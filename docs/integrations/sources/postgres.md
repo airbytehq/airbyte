@@ -17,7 +17,10 @@ If your dataset is small and you just want a snapshot of your table in the desti
 
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer
 - Use Postgres v9.3.x or above for non-CDC workflows and Postgres v10 or above for CDC workflows
-- Allowlist the IP address `34.106.109.131` to enable access to Airbyte
+- Allowlist one of our IP addresses to enable access to Airbyte:
+  - 34.106.109.131
+  - 34.106.196.165
+  - 34.106.60.246
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ## Setup guide
@@ -111,15 +114,26 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
     :::warning
     This is an advanced configuration option. Users are advised to use it with caution.
     :::
+9. For Airbyte Open Source, toggle the switch to connect using SSL. For Airbyte Cloud uses SSL by default.
+10. For SSL Modes, select:
+    - **disable** to disable encrypted communication between Airbyte and the source
+    - **allow** to enable encrypted communication only when required by the source
+    - **prefer** to allow unencrypted communication only when the source doesn't support encryption
+    - **require** to always require encryption. Note: The connection will fail if the source doesn't support encryption.
+    - **verify-ca** to always require encryption and verify that the source has a valid SSL certificate
+    - **verify-full** to always require encryption and verify the identity of the source
+11. For Replication Method, select Standard or [Logical CDC](https://www.postgresql.org/docs/10/logical-replication.html) from the dropdown. Refer to [Configuring Postgres connector with Change Data Capture (CDC)](#configuring-postgres-connector-with-change-data-capture-cdc) for more information.
+12. For SSH Tunnel Method, select:
+    - **No Tunnel** for a direct connection to the database
+    - **SSH Key Authentication** to use an RSA Private as your secret for establishing the SSH tunnel
+    - **Password Authentication** to use a password as your secret for establishing the SSH tunnel
+    
+    :::warning
+    Since Airbyte Cloud requires encrypted communication, select **SSH Key Authentication** or **Password Authentication** if you selected **disable**, **allow**, or **prefer** as the **SSL Mode**; otherwise, the connection will fail.
+    :::
 
-9. For Airbyte Open Source, toggle the switch to connect using SSL. Airbyte Cloud uses SSL by default.
-10. For Replication Method, select Standard or [Logical CDC](https://www.postgresql.org/docs/10/logical-replication.html) from the dropdown. Refer to [Configuring Postgres connector with Change Data Capture (CDC)](#configuring-postgres-connector-with-change-data-capture-cdc) for more information.
-11. For SSH Tunnel Method, select:
-    - No Tunnel for a direct connection to the database
-    - SSH Key Authentication to use an RSA Private as your secret for establishing the SSH tunnel
-    - Password Authentication to use a password as your secret for establishing the SSH tunnel
   Refer to [Connect via SSH Tunnel](#connect-via-ssh-tunnel​) for more information.
-12. Click **Set up source**.
+13. Click **Set up source**.
 
 ### Connect via SSH Tunnel​
 

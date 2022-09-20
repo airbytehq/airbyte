@@ -1,3 +1,4 @@
+{{- if .Values.minio.enabled }}
 apiVersion: apps/v1 #  for k8s versions before 1.9.0 use apps/v1beta2  and before 1.8.0 use extensions/v1beta1
 kind: Deployment
 metadata:
@@ -82,3 +83,4 @@ spec:
       protocol: TCP
   selector:
     {{ include "airbyte.minioSelectorLabels" . | nindent 4 }}
+{{- end }}

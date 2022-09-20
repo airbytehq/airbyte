@@ -9,7 +9,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 0.1.0
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -287,7 +287,7 @@
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.20
+  dockerImageTag: 0.2.22
   documentationUrl: https://docs.airbyte.io/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -387,11 +387,11 @@
 - name: Google Search Console
   sourceDefinitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
   dockerRepository: airbyte/source-google-search-console
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-search-console
   icon: googlesearchconsole.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
@@ -623,7 +623,7 @@
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
-  dockerImageTag: 0.1.22
+  dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.io/integrations/sources/mixpanel
   icon: mixpanel.svg
   sourceType: api
@@ -667,7 +667,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/notion
   icon: notion.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Okta
   sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   dockerRepository: airbyte/source-okta
@@ -876,7 +876,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -988,11 +988,11 @@
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: TalkDesk Explore
   sourceDefinitionId: f00d2cf4-3c28-499a-ba93-b50b6f26359e
   dockerRepository: airbyte/source-talkdesk-explore
@@ -1097,6 +1097,14 @@
   icon: woocommerce.svg
   sourceType: api
   releaseStage: alpha
+- name: Wrike
+  sourceDefinitionId: 9c13f986-a13b-4988-b808-4705badf71c2
+  dockerRepository: airbyte/source-wrike
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/wrike
+  icon: wrike.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
   dockerRepository: airbyte/source-zendesk-chat
@@ -1132,7 +1140,7 @@
 - name: Zenloop
   sourceDefinitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
   dockerRepository: airbyte/source-zenloop
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/zenloop
   sourceType: api
   releaseStage: alpha
@@ -1193,5 +1201,12 @@
   dockerRepository: airbyte/source-elasticsearch
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/elasticsearch
+  sourceType: api
+  releaseStage: alpha
+- name: Yandex Metrica
+  sourceDefinitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
+  dockerRepository: airbyte/source-yandex-metrica
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/yandex-metrica
   sourceType: api
   releaseStage: alpha

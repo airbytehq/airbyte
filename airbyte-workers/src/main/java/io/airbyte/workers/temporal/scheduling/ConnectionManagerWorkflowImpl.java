@@ -166,7 +166,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       if (workflowState.isDeleted()) {
         if (workflowState.isRunning()) {
           log.info("Cancelling the current running job because a connection deletion was requested");
-          reportCancelled();
+          reportCancelled(connectionUpdaterInput.getConnectionId());
         }
         log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
         deleteConnectionBeforeTerminatingTheWorkflow();
@@ -231,7 +231,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       final GeneratedJobInput jobInputs = getJobInput();
 
-      reportJobStarting();
+      reportJobStarting(connectionUpdaterInput.getConnectionId());
       StandardSyncOutput standardSyncOutput = null;
 
       try {
@@ -291,11 +291,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobSuccess, new JobSuccessInput(
           workflowInternalState.getJobId(),
           workflowInternalState.getAttemptNumber(),
+          connectionUpdaterInput.getConnectionId(),
           standardSyncOutput));
     } else {
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobSuccessWithAttemptNumber, new JobSuccessInputWithAttemptNumber(
           workflowInternalState.getJobId(),
           workflowInternalState.getAttemptNumber(),
+          connectionUpdaterInput.getConnectionId(),
           standardSyncOutput));
     }
 
@@ -317,12 +319,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::attemptFailure, new AttemptFailureInput(
           workflowInternalState.getJobId(),
           workflowInternalState.getAttemptNumber(),
+          connectionUpdaterInput.getConnectionId(),
           standardSyncOutput,
           FailureHelper.failureSummary(workflowInternalState.getFailures(), workflowInternalState.getPartialSuccess())));
     } else {
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::attemptFailureWithAttemptNumber, new AttemptNumberFailureInput(
           workflowInternalState.getJobId(),
           workflowInternalState.getAttemptNumber(),
+          connectionUpdaterInput.getConnectionId(),
           standardSyncOutput,
           FailureHelper.failureSummary(workflowInternalState.getFailures(), workflowInternalState.getPartialSuccess())));
     }
@@ -340,7 +344,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     } else {
       final String failureReason = failureType == FailureType.CONFIG_ERROR ? "Connection Check Failed " + connectionId
           : "Job failed after too many retries for connection " + connectionId;
-      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(connectionUpdaterInput.getJobId(), failureReason));
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(connectionUpdaterInput.getJobId(),
+          connectionUpdaterInput.getConnectionId(), connectionUpdaterInput.getAttemptNumber(), failureReason));
 
       final int autoDisableConnectionVersion =
           Workflow.getVersion("auto_disable_failing_connection", Workflow.DEFAULT_VERSION, AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);
@@ -744,12 +749,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   /**
    * Report the job as started in the job tracker and set it as running in the workflow internal
    * state.
+   *
+   * @param connectionId The connection ID associated with this execution of the workflow.
    */
-  private void reportJobStarting() {
+  private void reportJobStarting(final UUID connectionId) {
     runMandatoryActivity(
         jobCreationAndStatusUpdateActivity::reportJobStart,
         new ReportJobStartInput(
-            workflowInternalState.getJobId()));
+            workflowInternalState.getJobId(), connectionId));
 
     workflowState.setRunning(true);
   }
@@ -822,14 +829,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    */
   private void reportCancelledAndContinueWith(final boolean skipSchedulingNextRun, final ConnectionUpdaterInput connectionUpdaterInput) {
     if (workflowInternalState.getJobId() != null && workflowInternalState.getAttemptNumber() != null) {
-      reportCancelled();
+      reportCancelled(connectionUpdaterInput.getConnectionId());
     }
     resetNewConnectionInput(connectionUpdaterInput);
     connectionUpdaterInput.setSkipScheduling(skipSchedulingNextRun);
     prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
   }
 
-  private void reportCancelled() {
+  private void reportCancelled(final UUID connectionId) {
     final Long jobId = workflowInternalState.getJobId();
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
     final Set<FailureReason> failures = workflowInternalState.getFailures();
@@ -842,12 +849,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           new JobCancelledInput(
               jobId,
               attemptNumber,
+              connectionId,
               FailureHelper.failureSummaryForCancellation(jobId, attemptNumber, failures, partialSuccess)));
     } else {
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobCancelledWithAttemptNumber,
           new JobCancelledInputWithAttemptNumber(
               jobId,
               attemptNumber,
+              connectionId,
               FailureHelper.failureSummaryForCancellation(jobId, attemptNumber, failures, partialSuccess)));
     }
   }

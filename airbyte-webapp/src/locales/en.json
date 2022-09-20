@@ -27,7 +27,6 @@
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "Enter a valid email",
-  "form.cron.invalid": "Invalid cron expression",
   "form.empty.error": "Required",
   "form.selectConnector": "Type to search for a connector",
   "form.searchName": "search by name...",
@@ -307,6 +306,9 @@
   "destinations.addSourceReplicateData": "Add sources where to replicate data from.",
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
+  "destinations.frequentlyUsed": "Most frequently used destinations",
+  "destinations.dontHaveYourOwnDestination": "Don’t have your own destination yet?",
+  "destinations.startWith": "Start with {name}",
 
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
 

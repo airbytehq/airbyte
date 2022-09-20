@@ -18,7 +18,7 @@ For more information about the grading system, see [Product Release Stages](http
 |:--------------------------------------------------------------------------------------------| :------------------- | :------------------ |
 | [3PL Central](sources/tplcentral.md)                                                        | Alpha                | No                  |
 | [Airtable](sources/airtable.md)                                                             | Alpha                | No                  |
-| [AlloyDB](sources/alloydb.md)                                                               | Alpha                | Yes                 |
+| [AlloyDB](sources/alloydb.md)                                                               | Generally Available  | Yes                 |
 | [Amazon Ads](sources/amazon-ads.md)                                                         | Beta                 | Yes                 |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md)                                   | Alpha                | Yes                 |
 | [Amazon SQS](sources/amazon-sqs.md)                                                         | Alpha                | Yes                 |
@@ -166,6 +166,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Webflow](sources/webflow.md        )                                                       | Alpha                | Yes                 |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
 | [Wordpress](sources/wordpress.md)                                                           | Alpha                | No                  |
+| [Wrike](sources/wrike.md)                                                                   | Alpha                | No                  |
 | [YouTube Analytics](sources/youtube-analytics.md)                                           | Beta                 | Yes                 |
 | [Zencart](sources/zencart.md)                                                               | Alpha                | No                  |
 | [Zendesk Chat](sources/zendesk-chat.md)                                                     | Beta                 | Yes                 |
