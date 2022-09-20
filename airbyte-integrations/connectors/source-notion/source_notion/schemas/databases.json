@@ -1,0 +1,254 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "object": {
+      "enum": ["database"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "created_time": {
+      "type": "string"
+    },
+    "last_edited_time": {
+      "type": "string"
+    },
+    "title": {
+      "type": "array",
+      "items": {
+        "$ref": "rich_text.json"
+      }
+    },
+    "last_edited_by": {
+      "$ref": "user.json"
+    },
+    "created_by": {
+      "$ref": "user.json"
+    },
+    "archived": {
+      "type": "boolean"
+    },
+    "icon": {
+      "$ref": "icon.json"
+    },
+    "cover": {
+      "$ref": "file.json"
+    },
+    "parent": {
+      "$ref": "parent.json"
+    },
+    "url": {
+      "type": "string"
+    },
+    "is_inline": {
+      "type": ["null", "boolean"]
+    },
+    "properties": {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": "object",
+            "additionalProperties": true,
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": [
+                      "title",
+                      "rich_text",
+                      "date",
+                      "people",
+                      "files",
+                      "checkbox",
+                      "url",
+                      "email",
+                      "phone_number",
+                      "created_time",
+                      "created_by",
+                      "last_edited_time",
+                      "last_edited_by"
+                    ]
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["number"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "format": {
+                    "enum": [
+                      "number",
+                      "number_with_commas",
+                      "percent",
+                      "dollar",
+                      "canadian_dollar",
+                      "euro",
+                      "pound",
+                      "yen",
+                      "ruble",
+                      "rupee",
+                      "won",
+                      "yuan",
+                      "real",
+                      "lira",
+                      "rupiah",
+                      "franc",
+                      "hong_kong_dollar",
+                      "new_zealand_dollar",
+                      "krona",
+                      "norwegian_krone",
+                      "mexican_peso",
+                      "rand",
+                      "new_taiwan_dollar",
+                      "danish_krone",
+                      "zloty",
+                      "baht",
+                      "forint",
+                      "koruna",
+                      "shekel",
+                      "chilean_peso",
+                      "philippine_peso",
+                      "dirham",
+                      "colombian_peso",
+                      "riyal",
+                      "ringgit",
+                      "leu"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["select", "multi_select"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "options.json"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["formula"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "expression": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["relation"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "database_id": {
+                    "type": "string"
+                  },
+                  "synced_property_name": {
+                    "type": ["null", "string"]
+                  },
+                  "synced_property_id": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["rollup"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "relation_property_name": {
+                    "type": "string"
+                  },
+                  "relation_property_id": {
+                    "type": "string"
+                  },
+                  "rollup_property_name": {
+                    "type": "string"
+                  },
+                  "rollup_property_id": {
+                    "type": "string"
+                  },
+                  "function": {
+                    "enum": [
+                      "count_all",
+                      "count_values",
+                      "count_unique_values",
+                      "count_empty",
+                      "count_not_empty",
+                      "percent_empty",
+                      "percent_not_empty",
+                      "sum",
+                      "average",
+                      "median",
+                      "min",
+                      "max",
+                      "range",
+                      "show_original"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
