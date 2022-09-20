@@ -39,7 +39,6 @@ noscript {
     font-weight: 100 900;
     font-display: swap;
     font-style: normal;
-    font-named-instance: 'Regular';
     src: url("/fonts/inter/Inter-roman.var.woff2?v=3.19") format("woff2");
 }
 
@@ -48,7 +47,6 @@ noscript {
     font-weight: 100 900;
     font-display: swap;
     font-style: italic;
-    font-named-instance: 'Italic';
     src: url("/fonts/inter/Inter-italic.var.woff2?v=3.19") format("woff2");
 }
 
