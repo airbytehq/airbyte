@@ -208,6 +208,7 @@ class Stream(HttpStream, ABC):
     primary_key = None
     filter_old_records: bool = True
     denormalize_records: bool = False  # one record from API response can result in multiple records emitted
+    raise_on_http_errors: bool = True
 
     @property
     @abstractmethod
@@ -258,6 +259,11 @@ class Stream(HttpStream, ABC):
             self._session.params["hapikey"] = credentials.get("api_key")
         elif creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == HTTPStatus.FORBIDDEN:
+            setattr(self, "raise_on_http_errors", False)
+        return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == codes.too_many_requests:
@@ -354,12 +360,14 @@ class Stream(HttpStream, ABC):
 
                 properties = self._property_wrapper
                 if properties and properties.too_many_properties:
+                    print("lol1")
                     records, response = self._read_stream_records(
                         stream_slice=stream_slice,
                         stream_state=stream_state,
                         next_page_token=next_page_token,
                     )
                 else:
+                    print("lol2")
                     response = self.handle_request(
                         stream_slice=stream_slice,
                         stream_state=stream_state,
