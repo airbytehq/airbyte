@@ -66,7 +66,7 @@ Your database user should now be ready for use with Airbyte.
 
 **3. Set up CDC**
 
-For `STANDARD` replication method this is not applicable. If you select the `CDC` replication method then only this is required. Please read [the section on CDC below](mysql.md#setting-up-cdc-for-mysql) for more information.
+For `STANDARD` replication method this is not applicable. If you select the `CDC` replication method then only this is required. Please read the section on [CDC below](#change-data-capture-cdc) for more information.
 
 **4. That's it!**
 
@@ -125,6 +125,11 @@ Using this feature requires additional configuration, when creating the source. 
 2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
    1. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel \(see below for more information on generating this key\).
    2. Choose `Password Authentication` if you will be using a password as your secret for establishing the SSH Tunnel.
+
+   :::warning
+    Since Airbyte Cloud requires encrypted communication, select **SSH Key Authentication** or **Password Authentication** if you selected **preferred** as the **SSL Mode**; otherwise, the connection will fail.
+   :::
+
 3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will connect to. This should be a hostname or an IP Address.
 4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for SSH connections is `22`, so unless you have explicitly changed something, go with the default.
 5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the MySQl username.
@@ -184,6 +189,39 @@ MySQL data types are mapped to the following data types when synchronizing data.
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
+## Upgrading from 0.6.8 and older versions to 0.6.9 and later versions
+There is a backwards incompatible spec change between MySQL Source connector versions 0.6.8 and 0.6.9. As part of that spec change
+`replication_method` configuration parameter was changed to `object` from `string`. 
+
+In MySQL source connector versions 0.6.8 and older, `replication_method` configuration parameter was saved in the configuration database as follows:
+
+```
+"replication_method": "STANDARD"
+```
+
+Starting with version 0.6.9, `replication_method` configuration parameter is saved as follows:
+```
+"replication_method": {
+    "method": "STANDARD"
+}
+```
+
+After upgrading MySQL Source connector from 0.6.8 or older version to 0.6.9 or newer version you need to fix source configurations in the `actor` table
+in Airbyte database. To do so, you need to run the following two SQL queries. Follow the instructions in [Airbyte documentation](https://docs.airbyte.com/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db) to
+run SQL queries on Airbyte database.
+
+If you have connections with MySQL Source using _Standard_ replication method, run this SQL:
+```sql
+update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "STANDARD"}', true)  
+WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configuration->>'replication_method' = 'STANDARD');
+```
+
+If you have connections with MySQL Source using _Logicai Replication (CDC)_ method, run this SQL:
+```sql
+update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)  
+WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configuration->>'replication_method' = 'CDC');
+```
+
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                      |
@@ -192,7 +230,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 | 0.6.12  | 2022-09-13 | [16657](https://github.com/airbytehq/airbyte/pull/16657)   | Improve CDC record queueing performance                                                                                      |
 | 0.6.11  | 2022-09-08 | [16202](https://github.com/airbytehq/airbyte/pull/16202)   | Adds error messaging factory to UI                                                                                           |
 | 0.6.10  | 2022-09-08 | [16007](https://github.com/airbytehq/airbyte/pull/16007)   | Implement per stream state support.                                                                                          |
-| 0.6.9   | 2022-09-03 | [16216](https://github.com/airbytehq/airbyte/pull/16216)   | Standardize spec for CDC replication. Replace the `replication_method` enum with a config object with a `method` enum field. |
+| 0.6.9   | 2022-09-03 | [16216](https://github.com/airbytehq/airbyte/pull/16216)   | Standardize spec for CDC replication. See upgrade instructions [above](#upgrading-from-0.6.8-and-older-versions-to-0.6.9-and-later-versions). |
 | 0.6.8   | 2022-09-01 | [16259](https://github.com/airbytehq/airbyte/pull/16259)   | Emit state messages more frequently                                                                                          |
 | 0.6.7   | 2022-08-30 | [16114](https://github.com/airbytehq/airbyte/pull/16114)   | Prevent traffic going on an unsecured channel in strict-encryption version of source mysql                                   |
 | 0.6.6   | 2022-08-25 | [15993](https://github.com/airbytehq/airbyte/pull/15993)   | Improved support for connecting over SSL                                                                                     |
@@ -247,3 +285,4 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 | 0.1.6   | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307)     | Migrate Postgres and MySQL to use new JdbcSource                                                                             |
 | 0.1.5   | 2020-12-11 | [1267](https://github.com/airbytehq/airbyte/pull/1267)     | Support incremental sync                                                                                                     |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)     | Add connectors using an index YAML file                                                                                      |
+

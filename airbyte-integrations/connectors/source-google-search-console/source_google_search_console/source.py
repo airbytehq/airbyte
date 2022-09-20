@@ -6,12 +6,14 @@ import json
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from jsonschema import validate
+from source_google_search_console.exceptions import InvalidSiteURLValidationError
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
     SearchAnalyticsAllFields,
@@ -42,6 +44,8 @@ class SourceGoogleSearchConsole(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             stream_kwargs = self.get_stream_kwargs(config)
+            self.validate_site_urls(config, stream_kwargs)
+
             sites = Sites(**stream_kwargs)
             stream_slice = sites.stream_slices(SyncMode.full_refresh)
 
@@ -52,11 +56,32 @@ class SourceGoogleSearchConsole(AbstractSource):
                 next(sites_gen)
             return True, None
 
+        except InvalidSiteURLValidationError as e:
+            return False, repr(e)
         except Exception as error:
             return (
                 False,
                 f"Unable to connect to Google Search Console API with the provided credentials - {repr(error)}",
             )
+
+    @staticmethod
+    def validate_site_urls(config, stream_kwargs):
+        auth = stream_kwargs["authenticator"]
+
+        if isinstance(auth, ServiceAccountAuthenticator):
+            request = auth(requests.Request(method="GET", url="https://www.googleapis.com/webmasters/v3/sites"))
+            with requests.Session() as s:
+                response = s.send(s.prepare_request(request))
+        else:
+            response = requests.get("https://www.googleapis.com/webmasters/v3/sites", headers=auth.get_auth_header())
+        response_data = response.json()
+
+        site_urls = set([s["siteUrl"] for s in response_data["siteEntry"]])
+        provided_by_client = set(config["site_urls"])
+
+        invalid_site_url = provided_by_client - site_urls
+        if invalid_site_url:
+            raise InvalidSiteURLValidationError(f'The following URLs are not permitted: {", ".join(invalid_site_url)}')
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """

@@ -23,6 +23,7 @@ import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
@@ -108,13 +109,13 @@ class JobHistoryHandlerTest {
         .endedAt(a.getEndedAtInSecond().orElse(null));
   }
 
-  private static Attempt createSuccessfulAttempt(final long jobId, final long timestamps) {
-    return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, AttemptStatus.SUCCEEDED, null, timestamps, timestamps, timestamps);
+  private static Attempt createAttempt(final long jobId, final long timestamps, final AttemptStatus status) {
+    return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, status, null, timestamps, timestamps, timestamps);
   }
 
   @BeforeEach
   void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
-    testJobAttempt = createSuccessfulAttempt(JOB_ID, CREATED_AT);
+    testJobAttempt = createAttempt(JOB_ID, CREATED_AT, AttemptStatus.SUCCEEDED);
     testJob = new Job(JOB_ID, JOB_CONFIG.getConfigType(), JOB_CONFIG_ID, JOB_CONFIG, ImmutableList.of(testJobAttempt), JOB_STATUS, null, CREATED_AT,
         CREATED_AT);
 
@@ -174,7 +175,7 @@ class JobHistoryHandlerTest {
 
       final var secondJobId = JOB_ID + 100;
       final var createdAt2 = CREATED_AT + 1000;
-      final var secondJobAttempt = createSuccessfulAttempt(secondJobId, createdAt2);
+      final var secondJobAttempt = createAttempt(secondJobId, createdAt2, AttemptStatus.SUCCEEDED);
       final var secondJob = new Job(secondJobId, ConfigType.DISCOVER_SCHEMA, JOB_CONFIG_ID, JOB_CONFIG, ImmutableList.of(secondJobAttempt),
           JobStatus.SUCCEEDED, null, createdAt2, createdAt2);
 
@@ -298,6 +299,75 @@ class JobHistoryHandlerTest {
     final JobDebugInfoRead exp = new JobDebugInfoRead().job(toDebugJobInfo(testJob)).attempts(toAttemptInfoList(ImmutableList.of(testJobAttempt)));
 
     assertEquals(exp, jobDebugInfoActual);
+  }
+
+  @Test
+  @DisplayName("Should return the latest running sync job")
+  void testGetLatestRunningSyncJob() throws IOException {
+    final var connectionId = UUID.randomUUID();
+
+    final var olderRunningJobId = JOB_ID + 100;
+    final var olderRunningCreatedAt = CREATED_AT + 1000;
+    final var olderRunningJobAttempt = createAttempt(olderRunningJobId, olderRunningCreatedAt, AttemptStatus.RUNNING);
+    final var olderRunningJob = new Job(olderRunningJobId, ConfigType.SYNC, JOB_CONFIG_ID,
+        JOB_CONFIG, ImmutableList.of(olderRunningJobAttempt),
+        JobStatus.RUNNING, null, olderRunningCreatedAt, olderRunningCreatedAt);
+
+    // expect that we return the newer of the two running jobs. this should not happen in the real
+    // world but might as
+    // well test that we handle it properly.
+    final var newerRunningJobId = JOB_ID + 200;
+    final var newerRunningCreatedAt = CREATED_AT + 2000;
+    final var newerRunningJobAttempt = createAttempt(newerRunningJobId, newerRunningCreatedAt, AttemptStatus.RUNNING);
+    final var newerRunningJob = new Job(newerRunningJobId, ConfigType.SYNC, JOB_CONFIG_ID,
+        JOB_CONFIG, ImmutableList.of(newerRunningJobAttempt),
+        JobStatus.RUNNING, null, newerRunningCreatedAt, newerRunningCreatedAt);
+
+    when(jobPersistence.listJobsForConnectionWithStatuses(
+        connectionId,
+        Collections.singleton(ConfigType.SYNC),
+        JobStatus.NON_TERMINAL_STATUSES)).thenReturn(List.of(newerRunningJob, olderRunningJob));
+
+    final Optional<JobRead> expectedJob = Optional.of(JobConverter.getJobRead(newerRunningJob));
+    final Optional<JobRead> actualJob = jobHistoryHandler.getLatestRunningSyncJob(connectionId);
+
+    assertEquals(expectedJob, actualJob);
+  }
+
+  @Test
+  @DisplayName("Should return an empty optional if no running sync job")
+  void testGetLatestRunningSyncJobWhenNone() throws IOException {
+    final var connectionId = UUID.randomUUID();
+
+    when(jobPersistence.listJobsForConnectionWithStatuses(
+        connectionId,
+        Collections.singleton(ConfigType.SYNC),
+        JobStatus.NON_TERMINAL_STATUSES)).thenReturn(Collections.emptyList());
+
+    final Optional<JobRead> actual = jobHistoryHandler.getLatestRunningSyncJob(connectionId);
+
+    assertTrue(actual.isEmpty());
+  }
+
+  @Test
+  @DisplayName("Should return the latest sync job")
+  void testGetLatestSyncJob() throws IOException {
+    final var connectionId = UUID.randomUUID();
+
+    // expect the newest job overall to be returned, even if it is failed
+    final var newerFailedJobId = JOB_ID + 200;
+    final var newerFailedCreatedAt = CREATED_AT + 2000;
+    final var newerFailedJobAttempt = createAttempt(newerFailedJobId, newerFailedCreatedAt, AttemptStatus.FAILED);
+    final var newerFailedJob = new Job(newerFailedJobId, ConfigType.SYNC, JOB_CONFIG_ID,
+        JOB_CONFIG, ImmutableList.of(newerFailedJobAttempt),
+        JobStatus.RUNNING, null, newerFailedCreatedAt, newerFailedCreatedAt);
+
+    when(jobPersistence.getLastSyncJob(connectionId)).thenReturn(Optional.of(newerFailedJob));
+
+    final Optional<JobRead> expectedJob = Optional.of(JobConverter.getJobRead(newerFailedJob));
+    final Optional<JobRead> actualJob = jobHistoryHandler.getLatestSyncJob(connectionId);
+
+    assertEquals(expectedJob, actualJob);
   }
 
   @Test

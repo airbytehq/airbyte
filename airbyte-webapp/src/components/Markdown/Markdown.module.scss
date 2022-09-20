@@ -1,4 +1,5 @@
 @use "../../scss/colors";
+@use "../../scss/fonts";
 
 .markdown {
   * {
@@ -67,7 +68,7 @@
   code {
     white-space: break-spaces;
     background: colors.$grey-50;
-    font-family: Menlo, Monaco, Consolas, monospace;
+    font-family: fonts.$monospace;
   }
 
   pre > code {

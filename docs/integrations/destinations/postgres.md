@@ -88,7 +88,44 @@ characters.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **new destination**.
 3. On the Set up the destination page, enter the name for the Postgres connector
    and select **Postgres** from the Destination type dropdown.
-4. Follow the [Setup the Postgres Destination in Airbyte](postgres.md#Setup-the-Postgres-Destination-in-Airbyte)
+4. Enter a name for your source.
+5. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your Postgres database.
+6. List the **Default Schemas**.
+    :::note
+    The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be used at one time. No schemas set explicitly - will sync all of existing.
+    :::
+7. For **User** and **Password**, enter the username and password you created in [Step 1](#step-1-optional-create-a-dedicated-read-only-user).
+9. For Airbyte Open Source, toggle the switch to connect using SSL. For Airbyte Cloud uses SSL by default.
+10. For SSL Modes, select:
+    - **disable** to disable encrypted communication between Airbyte and the source
+    - **allow** to enable encrypted communication only when required by the source
+    - **prefer** to allow unencrypted communication only when the source doesn't support encryption
+    - **require** to always require encryption. Note: The connection will fail if the source doesn't support encryption.
+    - **verify-ca** to always require encryption and verify that the source has a valid SSL certificate
+    - **verify-full** to always require encryption and verify the identity of the source
+11. To customize the JDBC connection beyond common options, specify additional supported [JDBC URL parameters](https://jdbc.postgresql.org/documentation/head/connect.html) as key-value pairs separated by the symbol & in the **JDBC URL Parameters (Advanced)** field.
+
+    Example: key1=value1&key2=value2&key3=value3
+
+    These parameters will be added at the end of the JDBC URL that the AirByte will use to connect to your Postgres database.
+
+    The connector now supports `connectTimeout` and defaults to 60 seconds. Setting connectTimeout to 0 seconds will set the timeout to the longest time available.
+
+    **Note:** Do not use the following keys in JDBC URL Params field as they will be overwritten by Airbyte:
+    `currentSchema`, `user`, `password`, `ssl`, and `sslmode`.
+
+    :::warning
+    This is an advanced configuration option. Users are advised to use it with caution.
+    :::
+11. For SSH Tunnel Method, select:
+    - **No Tunnel** for a direct connection to the database
+    - **SSH Key Authentication** to use an RSA Private as your secret for establishing the SSH tunnel
+    - **Password Authentication** to use a password as your secret for establishing the SSH tunnel
+    
+    :::warning
+    Since Airbyte Cloud requires encrypted communication, select **SSH Key Authentication** or **Password Authentication** if you selected **disable**, **allow**, or **prefer** as the **SSL Mode**; otherwise, the connection will fail.
+    :::
+12. Click **Set up destination**.
 
 ## Supported sync modes
 
