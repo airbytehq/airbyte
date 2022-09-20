@@ -103,6 +103,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
         self.dimensions = config["dimensions"]
+        self.segments = config["segments"]
+        self.filtersExpression = config["filter"]
         self._config = config
         self.dimensions_ref, self.metrics_ref = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
 
@@ -167,6 +169,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
         metrics = [{"expression": metric} for metric in self.metrics]
         dimensions = [{"name": dimension} for dimension in self.dimensions]
+        segments = [{"segmentId": segment} for segment in self.segments]
+        filtersExpression = self.filtersExpression
 
         request_body = {
             "reportRequests": [
@@ -176,6 +180,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     "pageSize": self.page_size,
                     "metrics": metrics,
                     "dimensions": dimensions,
+                    "segments": segments,
+                    "filtersExpression": filtersExpression,
                 }
             ]
         }
@@ -268,7 +274,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         """
         try:
             if field_type == "dimension":
-                if attribute.startswith(("ga:dimension", "ga:customVarName", "ga:customVarValue")):
+                if attribute.startswith(("ga:dimension", "ga:customVarName", "ga:customVarValue", "ga:segment")):
                     # Custom Google Analytics Dimensions that are not part of self.dimensions_ref. They are always
                     # strings
                     return "string"
@@ -602,6 +608,8 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         for stream in config["ga_streams"]:
             config["metrics"] = stream["metrics"]
             config["dimensions"] = stream["dimensions"]
+            config["segments"] = stream.get("segments", list())
+            config["filter"] = stream.get("filter", "")
 
             # construct GAReadStreams sub-class for each stream
             stream_name = stream["name"]
