@@ -48,16 +48,6 @@ public class JobErrorReportingBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.job.error-reporting.strategy",
-            value = "")
-  @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
-  @Named("jobErrorReportingClient")
-  public JobErrorReportingClient defaultJobErrorReportingClient() {
-    return loggingJobErrorReportingClient();
-  }
-
-  @Singleton
   @Requires(property = "airbyte.worker.plane",
             notEquals = "DATA_PLANE")
   public JobErrorReporter jobErrorReporter(
