@@ -10,11 +10,12 @@ WORKDIR $WORKDIR
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
 COPY main.py ./
+COPY airbyte-to-flow ./
 
 RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+ENTRYPOINT ["airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=v1
 LABEL io.airbyte.name=airbyte/source-exchange-rates
