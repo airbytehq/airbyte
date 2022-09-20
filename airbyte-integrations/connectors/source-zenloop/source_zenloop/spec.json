@@ -5,7 +5,6 @@
     "title": "Zenloop Spec",
     "type": "object",
     "required": ["api_token"],
-    "additionalProperties": false,
     "properties": {
       "api_token": {
         "type": "string",

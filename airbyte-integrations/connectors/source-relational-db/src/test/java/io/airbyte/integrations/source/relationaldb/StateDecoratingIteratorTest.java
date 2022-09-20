@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
@@ -70,6 +71,32 @@ class StateDecoratingIteratorTest {
         .withState(new AirbyteStateMessage()
             .withData(Jsons.jsonNode(ImmutableMap.of("cursor", recordValue))));
   }
+
+  private Iterator<AirbyteMessage> createExceptionIterator() {
+    return new Iterator<AirbyteMessage>() {
+
+      final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2,
+          RECORD_MESSAGE_2, RECORD_MESSAGE_3);
+
+      @Override
+      public boolean hasNext() {
+        return true;
+      }
+
+      @Override
+      public AirbyteMessage next() {
+        if (internalMessageIterator.hasNext()) {
+          return internalMessageIterator.next();
+        } else {
+          // this line throws a RunTimeException wrapped around a SQLException to mimic the flow of when a
+          // SQLException is thrown and wrapped in
+          // StreamingJdbcDatabase#tryAdvance
+          throw new RuntimeException(new SQLException("Connection marked broken because of SQLSTATE(080006)", "08006"));
+        }
+      }
+
+    };
+  };
 
   private static Iterator<AirbyteMessage> messageIterator;
   private StateManager stateManager;
@@ -144,6 +171,52 @@ class StateDecoratingIteratorTest {
     assertEquals(recordMessage, iterator.next());
     // null because no records with a cursor field were replicated for the stream.
     assertNull(iterator.next().getState());
+    assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  void testIteratorCatchesExceptionWhenEmissionFrequencyNonZero() {
+    final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
+    final StateDecoratingIterator iterator = new StateDecoratingIterator(
+        exceptionIterator,
+        stateManager,
+        NAME_NAMESPACE_PAIR,
+        UUID_FIELD_NAME,
+        RECORD_VALUE_1,
+        JsonSchemaPrimitive.STRING,
+        1);
+    assertEquals(RECORD_MESSAGE_1, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    // continues to emit RECORD_MESSAGE_2 since cursorField has not changed thus not satisfying the
+    // condition of "ready"
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    // emits the first state message since the iterator has changed cursorFields (2 -> 3) and met the
+    // frequency minimum of 1 record
+    assertEquals(STATE_MESSAGE_2, iterator.next());
+    // no further records to read since Exception was caught above and marked iterator as endOfData()
+    assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  void testIteratorCatchesExceptionWhenEmissionFrequencyZero() {
+    final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
+    final StateDecoratingIterator iterator = new StateDecoratingIterator(
+        exceptionIterator,
+        stateManager,
+        NAME_NAMESPACE_PAIR,
+        UUID_FIELD_NAME,
+        RECORD_VALUE_1,
+        JsonSchemaPrimitive.STRING,
+        0);
+    assertEquals(RECORD_MESSAGE_1, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_2, iterator.next());
+    assertEquals(RECORD_MESSAGE_3, iterator.next());
+    // since stateEmission is not set to emit frequently, this will catch the error but not emit state
+    // message since it wasn't in a ready state
+    // of having a frequency > 0 but will prevent an exception from causing the iterator to fail by
+    // marking iterator as endOfData()
     assertFalse(iterator.hasNext());
   }
 

@@ -26,7 +26,7 @@ const useSyncActions = (): {
     const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
 
     analyticsService.track(Namespace.CONNECTION, trackableAction, {
-      frequency: getFrequencyType(connection.schedule),
+      frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,

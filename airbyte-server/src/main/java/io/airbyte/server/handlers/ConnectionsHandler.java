@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
@@ -116,7 +117,7 @@ public class ConnectionsHandler {
     ConnectionHelper.validateWorkspace(workspaceHelper,
         connectionCreate.getSourceId(),
         connectionCreate.getDestinationId(),
-        new HashSet<>(operationIds));
+        operationIds);
 
     final UUID connectionId = uuidGenerator.get();
 
@@ -217,7 +218,9 @@ public class ConnectionsHandler {
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
 
     final String frequencyString;
-    if (standardSync.getManual()) {
+    if (standardSync.getScheduleType() != null) {
+      frequencyString = getFrequencyStringFromScheduleType(standardSync.getScheduleType(), standardSync.getScheduleData());
+    } else if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
       final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
@@ -227,26 +230,123 @@ public class ConnectionsHandler {
     return metadata;
   }
 
-  public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate)
+  public ConnectionRead updateConnection(final ConnectionUpdate connectionPatch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    // retrieve and update sync
-    final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId());
 
-    final StandardSync newConnection = ConnectionHelper.updateConnectionObject(
-        workspaceHelper,
-        persistedSync,
-        ApiPojoConverters.connectionUpdateToInternal(connectionUpdate));
+    final UUID connectionId = connectionPatch.getConnectionId();
+
+    LOGGER.debug("Starting updateConnection for connectionId {}...", connectionId);
+    LOGGER.debug("incoming connectionPatch: {}", connectionPatch);
+
+    final StandardSync sync = configRepository.getStandardSync(connectionId);
+    LOGGER.debug("initial StandardSync: {}", sync);
+
+    validateConnectionPatch(workspaceHelper, sync, connectionPatch);
+
+    final ConnectionRead initialConnectionRead = ApiPojoConverters.internalToConnectionRead(sync);
+    LOGGER.debug("initial ConnectionRead: {}", initialConnectionRead);
+
+    applyPatchToStandardSync(sync, connectionPatch);
+
+    LOGGER.debug("patched StandardSync before persisting: {}", sync);
+    configRepository.writeStandardSync(sync);
+
+    eventRunner.update(connectionId);
+
+    final ConnectionRead updatedRead = buildConnectionRead(connectionId);
+    LOGGER.debug("final connectionRead: {}", updatedRead);
+
+    return updatedRead;
+  }
+
+  /**
+   * Modifies the given StandardSync by applying changes from a partially-filled ConnectionUpdate
+   * patch. Any fields that are null in the patch will be left unchanged.
+   */
+  private static void applyPatchToStandardSync(final StandardSync sync, final ConnectionUpdate patch) throws JsonValidationException {
+    // update the sync's schedule using the patch's scheduleType and scheduleData. validations occur in
+    // the helper to ensure both fields
+    // make sense together.
+    if (patch.getScheduleType() != null) {
+      ConnectionScheduleHelper.populateSyncFromScheduleTypeAndData(sync, patch.getScheduleType(), patch.getScheduleData());
+    }
+
+    // the rest of the fields are straightforward to patch. If present in the patch, set the field to
+    // the value
+    // in the patch. Otherwise, leave the field unchanged.
+
+    if (patch.getSyncCatalog() != null) {
+      sync.setCatalog(CatalogConverter.toProtocol(patch.getSyncCatalog()));
+    }
+
+    if (patch.getName() != null) {
+      sync.setName(patch.getName());
+    }
+
+    if (patch.getNamespaceDefinition() != null) {
+      sync.setNamespaceDefinition(Enums.convertTo(patch.getNamespaceDefinition(), NamespaceDefinitionType.class));
+    }
+
+    if (patch.getNamespaceFormat() != null) {
+      sync.setNamespaceFormat(patch.getNamespaceFormat());
+    }
+
+    if (patch.getPrefix() != null) {
+      sync.setPrefix(patch.getPrefix());
+    }
+
+    if (patch.getOperationIds() != null) {
+      sync.setOperationIds(patch.getOperationIds());
+    }
+
+    if (patch.getStatus() != null) {
+      sync.setStatus(ApiPojoConverters.toPersistenceStatus(patch.getStatus()));
+    }
+
+    if (patch.getSourceCatalogId() != null) {
+      sync.setSourceCatalogId(patch.getSourceCatalogId());
+    }
+
+    if (patch.getResourceRequirements() != null) {
+      sync.setResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(patch.getResourceRequirements()));
+    }
+  }
+
+  private void validateConnectionPatch(final WorkspaceHelper workspaceHelper, final StandardSync persistedSync, final ConnectionUpdate patch) {
+    // sanity check that we're updating the right connection
+    Preconditions.checkArgument(persistedSync.getConnectionId().equals(patch.getConnectionId()));
+
+    // make sure all operationIds belong to the same workspace as the connection
     ConnectionHelper.validateWorkspace(
-        workspaceHelper,
-        persistedSync.getSourceId(),
-        persistedSync.getDestinationId(),
-        new HashSet<>(connectionUpdate.getOperationIds()));
+        workspaceHelper, persistedSync.getSourceId(), persistedSync.getDestinationId(), patch.getOperationIds());
 
-    configRepository.writeStandardSync(newConnection);
+    // make sure the incoming schedule update is sensible. Note that schedule details are further
+    // validated in ConnectionScheduleHelper, this just
+    // sanity checks that fields are populated when they should be.
+    Preconditions.checkArgument(
+        patch.getSchedule() == null,
+        "ConnectionUpdate should only make changes to the schedule by setting scheduleType and scheduleData. 'schedule' is no longer supported.");
 
-    eventRunner.update(connectionUpdate.getConnectionId());
+    if (patch.getScheduleType() == null) {
+      Preconditions.checkArgument(
+          patch.getScheduleData() == null,
+          "ConnectionUpdate should not include any scheduleData without also specifying a valid scheduleType.");
+    } else {
+      switch (patch.getScheduleType()) {
+        case MANUAL -> Preconditions.checkArgument(
+            patch.getScheduleData() == null,
+            "ConnectionUpdate should not include any scheduleData when setting the Connection scheduleType to MANUAL.");
+        case BASIC -> Preconditions.checkArgument(
+            patch.getScheduleData() != null,
+            "ConnectionUpdate should include scheduleData when setting the Connection scheduleType to BASIC.");
+        case CRON -> Preconditions.checkArgument(
+            patch.getScheduleData() != null,
+            "ConnectionUpdate should include scheduleData when setting the Connection scheduleType to CRON.");
 
-    return buildConnectionRead(connectionUpdate.getConnectionId());
+        // shouldn't be possible to reach this case
+        default -> throw new RuntimeException("Unrecognized scheduleType!");
+      }
+    }
   }
 
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -317,12 +417,8 @@ public class ConnectionsHandler {
     newStreams.forEach(((streamDescriptor, airbyteStreamConfiguration) -> {
       final AirbyteStreamConfiguration oldConfig = oldStreams.get(streamDescriptor);
 
-      if (oldConfig == null) {
-        // The stream is a new one, the config has not change and it needs to be in the schema change list.
-      } else {
-        if (haveConfigChange(oldConfig, airbyteStreamConfiguration)) {
-          streamWithDifferentConf.add(streamDescriptor);
-        }
+      if (oldConfig != null && haveConfigChange(oldConfig, airbyteStreamConfiguration)) {
+        streamWithDifferentConf.add(streamDescriptor);
       }
     }));
 
@@ -424,6 +520,24 @@ public class ConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
     return ApiPojoConverters.internalToConnectionRead(standardSync);
+  }
+
+  private static String getFrequencyStringFromScheduleType(final ScheduleType scheduleType, final ScheduleData scheduleData) {
+    switch (scheduleType) {
+      case MANUAL -> {
+        return "manual";
+      }
+      case BASIC_SCHEDULE -> {
+        return TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(scheduleData.getBasicSchedule())) + " min";
+      }
+      case CRON -> {
+        // TODO(https://github.com/airbytehq/airbyte/issues/2170): consider something more detailed.
+        return "cron";
+      }
+      default -> {
+        throw new RuntimeException("Unexpected schedule type");
+      }
+    }
   }
 
 }

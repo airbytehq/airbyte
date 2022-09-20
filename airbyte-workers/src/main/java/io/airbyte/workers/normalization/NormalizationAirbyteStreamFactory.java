@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
  * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
  * line, only the first will be parsed.
  */
+@SuppressWarnings("PMD.MoreThanOneLogger")
 public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationAirbyteStreamFactory.class);
@@ -64,7 +65,7 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
         });
   }
 
-  private Stream<JsonNode> filterOutAndHandleNonJsonLines(String line) {
+  private Stream<JsonNode> filterOutAndHandleNonJsonLines(final String line) {
     final Optional<JsonNode> jsonLine = Jsons.tryDeserialize(line);
     if (jsonLine.isEmpty()) {
       // we log as info all the lines that are not valid json.
@@ -81,7 +82,7 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
     return jsonLine.stream();
   }
 
-  private Stream<AirbyteMessage> filterOutAndHandleNonAirbyteMessageLines(JsonNode jsonLine) {
+  private Stream<AirbyteMessage> filterOutAndHandleNonAirbyteMessageLines(final JsonNode jsonLine) {
     final Optional<AirbyteMessage> m = Jsons.tryObject(jsonLine, AirbyteMessage.class);
     if (m.isEmpty()) {
       // valid JSON but not an AirbyteMessage, so we assume this is a dbt json log
@@ -106,7 +107,7 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
     return m.stream();
   }
 
-  private void logAndCollectErrorMessage(String logMsg) {
+  private void logAndCollectErrorMessage(final String logMsg) {
     logger.error(logMsg);
     dbtErrors.add(logMsg);
   }

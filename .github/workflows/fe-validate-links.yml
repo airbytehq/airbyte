@@ -1,4 +1,4 @@
-name: Frontend Link Validation
+name: Check for broken links in FE
 
 on:
   workflow_dispatch:

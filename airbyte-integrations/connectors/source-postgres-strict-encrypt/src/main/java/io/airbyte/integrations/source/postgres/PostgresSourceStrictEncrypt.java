@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
@@ -11,7 +12,12 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +28,13 @@ import org.slf4j.LoggerFactory;
 public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceStrictEncrypt.class);
+  public static final String TUNNEL_METHOD = "tunnel_method";
+  public static final String NO_TUNNEL = "NO_TUNNEL";
+  public static final String SSL_MODE = "ssl_mode";
+  public static final String MODE = "mode";
+  public static final String SSL_MODE_ALLOW = "allow";
+  public static final String SSL_MODE_PREFER = "prefer";
+  public static final String SSL_MODE_DISABLE = "disable";
 
   PostgresSourceStrictEncrypt() {
     super(PostgresSource.sshWrappedSource());
@@ -31,12 +44,26 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
-    final ArrayNode modifiedSslModes = spec.getConnectionSpecification().get("properties").get("ssl_mode").get("oneOf").deepCopy();
-    // Assume that the first item is the "disable" option; remove it
-    modifiedSslModes.remove(0);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).remove("oneOf");
-    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).put("oneOf", modifiedSslModes);
     return spec;
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly and not over SSH tunnel
+    if (config.has(TUNNEL_METHOD)
+        && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
+        && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
+      //If no SSH tunnel
+      if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
+        if (Set.of(SSL_MODE_DISABLE,SSL_MODE_ALLOW, SSL_MODE_PREFER).contains(config.get(SSL_MODE).get(MODE).asText())) {
+          //Fail in case SSL mode is disable, allow or prefer
+          return new AirbyteConnectionStatus()
+              .withStatus(Status.FAILED)
+              .withMessage("Unsecured connection not allowed");
+        }
+      }
+    }
+    return super.check(config);
   }
 
   public static void main(final String[] args) throws Exception {
@@ -45,5 +72,4 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSourceStrictEncrypt.class);
   }
-
 }
