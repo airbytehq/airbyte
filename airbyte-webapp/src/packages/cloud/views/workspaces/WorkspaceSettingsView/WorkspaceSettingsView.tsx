@@ -2,6 +2,7 @@ import classNames from "classnames";
 import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import * as yup from "yup";
 
 import { Button, Label, LabeledInput, LabeledSwitch, LoadingButton } from "components";
 import { InfoTooltip } from "components/base/Tooltip";
@@ -26,6 +27,10 @@ const AdvancedModeSwitchLabel = () => (
     </InfoTooltip>
   </>
 );
+
+const ValidationSchema = yup.object().shape({
+  name: yup.string().required("form.empty.error"),
+});
 
 export const WorkspaceSettingsView: React.FC = () => {
   const { formatMessage } = useIntl();
@@ -60,6 +65,7 @@ export const WorkspaceSettingsView: React.FC = () => {
               name: payload.name,
             });
           }}
+          validationSchema={ValidationSchema}
         >
           {({ dirty, isSubmitting, resetForm, isValid, setFieldValue }) => (
             <Form>
@@ -93,10 +99,10 @@ export const WorkspaceSettingsView: React.FC = () => {
 
                 <div className={classNames(styles.formItem, styles.buttonGroup)}>
                   <Button type="button" secondary disabled={!dirty} onClick={() => resetForm()}>
-                    cancel
+                    <FormattedMessage id="form.cancel" />
                   </Button>
-                  <LoadingButton type="submit" disabled={!isValid} isLoading={isSubmitting}>
-                    save changes
+                  <LoadingButton type="submit" disabled={!dirty || !isValid} isLoading={isSubmitting}>
+                    <FormattedMessage id="form.saveChanges" />
                   </LoadingButton>
                 </div>
               </Content>
