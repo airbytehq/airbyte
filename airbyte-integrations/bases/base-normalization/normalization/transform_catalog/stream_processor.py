@@ -1162,7 +1162,7 @@ where 1 = 1
             stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
             if self.name_transformer.needs_quotes(stg_table):
                 stg_table = jinja_call(self.name_transformer.apply_quote(stg_table))
-            if suffix == "scd":
+            if suffix == "scd" and self.destination_type != DestinationType.DATABRICKS:
                 hooks = []
 
                 final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
