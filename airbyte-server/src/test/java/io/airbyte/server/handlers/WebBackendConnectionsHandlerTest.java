@@ -449,7 +449,7 @@ class WebBackendConnectionsHandlerTest {
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
-        .operationIds(List.of(newOperationId))
+        .operations(List.of(new WebBackendOperationCreateOrUpdate().operationId(newOperationId)))
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .name(standardSync.getName())
@@ -468,7 +468,7 @@ class WebBackendConnectionsHandlerTest {
         .name(standardSync.getName())
         .syncCatalog(catalog);
 
-    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionUpdate(input, operationIds);
+    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionPatch(input, operationIds);
 
     assertEquals(expected, actual);
   }
@@ -755,7 +755,7 @@ class WebBackendConnectionsHandlerTest {
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
-        .syncCatalog(expected.getSyncCatalog());
+        .syncCatalog(expectedWithNewSchema.getSyncCatalog());
 
     // state is per-stream
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(expected.getConnectionId());
@@ -788,8 +788,8 @@ class WebBackendConnectionsHandlerTest {
     assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
 
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(result.getConnectionId());
-    verify(connectionsHandler).getDiff(expected.getSyncCatalog(), expected.getSyncCatalog());
-    verify(connectionsHandler).getConfigurationDiff(expected.getSyncCatalog(), expected.getSyncCatalog());
+    verify(connectionsHandler).getDiff(expected.getSyncCatalog(), expectedWithNewSchema.getSyncCatalog());
+    verify(connectionsHandler).getConfigurationDiff(expected.getSyncCatalog(), expectedWithNewSchema.getSyncCatalog());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
     verify(connectionsHandler, times(1)).updateConnection(any());

@@ -263,6 +263,10 @@ class Client:
             builder.add_object(json.load(fp))
 
         result = builder.to_schema()
+        if "items" in result:
+            # this means we have a json list e.g. [{...}, {...}]
+            # but need to emit schema of an inside dict
+            result = result["items"]
         result["$schema"] = "http://json-schema.org/draft-07/schema#"
         return result
 
