@@ -46,6 +46,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -369,7 +370,10 @@ public class BigQueryUtils {
   private static String getConnectorNameFromEnv() {
     String imageName = System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE);
     // Transform airbyte/destination-bigquery:1.2.0 -> destination-bigquery/1.2.0
-    return imageName.replace("airbyte/", Strings.EMPTY).replace(":", "/");
+    // If imageName is null (e.g. in case of integration tests) return destination-bigquery
+    return Optional.ofNullable(imageName)
+        .map(name -> name.replace("airbyte/", Strings.EMPTY).replace(":", "/"))
+        .orElse("destination-bigquery");
   }
 
   private static String convertDateToInstantFormat(final String data) {
