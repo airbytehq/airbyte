@@ -16,6 +16,7 @@ import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import java.util.Optional;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -28,9 +29,9 @@ public class JobErrorReportingBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
-            value = "SENTRY")
+            pattern = "(?i)^sentry$")
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient sentryJobErrorReportingClient(
                                                                @Value("${airbyte.worker.job.error-reporting.sentry.dsn}") final String sentryDsn) {
@@ -39,9 +40,9 @@ public class JobErrorReportingBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
-            value = "LOGGING")
+            pattern = "(?i)^logging$")
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient loggingJobErrorReportingClient() {
     return new LoggingJobErrorReportingClient();
@@ -49,12 +50,12 @@ public class JobErrorReportingBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public JobErrorReporter jobErrorReporter(
                                            @Value("${airbyte.version}") final String airbyteVersion,
                                            final ConfigRepository configRepository,
                                            final DeploymentMode deploymentMode,
-                                           @Named("jobErrorReportingClient") final JobErrorReportingClient jobErrorReportingClient,
+                                           @Named("jobErrorReportingClient") final Optional<JobErrorReportingClient> jobErrorReportingClient,
                                            final WebUrlHelper webUrlHelper) {
     return new JobErrorReporter(
         configRepository,
@@ -63,7 +64,7 @@ public class JobErrorReportingBeanFactory {
         NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
         NormalizationRunnerFactory.NORMALIZATION_VERSION,
         webUrlHelper,
-        jobErrorReportingClient);
+        jobErrorReportingClient.orElseGet(() -> new LoggingJobErrorReportingClient()));
   }
 
 }
