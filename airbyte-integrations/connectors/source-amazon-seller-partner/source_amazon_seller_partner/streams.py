@@ -762,6 +762,9 @@ class Orders(IncrementalAmazonSPStream):
 
 
 class IncrementalAnalyticsStream(AnalyticsStream):
+    
+    fixed_period_in_days = 0
+
     @property
     @abstractmethod
     def cursor_field(self) -> Union[str, List[str]]:
@@ -826,7 +829,13 @@ class IncrementalAnalyticsStream(AnalyticsStream):
         slices = []
 
         while start_date < end_date:
-            end_date_slice = start_date.add(days=self.period_in_days)
+            # If request only returns data on day level
+            if self.fixed_period_in_days != 0:
+                slice_range = self.fixed_period_in_days
+            else: 
+                slice_range = self.period_in_days
+
+            end_date_slice = start_date.add(days=slice_range)
             slices.append(
                 {
                     "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
@@ -846,13 +855,13 @@ class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
     name = "GET_SALES_AND_TRAFFIC_REPORT"
     result_key = "salesAndTrafficByAsin"
     cursor_field = "queryEndDate"
-
+    fixed_period_in_days = 1
 
 class VendorSalesReports(IncrementalAnalyticsStream):
     name = "GET_VENDOR_SALES_REPORT"
     result_key = "salesByAsin"
     cursor_field = "endDate"
-    day_diff = 4 # Data is only available after 4 days
+    availability_sla_days = 4 # Data is only available after 4 days
 
 
 class VendorDirectFulfillmentShipping(AmazonSPStream):
