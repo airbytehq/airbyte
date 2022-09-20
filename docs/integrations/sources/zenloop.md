@@ -12,8 +12,9 @@ This Source is capable of syncing the following core Streams:
 * [Surveys](https://docs.zenloop.com/reference#get-list-of-surveys)
 * [AnswersSurveyGroup](https://docs.zenloop.com/reference#get-answers-for-survey-group) \(Incremental\)
 * [SurveyGroups](https://docs.zenloop.com/reference#get-list-of-survey-groups)
+* [Properties](https://docs.zenloop.com/reference#get-list-of-properties)
 
-The `Answers` and `AnswersSurveyGroup` stream respectively have an optional survey_id parameter that can be set by filling the `public_hash_id` field of the connector configuration. If not provided answers for all surveys (groups) will be pulled.
+The `Answers`, `AnswersSurveyGroup` and `Properties` stream respectively have an optional survey_id parameter that can be set by filling the `public_hash_id` field of the connector configuration. If not provided answers for all surveys (groups) will be pulled.
 
 ### Data type mapping
 
@@ -52,5 +53,6 @@ Please register on Zenloop and retrieve your API token [here](https://app.zenloo
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2 | 2022-08-22 | [15843](https://github.com/airbytehq/airbyte/pull/15843) | Adds Properties stream |
 | 0.1.1 | 2021-10-26 | [8299](https://github.com/airbytehq/airbyte/pull/8299) | Fix missing seed files |
 | 0.1.0 | 2021-10-26 | [7380](https://github.com/airbytehq/airbyte/pull/7380) | Initial Release |
