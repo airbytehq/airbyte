@@ -1,11 +1,13 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from typing import Mapping, Any
-from unittest.mock import MagicMock
-from source_primetric.source import SourcePrimetric
-from airbyte_cdk.logger import AirbyteLogger
+
 import json
+from typing import Any, Mapping
+from unittest.mock import MagicMock
+
+from airbyte_cdk.logger import AirbyteLogger
+from source_primetric.source import SourcePrimetric
 
 
 def get_config() -> Mapping[str, Any]:

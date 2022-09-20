@@ -6,7 +6,7 @@
 import json
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -25,10 +25,10 @@ class PrimetricStream(HttpStream, ABC):
         return parse_qs(urlparse(next_page_url).query)
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token
 
@@ -42,43 +42,36 @@ class PrimetricStream(HttpStream, ABC):
 
 
 class Assignments(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "assignments"
 
 
 class Employees(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "employees"
 
 
 class Hashtags(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "hash_tags"
 
 
 class OrganizationClients(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "organization/clients"
 
 
 class OrganizationCompanyGroups(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "organization/company_groups"
 
 
 class OrganizationDepartments(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "organization/departments"
 
 
 class OrganizationIdentityProviders(PrimetricStream):
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
@@ -90,7 +83,6 @@ class OrganizationIdentityProviders(PrimetricStream):
 
 
 class OrganizationPositions(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "organization/positions"
 
@@ -104,49 +96,41 @@ class OrganizationRagScopes(PrimetricStream):
 
 
 class OrganizationRoles(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "organization/roles"
 
 
 class OrganizationSeniorities(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "organization/seniorities"
 
 
 class OrganizationTags(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "organization/tags"
 
 
 class OrganizationTeams(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "organization/teams"
 
 
 class OrganizationTimeoffTypes(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "organization/timeoff_types"
 
 
 class People(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "people"
 
 
 class Projects(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "projects"
 
 
 class ProjectsVacancies(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "projects_vacancies"
 
@@ -165,25 +149,21 @@ class RagRatings(PrimetricStream):
 
 
 class Skills(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "skills"
 
 
 class Timeoffs(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "timeoffs"
 
 
 class Worklogs(PrimetricStream):
-
     def path(self, **kwargs) -> str:
         return "worklogs"
 
 
 class SourcePrimetric(AbstractSource):
-
     @staticmethod
     def get_connection_response(config: Mapping[str, Any]):
         token_refresh_endpoint = f"https://api.primetric.com/auth/token/"
@@ -194,12 +174,7 @@ class SourcePrimetric(AbstractSource):
         data = {"grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret, "refresh_token": refresh_token}
 
         try:
-            response = requests.request(
-                method="POST",
-                url=token_refresh_endpoint,
-                data=data,
-                headers=headers
-            )
+            response = requests.request(method="POST", url=token_refresh_endpoint, data=data, headers=headers)
 
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
@@ -225,25 +200,26 @@ class SourcePrimetric(AbstractSource):
 
         authenticator = TokenAuthenticator(response.json()["access_token"])
 
-        return [Assignments(authenticator=authenticator),
-                Employees(authenticator=authenticator),
-                Hashtags(authenticator=authenticator),
-                OrganizationClients(authenticator=authenticator),
-                OrganizationCompanyGroups(authenticator=authenticator),
-                OrganizationDepartments(authenticator=authenticator),
-                OrganizationIdentityProviders(authenticator=authenticator),
-                OrganizationPositions(authenticator=authenticator),
-                OrganizationRagScopes(authenticator=authenticator),
-                OrganizationRoles(authenticator=authenticator),
-                OrganizationSeniorities(authenticator=authenticator),
-                OrganizationTags(authenticator=authenticator),
-                OrganizationTeams(authenticator=authenticator),
-                OrganizationTimeoffTypes(authenticator=authenticator),
-                People(authenticator=authenticator),
-                Projects(authenticator=authenticator),
-                ProjectsVacancies(authenticator=authenticator),
-                RagRatings(authenticator=authenticator),
-                Skills(authenticator=authenticator),
-                Timeoffs(authenticator=authenticator),
-                Worklogs(authenticator=authenticator)
-                ]
+        return [
+            Assignments(authenticator=authenticator),
+            Employees(authenticator=authenticator),
+            Hashtags(authenticator=authenticator),
+            OrganizationClients(authenticator=authenticator),
+            OrganizationCompanyGroups(authenticator=authenticator),
+            OrganizationDepartments(authenticator=authenticator),
+            OrganizationIdentityProviders(authenticator=authenticator),
+            OrganizationPositions(authenticator=authenticator),
+            OrganizationRagScopes(authenticator=authenticator),
+            OrganizationRoles(authenticator=authenticator),
+            OrganizationSeniorities(authenticator=authenticator),
+            OrganizationTags(authenticator=authenticator),
+            OrganizationTeams(authenticator=authenticator),
+            OrganizationTimeoffTypes(authenticator=authenticator),
+            People(authenticator=authenticator),
+            Projects(authenticator=authenticator),
+            ProjectsVacancies(authenticator=authenticator),
+            RagRatings(authenticator=authenticator),
+            Skills(authenticator=authenticator),
+            Timeoffs(authenticator=authenticator),
+            Worklogs(authenticator=authenticator),
+        ]
