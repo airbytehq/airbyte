@@ -92,7 +92,8 @@ class Engage(MixpanelStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"page_size": self.page_size}
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params = {**params, "page_size": self.page_size}
         if next_page_token:
             params.update(next_page_token)
         return params

@@ -7,8 +7,8 @@ from .base import DateSlicesMixin, MixpanelStream
 
 class Annotations(DateSlicesMixin, MixpanelStream):
     """List the annotations for a given date range.
-    API Docs: https://developer.mixpanel.com/reference/annotations
-    Endpoint: https://mixpanel.com/api/2.0/annotations
+    API Docs: https://developer.mixpanel.com/reference/list-all-annotations-for-project
+    Endpoint: https://mixpanel.com/api/app/projects/{projectId}/annotations
 
     Output example:
     {
@@ -25,8 +25,13 @@ class Annotations(DateSlicesMixin, MixpanelStream):
     That's why stream does not support incremental sync.
     """
 
-    data_field: str = "annotations"
+    data_field: str = "results"
     primary_key: str = "id"
 
+    @property
+    def url_base(self):
+        prefix = "eu." if self.region == "EU" else ""
+        return f"https://{prefix}mixpanel.com/api/app/projects/"
+
     def path(self, **kwargs) -> str:
-        return "annotations"
+        return f"{self.project_id}/annotations"

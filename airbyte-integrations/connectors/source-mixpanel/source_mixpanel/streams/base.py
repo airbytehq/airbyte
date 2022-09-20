@@ -34,6 +34,7 @@ class MixpanelStream(HttpStream, ABC):
         self,
         authenticator: HttpAuthenticator,
         region: str,
+        project_id: int,
         start_date: Date = None,
         end_date: Date = None,
         date_window_size: int = 30,  # in days
@@ -47,6 +48,7 @@ class MixpanelStream(HttpStream, ABC):
         self.attribution_window = attribution_window
         self.additional_properties = select_properties_by_default
         self.region = region
+        self.project_id = project_id
 
         super().__init__(authenticator=authenticator)
 
@@ -106,7 +108,15 @@ class MixpanelStream(HttpStream, ABC):
         """
         Fetch required parameters in a given stream. Used to create sub-streams
         """
-        return {"authenticator": self.authenticator, "region": self.region}
+        return {"authenticator": self.authenticator, "region": self.region, "project_id": self.project_id}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {"project_id": str(self.project_id)}
 
 
 class DateSlicesMixin:
@@ -145,7 +155,9 @@ class DateSlicesMixin:
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         return {
+            **params,
             "from_date": stream_slice["start_date"],
             "to_date": stream_slice["end_date"],
         }

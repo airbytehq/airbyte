@@ -15,12 +15,14 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, FunnelsList, Revenue
 from .testing import adapt_streams_if_testing, adapt_validate_if_testing
+from .utils import read_full_refresh
 
 
-class TokenAuthenticatorBase64(TokenAuthenticator):
-    def __init__(self, token: str, auth_method: str = "Basic", **kwargs):
-        token = base64.b64encode(token.encode("utf8")).decode("utf8")
-        super().__init__(token=token, auth_method=auth_method, **kwargs)
+class ServiceAccountAuthenticator(TokenAuthenticator):
+    def __init__(self, username: str, secret: str):
+        token = username + ":" + secret
+        token = base64.b64encode(token.encode("ascii")).decode("ascii")
+        super().__init__(token=token, auth_method="Basic")
 
 
 class SourceMixpanel(AbstractSource):
@@ -60,23 +62,9 @@ class SourceMixpanel(AbstractSource):
         """
         config = self._validate_and_transform(config)
         try:
-            auth = TokenAuthenticatorBase64(token=config["api_secret"])
+            auth = ServiceAccountAuthenticator(username=config["username"], secret=config["secret"])
             funnels = FunnelsList(authenticator=auth, **config)
-            response = requests.request(
-                "GET",
-                url=funnels.url_base + funnels.path(),
-                headers={
-                    "Accept": "application/json",
-                    **auth.get_auth_header(),
-                },
-            )
-
-            if response.status_code != 200:
-                message = response.json()
-                error_message = message.get("error")
-                if error_message:
-                    return False, error_message
-                response.raise_for_status()
+            next(read_full_refresh(funnels))
         except Exception as e:
             return False, e
 
@@ -91,7 +79,7 @@ class SourceMixpanel(AbstractSource):
         logger = logging.getLogger("airbyte")
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
-        auth = TokenAuthenticatorBase64(token=config["api_secret"])
+        auth = ServiceAccountAuthenticator(username=config["username"], secret=config["secret"])
         return [
             Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
