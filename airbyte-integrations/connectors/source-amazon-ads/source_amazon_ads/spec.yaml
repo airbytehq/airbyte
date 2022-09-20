@@ -97,5 +97,5 @@ authSpecification:
   provider: "amazon"
   authUrlTemplate: "https://www.amazon.com/ap/oa?client_id={{ client_id }}&scope=advertising::campaign_management&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}"
   accessTokenUrlTemplate: "https://api.amazon.com/auth/o2/token"
-  accessTokenBody: "grant_type=authorization_code&client_id={{ client_id }}&client_secret={{ client_secret }}&redirect_uri={{ redirect_uri }}&code={{ urlencode code }}"
+  accessTokenBody: "grant_type=authorization_code&client_id={{ client_id }}&client_secret={{ client_secret }}&redirect_uri={{ redirect_uri }}&code={{ code }}"
   accessTokenResponseMap: "{\"refresh_token\": \"/refresh_token\"}"
