@@ -64,27 +64,19 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
     if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
       for (final StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
-        LOGGER.info("operator type is: " + standardSyncOperation.getOperatorType());
         if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
           final int normalizationSummaryCheckVersion =
               Workflow.getVersion(NORMALIZATION_SUMMARY_CHECK_TAG, Workflow.DEFAULT_VERSION, NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION);
-          LOGGER.info("normalization summary check version: " + normalizationSummaryCheckVersion);
-          LOGGER.info("current version: " + NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION);
           if (normalizationSummaryCheckVersion >= NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION) {
-            // this is the attempt number, not attempt id
-            LOGGER.info("attempt id on jobRunConfig is: " + jobRunConfig.getAttemptId());
             Boolean shouldRun;
             try {
-              LOGGER.info("inside try block");
               shouldRun = normalizationSummaryCheckActivity.shouldRunNormalization(Long.valueOf(jobRunConfig.getJobId()), jobRunConfig.getAttemptId(),
                   Optional.of(syncOutput.getStandardSyncSummary().getTotalStats().getRecordsCommitted()));
             } catch (final IOException e) {
-              LOGGER.info("inside catch block");
               shouldRun = true;
             }
-            LOGGER.info("should run: " + shouldRun);
             if (!shouldRun) {
-              LOGGER.info("Skipping normalization because there is no new data to normalize.");
+              LOGGER.info("Skipping normalization because there are no records to normalize.");
               break;
             }
           }
