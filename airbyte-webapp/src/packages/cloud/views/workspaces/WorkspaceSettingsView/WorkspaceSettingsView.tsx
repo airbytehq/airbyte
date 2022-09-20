@@ -16,7 +16,7 @@ import {
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
-import { useInvalidateWorkspaceQuery } from "services/workspaces/WorkspacesService";
+import { useInvalidateWorkspace } from "services/workspaces/WorkspacesService";
 
 import styles from "./WorkspaceSettingsView.module.scss";
 
@@ -40,7 +40,7 @@ export const WorkspaceSettingsView: React.FC = () => {
   const workspace = useCurrentWorkspace();
   const removeWorkspace = useRemoveCloudWorkspace();
   const updateCloudWorkspace = useUpdateCloudWorkspace();
-  const invalidateWorkspaceQuery = useInvalidateWorkspaceQuery();
+  const invalidateWorkspace = useInvalidateWorkspace(workspace.workspaceId);
   const [isAdvancedMode, setAdvancedMode] = useAdvancedModeSetting();
 
   return (
@@ -67,7 +67,7 @@ export const WorkspaceSettingsView: React.FC = () => {
               workspaceId,
               name: payload.name,
             });
-            await invalidateWorkspaceQuery(workspaceId);
+            await invalidateWorkspace();
           }}
           enableReinitialize
           validationSchema={ValidationSchema}

@@ -128,11 +128,11 @@ export const useUpdateWorkspace = () => {
   });
 };
 
-export const useInvalidateWorkspaceQuery = () => {
+export const useInvalidateWorkspace = (workspaceId: string) => {
   const queryClient = useQueryClient();
 
   return useCallback(
-    (workspaceId: string) => queryClient.invalidateQueries(workspaceKeys.detail(workspaceId)),
-    [queryClient]
+    () => queryClient.invalidateQueries(workspaceKeys.detail(workspaceId)),
+    [queryClient, workspaceId]
   );
 };
