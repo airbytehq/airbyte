@@ -1294,6 +1294,11 @@ paths:
       tags:
         - connection
       summary: Update a connection
+      description: |
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        containing the updated stream needs to be sent.
       operationId: updateConnection
       requestBody:
         content:
@@ -1985,6 +1990,14 @@ paths:
       tags:
         - web_backend
       summary: Update a connection
+      description: |
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Any operations that lack an ID will be created. Then, the newly created operationId will be applied to the
+        connection along with the rest of the operationIds in the request body.
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        containing the updated stream needs to be sent.
       operationId: webBackendUpdateConnection
       requestBody:
         content:
@@ -3248,10 +3261,9 @@ components:
           $ref: "#/components/schemas/ConnectionState"
     ConnectionUpdate:
       type: object
+      description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
       required:
         - connectionId
-        - syncCatalog
-        - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -3289,10 +3301,9 @@ components:
           format: uuid
     WebBackendConnectionUpdate:
       type: object
+      description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
       required:
         - connectionId
-        - syncCatalog
-        - status
       properties:
         name:
           type: string
@@ -3309,10 +3320,6 @@ components:
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
-        operationIds:
-          type: array
-          items:
-            $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:

@@ -201,6 +201,10 @@ endpoints:
   all:
     enabled: true
 
+google:
+  application:
+    credentials: ${GOOGLE_APPLICATION_CREDENTIALS:}
+
 temporal:
   cloud:
     client:

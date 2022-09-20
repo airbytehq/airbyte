@@ -31,7 +31,7 @@ public class ProcessFactoryBeanFactory {
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^(?!kubernetes$).*")
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("checkProcessFactory")
   public ProcessFactory checkDockerProcessFactory(
                                                   @Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -53,7 +53,7 @@ public class ProcessFactoryBeanFactory {
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^kubernetes$")
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("checkProcessFactory")
   public ProcessFactory checkKubernetesProcessFactory(
                                                       @Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -103,7 +103,7 @@ public class ProcessFactoryBeanFactory {
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^(?!kubernetes$).*")
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("discoverProcessFactory")
   public ProcessFactory discoverDockerProcessFactory(
                                                      @Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -125,7 +125,7 @@ public class ProcessFactoryBeanFactory {
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^kubernetes$")
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("discoverProcessFactory")
   public ProcessFactory discoverKubernetesProcessFactory(
                                                          @Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -175,7 +175,7 @@ public class ProcessFactoryBeanFactory {
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^(?!kubernetes$).*")
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("specProcessFactory")
   public ProcessFactory specDockerProcessFactory(
                                                  @Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -197,7 +197,7 @@ public class ProcessFactoryBeanFactory {
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^kubernetes$")
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("specProcessFactory")
   public ProcessFactory specKubernetesProcessFactory(
                                                      @Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
