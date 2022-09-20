@@ -368,10 +368,8 @@ public class BigQueryUtils {
 
   private static String getConnectorNameFromEnv() {
     String imageName = System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE);
-    // Next 2 lines changes format of connectors name.
-    // Example airbyte/destination-bigquery:1.2.0 -> destination-bigquery/1.2.0
-    imageName = imageName.replace("airbyte/", Strings.EMPTY);
-    return imageName.replace(":", "/");
+    // Transform airbyte/destination-bigquery:1.2.0 -> destination-bigquery/1.2.0
+    return imageName.replace("airbyte/", Strings.EMPTY).replace(":", "/");
   }
 
   private static String convertDateToInstantFormat(final String data) {
