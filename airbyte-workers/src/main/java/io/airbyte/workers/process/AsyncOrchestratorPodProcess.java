@@ -99,7 +99,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     // trust the doc store if it's in a terminal state
     if (docStoreStatus.equals(AsyncKubePodStatus.FAILED)) {
-      log.info("State Store reports orchestrator pod {} failed", getInfo().name());
+      log.error("State Store reports orchestrator pod {} failed", getInfo().name());
       return 1;
     } else if (docStoreStatus.equals(AsyncKubePodStatus.SUCCEEDED)) {
       log.info("State Store reports orchestrator pod {} succeeded", getInfo().name());
