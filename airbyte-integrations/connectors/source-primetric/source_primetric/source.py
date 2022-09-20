@@ -166,7 +166,7 @@ class Worklogs(PrimetricStream):
 class SourcePrimetric(AbstractSource):
     @staticmethod
     def get_connection_response(config: Mapping[str, Any]):
-        token_refresh_endpoint = f"https://api.primetric.com/auth/token/"
+        token_refresh_endpoint = f'{"https://api.primetric.com/auth/token/"}'
         client_id = config["client_id"]
         client_secret = config["client_secret"]
         refresh_token = None
