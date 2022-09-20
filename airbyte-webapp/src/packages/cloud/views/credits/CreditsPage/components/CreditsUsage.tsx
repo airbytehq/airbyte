@@ -6,7 +6,7 @@ import BarChart from "components/BarChart";
 import { Card } from "components/base/Card";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useGetUsage } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useGetUsage } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 
 import UsagePerConnectionTable from "./UsagePerConnectionTable";
 

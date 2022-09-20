@@ -2,10 +2,10 @@ import React from "react";
 import styled from "styled-components";
 
 import {
-  useCreateWorkspace,
+  useCreateCloudWorkspace,
   useListCloudWorkspaces,
   useWorkspaceService,
-} from "packages/cloud/services/workspaces/WorkspacesService";
+} from "packages/cloud/services/workspaces/CloudWorkspacesService";
 
 import WorkspaceItem from "./WorkspaceItem";
 import WorkspacesControl from "./WorkspacesControl";
@@ -20,7 +20,7 @@ const Content = styled.div`
 const WorkspacesList: React.FC = () => {
   const workspaces = useListCloudWorkspaces();
   const { selectWorkspace } = useWorkspaceService();
-  const createWorkspace = useCreateWorkspace();
+  const createWorkspace = useCreateCloudWorkspace();
 
   return (
     <Content>

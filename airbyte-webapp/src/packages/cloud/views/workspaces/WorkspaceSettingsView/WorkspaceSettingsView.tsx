@@ -11,10 +11,10 @@ import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import {
-  useRemoveWorkspace,
+  useRemoveCloudWorkspace,
   useUpdateCloudWorkspace,
   useWorkspaceService,
-} from "packages/cloud/services/workspaces/WorkspacesService";
+} from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 import { useInvalidateWorkspaceQuery } from "services/workspaces/WorkspacesService";
 
@@ -38,7 +38,7 @@ export const WorkspaceSettingsView: React.FC = () => {
   useTrackPage(PageTrackingCodes.SETTINGS_WORKSPACE);
   const { exitWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();
-  const removeWorkspace = useRemoveWorkspace();
+  const removeWorkspace = useRemoveCloudWorkspace();
   const updateCloudWorkspace = useUpdateCloudWorkspace();
   const invalidateWorkspaceQuery = useInvalidateWorkspaceQuery();
   const [isAdvancedMode, setAdvancedMode] = useAdvancedModeSetting();

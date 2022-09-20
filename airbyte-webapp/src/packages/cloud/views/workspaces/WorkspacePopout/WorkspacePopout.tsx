@@ -6,7 +6,10 @@ import styled from "styled-components";
 import { Popout } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 
-import { useWorkspaceService, useListCloudWorkspacesAsync } from "packages/cloud/services/workspaces/WorkspacesService";
+import {
+  useWorkspaceService,
+  useListCloudWorkspacesAsync,
+} from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import ExitIcon from "./components/ExitIcon";

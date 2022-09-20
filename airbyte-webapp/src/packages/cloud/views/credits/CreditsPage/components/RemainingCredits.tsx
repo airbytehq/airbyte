@@ -15,7 +15,7 @@ import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService"
 import {
   useGetCloudWorkspace,
   useInvalidateCloudWorkspace,
-} from "packages/cloud/services/workspaces/WorkspacesService";
+} from "packages/cloud/services/workspaces/CloudWorkspacesService";
 
 interface Props {
   selfServiceCheckoutEnabled: boolean;

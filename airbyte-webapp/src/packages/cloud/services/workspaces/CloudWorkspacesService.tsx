@@ -47,7 +47,7 @@ export function useListCloudWorkspacesAsync(): QueryObserverResult<CloudWorkspac
   return useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () => service.listByUser(user.userId));
 }
 
-export function useCreateWorkspace() {
+export function useCreateCloudWorkspace() {
   const service = useGetWorkspaceService();
   const queryClient = useQueryClient();
   const user = useCurrentUser();
@@ -94,7 +94,7 @@ export function useUpdateCloudWorkspace() {
   );
 }
 
-export function useRemoveWorkspace() {
+export function useRemoveCloudWorkspace() {
   const service = useGetWorkspaceService();
   const queryClient = useQueryClient();
 
