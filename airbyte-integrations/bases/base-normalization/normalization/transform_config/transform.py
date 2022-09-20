@@ -359,7 +359,6 @@ class TransformConfig:
             "schema": config["database"],
         }
         if "host" in config:
-            dbt_config["api_endpoint"] = config["host"]
             dbt_config["host"] = config["host"]
         if "account_name" in config:
             dbt_config["account_name"] = config["account_name"]

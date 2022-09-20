@@ -39,6 +39,8 @@ quoting:
 # Using these configurations, you can enable or disable models, change how they
 # are materialized, and more!
 models:
+  # Explicitly setting to append since Firebolt only supports this strategy
+  # https://docs.getdbt.com/reference/resource-configs/firebolt-configs#incremental-models
   +incremental_strategy: "append"
   airbyte_utils:
     +materialized: table
