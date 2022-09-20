@@ -360,14 +360,12 @@ class Stream(HttpStream, ABC):
 
                 properties = self._property_wrapper
                 if properties and properties.too_many_properties:
-                    print("lol1")
                     records, response = self._read_stream_records(
                         stream_slice=stream_slice,
                         stream_state=stream_state,
                         next_page_token=next_page_token,
                     )
                 else:
-                    print("lol2")
                     response = self.handle_request(
                         stream_slice=stream_slice,
                         stream_state=stream_state,
