@@ -97,6 +97,10 @@ Setting up a connection involves configuring the following parameters:
 
 For more information, see [Connections and Sync Modes](../understanding-airbyte/connections/README.md) and [Namespaces](../understanding-airbyte/namespaces.md)
 
+If you need to use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html):
+1. In the **Replication Frequency** dropdown, click **Cron**. 
+2. Enter a cron expression and choose a time zone to create a sync schedule.
+
 To set up a connection:
 
 1. On the Airbyte Cloud dashboard, click **Connections** and then click **+ New connection**.
