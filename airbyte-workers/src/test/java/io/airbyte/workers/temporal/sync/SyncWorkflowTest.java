@@ -24,6 +24,8 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.SyncStats;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.temporal.TemporalUtils;

@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.scheduler.models.AttemptNormalizationStatus;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
 import io.airbyte.workers.temporal.sync.NormalizationSummaryCheckActivityImpl;
 import java.io.IOException;
 import java.util.List;
