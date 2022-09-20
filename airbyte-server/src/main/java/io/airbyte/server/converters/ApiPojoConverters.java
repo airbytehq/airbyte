@@ -12,19 +12,15 @@ import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleDataCron;
 import io.airbyte.api.model.generated.ConnectionStatus;
-import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.JobType;
 import io.airbyte.api.model.generated.JobTypeResourceLimit;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.BasicSchedule;
-import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
-import io.airbyte.server.handlers.helpers.ConnectionScheduleHelper;
-import io.airbyte.validation.json.JsonValidationException;
 import java.util.stream.Collectors;
 
 public class ApiPojoConverters {
@@ -83,41 +79,6 @@ public class ApiPojoConverters {
         .cpuLimit(resourceReqs.getCpuLimit())
         .memoryRequest(resourceReqs.getMemoryRequest())
         .memoryLimit(resourceReqs.getMemoryLimit());
-  }
-
-  public static io.airbyte.config.StandardSync connectionUpdateToInternal(final ConnectionUpdate update) throws JsonValidationException {
-
-    final StandardSync newConnection = new StandardSync()
-        .withNamespaceDefinition(Enums.convertTo(update.getNamespaceDefinition(), NamespaceDefinitionType.class))
-        .withNamespaceFormat(update.getNamespaceFormat())
-        .withPrefix(update.getPrefix())
-        .withOperationIds(update.getOperationIds())
-        .withCatalog(CatalogConverter.toProtocol(update.getSyncCatalog()))
-        .withStatus(toPersistenceStatus(update.getStatus()))
-        .withSourceCatalogId(update.getSourceCatalogId());
-
-    if (update.getName() != null) {
-      newConnection.withName(update.getName());
-    }
-
-    // update Resource Requirements
-    if (update.getResourceRequirements() != null) {
-      newConnection.withResourceRequirements(resourceRequirementsToInternal(update.getResourceRequirements()));
-    }
-
-    // update sync schedule
-    if (update.getScheduleType() != null) {
-      ConnectionScheduleHelper.populateSyncFromScheduleTypeAndData(newConnection, update.getScheduleType(), update.getScheduleData());
-    } else if (update.getSchedule() != null) {
-      final Schedule newSchedule = new Schedule()
-          .withTimeUnit(toPersistenceTimeUnit(update.getSchedule().getTimeUnit()))
-          .withUnits(update.getSchedule().getUnits());
-      newConnection.withManual(false).withSchedule(newSchedule);
-    } else {
-      newConnection.withManual(true).withSchedule(null);
-    }
-
-    return newConnection;
   }
 
   public static ConnectionRead internalToConnectionRead(final StandardSync standardSync) {
