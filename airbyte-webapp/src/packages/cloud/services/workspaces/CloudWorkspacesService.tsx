@@ -119,7 +119,7 @@ export function useInvalidateCloudWorkspace(workspaceId: string): () => Promise<
   );
 }
 
-export function useGetUsage(workspaceId: string): CloudWorkspaceUsage {
+export function useGetCloudWorkspaceUsage(workspaceId: string): CloudWorkspaceUsage {
   const service = useGetWorkspaceService();
 
   return useSuspenseQuery<CloudWorkspaceUsage>(workspaceKeys.usage(workspaceId), () => service.getUsage(workspaceId));

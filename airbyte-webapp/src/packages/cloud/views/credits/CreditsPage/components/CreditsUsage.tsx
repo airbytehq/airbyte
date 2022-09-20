@@ -6,7 +6,7 @@ import BarChart from "components/BarChart";
 import { Card } from "components/base/Card";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useGetUsage } from "packages/cloud/services/workspaces/CloudWorkspacesService";
+import { useGetCloudWorkspaceUsage } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 
 import UsagePerConnectionTable from "./UsagePerConnectionTable";
 
@@ -35,7 +35,7 @@ const CreditsUsage: React.FC = () => {
   const { formatMessage, formatDate } = useIntl();
 
   const { workspaceId } = useCurrentWorkspace();
-  const data = useGetUsage(workspaceId);
+  const data = useGetCloudWorkspaceUsage(workspaceId);
 
   const chartData = useMemo(
     () =>
