@@ -24,7 +24,6 @@
             "x-oauth2-provider": "notion",
             "title": "OAuth2.0",
             "required": [
-              "auth_type",
               "client_id",
               "client_secret",
               "access_token"
