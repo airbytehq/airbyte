@@ -79,7 +79,7 @@
     "provider": "notion",
     "authUrlTemplate": "https://api.notion.com/v1/oauth/authorize?client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&owner=user&state={{ state }}",
     "accessTokenUrlTemplate": "https://api.notion.com/v1/oauth/token",
-    "accessTokenHeaders": "{\"Authorization\": \"Basic NGQyZjQ3ZGEtZGJmZi00NmRkLWEzYzktOWIwNDZiZTY0MjI1OnNlY3JldF9wcWNJcVRlQjRXVG9ud1FCUU5aTHRqOUEzTlc1WUhIcURBYWdhcVhjbGFY\", \"Content-Type\": \"application/json\"}",
+    "accessTokenHeaders": "{\"Authorization\": \"Basic {{ basicauth client_id client_secret}}\", \"Content-Type\": \"application/json\"}",
     "accessTokenBody": "{\"grant_type\": \"authorization_code\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}",
     "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
   }
