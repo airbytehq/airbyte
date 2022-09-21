@@ -49,6 +49,10 @@ dependencies {
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
 }
 
+task distTar(type: Exec) {
+    commandLine 'echo', "Ignored."
+}
+
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {
     main = 'io.airbyte.db.instance.development.MigrationDevCenter'
     classpath = files(configurations.migrations.files)

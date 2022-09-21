@@ -19,6 +19,7 @@ public class WorkerConfigs {
   private final List<TolerationPOJO> workerKubeTolerations;
   private final Map<String, String> workerKubeNodeSelectors;
   private final Map<String, String> workerKubeAnnotations;
+  private final String jobImageRegistry;
   private final String jobImagePullSecret;
   private final String jobImagePullPolicy;
   private final String sidecarImagePullPolicy;
@@ -42,6 +43,7 @@ public class WorkerConfigs {
         configs.getJobKubeTolerations(),
         configs.getJobKubeNodeSelectors(),
         configs.getJobKubeAnnotations(),
+        null,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
@@ -73,6 +75,7 @@ public class WorkerConfigs {
         configs.getJobKubeTolerations(),
         nodeSelectors,
         annotations,
+        null,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
@@ -104,6 +107,7 @@ public class WorkerConfigs {
         configs.getJobKubeTolerations(),
         nodeSelectors,
         annotations,
+        null,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
@@ -135,6 +139,7 @@ public class WorkerConfigs {
         configs.getJobKubeTolerations(),
         nodeSelectors,
         annotations,
+        null,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
@@ -155,6 +160,7 @@ public class WorkerConfigs {
         configs.getJobKubeTolerations(),
         configs.getJobKubeNodeSelectors(),
         configs.getJobKubeAnnotations(),
+        null,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
@@ -182,6 +188,10 @@ public class WorkerConfigs {
 
   public Map<String, String> getWorkerKubeAnnotations() {
     return workerKubeAnnotations;
+  }
+
+  public String getJobImageRegistry() {
+    return jobImageRegistry;
   }
 
   public String getJobImagePullSecret() {

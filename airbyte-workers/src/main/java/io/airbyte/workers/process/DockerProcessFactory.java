@@ -115,7 +115,10 @@ public class DockerProcessFactory implements ProcessFactory {
           rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
           "--log-driver",
           "none");
-      final String containerName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
+
+      final String registry = this.workerConfigs.getJobImageRegistry();
+      final String image = null == registry || imageName.startsWith(registry) ? imageName : registry + "/" + imageName;
+      final String containerName = ProcessFactory.createProcessName(image, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
       LOGGER.info("Creating docker container = {} with resources {}", containerName, resourceRequirements);
       cmd.add("--name");
       cmd.add(containerName);

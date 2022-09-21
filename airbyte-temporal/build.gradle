@@ -1,3 +1,7 @@
+task distTar(type: Exec) {
+    commandLine 'echo', "Ignored."
+}
+
 task copyScripts(type: Copy) {
     dependsOn copyDocker
 

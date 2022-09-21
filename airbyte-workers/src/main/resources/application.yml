@@ -124,6 +124,7 @@ airbyte:
           socat: ${JOB_KUBE_SOCAT_IMAGE:`alpine/socat:1.7.4.3-r0`}
         main:
           container:
+            image-registry: ${JOB_KUBE_MAIN_CONTAINER_IMAGE_REGISTRY:}
             image-pull-policy: ${JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY:IfNotPresent}
             image-pull-secret: ${JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET:}
         namespace: ${JOB_KUBE_NAMESPACE:default}

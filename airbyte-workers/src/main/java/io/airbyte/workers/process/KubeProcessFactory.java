@@ -107,13 +107,16 @@ public class KubeProcessFactory implements ProcessFactory {
 
       final var allLabels = getLabels(jobId, attempt, customLabels);
 
+      final String registry = this.workerConfigs.getJobImageRegistry();
+      final String image = null == registry || imageName.startsWith(registry) ? imageName : registry + "/" + imageName;
+
       return new KubePodProcess(
           isOrchestrator,
           processRunnerHost,
           fabricClient,
           podName,
           namespace,
-          imageName,
+          image,
           workerConfigs.getJobImagePullPolicy(),
           workerConfigs.getSidecarImagePullPolicy(),
           stdoutLocalPort,
