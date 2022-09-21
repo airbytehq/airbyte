@@ -13,7 +13,6 @@ import {
   ConnectionScheduleData,
   ConnectionScheduleType,
   ConnectionStatus,
-  ConnectionStatus,
   DestinationRead,
   NamespaceDefinitionType,
   OperationCreate,
