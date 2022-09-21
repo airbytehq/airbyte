@@ -23,7 +23,7 @@ export const enterHost = (host: string) => {
 };
 
 export const enterPort = (port: string) => {
-  cy.get(portInput).type(port);
+  cy.get(portInput).type("{selectAll}{del}").type(port);
 };
 
 export const enterDatabase = (database: string) => {
@@ -47,5 +47,8 @@ export const enterDestinationPath = (destinationPath: string) => {
 };
 
 export const enterSchema = (value: string) => {
+  if (!value) {
+    return;
+  }
   cy.get(schemaInput).clear().clear().type("{selectAll}{del}").type(value);
 };

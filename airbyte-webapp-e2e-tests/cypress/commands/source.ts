@@ -5,7 +5,7 @@ import { fillPostgresForm, fillPokeAPIForm } from "./connector";
 export const createPostgresSource = (
   name: string,
   host: string = "localhost",
-  port: string = "{selectAll}{del}5433",
+  port: string = "5433",
   database: string = "airbyte_ci",
   username: string = "postgres",
   password: string = "secret_password",
@@ -19,7 +19,7 @@ export const createPostgresSource = (
   fillPostgresForm(name, host, port, database, username, password, schema);
   submitButtonClick();
 
-  cy.wait("@checkSourceUpdateConnection");
+  cy.wait("@checkSourceUpdateConnection", { requestTimeout: 10000 });
   cy.wait("@createSource");
 };
 
