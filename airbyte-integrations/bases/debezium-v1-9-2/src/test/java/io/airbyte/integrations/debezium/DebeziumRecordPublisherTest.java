@@ -7,7 +7,7 @@ package io.airbyte.integrations.debezium;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableList;
-import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
+import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
@@ -23,7 +23,7 @@ class DebeziumRecordPublisherTest {
         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public").withSyncMode(SyncMode.INCREMENTAL)));
 
     final String expectedWhitelist = "public.id_and_name,public.id_\\,something,public.n\"aMéS";
-    final String actualWhitelist = DebeziumRecordPublisher.getTableWhitelist(catalog);
+    final String actualWhitelist = DebeziumPropertiesManager.getTableWhitelist(catalog);
 
     assertEquals(expectedWhitelist, actualWhitelist);
   }
@@ -35,7 +35,7 @@ class DebeziumRecordPublisherTest {
         CatalogHelpers.createConfiguredAirbyteStream("id_and_name2", "public").withSyncMode(SyncMode.FULL_REFRESH)));
 
     final String expectedWhitelist = "public.id_and_name";
-    final String actualWhitelist = DebeziumRecordPublisher.getTableWhitelist(catalog);
+    final String actualWhitelist = DebeziumPropertiesManager.getTableWhitelist(catalog);
 
     assertEquals(expectedWhitelist, actualWhitelist);
   }

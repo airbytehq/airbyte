@@ -129,6 +129,14 @@
         }
       }
     },
+    "transaction_id": {
+      "type": ["null", "string"],
+      "maxLength": 24
+    },
+    "transaction_initiation_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "payer_info": {
       "type": ["null", "object"],
       "properties": {

@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.record_buffer;
 
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
@@ -81,16 +80,14 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
   @Override
   public void flushAll() throws Exception {
-    AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
-      for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
-        LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
-            FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
-        recordWriter.accept(entry.getKey(), entry.getValue());
-        if (checkAndRemoveRecordWriter != null) {
-          fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
-        }
+    for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
+      LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
+          FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
+      recordWriter.accept(entry.getKey(), entry.getValue());
+      if (checkAndRemoveRecordWriter != null) {
+        fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
       }
-    }, Map.of("bufferSizeInBytes", bufferSizeInBytes));
+    }
     close();
     clear();
   }

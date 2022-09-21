@@ -1,13 +1,11 @@
 @use "../../../../../scss/colors";
+@use "../../../../../scss/variables";
 
 .title {
-  font-weight: 700;
-  font-size: 32px;
-  line-height: 39px;
   width: 250px;
-  color: colors.$dark-blue-900;
+  margin-bottom: variables.$spacing-md;
 }
 
 .highlight {
-  color: colors.$blue-400;
+  color: colors.$blue;
 }

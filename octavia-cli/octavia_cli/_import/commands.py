@@ -85,6 +85,8 @@ def import_connection(
         str: The generated import message.
     """
     remote_configuration = json.loads(get_json_representation(api_client, workspace_id, UnmanagedConnection, resource_to_get))
+    # Since #15253 "schedule" is deprecated
+    remote_configuration.pop("schedule", None)
     source_name, destination_name = remote_configuration["source"]["name"], remote_configuration["destination"]["name"]
     source_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
         project_path=".", definition_type="source", resource_name=source_name

@@ -1,18 +1,22 @@
 import { Field, FieldProps, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { NavigateOptions, To, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
 
-import useRouter from "hooks/useRouter";
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
+import { useQuery } from "hooks/useQuery";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 
+import { OAuthLogin } from "../OAuthLogin";
+import { Disclaimer } from "../SignupPage/components/SignupForm";
 import styles from "./LoginPage.module.scss";
 
 const LoginPageValidationSchema = yup.object().shape({
@@ -23,7 +27,10 @@ const LoginPageValidationSchema = yup.object().shape({
 const LoginPage: React.FC = () => {
   const { formatMessage } = useIntl();
   const { login } = useAuthService();
-  const { query, replace } = useRouter();
+  const query = useQuery<{ from?: string }>();
+  const navigate = useNavigate();
+  const replace = (path: To, state?: NavigateOptions) => navigate(path, { ...state, replace: true });
+  useTrackPage(PageTrackingCodes.LOGIN);
 
   return (
     <div>
@@ -104,6 +111,8 @@ const LoginPage: React.FC = () => {
           </Form>
         )}
       </Formik>
+      <OAuthLogin />
+      <Disclaimer />
     </div>
   );
 };

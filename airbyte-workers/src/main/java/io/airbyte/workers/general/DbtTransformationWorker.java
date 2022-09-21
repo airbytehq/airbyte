@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.general;
 
+import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.Worker;
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.AvoidPrintStackTrace")
 public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationWorker.class);
@@ -41,6 +43,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
   @Override
   public Void run(final OperatorDbtInput operatorDbtInput, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
+    LineGobbler.startSection("DBT TRANSFORMATION");
 
     try (dbtTransformationRunner) {
       LOGGER.info("Running dbt transformation.");
@@ -64,6 +67,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
 
     final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
     LOGGER.info("Dbt Transformation executed in {}.", duration.toMinutesPart());
+    LineGobbler.endSection("DBT TRANSFORMATION");
 
     return null;
   }

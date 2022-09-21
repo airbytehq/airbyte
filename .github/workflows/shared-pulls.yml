@@ -1,4 +1,6 @@
-name: "Shared Pull Requests"
+# Runs internal automation for pull requests
+
+name: "Add metadata and labels to PRs based on context"
 on:
   pull_request_target:
     types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]

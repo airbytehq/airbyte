@@ -2,9 +2,25 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import pytest
 import responses
 from airbyte_cdk.models import SyncMode
-from source_chargebee.streams import Addon, AttachedItem, Coupon, Customer, Event, Invoice, Item, ItemPrice, Order, Plan, Subscription
+from source_chargebee.streams import (
+    Addon,
+    AttachedItem,
+    Coupon,
+    CreditNote,
+    Customer,
+    Event,
+    Invoice,
+    Item,
+    ItemPrice,
+    Order,
+    Plan,
+    SemiIncrementalChargebeeStream,
+    Subscription,
+    Transaction,
+)
 
 
 @responses.activate
@@ -138,16 +154,28 @@ def test_item_price_stream(test_config_v2, item_prices_response):
 
 
 @responses.activate
-def test_attached_item_stream(test_config_v2, attached_items_response):
+def test_attached_item_stream(test_config_v2, attached_items_response, items_response):
     responses.add(
         responses.GET,
-        "https://airbyte-test.chargebee.com/api/v2/items/cbdemo_standard/attached_items",
+        "https://airbyte-test.chargebee.com/api/v2/items",
+        json=items_response,
+    )
+    responses.add(
+        responses.GET,
+        "https://airbyte-test.chargebee.com/api/v2/items/cbdemo_lite/attached_items",
         json=attached_items_response,
     )
     stream = AttachedItem(start_date=test_config_v2["start_date"])
-    records = [r for r in stream.read_records(SyncMode.incremental, None, {"item_id": "cbdemo_standard"}, None)]
+    stream_slice = next(
+        stream.stream_slices(
+            cursor_field=None,
+            sync_mode=SyncMode.incremental,
+            stream_state=None,
+        )
+    )
+    records = [r for r in stream.read_records(SyncMode.incremental, None, stream_slice, None)]
     assert len(records) == 2
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
 
 
 def test_starting_point(test_config_v2):
@@ -160,9 +188,29 @@ def test_starting_point(test_config_v2):
     assert stream.get_starting_point({"some_id": {stream.cursor_field: 1621666663}}, "some_id") == 1621666664
 
 
-def test_updated_state(test_config_v2):
-    stream = Subscription(start_date=test_config_v2["start_date"])
+@pytest.mark.parametrize(
+    "stream, state, expected",
+    [
+        (Subscription, {"updated_at": 1621666664}, {"updated_at": 1621666664}),
+        (SemiIncrementalChargebeeStream, {"parent_item_id": "id", "updated_at": 1624345058}, {"id": {"updated_at": 1624345058}}),
+    ],
+)
+def test_updated_state(test_config_v2, stream, state, expected):
+    instance = stream(start_date=test_config_v2["start_date"])
 
-    assert stream.get_updated_state({}, {}) == {}
-    assert stream.get_updated_state({stream.cursor_field: 1621666664}, {}) == {stream.cursor_field: 1621666664}
-    assert stream.get_updated_state({}, {stream.cursor_field: 1621666665}) == {stream.cursor_field: 1621666665}
+    assert instance.get_updated_state({}, {}) == {}
+    assert instance.get_updated_state(state, {}) == state
+    assert instance.get_updated_state({}, state) == expected
+
+
+@pytest.mark.parametrize(
+    "stream, expected",
+    [
+        (CreditNote, {"include_deleted": "true", "limit": 100, "sort_by[asc]": "date", "updated_at[after]": 1621666664}),
+        (Transaction, {"include_deleted": "true", "limit": 100, "sort_by[asc]": "date", "updated_at[after]": 1621666664}),
+    ],
+)
+def test_request_params(test_config_v2, stream, expected):
+    instance = stream(start_date=test_config_v2["start_date"])
+
+    assert instance.request_params(stream_state={}) == expected

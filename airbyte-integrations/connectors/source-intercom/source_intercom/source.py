@@ -94,6 +94,10 @@ class IntercomStream(HttpStream, ABC):
 class IncrementalIntercomStream(IntercomStream, ABC):
     cursor_field = "updated_at"
 
+    @property
+    def state_checkpoint_interval(self):
+        return self.page_size
+
     def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
         super().__init__(authenticator, start_date, **kwargs)
         self.has_old_records = False
@@ -493,7 +497,7 @@ class VersionApiAuthenticator(TokenAuthenticator):
     Docs: https://developers.intercom.com/building-apps/docs/update-your-api-version#section-selecting-the-version-via-the-developer-hub
     """
 
-    relevant_supported_version = "2.2"
+    relevant_supported_version = "2.5"
 
     def get_auth_header(self) -> Mapping[str, Any]:
         headers = super().get_auth_header()

@@ -18,7 +18,7 @@ const Container = styled.div`
   height: 100%;
 `;
 
-export const Heading = styled(H2)`
+const Heading = styled(H2)`
   font-weight: 700;
   font-size: 24px;
   line-height: 29px;
@@ -44,7 +44,7 @@ const OctaviaImg = styled.img`
   z-index: 1;
 `;
 
-export const BowtieImg = styled.img`
+const BowtieImg = styled.img`
   position: absolute;
 
   &.empty-list-bowtie--right {

@@ -3,21 +3,18 @@
   "type": "object",
   "properties": {
     "type": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "text": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "content": {
           "type": ["null", "string"]
         },
         "link": {
           "type": ["null", "object"],
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "type": {
               "enum": ["url"]
@@ -31,14 +28,14 @@
     },
     "rich_text": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "content": {
           "type": ["null", "string"]
         },
         "link": {
           "type": ["null", "object"],
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "type": {
               "enum": ["url"]
@@ -52,43 +49,25 @@
     },
     "annotations": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "bold": {
-          "type": [
-            "null",
-            "boolean"
-          ]
+          "type": ["null", "boolean"]
         },
         "italic": {
-          "type": [
-            "null",
-            "boolean"
-          ]
+          "type": ["null", "boolean"]
         },
         "strikethrough": {
-          "type": [
-            "null",
-            "boolean"
-          ]
+          "type": ["null", "boolean"]
         },
         "underline": {
-          "type": [
-            "null",
-            "boolean"
-          ]
+          "type": ["null", "boolean"]
         },
         "code": {
-          "type": [
-            "null",
-            "boolean"
-          ]
+          "type": ["null", "boolean"]
         },
         "color": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },

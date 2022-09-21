@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSource.class);
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+
   public static final String DRIVER_CLASS = DatabaseDriver.SNOWFLAKE.getDriverClassName();
   public static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
 
@@ -86,28 +89,33 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
         "INFORMATION_SCHEMA");
   }
 
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
   private JsonNode buildOAuthConfig(final JsonNode config, final String jdbcUrl) {
     final String accessToken;
     final var credentials = config.get("credentials");
     try {
       accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
-          config.get("host").asText(), credentials.get("client_id").asText(),
+          config.get(JdbcUtils.HOST_KEY).asText(), credentials.get("client_id").asText(),
           credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("connection_properties",
+        .put(JdbcUtils.CONNECTION_PROPERTIES_KEY,
             String.join(";", "authenticator=oauth", "token=" + accessToken))
-        .put("jdbc_url", jdbcUrl);
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
     return Jsons.jsonNode(configBuilder.build());
   }
 
   private JsonNode buildUsernamePasswordConfig(final JsonNode config, final String jdbcUrl) {
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
-        .put("jdbc_url", jdbcUrl);
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
     LOGGER.info(jdbcUrl);
     return Jsons.jsonNode(configBuilder.build());
   }

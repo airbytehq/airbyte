@@ -9,38 +9,13 @@
     <!-- TODO: couldn't figure out how to make gradle exclude to work so defining exclude at PMD level. Cons: hardcoding 'generated' -->
     <exclude-pattern>.*/generated/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-integrations/.*</exclude-pattern>
+    <exclude-pattern>.*/test-integration/.*</exclude-pattern>
 
     <rule ref="category/java/bestpractices.xml">
         <!-- exclude permanently -->
         <exclude name="GuardLogStatement" />
         <exclude name="JUnitAssertionsShouldIncludeMessage" />
         <exclude name="JUnitTestContainsTooManyAsserts" />
-        <!-- to be applied eventually -->
-        <exclude name="AbstractClassWithoutAbstractMethod"/>
-        <exclude name="ArrayIsStoredDirectly"/>
-        <exclude name="AvoidPrintStackTrace"/>
-        <exclude name="AvoidReassigningLoopVariables"/>
-        <exclude name="AvoidReassigningParameters"/>
-        <exclude name="AvoidUsingHardCodedIP"/>
-        <exclude name="CheckResultSet"/>
-        <exclude name="DoubleBraceInitialization"/>
-        <exclude name="ForLoopCanBeForeach"/>
-        <exclude name="JUnit4TestShouldUseTestAnnotation"/>
-        <exclude name="JUnit5TestShouldBePackagePrivate"/>
-        <exclude name="JUnitTestsShouldIncludeAssert"/>
-        <exclude name="LiteralsFirstInComparisons"/>
-        <exclude name="LooseCoupling"/>
-        <exclude name="MissingOverride"/>
-        <exclude name="PreserveStackTrace"/>
-        <exclude name="SwitchStmtsShouldHaveDefault"/>
-        <exclude name="SystemPrintln"/>
-        <exclude name="UnusedAssignment"/>
-        <exclude name="UnusedFormalParameter"/>
-        <exclude name="UnusedLocalVariable"/>
-        <exclude name="UnusedPrivateField"/>
-        <exclude name="UnusedPrivateMethod"/>
-        <exclude name="UseCollectionIsEmpty"/>
-        <exclude name="UseVarargs"/>
     </rule>
     <rule ref="category/java/codestyle.xml">
         <!-- exclude permanently -->
@@ -126,26 +101,8 @@
         <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
-        <exclude name="AssignmentInOperand"/>
-        <exclude name="AvoidAccessibilityAlteration"/>
-        <exclude name="AvoidBranchingStatementAsLastInLoop"/>
-        <exclude name="AvoidCatchingNPE"/>
-        <exclude name="AvoidCatchingThrowable"/>
-        <exclude name="AvoidDuplicateLiterals"/>
-        <exclude name="AvoidFieldNameMatchingTypeName"/>
-        <exclude name="AvoidInstanceofChecksInCatchClause"/>
-        <exclude name="AvoidLiteralsInIfCondition"/>
         <exclude name="CloseResource"/>
-        <exclude name="CompareObjectsWithEquals"/>
-        <exclude name="ConstructorCallsOverridableMethod"/>
-        <exclude name="DoNotTerminateVM"/>
-        <exclude name="EmptyCatchBlock"/>
-        <exclude name="EmptyIfStmt"/>
-        <exclude name="EmptyStatementNotInLoop"/>
-        <exclude name="ImplicitSwitchFallThrough"/>
-        <exclude name="InvalidLogMessageFormat"/>
         <exclude name="MissingSerialVersionUID"/>
-        <exclude name="MoreThanOneLogger"/>
         <exclude name="NullAssignment"/>
         <exclude name="ReturnEmptyCollectionRatherThanNull"/>
         <exclude name="SimpleDateFormatNeedsLocale"/>
@@ -153,13 +110,12 @@
         <exclude name="UseEqualsToCompareStrings"/>
         <exclude name="UseProperClassLoader"/>
     </rule>
-    <!-- uncomment when this rule is applied -->
-<!--    <rule ref="category/java/errorprone.xml/AssignmentInOperand">-->
-<!--        <properties>-->
-<!--            <property name="allowFor" value="true" />-->
-<!--            <property name="allowWhile" value="true" />-->
-<!--        </properties>-->
-<!--    </rule>-->
+    <rule ref="category/java/errorprone.xml/AssignmentInOperand">
+        <properties>
+            <property name="allowFor" value="true" />
+            <property name="allowWhile" value="true" />
+        </properties>
+    </rule>
     <rule ref="category/java/multithreading.xml">
         <!-- exclude permanently -->
         <exclude name="DoNotUseThreads"/>

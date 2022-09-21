@@ -6,6 +6,7 @@ import * as yup from "yup";
 import { LoadingButton, LabeledInput, Link } from "components";
 import HeadTitle from "components/HeadTitle";
 
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
@@ -22,6 +23,7 @@ const ResetPasswordPage: React.FC = () => {
   const { registerNotification } = useNotificationService();
   const { formatMessage } = useIntl();
 
+  useTrackPage(PageTrackingCodes.RESET_PASSWORD);
   return (
     <div>
       <HeadTitle titles={[{ id: "login.resetPassword" }]} />

@@ -91,6 +91,7 @@ public class Job {
     return updatedAtInSecond;
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public Optional<Attempt> getSuccessfulAttempt() {
     final List<Attempt> successfulAttempts = getAttempts()
         .stream()

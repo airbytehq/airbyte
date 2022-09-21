@@ -5,43 +5,36 @@ tests:
   spec:
     - spec_path: "integration_tests/spec.json"
   connection:
-    # THIS TEST IS COMMENTED OUT BECAUSE OF
-    # https://advertising.amazon.com/API/docs/en-us/info/release-notes#sandbox-deprecation-on-june-28-2022
-    # - config_path: "secrets/config.json"
-    #   status: "succeed"
-    - config_path: "secrets/config_test_account.json"
+    - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
-    # THIS TEST IS COMMENTED OUT BECAUSE OF LOST ACCESS TO SANDBOX
-    # - config_path: "secrets/config.json"
-    - config_path: "secrets/config_test_account.json"
+    - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config_test_account.json"
+    - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: ["sponsored_product_targetings"]
+      empty_streams: ["sponsored_brands_campaigns", "sponsored_brands_ad_groups", "sponsored_brands_keywords"]
       expect_records:
         path: "integration_tests/expected_records.txt"
         extra_fields: no
         exact_order: no
         extra_records: no
-      timeout_seconds: 3600
-    # THIS TEST IS COMMENTED OUT BECAUSE OF
-    # https://advertising.amazon.com/API/docs/en-us/info/release-notes#sandbox-deprecation-on-june-28-2022
-    # - config_path: "secrets/config.json"
-    #   configured_catalog_path: "integration_tests/configured_catalog_sponsored_display.json"
-    #   empty_streams: ["sponsored_display_targetings"]
-    #   expect_records:
-    #     path: "integration_tests/expected_records_sponsored_display.txt"
-    #     extra_fields: no
-    #     exact_order: no
-    #     extra_records: no
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_report.json"
+      timeout_seconds: 2400
+  incremental:
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_report.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+      cursor_paths:
+        sponsored_products_report_stream: ["1861552880916640", "reportDate"]
+      timeout_seconds: 2400
   full_refresh:
-    - config_path: "secrets/config_test_account.json"
+    - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_report.json"
+      ignored_fields:
+        "sponsored_products_report_stream": ["updatedAt"]
       timeout_seconds: 3600
-    # THIS TEST IS COMMENTED OUT BECAUSE OF
-    # https://advertising.amazon.com/API/docs/en-us/info/release-notes#sandbox-deprecation-on-june-28-2022
-    # - config_path: "secrets/config.json"
-    #   configured_catalog_path: "integration_tests/configured_catalog_sponsored_display.json"

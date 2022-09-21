@@ -1,0 +1,26 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation project(':airbyte-config:config-models')
+
+    runtimeOnly 'io.micronaut:micronaut-http-server-netty:3.6.0'
+
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+}
+
+mainClassName = 'io.airbyte.cron.MicronautCronRunner'
+
+application {
+    mainClass = mainClassName
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
+}
