@@ -58,8 +58,7 @@ You will need to choose an existing database or create a new database that will 
 You should now have all the requirements needed to configure ClickHouse as a destination in the UI. You'll need the following information to configure the ClickHouse destination:
 
 * **Host**
-* **Port** (JDBC HTTP port, not the native port)
-* **Tcp-port** (Native port, also required for data normalization)
+* **Port**
 * **Username**
 * **Password**
 * **Database**
