@@ -3400,39 +3400,6 @@ components:
           $ref: "#/components/schemas/SourceSearch"
         destination:
           $ref: "#/components/schemas/DestinationSearch"
-    WebBackendConnectionSearch:
-      type: object
-      properties:
-        connectionId:
-          $ref: "#/components/schemas/ConnectionId"
-        name:
-          type: string
-        namespaceDefinition:
-          $ref: "#/components/schemas/NamespaceDefinitionType"
-        namespaceFormat:
-          type: string
-          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
-          default: null
-          example: "${SOURCE_NAMESPACE}"
-        prefix:
-          type: string
-          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
-        sourceId:
-          $ref: "#/components/schemas/SourceId"
-        destinationId:
-          $ref: "#/components/schemas/DestinationId"
-        schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
-        scheduleType:
-          $ref: "#/components/schemas/ConnectionScheduleType"
-        scheduleData:
-          $ref: "#/components/schemas/ConnectionScheduleData"
-        status:
-          $ref: "#/components/schemas/ConnectionStatus"
-        source:
-          $ref: "#/components/schemas/SourceSearch"
-        destination:
-          $ref: "#/components/schemas/DestinationSearch"
     ConnectionReadList:
       type: object
       required:
