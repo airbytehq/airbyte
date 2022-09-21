@@ -22,6 +22,7 @@
     "css-modules/no-undef-class": ["error", { "camelCase": true }],
     "css-modules/no-unused-class": ["error", { "camelCase": true }],
     "dot-location": "warn",
+    "dot-notation": "warn",
     "eqeqeq": "error",
     "prettier/prettier": "warn",
     "unused-imports/no-unused-imports": "warn",

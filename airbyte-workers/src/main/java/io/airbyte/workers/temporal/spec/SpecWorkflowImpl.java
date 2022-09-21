@@ -5,8 +5,8 @@
 package io.airbyte.workers.temporal.spec;
 
 import io.airbyte.config.ConnectorJobOutput;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import javax.inject.Singleton;
 
