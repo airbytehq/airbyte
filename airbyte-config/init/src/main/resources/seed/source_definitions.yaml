@@ -671,7 +671,7 @@
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/notion
   icon: notion.svg
   sourceType: api
@@ -766,7 +766,7 @@
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
@@ -774,7 +774,7 @@
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/pipedrive
   icon: pipedrive.svg
   sourceType: api
