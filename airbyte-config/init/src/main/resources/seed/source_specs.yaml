@@ -7917,7 +7917,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-primetric:dev"
+- dockerImage: "airbyte/source-primetric:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -7925,21 +7925,30 @@
       title: "Primetric Spec"
       type: "object"
       required:
-        - "client_id"
-        - "client_secret"
-      additionalProperties: false
+      - "client_id"
+      - "client_secret"
       properties:
         client_id:
           type: "string"
-          description: "Client Id of our Primetric client"
+          title: "Client ID"
+          description: "The Client ID of your Primetric developer application. The\
+            \ Client ID is visible <a href=\\\"https://app.primetric.com/administrator/integrations\"\
+            >here</a>."
+          pattern: "^[a-zA-Z0-9]+$"
           airbyte_secret: true
           examples:
           - "1234aBcD5678EFGh9045Neq79sdDlA15082VMYcj"
+          order: 0
         client_secret:
           type: "string"
-          description: "The Client Secret for our Primetric client."
+          title: "Client Secret"
+          description: "The Client Secret of your Primetric developer application.\
+            \ You can manage your client's credentials <a href=\\\"https://app.primetric.com/administrator/integrations\"\
+            >here</a>."
+          pattern: "^[a-zA-Z0-9]+$"
           airbyte_secret: true
-    supportsNormalization: true
+          order: 1
+    supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-qualaroo:0.1.2"

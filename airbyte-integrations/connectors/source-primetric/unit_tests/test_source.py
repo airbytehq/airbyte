@@ -3,6 +3,7 @@
 #
 
 from unittest.mock import MagicMock
+
 from source_primetric.source import SourcePrimetric
 
 
