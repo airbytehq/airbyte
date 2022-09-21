@@ -81,7 +81,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
     }
     return (
       <FormattedMessage
-        values={{ count: streamsToReset?.length || 0, status: "failed" }}
+        values={{ count: streamsToReset?.length || 0 }}
         id={`sources.jobStatus.${jobConfigType}.${status}`}
       />
     );
