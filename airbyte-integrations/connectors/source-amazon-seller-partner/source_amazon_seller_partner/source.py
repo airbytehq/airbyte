@@ -101,7 +101,11 @@ class SourceAmazonSellerPartner(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
-        Check connection to Amazon SP API by requesting the list of reports as this endpoint should be available for any config. > NOT THE CASE, for VENDOR-ONLY accounts, the Orders endpoint is not available.
+        Check connection to Amazon SP API by requesting the Orders endpoint
+        This endpoint is not available for vendor-only Seller accounts, 
+        the Orders endpoint will then return a 403 error
+        Therefore made an exception for 403 errors (when vendor-only accounts). 
+        When no access, a 401 error is given.
         Validate if response has the expected error code and body.
         Show error message in case of request exception or unexpected response.
         """

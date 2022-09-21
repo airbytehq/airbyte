@@ -270,7 +270,6 @@ class ReportsAmazonSPStream(Stream, ABC):
             data=json_lib.dumps(report_data),
         )
         report_response = self._send_request(create_report_request)
-        #return report_response.json()[self.data_field]
         return report_response.json()
 
     def _retrieve_report(self, report_id: str) -> Mapping[str, Any]:
@@ -280,29 +279,8 @@ class ReportsAmazonSPStream(Stream, ABC):
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
         )
         retrieve_report_response = self._send_request(retrieve_report_request)
-        #report_payload = retrieve_report_response.json().get(self.data_field, {})
         report_payload = retrieve_report_response.json()
         return report_payload
-
-    # @staticmethod
-    # def decrypt_aes(content, key, iv):
-    #     key = base64.b64decode(key)
-    #     iv = base64.b64decode(iv)
-    #     decrypter = AES.new(key, AES.MODE_CBC, iv)
-    #     decrypted = decrypter.decrypt(content)
-    #     padding_bytes = decrypted[-1]
-    #     return decrypted[:-padding_bytes]
-
-    # def decrypt_report_document(self, url, initialization_vector, key, encryption_standard, payload):
-    #     """
-    #     Decrypts and unpacks a report document, currently AES encryption is implemented
-    #     """
-    #     if encryption_standard == "AES":
-    #         decrypted = self.decrypt_aes(requests.get(url).content, key, initialization_vector)
-    #         if "compressionAlgorithm" in payload:
-    #             return zlib.decompress(bytearray(decrypted), 15 + 32).decode("iso-8859-1")
-    #         return decrypted.decode("iso-8859-1")
-    #     raise Exception([{"message": "Only AES decryption is implemented."}])
 
     def decompress_report_document(self, url, payload):
         """
@@ -315,14 +293,6 @@ class ReportsAmazonSPStream(Stream, ABC):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         payload = response.json()
-        # payload = response.json().get(self.data_field, {})
-        # document = self.decrypt_report_document(
-        #     payload.get("url"),
-        #     payload.get("encryptionDetails", {}).get("initializationVector"),
-        #     payload.get("encryptionDetails", {}).get("key"),
-        #     payload.get("encryptionDetails", {}).get("standard"),
-        #     payload,
-        # )
 
         document = self.decompress_report_document(
             payload.get("url"),
@@ -1030,7 +1000,6 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
     ) -> Mapping[str, Any]:
 
         # For backwards
-
         return {"reportId": stream_slice.get("report_id")}
 
     def stream_slices(
