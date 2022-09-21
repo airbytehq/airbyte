@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["query", "site_url"],
+  "required": ["date", "site_url"],
   "properties": {
     "site_url": {
       "type": ["string"]
