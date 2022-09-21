@@ -23,7 +23,7 @@ public class CloudStorageBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.logs.type",
-            value = "GCS")
+            pattern = "(?i)^gcs$")
   @Named("logStorageConfigs")
   public CloudStorageConfigs gcsLogStorageConfigs(
                                                   @Value("${airbyte.cloud.storage.logs.gcs.bucket}") final String gcsLogBucket,
@@ -33,7 +33,7 @@ public class CloudStorageBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.logs.type",
-            value = "MINIO")
+            pattern = "(?i)^minio$")
   @Named("logStorageConfigs")
   public CloudStorageConfigs minioLogStorageConfigs(
                                                     @Value("${airbyte.cloud.storage.logs.minio.access-key}") final String awsAccessKeyId,
@@ -45,7 +45,7 @@ public class CloudStorageBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.logs.type",
-            value = "S3")
+            pattern = "(?i)^s3$")
   @Named("logStorageConfigs")
   public CloudStorageConfigs s3LogStorageConfigs(
                                                  @Value("${airbyte.cloud.storage.logs.s3.access-key}") final String awsAccessKeyId,
@@ -57,7 +57,7 @@ public class CloudStorageBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.state.type",
-            value = "GCS")
+            pattern = "(?i)^gcs$")
   @Named("stateStorageConfigs")
   public CloudStorageConfigs gcsStateStorageConfiguration(
                                                           @Value("${airbyte.cloud.storage.state.gcs.bucket}") final String gcsBucketName,
@@ -67,7 +67,7 @@ public class CloudStorageBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.state.type",
-            value = "MINIO")
+            pattern = "(?i)^minio$")
   @Named("stateStorageConfigs")
   public CloudStorageConfigs minioStateStorageConfiguration(
                                                             @Value("${airbyte.cloud.storage.state.minio.bucket}") final String bucketName,
@@ -79,7 +79,7 @@ public class CloudStorageBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.cloud.storage.state.type",
-            value = "S3")
+            pattern = "(?i)^s3$")
   @Named("stateStorageConfigs")
   public CloudStorageConfigs s3StateStorageConfiguration(
                                                          @Value("${airbyte.cloud.storage.state.s3.bucket}") final String bucketName,

@@ -37,10 +37,10 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.persistence.job.models.Attempt;
+import io.airbyte.persistence.job.models.Job;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
-import io.airbyte.scheduler.models.Attempt;
-import io.airbyte.scheduler.models.Job;
 import io.airbyte.workers.helper.ProtocolConverters;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -90,7 +90,7 @@ public class JobConverter {
         .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).toList());
   }
 
-  private static JobRead getJobRead(final Job job) {
+  public static JobRead getJobRead(final Job job) {
     final String configId = job.getScope();
     final JobConfigType configType = Enums.convertTo(job.getConfigType(), JobConfigType.class);
 
