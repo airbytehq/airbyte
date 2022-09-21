@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 from .constants import url_base
 
 class CurrentWeather(HttpStream):
-    
+    url_base = "http://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None

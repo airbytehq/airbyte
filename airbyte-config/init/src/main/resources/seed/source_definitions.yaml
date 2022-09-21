@@ -1081,6 +1081,14 @@
   icon: victorops.svg
   sourceType: api
   releaseStage: alpha
+- name: Weatherstack
+  sourceDefinitionId: fa6c04ad-cf15-4ba8-bbc2-79031550ee69
+  dockerRepository: airbyte/source-weatherstack
+  dockerImageTag: 0.1.2
+  documentationUrl: https://docs.airbyte.io/integrations/sources/weatherstack
+  icon: weatherstack.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Webflow
   sourceDefinitionId: ef580275-d9a9-48bb-af5e-db0f5855be04
   dockerRepository: airbyte/source-webflow

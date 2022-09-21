@@ -1,85 +1,128 @@
 {
   "streams": [
     {
-      "name": "current_weather",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": "column1",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "api_key": {
-            "type": "string"
-          },
-          "query": {
-            "type": "string"
+      "stream": {
+        "name": "current_weather",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "access_key": {
+              "type": "string"
+            },
+            "query": {
+              "type": "string",
+              "properties": {
+                "New York": {
+                  "type": "string"
+                },
+                "London": {
+                  "type": "string"
+                }
+              }
+            },
+            "historical_date": {
+              "type": "string"
+            }
           }
-        }
-      }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
-      "name": "forecast",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": false,
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "api_key": {
-            "type": "string"
-          },
-          "query": {
-            "type": "string"
-          },
-          "forecast_days": {
-            "type": "number"
-          },
-          "hourly": {
-            "type": "number"
+      "stream": {
+        "name": "forecast",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "access_key": {
+              "type": "string"
+            },
+            "query": {
+              "type": "string",
+              "properties": {
+                "New York": {
+                  "type": "string"
+                },
+                "London": {
+                  "type": "string"
+                }
+              }
+            },
+            "historical_date": {
+              "type": "string"
+            }
           }
-        }
-      }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
-      "name": "historical",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": false,
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "api_key": {
-            "type": "string"
-          },
-          "query": {
-            "type": "string"
-          },
-          "historical_date": {
-            "type": "string"
-          },
-          "hourly": {
-            "type": "number"
+      "stream": {
+        "name": "historical",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "access_key": {
+              "type": "string"
+            },
+            "query": {
+              "type": "string",
+              "properties": {
+                "New York": {
+                  "type": "string"
+                },
+                "London": {
+                  "type": "string"
+                }
+              }
+            },
+            "historical_date": {
+              "type": "string"
+            }
           }
-        }
-      }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
-      "name": "location_lookup",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": false,
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "api_key": {
-            "type": "string"
-          },
-          "query": {
-            "type": "string"
+      "stream": {
+        "name": "location_lookup",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "access_key": {
+              "type": "string"
+            },
+            "query": {
+              "type": "string",
+              "properties": {
+                "New York": {
+                  "type": "string"
+                },
+                "London": {
+                  "type": "string"
+                }
+              }
+            },
+            "historical_date": {
+              "type": "string"
+            }
           }
-        }
-      }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
