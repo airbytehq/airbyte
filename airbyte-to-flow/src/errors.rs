@@ -57,8 +57,8 @@ pub enum Error {
     #[error("go.estuary.dev/E017: Could not find expected message in stream: {0}")]
     MessageNotFound(&'static str),
 
-    #[error("go.estuary.dev/E018: Connector's connection status is not successful")]
-    ConnectionStatusUnsuccessful,
+    #[error("go.estuary.dev/E018: Connector's connection status is not successful: {0}")]
+    ConnectionStatusUnsuccessful(String),
 
     #[error("go.estuary.dev/E019: Validation request is missing")]
     MissingValidateRequest,
