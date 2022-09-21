@@ -44,6 +44,7 @@
     json
 {%- endmacro -%}
 
+
 {# string ------------------------------------------------- #}
 
 {%- macro mysql__type_string() -%}
