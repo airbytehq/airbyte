@@ -11,7 +11,7 @@
         "items": {
           "type": "string"
         },
-        "title": "Website URL Property",
+        "title": "Website URL",
         "description": "The URLs of the website property attached to your GSC account. Read more here: https://support.google.com/webmasters/answer/34592?hl=en.",
         "examples": ["https://example1.com", "https://example2.com"],
         "order": 0
@@ -51,6 +51,7 @@
               "auth_type": {
                 "type": "string",
                 "const": "Client",
+                "default": "Client",
                 "order": 0
               },
               "client_id": {
