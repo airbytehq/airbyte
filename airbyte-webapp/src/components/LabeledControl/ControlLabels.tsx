@@ -18,6 +18,7 @@ export interface ControlLabelsProps {
   label?: React.ReactNode;
   infoTooltipContent?: React.ReactNode;
   optional?: boolean;
+  htmlFor?: string;
 }
 
 const ControlLabels: React.FC<React.PropsWithChildren<ControlLabelsProps>> = (props) => (
@@ -28,6 +29,7 @@ const ControlLabels: React.FC<React.PropsWithChildren<ControlLabelsProps>> = (pr
       message={props.message}
       additionLength={props.labelAdditionLength}
       nextLine={props.nextLine}
+      htmlFor={props.htmlFor}
     >
       {props.label}
       {props.infoTooltipContent && (

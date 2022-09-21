@@ -32,10 +32,20 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
   const labelText = property.title || property.fieldKey;
 
   if (property.type === "boolean") {
+    const switchId = `switch-${field.name}`;
     return (
       <LabeledSwitch
         {...field}
-        label={<PropertyLabel className={styles.switchLabel} property={property} label={labelText} optional={false} />}
+        id={switchId}
+        label={
+          <PropertyLabel
+            className={styles.switchLabel}
+            property={property}
+            label={labelText}
+            optional={false}
+            htmlFor={switchId}
+          />
+        }
         value={field.value ?? property.default}
         disabled={disabled}
       />

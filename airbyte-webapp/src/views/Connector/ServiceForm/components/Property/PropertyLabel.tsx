@@ -12,6 +12,7 @@ interface PropertyLabelProps {
   description?: string;
   optional?: boolean;
   className?: string;
+  htmlFor?: string;
 }
 
 const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>> = ({
@@ -21,6 +22,7 @@ const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>> = ({
   optional,
   className,
   children,
+  htmlFor,
 }) => {
   const examples = property._type === "formItem" || property._type === "formGroup" ? property.examples : undefined;
 
@@ -33,6 +35,7 @@ const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>> = ({
         <LabelInfo label={label} examples={examples} description={description ?? property.description} />
       }
       optional={optional ?? !property.isRequired}
+      htmlFor={htmlFor}
     >
       {children}
     </ControlLabels>
