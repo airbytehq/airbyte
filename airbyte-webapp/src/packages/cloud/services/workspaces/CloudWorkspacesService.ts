@@ -53,7 +53,7 @@ export function useCreateCloudWorkspace() {
     onSuccess: (result) => {
       queryClient.setQueryData<CloudWorkspace[]>(workspaceKeys.lists(), (old) => [...(old ?? []), result]);
     },
-  }).mutateAsync;
+  });
 }
 
 export function useUpdateCloudWorkspace() {

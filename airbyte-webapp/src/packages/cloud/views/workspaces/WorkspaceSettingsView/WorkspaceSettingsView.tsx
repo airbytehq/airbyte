@@ -37,8 +37,8 @@ export const WorkspaceSettingsView: React.FC = () => {
   useTrackPage(PageTrackingCodes.SETTINGS_WORKSPACE);
   const { exitWorkspace } = useWorkspaceService();
   const workspace = useCurrentWorkspace();
-  const removeCloudWorkspace = useRemoveCloudWorkspace();
-  const updateCloudWorkspace = useUpdateCloudWorkspace();
+  const { mutateAsync: removeCloudWorkspace, isLoading: isRemovingCloudWorkspace } = useRemoveCloudWorkspace();
+  const { mutateAsync: updateCloudWorkspace } = useUpdateCloudWorkspace();
   const invalidateWorkspace = useInvalidateWorkspace(workspace.workspaceId);
   const [isAdvancedMode, setAdvancedMode] = useAdvancedModeSetting();
 
@@ -62,7 +62,7 @@ export const WorkspaceSettingsView: React.FC = () => {
           onSubmit={async (payload) => {
             const { workspaceId } = workspace;
             setAdvancedMode(payload.advancedMode);
-            await updateCloudWorkspace.mutateAsync({
+            await updateCloudWorkspace({
               workspaceId,
               name: payload.name,
             });
@@ -119,9 +119,9 @@ export const WorkspaceSettingsView: React.FC = () => {
           <div className={styles.header}>
             <FormattedMessage id="settings.generalSettings.deleteLabel" />
             <LoadingButton
-              isLoading={removeCloudWorkspace.isLoading}
+              isLoading={isRemovingCloudWorkspace}
               danger
-              onClick={() => removeCloudWorkspace.mutateAsync(workspace.workspaceId)}
+              onClick={() => removeCloudWorkspace(workspace.workspaceId)}
             >
               <FormattedMessage id="settings.generalSettings.deleteText" />
             </LoadingButton>

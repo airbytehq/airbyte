@@ -20,7 +20,7 @@ const Content = styled.div`
 const WorkspacesList: React.FC = () => {
   const workspaces = useListCloudWorkspaces();
   const { selectWorkspace } = useWorkspaceService();
-  const createCloudWorkspace = useCreateCloudWorkspace();
+  const { mutateAsync: createCloudWorkspace } = useCreateCloudWorkspace();
 
   return (
     <Content>
