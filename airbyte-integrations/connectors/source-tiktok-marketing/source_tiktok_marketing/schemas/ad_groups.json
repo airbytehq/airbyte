@@ -1,5 +1,6 @@
 {
-  "type": ["null", "object"],
+  "type": ["object"],
+  "required": ["adgroup_id"],
   "properties": {
     "adgroup_id": {
       "type": "integer"
