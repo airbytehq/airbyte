@@ -66,6 +66,11 @@ const useConnectionForm = ({
 
       formValues.operations = mapFormPropsToOperation(values, connection.operations, workspaceId);
 
+      if (formValues.scheduleType === ConnectionScheduleType.manual) {
+        // Have to set this to undefined to override the existing scheduleData
+        formValues.scheduleData = undefined;
+      }
+
       setSubmitError(null);
       try {
         // This onSubmit comes from either ReplicationView.tsx (Connection Edit), or CreateConnectionContent.tsx (Connection Create).
