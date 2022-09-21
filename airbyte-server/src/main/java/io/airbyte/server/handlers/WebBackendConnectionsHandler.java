@@ -177,19 +177,6 @@ public class WebBackendConnectionsHandler {
         .resourceRequirements(connectionRead.getResourceRequirements());
   }
 
-  public WebBackendConnectionReadList webBackendSearchConnections(final WebBackendConnectionSearch webBackendConnectionSearch)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-
-    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
-    for (final ConnectionRead connectionRead : connectionsHandler.listConnections().getConnections()) {
-      if (connectionsHandler.matchSearch(toConnectionSearch(webBackendConnectionSearch), connectionRead)) {
-        reads.add(buildWebBackendConnectionRead(connectionRead));
-      }
-    }
-
-    return new WebBackendConnectionReadList().connections(reads);
-  }
-
   // todo (cgardens) - This logic is a headache to follow it stems from the internal data model not
   // tracking selected streams in any reasonable way. We should update that.
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody)
