@@ -61,8 +61,7 @@ def test_internal_server_error_retry(time_mock):
     responses.add(
         "GET",
         "https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions",
-        status=HTTPStatus.INTERNAL_SERVER_ERROR,
-        json={"message": "Server Error"},
+        status=HTTPStatus.INTERNAL_SERVER_ERROR
     )
     with pytest.raises(BaseBackoffException):
         list(stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice))

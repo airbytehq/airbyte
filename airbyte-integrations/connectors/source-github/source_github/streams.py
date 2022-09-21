@@ -115,7 +115,6 @@ class GithubStream(HttpStream, ABC):
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
-            error_msg = str(e.response.json().get("message"))
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
@@ -128,6 +127,7 @@ class GithubStream(HttpStream, ABC):
                 else:
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
             elif e.response.status_code == requests.codes.FORBIDDEN:
+                error_msg = str(e.response.json().get("message"))
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
@@ -153,7 +153,8 @@ class GithubStream(HttpStream, ABC):
                     f"`{stream_slice['repository']}`, it seems like this repository is empty."
                 )
             else:
-                self.logger.error(f"Undefined error while reading records: {error_msg}")
+                # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
+                self.logger.error(f"Undefined error while reading records: {e.response.text}")
                 raise e
 
             self.logger.warn(error_msg)
