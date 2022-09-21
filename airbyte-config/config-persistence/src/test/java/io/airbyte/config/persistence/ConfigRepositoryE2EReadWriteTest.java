@@ -139,7 +139,7 @@ class ConfigRepositoryE2EReadWriteTest {
   void testWorkspaceCountConnections() throws IOException {
 
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
-    assertEquals(4, configRepository.countConnectionsForWorkspace(workspaceId));
+    assertEquals(3, configRepository.countConnectionsForWorkspace(workspaceId));
     assertEquals(2, configRepository.countDestinationsForWorkspace(workspaceId));
     assertEquals(2, configRepository.countSourcesForWorkspace(workspaceId));
   }
