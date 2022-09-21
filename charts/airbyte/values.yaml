@@ -689,7 +689,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.40.7
+    tag: 0.40.8
 
   ##  worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
