@@ -18,10 +18,10 @@ from source_amazon_seller_partner.streams import (
     BrandAnalyticsMarketBasketReports,
     BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
+    FbaAfnInventoryByCountryReports,
+    FbaAfnInventoryReports,
     FbaCustomerReturnsReports,
     FbaInventoryReports,
-    FbaAfnInventoryReports,
-    FbaAfnInventoryByCountryReports,
     FbaOrdersReports,
     FbaReplacementsReports,
     FbaShipmentsReports,
@@ -102,9 +102,9 @@ class SourceAmazonSellerPartner(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Check connection to Amazon SP API by requesting the Orders endpoint
-        This endpoint is not available for vendor-only Seller accounts, 
+        This endpoint is not available for vendor-only Seller accounts,
         the Orders endpoint will then return a 403 error
-        Therefore made an exception for 403 errors (when vendor-only accounts). 
+        Therefore made an exception for 403 errors (when vendor-only accounts).
         When no access, a 401 error is given.
         Validate if response has the expected error code and body.
         Show error message in case of request exception or unexpected response.
@@ -121,7 +121,7 @@ class SourceAmazonSellerPartner(AbstractSource):
                 logger.error(
                     "Could not check connection without data for Orders stream. Please change value for replication start date field."
                 )
-            
+
             # Additional check, since Vendor-ony accounts within Amazon Seller API will not pass the test without this exception
             if "403 Client Error" in str(e):
                 return True, None
