@@ -1,6 +1,6 @@
 {
-    "documentationUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
-    "changelogUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
+    "documentationUrl": "https://go.estuary.dev/VyWQ7h",
+    "changelogUrl": "https://go.estuary.dev/VyWQ7h",
     "connectionSpecification": {
         "title": "TikTok Marketing Source Spec",
         "type": "object",
@@ -96,7 +96,7 @@
             },
             "report_granularity": {
                 "title": "Report Aggregation Granularity",
-                "description": "The granularity used for aggregating performance data in reports. See <a href=\"https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation\">the docs</a>.",
+                "description": "The granularity used for aggregating performance data in reports. See the docs: https://go.estuary.dev/byfCts",
                 "enum": [
                     "LIFETIME",
                     "DAY",

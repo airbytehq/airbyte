@@ -135,16 +135,6 @@ def test_parse_response(stream_class, expected):
     assert record == expected
 
 
-def test_check_connection_ok(config, mocker, requests_mock):
-    url = "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com"
-    requests_mock.get(url, json={})
-    requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com"}]})
-    ok, error_msg = SourceGoogleSearchConsole().check_connection(logger, config=config)
-
-    assert ok
-    assert not error_msg
-
-
 def test_check_connection_invalid_config(config):
     config.pop("start_date")
     ok, error_msg = SourceGoogleSearchConsole().check_connection(logger, config=config)
