@@ -275,6 +275,7 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.37  | 2022-09-21 | [\#16839](https://github.com/airbytehq/airbyte/pull/16839) | Update JDBC driver for Snowflake to 3.13.19                                                                                                                      |
 | 0.4.36  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                      |
 | 0.4.35  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields).                           |
 | 0.4.34  | 2022-07-23 | [\#14388](https://github.com/airbytehq/airbyte/pull/14388) | Add support for key pair authentication                                                                                                             |
