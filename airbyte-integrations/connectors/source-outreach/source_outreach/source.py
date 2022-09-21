@@ -188,6 +188,16 @@ class Stages(IncrementalOutreachStream):
         return "stages"
 
 
+class Calls(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequences endpoint.
+    See https://api.outreach.io/api/v2/docs#call
+    """
+
+    def path(self, **kwargs) -> str:
+        return "calls"
+
+
 class OutreachAuthenticator(Oauth2Authenticator):
     def __init__(self, redirect_uri: str, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str):
         super().__init__(
@@ -234,4 +244,5 @@ class SourceOutreach(AbstractSource):
             Mailings(authenticator=auth, **config),
             Mailboxes(authenticator=auth, **config),
             Stages(authenticator=auth, **config),
+            Calls(authenticator=auth, **config),
         ]

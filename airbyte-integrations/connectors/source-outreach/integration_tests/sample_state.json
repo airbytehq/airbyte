@@ -7,5 +7,6 @@
   "personas": { "updatedAt": "2022-01-03T10:00:00Z" },
   "mailings": { "updatedAt": "2021-11-01T11:22:00Z" },
   "mailboxes": { "updatedAt": "2019-01-01T00:00:30Z" },
-  "stages": { "updatedAt": "2021-06-28T10:10:20Z" }
+  "stages": { "updatedAt": "2021-06-28T10:10:20Z" },
+  "calls": { "updatedAt": "2021-06-28T10:10:20Z" }
 }
