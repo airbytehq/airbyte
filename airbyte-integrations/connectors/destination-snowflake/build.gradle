@@ -27,6 +27,8 @@ application {
 dependencies {
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
+//  Updating to any newer versions is causing a regression with normalization. See: 
+//  https://github.com/airbytehq/airbyte/actions/runs/3078146312
     implementation 'net.snowflake:snowflake-jdbc:3.13.19'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
