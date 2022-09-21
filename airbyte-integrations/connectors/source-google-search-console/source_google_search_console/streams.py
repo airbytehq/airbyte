@@ -277,7 +277,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
 class SearchAnalyticsByDate(SearchAnalytics):
     dimensions = ["date"]
-    primary_key = ["query", "site_url"]
+    primary_key = ["date", "site_url"]
 
 class SearchAnalyticsByCountry(SearchAnalytics):
     dimensions = ["date", "country"]
