@@ -38,6 +38,8 @@ async fn main() -> Result<(), Error> {
     let mut buf = String::new();
     let stdin = std::io::stdin();
     stdin.read_line(&mut buf)?;
+    // pop the newline character \n
+    buf.pop();
 
     // the received line must be in the format of
     // <Protocol> <Address>
@@ -48,7 +50,8 @@ async fn main() -> Result<(), Error> {
         return Err(Error::InvalidSocketSpecification("socket specification requires two words".to_string()))
     }
     let stream_mode = StreamMode::from_str(words[0], true).map_err(Error::InvalidSocketSpecification)?;
-    let socket = words[1].to_string();
+    let socket = words[1];
+    eprintln!("{}", socket);
 
     let result = run_airbyte_source_connector(connector_entrypoint, operation, socket, stream_mode).await;
 

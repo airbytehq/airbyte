@@ -17,11 +17,10 @@ pub enum FlowCaptureOperation {
     Pull,
 }
 
-// Mode of streaming, Unix socket or TCP
+// Mode of streaming
 #[derive(Clone, strum_macros::Display, clap::ValueEnum, PartialEq, Debug)]
 #[strum(serialize_all = "kebab_case")]
 pub enum StreamMode {
-    UnixSocket,
     TCP,
 }
 

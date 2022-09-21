@@ -1,7 +1,7 @@
 FROM python:3.9-slim
 
 # Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y bash netcat && rm -rf /var/lib/apt/lists/*
 
 ENV CODE_PATH="source_exchange_rates"
 ENV WORKDIR=/airbyte/integration_code
@@ -15,7 +15,7 @@ COPY airbyte-to-flow ./
 RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-ENTRYPOINT ["airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
+ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=v1
 LABEL io.airbyte.name=airbyte/source-exchange-rates

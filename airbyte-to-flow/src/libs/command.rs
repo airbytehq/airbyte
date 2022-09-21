@@ -43,7 +43,7 @@ pub fn invoke_connector_delayed(entrypoint: String) -> Result<Child, Error> {
         Stdio::piped(),
         Stdio::piped(),
         Stdio::inherit(),
-        "read -r connector_proxy_dummy_var && exec {entrypoint}",
+        &format!("read -r connector_proxy_dummy_var && exec {entrypoint}"),
     )
 }
 

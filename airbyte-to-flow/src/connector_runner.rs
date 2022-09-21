@@ -1,7 +1,7 @@
 use std::pin::Pin;
 
 use futures::{channel::oneshot, stream, StreamExt};
-use tokio::{net::{UnixStream, TcpStream}, task::JoinHandle, io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}};
+use tokio::{net::{TcpStream, tcp::{OwnedWriteHalf, OwnedReadHalf}}, task::JoinHandle, io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}};
 use tokio_util::io::{ReaderStream, StreamReader};
 
 use proto_flow::capture::PullResponse;
@@ -19,22 +19,22 @@ async fn flatten_join_handle<T, E: std::convert::From<tokio::task::JoinError>>(
     }
 }
 
-async fn flow_read_stream(socket_path: &str, mode: &StreamMode) -> Result<InterceptorStream, Error> {
+async fn flow_socket(socket_path: &str, mode: &StreamMode) -> Result<(OwnedReadHalf, OwnedWriteHalf), Error> {
     match mode {
-        StreamMode::UnixSocket => 
-            Ok(Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(UnixStream::connect(&socket_path).await?)))),
-        StreamMode::TCP =>
-            Ok(Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(TcpStream::connect(&socket_path).await?))))
+        StreamMode::TCP => {
+            let stream = TcpStream::connect(socket_path).await?;
+            let (read_half, write_half) = stream.into_split();
+            Ok((read_half, write_half))
+        }
     }
 }
 
-async fn flow_write_stream(socket_path: &str, mode: &StreamMode) -> Result<Pin<Box<dyn AsyncWrite + Send>>, Error> {
-    match mode {
-        StreamMode::UnixSocket => 
-            Ok(Box::pin(UnixStream::connect(socket_path).await?)),
-        StreamMode::TCP =>
-            Ok(Box::pin(TcpStream::connect(socket_path).await?))
-    }
+async fn flow_read_stream(read_half: OwnedReadHalf) -> Result<InterceptorStream, Error> {
+    Ok(Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(read_half))))
+}
+
+fn flow_write_stream(write_half: OwnedWriteHalf) -> Pin<Box<dyn AsyncWrite + Send>> {
+    Box::pin(write_half)
 }
 
 fn airbyte_response_stream(child_stdout: ChildStdout) -> InterceptorStream {
@@ -51,7 +51,7 @@ pub fn parse_child(mut child: Child) -> Result<(Child, ChildStdin, ChildStdout),
 pub async fn run_airbyte_source_connector(
     entrypoint: String,
     op: FlowCaptureOperation,
-    socket_path: String,
+    socket_path: &str,
     stream_mode: StreamMode,
 ) -> Result<(), Error> {
     let mut airbyte_interceptor = AirbyteSourceInterceptor::new();
@@ -59,16 +59,30 @@ pub async fn run_airbyte_source_connector(
     let args = airbyte_interceptor.adapt_command_args(&op);
     let full_entrypoint = format!("{} \"{}\"", entrypoint, args.join("\" \""));
 
+    tracing::debug!("invoking connector");
     let (mut child, child_stdin, child_stdout) =
         parse_child(invoke_connector_delayed(full_entrypoint)?)?;
 
-    let adapted_request_stream = airbyte_interceptor.adapt_request_stream(
+    tracing::debug!("invoked connector, trying to establish socket connection");
+
+    let (read_half, write_half) = flow_socket(socket_path, &stream_mode).await?;
+
+    // std::thread::sleep(std::time::Duration::from_secs(400));
+    let adapted_request_stream = Box::pin(airbyte_interceptor.adapt_request_stream(
         &op,
-        flow_read_stream(&socket_path, &stream_mode).await?
-    )?;
+        Box::pin(flow_read_stream(read_half).await?.inspect(|msg| {
+            tracing::debug!("message from flow {:#?}", msg);
+        }))
+    )?.inspect(|msg| {
+        tracing::debug!("flow message transformed, being sent to airbyte connector {:#?}", msg);
+    }));
+
+    tracing::debug!("opened read socket");
 
     let adapted_response_stream =
-        airbyte_interceptor.adapt_response_stream(&op, airbyte_response_stream(child_stdout))?;
+        airbyte_interceptor.adapt_response_stream(&op, Box::pin(airbyte_response_stream(child_stdout).inspect(|msg| {
+            tracing::debug!("response from airbyte connector {:#?}", msg);
+        })))?;
 
     // Keep track of whether we did send a Driver Checkpoint as the final message of the response stream
     // See the comment of the block below for why this is necessary
@@ -95,19 +109,23 @@ pub async fn run_airbyte_source_connector(
                     }
                 };
 
+                tracing::debug!(?message, "response being sent to flow");
+
                 Ok(Some((raw, (!message.checkpoint.is_some(), stream, sender))))
             },
         ))
     } else {
         adapted_response_stream
-    };
+    }.inspect(|msg| {
+        tracing::debug!("response transformed for flow {:#?}", msg);
+    });
 
-    let response_write = flow_write_stream(&socket_path, &stream_mode).await?;
+    let response_write = flow_write_stream(write_half);
 
     let streaming_all_task = tokio::spawn(streaming_all(
         adapted_request_stream,
         child_stdin,
-        adapted_response_stream,
+        Box::pin(adapted_response_stream),
         response_write,
     ));
 
