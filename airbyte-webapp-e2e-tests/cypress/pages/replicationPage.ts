@@ -46,31 +46,27 @@ export const setupDestinationNamespaceSourceFormat = () => {
 };
 
 export const selectSyncMode = (source: string, dest: string) => {
-    cy.get(syncModeDropdown).first().click({ force: true });
+  cy.get(syncModeDropdown).first().click({ force: true });
 
-    cy.get(`.react-select__option`) 
-        .contains(`Source:${source}| Dest:${dest}`)
-        .click();
+  cy.get(`.react-select__option`).contains(`Source:${source}| Dest:${dest}`).click();
 };
 
 export const selectCursorField = (value: string) => {
-    cy.get(cursorFieldDropdown).first().click({ force: true });
-  
-    cy.get(`.react-select__option`)
-        .contains(value)
-        .click();
+  cy.get(cursorFieldDropdown).first().click({ force: true });
+
+  cy.get(`.react-select__option`).contains(value).click();
 };
 
 export const checkCursorField = (expectedValue: string) => {
-    cy.get(cursorFieldDropdown).find('p').should("have.text", expectedValue);
+  cy.get(cursorFieldDropdown).find("p").should("have.text", expectedValue);
 };
 
 export const checkPrimaryKey = (expectedValue: string) => {
-    cy.get(primaryKeyText).should("have.text", expectedValue);
+  cy.get(primaryKeyText).should("have.text", expectedValue);
 };
 
 export const searchStream = (value: string) => {
-    cy.get(streamNameInput).type(value);
+  cy.get(streamNameInput).type(value);
 };
 
 export const checkSuccessResult = () => {

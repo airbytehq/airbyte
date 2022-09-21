@@ -71,14 +71,14 @@ describe("Connection main actions", () => {
 
     searchStream("admins");
     selectSyncMode("Incremental", "Append");
-    selectCursorField('email');
+    selectCursorField("email");
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
-    
+
     cy.wait(5000);
     cy.wait("@updateConnection").then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, '200');    
+      assert.isNotNull(interception.response?.statusCode, "200");
     });
 
     checkSuccessResult();
@@ -113,7 +113,7 @@ describe("Connection main actions", () => {
 
     searchStream("admins");
     selectSyncMode("Incremental", "Deduped + history");
-    selectCursorField('email');
+    selectCursorField("email");
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
@@ -121,7 +121,7 @@ describe("Connection main actions", () => {
     cy.wait(5000);
 
     cy.wait("@updateConnection").then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, '200');    
+      assert.isNotNull(interception.response?.statusCode, "200");
     });
 
     checkSuccessResult();
@@ -154,9 +154,9 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    selectSchedule('Every hour');
-    fillOutDestinationPrefix('auto_test');
-    setupDestinationNamespaceCustomFormat('_test');
+    selectSchedule("Every hour");
+    fillOutDestinationPrefix("auto_test");
+    setupDestinationNamespaceCustomFormat("_test");
     selectSyncMode("Full refresh", "Append");
 
     const prefix = "auto_test";

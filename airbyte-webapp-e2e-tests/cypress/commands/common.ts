@@ -30,6 +30,6 @@ export const fillEmail = (email: string) => {
 
 // useful for ensuring that a name is unique from one test run to the next
 export const appendRandomString = (string: string) => {
-  const randomString = Math.random().toString(36).substring(2,10);
+  const randomString = Math.random().toString(36).substring(2, 10);
   return string + " _" + randomString;
-}
+};
