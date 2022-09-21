@@ -295,7 +295,6 @@ class WebBackendConnectionsHandlerTest {
     assertFalse(actual.getHasSources());
   }
 
-
   @Test
   void testWebBackendListConnectionsForWorkspace() throws ConfigNotFoundException, IOException,
       JsonValidationException {
@@ -308,7 +307,6 @@ class WebBackendConnectionsHandlerTest {
     assertEquals(1, WebBackendConnectionReadList.getConnections().size());
     assertEquals(expectedListItem, WebBackendConnectionReadList.getConnections().get(0));
   }
-
 
   @Test
   void testWebBackendListAllConnectionsForWorkspace() throws ConfigNotFoundException, IOException,

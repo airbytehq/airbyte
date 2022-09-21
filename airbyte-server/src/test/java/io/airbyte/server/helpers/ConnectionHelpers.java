@@ -23,7 +23,6 @@ import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
-import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -207,12 +206,12 @@ public class ConnectionHelpers {
   }
 
   public static WebBackendConnectionListItem generateExpectedWebBackendConnectionListItem(
-      final StandardSync standardSync,
-      final SourceRead source,
-      final DestinationRead destination,
-      final boolean isSyncing,
-      final Long latestSyncJobCreatedAt,
-      final JobStatus latestSynJobStatus) {
+                                                                                          final StandardSync standardSync,
+                                                                                          final SourceRead source,
+                                                                                          final DestinationRead destination,
+                                                                                          final boolean isSyncing,
+                                                                                          final Long latestSyncJobCreatedAt,
+                                                                                          final JobStatus latestSynJobStatus) {
 
     final WebBackendConnectionListItem connectionListItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())
@@ -230,7 +229,6 @@ public class ConnectionHelpers {
 
     return connectionListItem;
   }
-
 
   public static JsonNode generateBasicJsonSchema() {
     return CatalogHelpers.fieldsToJsonSchema(Field.of(FIELD_NAME, JsonSchemaType.STRING));
