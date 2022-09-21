@@ -10,8 +10,9 @@ import {
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
+import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
 
-import { ConnectionForm, ConnectionFormProps } from "./ConnectionForm";
+import { ConnectionForm, ConnectionFormMode } from "./ConnectionForm";
 
 const mockSource: SourceRead = {
   sourceId: "test-source",
@@ -66,13 +67,24 @@ jest.mock("services/workspaces/WorkspacesService", () => {
     useCurrentWorkspace: () => {
       return "currentWorkspace";
     },
+    useCurrentWorkspaceId: () => {
+      return "currentWorkspace";
+    },
   };
 });
 
-const renderConnectionForm = (props: ConnectionFormProps) =>
+const renderConnectionForm = (mode: ConnectionFormMode, connection = mockConnection) =>
   render(
     <ConfirmationModalService>
-      <ConnectionForm {...props} />
+      <ConnectionFormServiceProvider
+        mode={mode}
+        connection={connection}
+        formId={Math.random().toString()}
+        onSubmit={jest.fn()}
+        formDirty={false}
+      >
+        <ConnectionForm />
+      </ConnectionFormServiceProvider>
     </ConfirmationModalService>
   );
 
@@ -80,11 +92,7 @@ describe("<ConnectionForm />", () => {
   let container: HTMLElement;
   describe("edit mode", () => {
     beforeEach(async () => {
-      const renderResult = await renderConnectionForm({
-        onSubmit: jest.fn(),
-        mode: "edit",
-        connection: mockConnection,
-      });
+      const renderResult = await renderConnectionForm("edit");
 
       container = renderResult.container;
     });
@@ -102,11 +110,7 @@ describe("<ConnectionForm />", () => {
   });
   describe("readonly mode", () => {
     beforeEach(async () => {
-      const renderResult = await renderConnectionForm({
-        onSubmit: jest.fn(),
-        mode: "readonly",
-        connection: mockConnection,
-      });
+      const renderResult = await renderConnectionForm("readonly");
 
       container = renderResult.container;
     });

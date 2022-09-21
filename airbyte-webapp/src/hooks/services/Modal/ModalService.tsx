@@ -5,6 +5,8 @@ import { Modal } from "components";
 
 import { ModalOptions, ModalResult, ModalServiceContext } from "./types";
 
+export class ModalCancel extends Error {}
+
 const modalServiceContext = React.createContext<ModalServiceContext | undefined>(undefined);
 
 export const ModalServiceProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {

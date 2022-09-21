@@ -12,7 +12,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import ExitIcon from "./components/ExitIcon";
 
 const BottomElement = styled.div`
-  background: ${(props) => props.theme.greyColro0};
+  background: ${(props) => props.theme.greyColor0};
   padding: 12px 16px 12px;
   width: 100%;
   min-height: 34px;
