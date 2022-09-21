@@ -18,6 +18,7 @@ ROW_LIMIT = 25000
 
 class GoogleSearchConsole(HttpStream, ABC):
     url_base = BASE_URL
+    primary_key = None
     data_field = ""
 
     def __init__(
