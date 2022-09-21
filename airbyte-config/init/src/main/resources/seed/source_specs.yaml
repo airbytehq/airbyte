@@ -6986,7 +6986,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.8"
+- dockerImage: "airbyte/source-notion:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
     connectionSpecification:
@@ -7885,7 +7885,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.1.4"
+- dockerImage: "airbyte/source-pinterest:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pinterest"
     connectionSpecification:
@@ -7989,7 +7989,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.12"
+- dockerImage: "airbyte/source-pipedrive:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pipedrive"
     connectionSpecification:
