@@ -58,7 +58,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .flatMap(line -> {
           // only deserialise STATE or LOG or TRACE - how to?
           // todo!!
-          final boolean skipDeserilisation = line.contains("RECORD") && !line.contains("RECORD") && !line.contains("LOG") && !line.contains("TRACE");
+          final boolean skipDeserilisation = line.contains("RECORD") && !line.contains("STATE") && !line.contains("LOG") && !line.contains("TRACE");
           if (skipDeserilisation) {
             System.out.println("==== test!");
             final JsonNode base = Jsons.emptyObject();
