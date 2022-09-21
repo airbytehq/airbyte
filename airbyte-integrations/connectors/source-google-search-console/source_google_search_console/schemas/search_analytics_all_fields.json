@@ -1,9 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["query", "date", "site_url", "device", "country"],
   "properties": {
     "site_url": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "search_type": {
       "type": ["null", "string"]
@@ -13,16 +14,16 @@
       "format": "date"
     },
     "country": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "device": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "page": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "query": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "clicks": {
       "type": ["null", "integer"]

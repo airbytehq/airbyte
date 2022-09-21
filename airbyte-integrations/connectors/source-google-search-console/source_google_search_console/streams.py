@@ -60,6 +60,7 @@ class Sites(GoogleSearchConsole):
     """
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites
     """
+    primary_key = ["siteUrl"]
 
     def path(
         self,
@@ -75,6 +76,7 @@ class Sitemaps(GoogleSearchConsole):
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps
     """
 
+    primary_key = ["path"]
     data_field = "sitemap"
 
     def path(
@@ -275,27 +277,27 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
 class SearchAnalyticsByDate(SearchAnalytics):
     dimensions = ["date"]
-
+    primary_key = ["query", "site_url"]
 
 class SearchAnalyticsByCountry(SearchAnalytics):
     dimensions = ["date", "country"]
-
+    primary_key = ["country", "date", "site_url"]
 
 class SearchAnalyticsByDevice(SearchAnalytics):
     dimensions = ["date", "device"]
-
+    primary_key = ["device", "date", "site_url"]
 
 class SearchAnalyticsByPage(SearchAnalytics):
     dimensions = ["date", "page"]
-
+    primary_key = ["page", "date", "site_url"]
 
 class SearchAnalyticsByQuery(SearchAnalytics):
     dimensions = ["date", "query"]
-
+    primary_key = ["query", "date", "site_url"]
 
 class SearchAnalyticsAllFields(SearchAnalytics):
     dimensions = ["date", "country", "device", "page", "query"]
-
+    primary_key = ["query", "date", "site_url", "device", "country"]
 
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
     def __init__(self, dimensions: List[str], *args, **kwargs):

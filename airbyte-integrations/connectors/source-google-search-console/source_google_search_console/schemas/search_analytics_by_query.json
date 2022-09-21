@@ -1,19 +1,20 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["query", "date", "site_url"],
   "properties": {
     "site_url": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "search_type": {
       "type": ["null", "string"]
     },
     "date": {
-      "type": ["null", "string"],
+      "type": ["string"],
       "format": "date"
     },
     "query": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "clicks": {
       "type": ["null", "integer"]
