@@ -15,6 +15,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OP
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.noCondition;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
@@ -622,11 +623,12 @@ public class ConfigRepository {
     return getStandardSyncsFromResult(result);
   }
 
-  public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId) throws IOException {
+  public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId, final boolean includeDeleted) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
-        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId)
+            .and(includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated)))).fetch();
     return getStandardSyncsFromResult(result);
   }
 

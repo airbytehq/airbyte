@@ -201,7 +201,7 @@ class ConfigRepositoryE2EReadWriteTest {
   @Test
   void testListWorkspaceStandardSync() throws IOException {
 
-    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId());
+    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
     assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
   }
 

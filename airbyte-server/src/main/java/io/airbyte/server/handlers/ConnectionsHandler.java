@@ -363,14 +363,11 @@ public class ConnectionsHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
-    // listing all of this is also bad
-    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId())) {
-      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
-        continue;
-      }
-
+    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), includeDeleted)) {
       connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
+
+    configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), includeDeleted);
 
     return new ConnectionReadList().connections(connectionReads);
   }
