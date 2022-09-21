@@ -160,4 +160,12 @@ class TestJsonlParser(AbstractTestParser):
                 "line_checks": {},
                 "fails": [],
             },
+            "nested_json_test": {
+                "AbstractFileParser": JsonlParser(format={"filetype": "jsonl"}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "jsonl/test_file_10_nested_structure.jsonl"),
+                "num_records": 2,
+                "inferred_schema": {"meta": "object", "payload": "object"},
+                "line_checks": {},
+                "fails": [],
+            },
         }
