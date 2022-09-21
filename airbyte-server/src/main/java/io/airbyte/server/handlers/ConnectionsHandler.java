@@ -333,9 +333,6 @@ public class ConnectionsHandler {
           "ConnectionUpdate should not include any scheduleData without also specifying a valid scheduleType.");
     } else {
       switch (patch.getScheduleType()) {
-        case MANUAL -> Preconditions.checkArgument(
-            patch.getScheduleData() == null,
-            "ConnectionUpdate should not include any scheduleData when setting the Connection scheduleType to MANUAL.");
         case BASIC -> Preconditions.checkArgument(
             patch.getScheduleData() != null,
             "ConnectionUpdate should include scheduleData when setting the Connection scheduleType to BASIC.");

@@ -35,6 +35,7 @@ public class ConnectionScheduleHelper {
     switch (scheduleType) {
       // NOTE: the `manual` column is marked required, so we populate it until it's removed.
       case MANUAL -> {
+        // ignore the scheduleData from the request and always insert null for manual schedules
         standardSync.withScheduleType(ScheduleType.MANUAL).withScheduleData(null).withManual(true);
 
         // explicitly null out the legacy `schedule` column until it's removed.
