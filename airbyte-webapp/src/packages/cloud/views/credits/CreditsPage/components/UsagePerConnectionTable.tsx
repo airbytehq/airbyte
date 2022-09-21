@@ -112,10 +112,10 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     () => [
       {
         Header: (
-          <th className={styles.tableHeader} onClick={() => onSortClick("connection")}>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("connection")}>
             <FormattedMessage id="credits.connection" />
             <SortIcon wasActive={sortBy === "connection"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
-          </th>
+          </button>
         ),
         customWidth: 30,
         accessor: "sourceDefinitionName",
@@ -130,10 +130,10 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
       },
       {
         Header: (
-          <th className={styles.tableHeader} onClick={() => onSortClick("usage")}>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("usage")}>
             <FormattedMessage id="credits.usage" />
             <SortIcon wasActive={sortBy === "usage"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
-          </th>
+          </button>
         ),
         accessor: "creditsConsumed",
         collapse: true,

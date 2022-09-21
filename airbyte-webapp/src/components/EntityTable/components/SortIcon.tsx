@@ -4,12 +4,12 @@ import * as React from "react";
 
 import styles from "./SortIcon.module.scss";
 
-interface IProps {
+interface SortIconProps {
   lowToLarge?: boolean;
   wasActive?: boolean;
 }
 
-const SortIcon: React.FC<IProps> = ({ wasActive, lowToLarge }) => (
+const SortIcon: React.FC<SortIconProps> = ({ wasActive, lowToLarge }) => (
   <FontAwesomeIcon className={styles.sortIcon} icon={lowToLarge || !wasActive ? faCaretUp : faCaretDown} />
 );
 

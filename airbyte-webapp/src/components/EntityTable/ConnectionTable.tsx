@@ -82,10 +82,10 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
     () => [
       {
         Header: (
-          <th className={styles.tableHeader} onClick={() => onSortClick("name")}>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("name")}>
             <FormattedMessage id="tables.name" />
             <SortIcon wasActive={sortBy === "name"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
-          </th>
+          </button>
         ),
         headerHighlighted: true,
         accessor: "name",
@@ -96,14 +96,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
       },
       {
         Header: (
-          <th className={styles.tableHeader} onClick={() => onSortClick("entityName")}>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("entityName")}>
             {entity === "connection" ? (
               <FormattedMessage id="tables.destinationConnectionToName" />
             ) : (
               <FormattedMessage id={`tables.${entity}ConnectionToName`} />
             )}
             <SortIcon wasActive={sortBy === "entityName"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
-          </th>
+          </button>
         ),
         headerHighlighted: true,
         accessor: "entityName",
@@ -118,14 +118,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
       },
       {
         Header: (
-          <th className={styles.tableHeader} onClick={() => onSortClick("connectorName")}>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("connectorName")}>
             {entity === "connection" ? (
               <FormattedMessage id="tables.sourceConnectionToName" />
             ) : (
               <FormattedMessage id="tables.connector" />
             )}
             <SortIcon wasActive={sortBy === "connectorName"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
-          </th>
+          </button>
         ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
@@ -142,10 +142,10 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
       },
       {
         Header: (
-          <th className={styles.tableHeader} onClick={() => onSortClick("lastSync")}>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("lastSync")}>
             <FormattedMessage id="tables.lastSync" />
             <SortIcon wasActive={sortBy === "lastSync"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
-          </th>
+          </button>
         ),
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
