@@ -346,6 +346,8 @@
   "connection.updateSchema.namespace": "Namespace",
   "connection.updateSchema.dataType": "Data type",
 
+  "connection.catalogTree.sourceDefined": "source defined",
+
   "connection.newConnection": "+ New connection",
   "connection.newConnectionTitle": "New connection",
   "connection.noConnections": "Connection list is empty",
