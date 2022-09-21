@@ -11,7 +11,11 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.37"
     - config_path: "secrets/connected_account_config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.37"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_configured_catalog.json"

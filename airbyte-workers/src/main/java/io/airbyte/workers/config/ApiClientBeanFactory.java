@@ -12,6 +12,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.config.Configs.WorkerPlane;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.context.annotation.Prototype;
 import java.io.FileInputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
@@ -21,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
+import io.micronaut.context.BeanProvider;
+
 
 /**
  * Micronaut bean factory for API client singletons.
@@ -35,7 +38,7 @@ public class ApiClientBeanFactory {
   public AirbyteApiClient airbyteApiClient(
                                            @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
                                            @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
-                                           @Named("internalApiAuthToken") final String internalApiAuthToken,
+                                           @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
                                            @Named("internalApiScheme") final String internalApiScheme) {
     return new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
@@ -46,8 +49,10 @@ public class ApiClientBeanFactory {
             .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
             .setRequestInterceptor(builder -> {
               builder.setHeader("User-Agent", "WorkerApp");
+              // internalApiAuthToken is in BeanProvider because we want to create a new token each
+              // time we send a request.
               if (!airbyteApiAuthHeaderName.isBlank()) {
-                builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken);
+                builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken.get());
               }
             }));
   }
@@ -62,14 +67,15 @@ public class ApiClientBeanFactory {
 
   /**
    * Generate an auth token based on configs. This is called by the Api Client's requestInterceptor
-   * for each request.
+   * for each request. Using Prototype annotation here to make sure each time it's used it will
+   * generate a new JWT Signature if it's on data plane.
    * <p>
    * For Data Plane workers, generate a signed JWT as described here:
    * https://cloud.google.com/endpoints/docs/openapi/service-account-authentication
    * <p>
    * Otherwise, use the AIRBYTE_API_AUTH_HEADER_VALUE from EnvConfigs.
    */
-  @Singleton
+  @Prototype
   @Named("internalApiAuthToken")
   public String internalApiAuthToken(
                                      @Value("${airbyte.internal.api.auth-header.value}") final String airbyteApiAuthHeaderValue,
