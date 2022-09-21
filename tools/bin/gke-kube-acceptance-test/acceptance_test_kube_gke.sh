@@ -55,6 +55,7 @@ function cleanUpImages () {
     findAndDeleteTag "server" $TOKEN
     findAndDeleteTag "webapp" $TOKEN
     findAndDeleteTag "migration" $TOKEN
+    findAndDeleteTag "cron" $TOKEN
 }
 
 trap "cleanUpImages && kubectl delete namespaces $NAMESPACE --grace-period=0 --force" EXIT

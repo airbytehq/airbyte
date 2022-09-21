@@ -2,20 +2,19 @@ import { Field, FieldProps, setIn, useFormikContext } from "formik";
 import React, { useCallback } from "react";
 
 import { SyncSchemaStream } from "core/domain/catalog";
-import { AirbyteStreamConfiguration, DestinationSyncMode } from "core/request/AirbyteClient";
+import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
+import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 import { ConnectionFormValues, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
-import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import { CatalogSection } from "./CatalogSection";
 
 interface CatalogTreeProps {
   streams: SyncSchemaStream[];
-  destinationSupportedSyncModes: DestinationSyncMode[];
   onChangeStream: (stream: SyncSchemaStream) => void;
-  mode?: ConnectionFormMode;
 }
 
-const CatalogTree: React.FC<CatalogTreeProps> = ({ streams, destinationSupportedSyncModes, onChangeStream, mode }) => {
+const CatalogTree: React.FC<CatalogTreeProps> = ({ streams, onChangeStream }) => {
+  const { mode } = useConnectionFormService();
   const onUpdateStream = useCallback(
     (id: string | undefined, newConfig: Partial<AirbyteStreamConfiguration>) => {
       const streamNode = streams.find((streamNode) => streamNode.id === id);
@@ -47,9 +46,7 @@ const CatalogTree: React.FC<CatalogTreeProps> = ({ streams, destinationSupported
               namespaceFormat={form.values.namespaceFormat}
               prefix={form.values.prefix}
               streamNode={streamNode}
-              destinationSupportedSyncModes={destinationSupportedSyncModes}
               updateStream={onUpdateStream}
-              mode={mode}
               changedSelected={changedStreams.includes(streamNode) && mode === "edit"}
             />
           )}

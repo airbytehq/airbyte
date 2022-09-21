@@ -1,21 +1,18 @@
 import { Field, FieldInputProps, FieldProps, FormikProps } from "formik";
-import { ChangeEvent, useMemo } from "react";
+import { ChangeEvent, useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import { ControlLabels, DropDown, DropDownRow, Input, Link } from "components";
+import { IDataItem } from "components/base/DropDown/components/Option";
 
+import { Action, Namespace } from "core/analytics";
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 
 import availableCronTimeZones from "../../../../config/availableCronTimeZones.json";
-import { ConnectionFormMode } from "../ConnectionForm";
 import { FormikConnectionFormValues, useFrequencyDropdownData } from "../formConfig";
 import styles from "./ScheduleField.module.scss";
-
-interface ScheduleFieldProps {
-  scheduleData: ConnectionScheduleData | undefined;
-  mode: ConnectionFormMode;
-  onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
-}
 
 const CRON_DEFAULT_VALUE = {
   cronTimeZone: "UTC",
@@ -25,9 +22,40 @@ const CRON_DEFAULT_VALUE = {
 
 const CRON_REFERENCE_LINK = "http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html";
 
-const ScheduleField: React.FC<ScheduleFieldProps> = ({ scheduleData, mode, onDropDownSelect }) => {
+const ScheduleField: React.FC = () => {
   const { formatMessage } = useIntl();
-  const frequencies = useFrequencyDropdownData(scheduleData);
+  const { connection, mode } = useConnectionFormService();
+  const frequencies = useFrequencyDropdownData(connection.scheduleData);
+  const analyticsService = useAnalyticsService();
+
+  const onDropDownSelect = useCallback(
+    (item: IDataItem | null) => {
+      const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
+
+      if (item) {
+        analyticsService.track(Namespace.CONNECTION, Action.FREQUENCY, {
+          actionDescription: "Frequency selected",
+          frequency: item.label,
+          connector_source_definition: connection.source.sourceName,
+          connector_source_definition_id: connection.source.sourceDefinitionId,
+          connector_destination_definition: connection.destination.destinationName,
+          connector_destination_definition_id: connection.destination.destinationDefinitionId,
+          available_streams: connection.syncCatalog.streams.length,
+          enabled_streams: enabledStreams,
+          type: mode,
+        });
+      }
+    },
+    [
+      analyticsService,
+      connection.destination.destinationDefinitionId,
+      connection.destination.destinationName,
+      connection.source.sourceDefinitionId,
+      connection.source.sourceName,
+      connection.syncCatalog.streams,
+      mode,
+    ]
+  );
 
   const onScheduleChange = (item: DropDownRow.IDataItem, form: FormikProps<FormikConnectionFormValues>) => {
     onDropDownSelect?.(item);

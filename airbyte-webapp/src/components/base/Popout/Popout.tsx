@@ -1,5 +1,5 @@
 import React, { ReactNode, useMemo } from "react";
-import { ActionMeta, ControlProps } from "react-select";
+import { ActionMeta, ControlProps, StylesConfig } from "react-select";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
@@ -51,7 +51,7 @@ const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) 
     [props.components]
   );
 
-  const selectStyles = {
+  const selectStyles: StylesConfig = {
     ...(props.styles ?? {}),
     control: (provided: Value) => ({
       ...provided,
@@ -65,14 +65,18 @@ const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) 
       <DropDown
         selectProps={{
           targetComponent,
-          onOpen: toggleOpen,
+          onOpen: (e: React.MouseEvent<HTMLButtonElement>) => {
+            // Causes a form submit
+            e?.preventDefault();
+            toggleOpen();
+          },
         }}
         backspaceRemovesValue={false}
         controlShouldRenderValue={false}
         hideSelectedOptions={false}
         isClearable={false}
         menuIsOpen={isOpen}
-        // menuPosition={"fixed"}
+        menuShouldBlockScroll={false}
         placeholder={null}
         tabSelectsValue={false}
         {...props}

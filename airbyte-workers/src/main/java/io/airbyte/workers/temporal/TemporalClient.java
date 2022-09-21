@@ -18,9 +18,9 @@ import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
@@ -69,7 +69,7 @@ import org.apache.commons.lang3.time.StopWatch;
 @Slf4j
 @Singleton
 @Requires(property = "airbyte.worker.plane",
-          notEquals = "DATA_PLANE")
+          pattern = "(?i)^(?!data_plane).*")
 public class TemporalClient {
 
   /**
