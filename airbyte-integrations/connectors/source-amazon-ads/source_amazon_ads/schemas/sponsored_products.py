@@ -3,51 +3,51 @@
 #
 
 from decimal import Decimal
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .common import CatalogModel, Targeting
 
 
 class Adjustments(CatalogModel):
-    predicate: str
-    percentage: Decimal
+    predicate: Optional[str]
+    percentage: Optional[Decimal]
 
 
 class Bidding(CatalogModel):
-    strategy: str
-    adjustments: List[Adjustments]
+    strategy: Optional[str]
+    adjustments: Optional[List[Adjustments]]
 
 
 class ProductCampaign(CatalogModel):
-    portfolioId: Decimal
+    portfolioId: int
     campaignId: int
-    name: str
-    tags: Dict[str, str]
-    campaignType: str
-    targetingType: str
-    state: str
-    dailyBudget: Decimal
-    startDate: str
-    endDate: str = None
-    premiumBidAdjustment: bool
-    bidding: Bidding
+    name: Optional[str]
+    tags: Optional[Dict[str, str]]
+    campaignType: Optional[str]
+    targetingType: Optional[str]
+    state: Optional[str]
+    dailyBudget: Optional[Decimal]
+    startDate: Optional[str]
+    endDate: Optional[str] = None
+    premiumBidAdjustment: Optional[bool]
+    bidding: Optional[Bidding]
 
 
 class ProductAdGroups(CatalogModel):
     adGroupId: int
-    name: str
+    name: Optional[str]
     campaignId: int
-    defaultBid: Decimal
-    state: str
+    defaultBid: Optional[Decimal]
+    state: Optional[str]
 
 
 class ProductAd(CatalogModel):
     adId: int
     campaignId: int
     adGroupId: int
-    sku: str
-    asin: str
-    state: str
+    sku: Optional[str]
+    asin: Optional[str]
+    state: Optional[str]
 
 
 class ProductTargeting(Targeting):

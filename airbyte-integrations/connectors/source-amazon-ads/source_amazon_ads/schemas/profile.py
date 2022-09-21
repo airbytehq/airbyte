@@ -3,23 +3,24 @@
 #
 
 from decimal import Decimal
+from typing import Optional
 
 from .common import CatalogModel
 
 
 class AccountInfo(CatalogModel):
-    marketplaceStringId: str
+    marketplaceStringId: Optional[str]
     id: str
-    type: str
-    name: str = None
-    subType: str = None
-    validPaymentMethod: bool = None
+    type: Optional[str]
+    name: Optional[str] = None
+    subType: Optional[str] = None
+    validPaymentMethod: Optional[bool] = None
 
 
 class Profile(CatalogModel):
     profileId: int
-    countryCode: str = None
-    currencyCode: str = None
-    dailyBudget: Decimal = None
-    timezone: str
-    accountInfo: AccountInfo
+    countryCode: Optional[str] = None
+    currencyCode: Optional[str] = None
+    dailyBudget: Optional[Decimal] = None
+    timezone: Optional[str]
+    accountInfo: Optional[AccountInfo]
