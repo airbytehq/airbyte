@@ -318,7 +318,8 @@ public class SourceHandler {
         .workspaceId(sourceConnection.getWorkspaceId())
         .sourceDefinitionId(sourceConnection.getSourceDefinitionId())
         .connectionConfiguration(sourceConnection.getConfiguration())
-        .name(sourceConnection.getName());
+        .name(sourceConnection.getName())
+        .icon(standardSourceDefinition.getIcon());
   }
 
 }

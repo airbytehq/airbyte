@@ -309,7 +309,8 @@ public class DestinationHandler {
         .destinationDefinitionId(destinationConnection.getDestinationDefinitionId())
         .connectionConfiguration(destinationConnection.getConfiguration())
         .name(destinationConnection.getName())
-        .destinationName(standardDestinationDefinition.getName());
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(standardDestinationDefinition.getIcon());
   }
 
 }

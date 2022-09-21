@@ -61,6 +61,7 @@ import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.generated.WebBackendConnectionSearch;
+import io.airbyte.api.model.generated.WebBackendConnectionSearchResults;
 import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
@@ -328,7 +329,7 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.matchSearch(new ConnectionSearch(), connectionRead)).thenReturn(true);
 
     final WebBackendConnectionSearch webBackendConnectionSearch = new WebBackendConnectionSearch();
-    WebBackendConnectionReadList webBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    WebBackendConnectionSearchResults webBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
     assertEquals(1, webBackendConnectionReadList.getConnections().size());
     assertEquals(expected, webBackendConnectionReadList.getConnections().get(0));
 
