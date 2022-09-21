@@ -10,9 +10,10 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.config.Configs.WorkerPlane;
+import io.micronaut.context.BeanProvider;
 import io.micronaut.context.annotation.Factory;
-import io.micronaut.context.annotation.Value;
 import io.micronaut.context.annotation.Prototype;
+import io.micronaut.context.annotation.Value;
 import java.io.FileInputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
@@ -22,8 +23,6 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
-import io.micronaut.context.BeanProvider;
-
 
 /**
  * Micronaut bean factory for API client singletons.
