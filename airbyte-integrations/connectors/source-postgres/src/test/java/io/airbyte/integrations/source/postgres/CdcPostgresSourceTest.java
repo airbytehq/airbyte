@@ -344,6 +344,11 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
             .size());
   }
 
+  @Override
+  protected String randomTableSchema() {
+    return MODELS_SCHEMA + "_random";
+  }
+
   @Test
   public void testTableWithTimestampColDefault() throws Exception {
     createAndPopulateTimestampTable();
