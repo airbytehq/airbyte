@@ -49,6 +49,8 @@ public class ApiClientBeanFactory {
             .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
             .setRequestInterceptor(builder -> {
               builder.setHeader("User-Agent", "WorkerApp");
+              // internalApiAuthToken is in BeanProvider because we want to create a new token each
+              // time we send a request.
               if (!airbyteApiAuthHeaderName.isBlank()) {
                 builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken.get());
               }
@@ -65,7 +67,8 @@ public class ApiClientBeanFactory {
 
   /**
    * Generate an auth token based on configs. This is called by the Api Client's requestInterceptor
-   * for each request.
+   * for each request. Using Prototype annotation here to make sure each time it's used it will
+   * generate a new JWT Signature if it's on data plane.
    * <p>
    * For Data Plane workers, generate a signed JWT as described here:
    * https://cloud.google.com/endpoints/docs/openapi/service-account-authentication
