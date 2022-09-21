@@ -7,6 +7,70 @@ on:
     branches: [master]
 
 jobs:
+  build_airbyte_to_flow:
+    runs-on: ubuntu-20.04
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Prepare
+        id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          echo ::set-output name=tag::${TAG}
+
+      # Linux builds need the non-default musl target.
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-unknown-linux-musl
+
+      - name: Install protobuf compiler (it's not already included in CI runner)
+        run: sudo apt install -y libprotobuf-dev protobuf-compiler
+
+      - name: Build Linux
+        run: |-
+          sudo apt-get update && \
+          sudo apt-get install -y musl-tools && \
+          cd airbyte-to-flow && \
+          make
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          context: airbyte-to-flow
+          push: true
+          tags: ghcr.io/estuary/airbyte-to-flow:dev,ghcr.io/estuary/airbyte-to-flow:${{ steps.prep.outputs.tag }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        if: ${{ github.ref != 'refs/heads/main' }}
+        with:
+          context: airbyte-to-flow
+          push: true
+          tags: ghcr.io/estuary/airbyte-to-flow:${{ steps.prep.outputs.tag }}
+
   build_cdk:
     runs-on: ubuntu-20.04
     strategy:
@@ -42,6 +106,9 @@ jobs:
           ./publish-airbyte-cdk.sh
 
   build_connectors:
+    needs:
+      - build_airbyte_to_flow
+      - build_cdk
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
