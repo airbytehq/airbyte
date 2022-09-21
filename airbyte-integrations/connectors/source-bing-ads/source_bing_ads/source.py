@@ -148,7 +148,7 @@ class Accounts(BingAdsStream):
 
     primary_key = "Id"
     # Stream caches incoming responses to avoid duplicated http requests
-    use_cache: bool = True
+    use_cache: bool = False
     data_field: str = "AdvertiserAccount"
     service_name: str = "CustomerManagementService"
     operation_name: str = "SearchAccounts"
@@ -198,7 +198,7 @@ class Campaigns(BingAdsStream):
 
     primary_key = "Id"
     # Stream caches incoming responses to avoid duplicated http requests
-    use_cache: bool = True
+    use_cache: bool = False
     data_field: str = "Campaign"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetCampaignsByAccountId"
@@ -238,7 +238,7 @@ class AdGroups(BingAdsStream):
 
     primary_key = "Id"
     # Stream caches incoming responses to avoid duplicated http requests
-    use_cache: bool = True
+    use_cache: bool = False
     data_field: str = "AdGroup"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdGroupsByCampaignId"
