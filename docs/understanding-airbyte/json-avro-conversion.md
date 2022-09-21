@@ -32,7 +32,7 @@ The following built-in Json formats will be mapped to Avro logical types.
 | `string` | `time` | `long` | `time-micros` | Number of microseconds after midnight ([reference](https://avro.apache.org/docs/current/spec.html#Time+%28microsecond+precision%29)). |
 | `string` | `date-time` | `long` | `timestamp-micros` | Number of microseconds from `1970-01-01T00:00:00Z` ([reference](https://avro.apache.org/docs/current/spec.html#Timestamp+%28microsecond+precision%29)). |
 
-In the final Avro schema, these Avro logical type fields will be a union of the logical type and string. The rationale is that the incoming Json objects may contain invalid Json built-in formats. If that's the case, and the conversion from the Json built-in format to Avro built-in format fails, the field will fall back to a string.
+In the final Avro schema, these Avro logical type fields will be a union of the logical type and string. The rationale is that the incoming Json objects may contain invalid Json built-in formats. If that's the case, and the conversion from the Json built-in format to Avro built-in format fails, the field will fall back to a string. The extra string type can cause problem for some users in the destination. We may re-evaluate this conversion rule in the future.
 
 **Date**
 
