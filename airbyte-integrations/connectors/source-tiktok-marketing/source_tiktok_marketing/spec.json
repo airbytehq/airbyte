@@ -27,12 +27,14 @@
                                 "title": "App ID",
                                 "description": "The Developer Application App ID.",
                                 "airbyte_secret": true,
+                                "const": "{{ client_key }}",
                                 "type": "string"
                             },
                             "secret": {
                                 "title": "Secret",
                                 "description": "The Developer Application Secret.",
                                 "airbyte_secret": true,
+                                "const": "{{ client_secret }}",
                                 "type": "string"
                             },
                             "access_token": {
@@ -111,6 +113,6 @@
       "authUrlTemplate": "https://ads.tiktok.com/marketing_api/auth?app_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}&rid=vb4nmczfrgo",
       "accessTokenUrlTemplate": "https://open-api.tiktok.com/oauth/access_token/",
       "accessTokenBody": "{\"grant_type\": \"authorization_code\", \"client_key\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"code\": \"{{ code }}\"}",
-      "accessTokenResponseMap": "{\"access_token\": \"/access_token\", \"secret\": \"{{ client_secret }}\"}"
+      "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
     }
 }
