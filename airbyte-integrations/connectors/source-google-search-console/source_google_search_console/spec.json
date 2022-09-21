@@ -45,7 +45,8 @@
             "required": [
               "client_id",
               "client_secret",
-              "refresh_token"
+              "refresh_token",
+              "auth_type"
             ],
             "properties": {
               "auth_type": {
