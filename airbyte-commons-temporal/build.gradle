@@ -33,7 +33,7 @@ jsonSchema2Pojo {
     targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
     removeOldOutput = true
 
-    targetPackage = 'io.airbyte.scheduler.models'
+    targetPackage = 'io.airbyte.persistence.job.models'
 
     useLongIntegers = true
     generateBuilders = true

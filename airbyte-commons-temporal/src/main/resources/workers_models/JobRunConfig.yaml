@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-commons-temporal/src/main/resources/types/JobRunConfig.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/JobRunConfig.yaml
 title: JobRunConfig
 description: job run config
 type: object
