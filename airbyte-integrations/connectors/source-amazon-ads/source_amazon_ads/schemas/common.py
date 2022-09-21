@@ -4,7 +4,7 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, Iterable, Type
+from typing import Any, Dict, Iterable, Type, Optional
 
 from pydantic import BaseModel, create_model
 
@@ -20,7 +20,7 @@ class CatalogModel(BaseModel):
             schema.pop("title", None)
             schema.pop("description", None)
             # Remove required section so any missing attribute from API wont break object validation.
-            schema.pop("required", None)
+            # schema.pop("required", None)
             # According to https://github.com/airbytehq/airbyte/issues/14196 set additionalProperties to True
             if schema.pop("additionalProperties", None):
                 schema["additionalProperties"] = True
@@ -37,6 +37,8 @@ class CatalogModel(BaseModel):
                 if "type" in prop:
                     if allow_none:
                         prop["type"] = ["null", prop["type"]]
+                    else:
+                        schema["required"] = list(set(schema.get("required", []) + [name]))
 
 
 class MetricsReport(CatalogModel):
@@ -55,25 +57,25 @@ class MetricsReport(CatalogModel):
 
 class Targeting(CatalogModel):
     targetId: int
-    adGroupId: int
-    state: str
-    expressionType: str
-    bid: Decimal
+    adGroupId: Optional[int]
+    state: Optional[str]
+    expressionType: Optional[str]
+    bid: Optional[Decimal]
 
 
 class KeywordsBase(CatalogModel):
     keywordId: int
-    campaignId: int
-    adGroupId: int
-    state: str
-    keywordText: str
+    campaignId: Optional[int]
+    adGroupId: Optional[int]
+    state: Optional[str]
+    keywordText: Optional[str]
 
 
 class Keywords(KeywordsBase):
-    nativeLanguageKeyword: str
-    matchType: str
-    bid: Decimal
+    nativeLanguageKeyword: Optional[str]
+    matchType: Optional[str]
+    bid: Optional[Decimal]
 
 
 class NegativeKeywords(KeywordsBase):
-    matchType: str
+    matchType: Optional[str]

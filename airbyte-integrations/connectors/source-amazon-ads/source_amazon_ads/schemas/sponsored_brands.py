@@ -3,29 +3,29 @@
 #
 
 from decimal import Decimal
-from typing import Dict
+from typing import Dict, Optional
 
 from .common import CatalogModel
 
 
 class BrandsCampaign(CatalogModel):
     campaignId: int
-    name: str
-    tags: Dict[str, str]
-    budget: Decimal
-    budgetType: str
-    startDate: str
-    endDate: str
-    state: str
-    servingStatus: str
-    brandEntityId: str
-    portfolioId: Decimal
-    bidOptimization: bool = None
-    bidMultiplier: Decimal = None
-    adFormat: str
+    name: Optional[str]
+    tags: Optional[Dict[str, str]]
+    budget: Optional[Decimal]
+    budgetType: Optional[str]
+    startDate: Optional[str]
+    endDate: Optional[str]
+    state: Optional[str]
+    servingStatus: Optional[str]
+    brandEntityId: Optional[str]
+    portfolioId: Optional[Decimal]
+    bidOptimization: Optional[bool] = None
+    bidMultiplier: Optional[Decimal] = None
+    adFormat: Optional[str]
 
 
 class BrandsAdGroup(CatalogModel):
-    campaignId: int
+    campaignId: Optional[int]
     adGroupId: int
-    name: str
+    name: Optional[str]
