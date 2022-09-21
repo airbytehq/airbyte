@@ -17,11 +17,13 @@
     "storybook": "start-storybook -p 9009 --quiet",
     "build:storybook": "build-storybook -o 'build/storybook'",
     "lint": "eslint --ext js,ts,tsx src",
+    "lint-staged": "lint-staged",
     "stylelint": "stylelint \"**/*.{css,scss}\"",
     "stylelint-check": "stylelint-config-prettier-scss-check",
     "license-check": "node ./scripts/license-check.js",
     "generate-client": "orval",
-    "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
+    "validate-links": "ts-node --skip-project ./scripts/validate-links.ts",
+    "prepare": "cd .. && husky install ./airbyte-webapp/.husky"
   },
   "dependencies": {
     "@floating-ui/react-dom": "^1.0.0",
@@ -112,7 +114,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "express": "^4.18.1",
-    "husky": "^4.2.3",
+    "husky": "^8.0.0",
     "license-checker": "^25.0.1",
     "lint-staged": "^12.3.7",
     "mini-css-extract-plugin": "^2.6.1",
@@ -131,11 +133,6 @@
     "tmpl": "^1.0.5",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.3"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx}": [
