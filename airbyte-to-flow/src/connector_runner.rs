@@ -59,30 +59,19 @@ pub async fn run_airbyte_source_connector(
     let args = airbyte_interceptor.adapt_command_args(&op);
     let full_entrypoint = format!("{} \"{}\"", entrypoint, args.join("\" \""));
 
-    tracing::debug!("invoking connector");
     let (mut child, child_stdin, child_stdout) =
         parse_child(invoke_connector_delayed(full_entrypoint)?)?;
-
-    tracing::debug!("invoked connector, trying to establish socket connection");
 
     let (read_half, write_half) = flow_socket(socket_path, &stream_mode).await?;
 
     // std::thread::sleep(std::time::Duration::from_secs(400));
-    let adapted_request_stream = Box::pin(airbyte_interceptor.adapt_request_stream(
+    let adapted_request_stream = airbyte_interceptor.adapt_request_stream(
         &op,
-        Box::pin(flow_read_stream(read_half).await?.inspect(|msg| {
-            tracing::debug!("message from flow {:#?}", msg);
-        }))
-    )?.inspect(|msg| {
-        tracing::debug!("flow message transformed, being sent to airbyte connector {:#?}", msg);
-    }));
-
-    tracing::debug!("opened read socket");
+        flow_read_stream(read_half).await?
+    )?;
 
     let adapted_response_stream =
-        airbyte_interceptor.adapt_response_stream(&op, Box::pin(airbyte_response_stream(child_stdout).inspect(|msg| {
-            tracing::debug!("response from airbyte connector {:#?}", msg);
-        })))?;
+        airbyte_interceptor.adapt_response_stream(&op, airbyte_response_stream(child_stdout))?;
 
     // Keep track of whether we did send a Driver Checkpoint as the final message of the response stream
     // See the comment of the block below for why this is necessary
@@ -109,16 +98,12 @@ pub async fn run_airbyte_source_connector(
                     }
                 };
 
-                tracing::debug!(?message, "response being sent to flow");
-
                 Ok(Some((raw, (!message.checkpoint.is_some(), stream, sender))))
             },
         ))
     } else {
         adapted_response_stream
-    }.inspect(|msg| {
-        tracing::debug!("response transformed for flow {:#?}", msg);
-    });
+    };
 
     let response_write = flow_write_stream(write_half);
 
