@@ -4671,7 +4671,7 @@
           title: "Jenkins Token"
           airbyte_secret: true
         depth:
-          type: "number"
+          type: "integer"
           title: "Depth"
           description: "Jenkins JSON API does not support deep scan, it is required\
             \ to generate a suitable tree for the corresponding depth. Job in some\
