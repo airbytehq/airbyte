@@ -7,7 +7,6 @@ import logging
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
-import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -18,6 +17,12 @@ from .testing import adapt_streams_if_testing, adapt_validate_if_testing
 from .utils import read_full_refresh
 
 
+class TokenAuthenticatorBase64(TokenAuthenticator):
+    def __init__(self, token: str):
+        token = base64.b64encode(token.encode("utf8")).decode("utf8")
+        super().__init__(token=token, auth_method="Basic")
+
+
 class ServiceAccountAuthenticator(TokenAuthenticator):
     def __init__(self, username: str, secret: str):
         token = username + ":" + secret
@@ -26,6 +31,16 @@ class ServiceAccountAuthenticator(TokenAuthenticator):
 
 
 class SourceMixpanel(AbstractSource):
+    def get_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
+        credentials = config.get("credentials")
+        if credentials:
+            username = credentials.get("username")
+            secret = credentials.get("secret")
+            if username and secret:
+                return ServiceAccountAuthenticator(username=username, secret=secret)
+            return TokenAuthenticatorBase64(token=credentials["api_secret"])
+        return TokenAuthenticatorBase64(token=config["api_secret"])
+
     @adapt_validate_if_testing
     def _validate_and_transform(self, config: Mapping[str, Any]):
         logger = logging.getLogger("airbyte")
@@ -62,7 +77,7 @@ class SourceMixpanel(AbstractSource):
         """
         config = self._validate_and_transform(config)
         try:
-            auth = ServiceAccountAuthenticator(username=config["username"], secret=config["secret"])
+            auth = self.get_authenticator(config)
             funnels = FunnelsList(authenticator=auth, **config)
             next(read_full_refresh(funnels))
         except Exception as e:
@@ -79,7 +94,7 @@ class SourceMixpanel(AbstractSource):
         logger = logging.getLogger("airbyte")
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
-        auth = ServiceAccountAuthenticator(username=config["username"], secret=config["secret"])
+        auth = self.get_authenticator(config)
         return [
             Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
