@@ -43,15 +43,15 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
     final AtomicLong totalRecordsCommitted = new AtomicLong(0L);
     final AtomicBoolean shouldReturnTrue = new AtomicBoolean(false);
 
-    attemptNormalizationStatuses.stream().sorted(Comparator.comparing(AttemptNormalizationStatus::getAttemptNumber).reversed()).toList()
+    attemptNormalizationStatuses.stream().sorted(Comparator.comparing(AttemptNormalizationStatus::attemptNumber).reversed()).toList()
         .forEach(n -> {
-          if (n.getAttemptNumber() == attemptNumber) {
+          if (n.attemptNumber() == attemptNumber) {
             return;
           }
 
           // if normalization succeeded from a previous attempt succeeded,
           // we can stop looking for previous attempts
-          if (!n.getNormalizationFailed()) {
+          if (!n.normalizationFailed()) {
             return;
           }
 
@@ -59,11 +59,11 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
           // committed number
           // if there is no data recorded for the number of committed records, we should assume that there
           // were committed records and run normalization
-          if (n.getRecordsCommitted().isEmpty()) {
+          if (n.recordsCommitted().isEmpty()) {
             shouldReturnTrue.set(true);
             return;
-          } else if (n.getRecordsCommitted().get() != 0L) {
-            totalRecordsCommitted.set(totalRecordsCommitted.get() + n.getRecordsCommitted().get());
+          } else if (n.recordsCommitted().get() != 0L) {
+            totalRecordsCommitted.set(totalRecordsCommitted.get() + n.recordsCommitted().get());
           }
         });
 
