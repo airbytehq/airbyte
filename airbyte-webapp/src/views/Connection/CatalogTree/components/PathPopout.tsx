@@ -1,5 +1,5 @@
 import React from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 
 import { Popout } from "components";
 import { Tooltip } from "components/base/Tooltip";
@@ -35,13 +35,6 @@ interface PathProps {
 
 type PathPopoutProps = PathPopoutBaseProps & (PathMultiProps | PathProps);
 
-const SourceDefinedPath: React.FC = () => {
-  const { formatMessage } = useIntl();
-  const message = formatMessage({ id: "connection.catalogTree.sourceDefined" });
-
-  return <>{`<${message}>`}</>;
-};
-
 export const PathPopout: React.FC<PathPopoutProps> = (props) => {
   if (props.pathType === "sourceDefined") {
     if (props.path && props.path.length > 0) {
@@ -54,7 +47,7 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
       );
     }
 
-    return <SourceDefinedPath />;
+    return <FormattedMessage id="connection.catalogTree.sourceDefined" />;
   }
 
   const text = props.path
