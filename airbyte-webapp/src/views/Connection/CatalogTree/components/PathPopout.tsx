@@ -36,12 +36,8 @@ type PathPopoutProps = PathPopoutBaseProps & (PathMultiProps | PathProps);
 
 export const PathPopout: React.FC<PathPopoutProps> = (props) => {
   if (props.pathType === "sourceDefined") {
-    if (props.path) {
-      const text = props.path
-        ? props.isMulti
-          ? props.path.map(pathDisplayName).join(", ")
-          : pathDisplayName(props.path)
-        : "";
+    if (props.path && props.path.length > 0) {
+      const text = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
 
       return (
         <Tooltip placement="bottom-start" control={<div className={styles.text}>{text}</div>}>
@@ -49,7 +45,7 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
         </Tooltip>
       );
     }
-    return <>{"<sourceDefined>"}</>;
+    return <>{"<source defined>"}</>;
   }
 
   const text = props.path
