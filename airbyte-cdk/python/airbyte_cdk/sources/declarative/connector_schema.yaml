@@ -10,7 +10,7 @@ properties:
   streams:
     "$ref": "#/definitions/Streams"
   check:
-    "$ref": "#/definitions/ConnectionChecker" #TODO
+    "$ref": "#/definitions/ConnectionChecker"
 definitions:
   "$options":
     type: object
