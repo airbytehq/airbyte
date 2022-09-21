@@ -2,13 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import copy
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import split_config
@@ -110,7 +109,6 @@ class SourceSalesforce(AbstractSource):
         Overwritten to dynamically receive only those streams that are necessary for reading for significant speed gains
         (Salesforce has a strict API limit on requests).
         """
-        connector_state = copy.deepcopy(state or {})
         config, internal_config = split_config(config)
         # get the streams once in case the connector needs to make any queries to generate them
         logger.info("Starting generating streams")
