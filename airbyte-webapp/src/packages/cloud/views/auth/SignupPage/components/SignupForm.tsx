@@ -199,21 +199,13 @@ export const SignupForm: React.FC = () => {
   const [params] = useSearchParams();
   const search = Object.fromEntries(params);
 
-  const initialValues = params.get("email")
-    ? {
-        name: search.firstname ? `${search.firstname} ${search.lastname}` : "",
-        companyName: search.company,
-        email: search.email,
-        password: "",
-        news: true,
-      }
-    : {
-        name: "",
-        companyName: "",
-        email: "",
-        password: "",
-        news: true,
-      };
+  const initialValues = {
+    name: `${search.firstname ?? ""} ${search.lastname ?? ""}`.trim(),
+    companyName: search.company ?? "",
+    email: search.email ?? "",
+    password: "",
+    news: true,
+  };
   return (
     <Formik<FormValues>
       initialValues={initialValues}
