@@ -11,6 +11,8 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests_oauthlib import OAuth1
 from source_netsuite.constraints import (
+    CUSTOM_INCREMENTAL_CURSOR,
+    INCREMENTAL_CURSOR,
     META_PATH,
     NETSUITE_ERRORS_MAPPING,
     RECORD_PATH,
@@ -18,8 +20,6 @@ from source_netsuite.constraints import (
     REFERAL_SCHEMA_URL,
     SCHEMA_HEADERS,
     USLESS_SCHEMA_ELEMENTS,
-    CUSTOM_INCREMENTAL_CURSOR,
-    INCREMENTAL_CURSOR,
 )
 
 
