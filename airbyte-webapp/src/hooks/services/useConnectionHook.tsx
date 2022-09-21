@@ -13,6 +13,7 @@ import {
   ConnectionScheduleData,
   ConnectionScheduleType,
   ConnectionStatus,
+  ConnectionStatus,
   DestinationRead,
   NamespaceDefinitionType,
   OperationCreate,
@@ -39,7 +40,7 @@ export const connectionsKeys = {
 
 export interface ValuesProps {
   name?: string;
-  scheduleData: ConnectionScheduleData;
+  scheduleData: ConnectionScheduleData | undefined;
   scheduleType: ConnectionScheduleType;
   prefix: string;
   syncCatalog: SyncSchema;
@@ -194,15 +195,15 @@ const useUpdateConnection = () => {
   const queryClient = useQueryClient();
 
   return useMutation((connectionUpdate: WebBackendConnectionUpdate) => service.update(connectionUpdate), {
-    onSuccess: (connection) => {
-      queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
+    onSuccess: (updatedConnection) => {
+      queryClient.setQueryData(connectionsKeys.detail(updatedConnection.connectionId), updatedConnection);
       // Update the connection inside the connections list response
       queryClient.setQueryData<WebBackendConnectionReadList>(connectionsKeys.lists(), (ls) => ({
         ...ls,
         connections:
           ls?.connections.map((conn) => {
-            if (conn.connectionId === connection.connectionId) {
-              return connection;
+            if (conn.connectionId === updatedConnection.connectionId) {
+              return updatedConnection;
             }
             return conn;
           }) ?? [],
