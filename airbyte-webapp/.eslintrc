@@ -30,6 +30,7 @@
     "no-inner-declarations": "off",
     "no-unused-vars": "off",
     "no-useless-computed-key": "warn",
+    "dot-notation": "warn",
     "no-useless-return": "warn",
     "no-var": "warn",
     "object-shorthand": ["warn", "always"],
