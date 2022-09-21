@@ -49,5 +49,5 @@ def test_should_retry(patch_base_class, http_status, should_retry):
 def test_backoff_time(patch_base_class):
     response_mock = MagicMock()
     stream = PrimetricStream()
-    expected_backoff_time = 5
+    expected_backoff_time = 31
     assert stream.backoff_time(response_mock) == expected_backoff_time
