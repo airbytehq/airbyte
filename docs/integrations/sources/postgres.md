@@ -189,7 +189,7 @@ To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, confi
 | Parameter  | Description  | Set value to |
 |------------|--------------|--------------|
 | wal_level  | Type of coding used within the Postgres write-ahead log  | logical |
-| max_wel_senders | The maximum number of processes used for handling WAL changes | Min: 1 |
+| max_wal_senders | The maximum number of processes used for handling WAL changes | Min: 1 |
 | max_replication_slots | The maximum number of replication slots that are allowed to stream WAL changes | 1 (if Airbyte is the only service reading subscribing to WAL changes. More than 1 if other services are also reading from the WAL) |
 
 To enable logical replication on AWS Postgres RDS or Aurora​:
