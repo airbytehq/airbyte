@@ -200,15 +200,15 @@ const useUpdateConnection = () => {
   const queryClient = useQueryClient();
 
   return useMutation((connectionUpdate: WebBackendConnectionUpdate) => service.update(connectionUpdate), {
-    onSuccess: (connection) => {
-      queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
+    onSuccess: (updatedConnection) => {
+      queryClient.setQueryData(connectionsKeys.detail(updatedConnection.connectionId), updatedConnection);
       // Update the connection inside the connections list response
       queryClient.setQueryData<ListConnection>(connectionsKeys.lists(), (ls) => ({
         ...ls,
         connections:
           ls?.connections.map((conn) => {
-            if (conn.connectionId === connection.connectionId) {
-              return connection;
+            if (conn.connectionId === updatedConnection.connectionId) {
+              return updatedConnection;
             }
             return conn;
           }) ?? [],
