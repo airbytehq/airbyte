@@ -97,6 +97,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     final AtomicReference<Runnable> cancellationCallback = new AtomicReference<>(null);
     return temporalUtils.withBackgroundHeartbeat(cancellationCallback, () -> {
       try {
+        // Assemble configuration.
         final Map<String, String> envMap = System.getenv().entrySet().stream()
             .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -129,6 +130,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             mainContainerInfo);
         val featureFlag = new EnvVariableFeatureFlags();
 
+        // Use the configuration to create the process.
         process = new AsyncOrchestratorPodProcess(
             kubePodInfo,
             containerOrchestratorConfig.documentStoreClient(),
@@ -139,6 +141,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             featureFlag.useStreamCapableState(),
             serverPort);
 
+        // Define what to do on cancellation.
         cancellationCallback.set(() -> {
           // When cancelled, try to set to true.
           // Only proceed if value was previously false, so we only have one cancellation going. at a time
@@ -172,8 +175,9 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           throw new CancellationException();
         }
 
-        if (process.exitValue() != 0) {
-          throw new WorkerException("Non-zero exit code!");
+        final int asyncProcessExitValue = process.exitValue();
+        if (asyncProcessExitValue != 0) {
+          throw new WorkerException("Orchestrator process exited with non-zero exit code: " + asyncProcessExitValue);
         }
 
         final var output = process.getOutput();
@@ -208,9 +212,10 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     final Stopwatch stopwatch = Stopwatch.createStarted();
 
     while (!runningPods.isEmpty() && stopwatch.elapsed().compareTo(MAX_DELETION_TIMEOUT) < 0) {
-      log.warn("There are currently running pods for the connection: " + getPodNames(runningPods).toString());
+      log.warn("There are currently running pods for the connection: {}. Killing these pods to enforce one execution at a time.",
+          getPodNames(runningPods).toString());
 
-      log.info("Attempting to delete pods: " + getPodNames(runningPods).toString());
+      log.info("Attempting to delete pods: {}", getPodNames(runningPods).toString());
       runningPods.stream()
           .parallel()
           .forEach(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());
