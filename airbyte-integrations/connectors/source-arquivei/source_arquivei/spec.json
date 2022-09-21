@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Arquivei Spec",
     "type": "object",
-    "required": ["api_key","api_id","start_date"],
+    "required": ["api_key","api_id","merchant"],
     "additionalProperties": false,
     "properties": {
       "api_key": {
@@ -17,12 +17,10 @@
         "type": "string",
         "description": "API id used to retrieve data from the Arquivei API."
       },
-      "start_date": {
-        "title": "Start Date",
+      "merchant": {
+        "title": "Merchant Code",
         "type": "string",
-        "description": "UTC date and time in the format 2017-01-25. Any data before this date will not be replicated.",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "examples": ["YYYY-MM-DD"]
+        "description": "Merchant code with 5 characters length. Example: BRXYZ."
       }
     }
   }
