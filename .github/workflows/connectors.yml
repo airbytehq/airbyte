@@ -65,6 +65,7 @@ jobs:
           - source-github
           - source-amazon-ads
           - source-notion
+          - source-tiktok-marketing
 
     steps:
       - uses: actions/checkout@v2
