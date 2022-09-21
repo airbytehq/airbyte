@@ -44,10 +44,6 @@
     json
 {%- endmacro -%}
 
-{% macro firebolt__type_json() %}
-    string
-{% endmacro %}
-
 {# string ------------------------------------------------- #}
 
 {%- macro mysql__type_string() -%}
