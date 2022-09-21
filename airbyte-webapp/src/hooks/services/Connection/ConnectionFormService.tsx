@@ -54,7 +54,7 @@ const useConnectionForm = ({
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
       // Set the scheduleType based on the schedule value
-      values["scheduleType"] = values.scheduleData?.basicSchedule
+      values.scheduleType = values.scheduleData?.basicSchedule
         ? ConnectionScheduleType.basic
         : ConnectionScheduleType.manual;
 
@@ -65,6 +65,11 @@ const useConnectionForm = ({
       }) as unknown as ConnectionFormValues;
 
       formValues.operations = mapFormPropsToOperation(values, connection.operations, workspaceId);
+
+      if (formValues.scheduleType === ConnectionScheduleType.manual) {
+        // Have to set this to undefined to override the existing scheduleData
+        formValues.scheduleData = undefined;
+      }
 
       setSubmitError(null);
       try {

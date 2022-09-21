@@ -7,7 +7,6 @@ import { Button, H2 } from "components/base";
 interface EmptyResourceListViewProps {
   resourceType: "connections" | "destinations" | "sources";
   onCreateClick: () => void;
-  disableCreateButton?: boolean;
 }
 
 const Container = styled.div`
@@ -57,11 +56,7 @@ const BowtieImg = styled.img`
   }
 `;
 
-export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
-  resourceType,
-  onCreateClick,
-  disableCreateButton,
-}) => {
+export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({ resourceType, onCreateClick }) => {
   const { headingMessageId, buttonMessageId, singularResourceType } = useMemo(() => {
     const singularResourceType = resourceType.substring(0, resourceType.length - 1);
     const baseMessageId = resourceType === "connections" ? singularResourceType : resourceType;
@@ -88,7 +83,7 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
         )}
         <OctaviaImg src={`/images/octavia/empty-${resourceType}.png`} alt="Octavia" resource={resourceType} />
       </IllustrationContainer>
-      <Button onClick={onCreateClick} disabled={disableCreateButton} size="lg" data-id={`new-${singularResourceType}`}>
+      <Button onClick={onCreateClick} size="lg" data-id={`new-${singularResourceType}`}>
         <FormattedMessage id={buttonMessageId} />
       </Button>
     </Container>

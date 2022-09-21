@@ -8,10 +8,10 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.DefaultJobCreator;
-import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
-import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.persistence.job.DefaultJobCreator;
+import io.airbyte.persistence.job.factory.DefaultSyncJobFactory;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
+import io.airbyte.persistence.job.factory.SyncJobFactory;
 import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
@@ -34,14 +34,14 @@ public class TemporalBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public TrackingClient trackingClient() {
     return TrackingClientSingleton.get();
   }
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public SyncJobFactory jobFactory(
                                    final ConfigRepository configRepository,
                                    @Property(name = "airbyte.connector.specific-resource-defaults-enabled",
@@ -69,7 +69,7 @@ public class TemporalBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public TemporalWorkerRunFactory temporalWorkerRunFactory(
                                                            @Value("${airbyte.version}") final String airbyteVersion,
                                                            final FeatureFlags featureFlags,

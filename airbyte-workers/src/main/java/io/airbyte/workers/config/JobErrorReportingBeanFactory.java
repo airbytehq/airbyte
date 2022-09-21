@@ -6,12 +6,12 @@ package io.airbyte.workers.config;
 
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.WebUrlHelper;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClient;
-import io.airbyte.scheduler.persistence.job_error_reporter.LoggingJobErrorReportingClient;
-import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper;
-import io.airbyte.scheduler.persistence.job_error_reporter.SentryJobErrorReportingClient;
+import io.airbyte.persistence.job.WebUrlHelper;
+import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
+import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
+import io.airbyte.persistence.job.errorreporter.LoggingJobErrorReportingClient;
+import io.airbyte.persistence.job.errorreporter.SentryExceptionHelper;
+import io.airbyte.persistence.job.errorreporter.SentryJobErrorReportingClient;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
@@ -29,9 +29,9 @@ public class JobErrorReportingBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
-            value = "SENTRY")
+            pattern = "(?i)^sentry$")
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient sentryJobErrorReportingClient(
                                                                @Value("${airbyte.worker.job.error-reporting.sentry.dsn}") final String sentryDsn) {
@@ -40,9 +40,9 @@ public class JobErrorReportingBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
-            value = "LOGGING")
+            pattern = "(?i)^logging$")
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient loggingJobErrorReportingClient() {
     return new LoggingJobErrorReportingClient();
@@ -50,7 +50,7 @@ public class JobErrorReportingBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public JobErrorReporter jobErrorReporter(
                                            @Value("${airbyte.version}") final String airbyteVersion,
                                            final ConfigRepository configRepository,
