@@ -367,8 +367,6 @@ public class ConnectionsHandler {
       connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
-    configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), includeDeleted);
-
     return new ConnectionReadList().connections(connectionReads);
   }
 
