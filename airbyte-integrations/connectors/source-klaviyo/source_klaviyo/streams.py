@@ -8,9 +8,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
-from airbyte_cdk.sources.utils.transform import TypeTransformer, TransformConfig
-
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class KlaviyoStream(HttpStream, ABC):
@@ -34,6 +33,7 @@ class KlaviyoStream(HttpStream, ABC):
                 transformed_value = pendulum.parse(original_value).to_rfc3339_string()
                 return transformed_value
             return original_value
+
         return custom_transform_date_rfc3339
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
