@@ -4,29 +4,35 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import static org.mockito.Mockito.mock;
+
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
 import io.airbyte.workers.temporal.sync.NormalizationSummaryCheckActivityImpl;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 class NormalizationSummaryCheckActivityTest {
 
   private static final Long JOB_ID = 10L;
-  @Mock
-  private JobPersistence mJobPersistence;
+  static private NormalizationSummaryCheckActivityImpl normalizationSummaryCheckActivity;
+  static private JobPersistence mJobPersistence;
 
-  @InjectMocks
-  private NormalizationSummaryCheckActivityImpl normalizationSummaryCheckActivity;
+  @BeforeAll
+  static void setUp() {
+    mJobPersistence = mock(JobPersistence.class);
+    normalizationSummaryCheckActivity = new NormalizationSummaryCheckActivityImpl(Optional.of(mJobPersistence));
+  }
 
   @Test
   void testShouldRunNormalizationRecordsCommittedOnFirstAttemptButNotCurrentAttempt() throws IOException {

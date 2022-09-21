@@ -13,6 +13,6 @@ import java.util.Optional;
 public interface NormalizationSummaryCheckActivity {
 
   @ActivityMethod
-  Boolean shouldRunNormalization(Long jobId, Long attemptId, Optional<Long> numCommittedRecords) throws IOException;
+  boolean shouldRunNormalization(Long jobId, Long attemptId, Optional<Long> numCommittedRecords) throws IOException;
 
 }

@@ -10,34 +10,38 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.inject.Inject;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.inject.Singleton;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Singleton
-@AllArgsConstructor
-@NoArgsConstructor
 @Slf4j
+@Singleton
 public class NormalizationSummaryCheckActivityImpl implements NormalizationSummaryCheckActivity {
 
-  @Inject
-  private JobPersistence jobPersistence;
+  private final Optional<JobPersistence> jobPersistence;
+
+  public NormalizationSummaryCheckActivityImpl(final Optional<JobPersistence> jobPersistence) {
+    this.jobPersistence = jobPersistence;
+  }
 
   @Override
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-  public Boolean shouldRunNormalization(final Long jobId, final Long attemptNumber, final Optional<Long> numCommittedRecords) throws IOException {
+  public boolean shouldRunNormalization(final Long jobId, final Long attemptNumber, final Optional<Long> numCommittedRecords) throws IOException {
+    // if job persistence is unavailable, default to running normalization
+    if (jobPersistence.isEmpty()) {
+      return true;
+    }
+
     // if the count of committed records for this attempt is > 0 OR if it is null,
     // then we should run normalization
     if (numCommittedRecords.get() == null || numCommittedRecords.get() > 0) {
       return true;
     }
 
-    final List<AttemptNormalizationStatus> attemptNormalizationStatuses = jobPersistence.getAttemptNormalizationStatusesForJob(jobId);
-    final AtomicReference<Long> totalRecordsCommitted = new AtomicReference<>(0L);
-    final AtomicReference<Boolean> shouldReturnTrue = new AtomicReference<>(false);
+    final List<AttemptNormalizationStatus> attemptNormalizationStatuses = jobPersistence.get().getAttemptNormalizationStatusesForJob(jobId);
+    final AtomicLong totalRecordsCommitted = new AtomicLong(0L);
+    final AtomicBoolean shouldReturnTrue = new AtomicBoolean(false);
 
     attemptNormalizationStatuses.stream().sorted(Comparator.comparing(AttemptNormalizationStatus::getAttemptNumber).reversed()).toList()
         .forEach(n -> {
@@ -51,18 +55,15 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
             return;
           }
 
-          // if normalization failed on past attempt,
-          // add number of records committed on that attempt to
-          // total committed number
-          if (n.getNormalizationFailed()) {
-            // if there is no data recorded for the number of committed records, we should assume that there
-            // were committed records and run normalization
-            if (n.getRecordsCommitted().get() == null) {
-              shouldReturnTrue.set(true);
-              return;
-            } else if (n.getRecordsCommitted().get() != 0L) {
-              totalRecordsCommitted.set(totalRecordsCommitted.get() + n.getRecordsCommitted().get());
-            }
+          // if normalization failed on past attempt, add number of records committed on that attempt to total
+          // committed number
+          // if there is no data recorded for the number of committed records, we should assume that there
+          // were committed records and run normalization
+          if (n.getRecordsCommitted().isEmpty()) {
+            shouldReturnTrue.set(true);
+            return;
+          } else if (n.getRecordsCommitted().get() != 0L) {
+            totalRecordsCommitted.set(totalRecordsCommitted.get() + n.getRecordsCommitted().get());
           }
         });
 

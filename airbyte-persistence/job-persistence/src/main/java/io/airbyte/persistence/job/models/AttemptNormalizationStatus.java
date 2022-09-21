@@ -6,17 +6,7 @@ package io.airbyte.persistence.job.models;
 
 import java.util.Optional;
 
-public class AttemptNormalizationStatus {
-
-  private final long attemptNumber;
-  private final Optional<Long> recordsCommitted;
-  private final Boolean normalizationFailed;
-
-  public AttemptNormalizationStatus(final long attemptNumber, final Optional<Long> recordsCommitted, final Boolean normalizationFailed) {
-    this.attemptNumber = attemptNumber;
-    this.recordsCommitted = recordsCommitted;
-    this.normalizationFailed = normalizationFailed;
-  }
+public record AttemptNormalizationStatus(long attemptNumber, Optional<Long> recordsCommitted, boolean normalizationFailed) {
 
   public long getAttemptNumber() {
     return attemptNumber;
