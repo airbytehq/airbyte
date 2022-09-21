@@ -54,7 +54,7 @@ const useConnectionForm = ({
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
       // Set the scheduleType based on the schedule value
-      values["scheduleType"] = values.scheduleData?.basicSchedule
+      values.scheduleType = values.scheduleData?.basicSchedule
         ? ConnectionScheduleType.basic
         : ConnectionScheduleType.manual;
 

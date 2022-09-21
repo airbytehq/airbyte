@@ -24,7 +24,7 @@ describe("#useFrequencyDropdownData", () => {
     const additionalFrequency = {
       basicSchedule: {
         units: 1,
-        timeUnit: ConnectionScheduleTimeUnit["hours"],
+        timeUnit: ConnectionScheduleTimeUnit.hours,
       },
     };
     const { result } = renderHook(() => useFrequencyDropdownData(additionalFrequency), { wrapper });
@@ -35,7 +35,7 @@ describe("#useFrequencyDropdownData", () => {
     const additionalFrequency = {
       basicSchedule: {
         units: 7,
-        timeUnit: ConnectionScheduleTimeUnit["minutes"],
+        timeUnit: ConnectionScheduleTimeUnit.minutes,
       },
     };
     const { result } = renderHook(() => useFrequencyDropdownData(additionalFrequency), { wrapper });
