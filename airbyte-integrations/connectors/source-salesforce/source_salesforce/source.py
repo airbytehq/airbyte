@@ -7,6 +7,7 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -114,6 +115,7 @@ class SourceSalesforce(AbstractSource):
         # get the streams once in case the connector needs to make any queries to generate them
         logger.info("Starting generating streams")
         stream_instances = {s.name: s for s in self.streams(config, catalog=catalog, state=state)}
+        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         logger.info(f"Starting syncing {self.name}")
         self._stream_to_instance_map = stream_instances
         for configured_stream in catalog.streams:
@@ -128,7 +130,7 @@ class SourceSalesforce(AbstractSource):
                     logger=logger,
                     stream_instance=stream_instance,
                     configured_stream=configured_stream,
-                    connector_state=connector_state,
+                    state_manager=state_manager,
                     internal_config=internal_config,
                 )
             except exceptions.HTTPError as error:
