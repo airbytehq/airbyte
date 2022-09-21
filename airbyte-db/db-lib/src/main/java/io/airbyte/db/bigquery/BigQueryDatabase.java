@@ -43,7 +43,7 @@ import org.threeten.bp.Duration;
 public class BigQueryDatabase extends SqlDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDatabase.class);
-  private static final String AGENT_TEMPLATE = "%s (GPN:Airbyte; staging)";
+  private static final String AGENT_TEMPLATE = "%s (GPN: Airbyte; staging)";
 
   private final BigQuery bigQuery;
   private final BigQuerySourceOperations sourceOperations;
