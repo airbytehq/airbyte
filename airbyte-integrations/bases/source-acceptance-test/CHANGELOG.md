@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4
+Make incremental tests compatible with per stream states.[#16686](https://github.com/airbytehq/airbyte/pull/16686/)
+
+
 ## 0.2.3
 Backward compatibility tests: improve `check_if_type_of_type_field_changed` to make it less radical when validating specs and allow `'str' -> ['str', '<another_type>']` type changes.[#16429](https://github.com/airbytehq/airbyte/pull/16429/)
 
