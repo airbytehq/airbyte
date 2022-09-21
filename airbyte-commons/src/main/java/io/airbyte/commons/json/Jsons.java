@@ -55,6 +55,7 @@ public class Jsons {
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
+
   }
 
   public static <T> T convertValue(final Object object, final Class<T> klass) {

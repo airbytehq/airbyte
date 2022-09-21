@@ -28,6 +28,7 @@ definitions:
           - CONNECTION_STATUS
           - CATALOG
           - TRACE
+          - UNSERIALIZED
       log:
         description: "log message: any kind of logging you want the platform to know about."
         "$ref": "#/definitions/AirbyteLogMessage"
@@ -48,6 +49,9 @@ definitions:
       trace:
         description: "trace message: a message to communicate information about the status and performance of a connector"
         "$ref": "#/definitions/AirbyteTraceMessage"
+      unserialized:
+        description: "unserialized test"
+        "$ref": "#/definitions/AirbyteUnserialisedMessage"
   AirbyteRecordMessage:
     type: object
     additionalProperties: true
@@ -83,6 +87,13 @@ definitions:
         description: "(Deprecated) the state data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  AirbyteUnserialisedMessage:
+    type: object
+    additionalProperties: true
+    properties:
+      data:
+        description: "Unserialised"
+        type: string
   AirbyteStateType:
     type: string
     description: >
