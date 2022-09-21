@@ -46,6 +46,7 @@ from .streams import (
     TeamMemberships,
     Teams,
     Users,
+    WorkflowJobs,
     WorkflowRuns,
     Workflows,
 )
@@ -188,6 +189,7 @@ class SourceGithub(AbstractSource):
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
         teams_stream = Teams(**organization_args)
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
+        workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
 
         return [
             Assignees(**repository_args),
@@ -224,5 +226,6 @@ class SourceGithub(AbstractSource):
             Users(**organization_args),
             Workflows(**repository_args_with_start_date),
             WorkflowRuns(**repository_args_with_start_date),
+            WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]

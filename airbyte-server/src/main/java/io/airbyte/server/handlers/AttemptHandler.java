@@ -6,7 +6,7 @@ package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.generated.InternalOperationResult;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

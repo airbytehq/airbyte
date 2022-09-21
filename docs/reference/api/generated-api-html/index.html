@@ -1838,7 +1838,10 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connections/update</code></pre></div>
     <div class="method-summary">Update a connection (<span class="nickname">updateConnection</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+with the catalog from the request. This means that to modify a single stream, the entire new catalog
+containing the updated stream needs to be sent.</div>
 
 
     <h3 class="field-label">Consumes</h3>
@@ -9786,7 +9789,13 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/update</code></pre></div>
     <div class="method-summary">Update a connection (<span class="nickname">webBackendUpdateConnection</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+Any operations that lack an ID will be created. Then, the newly created operationId will be applied to the
+connection along with the rest of the operationIds in the request body.
+Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+with the catalog from the request. This means that to modify a single stream, the entire new catalog
+containing the updated stream needs to be sent.</div>
 
 
     <h3 class="field-label">Consumes</h3>
@@ -11118,7 +11127,7 @@ font-style: italic;
   </div>
   <div class="model">
     <h3><a name="ConnectionUpdate"><code>ConnectionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
+    <div class='model-description'>Used to apply a patch-style update to a connection, which means that null properties remain unchanged</div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
@@ -11126,11 +11135,11 @@ font-style: italic;
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Name that will be set to this connection </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
-<div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
+<div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
 <div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
-<div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
@@ -12191,19 +12200,18 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
   </div>
   <div class="model">
     <h3><a name="WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
+    <div class='model-description'>Used to apply a patch-style update to a connection, which means that null properties remain unchanged</div>
     <div class="field-items">
       <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Name that will be set to the connection </div>
 <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
 <div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
-<div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
-<div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
+<div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
 <div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
-<div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">skipReset (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
