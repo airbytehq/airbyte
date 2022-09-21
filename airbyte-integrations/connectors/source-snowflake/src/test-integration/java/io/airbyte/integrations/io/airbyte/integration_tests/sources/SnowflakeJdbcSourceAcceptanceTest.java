@@ -126,7 +126,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     final AirbyteConnectionStatus status = source.check(config);
     assertEquals(Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("Could not connect with provided configuration"));
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 200028;"));
   }
 
   @Override
