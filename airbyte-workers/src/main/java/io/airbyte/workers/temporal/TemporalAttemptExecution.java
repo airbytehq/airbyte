@@ -14,7 +14,7 @@ import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;

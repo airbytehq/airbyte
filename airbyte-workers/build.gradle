@@ -50,7 +50,7 @@ dependencies {
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:protocol-models')
-    implementation (project(':airbyte-scheduler:scheduler-persistence')) {
+    implementation (project(':airbyte-persistence:job-persistence')) {
         // Temporary hack to avoid dependency conflicts
         exclude group: 'io.micronaut'
         exclude group: 'io.micronaut.flyway'
@@ -88,7 +88,7 @@ jsonSchema2Pojo {
     targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
     removeOldOutput = true
 
-    targetPackage = 'io.airbyte.scheduler.models'
+    targetPackage = 'io.airbyte.persistence.job.models'
 
     useLongIntegers = true
     generateBuilders = true

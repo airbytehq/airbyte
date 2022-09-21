@@ -14,7 +14,7 @@ import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.scheduler.models.Job;
+import io.airbyte.persistence.job.models.Job;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;

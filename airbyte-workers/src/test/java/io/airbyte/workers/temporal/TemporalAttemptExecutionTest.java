@@ -20,7 +20,7 @@ import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.config.Configs;
 import io.airbyte.db.init.DatabaseInitializationException;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.temporal.serviceclient.CheckedExceptionWrapper;
 import java.io.IOException;

@@ -15,7 +15,7 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;

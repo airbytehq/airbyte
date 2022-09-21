@@ -20,8 +20,7 @@ dependencies {
         exclude module: 'airbyte-workers'
         exclude module: 'airbyte-commons-temporal'
     }
-    implementation project(':airbyte-scheduler:scheduler-models')
-    implementation project(':airbyte-scheduler:scheduler-persistence')
+    implementation project(':airbyte-persistence:job-persistence')
     implementation(project(':airbyte-workers')) {
         // Temporary hack to avoid dependency conflicts
         exclude group: 'io.micronaut'
