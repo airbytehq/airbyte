@@ -63,7 +63,7 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
             shouldReturnTrue.set(true);
             return;
           } else if (n.recordsCommitted().get() != 0L) {
-            totalRecordsCommitted.set(totalRecordsCommitted.get() + n.recordsCommitted().get());
+            totalRecordsCommitted.addAndGet(n.recordsCommitted().get());
           }
         });
 
