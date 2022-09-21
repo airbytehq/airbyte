@@ -17,8 +17,13 @@ import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ConnectionStatus;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SyncMode;
+import io.airbyte.api.model.generated.WebBackendConnectionListItem;
+import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -200,6 +205,32 @@ public class ConnectionHelpers {
     }
     return connectionRead;
   }
+
+  public static WebBackendConnectionListItem generateExpectedWebBackendConnectionListItem(
+      final StandardSync standardSync,
+      final SourceRead source,
+      final DestinationRead destination,
+      final boolean isSyncing,
+      final Long latestSyncJobCreatedAt,
+      final JobStatus latestSynJobStatus) {
+
+    final WebBackendConnectionListItem connectionListItem = new WebBackendConnectionListItem()
+        .connectionId(standardSync.getConnectionId())
+        .name(standardSync.getName())
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .source(source)
+        .destination(destination)
+        .status(ApiPojoConverters.toApiStatus(standardSync.getStatus()))
+        .isSyncing(isSyncing)
+        .latestSyncJobCreatedAt(latestSyncJobCreatedAt)
+        .latestSyncJobStatus(latestSynJobStatus)
+        .scheduleType(ApiPojoConverters.toApiConnectionScheduleType(standardSync))
+        .scheduleData(ApiPojoConverters.toApiConnectionScheduleData(standardSync));
+
+    return connectionListItem;
+  }
+
 
   public static JsonNode generateBasicJsonSchema() {
     return CatalogHelpers.fieldsToJsonSchema(Field.of(FIELD_NAME, JsonSchemaType.STRING));
