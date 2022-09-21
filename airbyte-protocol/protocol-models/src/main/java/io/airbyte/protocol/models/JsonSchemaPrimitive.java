@@ -8,6 +8,7 @@ public enum JsonSchemaPrimitive {
 
   STRING,
   NUMBER,
+  INTEGER,
   OBJECT,
   ARRAY,
   BOOLEAN,

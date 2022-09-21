@@ -18,12 +18,13 @@ class DataTypeEnumTest {
   @Test
   void testConversionFromJsonSchemaPrimitiveToDataType() {
     assertEquals(5, DataType.class.getEnumConstants().length);
-    assertEquals(6, JsonSchemaPrimitive.class.getEnumConstants().length);
+    assertEquals(7, JsonSchemaPrimitive.class.getEnumConstants().length);
 
     assertEquals(DataType.STRING, DataType.fromValue(JsonSchemaPrimitive.STRING.toString().toLowerCase()));
     assertEquals(DataType.NUMBER, DataType.fromValue(JsonSchemaPrimitive.NUMBER.toString().toLowerCase()));
     assertEquals(DataType.BOOLEAN, DataType.fromValue(JsonSchemaPrimitive.BOOLEAN.toString().toLowerCase()));
     assertEquals(DataType.ARRAY, DataType.fromValue(JsonSchemaPrimitive.ARRAY.toString().toLowerCase()));
+    assertEquals(DataType.OBJECT, DataType.fromValue(JsonSchemaPrimitive.OBJECT.toString().toLowerCase()));
     assertEquals(DataType.OBJECT, DataType.fromValue(JsonSchemaPrimitive.OBJECT.toString().toLowerCase()));
     assertThrows(IllegalArgumentException.class, () -> DataType.fromValue(JsonSchemaPrimitive.NULL.toString().toLowerCase()));
   }

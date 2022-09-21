@@ -9,24 +9,26 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+import static io.airbyte.integrations.source.postgres.PostgresType.safeGetJdbcType;
+import static io.airbyte.protocol.models.JsonSchemaType.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.SourceOperations;
+import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
-import java.sql.JDBCType;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -34,6 +36,8 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
+
+import org.postgresql.core.Oid;
 import org.postgresql.geometric.PGbox;
 import org.postgresql.geometric.PGcircle;
 import org.postgresql.geometric.PGline;
@@ -46,7 +50,7 @@ import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSourceOperations extends JdbcSourceOperations {
+public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperations<PostgresType> implements SourceOperations<ResultSet, PostgresType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceOperations.class);
   private static final String TIMESTAMPTZ = "timestamptz";
@@ -92,7 +96,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   @Override
   public void setStatementField(final PreparedStatement preparedStatement,
                                 final int parameterIndex,
-                                final JDBCType cursorFieldType,
+                                final PostgresType cursorFieldType,
                                 final String value)
       throws SQLException {
     switch (cursorFieldType) {
@@ -170,7 +174,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
     final String columnTypeName = metadata.getColumnTypeName(colIndex).toLowerCase();
-    final JDBCType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
+    final PostgresType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
     if (resultSet.getString(colIndex) == null) {
       json.putNull(columnName);
     } else {
@@ -188,6 +192,10 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         case "path" -> putObject(json, columnName, resultSet, colIndex, PGpath.class);
         case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
         case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
+        case "_varchar","_char","_bpchar","_text","_name" -> putArray(json, columnName, resultSet, colIndex);
+        case "_int2","_int4","_int8","_oid" -> putLongArray(json, columnName, resultSet, colIndex);
+        case "_numeric","_decimal" -> putBigDecimalArray(json, columnName, resultSet, colIndex);
+        case "_float4","_float8" -> putDoubleArray(json, columnName, resultSet, colIndex);
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -211,6 +219,41 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     }
   }
 
+  private void putBigDecimalArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
+    while (arrayResultSet.next()) {
+      final BigDecimal bigDecimal = DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getBigDecimal(2));
+      if (bigDecimal != null) {
+        arrayNode.add(bigDecimal);
+      } else {
+        arrayNode.add((BigDecimal) null);
+      }
+    }
+    node.set(columnName, arrayNode);
+  }
+
+  private void putDoubleArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getDouble(colIndex), Double::isFinite));
+
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
+    while (arrayResultSet.next()) {
+      arrayNode.add( DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(colIndex), Double::isFinite));
+    }
+    node.set(columnName, arrayNode);
+  }
+
+  private void putLongArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
+    while (arrayResultSet.next()) {
+      arrayNode.add(arrayResultSet.getLong(2));
+    }
+    node.set(columnName, arrayNode);
+  }
+
   @Override
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
@@ -227,19 +270,42 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
+  public PostgresType getFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
       return switch (typeName) {
-        case "bool", "boolean" -> JDBCType.BOOLEAN;
+
+        case "_bit" -> PostgresType.BIT_ARRAY;
+        case "_bool" -> PostgresType.BOOL_ARRAY;
+        case "_name" -> PostgresType.NAME_ARRAY;
+        case "_varchar" -> PostgresType.VARCHAR_ARRAY;
+        case "_char" -> PostgresType.CHAR_ARRAY;
+        case "_bpchar" -> PostgresType.BPCHAR_ARRAY;
+        case "_text" -> PostgresType.TEXT_ARRAY;
+        case "_int4" -> PostgresType.INT4_ARRAY;
+        case "_int2" -> PostgresType.INT2_ARRAY;
+        case "_int8" -> PostgresType.INT8_ARRAY;
+        case "_money" -> PostgresType.MONEY_ARRAY;
+        case "_oid" -> PostgresType.OID_ARRAY;
+        case "_numeric" -> PostgresType.NUMERIC_ARRAY;
+        case "_float4" -> PostgresType.FLOAT4_ARRAY;
+        case "_float8" -> PostgresType.FLOAT8_ARRAY;
+        case "_timestamptz" -> PostgresType.TIMESTAMPTZ_ARRAY;
+        case "_timestamp" -> PostgresType.TIMESTAMP_ARRAY;
+        case "_timetz" -> PostgresType.TIMETZ_ARRAY;
+        case "_time" -> PostgresType.TIME_ARRAY;
+        case "_date" -> PostgresType.DATE_ARRAY;
+        case "bool", "boolean" -> PostgresType.BOOLEAN;
         // BYTEA is variable length binary string with hex output format by default (e.g. "\x6b707a").
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
-        case "bytea" -> JDBCType.VARCHAR;
-        case TIMESTAMPTZ -> JDBCType.TIMESTAMP_WITH_TIMEZONE;
-        case TIMETZ -> JDBCType.TIME_WITH_TIMEZONE;
-        default -> JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
+        case "bytea" -> PostgresType.VARCHAR;
+
+        case TIMESTAMPTZ -> PostgresType.TIMESTAMP_WITH_TIMEZONE;
+        case TIMETZ -> PostgresType.TIME_WITH_TIMEZONE;
+
+        default -> PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
       };
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
@@ -247,18 +313,104 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
           field.get(INTERNAL_SCHEMA_NAME),
           field.get(INTERNAL_TABLE_NAME),
           field.get(INTERNAL_COLUMN_TYPE)));
-      return JDBCType.VARCHAR;
+      return PostgresType.VARCHAR;
     }
   }
 
   @Override
-  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
+  public JsonSchemaType getJsonType(final PostgresType jdbcType) {
     return switch (jdbcType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
       case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
       case ARRAY -> JsonSchemaType.ARRAY;
+      case BIT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.BOOLEAN.name().toLowerCase())
+              .withAirbyteType("bit_array")
+              .build();
+      case BOOL_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.BOOLEAN.name().toLowerCase())
+              .withAirbyteType("bool_array")
+              .build();
+      case NAME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withAirbyteType("name_array")
+              .build();
+      case VARCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withAirbyteType("varchar_array")
+              .build();
+      case CHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withAirbyteType("char_array")
+              .build();
+      case BPCHAR_ARRAY-> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withAirbyteType("bpchar_array")
+              .build();
+      case TEXT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withAirbyteType("text_array")
+              .build();
+      case INT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+              .withAirbyteType("int4_array")
+              .build();
+      case INT2_ARRAY-> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+              .withAirbyteType("int2_array")
+              .build();
+      case INT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+              .withAirbyteType("int8_array")
+              .build();
+      case MONEY_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+              .withAirbyteType("money_array")
+              .build();
+      case OID_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+              .withAirbyteType("oid_array")
+              .build();
+      case NUMERIC_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+              .withAirbyteType("numeric_array")
+              .build();
+      case FLOAT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+              .withAirbyteType("float4_array")
+              .build();
+      case FLOAT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+              .withAirbyteType("float8_array")
+              .build();
+      case TIMESTAMPTZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withFormat(DATE_TIME)
+              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withAirbyteType("timestamp_with_timezone_array")
+              .build();
+      case TIMESTAMP_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withFormat(DATE_TIME)
+              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withAirbyteType("timestamp_without_timezone_array")
+              .build();
+      case TIMETZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withFormat(TIME)
+              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withAirbyteType("time_with_timezone_array")
+              .build();
+      case TIME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withFormat(TIME)
+              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withAirbyteType("time_without_timezone_array")
+              .build();
+      case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withFormat(DATE)
+              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withAirbyteType("date_array")
+              .build();
+
       case DATE -> JsonSchemaType.STRING_DATE;
       case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
       case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
@@ -329,7 +481,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public boolean isCursorType(JDBCType type) {
+  public boolean isCursorType(PostgresType type) {
     return PostgresUtils.ALLOWED_CURSOR_TYPES.contains(type);
   }
 

@@ -13,7 +13,7 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION source-postgres
-
+ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 COPY --from=build /airbyte /airbyte
 
 LABEL io.airbyte.version=1.0.10
