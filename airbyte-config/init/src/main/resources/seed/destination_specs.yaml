@@ -4558,7 +4558,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.36"
+- dockerImage: "airbyte/destination-snowflake:0.4.37"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
