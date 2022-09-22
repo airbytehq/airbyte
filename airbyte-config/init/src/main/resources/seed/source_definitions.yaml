@@ -517,7 +517,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/klaviyo
   icon: klaviyo.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Kyriba
   sourceDefinitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
   dockerRepository: airbyte/source-kyriba
