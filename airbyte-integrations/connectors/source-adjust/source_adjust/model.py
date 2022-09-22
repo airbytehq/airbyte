@@ -175,9 +175,7 @@ class Spec(pydantic.BaseModel):
                 spec[key] = schema.pop(key)
 
             schema["connectionSpecification"] = spec
-            schema[
-                "documentationUrl"
-            ] = "https://raw.githubusercontent.com/appchoose/airbyte/feature/source-adjust/docs/integrations/sources/adjust.md"
+            schema["documentationUrl"] = "https://docs.airbyte.io/integrations/sources/adjust"
 
 
 class Report(pydantic.BaseModel):
