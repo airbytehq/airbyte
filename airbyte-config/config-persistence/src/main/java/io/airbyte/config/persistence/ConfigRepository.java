@@ -53,7 +53,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -628,23 +627,6 @@ public class ConfigRepository {
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
-    return getStandardSyncsFromResult(result);
-  }
-
-  /**
-   * Queries for connection data but excludes columns that have large/unbounded sizes (such as the
-   * catalog). List operations that don't need a catalog can use this repository method for better
-   * efficiency.
-   */
-  public List<StandardSync> listWorkspaceStandardSyncsMinimal(final UUID workspaceId) throws IOException {
-    final Result<Record> result = database.query(
-        ctx -> ctx.select(Arrays.stream(CONNECTION.fields())
-            .filter(col -> !col.equals(CONNECTION.CATALOG))
-            .collect(Collectors.toList()))
-            .from(CONNECTION)
-            .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
-            .where(ACTOR.WORKSPACE_ID.eq(workspaceId)))
-        .fetch();
     return getStandardSyncsFromResult(result);
   }
 

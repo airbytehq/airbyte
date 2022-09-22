@@ -114,7 +114,7 @@ public class WebBackendConnectionsHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<WebBackendConnectionListItem> connectionItems = Lists.newArrayList();
 
-    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncsMinimal(workspaceIdRequestBody.getWorkspaceId())) {
+    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId())) {
       if (standardSync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
         continue;
       }

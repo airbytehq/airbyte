@@ -155,7 +155,7 @@ class WebBackendConnectionsHandlerTest {
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
-    when(configRepository.listWorkspaceStandardSyncsMinimal(sourceRead.getWorkspaceId()))
+    when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId()))
         .thenReturn(Collections.singletonList(standardSync));
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
     operationReadList = new OperationReadList()
