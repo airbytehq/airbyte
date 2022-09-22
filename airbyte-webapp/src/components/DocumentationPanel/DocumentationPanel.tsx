@@ -21,7 +21,7 @@ export const DocumentationPanel: React.FC = () => {
   const { formatMessage } = useIntl();
   const config = useConfig();
   const { setDocumentationPanelOpen, documentationUrl } = useDocumentationPanelContext();
-  const { data: docs, isLoading, error } = useDocumentation(documentationUrl);
+  const { data: docs, isLoading } = useDocumentation(documentationUrl);
 
   // @ts-expect-error rehype-slug currently has type conflicts due to duplicate vfile dependencies
   const urlReplacerPlugin: PluggableList = useMemo<PluggableList>(() => {
@@ -55,7 +55,7 @@ export const DocumentationPanel: React.FC = () => {
       <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
       <Markdown
         className={styles.content}
-        content={docs && !error ? docs : formatMessage({ id: "connector.setupGuide.notFound" })}
+        content={!docs?.includes("<!DOCTYPE html>") ? docs : formatMessage({ id: "connector.setupGuide.notFound" })}
         rehypePlugins={urlReplacerPlugin}
       />
     </div>
