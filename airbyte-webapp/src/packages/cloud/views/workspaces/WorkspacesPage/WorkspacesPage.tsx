@@ -17,7 +17,7 @@ const WorkspacesPage: React.FC = () => {
       <Text as="h1" size="lg" centered>
         <FormattedMessage id="workspaces.title" />
       </Text>
-      <Text as="p" size="lg" centered className={styles.subtitle}>
+      <Text as="p" centered className={styles.subtitle}>
         <FormattedMessage id="workspaces.subtitle" />
       </Text>
       <WorkspacesList />
