@@ -8,11 +8,15 @@ plugins {
 
 configurations {
     jdbc
+    ddTracerAgent
 }
 
 dependencies {
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    // Datadog CI instrumentation for tests
+    ddTracerAgent 'com.datadoghq:dd-java-agent:0.108.2'
 
     implementation platform(libs.micronaut.bom)
     implementation libs.bundles.micronaut
@@ -114,6 +118,12 @@ run {
     environment 'AIRBYTE_ROLE', System.getenv('AIRBYTE_ROLE')
     environment 'AIRBYTE_VERSION', env.VERSION
     environment 'MICRONAUT_ENVIRONMENTS', 'local,control'
+}
+
+test {
+    if (project.hasProperty("dd-civisibility")) {
+        jvmArgs = ["-javaagent:${configurations.ddTracerAgent.asPath}", "-Ddd.service=my-java-app", "-Ddd.civisibility.enabled=true"]
+    }
 }
 
 task cloudStorageIntegrationTest(type: Test) {
