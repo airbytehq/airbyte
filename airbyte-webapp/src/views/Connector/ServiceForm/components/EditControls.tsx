@@ -7,7 +7,7 @@ import { Button } from "components/ui/Button";
 import { useServiceForm } from "../serviceFormContext";
 import styles from "./EditControls.module.scss";
 import { TestingConnectionError } from "./TestingConnectionError";
-import TestingConnectionSpinner from "./TestingConnectionSpinner";
+import { TestingConnectionSpinner } from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
 const Controls = styled.div`
