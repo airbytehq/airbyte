@@ -13,7 +13,7 @@ interface TitlesBlockProps {
 const TitlesBlock: React.FC<TitlesBlockProps> = ({ title, children, testId }) => {
   return (
     <div className={styles.container}>
-      <Text as="h1" size="xl" centered data-testid={testId}>
+      <Text as="h1" size="lg" centered data-testid={testId}>
         {title}
       </Text>
       <Text as="p" centered className={styles.content}>
