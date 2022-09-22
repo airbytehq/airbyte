@@ -32,6 +32,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteGlobalState;
@@ -198,20 +199,20 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-//    if (!featureFlags.useStreamCapableState()) {
-//      return AirbyteStateType.LEGACY;
-//    }
+    if (!featureFlags.useStreamCapableState()) {
+      return AirbyteStateType.LEGACY;
+    }
 
     return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
   @Override
   protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
-//    if (!featureFlags.useStreamCapableState()) {
-//      return List.of(new AirbyteStateMessage()
-//          .withType(AirbyteStateType.LEGACY)
-//          .withData(Jsons.jsonNode(new DbState())));
-//    }
+    if (!featureFlags.useStreamCapableState()) {
+      return List.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.LEGACY)
+          .withData(Jsons.jsonNode(new DbState())));
+    }
 
     if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
       final AirbyteGlobalState globalState = new AirbyteGlobalState()

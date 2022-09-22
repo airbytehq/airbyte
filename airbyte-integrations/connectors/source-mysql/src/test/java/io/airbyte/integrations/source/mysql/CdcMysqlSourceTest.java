@@ -58,7 +58,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @BeforeEach
   public void setup() throws SQLException {
-//    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     init();
     revokeAllPermissions();
     grantCorrectPermissions();
