@@ -3,7 +3,6 @@ import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
-import styled from "styled-components";
 
 import Table from "components/Table";
 
@@ -19,10 +18,6 @@ import NameCell from "./components/NameCell";
 import SortButton from "./components/SortButton";
 import StatusCell from "./components/StatusCell";
 import { ITableDataItem, SortOrderEnum } from "./types";
-
-const Content = styled.div`
-  margin: 0 32px 0 27px;
-`;
 
 interface IProps {
   data: ITableDataItem[];
@@ -191,11 +186,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
     [allowSync, entity, onSync, onSortClick, sortBy, sortOrder]
   );
 
-  return (
-    <Content>
-      <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />
-    </Content>
-  );
+  return <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />;
 };
 
 export default ConnectionTable;

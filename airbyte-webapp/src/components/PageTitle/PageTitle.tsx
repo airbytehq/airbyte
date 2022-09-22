@@ -3,6 +3,8 @@ import styled from "styled-components";
 
 import { H3 } from "components";
 
+import styles from "./PageTitle.module.scss";
+
 interface PageTitleProps {
   withLine?: boolean;
   middleComponent?: React.ReactNode;
@@ -12,7 +14,7 @@ interface PageTitleProps {
 }
 
 export const MainContainer = styled.div<{ withLine?: boolean }>`
-  padding: 20px 32px 18px;
+  padding: 20px 20px 18px;
   border-bottom: ${({ theme, withLine }) => (withLine ? `1px solid ${theme.greyColor20}` : "none")};
   position: relative;
   z-index: 2;
@@ -21,12 +23,6 @@ export const MainContainer = styled.div<{ withLine?: boolean }>`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-`;
-
-export const MiddleBlock = styled.div`
-  flex: 1 0 0;
-  display: flex;
-  justify-content: center;
 `;
 
 export const MiddleTitleBlock = styled(H3)`
@@ -57,7 +53,7 @@ const PageTitle: React.FC<PageTitleProps> = ({ title, withLine, middleComponent,
     {middleTitleBlock ? (
       <MiddleTitleBlock>{middleTitleBlock}</MiddleTitleBlock>
     ) : (
-      <MiddleBlock>{middleComponent}</MiddleBlock>
+      <div className={styles.middleBlock}>{middleComponent}</div>
     )}
     <EndBlock>{endComponent}</EndBlock>
   </MainContainer>

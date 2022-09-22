@@ -1,6 +1,5 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { PageTitle } from "components";
 import HeadTitle from "components/HeadTitle";
@@ -12,15 +11,7 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import CreditsUsage from "./components/CreditsUsage";
 import { EmailVerificationHint } from "./components/EmailVerificationHint";
 import RemainingCredits from "./components/RemainingCredits";
-
-const Content = styled.div`
-  margin: 0 33px 0 27px;
-  height: 100%;
-`;
-
-const EmailVerificationHintWithMargin = styled(EmailVerificationHint)`
-  margin-bottom: 8px;
-`;
+import styles from "./CreditsPage.module.scss";
 
 const CreditsPage: React.FC = () => {
   const { emailVerified } = useAuthService();
@@ -30,11 +21,11 @@ const CreditsPage: React.FC = () => {
       headTitle={<HeadTitle titles={[{ id: "credits.credits" }]} />}
       pageTitle={<PageTitle title={<FormattedMessage id="credits.credits" />} />}
     >
-      <Content>
-        {!emailVerified && <EmailVerificationHintWithMargin />}
+      <div className={styles.content}>
+        {!emailVerified && <EmailVerificationHint className={styles.emailVerificationHint} />}
         <RemainingCredits selfServiceCheckoutEnabled={emailVerified} />
         <CreditsUsage />
-      </Content>
+      </div>
     </MainPageWithScroll>
   );
 };
