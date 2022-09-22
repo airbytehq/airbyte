@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.scheduler.client;
+package io.airbyte.server.scheduler;
 
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
