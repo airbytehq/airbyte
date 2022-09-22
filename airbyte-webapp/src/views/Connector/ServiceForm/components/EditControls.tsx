@@ -6,7 +6,7 @@ import { Button } from "components";
 
 import { useServiceForm } from "../serviceFormContext";
 import { TestingConnectionError } from "./TestingConnectionError";
-import TestingConnectionSpinner from "./TestingConnectionSpinner";
+import { TestingConnectionSpinner } from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
 const Controls = styled.div`
