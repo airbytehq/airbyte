@@ -12,7 +12,7 @@ import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
-import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
