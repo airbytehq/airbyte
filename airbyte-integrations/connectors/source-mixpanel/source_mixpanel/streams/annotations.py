@@ -25,13 +25,20 @@ class Annotations(DateSlicesMixin, MixpanelStream):
     That's why stream does not support incremental sync.
     """
 
-    data_field: str = "results"
     primary_key: str = "id"
 
     @property
+    def data_field(self):
+        return "results" if self.project_id else "annotations"
+
+    @property
     def url_base(self):
+        if not self.project_id:
+            return super().url_base
         prefix = "eu." if self.region == "EU" else ""
         return f"https://{prefix}mixpanel.com/api/app/projects/"
 
     def path(self, **kwargs) -> str:
-        return f"{self.project_id}/annotations"
+        if self.project_id:
+            return f"{self.project_id}/annotations"
+        return "annotations"

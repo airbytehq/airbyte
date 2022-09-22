@@ -7,6 +7,7 @@ import logging
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -85,8 +86,11 @@ class SourceMixpanel(AbstractSource):
         config = self._validate_and_transform(config)
         try:
             auth = self.get_authenticator(config)
+            FunnelsList.max_retries = 0
             funnels = FunnelsList(authenticator=auth, **config)
             next(read_full_refresh(funnels))
+        except requests.HTTPError as e:
+            return False, e.response.json()["error"]
         except Exception as e:
             return False, e
 
