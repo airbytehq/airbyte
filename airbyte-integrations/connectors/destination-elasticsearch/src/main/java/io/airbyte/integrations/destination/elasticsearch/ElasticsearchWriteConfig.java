@@ -19,7 +19,7 @@ public class ElasticsearchWriteConfig {
   private List<List<String>> primaryKey;
   private boolean upsert;
 
-  ElasticsearchWriteConfig() {}
+  public ElasticsearchWriteConfig() {}
 
   ElasticsearchWriteConfig(
                            String namespace,
