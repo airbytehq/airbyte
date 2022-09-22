@@ -317,27 +317,6 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testWebBackendSearchConnections() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final ConnectionReadList connectionReadList = new ConnectionReadList();
-    connectionReadList.setConnections(Collections.singletonList(connectionRead));
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
-    connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
-
-    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
-    when(connectionsHandler.listConnections()).thenReturn(connectionReadList);
-    when(connectionsHandler.matchSearch(new ConnectionSearch(), connectionRead)).thenReturn(true);
-
-    final WebBackendConnectionSearch webBackendConnectionSearch = new WebBackendConnectionSearch();
-    WebBackendConnectionReadList webBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(1, webBackendConnectionReadList.getConnections().size());
-    assertEquals(expected, webBackendConnectionReadList.getConnections().get(0));
-
-    when(connectionsHandler.matchSearch(new ConnectionSearch(), connectionRead)).thenReturn(false);
-    webBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(0, webBackendConnectionReadList.getConnections().size());
-  }
-
-  @Test
   void testWebBackendGetConnection() throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
