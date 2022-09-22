@@ -46,7 +46,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       lastStateMessage = message;
       outputRecordCollector.accept(message);
     } else if (message.getType() == Type.RECORD) {
-      message.getRecord().setNamespace(datasetId);
       processRecord(message);
     } else {
       LOGGER.warn("Unexpected message: {}", message.getType());
