@@ -66,7 +66,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
    ```bash
-   kubectl delete deployments airbyte-db airbyte-scheduler airbyte-worker airbyte-server airbyte-temporal airbyte-webapp --namespace=<yournamespace or default>
+   kubectl delete deployments airbyte-db airbyte-worker airbyte-server airbyte-temporal airbyte-webapp --namespace=<yournamespace or default>
    ```
 
 2. Upgrade the kube deployment to new version.

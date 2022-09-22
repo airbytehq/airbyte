@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.scheduler.client;
+package io.airbyte.server.scheduler;
 
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
