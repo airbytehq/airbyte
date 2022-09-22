@@ -31,62 +31,24 @@ noscript {
     color: #1A1A21;
     font-size: 18px;
     line-height: 22px;
-    font-family: Inter, Arial, sans-serif;
+    font-family: Inter, Helvetica, Arial, sans-serif;
 }
 
-/* Regular Inter */
 @font-face {
-    font-family: "Inter";
-    src: url("/fonts/inter/Inter-Regular.eot"); /* IE9 Compat Modes */
-    src: local("Inter"),
-    url("/fonts/inter/Inter-Regular.eot?#iefix") format("embedded-opentype"),
-        /* IE6-IE8 */ url("/fonts/inter/Inter-Regular.woff2") format("woff2"),
-        /* Super Modern Browsers */ url("/fonts/inter/Inter-Regular.woff")
-    format("woff"),
-        /* Modern Browsers */ url("/fonts/inter/Inter-Regular.ttf")
-    format("truetype"),
-        /* Safari, Android, iOS */ url("/fonts/inter/Inter-Regular.svg#OpenSans")
-    format("svg"); /* Legacy iOS */
-
-    font-weight: normal;
+    font-family: 'Inter';
+    font-weight: 100 900;
+    font-display: swap;
     font-style: normal;
+    src: url("/fonts/inter/Inter-roman.var.woff2?v=3.19") format("woff2");
 }
 
-/* Medium Inter */
 @font-face {
-    font-family: "Inter";
-    src: url("/fonts/inter/Inter-Medium.eot"); /* IE9 Compat Modes */
-    src: local("Inter"),
-    url("/fonts/inter/Inter-Medium.eot?#iefix") format("embedded-opentype"),
-        /* IE6-IE8 */ url("/fonts/inter/Inter-Medium.woff2") format("woff2"),
-        /* Super Modern Browsers */ url("/fonts/inter/Inter-Medium.woff")
-    format("woff"),
-        /* Modern Browsers */ url("/fonts/inter/Inter-Medium.ttf")
-    format("truetype"),
-        /* Safari, Android, iOS */ url("/fonts/inter/Inter-Medium.svg#OpenSans")
-    format("svg"); /* Legacy iOS */
-
-    font-weight: 500;
-    font-style: normal;
+    font-family: 'Inter';
+    font-weight: 100 900;
+    font-display: swap;
+    font-style: italic;
+    src: url("/fonts/inter/Inter-italic.var.woff2?v=3.19") format("woff2");
 }
-
-/* Bold Inter */
-@font-face {
-    font-family: "Inter";
-    src: url("/fonts/inter/Inter-Bold.eot"); /* IE9 Compat Modes */
-    src: local("Inter"),
-    url("/fonts/inter/Inter-Bold.eot?#iefix") format("embedded-opentype"),
-        /* IE6-IE8 */ url("/fonts/inter/Inter-Bold.woff2") format("woff2"),
-        /* Super Modern Browsers */ url("/fonts/inter/Inter-Bold.woff")
-    format("woff"),
-        /* Modern Browsers */ url("/fonts/inter/Inter-Bold.ttf") format("truetype"),
-        /* Safari, Android, iOS */ url("/fonts/inter/Inter-Bold.svg#OpenSans")
-    format("svg"); /* Legacy iOS */
-
-    font-weight: bold;
-    font-style: normal;
-}
-
 
 /* Regular Roboto Mono */
 @font-face {
