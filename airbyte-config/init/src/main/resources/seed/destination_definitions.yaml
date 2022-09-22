@@ -70,7 +70,7 @@
   dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
   releaseStage: alpha
-  icon: cliskhouse.svg
+  icon: clickhouse.svg
 - name: Databricks Lakehouse
   destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-databricks
