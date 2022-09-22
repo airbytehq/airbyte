@@ -4,6 +4,7 @@
     "connectionSpecification": {
         "title": "TikTok Marketing Source Spec",
         "type": "object",
+        "required": ["credentials"],
         "properties": {
             "credentials": {
                 "title": "Authentication Method",
@@ -27,14 +28,12 @@
                                 "title": "App ID",
                                 "description": "The Developer Application App ID.",
                                 "airbyte_secret": true,
-                                "const": "{{ client_key }}",
                                 "type": "string"
                             },
                             "secret": {
                                 "title": "Secret",
                                 "description": "The Developer Application Secret.",
                                 "airbyte_secret": true,
-                                "const": "{{ client_secret }}",
                                 "type": "string"
                             },
                             "access_token": {
@@ -111,8 +110,7 @@
     "authSpecification": {
       "provider": "tiktok",
       "authUrlTemplate": "https://ads.tiktok.com/marketing_api/auth?app_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}&rid=vb4nmczfrgo",
-      "accessTokenUrlTemplate": "https://open-api.tiktok.com/oauth/access_token/",
-      "accessTokenBody": "{\"grant_type\": \"authorization_code\", \"client_key\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"code\": \"{{ code }}\"}",
+      "accessTokenUrlTemplate": "https://open-api.tiktok.com/oauth/access_token/?client_key={{ client_key }}&client_secret={{ client_secret }}&code={{ code }}&grant_type=authorization_code",
       "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
     }
 }
