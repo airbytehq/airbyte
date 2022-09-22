@@ -770,7 +770,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
