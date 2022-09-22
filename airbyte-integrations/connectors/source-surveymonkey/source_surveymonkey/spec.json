@@ -45,7 +45,7 @@
   },
   "authSpecification": {
     "provider": "surveymonkey",
-    "authUrlTemplate": "https://api.surveymonkey.com/oauth/authorize?client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&&state={{ state }}",
+    "authUrlTemplate": "https://api.surveymonkey.com/oauth/authorize?client_id={{client_id }}&redirect_uri={{ urlencode redirect_uri }}&response_type=code&state={{ state }}",
     "accessTokenUrlTemplate": "https://api.surveymonkey.com/oauth/token",
     "accessTokenBody": "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ urlencode client_id }}\", \"client_secret\": \"{{ urlencode client_secret }}\", \"redirect_uri\": \"{{ urlencode redirect_uri }}\", \"code\": \"{{ urlencode code }}\"}",
     "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
