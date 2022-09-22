@@ -67,6 +67,7 @@ jobs:
           - source-notion
           - source-tiktok-marketing
           - source-google-search-console
+          - source-surveymonkey
 
     steps:
       - uses: actions/checkout@v2

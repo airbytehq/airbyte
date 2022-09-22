@@ -1,0 +1,54 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/surveymonkey",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "SurveyMonkey Spec",
+    "type": "object",
+    "required": ["access_token", "start_date"],
+    "additionalProperties": true,
+    "properties": {
+      "credentials": {
+        "type": "object",
+        "title": "Credentials",
+        "description": "Credentials for the service",
+        "x-oauth2-provider": "surveymonkey", 
+        "required": ["access_token"],
+        "properties": {     
+          "access_token": {
+            "title": "Access Token",
+            "order": 0,
+            "type": "string",
+            "airbyte_secret": true,
+            "description": "Access Token for making authenticated requests. See the <a href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
+          }
+        }
+    },
+      "start_date": {
+        "title": "Start Date",
+        "order": 1,
+        "type": "string",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?$",
+        "examples": ["2021-01-01T00:00:00Z"]
+      },
+      "survey_ids": {
+        "type": "array",
+        "order": 2,
+        "items": {
+          "type": "string",
+          "pattern": "^[0-9]{8,9}$"
+        },
+        "title": "Survey Monkey survey IDs",
+        "description": "IDs of the surveys from which you'd like to replicate data. If left empty, data from all boards to which you have access will be replicated."
+      }
+    }
+  },
+  "authSpecification": {
+    "provider": "surveymonkey",
+    "authUrlTemplate": "https://api.surveymonkey.com/oauth/authorize?client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&&state={{ state }}",
+    "accessTokenUrlTemplate": "https://api.surveymonkey.com/oauth/token",
+    "accessTokenBody": "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ urlencode client_id }}\", \"client_secret\": \"{{ urlencode client_secret }}\", \"redirect_uri\": \"{{ urlencode redirect_uri }}\", \"code\": \"{{ urlencode code }}\"}",
+    "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
+    "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
+    }   
+}
