@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 from .constants import url_base
 
 
-class CurrentWeather(HttpStream):
+class CurrentWeatherStream(HttpStream):
     url_base = "http://api.weatherstack.com/"
 
     # Set this as a noop.
@@ -57,7 +57,7 @@ class CurrentWeather(HttpStream):
         return None
 
 
-class Forecast(HttpStream):
+class ForecastStream(HttpStream):
     url_base = "http://api.weatherstack.com/"
 
     # Set this as a noop.
@@ -100,7 +100,7 @@ class Forecast(HttpStream):
         return None
 
 
-class Historical(HttpStream):
+class HistoricalStream(HttpStream):
     url_base = "http://api.weatherstack.com/"
 
     # Set this as a noop.
@@ -143,7 +143,7 @@ class Historical(HttpStream):
         return None
 
 
-class LocationLookup(HttpStream):
+class LocationLookupStream(HttpStream):
     url_base = "http://api.weatherstack.com/"
 
     # Set this as a noop.
@@ -206,8 +206,8 @@ class SourceWeatherstack(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = NoAuth()
         return [
-            CurrentWeather(authenticator=auth, config=config),
-            Forecast(authenticator=auth, config=config),
-            LocationLookup(authenticator=auth, config=config),
-            Historical(authenticator=auth, config=config),
+            CurrentWeatherStream(authenticator=auth, config=config),
+            ForecastStream(authenticator=auth, config=config),
+            LocationLookupStream(authenticator=auth, config=config),
+            HistoricalStream(authenticator=auth, config=config),
         ]
