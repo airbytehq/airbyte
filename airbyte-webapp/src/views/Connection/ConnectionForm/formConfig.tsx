@@ -24,12 +24,11 @@ import {
   SyncMode,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
+import { ConnectionOrPartialConnection } from "hooks/services/Connection/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { isValidCron } from "utils/cron";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
-import { ConnectionOrPartialConnection } from "./ConnectionForm";
 
 export interface FormikConnectionFormValues {
   name?: string;
@@ -98,23 +97,7 @@ export const connectionValidationSchema = yup
       return yup.object({
         cron: yup
           .object({
-            cronExpression: yup
-              .string()
-              .test({
-                name: "cronExpression",
-                message: "Incorrect cron string",
-                test(value) {
-                  if (value && isValidCron(value, { seconds: true, allowBlankDay: true })) {
-                    return true;
-                  }
-
-                  return this.createError({
-                    message: "form.cron.invalid",
-                    path: `cronExpression`,
-                  });
-                },
-              })
-              .required("form.empty.error"),
+            cronExpression: yup.string().required("form.empty.error"),
             cronTimeZone: yup.string().required("form.empty.error"),
           })
           .defined("form.empty.error"),
