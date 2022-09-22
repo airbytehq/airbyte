@@ -1,0 +1,14 @@
+.title {
+  margin: 21px 0;
+}
+
+.videos {
+  width: 425px;
+  height: 205px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0 50px;
+  background: url("./images/video-background.svg") no-repeat;
+  padding: 0 27px;
+}
