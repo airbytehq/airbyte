@@ -7,7 +7,7 @@ interface IProps {
   highlighted?: boolean;
 }
 
-export const H1 = styled.h1<IProps>`
+const H1 = styled.h1<IProps>`
   font-size: ${({ theme }) => theme.h1?.fontSize || "28px"};
   line-height: ${({ theme }) => theme.h1?.lineHeight || "34px"};
   font-style: normal;
@@ -27,11 +27,6 @@ export const H2 = styled(H1).attrs({ as: "h2" })`
 export const H3 = styled(H1).attrs({ as: "h3" })`
   font-size: 20px;
   line-height: 24px;
-`;
-
-export const H4 = styled(H1).attrs({ as: "h4" })`
-  font-size: 18px;
-  line-height: 22px;
 `;
 
 export const H5 = styled(H1).attrs({ as: "h5" })`
