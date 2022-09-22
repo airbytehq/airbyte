@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
+import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
 import { ConnectionScheduleType, OperationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
-import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
+import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
@@ -13,8 +14,11 @@ import {
   useInitialValues,
 } from "views/Connection/ConnectionForm/formConfig";
 
+import { useConfirmationModalService } from "../ConfirmationModal";
 import { useChangedFormsById } from "../FormChangeTracker";
 import { ValuesProps } from "../useConnectionHook";
+
+export type ConnectionFormMode = "create" | "edit" | "readonly";
 
 export type ConnectionOrPartialConnection =
   | WebBackendConnectionRead
@@ -27,11 +31,12 @@ export type SubmitResult = WebBackendConnectionRead | SubmitCancel;
 
 export interface ConnectionServiceProps {
   connection: WebBackendConnectionRead;
-  schemaHasBeenRefreshed: boolean;
+  schemaHasBeenRefreshed?: boolean;
   mode: ConnectionFormMode;
   formId: string;
-  setConnection: (connection: WebBackendConnectionRead) => void;
-  setSchemaHasBeenRefreshed: (refreshed: boolean) => void;
+  // only needed for edit
+  setConnection?: (connection: WebBackendConnectionRead) => void;
+  setSchemaHasBeenRefreshed?: (refreshed: boolean) => void;
   onSubmit?: (values: ValuesProps) => Promise<SubmitResult>;
   onAfterSubmit?: (submitResult: SubmitResult) => void;
   refreshCatalog: () => Promise<void>;
@@ -43,8 +48,8 @@ export function isSubmitCancel(submitResult: SubmitResult): submitResult is { su
 
 export const tidyConnectionFormValues = (
   values: FormikConnectionFormValues,
-  operations: OperationRead[] | undefined,
-  workspaceId: string
+  workspaceId: string,
+  operations?: OperationRead[]
 ): ValuesProps => {
   // Set the scheduleType based on the schedule value
   // TODO: I think this should be removed
@@ -63,6 +68,15 @@ export const tidyConnectionFormValues = (
   return formValues;
 };
 
+export const useGetErrorMessage = (formValid: boolean, connectionDirty: boolean, error: FormError) => {
+  const { formatMessage } = useIntl();
+  return error
+    ? generateMessageFromError(error)
+    : connectionDirty && !formValid
+    ? formatMessage({ id: "connectionForm.validation.error" })
+    : null;
+};
+
 const useConnectionForm = ({
   connection,
   mode,
@@ -73,6 +87,8 @@ const useConnectionForm = ({
   setSchemaHasBeenRefreshed,
   refreshCatalog,
 }: ConnectionServiceProps) => {
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+
   const [submitError, setSubmitError] = useState<Error | null>(null);
 
   const [{ loading: isRefreshingCatalog }, refreshConnectionCatalog] = useAsyncFn(refreshCatalog, []);
@@ -83,7 +99,23 @@ const useConnectionForm = ({
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
 
-  console.log({ submitError });
+  const onRefreshSourceSchema = async () => {
+    if (connectionDirty) {
+      // The form is dirty so we show a warning before proceeding.
+      openConfirmationModal({
+        title: "connection.updateSchema.formChanged.title",
+        text: "connection.updateSchema.formChanged.text",
+        submitButtonText: "connection.updateSchema.formChanged.confirm",
+        onSubmit: () => {
+          closeConfirmationModal();
+          refreshConnectionCatalog();
+        },
+      });
+    } else {
+      // The form is not dirty so we can directly refresh the source schema.
+      refreshConnectionCatalog();
+    }
+  };
 
   // const onFormSubmit = useCallback(
   //   async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
@@ -112,6 +144,13 @@ const useConnectionForm = ({
 
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
+  /** Required Fields
+   * connection
+   * mode
+   * destDefinition
+   * onRefreshSourceSchema? Can probably be prop-drilled
+   **/
+
   return {
     initialValues,
     destDefinition,
@@ -123,6 +162,7 @@ const useConnectionForm = ({
     connectionDirty,
     isRefreshingCatalog,
     schemaHasBeenRefreshed,
+    onRefreshSourceSchema,
     onAfterSubmit,
     setConnection,
     setSchemaHasBeenRefreshed,

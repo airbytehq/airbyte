@@ -1,5 +1,5 @@
-import { FormikHelpers } from "formik";
-import React, { useEffect, useState } from "react";
+import { Formik, FormikHelpers } from "formik";
+import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 import styled from "styled-components";
@@ -17,10 +17,12 @@ import { tidyConnectionFormValues, useConnectionFormService } from "hooks/servic
 import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, useUpdateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
-import { ConnectionForm } from "views/Connection/ConnectionForm";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+import EditControls from "views/Connection/ConnectionForm/components/EditControls";
+import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
+import { connectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 interface ResetWarningModalProps {
   onClose: (withReset: boolean) => void;
@@ -76,20 +78,22 @@ export const ConnectionReplication: React.FC = () => {
   const { formatMessage } = useIntl();
 
   const { openModal, closeModal } = useModalService();
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const { closeConfirmationModal } = useConfirmationModalService();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
 
-  const [hasBeenSaved, setHasBeenSaved] = useState(false);
+  const [, /* hasBeenSaved*/ setHasBeenSaved] = useState(false);
 
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const {
     connection,
+    initialValues,
     isRefreshingCatalog,
     connectionDirty,
+    submitError,
     schemaHasBeenRefreshed,
-    refreshConnectionCatalog,
+    // onRefreshSourceSchema,
     setSubmitError,
     setConnection,
     setSchemaHasBeenRefreshed,
@@ -126,12 +130,12 @@ export const ConnectionReplication: React.FC = () => {
       });
     }
 
-    setConnection(updatedConnection);
+    setConnection?.(updatedConnection);
     setHasBeenSaved(true);
   };
 
-  const onSubmitForm = async (values: FormikConnectionFormValues, _: FormikHelpers<FormikConnectionFormValues>) => {
-    const formValues = tidyConnectionFormValues(values, connection.operations, workspaceId);
+  const onFormSubmit = async (values: FormikConnectionFormValues, _: FormikHelpers<FormikConnectionFormValues>) => {
+    const formValues = tidyConnectionFormValues(values, workspaceId, connection.operations);
 
     // Detect whether the catalog has any differences in its enabled streams compared to the original one.
     // This could be due to user changes (e.g. in the sync mode) or due to new/removed
@@ -166,7 +170,7 @@ export const ConnectionReplication: React.FC = () => {
         // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save.
         await saveConnection(formValues, { skipReset: true });
       }
-      setSchemaHasBeenRefreshed(false);
+      setSchemaHasBeenRefreshed?.(false);
     } catch (e) {
       setSubmitError(e);
     }
@@ -191,39 +195,41 @@ export const ConnectionReplication: React.FC = () => {
     }
   }, [connectionDirty]);
 
-  const onRefreshSourceSchema = async () => {
-    if (connectionDirty) {
-      // The form is dirty so we show a warning before proceeding.
-      openConfirmationModal({
-        title: "connection.updateSchema.formChanged.title",
-        text: "connection.updateSchema.formChanged.text",
-        submitButtonText: "connection.updateSchema.formChanged.confirm",
-        onSubmit: () => {
-          closeConfirmationModal();
-          refreshConnectionCatalog();
-        },
-      });
-    } else {
-      // The form is not dirty so we can directly refresh the source schema.
-      refreshConnectionCatalog();
-    }
+  const onCancelConnectionFormEdit = () => {
+    setSchemaHasBeenRefreshed?.(false);
   };
 
-  const onCancelConnectionFormEdit = () => {
-    setSchemaHasBeenRefreshed(false);
-  };
+  const getErrorMessage = useCallback(
+    (formValid: boolean, dirty: boolean) =>
+      submitError
+        ? generateMessageFromError(submitError)
+        : dirty && !formValid
+        ? formatMessage({ id: "connectionForm.validation.error" })
+        : null,
+    [formatMessage, submitError]
+  );
 
   return (
     <Content>
       {!isRefreshingCatalog && connection ? (
-        <ConnectionForm
-          /* successMessage could be replaced with a toast */
-          successMessage={hasBeenSaved && <FormattedMessage id="form.changesSaved" />}
-          canSubmitUntouchedForm={schemaHasBeenRefreshed}
-          onFormSubmit={onSubmitForm}
-          onCancel={onCancelConnectionFormEdit}
-          onRefreshSourceSchema={onRefreshSourceSchema}
-        />
+        <Formik initialValues={initialValues} validationSchema={connectionValidationSchema} onSubmit={onFormSubmit}>
+          {({ values, isSubmitting, isValid, dirty, resetForm }) => (
+            <>
+              <ConnectionFormFields values={values} isSubmitting={isSubmitting} />
+              <EditControls
+                isSubmitting={isSubmitting}
+                dirty={dirty}
+                resetForm={() => {
+                  resetForm();
+                  onCancelConnectionFormEdit();
+                }}
+                // successMessage={successMessage}
+                errorMessage={getErrorMessage(isValid, dirty)}
+                enableControls={schemaHasBeenRefreshed || connectionDirty}
+              />
+            </>
+          )}
+        </Formik>
       ) : (
         <LoadingSchema />
       )}
