@@ -10,6 +10,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-scheduler:scheduler-models')
     implementation project(':airbyte-scheduler:scheduler-persistence')
+    implementation project(':airbyte-persistence:job-persistence')
     // todo (cgardens) - remove this dep. just needs temporal client.
     implementation project(':airbyte-workers')
 

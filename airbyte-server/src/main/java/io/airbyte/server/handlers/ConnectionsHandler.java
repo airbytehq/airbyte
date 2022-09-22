@@ -40,10 +40,10 @@ import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.CatalogDiffConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
@@ -363,6 +363,7 @@ public class ConnectionsHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
+    // listing all of this is also bad
     for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId())) {
       if (standardSync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
         continue;
