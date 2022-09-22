@@ -41,7 +41,6 @@
     "flat": "^5.0.2",
     "formik": "^2.2.9",
     "framer-motion": "^6.3.11",
-    "js-cookie": "^3.0.1",
     "launchdarkly-js-client-sdk": "^2.22.1",
     "lodash": "^4.17.21",
     "mdast": "^3.0.0",
