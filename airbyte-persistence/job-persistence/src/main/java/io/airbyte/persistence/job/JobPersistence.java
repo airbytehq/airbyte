@@ -11,6 +11,7 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
 import io.airbyte.persistence.job.models.AttemptWithJobInfo;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
@@ -293,5 +294,7 @@ public interface JobPersistence {
    * "major" version bump as it will no longer be needed.
    */
   void setSchedulerMigrationDone() throws IOException;
+
+  List<AttemptNormalizationStatus> getAttemptNormalizationStatusesForJob(final Long jobId) throws IOException;
 
 }
