@@ -24,8 +24,9 @@ from source_mixpanel.streams import (
     MixpanelStream,
     Revenue,
 )
+from source_mixpanel.utils import read_full_refresh
 
-from .utils import get_url_to_mock, read_full_refresh, setup_response
+from .utils import get_url_to_mock, setup_response
 
 logger = AirbyteLogger()
 

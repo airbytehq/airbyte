@@ -6,10 +6,11 @@ import copy
 
 import pytest
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from source_mixpanel.source import SourceMixpanel, TokenAuthenticatorBase64
 from source_mixpanel.streams import FunnelsList
 
-from .utils import get_url_to_mock, setup_response
+from .utils import command_check, get_url_to_mock, setup_response
 
 logger = AirbyteLogger()
 
@@ -40,14 +41,14 @@ def test_check_connection(requests_mock, check_connection_url, config_raw, respo
 
 def test_check_connection_bad_config():
     config = {}
-    ok, error = SourceMixpanel().check_connection(logger, config)
-    assert not ok and error
+    source = SourceMixpanel()
+    assert command_check(source, config) == AirbyteConnectionStatus(status=Status.FAILED, message="KeyError('api_secret')")
 
 
 def test_check_connection_incomplete(config_raw):
     config_raw.pop("api_secret")
-    ok, error = SourceMixpanel().check_connection(logger, config_raw)
-    assert not ok and error
+    source = SourceMixpanel()
+    assert command_check(source, config_raw) == AirbyteConnectionStatus(status=Status.FAILED, message="KeyError('api_secret')")
 
 
 def test_streams(config_raw):
