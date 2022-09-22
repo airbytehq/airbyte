@@ -300,7 +300,8 @@ class SyncWorkflowTest {
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutputNoRecordsCommitted, syncInput.getCatalog());
     verifyNoInteractions(normalizationActivity);
-    verifyNoInteractions(dbtTransformationActivity);
+    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
+        operatorDbtInput);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")

@@ -57,7 +57,6 @@ dependencies {
         exclude group: 'io.micronaut.security'
         exclude group: 'io.micronaut.sql'
     }
-    implementation project(':airbyte-scheduler:scheduler-models')
     implementation project(':airbyte-api')
 
     testAnnotationProcessor platform(libs.micronaut.bom)
