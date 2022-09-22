@@ -94,9 +94,12 @@ class AttributionReport(AmazonAdsStream):
         Iterate through self._profiles list and send read all records for each profile.
         """
         for profile in self._profiles:
-            self._set_dates(profile)
-            self._current_profile_id = profile.profileId
-            yield from super().read_records(*args, **kvargs)
+            try:
+                self._set_dates(profile)
+                self._current_profile_id = profile.profileId
+                yield from super().read_records(*args, **kvargs)
+            except Exception as err:
+                self.logger.info("some error occurred: %s", err)
 
     def request_headers(self, *args, **kvargs) -> MutableMapping[str, Any]:
         headers = super().request_headers(*args, **kvargs)
