@@ -62,7 +62,7 @@ class SourceFilesAbstractSpec(BaseModel):
     )
 
     format: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat] = Field(
-        default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20
+        default="csv", title="File Format", description="The format of the files you'd like to replicate", order=30
     )
 
     user_schema: str = Field(
@@ -74,12 +74,12 @@ class SourceFilesAbstractSpec(BaseModel):
         '<a href="https://json-schema.org/understanding-json-schema/reference/type.html" target="_blank">JSON Schema '
         "datatypes</a>. Leave as {} to auto-infer the schema.",
         examples=['{"column_1": "number", "column_2": "string", "column_3": "array", "column_4": "object", "column_5": "boolean"}'],
-        order=30,
+        order=40,
     )
 
     @staticmethod
-    def change_format_to_oneOf(schema: dict) -> dict:
-        props_to_change = ["format"]
+    def change_format_and_authentication_to_oneOf(schema: dict) -> dict:
+        props_to_change = ["format", "authentication"]
         for prop in props_to_change:
             schema["properties"][prop]["type"] = "object"
             if "oneOf" in schema["properties"][prop]:
@@ -108,6 +108,6 @@ class SourceFilesAbstractSpec(BaseModel):
         """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema(*args, **kwargs)
         cls.check_provider_added(schema)
-        schema = cls.change_format_to_oneOf(schema)
+        schema = cls.change_format_and_authentication_to_oneOf(schema)
         schema = cls.resolve_refs(schema)
         return schema

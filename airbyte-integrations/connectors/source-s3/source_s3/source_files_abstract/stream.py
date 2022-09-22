@@ -36,7 +36,7 @@ class ConfigurationError(Exception):
 class FileStream(Stream, ABC):
     @property
     def fileformatparser_map(self) -> Mapping[str, type]:
-        """Mapping where every key is equal  'filetype' and values are  corresponding  parser classes."""
+        """Mapping where every key is equal 'filetype' and values are corresponding parser classes."""
         return {
             "csv": CsvParser,
             "parquet": ParquetParser,
@@ -51,9 +51,10 @@ class FileStream(Stream, ABC):
     airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
     datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
-    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None):
+    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None, authentication: dict = {}):
         """
         :param dataset: table name for this stream
+        :param authentication: authentication specific mapping as described in spec.json
         :param provider: provider specific mapping as described in spec.json
         :param format: file format specific mapping as described in spec.json
         :param path_pattern: glob-style pattern for file-matching (https://facelessuser.github.io/wcmatch/glob/)
@@ -64,10 +65,13 @@ class FileStream(Stream, ABC):
         self._provider = provider
         self._format = format
         self._schema: Dict[str, Any] = {}
+        self._authentication = authentication
         if schema:
             self._schema = self._parse_user_input_schema(schema)
         self.master_schema: Dict[str, Any] = None
         LOGGER.info(f"initialised stream with format: {format}")
+        LOGGER.debug(f"initialised stream with provider: {provider}")
+        LOGGER.debug(f"initialised stream with authentication: {authentication}")
 
     @staticmethod
     def _parse_user_input_schema(schema: str) -> Dict[str, Any]:

@@ -22,6 +22,106 @@
         "order": 10,
         "type": "string"
       },
+      "authentication": {
+        "title": "Authentication Method",
+        "description": "The authentication method to use for accessing the bucket",
+        "default": "default_credentials",
+        "order": 12,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Default Credential Provider Chain",
+            "description": "Use default <a href=\"https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#configuring-credentials\" target=\"_blank\">AWS credential provider</html> chain (such as EC2 instance profile).",
+            "type": "object",
+            "properties": {
+              "auth_method": {
+                "title": "Authentication Method",
+                "const": "default_credentials",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "title": "Provide Credentials",
+            "description": "Use Access Key ID and Access Key Secret as credentials. Needs proper permissions for accessing S3-Bucket.",
+            "type": "object",
+            "properties": {
+              "auth_method": {
+                "title": "Authentication Method",
+                "const": "provided_credentials",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "title": "No Credentials",
+            "description": "For access to public S3-Buckets no credentials are required. Request will be unsigned.",
+            "type": "string",
+            "properties": {
+              "auth_method": {
+                "title": "Authentication Method",
+                "const": "no_credentials",
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "provider": {
+        "title": "S3: Amazon Web Services",
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "title": "Bucket",
+            "description": "Name of the S3 bucket where the file(s) exist.",
+            "order": 0,
+            "type": "string"
+          },
+          "aws_access_key_id": {
+            "title": "Aws Access Key Id",
+            "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+            "airbyte_secret": true,
+            "type": "string"
+          },
+          "aws_secret_access_key": {
+            "title": "Aws Secret Access Key",
+            "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+            "airbyte_secret": true,
+            "type": "string"
+          },
+          "path_prefix": {
+            "title": "Path Prefix",
+            "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimize finding these in S3. This is optional but recommended if your bucket contains many folders/files which you don't need to replicate.",
+            "default": "",
+            "order": 3,
+            "type": "string"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
+            "default": "",
+            "order": 4,
+            "type": "string"
+          },
+          "use_ssl": {
+            "title": "Use TLS",
+            "description": "Whether the remote server is using a secure SSL/TLS connection. Only relevant if using an S3-compatible, non-AWS server",
+            "order": 5,
+            "type": "boolean"
+          },
+          "verify_ssl_cert": {
+            "title": "Verify TLS Certificates",
+            "description": "Set this to false to allow self signed certificates. Only relevant if using an S3-compatible, non-AWS server",
+            "order": 6,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "bucket"
+        ],
+        "order": 11,
+        "description": "Use this to load files from S3 or S3-compatible services"
+      },
       "format": {
         "title": "File Format",
         "description": "The format of the files you'd like to replicate",
@@ -102,7 +202,9 @@
                 "title": "Advanced Options",
                 "description": "Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
                 "default": "{}",
-                "examples": ["{\"column_names\": [\"column1\", \"column2\"]}"],
+                "examples": [
+                  "{\"column_names\": [\"column1\", \"column2\"]}"
+                ],
                 "order": 8,
                 "type": "string"
               },
@@ -182,13 +284,21 @@
                 "title": "Unexpected field behavior",
                 "description": "How JSON fields outside of explicit_schema (if given) are treated. Check <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.json.ParseOptions.html\" target=\"_blank\">PyArrow documentation</a> for details",
                 "default": "infer",
-                "examples": ["ignore", "infer", "error"],
+                "examples": [
+                  "ignore",
+                  "infer",
+                  "error"
+                ],
                 "order": 1,
                 "allOf": [
                   {
                     "title": "UnexpectedFieldBehaviorEnum",
                     "description": "An enumeration.",
-                    "enum": ["ignore", "infer", "error"],
+                    "enum": [
+                      "ignore",
+                      "infer",
+                      "error"
+                    ],
                     "type": "string"
                   }
                 ]
@@ -213,70 +323,18 @@
         ],
         "order": 30,
         "type": "string"
-      },
-      "provider": {
-        "title": "S3: Amazon Web Services",
-        "type": "object",
-        "properties": {
-          "bucket": {
-            "title": "Bucket",
-            "description": "Name of the S3 bucket where the file(s) exist.",
-            "order": 0,
-            "type": "string"
-          },
-          "aws_access_key_id": {
-            "title": "AWS Access Key ID",
-            "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
-            "airbyte_secret": true,
-            "order": 1,
-            "type": "string"
-          },
-          "aws_secret_access_key": {
-            "title": "AWS Secret Access Key",
-            "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
-            "airbyte_secret": true,
-            "order": 2,
-            "type": "string"
-          },
-          "use_aws_default_credential_provider_chain": {
-            "title": "Use Aws Default Credential Provider Chain",
-            "description": "Use default AWS credential provider chain (such as EC2 instance profile). Leave the Access Key ID and Secret Access Key blank if setting this to true.",
-            "type": "boolean"
-          },          
-          "path_prefix": {
-            "title": "Path Prefix",
-            "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimize finding these in S3. This is optional but recommended if your bucket contains many folders/files which you don't need to replicate.",
-            "default": "",
-            "order": 3,
-            "type": "string"
-          },
-          "endpoint": {
-            "title": "Endpoint",
-            "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
-            "default": "",
-            "order": 4,
-            "type": "string"
-          },
-          "use_ssl": {
-            "title": "Use TLS",
-            "description": "Whether the remote server is using a secure SSL/TLS connection. Only relevant if using an S3-compatible, non-AWS server",
-            "order": 5,
-            "type": "boolean"
-          },
-          "verify_ssl_cert": {
-            "title": "Verify TLS Certificates",
-            "description": "Set this to false to allow self signed certificates. Only relevant if using an S3-compatible, non-AWS server",
-            "order": 6,
-            "type": "boolean"
-          }
-        },
-        "required": ["bucket"],
-        "order": 11,
-        "description": "Use this to load files from S3 or S3-compatible services"
       }
     },
-    "required": ["dataset", "path_pattern", "provider"]
+    "required": [
+      "dataset",
+      "path_pattern",
+      "provider"
+    ]
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+  "supported_destination_sync_modes": [
+    "overwrite",
+    "append",
+    "append_dedup"
+  ]
 }

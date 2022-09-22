@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -25,7 +25,8 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         :yield: key (name) of each object
         """
         provider = self._provider
-        client = make_s3_client(provider)
+        authentication = self._authentication
+        client = make_s3_client(provider, authentication)
 
         ctoken = None
         while True:

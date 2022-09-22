@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from enum import Enum
@@ -15,43 +15,45 @@ class AuthenticationMethod(Enum):
     UNSIGNED = 3
 
 
-def get_authentication_method(provider: dict) -> AuthenticationMethod:
+def get_authentication_method(provider: dict, authentication: dict = {}) -> AuthenticationMethod:
     """
     Return authentication method for this provider.
     :param provider provider configuration from connector configuration.
+    :param authentication authentication configuration from connector configuration.
     :return authentication method.
     """
     if provider.get("aws_access_key_id") and provider.get("aws_secret_access_key"):
         return AuthenticationMethod.ACCESS_KEY_SECRET_ACCESS_KEY
-    elif provider.get("use_aws_default_credential_provider_chain"):
+    elif authentication.get("auth_method") == "default_credentials":
         return AuthenticationMethod.DEFAULT
     else:
         return AuthenticationMethod.UNSIGNED
 
 
-def make_s3_client(provider: dict, session: boto3.session.Session = None, config: Config = None) -> BaseClient:
+def make_s3_client(provider: dict, authentication: dict = {}, session: boto3.session.Session = None, config: Config = None) -> BaseClient:
     """
     Construct boto3 client with specified config and remote endpoint
     :param provider provider configuration from connector configuration.
+    :param authentication authentication configuration from connector configuration.
     :param session User session to create client from. Default boto3 sesion in case of session not specified.
     :param config Client config parameter in case of using creds from .aws/config file.
     :return Boto3 S3 client instance.
     """
-    client_kv_args = _get_s3_client_args(provider)
+    client_kv_args = _get_s3_client_args(provider, authentication)
     if session is None:
         return boto3.client("s3", **client_kv_args)
     else:
         return session.client("s3", **client_kv_args)
 
 
-def _get_s3_client_args(provider: dict) -> dict:
+def _get_s3_client_args(provider: dict, authentication: dict = {}) -> dict:
     """
     Returns map of args used for creating s3 boto3 client.
     :param provider provider configuration from connector configuration.
     :return map of s3 client arguments.
     """
     client_kv_args = {}
-    authentication_method = get_authentication_method(provider)
+    authentication_method = get_authentication_method(provider, authentication)
 
     if authentication_method == AuthenticationMethod.ACCESS_KEY_SECRET_ACCESS_KEY:
         client_kv_args["aws_access_key_id"] = provider.get("aws_access_key_id")

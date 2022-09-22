@@ -3,16 +3,27 @@
 #
 
 
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping, Optional, Union
 
 from pydantic import BaseModel, Field
 
+from .source_files_abstract.auth_methods.default_credentials_spec import DefaultCredentials
+from .source_files_abstract.auth_methods.no_credentials_spec import NoCredentials
+from .source_files_abstract.auth_methods.provided_credentials_spec import ProvidedCredentials
 from .source_files_abstract.source import SourceFilesAbstract
 from .source_files_abstract.spec import SourceFilesAbstractSpec
 from .stream import IncrementalFileStreamS3
 
 
 class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
+
+    authentication: Union[DefaultCredentials, ProvidedCredentials, NoCredentials] = Field(
+        default="default_credentials",
+        title="Authentication Method",
+        description="The authentication method to use for accessing the bucket.",
+        order=3,
+    )
+
     class Config:
         title = "S3 Source Spec"
 
@@ -23,26 +34,22 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             schema_extra = {"order": 11, "description": "Use this to load files from S3 or S3-compatible services"}
 
         bucket: str = Field(description="Name of the S3 bucket where the file(s) exist.", order=0)
+
         aws_access_key_id: Optional[str] = Field(
-            title="AWS Access Key ID",
             default=None,
-            description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
-            "permissions. If accessing publicly available data, this field is not necessary.",
+            description="In order to access private Buckets stored on AWS S3, this connector requires credentials "
+            "with the proper permissions. If accessing publicly available data, this field is not necessary.",
             airbyte_secret=True,
             order=1,
         )
         aws_secret_access_key: Optional[str] = Field(
-            title="AWS Secret Access Key",
             default=None,
-            description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
-            "permissions. If accessing publicly available data, this field is not necessary.",
+            description="In order to access private Buckets stored on AWS S3, this connector requires credentials "
+            "with the proper permissions. If accessing publicly available data, this field is not necessary.",
             airbyte_secret=True,
             order=2,
         )
-        use_aws_default_credential_provider_chain: bool = Field(
-            default=None,
-            description="Use default AWS credential provider chain (such as EC2 instance profile). Leave the Access Key ID and Secret Access Key blank if setting this to true.",
-        )        
+
         path_prefix: str = Field(
             default="",
             description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, "

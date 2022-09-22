@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,7 +7,7 @@ from typing import Mapping
 
 import pytest
 from airbyte_cdk import AirbyteLogger
-from source_s3.s3_utils import get_authentication_method, AuthenticationMethod
+from source_s3.s3_utils import AuthenticationMethod, get_authentication_method
 
 LOGGER = AirbyteLogger()
 
