@@ -13,7 +13,7 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
   const connectionService = useWebConnectionService();
   const [schemaHasBeenRefreshed, setSchemaHasBeenRefreshed] = useState(false);
 
-  const [{ loading: schemaRefreshing }, refreshConnectionCatalog] = useAsyncFn(async () => {
+  const [{ loading: schemaRefreshing }, refreshSchema] = useAsyncFn(async () => {
     setConnection(await connectionService.getConnection(connectionId, true));
     setSchemaHasBeenRefreshed(true);
   }, [connectionId]);
@@ -24,7 +24,7 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
     schemaHasBeenRefreshed,
     setConnection,
     setSchemaHasBeenRefreshed,
-    refreshConnectionCatalog,
+    refreshSchema,
   };
 };
 

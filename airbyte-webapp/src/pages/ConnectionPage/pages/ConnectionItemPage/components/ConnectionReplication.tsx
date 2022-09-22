@@ -1,4 +1,4 @@
-import { Formik, FormikHelpers } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
@@ -82,21 +82,19 @@ export const ConnectionReplication: React.FC = () => {
 
   const { openModal, closeModal } = useModalService();
   const { closeConfirmationModal } = useConfirmationModalService();
+  const [saved, setSaved] = useState(false);
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
-
-  const [, /* hasBeenSaved*/ setHasBeenSaved] = useState(false);
 
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const {
     connection,
     schemaRefreshing,
-    connectionDirty,
     schemaHasBeenRefreshed,
-    onRefreshSourceSchema,
     setConnection,
     setSchemaHasBeenRefreshed,
+    refreshSchema,
   } = useConnectionEditService();
 
   const { initialValues, getErrorMessage, setSubmitError } = useConnectionFormService();
@@ -132,8 +130,7 @@ export const ConnectionReplication: React.FC = () => {
       });
     }
 
-    setConnection?.(updatedConnection);
-    setHasBeenSaved(true);
+    setConnection(updatedConnection);
   };
 
   const onFormSubmit = async (values: FormikConnectionFormValues, _: FormikHelpers<FormikConnectionFormValues>) => {
@@ -165,22 +162,28 @@ export const ConnectionReplication: React.FC = () => {
           content: (props) => <ResetWarningModal {...props} stateType={stateType} />,
         });
         if (result.type !== "canceled") {
+          // Save the connection taking into account the correct skipRefresh value from the dialog choice.
           await saveConnection(formValues, { skipReset: !result.reason });
+        } else {
+          // We don't want to set saved to true or schema has been refreshed to false.
+          return;
         }
-        // Save the connection taking into account the correct skipRefresh value from the dialog choice.
       } else {
         // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save.
         await saveConnection(formValues, { skipReset: true });
       }
-      setSchemaHasBeenRefreshed?.(false);
+
+      setSaved(true);
+      setSchemaHasBeenRefreshed(false);
     } catch (e) {
       setSubmitError(e);
     }
   };
 
   useEffect(() => {
+    // If we have a catalogDiff we always want to show the modal
     const { catalogDiff, syncCatalog } = connection;
-    if (catalogDiff?.transforms && catalogDiff.transforms.length > 0) {
+    if (catalogDiff?.transforms && catalogDiff.transforms?.length > 0) {
       openModal<void>({
         title: formatMessage({ id: "connection.updateSchema.completed" }),
         preventCancel: true,
@@ -191,35 +194,25 @@ export const ConnectionReplication: React.FC = () => {
     }
   }, [connection, formatMessage, openModal]);
 
-  useEffect(() => {
-    if (connectionDirty) {
-      setHasBeenSaved(false);
-    }
-  }, [connectionDirty]);
-
-  const onCancelConnectionFormEdit = () => {
-    setSchemaHasBeenRefreshed?.(false);
-  };
-
   return (
     <Content>
       {!schemaRefreshing && connection ? (
         <Formik initialValues={initialValues} validationSchema={connectionValidationSchema} onSubmit={onFormSubmit}>
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
-            <>
-              <ConnectionFormFields values={values} isSubmitting={isSubmitting} />
+            <Form>
+              <ConnectionFormFields values={values} isSubmitting={isSubmitting} refreshSchema={refreshSchema} />
               <EditControls
                 isSubmitting={isSubmitting}
                 dirty={dirty}
                 resetForm={() => {
                   resetForm();
-                  onCancelConnectionFormEdit();
+                  setSchemaHasBeenRefreshed(false);
                 }}
-                // successMessage={successMessage}
+                successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
                 errorMessage={getErrorMessage(isValid, dirty)}
-                enableControls={schemaHasBeenRefreshed || connectionDirty}
+                enableControls={schemaHasBeenRefreshed || dirty}
               />
-            </>
+            </Form>
           )}
         </Formik>
       ) : (

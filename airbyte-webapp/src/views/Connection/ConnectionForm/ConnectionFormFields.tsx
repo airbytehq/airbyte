@@ -92,10 +92,16 @@ interface ConnectionFormFieldsProps {
   className?: string;
   values: ValuesProps | FormikConnectionFormValues;
   isSubmitting: boolean;
+  refreshSchema: () => void;
 }
 
-export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ className, values, isSubmitting }) => {
-  const { mode, onRefreshSourceSchema } = useConnectionFormService();
+export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({
+  className,
+  values,
+  isSubmitting,
+  refreshSchema,
+}) => {
+  const { mode } = useConnectionFormService();
   const { formatMessage } = useIntl();
 
   return (
@@ -171,7 +177,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ clas
             component={SchemaField}
             isSubmitting={isSubmitting}
             additionalControl={
-              <Button onClick={onRefreshSourceSchema} type="button" secondary>
+              <Button onClick={refreshSchema} type="button" secondary>
                 <TryArrow icon={faSyncAlt} />
                 <FormattedMessage id="connection.updateSchema" />
               </Button>

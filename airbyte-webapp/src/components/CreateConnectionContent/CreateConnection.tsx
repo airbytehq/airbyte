@@ -1,4 +1,4 @@
-import { Field, FieldProps, Formik, FormikHelpers } from "formik";
+import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
 import React, { Suspense, useCallback } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
@@ -110,7 +110,7 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
       <div className={styles.connectionFormContainer}>
         <Formik initialValues={initialValues} validationSchema={connectionValidationSchema} onSubmit={onFormSubmit}>
           {({ values, isSubmitting, isValid, dirty }) => (
-            <>
+            <Form>
               <Section>
                 <Field name="name">
                   {({ field, meta }: FieldProps<string>) => (
@@ -143,7 +143,7 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
                   )}
                 </Field>
               </Section>
-              <ConnectionFormFields values={values} isSubmitting={isSubmitting} />
+              <ConnectionFormFields values={values} isSubmitting={isSubmitting} refreshSchema={onDiscoverSchema} />
               <OperationsSection
                 onStartEditTransformation={toggleEditingTransformation}
                 onEndEditTransformation={toggleEditingTransformation}
@@ -153,7 +153,7 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
                 isValid={isValid && !editingTransformation}
                 errorMessage={getErrorMessage(isValid, dirty)}
               />
-            </>
+            </Form>
           )}
         </Formik>
       </div>
