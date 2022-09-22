@@ -63,6 +63,7 @@ public class BigQueryUtils {
   private static final DateTimeFormatter formatter =
       DateTimeFormatter.ofPattern("[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
           "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
+  private static final String USER_AGENT_FORMAT = "%s (GPN: Airbyte)";
 
   public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -353,17 +354,13 @@ public class BigQueryUtils {
     }
   }
 
-  public static HeaderProvider getHeaders() {
-    String connectorName = getConnectorNameFromEnv();
-
-    return () -> ImmutableMap.of("user-agent", connectorName + " (GPN:Airbyte)");
+  public static HeaderProvider getHeaderProvider() {
+    String connectorName = getConnectorNameOrDefault();
+    return () -> ImmutableMap.of("user-agent", String.format(USER_AGENT_FORMAT, connectorName));
   }
 
-  private static String getConnectorNameFromEnv() {
-    String imageName = System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE);
-    // Transform airbyte/destination-bigquery:1.2.0 -> destination-bigquery/1.2.0
-    // If imageName is null (e.g. in case of integration tests) return destination-bigquery
-    return Optional.ofNullable(imageName)
+  private static String getConnectorNameOrDefault() {
+    return Optional.ofNullable(System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE))
         .map(name -> name.replace("airbyte/", Strings.EMPTY).replace(":", "/"))
         .orElse("destination-bigquery");
   }
