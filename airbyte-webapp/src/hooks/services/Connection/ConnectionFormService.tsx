@@ -53,11 +53,6 @@ const useConnectionForm = ({
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      // Set the scheduleType based on the schedule value
-      values.scheduleType = values.scheduleData?.basicSchedule
-        ? ConnectionScheduleType.basic
-        : ConnectionScheduleType.manual;
-
       // TODO: We should align these types
       // With the PATCH-style endpoint available we might be able to forego this pattern
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
