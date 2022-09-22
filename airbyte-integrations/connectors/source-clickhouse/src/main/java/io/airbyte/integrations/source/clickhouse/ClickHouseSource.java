@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
+
 public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   /**
@@ -90,9 +92,16 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
         config.get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 
+    boolean isAdditionalParamsExists = config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty();
     // assume ssl if not explicitly mentioned.
+    if (isSsl || isAdditionalParamsExists) {
+      jdbcUrl.append("?");
+    }
     if (isSsl) {
-      jdbcUrl.append("?").append(SSL_MODE);
+      jdbcUrl.append(SSL_MODE).append(AMPERSAND);
+    }
+    if (isAdditionalParamsExists) {
+      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

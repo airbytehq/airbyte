@@ -5,6 +5,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -18,6 +19,8 @@ import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
+
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -112,6 +115,35 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   @Override
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new ClickHouseSource();
+  }
+
+  @Test
+  public void testEmptyExtraParams() {
+    final String extraParam = "";
+    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    final JsonNode jdbcConfig = new ClickHouseSource().toDatabaseConfig(config);
+    assertNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+  }
+
+  @Test
+  public void testExtraParamsWithSsl() {
+    final String extraParam = "key1=value1&key2=value2&key3=value3";
+    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    final JsonNode jdbcConfig = new ClickHouseSource().toDatabaseConfig(config);
+    assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertTrue(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText().endsWith(extraParam));
+  }
+
+  private JsonNode buildConfigWithExtraJdbcParameters(String extraParam) {
+
+    return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
+            "host", "localhost",
+            "port", 8123,
+            "database", "db",
+            "username", "username",
+            "password", "verysecure",
+            "jdbc_url_params", extraParam,
+            "ssl", false));
   }
 
 }
