@@ -1,4 +1,4 @@
-FROM debian:10.5-slim
+FROM amazonlinux:2022.0.20220831.1
 
 WORKDIR /airbyte
 
