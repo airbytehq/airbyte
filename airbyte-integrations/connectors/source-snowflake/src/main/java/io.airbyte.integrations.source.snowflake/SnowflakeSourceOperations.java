@@ -26,7 +26,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putBigInt(final ObjectNode node, final String columnName, final ResultSet resultSet, int index) {
+  protected void putBigInt(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
     try {
       final var value = resultSet.getBigDecimal(index);
       node.put(columnName, value);
@@ -41,7 +41,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JsonSchemaType getJsonType(JDBCType jdbcType) {
+  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
@@ -58,6 +58,39 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
       // types to String
       default -> JsonSchemaType.STRING;
     };
+  }
+
+  /**
+   * The only difference between this method and the one in {@link JdbcSourceOperations} is that
+   * the TIMESTAMP_WITH_TIMEZONE columns are also converted using the putTimestamp method.
+   * This is necessary after the JDBC upgrade from 3.13.9 to 3.13.22. This change may need to be
+   * added to {@link JdbcSourceOperations#setJsonField} in the future.
+   * <p/>
+   * See issue: https://github.com/airbytehq/airbyte/issues/16838.
+   */
+  @Override
+  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+    final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
+    final String columnName = resultSet.getMetaData().getColumnName(colIndex);
+    final JDBCType columnType = safeGetJdbcType(columnTypeInt);
+
+    // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
+    switch (columnType) {
+      case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
+      case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
+      case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
+      case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
+      case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
+      case REAL -> putFloat(json, columnName, resultSet, colIndex);
+      case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
+      case CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
+      case DATE -> putDate(json, columnName, resultSet, colIndex);
+      case TIME -> putTime(json, columnName, resultSet, colIndex);
+      case TIMESTAMP, TIMESTAMP_WITH_TIMEZONE -> putTimestamp(json, columnName, resultSet, colIndex);
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
+      case ARRAY -> putArray(json, columnName, resultSet, colIndex);
+      default -> putDefault(json, columnName, resultSet, colIndex);
+    }
   }
 
 }

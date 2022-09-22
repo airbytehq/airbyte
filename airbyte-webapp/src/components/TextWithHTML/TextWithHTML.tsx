@@ -8,7 +8,7 @@ interface TextWithHTMLProps {
 
 const allowedAttributes = {
   ...sanitizeHtml.defaults.allowedAttributes,
-  a: [...sanitizeHtml.defaults.allowedAttributes["a"], "rel"],
+  a: [...sanitizeHtml.defaults.allowedAttributes.a, "rel"],
 };
 
 export const TextWithHTML: React.FC<TextWithHTMLProps> = ({ text, className }) => {

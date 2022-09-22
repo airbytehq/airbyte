@@ -13,7 +13,7 @@ export const SelectContainer: React.FC<
 > = (props) => {
   const wrapperProps = {
     "data-testid": props.selectProps["data-testid"],
-    role: props.selectProps["role"] || "combobox",
+    role: props.selectProps.role || "combobox",
   };
   return <components.SelectContainer {...props} innerProps={{ ...props.innerProps, ...wrapperProps }} />;
 };
