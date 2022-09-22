@@ -2255,6 +2255,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalOperationResult"
+  /v1/geography/list:
+    get:
+      summary: Lists all geography_type enums
+      operationId: listGeographies
+      responses:
+        "200":
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeographyTypeList"
 components:
   securitySchemes:
     bearerAuth:
@@ -3531,6 +3542,21 @@ components:
         - source
         - destination
         - customformat
+    GeographyType:
+      type: string
+      description: Geography of dataplane workers
+      default: auto
+      enum:
+        - auto
+        - us
+        - eu
+    GeographyTypeList:
+      type: object
+      properties:
+        geographies:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeographyType"
     # Operations
     OperationId:
       type: string

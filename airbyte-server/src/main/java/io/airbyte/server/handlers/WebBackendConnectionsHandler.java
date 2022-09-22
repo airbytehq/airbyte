@@ -22,6 +22,8 @@ import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.GeographyType;
+import io.airbyte.api.model.generated.GeographyTypeList;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobListRequestBody;
 import io.airbyte.api.model.generated.JobRead;
@@ -60,6 +62,7 @@ import io.airbyte.workers.helper.ProtocolConverters;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -101,6 +104,10 @@ public class WebBackendConnectionsHandler {
 
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
     return Enums.convertTo(stateHandler.getState(connectionIdRequestBody).getStateType(), ConnectionStateType.class);
+  }
+
+  public GeographyTypeList listGeography() {
+    return new GeographyTypeList().geographies(Arrays.stream(GeographyType.values()).toList());
   }
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)

@@ -243,6 +243,10 @@ font-style: italic;
   <li><a href="#executeMigrations"><code><span class="http-method">post</span> /v1/db_migrations/migrate</code></a></li>
   <li><a href="#listMigrations"><code><span class="http-method">post</span> /v1/db_migrations/list</code></a></li>
   </ul>
+  <h4><a href="#Default">Default</a></h4>
+  <ul>
+  <li><a href="#listGeographies"><code><span class="http-method">get</span> /v1/geography/list</code></a></li>
+  </ul>
   <h4><a href="#Destination">Destination</a></h4>
   <ul>
   <li><a href="#checkConnectionToDestination"><code><span class="http-method">post</span> /v1/destinations/check_connection</code></a></li>
@@ -2093,6 +2097,47 @@ font-style: italic;
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <h1><a name="Default">Default</a></h1>
+  <div class="method"><a name="listGeographies"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /v1/geography/list</code></pre></div>
+    <div class="method-summary">Lists all geography_type enums (<span class="nickname">listGeographies</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#GeographyTypeList">GeographyTypeList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "geographies" : [ null, null ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#GeographyTypeList">GeographyTypeList</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Destination">Destination</a></h1>
@@ -10671,6 +10716,8 @@ font-style: italic;
     <li><a href="#FieldRemove"><code>FieldRemove</code> - </a></li>
     <li><a href="#FieldSchemaUpdate"><code>FieldSchemaUpdate</code> - </a></li>
     <li><a href="#FieldTransform"><code>FieldTransform</code> - </a></li>
+    <li><a href="#GeographyType"><code>GeographyType</code> - </a></li>
+    <li><a href="#GeographyTypeList"><code>GeographyTypeList</code> - </a></li>
     <li><a href="#GlobalState"><code>GlobalState</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
@@ -11419,6 +11466,19 @@ font-style: italic;
 <div class="param">addField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldAdd">FieldAdd</a></span>  </div>
 <div class="param">removeField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldRemove">FieldRemove</a></span>  </div>
 <div class="param">updateFieldSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldSchemaUpdate">FieldSchemaUpdate</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="GeographyType"><code>GeographyType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>Geography of dataplane workers</div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="GeographyTypeList"><code>GeographyTypeList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">geographies (optional)</div><div class="param-desc"><span class="param-type"><a href="#GeographyType">array[GeographyType]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

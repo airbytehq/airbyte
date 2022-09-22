@@ -41,6 +41,7 @@ import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationReadList;
 import io.airbyte.api.model.generated.DestinationSearch;
 import io.airbyte.api.model.generated.DestinationUpdate;
+import io.airbyte.api.model.generated.GeographyTypeList;
 import io.airbyte.api.model.generated.HealthCheckRead;
 import io.airbyte.api.model.generated.InternalOperationResult;
 import io.airbyte.api.model.generated.JobDebugInfoRead;
@@ -851,6 +852,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody requestBody) {
     return execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
+  }
+
+  @Override
+  public GeographyTypeList listGeographies() {
+    return execute(webBackendConnectionsHandler::listGeography); // todo move to connection handler instead?
   }
 
   public boolean canImportDefinitions() {
