@@ -32,9 +32,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +85,8 @@ public class BigQueryDatabase extends SqlDatabase {
   }
 
   private String getConnectorVersion() {
-    return System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE)
+    return Optional.ofNullable(System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE))
+        .orElse(EMPTY)
         .replace("airbyte/", EMPTY).replace(":", "/");
   }
 
