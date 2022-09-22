@@ -802,6 +802,7 @@ public abstract class CdcSourceTest {
     expectedCatalog.withStreams(streams);
     return expectedCatalog;
   }
+
   /**
    * The schema of a random table which is used as a new table in snapshot test
    */
