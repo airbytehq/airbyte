@@ -5,12 +5,12 @@
 
 import csv
 import io
+import logging
 import re
 from unittest.mock import Mock
 
 import pytest
 import requests_mock
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from conftest import generate_stream
 from requests.exceptions import HTTPError
@@ -22,12 +22,6 @@ from source_salesforce.streams import (
     IncrementalSalesforceStream,
     SalesforceStream,
 )
-
-
-@pytest.fixture(autouse=True)
-def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
@@ -56,26 +50,6 @@ def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_ap
     stream_name = "Account"
     stream = generate_stream(stream_name, stream_config, stream_api_v2)
     assert not isinstance(stream, BulkSalesforceStream)
-
-
-def test_stream_has_state_rest_api_should_be_used(stream_config, stream_api):
-    """
-    Stream `ActiveFeatureLicenseMetric` has state, in that case REST API stream will be used for it.
-    """
-    stream_name = "ActiveFeatureLicenseMetric"
-    state = {stream_name: {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
-    stream = generate_stream(stream_name, stream_config, stream_api, state=state)
-    assert not isinstance(stream, BulkSalesforceStream)
-
-
-def test_stream_has_no_state_bulk_api_should_be_used(stream_config, stream_api):
-    """
-    Stream `ActiveFeatureLicenseMetric` has no state, in that case BULK API stream will be used for it.
-    """
-    stream_name = "ActiveFeatureLicenseMetric"
-    state = {"other_stream": {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
-    stream = generate_stream(stream_name, stream_config, stream_api, state=state)
-    assert isinstance(stream, BulkSalesforceStream)
 
 
 @pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 3000])
@@ -215,12 +189,12 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
 
         m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
         res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
-        assert res == [(1, {"Id": "0014W000027f6UwQAI", "IsDeleted": False})]
+        assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": False}]
 
 
 def test_check_connection_rate_limit(stream_config):
     source = SourceSalesforce()
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
     url = "https://login.salesforce.com/services/oauth2/token"
@@ -239,7 +213,7 @@ def configure_request_params_mock(stream_1, stream_2):
     stream_2.request_params.return_value = {"q": "query"}
 
 
-def test_rate_limit_bulk(stream_config, stream_api, configured_catalog, state):
+def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
     """
     Connector should stop the sync if one stream reached rate limit
     stream_1, stream_2, stream_3, ...
@@ -257,7 +231,7 @@ def test_rate_limit_bulk(stream_config, stream_api, configured_catalog, state):
     source = SourceSalesforce()
     source.streams = Mock()
     source.streams.return_value = streams
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
     with requests_mock.Mocker() as m:
@@ -282,7 +256,7 @@ def test_rate_limit_bulk(stream_config, stream_api, configured_catalog, state):
 
             m.register_uri("POST", stream.path(), creation_responses)
 
-        result = [i for i in source.read(logger=logger, config=stream_config, catalog=configured_catalog, state=state)]
+        result = [i for i in source.read(logger=logger, config=stream_config, catalog=bulk_catalog, state=state)]
         assert stream_1.request_params.called
         assert (
             not stream_2.request_params.called
@@ -295,7 +269,7 @@ def test_rate_limit_bulk(stream_config, stream_api, configured_catalog, state):
         assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-11-05"  # state checkpoint interval is 5.
 
 
-def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
+def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     """
     Connector should stop the sync if one stream reached rate limit
     stream_1, stream_2, stream_3, ...
@@ -303,8 +277,8 @@ def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
     Next streams should not be executed.
     """
 
-    stream_1: IncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api, state=state)
-    stream_2: IncrementalSalesforceStream = generate_stream("Asset", stream_config, stream_api, state=state)
+    stream_1: IncrementalSalesforceStream = generate_stream("KnowledgeArticle", stream_config, stream_api)
+    stream_2: IncrementalSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
 
     stream_1.state_checkpoint_interval = 3
     configure_request_params_mock(stream_1, stream_2)
@@ -313,7 +287,7 @@ def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
     source.streams = Mock()
     source.streams.return_value = [stream_1, stream_2]
 
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     next_page_url = "/services/data/v52.0/query/012345"
     response_1 = {
@@ -349,7 +323,7 @@ def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
         m.register_uri("GET", stream_1.path(), json=response_1, status_code=200)
         m.register_uri("GET", next_page_url, json=response_2, status_code=403)
 
-        result = [i for i in source.read(logger=logger, config=stream_config, catalog=configured_catalog, state=state)]
+        result = [i for i in source.read(logger=logger, config=stream_config, catalog=rest_catalog, state=state)]
 
         assert stream_1.request_params.called
         assert (
@@ -360,14 +334,12 @@ def test_rate_limit_rest(stream_config, stream_api, configured_catalog, state):
         assert len(records) == 5
 
         state_record = [item for item in result if item.type == Type.STATE][0]
-        assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-11-17"
+        assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17"
 
 
 def test_pagination_rest(stream_config, stream_api):
-    stream_name = "ActiveFeatureLicenseMetric"
-    state = {stream_name: {"SystemModstamp": "2122-08-22T05:08:29.000Z"}}
-
-    stream: SalesforceStream = generate_stream(stream_name, stream_config, stream_api, state=state)
+    stream_name = "AcceptedEventRelation"
+    stream: SalesforceStream = generate_stream(stream_name, stream_config, stream_api)
     stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
     next_page_url = "/services/data/v52.0/query/012345"
     with requests_mock.Mocker() as m:
@@ -427,7 +399,7 @@ def test_csv_reader_dialect_unix():
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", url + "/results", text=text)
-        result = [dict(i[1]) for i in stream.read_with_chunks(stream.download_data(url))]
+        result = [i for i in stream.read_with_chunks(stream.download_data(url))]
         assert result == data
 
 

@@ -2,13 +2,14 @@
 // of the CatalogTree component once we finish migrating to scss,
 // not only styles used directly in CatalogTree
 
-.headerCell {
+%headerCell {
   font-size: 10px;
   line-height: 13px;
 }
 
 .checkboxCell {
-  @extend .headerCell;
+  @extend %headerCell;
+
   max-width: 43px;
   text-align: center;
   display: flex;

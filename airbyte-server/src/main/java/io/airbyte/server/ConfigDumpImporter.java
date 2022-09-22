@@ -27,9 +27,9 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.persistence.job.DefaultJobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -58,11 +58,11 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.AvoidReassigningLoopVariables")
 public class ConfigDumpImporter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigDumpImporter.class);
   private static final String CONFIG_FOLDER_NAME = "airbyte_config";
-  private static final String DB_FOLDER_NAME = "airbyte_db";
   private static final String VERSION_FILE_NAME = "VERSION";
   private static final Path TMP_AIRBYTE_STAGED_RESOURCES = Path.of("/tmp/airbyte_staged_resources");
 
@@ -241,7 +241,7 @@ public class ConfigDumpImporter {
       throws IOException {
     // filter out the deployment record from the import data, if it exists.
     Stream<JsonNode> stream = metadataTableStream
-        .filter(record -> !record.get(DefaultJobPersistence.METADATA_KEY_COL).asText().equals(DefaultJobPersistence.DEPLOYMENT_ID_KEY));
+        .filter(record -> !DefaultJobPersistence.DEPLOYMENT_ID_KEY.equals(record.get(DefaultJobPersistence.METADATA_KEY_COL).asText()));
 
     // insert the current deployment id, if it exists.
     final Optional<UUID> deploymentOptional = postgresPersistence.getDeployment();

@@ -61,7 +61,17 @@
   },
   "reviews": {
     "airbytehq/integration-test": {
-      "pull_request_updated_at": "2021-08-30T12:01:15Z"
+      "updated_at": "2021-08-30T12:01:15Z"
+    }
+  },
+  "workflow_runs": {
+    "airbytehq/integration-test": {
+      "completed_at": "2021-08-30T12:01:15Z"
+    }
+  },
+  "workflow_jobs": {
+    "airbytehq/integration-test": {
+      "completed_at": "2021-08-30T12:01:15Z"
     }
   }
 }

@@ -2,7 +2,53 @@
     cluster_by = ["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY_SCD", "_AIRBYTE_EMITTED_AT"],
     unique_key = "_AIRBYTE_UNIQUE_KEY_SCD",
     schema = "TEST_NORMALIZATION",
-    post_hook = ["drop view _AIRBYTE_TEST_NORMALIZATION.NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_STG"],
+    post_hook = ["
+                    {%
+                    set final_table_relation = adapter.get_relation(
+                            database=this.database,
+                            schema=this.schema,
+                            identifier='NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES'
+                        )
+                    %}
+                    {#
+                    If the final table doesn't exist, then obviously we can't delete anything from it.
+                    Also, after a reset, the final table is created without the _airbyte_unique_key column (this column is created during the first sync)
+                    So skip this deletion if the column doesn't exist. (in this case, the table is guaranteed to be empty anyway)
+                    #}
+                    {%
+                    if final_table_relation is not none and '_AIRBYTE_UNIQUE_KEY' in adapter.get_columns_in_relation(final_table_relation)|map(attribute='name')
+                    %}
+                    -- Delete records which are no longer active:
+                    -- This query is equivalent, but the left join version is more performant:
+                    -- delete from final_table where unique_key in (
+                    --     select unique_key from scd_table where 1 = 1 <incremental_clause(normalized_at, final_table)>
+                    -- ) and unique_key not in (
+                    --     select unique_key from scd_table where active_row = 1 <incremental_clause(normalized_at, final_table)>
+                    -- )
+                    -- We're incremental against normalized_at rather than emitted_at because we need to fetch the SCD
+                    -- entries that were _updated_ recently. This is because a deleted record will have an SCD record
+                    -- which was emitted a long time ago, but recently re-normalized to have active_row = 0.
+                    delete from {{ final_table_relation }} where {{ final_table_relation }}._AIRBYTE_UNIQUE_KEY in (
+                        select recent_records.unique_key
+                        from (
+                                select distinct _AIRBYTE_UNIQUE_KEY as unique_key
+                                from {{ this }}
+                                where 1=1 {{ incremental_clause('_AIRBYTE_NORMALIZED_AT', this.schema + '.' + adapter.quote('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES')) }}
+                            ) recent_records
+                            left join (
+                                select _AIRBYTE_UNIQUE_KEY as unique_key, count(_AIRBYTE_UNIQUE_KEY) as active_count
+                                from {{ this }}
+                                where _AIRBYTE_ACTIVE_ROW = 1 {{ incremental_clause('_AIRBYTE_NORMALIZED_AT', this.schema + '.' + adapter.quote('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES')) }}
+                                group by _AIRBYTE_UNIQUE_KEY
+                            ) active_counts
+                            on recent_records.unique_key = active_counts.unique_key
+                        where active_count is null or active_count = 0
+                    )
+                    {% else %}
+                    -- We have to have a non-empty query, so just do a noop delete
+                    delete from {{ this }} where 1=0
+                    {% endif %}
+                    ","drop view _AIRBYTE_TEST_NORMALIZATION.NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_STG"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_STG')
@@ -15,7 +61,7 @@ new_data as (
     from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_STG')  }}
     -- NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES') }}
     where 1 = 1
-    {{ incremental_clause('_AIRBYTE_EMITTED_AT') }}
+    {{ incremental_clause('_AIRBYTE_EMITTED_AT', this) }}
 ),
 new_data_ids as (
     -- build a subset of _AIRBYTE_UNIQUE_KEY from rows that are new

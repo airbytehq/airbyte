@@ -15,6 +15,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
@@ -43,10 +44,17 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
   public S3JsonlWriter(final S3DestinationConfig config,
                        final AmazonS3 s3Client,
                        final ConfiguredAirbyteStream configuredStream,
-                       final Timestamp uploadTimestamp) {
+                       final Timestamp uploadTimestamp)
+      throws IOException {
     super(config, s3Client, configuredStream);
 
-    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.JSONL);
+    final String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
+        .builder()
+        .timestamp(uploadTimestamp)
+        .s3Format(S3Format.JSONL)
+        .fileExtension(S3Format.JSONL.getFileExtension())
+        .fileNamePattern(config.getFileNamePattern())
+        .build());
     objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
@@ -54,7 +62,6 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
 
     this.uploadManager = StreamTransferManagerFactory
         .create(config.getBucketName(), objectKey, s3Client)
-        .setPartSize(config.getFormatConfig().getPartSize())
         .get();
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);

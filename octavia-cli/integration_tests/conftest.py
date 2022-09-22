@@ -35,7 +35,7 @@ def octavia_test_project_directory():
 
 @pytest.fixture(scope="session")
 def api_client():
-    return get_api_client("http://localhost:8000")
+    return get_api_client("http://localhost:8000", "octavia-cli/integration-tests", None)
 
 
 @pytest.fixture(scope="session")
@@ -43,17 +43,21 @@ def workspace_id(api_client):
     return get_workspace_id(api_client, None)
 
 
-@pytest.fixture(scope="session")
-def source_configuration_and_path(octavia_test_project_directory):
-    path = f"{octavia_test_project_directory}/sources/poke/configuration.yaml"
+def open_yaml_configuration(path: str):
     with open(path, "r") as f:
         local_configuration = yaml.safe_load(f)
     return local_configuration, path
 
 
 @pytest.fixture(scope="session")
-def source_state_path(octavia_test_project_directory):
-    state_path = f"{octavia_test_project_directory}/sources/poke/state.yaml"
+def source_configuration_and_path(octavia_test_project_directory):
+    path = f"{octavia_test_project_directory}/sources/poke/configuration.yaml"
+    return open_yaml_configuration(path)
+
+
+@pytest.fixture(scope="session")
+def source_state_path(octavia_test_project_directory, workspace_id):
+    state_path = f"{octavia_test_project_directory}/sources/poke/state_{workspace_id}.yaml"
     silent_remove(state_path)
     yield state_path
     silent_remove(state_path)
@@ -70,14 +74,12 @@ def source(api_client, workspace_id, source_configuration_and_path, source_state
 @pytest.fixture(scope="session")
 def destination_configuration_and_path(octavia_test_project_directory):
     path = f"{octavia_test_project_directory}/destinations/postgres/configuration.yaml"
-    with open(path, "r") as f:
-        local_configuration = yaml.safe_load(f)
-    return local_configuration, path
+    return open_yaml_configuration(path)
 
 
 @pytest.fixture(scope="session")
-def destination_state_path(octavia_test_project_directory):
-    state_path = f"{octavia_test_project_directory}/destinations/postgres/state.yaml"
+def destination_state_path(octavia_test_project_directory, workspace_id):
+    state_path = f"{octavia_test_project_directory}/destinations/postgres/state_{workspace_id}.yaml"
     silent_remove(state_path)
     yield state_path
     silent_remove(state_path)
@@ -100,16 +102,16 @@ def connection_configuration_and_path(octavia_test_project_directory):
 
 
 @pytest.fixture(scope="session")
-def connection_state_path(octavia_test_project_directory):
-    state_path = f"{octavia_test_project_directory}/connections/poke_to_pg/state.yaml"
+def connection_state_path(octavia_test_project_directory, workspace_id):
+    state_path = f"{octavia_test_project_directory}/connections/poke_to_pg/state_{workspace_id}.yaml"
     silent_remove(state_path)
     yield state_path
     silent_remove(state_path)
 
 
 @pytest.fixture(scope="session")
-def connection_with_normalization_state_path(octavia_test_project_directory):
-    state_path = f"{octavia_test_project_directory}/connections/poke_to_pg_normalization/state.yaml"
+def connection_with_normalization_state_path(octavia_test_project_directory, workspace_id):
+    state_path = f"{octavia_test_project_directory}/connections/poke_to_pg_normalization/state_{workspace_id}.yaml"
     silent_remove(state_path)
     yield state_path
     silent_remove(state_path)
@@ -124,8 +126,8 @@ def updated_connection_configuration_and_path(octavia_test_project_directory, so
         edited_path = f"{octavia_test_project_directory}/connections/poke_to_pg/updated_configuration.yaml"
     with open(path, "r") as dumb_local_configuration_file:
         local_configuration = yaml.safe_load(dumb_local_configuration_file)
-    local_configuration["source_id"] = source.resource_id
-    local_configuration["destination_id"] = destination.resource_id
+    local_configuration["source_configuration_path"] = source.configuration_path
+    local_configuration["destination_configuration_path"] = destination.configuration_path
     with open(edited_path, "w") as updated_configuration_file:
         yaml.dump(local_configuration, updated_configuration_file)
     return local_configuration, edited_path

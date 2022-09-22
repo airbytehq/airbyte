@@ -20,7 +20,7 @@ def patch_incremental_base_class(mocker):
 
 def test_cursor_field(patch_incremental_base_class):
     stream = IncrementalOutreachStream(authenticator=MagicMock())
-    expected_cursor_field = "attributes/properties/updatedAt"
+    expected_cursor_field = "updatedAt"
     assert stream.cursor_field == expected_cursor_field
 
 

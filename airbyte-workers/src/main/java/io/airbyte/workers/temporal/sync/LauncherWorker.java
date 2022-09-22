@@ -5,15 +5,17 @@
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.base.Stopwatch;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
+import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
+import io.airbyte.workers.process.KubeContainerInfo;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.process.KubePodResourceHelper;
 import io.airbyte.workers.process.KubeProcessFactory;
@@ -34,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 /**
  * Coordinates configuring and managing the state of an async process. This is tied to the (job_id,
@@ -53,10 +56,12 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final String podNamePrefix;
   private final JobRunConfig jobRunConfig;
   private final Map<String, String> additionalFileMap;
-  private final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig;
+  private final ContainerOrchestratorConfig containerOrchestratorConfig;
   private final ResourceRequirements resourceRequirements;
   private final Class<OUTPUT> outputClass;
   private final Supplier<ActivityExecutionContext> activityContext;
+  private final Integer serverPort;
+  private final TemporalUtils temporalUtils;
 
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private AsyncOrchestratorPodProcess process;
@@ -66,10 +71,13 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final String podNamePrefix,
                         final JobRunConfig jobRunConfig,
                         final Map<String, String> additionalFileMap,
-                        final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
+                        final ContainerOrchestratorConfig containerOrchestratorConfig,
                         final ResourceRequirements resourceRequirements,
                         final Class<OUTPUT> outputClass,
-                        final Supplier<ActivityExecutionContext> activityContext) {
+                        final Supplier<ActivityExecutionContext> activityContext,
+                        final Integer serverPort,
+                        final TemporalUtils temporalUtils) {
+
     this.connectionId = connectionId;
     this.application = application;
     this.podNamePrefix = podNamePrefix;
@@ -79,14 +87,17 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.resourceRequirements = resourceRequirements;
     this.outputClass = outputClass;
     this.activityContext = activityContext;
+    this.serverPort = serverPort;
+    this.temporalUtils = temporalUtils;
   }
 
   @Override
   public OUTPUT run(final INPUT input, final Path jobRoot) throws WorkerException {
     final AtomicBoolean isCanceled = new AtomicBoolean(false);
     final AtomicReference<Runnable> cancellationCallback = new AtomicReference<>(null);
-    return TemporalUtils.withBackgroundHeartbeat(cancellationCallback, () -> {
+    return temporalUtils.withBackgroundHeartbeat(cancellationCallback, () -> {
       try {
+        // Assemble configuration.
         final Map<String, String> envMap = System.getenv().entrySet().stream()
             .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -99,7 +110,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)));
 
         final Map<Integer, Integer> portMap = Map.of(
-            WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
+            serverPort, serverPort,
             OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
             OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
             OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
@@ -112,18 +123,25 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
         final var podNameAndJobPrefix = podNamePrefix + "-job-" + jobRunConfig.getJobId() + "-attempt-";
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
+        final var mainContainerInfo = new KubeContainerInfo(containerOrchestratorConfig.containerOrchestratorImage(),
+            containerOrchestratorConfig.containerOrchestratorImagePullPolicy());
+        final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(),
+            podName,
+            mainContainerInfo);
+        val featureFlag = new EnvVariableFeatureFlags();
 
-        final var kubePodInfo = new KubePodInfo(containerOrchestratorConfig.namespace(), podName);
-
+        // Use the configuration to create the process.
         process = new AsyncOrchestratorPodProcess(
             kubePodInfo,
             containerOrchestratorConfig.documentStoreClient(),
             containerOrchestratorConfig.kubernetesClient(),
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
-            containerOrchestratorConfig.containerOrchestratorImage(),
-            containerOrchestratorConfig.googleApplicationCredentials());
+            containerOrchestratorConfig.googleApplicationCredentials(),
+            featureFlag.useStreamCapableState(),
+            serverPort);
 
+        // Define what to do on cancellation.
         cancellationCallback.set(() -> {
           // When cancelled, try to set to true.
           // Only proceed if value was previously false, so we only have one cancellation going. at a time
@@ -146,7 +164,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                 portMap);
           } catch (final KubernetesClientException e) {
             throw new WorkerException(
-                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.");
+                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.", e);
           }
         }
 
@@ -157,8 +175,9 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           throw new CancellationException();
         }
 
-        if (process.exitValue() != 0) {
-          throw new WorkerException("Non-zero exit code!");
+        final int asyncProcessExitValue = process.exitValue();
+        if (asyncProcessExitValue != 0) {
+          throw new WorkerException("Orchestrator process exited with non-zero exit code: " + asyncProcessExitValue);
         }
 
         final var output = process.getOutput();
@@ -193,9 +212,10 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     final Stopwatch stopwatch = Stopwatch.createStarted();
 
     while (!runningPods.isEmpty() && stopwatch.elapsed().compareTo(MAX_DELETION_TIMEOUT) < 0) {
-      log.warn("There are currently running pods for the connection: " + getPodNames(runningPods).toString());
+      log.warn("There are currently running pods for the connection: {}. Killing these pods to enforce one execution at a time.",
+          getPodNames(runningPods).toString());
 
-      log.info("Attempting to delete pods: " + getPodNames(runningPods).toString());
+      log.info("Attempting to delete pods: {}", getPodNames(runningPods).toString());
       runningPods.stream()
           .parallel()
           .forEach(kubePod -> client.resource(kubePod).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete());

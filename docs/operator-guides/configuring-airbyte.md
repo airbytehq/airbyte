@@ -46,7 +46,11 @@ The following variables are relevant to both Docker and Kubernetes.
 #### Secrets
 1. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
 2. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
-3. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Alpha support. Undefined behavior will result if this is turned on and then off.
+3. `VAULT_ADDRESS` - Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
+4. `VAULT_PREFIX` - Define the vault path prefix. Empty by default. Alpha Support.
+5. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
+6. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
+7. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use Hashicorp Vault, currently only the token based authentication is supported. Alpha support. Undefined behavior will result if this is turned on and then off.
 
 #### Database
 1. `DATABASE_USER` - Define the Jobs Database user.
@@ -74,6 +78,13 @@ The following variables are relevant to both Docker and Kubernetes.
 
 #### Logging
 1. `LOG_LEVEL` - Define log levels. Defaults to INFO. This value is expected to be one of the various Log4J log levels.
+
+#### Monitoring
+1. `PUBLISH_METRICS` - Define whether to publish metrics collected by the Metrics Reporter. Defaults to false.
+2. `METRIC_CLIENT` - Defines which metrics client to use. Only relevant if `PUBLISH_METRICS` is set to true. Accepts either `datadog` or `otel`. Default to none.
+3. `DD_AGENT_HOST` - Defines the ip the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
+4. `DD_AGENT_PORT` - Defines the port the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
+5. `OTEL_COLLECTOR_ENDPOIN` - Define the ip:port the OTEL metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `otel`. Defaults to none.
 
 #### Worker
 1. `MAX_SPEC_WORKERS` - Define the maximum number of Spec workers each Airbyte Worker container can support. Defaults to 5.

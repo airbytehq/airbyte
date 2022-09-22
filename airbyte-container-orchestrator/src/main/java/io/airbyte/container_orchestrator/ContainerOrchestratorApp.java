@@ -4,13 +4,14 @@
 
 package io.airbyte.container_orchestrator;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.WorkerApp;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AsyncKubePodStatus;
@@ -21,7 +22,6 @@ import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.process.WorkerHeartbeatServer;
 import io.airbyte.workers.storage.StateClients;
 import io.airbyte.workers.temporal.sync.DbtLauncherWorker;
 import io.airbyte.workers.temporal.sync.NormalizationLauncherWorker;
@@ -51,26 +51,37 @@ import sun.misc.Signal;
  * future this will need to independently interact with cloud storage.
  */
 @Slf4j
+@SuppressWarnings({"PMD.AvoidCatchingThrowable", "PMD.DoNotTerminateVM"})
 public class ContainerOrchestratorApp {
 
   public static final int MAX_SECONDS_TO_WAIT_FOR_FILE_COPY = 60;
+
+  // TODO Move the following to configuration once converted to a Micronaut service
+
+  // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
+  // version is deployed!
+  private static final Path STATE_STORAGE_PREFIX = Path.of("/state");
+  private static final Integer KUBE_HEARTBEAT_PORT = 9000;
 
   private final String application;
   private final Map<String, String> envMap;
   private final JobRunConfig jobRunConfig;
   private final KubePodInfo kubePodInfo;
   private final Configs configs;
+  private final FeatureFlags featureFlags;
 
   public ContainerOrchestratorApp(
                                   final String application,
                                   final Map<String, String> envMap,
                                   final JobRunConfig jobRunConfig,
-                                  final KubePodInfo kubePodInfo) {
+                                  final KubePodInfo kubePodInfo,
+                                  final FeatureFlags featureFlags) {
     this.application = application;
     this.envMap = envMap;
     this.jobRunConfig = jobRunConfig;
     this.kubePodInfo = kubePodInfo;
     this.configs = new EnvConfigs(envMap);
+    this.featureFlags = featureFlags;
   }
 
   private void configureLogging() {
@@ -102,13 +113,13 @@ public class ContainerOrchestratorApp {
 
       final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
       final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
-      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application);
+      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application, featureFlags);
 
       if (jobOrchestrator == null) {
         throw new IllegalStateException("Could not find job orchestrator for application: " + application);
       }
 
-      final var heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
+      final var heartbeatServer = new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT);
       heartbeatServer.startBackground();
 
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.RUNNING);
@@ -140,7 +151,7 @@ public class ContainerOrchestratorApp {
 
       // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
       // version is deployed!
-      final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), WorkerApp.STATE_STORAGE_PREFIX);
+      final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), STATE_STORAGE_PREFIX);
       final var asyncStateManager = new DefaultAsyncStateManager(documentStoreClient);
 
       runInternal(asyncStateManager);
@@ -174,8 +185,9 @@ public class ContainerOrchestratorApp {
       final var envMap = JobOrchestrator.readEnvMap();
       final var jobRunConfig = JobOrchestrator.readJobRunConfig();
       final var kubePodInfo = JobOrchestrator.readKubePodInfo();
+      final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
-      final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo);
+      final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo, featureFlags);
       app.run();
     } catch (final Throwable t) {
       log.error("Orchestrator failed...", t);
@@ -187,10 +199,10 @@ public class ContainerOrchestratorApp {
   private static JobOrchestrator<?> getJobOrchestrator(final Configs configs,
                                                        final WorkerConfigs workerConfigs,
                                                        final ProcessFactory processFactory,
-                                                       final String application) {
-
+                                                       final String application,
+                                                       final FeatureFlags featureFlags) {
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory);
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory, featureFlags);
       case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
@@ -205,7 +217,8 @@ public class ContainerOrchestratorApp {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final String localIp = InetAddress.getLocalHost().getHostAddress();
-      final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
+      // TODO move port to configuration
+      final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
       log.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
 
       // this needs to have two ports for the source and two ports for the destination (all four must be

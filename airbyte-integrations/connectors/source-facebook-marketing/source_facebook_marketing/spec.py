@@ -3,11 +3,10 @@
 #
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional
 
-import pendulum
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
 from pydantic import BaseModel, Field, PositiveInt
@@ -19,6 +18,7 @@ ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+EMPTY_PATTERN = "^$"
 
 
 class InsightConfig(BaseModel):
@@ -118,9 +118,9 @@ class ConnectorConfig(BaseConfig):
             "All data generated between start_date and this date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
-        pattern=DATE_TIME_PATTERN,
+        pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
-        default_factory=pendulum.now,
+        default_factory=lambda: datetime.now(tz=timezone.utc),
     )
 
     access_token: str = Field(
@@ -171,4 +171,11 @@ class ConnectorConfig(BaseConfig):
         maximum=28,
         mininum=1,
         default=28,
+    )
+
+    max_batch_size: Optional[PositiveInt] = Field(
+        title="Maximum size of Batched Requests",
+        order=9,
+        description="Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
+        default=50,
     )

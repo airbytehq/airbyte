@@ -141,7 +141,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    return config.get(CONFIG_DATASET_ID).asText();
+    return BigQueryUtils.getDatasetId(config);
   }
 
   @Override
@@ -181,7 +181,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     final FieldList fields = queryResults.getSchema().getFields();
     BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
-     return Streams.stream(queryResults.iterateAll())
+    return Streams.stream(queryResults.iterateAll())
         .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
   }
 
@@ -221,7 +221,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .getService();
 
     final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+        DatasetInfo.newBuilder(getDefaultSchema(config)).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
     dataset = bigquery.create(datasetInfo);
 
     tornDown = false;

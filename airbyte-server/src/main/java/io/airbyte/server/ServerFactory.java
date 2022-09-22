@@ -13,11 +13,12 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
-import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.SynchronousSchedulerClient;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.server.scheduler.EventRunner;
+import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Set;
@@ -74,6 +75,7 @@ public interface ServerFactory {
           seed,
           synchronousSchedulerClient,
           new FileTtlManager(10, TimeUnit.MINUTES, 10),
+          new StatePersistence(configsDatabase),
           MDC.getCopyOfContextMap(),
           configsDatabase,
           jobsDatabase,

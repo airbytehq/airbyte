@@ -2,7 +2,7 @@ import { useField } from "formik";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
-import { MenuListComponentProps } from "react-select/src/components/Menu";
+import { MenuListProps } from "react-select";
 import styled from "styled-components";
 
 import { ControlLabels, DropDown, DropDownRow } from "components";
@@ -15,8 +15,8 @@ import {
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
 
+import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
-import { FormBaseItem } from "core/form/types";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -28,17 +28,16 @@ import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumenta
 import { WarningMessage } from "../WarningMessage";
 
 const BottomElement = styled.div`
-  background: ${(props) => props.theme.greyColro0};
+  background: ${({ theme }) => theme.greyColor0};
   padding: 6px 16px 8px;
   width: 100%;
   min-height: 34px;
-  border-top: 1px solid ${(props) => props.theme.greyColor20};
-`;
+  border-top: 1px solid ${({ theme }) => theme.greyColor20};
+  position: relative;
 
-const Block = styled.div`
   cursor: pointer;
-  color: ${({ theme }) => theme.textColor};
 
+  color: ${({ theme }) => theme.textColor};
   &:hover {
     color: ${({ theme }) => theme.primaryColor};
   }
@@ -78,7 +77,8 @@ const SingleValueContent = styled(components.SingleValue)`
   align-items: center;
 `;
 
-type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MenuWithRequestButtonProps = MenuListProps<IDataItem, false> & { selectProps: any };
 
 /**
  * Returns the order for a specific release stage label. This will define
@@ -97,13 +97,13 @@ function getOrderForReleaseStage(stage?: ReleaseStage): number {
   }
 }
 
-const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({ children, ...props }) => (
+const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => (
   <>
     <components.MenuList {...props}>{children}</components.MenuList>
-    <BottomElement>
-      <Block onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}>
-        <FormattedMessage id="connector.requestConnectorBlock" />
-      </Block>
+    <BottomElement
+      onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}
+    >
+      <FormattedMessage id="connector.requestConnectorBlock" />
     </BottomElement>
   </>
 );
@@ -138,7 +138,8 @@ const Option: React.FC<OptionProps> = (props) => {
   );
 };
 
-const SingleValue: React.FC<SingleValueProps> = (props) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SingleValue: React.FC<SingleValueProps<any>> = (props) => {
   return (
     <SingleValueView>
       {props.data.img && <SingleValueIcon>{props.data.img}</SingleValueIcon>}
@@ -153,7 +154,7 @@ const SingleValue: React.FC<SingleValueProps> = (props) => {
 };
 
 interface ConnectorServiceTypeControlProps {
-  property: FormBaseItem;
+  propertyPath: string;
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
@@ -164,7 +165,7 @@ interface ConnectorServiceTypeControlProps {
 }
 
 const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
-  property,
+  propertyPath,
   formType,
   isEditMode,
   onChangeServiceType,
@@ -175,7 +176,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
 }) => {
   const { formatMessage } = useIntl();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
-  const [field, fieldMeta, { setValue }] = useField(property.path);
+  const [field, fieldMeta, { setValue }] = useField(propertyPath);
   const analytics = useAnalyticsService();
   const workspace = useCurrentWorkspace();
   const availableConnectorDefinitions = useAvailableConnectorDefinitions(availableServices, workspace);
@@ -196,12 +197,10 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
             return priorityB - priorityA;
           } else if (a.releaseStage !== b.releaseStage) {
             return getOrderForReleaseStage(a.releaseStage) - getOrderForReleaseStage(b.releaseStage);
-          } else {
-            return naturalComparator(a.label, b.label);
           }
+          return naturalComparator(a.label, b.label);
         }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [availableServices, orderOverwrite]
+    [availableConnectorDefinitions, orderOverwrite]
   );
 
   const { setDocumentationUrl } = useDocumentationPanelContext();
@@ -210,14 +209,10 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
 
   const getNoOptionsMessage = useCallback(
     ({ inputValue }: { inputValue: string }) => {
-      analytics.track(
-        formType === "source"
-          ? "Airbyte.UI.NewSource.NoMatchingConnector"
-          : "Airbyte.UI.NewDestination.NoMatchingConnector",
-        {
-          query: inputValue,
-        }
-      );
+      analytics.track(formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION, Action.NO_MATCHING_CONNECTOR, {
+        actionDescription: "Connector query without results",
+        query: inputValue,
+      });
       return formatMessage({ id: "form.noConnectorFound" });
     },
     [analytics, formType, formatMessage]
@@ -241,9 +236,9 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
   );
 
   const onMenuOpen = () => {
-    const eventName =
-      formType === "source" ? "Airbyte.UI.NewSource.SelectionOpened" : "Airbyte.UI.NewDestination.SelectionOpened";
-    analytics.track(eventName, {});
+    analytics.track(formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION, Action.SELECTION_OPENED, {
+      actionDescription: "Opened connector type selection",
+    });
   };
 
   return (

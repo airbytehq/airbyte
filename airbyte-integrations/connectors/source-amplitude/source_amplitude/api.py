@@ -140,11 +140,20 @@ class Events(IncrementalAmplitudeStream):
     compare_date_template = "%Y-%m-%d %H:%M:%S.%f"
     primary_key = "uuid"
     state_checkpoint_interval = 1000
-    time_interval = {"days": 3}
+    time_interval = {"days": 1}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
-        zip_file = zipfile.ZipFile(io.BytesIO(response.content))
+        try:
+            zip_file = zipfile.ZipFile(io.BytesIO(response.content))
+        except zipfile.BadZipFile as e:
+            self.logger.exception(e)
+            self.logger.error(
+                f"Received an invalid zip file in response to URL: {response.request.url}."
+                f"The size of the response body is: {len(response.content)}"
+            )
+            return []
+
         for gzip_filename in zip_file.namelist():
             with zip_file.open(gzip_filename) as file:
                 for record in self._parse_zip_file(file):
@@ -164,7 +173,7 @@ class Events(IncrementalAmplitudeStream):
             slices.append(
                 {
                     "start": start.strftime(self.date_template),
-                    "end": self._get_end_date(start).strftime(self.date_template),
+                    "end": start.add(**self.time_interval).subtract(hours=1).strftime(self.date_template),
                 }
             )
             start = start.add(**self.time_interval)
@@ -187,7 +196,8 @@ class Events(IncrementalAmplitudeStream):
         # https://developers.amplitude.com/docs/export-api#status-codes
         try:
             self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
-            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+            records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+            yield from records
         except requests.exceptions.HTTPError as error:
             status = error.response.status_code
             if status in HTTP_ERROR_CODES.keys():
@@ -202,6 +212,9 @@ class Events(IncrementalAmplitudeStream):
         params["start"] = pendulum.parse(stream_slice["start"]).strftime(self.date_template)
         params["end"] = pendulum.parse(stream_slice["end"]).strftime(self.date_template)
         return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/export"

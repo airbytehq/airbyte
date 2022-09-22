@@ -4,11 +4,12 @@
 
 package io.airbyte.workers.process;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.general.DocumentStoreClient;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -22,6 +23,7 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.micronaut.core.util.StringUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.AbstractMap;
@@ -57,9 +59,10 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final KubernetesClient kubernetesClient;
   private final String secretName;
   private final String secretMountPath;
-  private final String containerOrchestratorImage;
   private final String googleApplicationCredentials;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
+  private final boolean useStreamCapableState;
+  private final Integer serverPort;
 
   public AsyncOrchestratorPodProcess(
                                      final KubePodInfo kubePodInfo,
@@ -67,16 +70,18 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final KubernetesClient kubernetesClient,
                                      final String secretName,
                                      final String secretMountPath,
-                                     final String containerOrchestratorImage,
-                                     final String googleApplicationCredentials) {
+                                     final String googleApplicationCredentials,
+                                     final boolean useStreamCapableState,
+                                     final Integer serverPort) {
     this.kubePodInfo = kubePodInfo;
     this.documentStoreClient = documentStoreClient;
     this.kubernetesClient = kubernetesClient;
     this.secretName = secretName;
     this.secretMountPath = secretMountPath;
-    this.containerOrchestratorImage = containerOrchestratorImage;
     this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
+    this.useStreamCapableState = useStreamCapableState;
+    this.serverPort = serverPort;
   }
 
   public Optional<String> getOutput() {
@@ -94,8 +99,10 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     // trust the doc store if it's in a terminal state
     if (docStoreStatus.equals(AsyncKubePodStatus.FAILED)) {
+      log.warn("State Store reports orchestrator pod {} failed", getInfo().name());
       return 1;
     } else if (docStoreStatus.equals(AsyncKubePodStatus.SUCCEEDED)) {
+      log.info("State Store reports orchestrator pod {} succeeded", getInfo().name());
       return 0;
     }
 
@@ -110,6 +117,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     // we must assume failure, since the document store is the "truth" for
     // async pod status.
     if (pod == null) {
+      log.info("State Store missing status. Orchestrator pod {} non-existent. Assume failure.", getInfo().name());
       return 1;
     }
 
@@ -121,11 +129,14 @@ public class AsyncOrchestratorPodProcess implements KubePod {
       // we read the status from the Kubernetes API, we need to check the doc store again.
       final AsyncKubePodStatus secondDocStoreStatus = getDocStoreStatus();
       if (secondDocStoreStatus.equals(AsyncKubePodStatus.FAILED)) {
+        log.warn("State Store reports orchestrator pod {} failed", getInfo().name());
         return 1;
       } else if (secondDocStoreStatus.equals(AsyncKubePodStatus.SUCCEEDED)) {
+        log.info("State Store reports orchestrator pod {} succeeded", getInfo().name());
         return 0;
       } else {
         // otherwise, the actual pod is terminal when the doc store says it shouldn't be.
+        log.warn("State Store missing status, however orchestrator pod {} in terminal. Assume failure.", getInfo().name());
         return 1;
       }
     }
@@ -260,7 +271,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withMountPath(KubePodProcess.CONFIG_DIR)
         .build());
 
-    if (secretName != null && secretMountPath != null && googleApplicationCredentials != null) {
+    if (secretName != null && secretMountPath != null && StringUtils.isNotEmpty(googleApplicationCredentials)) {
       volumes.add(new VolumeBuilder()
           .withName("airbyte-secret")
           .withSecret(new SecretVolumeSourceBuilder()
@@ -275,14 +286,22 @@ public class AsyncOrchestratorPodProcess implements KubePod {
           .build());
 
       envVars.add(new EnvVar(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, googleApplicationCredentials, null));
+
     }
 
+    final EnvConfigs envConfigs = new EnvConfigs();
+    envVars.add(new EnvVar(EnvConfigs.METRIC_CLIENT, envConfigs.getMetricClient(), null));
+    envVars.add(new EnvVar(EnvConfigs.DD_AGENT_HOST, envConfigs.getDDAgentHost(), null));
+    envVars.add(new EnvVar(EnvConfigs.DD_DOGSTATSD_PORT, envConfigs.getDDDogStatsDPort(), null));
+    envVars.add(new EnvVar(EnvConfigs.PUBLISH_METRICS, Boolean.toString(envConfigs.getPublishMetrics()), null));
+    envVars.add(new EnvVar(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(useStreamCapableState), null));
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
-    containerPorts.add(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null));
+    containerPorts.add(new ContainerPort(serverPort, null, null, null, null));
 
     final var mainContainer = new ContainerBuilder()
         .withName(KubePodProcess.MAIN_CONTAINER_NAME)
-        .withImage(containerOrchestratorImage)
+        .withImage(kubePodInfo.mainContainerInfo().image())
+        .withImagePullPolicy(kubePodInfo.mainContainerInfo().pullPolicy())
         .withResources(KubePodProcess.getResourceRequirementsBuilder(resourceRequirements).build())
         .withEnv(envVars)
         .withPorts(containerPorts)

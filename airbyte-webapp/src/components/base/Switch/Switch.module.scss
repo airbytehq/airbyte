@@ -1,7 +1,7 @@
 @use "../../../scss/colors";
 @use "../../../scss/variables";
 
-@mixin knobTransform($position, $small: false) {
+@mixin knob-transform($position, $small: false) {
   @if $position == left {
     transform: translateX(0);
   } @else if $small {
@@ -22,63 +22,6 @@
     height: 18px;
   }
 
-  .switchInput {
-    opacity: 0;
-    width: 0;
-    height: 0;
-
-    &:checked + .slider {
-      background-color: colors.$primaryColor;
-
-      &:before {
-        @include knobTransform(right, false);
-      }
-
-      &.small:before {
-        @include knobTransform(right, true);
-      }
-
-      &.loading {
-        background-image: url("./ProgressReverse.svg");
-
-        &:before {
-          @include knobTransform(left, false);
-        }
-
-        &.small:before {
-          @include knobTransform(left, true);
-        }
-      }
-    }
-
-    &:not(:checked) + .slider {
-      &:before {
-        @include knobTransform(left, false);
-      }
-
-      &.small:before {
-        @include knobTransform(left, true);
-      }
-
-      &.loading {
-        background-image: url("./Progress.svg");
-
-        &:before {
-          @include knobTransform(right, false);
-        }
-
-        &.small:before {
-          @include knobTransform(right, true);
-        }
-      }
-    }
-
-    &:disabled + .slider {
-      opacity: 0.5;
-      cursor: auto;
-    }
-  }
-
   .slider {
     cursor: pointer;
     position: absolute;
@@ -86,17 +29,17 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: colors.$greyColor20;
+    background: colors.$grey-100;
     transition: variables.$transition;
     border-radius: 20px;
-    border: 1px solid colors.$greyColor30;
+    border: 1px solid colors.$grey-200;
 
-    &.small:before {
+    &.small::before {
       height: 16px;
       width: 16px;
     }
 
-    &:before {
+    &::before {
       position: absolute;
       z-index: 1;
       content: "";
@@ -104,10 +47,67 @@
       width: 24px;
       left: -1px;
       top: -1px;
-      background: colors.$whiteColor;
+      background: colors.$white;
       transition: variables.$transition;
       border-radius: 50%;
-      border: 1px solid colors.$greyColor30;
+      border: 1px solid colors.$grey-200;
+    }
+  }
+
+  .switchInput {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .slider {
+      background-color: colors.$blue;
+
+      &::before {
+        @include knob-transform(right, false);
+      }
+
+      &.small::before {
+        @include knob-transform(right, true);
+      }
+
+      &.loading {
+        background-image: url("./ProgressReverse.svg");
+
+        &::before {
+          @include knob-transform(left, false);
+        }
+
+        &.small::before {
+          @include knob-transform(left, true);
+        }
+      }
+    }
+
+    &:not(:checked) + .slider {
+      &::before {
+        @include knob-transform(left, false);
+      }
+
+      &.small::before {
+        @include knob-transform(left, true);
+      }
+
+      &.loading {
+        background-image: url("./Progress.svg");
+
+        &::before {
+          @include knob-transform(right, false);
+        }
+
+        &.small::before {
+          @include knob-transform(right, true);
+        }
+      }
+    }
+
+    &:disabled + .slider {
+      opacity: 0.5;
+      cursor: auto;
     }
   }
 }

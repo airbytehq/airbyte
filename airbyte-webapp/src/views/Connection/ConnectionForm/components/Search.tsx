@@ -22,7 +22,7 @@ const SearchContent = styled.div`
 `;
 
 const Search: React.FC<SearchProps> = ({ onSearch }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <SearchContent>

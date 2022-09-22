@@ -149,8 +149,8 @@ class SalesforceStream(HttpStream, ABC):
 
 
 class BulkSalesforceStream(SalesforceStream):
-    page_size = 30000
-    DEFAULT_WAIT_TIMEOUT_SECONDS = 600
+    page_size = 15000
+    DEFAULT_WAIT_TIMEOUT_SECONDS = 86400  # 24-hour bulk job running time
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
 
@@ -272,13 +272,13 @@ class BulkSalesforceStream(SalesforceStream):
             return None, job_status
         return job_full_url, job_status
 
-    def filter_null_bytes(self, s: str):
+    def filter_null_bytes(self, b: bytes):
         """
         https://github.com/airbytehq/airbyte/issues/8300
         """
-        res = s.replace("\x00", "")
-        if len(res) < len(s):
-            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
+        res = b.replace(b"\x00", b"")
+        if len(res) < len(b):
+            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(b), len(res))
         return res
 
     def download_data(self, url: str, chunk_size: float = 1024) -> os.PathLike:
@@ -292,9 +292,9 @@ class BulkSalesforceStream(SalesforceStream):
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response:
-            with open(tmp_file, "w") as data_file:
+            with open(tmp_file, "wb") as data_file:
                 for chunk in response.iter_content(chunk_size=chunk_size):
-                    data_file.writelines(self.filter_null_bytes(self.decode(chunk)))
+                    data_file.write(self.filter_null_bytes(chunk))
         # check the file exists
         if os.path.isfile(tmp_file):
             return tmp_file
@@ -312,8 +312,8 @@ class BulkSalesforceStream(SalesforceStream):
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
-                    for n, row in enumerate(chunk, 1):
-                        yield n, row
+                    for row in chunk:
+                        yield row
         except pd.errors.EmptyDataError as e:
             self.logger.info(f"Empty data received. {e}")
             yield from []
@@ -382,12 +382,15 @@ class BulkSalesforceStream(SalesforceStream):
 
             count = 0
             record: Mapping[str, Any] = {}
-            for count, record in self.read_with_chunks(self.download_data(url=job_full_url)):
+            for record in self.read_with_chunks(self.download_data(url=job_full_url)):
+                count += 1
                 yield record
             self.delete_job(url=job_full_url)
 
             if count < self.page_size:
-                # this is a last page
+                # Salesforce doesn't give a next token or something to know the request was
+                # the last page. The connectors will sync batches in `page_size` and
+                # considers that batch is smaller than the `page_size` it must be the last page.
                 break
 
             next_page_token = self.next_page_token(record)

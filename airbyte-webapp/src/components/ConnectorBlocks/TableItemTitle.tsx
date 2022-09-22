@@ -7,7 +7,7 @@ import { Popout } from "components/base/Popout/Popout";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 interface TableItemTitleProps {
   type: "source" | "destination";
@@ -55,9 +55,8 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
   entityIcon,
   releaseStage,
 }) => {
-  const { hasFeature } = useFeatureService();
-  const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
-  const formatMessage = useIntl().formatMessage;
+  const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
+  const { formatMessage } = useIntl();
   const options = [
     {
       label: formatMessage({
@@ -90,12 +89,13 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           options={options}
           isSearchable={false}
           styles={{
-            // TODO: hack to position select
+            // TODO: hack to position select. Should be refactored with Headless UI Menu
             menuPortal: (base) => ({
               ...base,
-              "margin-left": "-130px",
+              marginLeft: -130,
             }),
           }}
+          menuShouldBlockScroll={false}
           onChange={onSelect}
           targetComponent={({ onOpen }) => (
             <Button onClick={onOpen} disabled={!allowCreateConnection}>

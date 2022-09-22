@@ -7,7 +7,6 @@ import { Button, H2 } from "components/base";
 interface EmptyResourceListViewProps {
   resourceType: "connections" | "destinations" | "sources";
   onCreateClick: () => void;
-  disableCreateButton?: boolean;
 }
 
 const Container = styled.div`
@@ -18,7 +17,7 @@ const Container = styled.div`
   height: 100%;
 `;
 
-export const Heading = styled(H2)`
+const Heading = styled(H2)`
   font-weight: 700;
   font-size: 24px;
   line-height: 29px;
@@ -44,7 +43,7 @@ const OctaviaImg = styled.img`
   z-index: 1;
 `;
 
-export const BowtieImg = styled.img`
+const BowtieImg = styled.img`
   position: absolute;
 
   &.empty-list-bowtie--right {
@@ -57,11 +56,7 @@ export const BowtieImg = styled.img`
   }
 `;
 
-export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
-  resourceType,
-  onCreateClick,
-  disableCreateButton,
-}) => {
+export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({ resourceType, onCreateClick }) => {
   const { headingMessageId, buttonMessageId, singularResourceType } = useMemo(() => {
     const singularResourceType = resourceType.substring(0, resourceType.length - 1);
     const baseMessageId = resourceType === "connections" ? singularResourceType : resourceType;
@@ -88,7 +83,7 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
         )}
         <OctaviaImg src={`/images/octavia/empty-${resourceType}.png`} alt="Octavia" resource={resourceType} />
       </IllustrationContainer>
-      <Button onClick={onCreateClick} disabled={disableCreateButton} size="xl" data-id={`new-${singularResourceType}`}>
+      <Button onClick={onCreateClick} size="xl" data-id={`new-${singularResourceType}`}>
         <FormattedMessage id={buttonMessageId} />
       </Button>
     </Container>

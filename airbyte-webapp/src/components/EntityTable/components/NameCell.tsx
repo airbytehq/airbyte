@@ -30,18 +30,12 @@ const Name = styled.div<{ enabled?: boolean }>`
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
 `;
 
-const Space = styled.div`
-  width: 30px;
-  height: 20px;
-  opacity: 0;
-`;
-
 const Image = styled(ConnectorIcon)`
   margin-right: 6px;
 `;
 
 const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const statusIconStatus = useMemo<StatusIconStatus | undefined>(
     () =>
       status === Status.EMPTY
@@ -78,8 +72,8 @@ const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
 
   return (
     <Content>
-      {status ? <StatusIcon title={title} status={statusIconStatus} /> : <Space />}
-      {icon && <Image small icon={img} />}
+      {status && <StatusIcon title={title} status={statusIconStatus} />}
+      {icon && <Image icon={img} />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );

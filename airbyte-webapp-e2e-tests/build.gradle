@@ -1,15 +1,14 @@
 plugins {
     id "base"
-    id "com.github.node-gradle.node" version "2.2.4"
+    id "com.github.node-gradle.node" version "3.3.0"
 }
 
-def nodeVersion = System.getenv('NODE_VERSION') ?: '16.13.0'
+def nodeVersion = System.getenv('NODE_VERSION') ?: '16.15.1'
 
 node {
     download = true
     version = nodeVersion
 }
-
 
 task e2etest(type: NpmTask) {
     dependsOn npmInstall

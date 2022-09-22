@@ -23,6 +23,7 @@ dependencies {
     implementation "com.oracle.database.jdbc:ojdbc8-production:19.7.0.0"
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
+    testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'

@@ -1,12 +1,12 @@
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
-import styled from "styled-components";
 
 import Table from "components/Table";
 
-import useRouter from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
@@ -14,11 +14,8 @@ import ConnectorCell from "./components/ConnectorCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
 import SortButton from "./components/SortButton";
+import styles from "./ImplementationTable.module.scss";
 import { EntityTableDataItem, SortOrderEnum } from "./types";
-
-const Content = styled.div`
-  margin: 0 32px 0 27px;
-`;
 
 interface IProps {
   data: EntityTableDataItem[];
@@ -27,7 +24,8 @@ interface IProps {
 }
 
 const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => {
-  const { query, push } = useRouter();
+  const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
+  const navigate = useNavigate();
   const sortBy = query.sortBy || "entity";
   const sortOrder = query.order || SortOrderEnum.ASC;
 
@@ -35,17 +33,17 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
     (field: string) => {
       const order =
         sortBy !== field ? SortOrderEnum.ASC : sortOrder === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
-      push({
+      navigate({
         search: queryString.stringify(
           {
             sortBy: field,
-            order: order,
+            order,
           },
           { skipNull: true }
         ),
       });
     },
-    [push, sortBy, sortOrder]
+    [navigate, sortBy, sortOrder]
   );
 
   const sortData = useCallback(
@@ -137,9 +135,9 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
   );
 
   return (
-    <Content>
+    <div className={styles.content}>
       <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />
-    </Content>
+    </div>
   );
 };
 

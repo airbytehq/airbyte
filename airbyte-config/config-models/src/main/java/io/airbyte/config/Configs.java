@@ -7,9 +7,11 @@ package io.airbyte.config;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -30,6 +32,7 @@ public interface Configs {
 
   // CORE
   // General
+
   /**
    * Distinguishes internal Airbyte deployments. Internal-use only.
    */
@@ -70,7 +73,15 @@ public interface Configs {
    */
   Path getWorkspaceRoot();
 
+  /**
+   * Defines the URL to pull the remote connector catalog from.
+   *
+   * @return
+   */
+  Optional<URI> getRemoteConnectorCatalogUrl();
+
   // Docker Only
+
   /**
    * Defines the name of the Airbyte docker volume.
    */
@@ -90,6 +101,7 @@ public interface Configs {
   Path getLocalRoot();
 
   // Secrets
+
   /**
    * Defines the GCP Project to store secrets in. Alpha support.
    */
@@ -103,12 +115,30 @@ public interface Configs {
 
   /**
    * Defines the Secret Persistence type. None by default. Set to GOOGLE_SECRET_MANAGER to use Google
-   * Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Alpha support.
-   * Undefined behavior will result if this is turned on and then off.
+   * Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use
+   * Hashicorp Vault. Alpha support. Undefined behavior will result if this is turned on and then off.
    */
   SecretPersistenceType getSecretPersistenceType();
 
+  /**
+   * Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
+   */
+  String getVaultAddress();
+
+  /**
+   * Define the vault path prefix to read/write Airbyte Configuration to Hashicorp Vault. Empty by
+   * default. Alpha Support.
+   */
+  String getVaultPrefix();
+
+  /**
+   * Define the vault token to read/write Airbyte Configuration to Hashicorp Vault. Empty by default.
+   * Alpha Support.
+   */
+  String getVaultToken();
+
   // Database
+
   /**
    * Define the Jobs Database user.
    */
@@ -171,7 +201,36 @@ public interface Configs {
    */
   boolean runDatabaseMigrationOnStartup();
 
+  // Temporal Cloud - Internal-Use Only
+
+  /**
+   * Define if Temporal Cloud should be used. Internal-use only.
+   */
+  boolean temporalCloudEnabled();
+
+  /**
+   * Temporal Cloud target endpoint, usually with form ${namespace}.tmprl.cloud:7233. Internal-use
+   * only.
+   */
+  String getTemporalCloudHost();
+
+  /**
+   * Temporal Cloud namespace. Internal-use only.
+   */
+  String getTemporalCloudNamespace();
+
+  /**
+   * Temporal Cloud client cert for SSL. Internal-use only.
+   */
+  String getTemporalCloudClientCert();
+
+  /**
+   * Temporal Cloud client key for SSL. Internal-use only.
+   */
+  String getTemporalCloudClientKey();
+
   // Airbyte Services
+
   /**
    * Define the url where Temporal is hosted at. Please include the port. Airbyte services use this
    * information.
@@ -201,6 +260,7 @@ public interface Configs {
   String getWebappUrl();
 
   // Jobs
+
   /**
    * Define the number of attempts a sync will attempt before failing.
    */
@@ -273,6 +333,7 @@ public interface Configs {
   int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
 
   // Jobs - Kube only
+
   /**
    * Define the check job container's minimum CPU request. Defaults to
    * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
@@ -286,16 +347,40 @@ public interface Configs {
   String getCheckJobMainContainerCpuLimit();
 
   /**
-   * Define the job container's minimum RAM usage. Defaults to
+   * Define the check job container's minimum RAM usage. Defaults to
    * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryRequest();
 
   /**
-   * Define the job container's maximum RAM usage. Defaults to
+   * Define the check job container's maximum RAM usage. Defaults to
    * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryLimit();
+
+  /**
+   * Define the normalization job container's minimum CPU request. Defaults to
+   * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerCpuRequest();
+
+  /**
+   * Define the normalization job container's maximum CPU usage. Defaults to
+   * {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerCpuLimit();
+
+  /**
+   * Define the normalization job container's minimum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerMemoryRequest();
+
+  /**
+   * Define the normalization job container's maximum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerMemoryLimit();
 
   /**
    * Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration
@@ -381,6 +466,7 @@ public interface Configs {
   String getJobKubeNamespace();
 
   // Logging/Monitoring/Tracking
+
   /**
    * Define either S3, Minio or GCS as a logging backend. Kubernetes only. Multiple variables are
    * involved here. Please see {@link CloudStorageConfigs} for more info.
@@ -416,12 +502,40 @@ public interface Configs {
   String getDDDogStatsDPort();
 
   /**
+   * Set constant tags to be attached to all metrics. Useful for distinguishing between environments.
+   * Example: airbyte_instance:dev,k8s-cluster:aws-dev
+   */
+  List<String> getDDConstantTags();
+
+  /**
    * Define whether to publish tracking events to Segment or log-only. Airbyte internal use.
    */
   TrackingStrategy getTrackingStrategy();
 
+  /**
+   * Define whether to send job failure events to Sentry or log-only. Airbyte internal use.
+   */
+  JobErrorReportingStrategy getJobErrorReportingStrategy();
+
+  /**
+   * Determines the Sentry DSN that should be used when reporting connector job failures to Sentry.
+   * Used with SENTRY error reporting strategy. Airbyte internal use.
+   */
+  String getJobErrorReportingSentryDSN();
+
   // APPLICATIONS
   // Worker
+
+  /**
+   * Define the header name used to authenticate from an Airbyte Worker to the Airbyte API
+   */
+  String getAirbyteApiAuthHeaderName();
+
+  /**
+   * Define the header value used to authenticate from an Airbyte Worker to the Airbyte API
+   */
+  String getAirbyteApiAuthHeaderValue();
+
   /**
    * Define the maximum number of workers each Airbyte Worker container supports. Multiple variables
    * are involved here. Please see {@link MaxWorkersConfig} for more info.
@@ -454,13 +568,62 @@ public interface Configs {
    */
   boolean shouldRunConnectionManagerWorkflows();
 
+  /**
+   * Define if the worker is operating within Airbyte's Control Plane, or within an external Data
+   * Plane. - Workers in the Control Plane process tasks related to control-flow, like scheduling and
+   * routing, as well as data syncing tasks that are enqueued for the Control Plane's default task
+   * queue. - Workers in a Data Plane process only tasks related to data syncing that are specifically
+   * enqueued for that worker's particular Data Plane.
+   */
+  WorkerPlane getWorkerPlane();
+
+  // Worker - Control Plane configs
+
+  /**
+   * TEMPORARY: Define a set of connection IDs that should run in Airbyte's MVP Data Plane. - This
+   * should only be set on Control-plane workers, since those workers decide which Data Plane task
+   * queue to use based on connectionId. - Will be removed in favor of the Routing Service in the
+   * future. Internal-use only.
+   */
+  Set<String> connectionIdsForMvpDataPlane();
+
+  // Worker - Data Plane configs
+
+  /**
+   * Define a set of Temporal Task Queue names for which the worker should register handlers for to
+   * process tasks related to syncing data. - For workers within Airbyte's Control Plane, this returns
+   * the Control Plane's default task queue. - For workers within a Data Plane, this returns only task
+   * queue names specific to that Data Plane. Internal-use only.
+   */
+  Set<String> getDataSyncTaskQueues();
+
+  /**
+   * Return the Control Plane endpoint that workers in a Data Plane will hit for authentication. This
+   * is separate from the actual endpoint being hit for application logic. Internal-use only.
+   */
+  String getControlPlaneAuthEndpoint();
+
+  /**
+   * Return the service account a data plane uses to authenticate with a control plane. Internal-use
+   * only.
+   */
+  String getDataPlaneServiceAccountCredentialsPath();
+
+  /**
+   * Return the service account email a data plane uses to authenticate with a control plane.
+   * Internal-use only.
+   */
+  String getDataPlaneServiceAccountEmail();
+
   // Worker - Kube only
+
   /**
    * Define the local ports the Airbyte Worker pod uses to connect to the various Job pods.
    */
   Set<Integer> getTemporalWorkerPorts();
 
   // Container Orchestrator
+
   /**
    * Define if Airbyte should use the container orchestrator. Internal-use only.
    */
@@ -508,9 +671,19 @@ public interface Configs {
   int getMaxActivityTimeoutSecond();
 
   /**
-   * Get the duration in second between 2 activity attempts
+   * Get initial delay in seconds between two activity attempts
    */
-  int getDelayBetweenActivityAttempts();
+  int getInitialDelayBetweenActivityAttemptsSeconds();
+
+  /**
+   * Get maximum delay in seconds between two activity attempts
+   */
+  int getMaxDelayBetweenActivityAttemptsSeconds();
+
+  /**
+   * Get the delay in seconds between an activity failing and the workflow being restarted
+   */
+  int getWorkflowFailureRestartDelaySeconds();
 
   /**
    * Get number of attempts of the non long running activities
@@ -519,6 +692,11 @@ public interface Configs {
 
   enum TrackingStrategy {
     SEGMENT,
+    LOGGING
+  }
+
+  enum JobErrorReportingStrategy {
+    SENTRY,
     LOGGING
   }
 
@@ -535,7 +713,13 @@ public interface Configs {
   enum SecretPersistenceType {
     NONE,
     TESTING_CONFIG_DB_TABLE,
-    GOOGLE_SECRET_MANAGER
+    GOOGLE_SECRET_MANAGER,
+    VAULT
+  }
+
+  enum WorkerPlane {
+    CONTROL_PLANE,
+    DATA_PLANE
   }
 
 }

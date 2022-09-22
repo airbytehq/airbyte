@@ -27,13 +27,13 @@ class AirbyteRecordMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    stream: str = Field(..., description="the name of this record's stream")
-    data: Dict[str, Any] = Field(..., description="the record data")
+    namespace: Optional[str] = Field(None, description="namespace the data is associated with")
+    stream: str = Field(..., description="stream the data is associated with")
+    data: Dict[str, Any] = Field(..., description="record data")
     emitted_at: int = Field(
         ...,
         description="when the data was emitted from the source. epoch in millisecond.",
     )
-    namespace: Optional[str] = Field(None, description="the namespace of this record's stream")
 
 
 class AirbyteStateType(Enum):
@@ -70,8 +70,12 @@ class AirbyteLogMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    level: Level = Field(..., description="the type of logging")
-    message: str = Field(..., description="the log message")
+    level: Level = Field(..., description="log level")
+    message: str = Field(..., description="log message")
+    stack_trace: Optional[str] = Field(
+        None,
+        description="an optional stack trace if the log message corresponds to an exception",
+    )
 
 
 class TraceType(Enum):
@@ -153,6 +157,9 @@ class AuthFlowType(Enum):
 
 
 class OAuthConfigSpecification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     oauth_user_input_from_connector_config_specification: Optional[Dict[str, Any]] = Field(
         None,
         description="OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.\nMust be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification\nusing special annotation 'path_in_connector_config'.\nThese are input values the user is entering through the UI to authenticate to the connector, that might also shared\nas inputs for syncing data via the connector.\n\nExamples:\n\nif no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]\nif connector values such as 'app_id' inside the top level are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['app_id']\n    }\n  }\nif connector values such as 'info.app_id' nested inside another object are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['info', 'app_id']\n    }\n  }",
@@ -261,7 +268,10 @@ class ConnectorSpecification(BaseModel):
         ...,
         description="ConnectorDefinition specific blob. Must be a valid JSON string.",
     )
-    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
+    supportsIncremental: Optional[bool] = Field(
+        None,
+        description="(deprecated) If the connector supports incremental mode or not.",
+    )
     supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
     supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
     supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
@@ -272,13 +282,17 @@ class ConnectorSpecification(BaseModel):
         None,
         description="Additional and optional specification object to describe what an 'advanced' Auth flow would need to function.\n  - A connector should be able to fully function with the configuration as described by the ConnectorSpecification in a 'basic' mode.\n  - The 'advanced' mode provides easier UX for the user with UI improvements and automations. However, this requires further setup on the\n  server side by instance or workspace admins beforehand. The trade-off is that the user does not have to provide as many technical\n  inputs anymore and the auth process is faster and easier to complete.",
     )
+    protocol_version: Optional[str] = Field(
+        None,
+        description="the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer. ",
+    )
 
 
 class AirbyteStateMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    state_type: Optional[AirbyteStateType] = None
+    type: Optional[AirbyteStateType] = None
     stream: Optional[AirbyteStreamState] = None
     global_: Optional[AirbyteGlobalState] = Field(None, alias="global")
     data: Optional[Dict[str, Any]] = Field(None, description="(Deprecated) the state data")

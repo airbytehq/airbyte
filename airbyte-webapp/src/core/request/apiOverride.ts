@@ -51,7 +51,7 @@ export const apiOverride = async <T, U = unknown>(
   const requestUrl = `${apiUrl.replace(/\/v1\/?$/, "")}${url.startsWith("/") ? "" : "/"}${url}`;
 
   for (const middleware of options.middlewares) {
-    headers = (await middleware({ headers })).headers;
+    ({ headers } = await middleware({ headers }));
   }
 
   const response = await fetch(`${requestUrl}${new URLSearchParams(params)}`, {

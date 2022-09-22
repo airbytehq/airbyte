@@ -11,7 +11,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -24,7 +25,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -37,7 +39,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -50,7 +53,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -63,7 +67,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -76,7 +81,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["date"]
+      "cursor_field": ["date"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -89,7 +95,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -102,7 +109,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -115,7 +123,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -128,7 +137,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -141,7 +151,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -154,7 +165,8 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "cursor_field": ["created"],
+      "primary_key": [["id"]]
     }
   ]
 }

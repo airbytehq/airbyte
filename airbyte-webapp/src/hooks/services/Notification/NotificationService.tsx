@@ -9,7 +9,7 @@ import { Notification, NotificationServiceApi, NotificationServiceState } from "
 
 const notificationServiceContext = React.createContext<NotificationServiceApi | null>(null);
 
-function NotificationService({ children }: { children: React.ReactNode }) {
+const NotificationService = ({ children }: { children: React.ReactNode }) => {
   const [state, { addNotification, clearAll, deleteNotificationById }] = useTypesafeReducer<
     NotificationServiceState,
     typeof actions
@@ -48,7 +48,7 @@ function NotificationService({ children }: { children: React.ReactNode }) {
       ) : null}
     </>
   );
-}
+};
 
 export const useNotificationService: (
   notification?: Notification,

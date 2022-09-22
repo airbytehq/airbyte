@@ -5,7 +5,6 @@ connectionSpecification:
   type: object
   required:
     - fix-me
-  additionalProperties: false
   properties:
     fix-me:
       type: string

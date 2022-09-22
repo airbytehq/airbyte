@@ -28,8 +28,8 @@ import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.DefaultJobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Optional;
@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * - setting all required Airbyte metadata information.
  */
+@SuppressWarnings("PMD.UnusedPrivateField")
 public class BootloaderApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BootloaderApp.class);

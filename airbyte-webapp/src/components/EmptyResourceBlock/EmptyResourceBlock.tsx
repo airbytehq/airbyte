@@ -35,7 +35,7 @@ const Description = styled.div`
 const EmptyResourceBlock: React.FC<IProps> = ({ text, description }) => (
   <Content>
     <ImgBlock>
-      <img src="/cactus.png" height={40} alt={"cactus"} />
+      <img src="/cactus.png" height={40} alt="cactus" />
     </ImgBlock>
     {text}
     <Description>{description}</Description>

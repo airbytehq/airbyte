@@ -14,7 +14,7 @@ type IHeaderProps = {
   collapse?: boolean;
   customWidth?: number;
   customPadding?: PaddingProps;
-} & ColumnInstance;
+} & ColumnInstance<Record<string, unknown>>;
 
 type ICellProps = {
   column: IHeaderProps;
@@ -43,6 +43,9 @@ const Tr = styled.tr<{
 }>`
   background: ${({ theme, erroredRows }) => (erroredRows ? theme.dangerTransparentColor : theme.whiteColor)};
   cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
+  &:hover {
+    background-color: ${({ theme }) => `${theme.grey50}`};
+  }
 `;
 
 const Td = styled.td<{
@@ -92,7 +95,7 @@ const Th = styled.th<IThProps>`
   }
 
   &:last-child {
-    padding-left: 45px;
+    padding-left: 15px;
     border-radius: 0 10px 0 0;
   }
 `;
@@ -161,22 +164,19 @@ const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortB
               onClick={() => onClickRow?.(row.original)}
               erroredRows={erroredRows && !!row.original.error}
             >
-              {
-                // @ts-ignore needs to address proper types for table
-                row.cells.map((cell: ICellProps, key) => {
-                  return (
-                    <Td
-                      {...cell.getCellProps()}
-                      collapse={cell.column.collapse}
-                      customPadding={cell.column.customPadding}
-                      customWidth={cell.column.customWidth}
-                      key={`table-cell-${row.id}-${key}`}
-                    >
-                      {cell.render("Cell")}
-                    </Td>
-                  );
-                })
-              }
+              {row.cells.map((cell: ICellProps, key) => {
+                return (
+                  <Td
+                    {...cell.getCellProps()}
+                    collapse={cell.column.collapse}
+                    customPadding={cell.column.customPadding}
+                    customWidth={cell.column.customWidth}
+                    key={`table-cell-${row.id}-${key}`}
+                  >
+                    {cell.render("Cell")}
+                  </Td>
+                );
+              })}
             </Tr>
           );
         })}

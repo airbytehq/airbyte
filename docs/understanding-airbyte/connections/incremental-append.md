@@ -66,7 +66,7 @@ Some sources are able to determine the cursor that they use without any user inp
 
 ![](../../.gitbook/assets/incremental_source_defined.png)
 
-\(You can find a more technical details about the configuration data model [here](../catalog.md)\).
+\(You can find a more technical details about the configuration data model [here](../airbyte-protocol.md#catalog)\).
 
 ## User-Defined Cursor
 
@@ -74,7 +74,7 @@ Some sources cannot define the cursor without user input. For example, in the [p
 
 ![](../../.gitbook/assets/incremental_user_defined.png)
 
-\(You can find a more technical details about the configuration data model [here](../catalog.md)\).
+\(You can find a more technical details about the configuration data model [here](../airbyte-protocol.md#catalog)\).
 
 ## Getting the Latest Snapshot of data
 
@@ -128,3 +128,6 @@ The current behavior of **Incremental** is not able to handle source schema chan
 
 If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](incremental-append.md)
 
+## Related tutorial
+
+For an in-depth hands-on deep-dive into incremental sync, see: [Explore Airbyte’s incremental data synchronization](https://airbyte.com/tutorials/incremental-data-synchronization).

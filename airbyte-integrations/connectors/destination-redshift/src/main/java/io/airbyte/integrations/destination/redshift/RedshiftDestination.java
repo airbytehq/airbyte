@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.findS3Options;
-import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.anyOfS3FieldsAreNullOrEmpty;
+import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.anyOfS3FieldsAreNullOrEmpty;
+import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.Destination;
@@ -16,10 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The Redshift Destination offers two replication strategies. The first inserts via a typical SQL Insert statement. Although less efficient, this requires less user set up. See {@link
- * RedshiftInsertDestination} for more detail. The second inserts via streaming the data to an S3 bucket, and Cop-ing the date into Redshift. This is more efficient, and recommended for production
- * workloads, but does require users to set up an S3 bucket and pass in additional credentials. See {@link RedshiftStagingS3Destination} for more detail. This class inspect the given arguments to
- * determine which strategy to use.
+ * The Redshift Destination offers two replication strategies. The first inserts via a typical SQL
+ * Insert statement. Although less efficient, this requires less user set up. See
+ * {@link RedshiftInsertDestination} for more detail. The second inserts via streaming the data to
+ * an S3 bucket, and Cop-ing the date into Redshift. This is more efficient, and recommended for
+ * production workloads, but does require users to set up an S3 bucket and pass in additional
+ * credentials. See {@link RedshiftStagingS3Destination} for more detail. This class inspect the
+ * given arguments to determine which strategy to use.
  */
 public class RedshiftDestination extends SwitchingDestination<RedshiftDestination.DestinationType> {
 
@@ -28,8 +31,7 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
 
   private static final Map<DestinationType, Destination> destinationMap = Map.of(
       DestinationType.STANDARD, new RedshiftInsertDestination(),
-      DestinationType.COPY_S3, new RedshiftStagingS3Destination()
-  );
+      DestinationType.COPY_S3, new RedshiftStagingS3Destination());
 
   enum DestinationType {
     STANDARD,
@@ -62,4 +64,5 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", RedshiftDestination.class);
   }
+
 }

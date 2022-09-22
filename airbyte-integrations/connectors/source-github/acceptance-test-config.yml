@@ -42,10 +42,11 @@ tests:
         releases: ["airbytehq/integration-test", "created_at"]
         repositories: ["airbytehq", "updated_at"]
         review_comments: ["airbytehq/integration-test", "updated_at"]
-        reviews: ["airbytehq/integration-test", "pull_request_updated_at"]
+        reviews: ["airbytehq/integration-test", "updated_at"]
         stargazers: ["airbytehq/integration-test", "starred_at"]
         workflow_runs: ["airbytehq/integration-test", "updated_at"]
         workflows: ["airbytehq/integration-test", "updated_at"]
+        workflow_jobs: ["airbytehq/integration-test", "completed_at"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -26,7 +26,7 @@ function removeNestedPaths(
   }
 
   if (schema.properties) {
-    const properties = schema.properties;
+    const { properties } = schema;
     const filteredProperties: Record<string, JSONSchema7Definition> = {};
 
     for (const propertiesKey in properties) {
@@ -63,7 +63,7 @@ function removeNestedPaths(
 
 function applyFuncAt(
   schema: JSONSchema7Definition,
-  path: (string | number)[],
+  path: Array<string | number>,
   f: (schema: JSONSchema7Definition) => JSONSchema7
 ): JSONSchema7Definition {
   if (typeof schema === "boolean") {

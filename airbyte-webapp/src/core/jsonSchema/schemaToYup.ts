@@ -119,17 +119,17 @@ export const buildYupFormForJsonSchema = (
     const hasDefault = isDefined(jsonSchema.default);
 
     if (hasDefault) {
-      // @ts-ignore can't infer correct type here so lets just use default from json_schema
+      // @ts-expect-error can't infer correct type here so lets just use default from json_schema
       schema = schema.default(jsonSchema.default);
     }
 
     if (!hasDefault && jsonSchema.const) {
-      // @ts-ignore can't infer correct type here so lets just use default from json_schema
+      // @ts-expect-error can't infer correct type here so lets just use default from json_schema
       schema = schema.oneOf([jsonSchema.const]).default(jsonSchema.const);
     }
 
     if (jsonSchema.enum) {
-      // @ts-ignore as enum is array we are going to use it as oneOf for yup
+      // @ts-expect-error as enum is array we are going to use it as oneOf for yup
       schema = schema.oneOf(jsonSchema.enum);
     }
 

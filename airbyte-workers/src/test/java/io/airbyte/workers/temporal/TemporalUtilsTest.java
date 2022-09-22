@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal;
 
-import static io.airbyte.workers.temporal.TemporalUtils.getTemporalClientWhenConnected;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.temporal.stubs.HeartbeatWorkflow;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityExecutionContext;
@@ -48,12 +48,15 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class TemporalUtilsTest {
 
   private static final String TASK_QUEUE = "default";
+  private static final String BEFORE = "before: {}";
 
   @Test
   void testAsyncExecute() throws Exception {
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     final VoidCallable callable = mock(VoidCallable.class);
@@ -73,7 +76,7 @@ class TemporalUtilsTest {
     testEnv.start();
 
     final TestWorkflow workflowStub = client.newWorkflowStub(TestWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
-    final ImmutablePair<WorkflowExecution, CompletableFuture<String>> pair = TemporalUtils.asyncExecute(
+    final ImmutablePair<WorkflowExecution, CompletableFuture<String>> pair = temporalUtils.asyncExecute(
         workflowStub,
         workflowStub::run,
         "whatever",
@@ -96,30 +99,35 @@ class TemporalUtilsTest {
 
   @Test
   void testWaitForTemporalServerAndLogThrowsException() {
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
     final Supplier<WorkflowServiceStubs> serviceSupplier = mock(Supplier.class);
+    final String namespace = "default";
 
-    when(namespaceInfo.getName()).thenReturn("default");
+    when(namespaceInfo.isInitialized()).thenReturn(true);
+    when(namespaceInfo.getName()).thenReturn(namespace);
     when(describeNamespaceResponse.getNamespaceInfo()).thenReturn(namespaceInfo);
     when(serviceSupplier.get())
         .thenThrow(RuntimeException.class)
         .thenReturn(workflowServiceStubs);
-    when(workflowServiceStubs.blockingStub().listNamespaces(any()).getNamespacesList())
+    when(workflowServiceStubs.blockingStub().describeNamespace(any()))
         .thenThrow(RuntimeException.class)
-        .thenReturn(List.of(describeNamespaceResponse));
-    getTemporalClientWhenConnected(Duration.ofMillis(10), Duration.ofSeconds(1), Duration.ofSeconds(0), serviceSupplier);
+        .thenReturn(describeNamespaceResponse);
+    temporalUtils.getTemporalClientWhenConnected(Duration.ofMillis(10), Duration.ofSeconds(1), Duration.ofSeconds(0), serviceSupplier, namespace);
   }
 
   @Test
   void testWaitThatTimesOut() {
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
     final Supplier<WorkflowServiceStubs> serviceSupplier = mock(Supplier.class);
+    final String namespace = "default";
 
-    when(namespaceInfo.getName()).thenReturn("default");
+    when(namespaceInfo.getName()).thenReturn(namespace);
     when(describeNamespaceResponse.getNamespaceInfo()).thenReturn(namespaceInfo);
     when(serviceSupplier.get())
         .thenThrow(RuntimeException.class)
@@ -128,7 +136,7 @@ class TemporalUtilsTest {
         .thenThrow(RuntimeException.class)
         .thenReturn(List.of(describeNamespaceResponse));
     assertThrows(RuntimeException.class, () -> {
-      getTemporalClientWhenConnected(Duration.ofMillis(100), Duration.ofMillis(10), Duration.ofSeconds(0), serviceSupplier);
+      temporalUtils.getTemporalClientWhenConnected(Duration.ofMillis(100), Duration.ofMillis(10), Duration.ofSeconds(0), serviceSupplier, namespace);
     });
   }
 
@@ -176,7 +184,7 @@ class TemporalUtilsTest {
 
   @Test
   void testHeartbeatWithContext() throws InterruptedException {
-
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
 
     final Worker worker = testEnv.newWorker(TASK_QUEUE);
@@ -187,8 +195,8 @@ class TemporalUtilsTest {
     final CountDownLatch latch = new CountDownLatch(2);
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      ActivityExecutionContext context = Activity.getExecutionContext();
-      TemporalUtils.withBackgroundHeartbeat(
+      final ActivityExecutionContext context = Activity.getExecutionContext();
+      temporalUtils.withBackgroundHeartbeat(
           // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           () -> {
             latch.await();
@@ -217,7 +225,7 @@ class TemporalUtilsTest {
 
   @Test
   void testHeartbeatWithContextAndCallbackRef() throws InterruptedException {
-
+    final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
     final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
 
     final Worker worker = testEnv.newWorker(TASK_QUEUE);
@@ -228,8 +236,8 @@ class TemporalUtilsTest {
     final CountDownLatch latch = new CountDownLatch(2);
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      ActivityExecutionContext context = Activity.getExecutionContext();
-      TemporalUtils.withBackgroundHeartbeat(
+      final ActivityExecutionContext context = Activity.getExecutionContext();
+      temporalUtils.withBackgroundHeartbeat(
           // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           new AtomicReference<>(() -> {}),
           () -> {
@@ -308,14 +316,15 @@ class TemporalUtilsTest {
         this.callable = callable;
       }
 
+      @Override
       public void activity() {
-        LOGGER.info("before: {}", ACTIVITY1);
+        LOGGER.info(BEFORE, ACTIVITY1);
         try {
           callable.call();
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
-        LOGGER.info("before: {}", ACTIVITY1);
+        LOGGER.info(BEFORE, ACTIVITY1);
       }
 
     }
@@ -370,20 +379,23 @@ class TemporalUtilsTest {
 
       private final AtomicInteger timesReachedEnd;
 
+      private final TemporalUtils temporalUtils = new TemporalUtils(null, null, null, null, null, null, null);
+
       public Activity1Impl(final AtomicInteger timesReachedEnd) {
         this.timesReachedEnd = timesReachedEnd;
       }
 
-      public void activity(String arg) {
-        LOGGER.info("before: {}", ACTIVITY1);
-        ActivityExecutionContext context = Activity.getExecutionContext();
-        TemporalUtils.withBackgroundHeartbeat(
+      @Override
+      public void activity(final String arg) {
+        LOGGER.info(BEFORE, ACTIVITY1);
+        final ActivityExecutionContext context = Activity.getExecutionContext();
+        temporalUtils.withBackgroundHeartbeat(
             new AtomicReference<>(null),
             () -> {
               if (timesReachedEnd.get() == 0) {
-                if (arg.equals("runtime")) {
+                if ("runtime".equals(arg)) {
                   throw new RuntimeException("failed");
-                } else if (arg.equals("timeout")) {
+                } else if ("timeout".equals(arg)) {
                   Thread.sleep(10000);
                   return null;
                 } else {
@@ -395,7 +407,7 @@ class TemporalUtilsTest {
             },
             () -> context);
         timesReachedEnd.incrementAndGet();
-        LOGGER.info("before: {}", ACTIVITY1);
+        LOGGER.info(BEFORE, ACTIVITY1);
       }
 
     }

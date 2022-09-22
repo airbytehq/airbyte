@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Iterator, List, Mapping, Optional, Type, Union
 
+import backoff
 import pendulum
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adaccount import AdAccount
@@ -15,9 +16,18 @@ from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
-from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookResponse
+from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from source_facebook_marketing.streams.common import retry_pattern
 
 logger = logging.getLogger("airbyte")
+
+
+# `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.
+# It still has http status 200 but the object can not be constructed from what was fetched from API.
+# Also, it does not happen while making a call to the API, but later - when parsing the result,
+# that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
+
+backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=5, factor=5)
 
 
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
@@ -338,6 +348,7 @@ class InsightAsyncJob(AsyncJob):
 
         return False
 
+    @backoff_policy
     def get_result(self) -> Any:
         """Retrieve result of the finished job."""
         if not self._job or self.failed:

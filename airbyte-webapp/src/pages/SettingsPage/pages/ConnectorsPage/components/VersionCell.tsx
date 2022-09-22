@@ -64,7 +64,7 @@ const ErrorMessage = styled(SuccessMessage)`
 `;
 
 const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, currentVersion }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const renderFeedback = (dirty: boolean, feedback?: string) => {
     if (feedback && !dirty) {
@@ -74,9 +74,8 @@ const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, curren
             <FormattedMessage id="form.savedChange" />
           </SuccessMessage>
         );
-      } else {
-        return <ErrorMessage>{feedback}</ErrorMessage>;
       }
+      return <ErrorMessage>{feedback}</ErrorMessage>;
     }
 
     return null;

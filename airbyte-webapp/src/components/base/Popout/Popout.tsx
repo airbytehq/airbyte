@@ -1,5 +1,5 @@
 import React, { ReactNode, useMemo } from "react";
-import { ActionMeta, ControlProps } from "react-select";
+import { ActionMeta, ControlProps, StylesConfig } from "react-select";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
@@ -18,18 +18,20 @@ const OutsideClickListener = styled.div`
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Value = any;
 
-const ControlComponent = (props: ControlProps<Value, false>) => (
+const ControlComponent = (props: ControlProps & { selectProps: Value }) => (
   <div ref={props.innerRef}>
     {props.selectProps.selectProps.targetComponent({
       onOpen: props.selectProps.selectProps.onOpen,
+      isOpen: props.selectProps.menuIsOpen,
       value: props.selectProps.value,
     })}
   </div>
 );
 
-type PopoutProps = DropdownProps & {
+interface PopoutProps extends DropdownProps {
   targetComponent: (props: { onOpen: () => void; isOpen?: boolean; value: Value }) => ReactNode;
-};
+  title?: string;
+}
 
 const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) => {
   const [isOpen, toggleOpen] = useToggle(false);
@@ -49,7 +51,7 @@ const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) 
     [props.components]
   );
 
-  const selectStyles = {
+  const selectStyles: StylesConfig = {
     ...(props.styles ?? {}),
     control: (provided: Value) => ({
       ...provided,
@@ -61,14 +63,20 @@ const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) 
   return (
     <>
       <DropDown
-        selectProps={{ targetComponent, onOpen: toggleOpen }}
-        autoFocus
+        selectProps={{
+          targetComponent,
+          onOpen: (e: React.MouseEvent<HTMLButtonElement>) => {
+            // Causes a form submit
+            e?.preventDefault();
+            toggleOpen();
+          },
+        }}
         backspaceRemovesValue={false}
         controlShouldRenderValue={false}
         hideSelectedOptions={false}
         isClearable={false}
         menuIsOpen={isOpen}
-        // menuPosition={"fixed"}
+        menuShouldBlockScroll={false}
         placeholder={null}
         tabSelectsValue={false}
         {...props}

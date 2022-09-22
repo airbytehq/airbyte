@@ -23,6 +23,12 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
+    # set clean-up args to clean target destination after the test
+    clean_up_args = {
+        "destination_type": [d for d in DestinationType if d.value in destinations_to_test],
+        "test_type": "ephemeral",
+        "tmp_folders": temporary_folders,
+    }
     if DestinationType.POSTGRES.value not in destinations_to_test:
         destinations_to_test.append(DestinationType.POSTGRES.value)
     dbt_test_utils.set_target_schema("test_ephemeral")
@@ -30,6 +36,7 @@ def before_all_tests(request):
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
+    dbt_test_utils.clean_tmp_tables(**clean_up_args)
     dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
@@ -88,9 +95,14 @@ def test_stream_with_1_airbyte_column(setup_test_path):
 
 
 def run_test(destination_type: DestinationType, column_count: int, expected_exception_message: str = ""):
+    if destination_type.value == DestinationType.CLICKHOUSE.value:
+        pytest.skip("ephemeral materialization isn't supported in ClickHouse yet")
     if destination_type.value == DestinationType.ORACLE.value:
         # Oracle does not allow changing to random schema
         dbt_test_utils.set_target_schema("test_normalization")
+    elif destination_type.value == DestinationType.REDSHIFT.value:
+        # set unique schema for Redshift test
+        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_ephemeral_"))
     else:
         dbt_test_utils.set_target_schema("test_ephemeral")
     print("Testing ephemeral")
@@ -138,6 +150,8 @@ def setup_test_dir(integration_type: str) -> str:
         copy_tree("../dbt-project-template-oracle", test_root_dir)
     elif integration_type == DestinationType.SNOWFLAKE.value:
         copy_tree("../dbt-project-template-snowflake", test_root_dir)
+    elif integration_type == DestinationType.TIDB.value:
+        copy_tree("../dbt-project-template-tidb", test_root_dir)
     return test_root_dir
 
 

@@ -93,6 +93,8 @@ public abstract class DestinationAcceptanceTest {
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
 
+  private static final String DUMMY_CATALOG_NAME = "DummyCatalog";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationAcceptanceTest.class);
 
   private TestDestinationEnv testEnv;
@@ -415,11 +417,26 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
 
+    // We need to make sure that other streams\tables\files in the same location will not be
+    // affected\deleted\overridden by our activities during first, second or any future sync.
+    // So let's create a dummy data that will be checked after all sync. It should remain the same
+    final AirbyteCatalog dummyCatalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    dummyCatalog.getStreams().get(0).setName(DUMMY_CATALOG_NAME);
+    final ConfiguredAirbyteCatalog configuredDummyCatalog = CatalogHelpers.toDefaultConfiguredCatalog(dummyCatalog);
+    // update messages to set new dummy stream name
+    firstSyncMessages.stream().filter(message -> message.getRecord() != null)
+        .forEach(message -> message.getRecord().setStream(DUMMY_CATALOG_NAME));
+    // sync dummy data
+    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredDummyCatalog, false);
+
+    // Run second sync
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)
@@ -442,6 +459,10 @@ public abstract class DestinationAcceptanceTest {
     runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false);
     final String defaultSchema = getDefaultSchema(config);
     retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
+
+    // verify that other streams in the same location were not affected. If something fails here,
+    // then this need to be fixed in connectors logic to override only required streams
+    retrieveRawRecordsAndAssertSameMessages(dummyCatalog, firstSyncMessages, defaultSchema);
   }
 
   /**
@@ -991,6 +1012,57 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
+   * Verify that destination doesn't fail if new fields arrive in the data after initial schema
+   * discovery and sync.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testSyncNotFailsWithNewFields() throws Exception {
+    if (!implementsOverwrite()) {
+      LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
+      return;
+    }
+
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
+    final var stream = catalog.getStreams().get(0);
+
+    // Run second sync with new fields on the message
+    final List<AirbyteMessage> secondSyncMessagesWithNewFields = Lists.newArrayList(
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(stream.getName())
+                .withEmittedAt(Instant.now().toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("id", 1)
+                    .put("currency", "USD")
+                    .put("date", "2020-03-31T00:00:00Z")
+                    .put("newFieldString", "Value for new field")
+                    .put("newFieldNumber", 3)
+                    .put("HKD", 10.1)
+                    .put("NZD", 700.1)
+                    .build()))),
+        new AirbyteMessage()
+            .withType(Type.STATE)
+            .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
+
+    // Run sync and verify that all message were written without failing
+    runSyncAndVerifyStateOutput(config, secondSyncMessagesWithNewFields, configuredCatalog, false);
+    var destinationOutput = retrieveRecords(testEnv, stream.getName(), getDefaultSchema(config), stream.getJsonSchema());
+    // Remove state message
+    secondSyncMessagesWithNewFields.removeIf(airbyteMessage -> airbyteMessage.getType().equals(Type.STATE));
+    assertEquals(secondSyncMessagesWithNewFields.size(), destinationOutput.size());
+  }
+
+  /**
    * Whether the destination should be tested against different namespaces.
    */
   protected boolean supportNamespaceTest() {
@@ -1019,20 +1091,20 @@ public abstract class DestinationAcceptanceTest {
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
-            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
+            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
-            .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
+            .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection();
   }
 
   protected StandardCheckConnectionOutput.Status runCheckWithCatchedException(final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
           workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
-              .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
+              .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection();
       return standardCheckConnectionOutput.getStatus();
     } catch (final Exception e) {
       LOGGER.error("Failed to check connection:" + e.getMessage());

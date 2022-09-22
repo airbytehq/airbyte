@@ -6,7 +6,7 @@ import StarsIcon from "./components/StarsIcon";
 import StepItem from "./components/StepItem";
 
 interface StepsCounterProps {
-  steps: { id: StepType; name?: React.ReactNode }[];
+  steps: Array<{ id: StepType; name?: React.ReactNode }>;
   currentStep: StepType;
 }
 

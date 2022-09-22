@@ -28,10 +28,12 @@ const defaultOptions: Partial<AirbyteStreamConfiguration> = {
   selected: false,
 };
 
-const BatchEditProvider: React.FC<{
-  nodes: SyncSchemaStream[];
-  update: (streams: SyncSchemaStream[]) => void;
-}> = ({ children, nodes, update }) => {
+const BatchEditProvider: React.FC<
+  React.PropsWithChildren<{
+    nodes: SyncSchemaStream[];
+    update: (streams: SyncSchemaStream[]) => void;
+  }>
+> = ({ children, nodes, update }) => {
   const [selectedBatchNodes, { reset, toggle, add }] = useSet<string | undefined>(new Set());
   const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(defaultOptions);
 
@@ -58,10 +60,10 @@ const BatchEditProvider: React.FC<{
   const allChecked = selectedBatchNodes.size === nodes.length;
 
   const ctx: BatchContext = {
-    isActive: isActive,
+    isActive,
     toggleNode: toggle,
     onCheckAll: () => (allChecked ? reset() : nodes.forEach((n) => add(n.id))),
-    allChecked: allChecked,
+    allChecked,
     selectedBatchNodeIds: Array.from(selectedBatchNodes).filter((node): node is string => node !== undefined),
     selectedBatchNodes: nodes.filter((n) => selectedBatchNodes.has(n.id)),
     onChangeOption: (newOptions) => setOptions({ ...options, ...newOptions }),

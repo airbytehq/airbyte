@@ -15,5 +15,5 @@ select
 from {{ ref('nested_stream_with_co_1g_into_long_names_ab1') }}
 -- nested_stream_with_co__lting_into_long_names
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

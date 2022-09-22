@@ -18,10 +18,10 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,8 +30,19 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
+import org.postgresql.geometric.PGbox;
+import org.postgresql.geometric.PGcircle;
+import org.postgresql.geometric.PGline;
+import org.postgresql.geometric.PGlseg;
+import org.postgresql.geometric.PGpath;
+import org.postgresql.geometric.PGpoint;
+import org.postgresql.geometric.PGpolygon;
 import org.postgresql.jdbc.PgResultSetMetaData;
+import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,13 +90,79 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      Date date = Date.valueOf(value);
-      preparedStatement.setDate(parameterIndex, date);
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
+  public void setStatementField(final PreparedStatement preparedStatement,
+                                final int parameterIndex,
+                                final JDBCType cursorFieldType,
+                                final String value)
+      throws SQLException {
+    switch (cursorFieldType) {
+
+      case TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
+      case TIMESTAMP_WITH_TIMEZONE -> setTimestampWithTimezone(preparedStatement, parameterIndex, value);
+      case TIME -> setTime(preparedStatement, parameterIndex, value);
+      case TIME_WITH_TIMEZONE -> setTimeWithTimezone(preparedStatement, parameterIndex, value);
+      case DATE -> setDate(preparedStatement, parameterIndex, value);
+      case BIT -> setBit(preparedStatement, parameterIndex, value);
+      case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
+      case TINYINT, SMALLINT -> setShortInt(preparedStatement, parameterIndex, value);
+      case INTEGER -> setInteger(preparedStatement, parameterIndex, value);
+      case BIGINT -> setBigInteger(preparedStatement, parameterIndex, value);
+      case FLOAT, DOUBLE -> setDouble(preparedStatement, parameterIndex, value);
+      case REAL -> setReal(preparedStatement, parameterIndex, value);
+      case NUMERIC, DECIMAL -> setDecimal(preparedStatement, parameterIndex, value);
+      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> setString(preparedStatement, parameterIndex, value);
+      case BINARY, BLOB -> setBinary(preparedStatement, parameterIndex, value);
+      // since cursor are expected to be comparable, handle cursor typing strictly and error on
+      // unrecognized types
+      default -> throw new IllegalArgumentException(String.format("%s cannot be used as a cursor.", cursorFieldType));
     }
+  }
+
+  private void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      // attempt to parse the time w/o timezone. This can be caused by schema created with a different
+      // version of the connector
+      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+    }
+  }
+
+  private void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      // attempt to parse the datetime w/o timezone. This can be caused by schema created with a different
+      // version of the connector
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    }
+  }
+
+  @Override
+  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
+      // version of the connector
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    }
+  }
+
+  @Override
+  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
+      // version of the connector
+      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
+    }
+  }
+
+  @Override
+  protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
   }
 
   @Override
@@ -103,6 +180,14 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         case TIMETZ -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
         case TIMESTAMPTZ -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
         case "hstore" -> putHstoreAsJson(json, columnName, resultSet, colIndex);
+        case "circle" -> putObject(json, columnName, resultSet, colIndex, PGcircle.class);
+        case "box" -> putObject(json, columnName, resultSet, colIndex, PGbox.class);
+        case "double precision", "float", "float8" -> putDouble(json, columnName, resultSet, colIndex);
+        case "line" -> putObject(json, columnName, resultSet, colIndex, PGline.class);
+        case "lseg" -> putObject(json, columnName, resultSet, colIndex, PGlseg.class);
+        case "path" -> putObject(json, columnName, resultSet, colIndex, PGpath.class);
+        case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
+        case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -127,22 +212,18 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    LocalDate date = getDateTimeObject(resultSet, index, LocalDate.class);
-    node.put(columnName, resolveEra(date, date.toString()));
+  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
   }
 
   @Override
-  protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    LocalTime time = getDateTimeObject(resultSet, index, LocalTime.class);
-    node.put(columnName, time.toString());
+  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
   }
 
   @Override
-  protected void putTimestamp(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    LocalDateTime timestamp = getDateTimeObject(resultSet, index, LocalDateTime.class);
-    LocalDate date = timestamp.toLocalDate();
-    node.put(columnName, resolveEra(date, timestamp.toString()));
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
   }
 
   @Override
@@ -171,10 +252,11 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JsonSchemaType getJsonType(JDBCType jdbcType) {
+  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
-      case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
+      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
+      case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
       case ARRAY -> JsonSchemaType.ARRAY;
       case DATE -> JsonSchemaType.STRING_DATE;
@@ -187,10 +269,22 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     };
   }
 
+  @Override
   protected void putBoolean(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, resultSet.getString(index).equalsIgnoreCase("t"));
   }
 
+  protected <T extends PGobject> void putObject(final ObjectNode node,
+                                                final String columnName,
+                                                final ResultSet resultSet,
+                                                final int index,
+                                                Class<T> clazz)
+      throws SQLException {
+    final T object = getObject(resultSet, index, clazz);
+    node.put(columnName, object.getValue());
+  }
+
+  @Override
   protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
     final BigDecimal bigDecimal = DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index));
     if (bigDecimal != null) {
@@ -221,7 +315,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     final var data = resultSet.getObject(index);
     try {
       node.put(columnName, OBJECT_MAPPER.writeValueAsString(data));
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
       throw new RuntimeException("Could not parse 'hstore' value:" + e);
     }
   }
@@ -232,6 +326,11 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   @VisibleForTesting
   static String parseMoneyValue(final String moneyString) {
     return moneyString.replaceAll("[^\\d.-]", "");
+  }
+
+  @Override
+  public boolean isCursorType(JDBCType type) {
+    return PostgresUtils.ALLOWED_CURSOR_TYPES.contains(type);
   }
 
 }

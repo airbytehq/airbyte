@@ -114,7 +114,7 @@ The nice thing about this approach is that you are running your destination exac
 
 #### Handling Exceptions
 
-In order to best propagate user-friendly error messages and log error information to the platform, the [Airbyte Protocol](../../understanding-airbyte/airbyte-specification.md#The Airbyte Protocol) implements AirbyteTraceMessage.
+In order to best propagate user-friendly error messages and log error information to the platform, the [Airbyte Protocol](../../understanding-airbyte/airbyte-protocol.md#The Airbyte Protocol) implements AirbyteTraceMessage.
 
 We recommend using AirbyteTraceMessages for known errors, as in these cases you can likely offer the user a helpful message as to what went wrong and suggest how they can resolve it.
 
@@ -150,7 +150,7 @@ Each destination contains a specification written in JsonSchema that describes i
 
 Your generated template should have the spec file in `airbyte-integrations/connectors/destination-<name>/src/main/resources/spec.json`. The generated connector will take care of reading this file and converting it to the correct output. Edit it and you should be done with this step.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-specification.md).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-protocol.md).
 
 See the `spec` operation in action:
 
@@ -185,7 +185,7 @@ docker run -v $(pwd)/secrets:/secrets --rm airbyte/destination-<name>:dev check 
 The `write` operation is the main workhorse of a destination connector: it reads input data from the source and writes it to the underlying destination. It takes as input the config file used to run the connector as well as the configured catalog: the file used to describe the schema of the incoming data and how it should be written to the destination. Its "output" is two things:
 
 1. Data written to the underlying destination
-2. `AirbyteMessage`s of type `AirbyteStateMessage`, written to stdout to indicate which records have been written so far during a sync. It's important to output these messages when possible in order to avoid re-extracting messages from the source. See the [write operation protocol reference](https://docs.airbyte.io/understanding-airbyte/airbyte-specification#write) for more information.
+2. `AirbyteMessage`s of type `AirbyteStateMessage`, written to stdout to indicate which records have been written so far during a sync. It's important to output these messages when possible in order to avoid re-extracting messages from the source. See the [write operation protocol reference](https://docs.airbyte.io/understanding-airbyte/airbyte-protocol#write) for more information.
 
 To implement the `write` Airbyte operation, implement the `getConsumer` method in your generated `<Name>Destination.java` file. Here are some example implementations from different destination conectors:
 

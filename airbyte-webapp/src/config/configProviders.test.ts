@@ -14,8 +14,8 @@ interface Value {
     innerProp: string;
   };
 }
-describe("applyProviders", function () {
-  test("should deepMerge config returned from providers", async () => {
+describe("applyProviders", () => {
+  it("should deepMerge config returned from providers", async () => {
     const defaultValue: Value = {
       prop1: {
         innerProp: "Alex",
@@ -29,7 +29,7 @@ describe("applyProviders", function () {
         innerProp: "1",
       },
     };
-    const providers: ProviderAsync<DeepPartial<Value>>[] = [
+    const providers: Array<ProviderAsync<DeepPartial<Value>>> = [
       async () => ({
         prop1: {
           innerProp: "John",

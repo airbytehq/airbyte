@@ -16,8 +16,8 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.ConfigDumpExporter;
 import io.airbyte.server.ConfigDumpImporter;
 import io.airbyte.server.errors.InternalServerKnownException;
@@ -91,7 +91,7 @@ public class ArchiveHandler {
       fileTtlManager.register(archive.toPath());
       return archive;
     } catch (final JsonValidationException | IOException | ConfigNotFoundException e) {
-      throw new InternalServerKnownException(String.format("Failed to export Workspace configuration due to: %s", e.getMessage()));
+      throw new InternalServerKnownException(String.format("Failed to export Workspace configuration due to: %s", e.getMessage()), e);
     }
   }
 

@@ -45,6 +45,6 @@
       "type": "object"
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "A screen scheme."
 }

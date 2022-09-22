@@ -24,8 +24,8 @@ const Separator = styled.div`
   padding: 0 5px;
 `;
 
-const SingleValue: React.FC<IProps> = (props) => {
-  const { syncMode, destinationSyncMode } = props.data.value;
+const SingleValue: React.FC<IProps<unknown>> = (props) => {
+  const { syncMode, destinationSyncMode } = props.data?.value;
   return (
     <Text>
       <ValueView {...props}>
@@ -102,10 +102,11 @@ const SyncSettingsDropdown: React.FC<DropdownProps> = (props) => (
   <DropDown
     {...props}
     components={{
-      SingleValue: SingleValue,
-      Option: Option,
+      SingleValue,
+      Option,
       Control: DropdownControl,
     }}
+    data-testid="syncSettingsDropdown"
     $withBorder
   />
 );

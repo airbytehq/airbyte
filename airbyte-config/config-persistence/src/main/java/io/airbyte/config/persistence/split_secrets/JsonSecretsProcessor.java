@@ -17,6 +17,7 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -76,11 +77,14 @@ public class JsonSecretsProcessor {
    * @return json object with all secrets masked.
    */
   public static JsonNode maskAllSecrets(final JsonNode json, final JsonNode schema) {
-    final Set<String> pathsWithSecrets = JsonSchemas.collectJsonPathsThatMeetCondition(
+    final Set<String> pathsWithSecrets = JsonSchemas.collectPathsThatMeetCondition(
         schema,
         node -> MoreIterators.toList(node.fields())
             .stream()
-            .anyMatch(field -> AIRBYTE_SECRET_FIELD.equals(field.getKey())));
+            .anyMatch(field -> AIRBYTE_SECRET_FIELD.equals(field.getKey())))
+        .stream()
+        .map(JsonPaths::mapJsonSchemaPathToJsonPath)
+        .collect(Collectors.toSet());
 
     JsonNode copy = Jsons.clone(json);
     for (final String path : pathsWithSecrets) {

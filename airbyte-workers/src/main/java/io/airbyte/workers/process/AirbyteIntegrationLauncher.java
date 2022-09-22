@@ -7,6 +7,8 @@ package io.airbyte.workers.process;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.exception.WorkerException;
@@ -29,6 +31,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   public static final String CHECK_JOB = "check";
   public static final String DISCOVER_JOB = "discover";
 
+  private static final String CONFIG = "--config";
+
   /**
    * A sync job can actually be broken down into the following steps. Try to be as precise as possible
    * with naming/labels to help operations.
@@ -44,6 +48,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final String imageName;
   private final ProcessFactory processFactory;
   private final ResourceRequirements resourceRequirement;
+  private final FeatureFlags featureFlags;
 
   public AirbyteIntegrationLauncher(final String jobId,
                                     final int attempt,
@@ -55,6 +60,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
+    this.featureFlags = new EnvVariableFeatureFlags();
   }
 
   @Override
@@ -91,7 +97,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         getWorkerMetadata(),
         Collections.emptyMap(),
         "check",
-        "--config", configFilename);
+        CONFIG, configFilename);
   }
 
   @Override
@@ -110,7 +116,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         getWorkerMetadata(),
         Collections.emptyMap(),
         "discover",
-        "--config", configFilename);
+        CONFIG, configFilename);
   }
 
   @Override
@@ -124,7 +130,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
       throws WorkerException {
     final List<String> arguments = Lists.newArrayList(
         "read",
-        "--config", configFilename,
+        CONFIG, configFilename,
         "--catalog", catalogFilename);
 
     final Map<String, String> files = new HashMap<>();
@@ -180,7 +186,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         getWorkerMetadata(),
         Collections.emptyMap(),
         "write",
-        "--config", configFilename,
+        CONFIG, configFilename,
         "--catalog", catalogFilename);
   }
 
@@ -188,7 +194,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     return Map.of(
         WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
         WorkerEnvConstants.WORKER_JOB_ID, jobId,
-        WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt));
+        WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt),
+        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()));
   }
 
 }

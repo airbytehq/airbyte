@@ -19,6 +19,8 @@ images:
     newTag: dev
   - name: temporalio/auto-setup
     newTag: 1.7.0
+  - name: airbyte/cron
+    newTag: dev
 
 configMapGenerator:
   - name: airbyte-env

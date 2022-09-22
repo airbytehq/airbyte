@@ -111,20 +111,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-
-        today = pendulum.today(tz="UTC").date()
-        date_start = stream_state and stream_state.get("date_start")
-        if date_start:
-            date_start = pendulum.parse(date_start).date()
-
         job = stream_slice["insight_job"]
         for obj in job.get_result():
-            record = obj.export_all_data()
-            if date_start:
-                updated_time = pendulum.parse(record["updated_time"]).date()
-                if updated_time <= date_start or updated_time >= today:
-                    continue
-            yield record
+            yield obj.export_all_data()
 
         self._completed_slices.add(job.interval.start)
         if job.interval.start == self._next_cursor_value:
@@ -172,11 +161,9 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def _date_intervals(self) -> Iterator[pendulum.Date]:
         """Get date period to sync"""
-        yesterday = pendulum.yesterday(tz="UTC").date()
-        end_date = min(self._end_date, yesterday)
-        if end_date < self._next_cursor_value:
+        if self._end_date < self._next_cursor_value:
             return
-        date_range = end_date - self._next_cursor_value
+        date_range = self._end_date - self._next_cursor_value
         yield from date_range.range("days", self.time_increment)
 
     def _advance_cursor(self):
@@ -195,14 +182,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return:
         """
 
-        today = pendulum.today(tz="UTC").date()
-        refresh_date = today - self.insights_lookback_period
-
         for ts_start in self._date_intervals():
             if ts_start in self._completed_slices:
-                if ts_start < refresh_date:
-                    continue
-                self._completed_slices.remove(ts_start)
+                continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
             yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
@@ -242,7 +224,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         :return: the first date to sync
         """
-        today = pendulum.today(tz="UTC").date()
+        today = pendulum.today().date()
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
         refresh_date = today - self.insights_lookback_period
         if self._cursor_value:

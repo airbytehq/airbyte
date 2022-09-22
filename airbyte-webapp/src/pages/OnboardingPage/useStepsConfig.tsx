@@ -11,7 +11,7 @@ const useStepsConfig = (
 ): {
   currentStep: StepType;
   setCurrentStep: (step: StepType) => void;
-  steps: { name: JSX.Element; id: StepType }[];
+  steps: Array<{ name: JSX.Element; id: StepType }>;
 } => {
   const getInitialStep = () => {
     if (hasSources) {

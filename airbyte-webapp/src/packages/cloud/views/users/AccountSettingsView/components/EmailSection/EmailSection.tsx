@@ -29,7 +29,7 @@ const TextInputsSection = styled.div`
 `;
 
 const EmailSection: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const user = useCurrentUser();
 
   const emailService = useEmail();

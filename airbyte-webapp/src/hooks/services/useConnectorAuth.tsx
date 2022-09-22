@@ -9,7 +9,7 @@ import { SourceAuthService } from "core/domain/connector/SourceAuthService";
 import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/request/AirbyteClient";
 
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import useRouter from "../useRouter";
+import { useQuery } from "../useQuery";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 let windowObjectReference: Window | null = null; // global variable
@@ -78,17 +78,16 @@ export function useConnectorAuth(): {
         const response = await sourceAuthService.getConsentUrl(payload);
 
         return { consentUrl: response.consentUrl, payload };
-      } else {
-        const payload = {
-          workspaceId,
-          destinationDefinitionId: ConnectorSpecification.id(connector),
-          redirectUrl: `${oauthRedirectUrl}/auth_flow`,
-          oAuthInputConfiguration,
-        };
-        const response = await destinationAuthService.getConsentUrl(payload);
-
-        return { consentUrl: response.consentUrl, payload };
       }
+      const payload = {
+        workspaceId,
+        destinationDefinitionId: ConnectorSpecification.id(connector),
+        redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+        oAuthInputConfiguration,
+      };
+      const response = await destinationAuthService.getConsentUrl(payload);
+
+      return { consentUrl: response.consentUrl, payload };
     },
     completeOauthRequest: async (
       params: SourceOauthConsentRequest | DestinationOauthConsentRequest,
@@ -168,7 +167,7 @@ export function useRunOauthFlow(
 }
 
 export function useResolveNavigate(): void {
-  const { query } = useRouter();
+  const query = useQuery();
 
   useEffectOnce(() => {
     window.opener.postMessage(query);
