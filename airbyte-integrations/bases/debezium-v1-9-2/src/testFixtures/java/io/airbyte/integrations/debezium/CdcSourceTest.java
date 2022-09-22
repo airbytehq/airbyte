@@ -702,6 +702,67 @@ public abstract class CdcSourceTest {
         randomTableSchema());
     assertExpectedRecords(recordsWritten, recordsForModelsStreamFromSecondBatch);
 
+    /*
+     * Write 20 records to both the tables
+     */
+    final Set<JsonNode> recordsWrittenInRandomTable = new HashSet<>();
+    recordsWritten.clear();
+    for (int recordsCreated = 30; recordsCreated < 50; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+      recordsWritten.add(record);
+
+      final JsonNode record2 = Jsons
+          .jsonNode(ImmutableMap
+              .of(COL_ID + "_random", 11000 + recordsCreated, COL_MAKE_ID + "_random", 1 + recordsCreated, COL_MODEL + "_random",
+                  "Fiesta-random" + recordsCreated));
+      writeRecords(record2, randomTableSchema(), MODELS_STREAM_NAME + "_random",
+          COL_ID + "_random", COL_MAKE_ID + "_random", COL_MODEL + "_random");
+      recordsWrittenInRandomTable.add(record2);
+    }
+
+    final JsonNode state2 = stateAfterSecondBatch.get(1).getData();
+    final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
+        .read(getConfig(), updatedCatalog, state2);
+    final List<AirbyteMessage> dataFromThirdBatch = AutoCloseableIterators
+        .toListAndClose(thirdBatchIterator);
+
+    final List<AirbyteStateMessage> stateAfterThirdBatch = extractStateMessages(dataFromThirdBatch);
+    assertEquals(1, stateAfterThirdBatch.size());
+
+    final AirbyteStateMessage stateMessageEmittedAfterThirdSyncCompletion = stateAfterThirdBatch.get(0);
+    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterThirdSyncCompletion.getType());
+    assertNotEquals(stateMessageEmittedAfterThirdSyncCompletion.getGlobal().getSharedState(),
+        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
+    final Set<StreamDescriptor> streamsInSyncCompletionStateAfterThirdSync = stateMessageEmittedAfterThirdSyncCompletion.getGlobal().getStreamStates()
+        .stream()
+        .map(AirbyteStreamState::getStreamDescriptor)
+        .collect(Collectors.toSet());
+    assertTrue(
+        streamsInSyncCompletionStateAfterThirdSync.contains(
+            new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
+    assertTrue(streamsInSyncCompletionStateAfterThirdSync.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    assertNotNull(stateMessageEmittedAfterThirdSyncCompletion.getData());
+
+    final Map<String, Set<AirbyteRecordMessage>> recordsStreamWiseFromThirdBatch = extractRecordMessagesStreamWise(dataFromThirdBatch);
+    assertTrue(recordsStreamWiseFromThirdBatch.containsKey(MODELS_STREAM_NAME));
+    assertTrue(recordsStreamWiseFromThirdBatch.containsKey(MODELS_STREAM_NAME + "_random"));
+
+    final Set<AirbyteRecordMessage> recordsForModelsStreamFromThirdBatch = recordsStreamWiseFromThirdBatch.get(MODELS_STREAM_NAME);
+    final Set<AirbyteRecordMessage> recordsForModelsRandomStreamFromThirdBatch = recordsStreamWiseFromThirdBatch.get(MODELS_STREAM_NAME + "_random");
+
+    assertEquals(20, recordsForModelsStreamFromThirdBatch.size());
+    assertEquals(20, recordsForModelsRandomStreamFromThirdBatch.size());
+    assertExpectedRecords(recordsWritten, recordsForModelsStreamFromThirdBatch);
+    assertExpectedRecords(recordsWrittenInRandomTable, recordsForModelsRandomStreamFromThirdBatch,
+        recordsForModelsRandomStreamFromThirdBatch.stream().map(AirbyteRecordMessage::getStream).collect(
+            Collectors.toSet()),
+        Sets
+            .newHashSet(MODELS_STREAM_NAME + "_random"),
+        randomTableSchema());
   }
 
   protected AirbyteCatalog expectedCatalogForDiscover() {
@@ -741,7 +802,9 @@ public abstract class CdcSourceTest {
     expectedCatalog.withStreams(streams);
     return expectedCatalog;
   }
-
+  /**
+   * The schema of a random table which is used as a new table in snapshot test
+   */
   protected abstract String randomTableSchema();
 
   protected abstract CdcTargetPosition cdcLatestTargetPosition();
