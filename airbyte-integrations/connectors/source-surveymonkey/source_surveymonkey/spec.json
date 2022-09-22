@@ -24,12 +24,12 @@
             "client_id": {
               "title": "Client ID",
               "type": "string",
-              "airbyte_secret": true,
+              "airbyte_secret": true
           },
             "client_secret": {
               "title": "Client Secret",
               "type": "string",
-              "airbyte_secret": true,
+              "airbyte_secret": true
           }
         }
     },
