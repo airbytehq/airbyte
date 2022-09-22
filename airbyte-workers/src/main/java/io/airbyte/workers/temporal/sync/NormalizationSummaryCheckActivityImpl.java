@@ -35,7 +35,7 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
 
     // if the count of committed records for this attempt is > 0 OR if it is null,
     // then we should run normalization
-    if (numCommittedRecords.get() == null || numCommittedRecords.get() > 0) {
+    if (numCommittedRecords.isEmpty() || numCommittedRecords.get() > 0) {
       return true;
     }
 
