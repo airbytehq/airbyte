@@ -14,7 +14,7 @@ const WorkspacesPage: React.FC = () => {
   return (
     <div className={styles.container}>
       <img className={styles.logo} alt="logo" src="/cloud-main-logo.svg" width={186} />
-      <Text as="h1" size="xl" centered>
+      <Text as="h1" size="lg" centered>
         <FormattedMessage id="workspaces.title" />
       </Text>
       <Text as="p" size="lg" centered className={styles.subtitle}>
