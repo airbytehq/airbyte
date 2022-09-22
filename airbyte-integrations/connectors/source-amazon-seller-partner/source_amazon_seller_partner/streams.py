@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import base64
 import csv
 import json as json_lib
 import time
@@ -24,10 +23,9 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException,
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 
-REPORTS_API_VERSION = "2021-06-30" #2020-09-04
+REPORTS_API_VERSION = "2021-06-30"  # 2020-09-04
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
 FINANCES_API_VERSION = "v0"
@@ -121,7 +119,9 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         if next_page_token:
             return {self.next_page_token_field: next_page_token}
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
+    ) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
         """
@@ -157,7 +157,9 @@ class ReportsAmazonSPStream(Stream, ABC):
     sleep_seconds = 30
     data_field = "payload"
     result_key = None
-    availability_sla_days = 1 # see data availability sla at https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
+    availability_sla_days = (
+        1  # see data availability sla at https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
+    )
 
     def __init__(
         self,
@@ -291,13 +293,12 @@ class ReportsAmazonSPStream(Stream, ABC):
             return zlib.decompress(bytearray(report), 15 + 32).decode("iso-8859-1")
         return report.decode("iso-8859-1")
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
         payload = response.json()
 
-        document = self.decompress_report_document(
-            payload.get("url"),
-            payload
-        )
+        document = self.decompress_report_document(payload.get("url"), payload)
 
         document_records = self.parse_document(document)
         yield from document_records
@@ -306,7 +307,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
     def report_options(self) -> Mapping[str, Any]:
-        if self._report_options != None:
+        if self._report_options is not None:
             return json_lib.loads(self._report_options).get(self.name)
         else:
             return {}
@@ -377,6 +378,7 @@ class FbaInventoryReports(ReportsAmazonSPStream):
 
     name = "GET_FBA_INVENTORY_AGED_DATA"
 
+
 class FbaAfnInventoryReports(ReportsAmazonSPStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
@@ -385,6 +387,7 @@ class FbaAfnInventoryReports(ReportsAmazonSPStream):
 
     name = "GET_AFN_INVENTORY_DATA"
 
+
 class FbaAfnInventoryByCountryReports(ReportsAmazonSPStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
@@ -392,6 +395,7 @@ class FbaAfnInventoryByCountryReports(ReportsAmazonSPStream):
     """
 
     name = "GET_AFN_INVENTORY_DATA_BY_COUNTRY"
+
 
 class FbaStorageFeesReports(ReportsAmazonSPStream):
     """
@@ -463,7 +467,7 @@ class AnalyticsStream(ReportsAmazonSPStream):
     def parse_document(self, document):
         parsed = json_lib.loads(document)
         return parsed.get(self.result_key, [])
-    
+
     def _report_data(
         self,
         sync_mode: SyncMode,
@@ -480,9 +484,7 @@ class AnalyticsStream(ReportsAmazonSPStream):
     @staticmethod
     def _augmented_data(self, report_options) -> Mapping[str, Any]:
         if report_options.get("reportPeriod") is None:
-            return {
-                "reportOptions": report_options
-            }
+            return {"reportOptions": report_options}
         else:
             now = pendulum.now("utc")
             if report_options["reportPeriod"] == "DAY":
@@ -512,7 +514,7 @@ class AnalyticsStream(ReportsAmazonSPStream):
             return {
                 "dataStartTime": data_start_time.strftime(DATE_TIME_FORMAT),
                 "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
-                "reportOptions": report_options
+                "reportOptions": report_options,
             }
 
 
@@ -544,14 +546,16 @@ class BrandAnalyticsItemComparisonReports(AnalyticsStream):
     name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
     result_key = "dataByAsin"
 
+
 class VendorInventoryReports(AnalyticsStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
     """
-    
+
     name = "GET_VENDOR_INVENTORY_REPORT"
     result_key = "inventoryByAsin"
     availability_sla_days = 3
+
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
     @property
@@ -720,7 +724,9 @@ class Orders(IncrementalAmazonSPStream):
         params.update({"MarketplaceIds": self.marketplace_id})
         return params
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
         yield from response.json().get(self.data_field, {}).get(self.name, [])
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -732,7 +738,7 @@ class Orders(IncrementalAmazonSPStream):
 
 
 class IncrementalAnalyticsStream(AnalyticsStream):
-    
+
     fixed_period_in_days = 0
 
     @property
@@ -758,7 +764,9 @@ class IncrementalAnalyticsStream(AnalyticsStream):
 
         return data
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
 
         payload = response.json()
 
@@ -802,7 +810,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
             # If request only returns data on day level
             if self.fixed_period_in_days != 0:
                 slice_range = self.fixed_period_in_days
-            else: 
+            else:
                 slice_range = self.period_in_days
 
             end_date_slice = start_date.add(days=slice_range)
@@ -821,17 +829,18 @@ class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#seller-retail-analytics-reports
     """
-    
+
     name = "GET_SALES_AND_TRAFFIC_REPORT"
     result_key = "salesAndTrafficByAsin"
     cursor_field = "queryEndDate"
     fixed_period_in_days = 1
 
+
 class VendorSalesReports(IncrementalAnalyticsStream):
     name = "GET_VENDOR_SALES_REPORT"
     result_key = "salesByAsin"
     cursor_field = "endDate"
-    availability_sla_days = 4 # Data is only available after 4 days
+    availability_sla_days = 4  # Data is only available after 4 days
 
 
 class VendorDirectFulfillmentShipping(AmazonSPStream):
@@ -1042,7 +1051,7 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
             )
             report_response = self._send_request(get_reports)
             response = report_response.json()
-            data = response.get('reports', list())
+            data = response.get("reports", list())
             records = [e.get("reportId") for e in data if e and e.get("reportId") not in unique_records]
             unique_records += records
             reports = [{"report_id": report_id} for report_id in records]
