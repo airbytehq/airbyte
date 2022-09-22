@@ -23,6 +23,15 @@ To add a user to your workspace:
     The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.
     :::
 
+### Remove users from your workspace​
+
+To remove a user from your workspace:
+
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar. 
+2. In the Workspace Settings sidebar, click **Access Management**.
+3. Click **Remove** next to the user’s name.
+4. The **Remove user** dialog displays. Click **Remove**.
+
 ### Switch between multiple workspaces
 
 To switch between workspaces:
@@ -255,6 +264,17 @@ To refresh the source schema:
 1. Click **Refresh source schema** to fetch the schema of your data source.
 
 2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
+
+## Display Connection State
+**Connection State** provides additional information about incremental syncs, such as when a stream was created or updated. 
+
+To display **Connection State**:
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
+2. In the Workspace Settings sidebar, click **General Settings**.
+3. Toggle **Enable advanced mode** and click **Save changes**.
+4. Click **Connections** in the navigation bar and then click the connection in the list you want to display.
+5. Click **Settings**. 
+    The **Connection State** displays. 
 
 ## Buy credits
 
