@@ -43,7 +43,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:0.1.0"
+- dockerImage: "airbyte/source-alloydb:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -1473,7 +1473,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cart:0.1.6"
+- dockerImage: "airbyte/source-cart:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cart"
     connectionSpecification:
@@ -1481,22 +1481,72 @@
       title: "Cart.com Spec"
       type: "object"
       required:
-      - "access_token"
       - "start_date"
-      - "store_name"
       additionalProperties: true
       properties:
-        access_token:
-          type: "string"
-          title: "Access Token"
-          airbyte_secret: true
-          description: "Access Token for making authenticated requests."
-        store_name:
-          type: "string"
-          title: "Store Name"
-          description: "The name of Cart.com Online Store. All API URLs start with\
-            \ https://[mystorename.com]/api/v1/, where [mystorename.com] is the domain\
-            \ name of your store."
+        credentials:
+          title: "Authorization Method"
+          description: ""
+          type: "object"
+          oneOf:
+          - title: "Central API Router"
+            type: "object"
+            order: 0
+            required:
+            - "auth_type"
+            - "user_name"
+            - "user_secret"
+            - "site_id"
+            properties:
+              auth_type:
+                type: "string"
+                const: "CENTRAL_API_ROUTER"
+                order: 0
+              user_name:
+                type: "string"
+                title: "User Name"
+                description: "Enter your application's User Name"
+                airbyte_secret: true
+                order: 1
+              user_secret:
+                type: "string"
+                title: "User Secret"
+                description: "Enter your application's User Secret"
+                airbyte_secret: true
+                order: 2
+              site_id:
+                type: "string"
+                title: "Site ID"
+                description: "You can determine a site provisioning site Id by hitting\
+                  \ https://site.com/store/sitemonitor.aspx and reading the response\
+                  \ param PSID"
+                airbyte_secret: true
+                order: 3
+          - title: "Single Store Access Token"
+            type: "object"
+            order: 1
+            required:
+            - "auth_type"
+            - "access_token"
+            - "store_name"
+            properties:
+              auth_type:
+                type: "string"
+                const: "SINGLE_STORE_ACCESS_TOKEN"
+                order: 0
+              access_token:
+                type: "string"
+                title: "Access Token"
+                airbyte_secret: true
+                order: 1
+                description: "Access Token for making authenticated requests."
+              store_name:
+                type: "string"
+                title: "Store Name"
+                order: 2
+                description: "The name of Cart.com Online Store. All API URLs start\
+                  \ with https://[mystorename.com]/api/v1/, where [mystorename.com]\
+                  \ is the domain name of your store."
         start_date:
           title: "Start Date"
           type: "string"
@@ -2705,7 +2755,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.20"
+- dockerImage: "airbyte/source-file:0.2.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -2731,6 +2781,7 @@
           - "json"
           - "jsonl"
           - "excel"
+          - "excel_binary"
           - "feather"
           - "parquet"
           - "yaml"
@@ -3115,7 +3166,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.46"
+- dockerImage: "airbyte/source-github:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -3829,7 +3880,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-search-console:0.1.14"
+- dockerImage: "airbyte/source-google-search-console:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-search-console"
     connectionSpecification:
@@ -3937,6 +3988,7 @@
                 examples:
                 - "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID,\
                   \ \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
+                airbyte_secret: true
               email:
                 title: "Admin Email"
                 type: "string"
@@ -5062,7 +5114,7 @@
     supported_destination_sync_modes: []
     supported_source_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-klaviyo:0.1.7"
+- dockerImage: "airbyte/source-klaviyo:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
@@ -5657,7 +5709,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:0.1.7"
+- dockerImage: "airbyte/source-marketo:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/marketo"
     connectionSpecification:
@@ -6171,7 +6223,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.22"
+- dockerImage: "airbyte/source-mixpanel:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
@@ -6854,7 +6906,87 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.8"
+- dockerImage: "airbyte/source-netsuite:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Netsuite Spec"
+      type: "object"
+      required:
+      - "realm"
+      - "consumer_key"
+      - "consumer_secret"
+      - "token_key"
+      - "token_secret"
+      - "start_datetime"
+      additionalProperties: true
+      properties:
+        realm:
+          type: "string"
+          title: "Realm (Account Id)"
+          description: "Netsuite realm e.g. 2344535, as for `production` or 2344535_SB1,\
+            \ as for the `sandbox`"
+          order: 0
+          airbyte_secret: true
+        consumer_key:
+          type: "string"
+          title: "Consumer Key"
+          description: "Consumer key associated with your integration"
+          order: 1
+          airbyte_secret: true
+        consumer_secret:
+          type: "string"
+          title: "Consumer Secret"
+          description: "Consumer secret associated with your integration"
+          order: 2
+          airbyte_secret: true
+        token_key:
+          type: "string"
+          title: "Token Key (Token Id)"
+          description: "Access token key"
+          order: 3
+          airbyte_secret: true
+        token_secret:
+          type: "string"
+          title: "Token Secret"
+          description: "Access token secret"
+          order: 4
+          airbyte_secret: true
+        object_types:
+          type: "array"
+          title: "Object Types (Optional)"
+          items:
+            type: "string"
+          description: "The API names of the Netsuite objects you want to sync. Setting\
+            \ this speeds up the connection setup process by limiting the number of\
+            \ schemas that need to be retrieved from Netsuite."
+          order: 5
+          examples:
+          - "customer"
+          - "salesorder"
+          - "etc"
+          default: []
+        start_datetime:
+          type: "string"
+          title: "Start Date"
+          description: "Starting point for your data replication, in format of \"\
+            YYYY-MM-DDTHH:mm:ssZ\""
+          order: 6
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          examples:
+          - "2017-01-25T00:00:00Z"
+        window_in_days:
+          type: "integer"
+          title: "Window in Days (Optional)"
+          description: "The amount of days used to query the data with date chunks.\
+            \ Set smaller value, if you have lots of data."
+          order: 7
+          default: 30
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-notion:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
     connectionSpecification:
@@ -7753,7 +7885,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.1.4"
+- dockerImage: "airbyte/source-pinterest:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pinterest"
     connectionSpecification:
@@ -7857,7 +7989,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.12"
+- dockerImage: "airbyte/source-pipedrive:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pipedrive"
     connectionSpecification:
@@ -8490,6 +8622,40 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-primetric:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Primetric Spec"
+      type: "object"
+      required:
+      - "client_id"
+      - "client_secret"
+      properties:
+        client_id:
+          type: "string"
+          title: "Client ID"
+          description: "The Client ID of your Primetric developer application. The\
+            \ Client ID is visible <a href=\\\"https://app.primetric.com/administrator/integrations\"\
+            >here</a>."
+          pattern: "^[a-zA-Z0-9]+$"
+          airbyte_secret: true
+          examples:
+          - "1234aBcD5678EFGh9045Neq79sdDlA15082VMYcj"
+          order: 0
+        client_secret:
+          type: "string"
+          title: "Client Secret"
+          description: "The Client Secret of your Primetric developer application.\
+            \ You can manage your client's credentials <a href=\\\"https://app.primetric.com/administrator/integrations\"\
+            >here</a>."
+          pattern: "^[a-zA-Z0-9]+$"
+          airbyte_secret: true
+          order: 1
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-qualaroo:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/qualaroo"
@@ -8868,7 +9034,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.18"
+- dockerImage: "airbyte/source-s3:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -9860,7 +10026,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.21"
+- dockerImage: "airbyte/source-snowflake:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -10276,7 +10442,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.37"
+- dockerImage: "airbyte/source-stripe:0.1.38"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
@@ -11668,7 +11834,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zenloop:0.1.1"
+- dockerImage: "airbyte/source-zenloop:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zenloop"
     connectionSpecification:
@@ -11677,7 +11843,6 @@
       type: "object"
       required:
       - "api_token"
-      additionalProperties: false
       properties:
         api_token:
           type: "string"
@@ -12164,6 +12329,51 @@
                   \ server"
                 type: "string"
                 airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-yandex-metrica:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Yandex Metrica Spec"
+      type: "object"
+      required:
+      - "auth_token"
+      - "counter_id"
+      - "start_date"
+      - "end_date"
+      additionalProperties: true
+      properties:
+        auth_token:
+          type: "string"
+          title: "Authentication Token"
+          description: "Your Yandex Metrica API access token"
+          airbyte_secret: true
+          order: 0
+        counter_id:
+          type: "string"
+          title: "Counter ID"
+          description: "Counter ID"
+          pattern: "^[0-9]+$"
+          order: 1
+        start_date:
+          title: "Start Date"
+          type: "string"
+          description: "UTC date and time in the format YYYY-MM-DD."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          examples:
+          - "2022-01-01"
+          order: 2
+        end_date:
+          title: "End Date"
+          type: "string"
+          description: "UTC date and time in the format YYYY-MM-DD."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          examples:
+          - "2022-01-01"
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

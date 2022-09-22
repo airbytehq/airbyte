@@ -105,16 +105,6 @@ public class WebBackendConnectionsHandler {
     return new WebBackendConnectionReadList().connections(reads);
   }
 
-  public WebBackendConnectionReadList webBackendListAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-
-    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
-    for (final ConnectionRead connection : connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
-      reads.add(buildWebBackendConnectionRead(connection));
-    }
-    return new WebBackendConnectionReadList().connections(reads);
-  }
-
   private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceRead source = getSourceRead(connectionRead);
@@ -335,47 +325,37 @@ public class WebBackendConnectionsHandler {
     return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
   }
 
-  public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate)
+  /**
+   * Given a WebBackendConnectionUpdate, patch the connection by applying any non-null properties from
+   * the patch to the connection.
+   *
+   * As a convenience to the front-end, this endpoint also creates new operations present in the
+   * request, and bundles those newly-created operationIds into the connection update.
+   */
+  public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionPatch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
-    final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
-    final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
-    final ConfiguredAirbyteCatalog existingConfiguredCatalog =
+
+    final UUID connectionId = webBackendConnectionPatch.getConnectionId();
+    ConnectionRead connectionRead = connectionsHandler.getConnection(connectionId);
+
+    // before doing any updates, fetch the existing catalog so that it can be diffed
+    // with the final catalog to determine which streams might need to be reset.
+    final ConfiguredAirbyteCatalog oldConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
-    ConnectionRead connectionRead;
-    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-    final Boolean skipReset = webBackendConnectionUpdate.getSkipReset() != null ? webBackendConnectionUpdate.getSkipReset() : false;
-    if (!skipReset) {
-      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingConfiguredCatalog);
-      final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
-      newAirbyteCatalog
-          .setStreams(newAirbyteCatalog.getStreams().stream().filter(streamAndConfig -> streamAndConfig.getConfig().getSelected()).toList());
-      final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
-      final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
-      final Set<StreamDescriptor> changedConfigStreamDescriptors = connectionsHandler.getConfigurationDiff(apiExistingCatalog, newAirbyteCatalog);
-      final Set<StreamDescriptor> allStreamToReset = new HashSet<>();
-      allStreamToReset.addAll(apiStreamsToReset);
-      allStreamToReset.addAll(changedConfigStreamDescriptors);
-      List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
-          allStreamToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
+    final List<UUID> newAndExistingOperationIds = createOrUpdateOperations(connectionRead, webBackendConnectionPatch);
 
-      if (!streamsToReset.isEmpty()) {
-        final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
-        final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
+    // pass in operationIds because the patch object doesn't include operationIds that were just created
+    // above.
+    final ConnectionUpdate connectionPatch = toConnectionPatch(webBackendConnectionPatch, newAndExistingOperationIds);
 
-        if (stateType == ConnectionStateType.LEGACY) {
-          streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
-        }
-        ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
-            webBackendConnectionUpdate.getConnectionId(),
-            streamsToReset);
-        verifyManualOperationResult(manualOperationResult);
-        manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-        verifyManualOperationResult(manualOperationResult);
-        connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
-      }
-    }
+    // persist the update and set the connectionRead to the updated form.
+    connectionRead = connectionsHandler.updateConnection(connectionPatch);
+
+    // detect if any streams need to be reset based on the patch and initial catalog, if so, reset them
+    // and fetch
+    // an up-to-date connectionRead
+    connectionRead = resetStreamsIfNeeded(webBackendConnectionPatch, oldConfiguredCatalog, connectionRead);
 
     /*
      * This catalog represents the full catalog that was used to create the configured catalog. It will
@@ -390,6 +370,52 @@ public class WebBackendConnectionsHandler {
     }
 
     return buildWebBackendConnectionRead(connectionRead);
+  }
+
+  /**
+   * Given a fully updated connection, check for a diff between the old catalog and the updated
+   * catalog to see if any streams need to be reset.
+   */
+  private ConnectionRead resetStreamsIfNeeded(final WebBackendConnectionUpdate webBackendConnectionPatch,
+                                              final ConfiguredAirbyteCatalog oldConfiguredCatalog,
+                                              final ConnectionRead updatedConnectionRead)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+
+    final UUID connectionId = webBackendConnectionPatch.getConnectionId();
+    final Boolean skipReset = webBackendConnectionPatch.getSkipReset() != null ? webBackendConnectionPatch.getSkipReset() : false;
+    if (!skipReset) {
+      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(oldConfiguredCatalog);
+      final AirbyteCatalog upToDateAirbyteCatalog = updatedConnectionRead.getSyncCatalog();
+      final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog);
+      final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
+      final Set<StreamDescriptor> changedConfigStreamDescriptors =
+          connectionsHandler.getConfigurationDiff(apiExistingCatalog, upToDateAirbyteCatalog);
+      final Set<StreamDescriptor> allStreamToReset = new HashSet<>();
+      allStreamToReset.addAll(apiStreamsToReset);
+      allStreamToReset.addAll(changedConfigStreamDescriptors);
+      List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
+          allStreamToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
+
+      if (!streamsToReset.isEmpty()) {
+        final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
+        final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
+
+        if (stateType == ConnectionStateType.LEGACY) {
+          streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
+        }
+        ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+            connectionId,
+            streamsToReset);
+        verifyManualOperationResult(manualOperationResult);
+        manualOperationResult = eventRunner.startNewManualSync(connectionId);
+        verifyManualOperationResult(manualOperationResult);
+
+        // return updated connectionRead after reset
+        return connectionsHandler.getConnection(connectionId);
+      }
+    }
+    // if no reset was necessary, return the connectionRead without changes
+    return updatedConnectionRead;
   }
 
   private void verifyManualOperationResult(final ManualOperationResult manualOperationResult) throws IllegalStateException {
@@ -410,33 +436,35 @@ public class WebBackendConnectionsHandler {
     return operationIds;
   }
 
-  private List<UUID> updateOperations(final WebBackendConnectionUpdate webBackendConnectionUpdate)
+  private List<UUID> createOrUpdateOperations(final ConnectionRead connectionRead, final WebBackendConnectionUpdate webBackendConnectionPatch)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final ConnectionRead connectionRead = connectionsHandler
-        .getConnection(webBackendConnectionUpdate.getConnectionId());
+
+    // this is a patch-style update, so don't make any changes if the request doesn't include operations
+    if (webBackendConnectionPatch.getOperations() == null) {
+      return null;
+    }
 
     // wrap operationIds in a new ArrayList so that it is modifiable below, when calling .removeAll
     final List<UUID> originalOperationIds =
         connectionRead.getOperationIds() == null ? new ArrayList<>() : new ArrayList<>(connectionRead.getOperationIds());
 
-    final List<WebBackendOperationCreateOrUpdate> updatedOperations =
-        webBackendConnectionUpdate.getOperations() == null ? new ArrayList<>() : webBackendConnectionUpdate.getOperations();
-
-    final List<UUID> operationIds = new ArrayList<>();
+    final List<WebBackendOperationCreateOrUpdate> updatedOperations = webBackendConnectionPatch.getOperations();
+    final List<UUID> finalOperationIds = new ArrayList<>();
 
     for (final var operationCreateOrUpdate : updatedOperations) {
       if (operationCreateOrUpdate.getOperationId() == null || !originalOperationIds.contains(operationCreateOrUpdate.getOperationId())) {
         final OperationCreate operationCreate = toOperationCreate(operationCreateOrUpdate);
-        operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
+        finalOperationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
       } else {
         final OperationUpdate operationUpdate = toOperationUpdate(operationCreateOrUpdate);
-        operationIds.add(operationsHandler.updateOperation(operationUpdate).getOperationId());
+        finalOperationIds.add(operationsHandler.updateOperation(operationUpdate).getOperationId());
       }
     }
 
-    originalOperationIds.removeAll(operationIds);
+    // remove operationIds that weren't included in the update
+    originalOperationIds.removeAll(finalOperationIds);
     operationsHandler.deleteOperationsForConnection(connectionRead.getConnectionId(), originalOperationIds);
-    return operationIds;
+    return finalOperationIds;
   }
 
   @VisibleForTesting
@@ -483,25 +511,35 @@ public class WebBackendConnectionsHandler {
     return connectionCreate;
   }
 
+  /**
+   * Take in a WebBackendConnectionUpdate and convert it into a ConnectionUpdate. OperationIds are
+   * handled as a special case because the WebBackendConnectionUpdate handler allows for on-the-fly
+   * creation of new operations. So, the brand-new IDs are passed in because they aren't present in
+   * the WebBackendConnectionUpdate itself.
+   *
+   * The return value is used as a patch -- a field set to null means that it should not be modified.
+   */
   @VisibleForTesting
-  protected static ConnectionUpdate toConnectionUpdate(final WebBackendConnectionUpdate webBackendConnectionUpdate, final List<UUID> operationIds) {
-    final ConnectionUpdate connectionUpdate = new ConnectionUpdate();
+  protected static ConnectionUpdate toConnectionPatch(final WebBackendConnectionUpdate webBackendConnectionPatch,
+                                                      final List<UUID> finalOperationIds) {
+    final ConnectionUpdate connectionPatch = new ConnectionUpdate();
 
-    connectionUpdate.connectionId(webBackendConnectionUpdate.getConnectionId());
-    connectionUpdate.namespaceDefinition(webBackendConnectionUpdate.getNamespaceDefinition());
-    connectionUpdate.namespaceFormat(webBackendConnectionUpdate.getNamespaceFormat());
-    connectionUpdate.prefix(webBackendConnectionUpdate.getPrefix());
-    connectionUpdate.name(webBackendConnectionUpdate.getName());
-    connectionUpdate.operationIds(operationIds);
-    connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
-    connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
-    connectionUpdate.scheduleType(webBackendConnectionUpdate.getScheduleType());
-    connectionUpdate.scheduleData(webBackendConnectionUpdate.getScheduleData());
-    connectionUpdate.status(webBackendConnectionUpdate.getStatus());
-    connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
-    connectionUpdate.sourceCatalogId(webBackendConnectionUpdate.getSourceCatalogId());
+    connectionPatch.connectionId(webBackendConnectionPatch.getConnectionId());
+    connectionPatch.namespaceDefinition(webBackendConnectionPatch.getNamespaceDefinition());
+    connectionPatch.namespaceFormat(webBackendConnectionPatch.getNamespaceFormat());
+    connectionPatch.prefix(webBackendConnectionPatch.getPrefix());
+    connectionPatch.name(webBackendConnectionPatch.getName());
+    connectionPatch.syncCatalog(webBackendConnectionPatch.getSyncCatalog());
+    connectionPatch.schedule(webBackendConnectionPatch.getSchedule());
+    connectionPatch.scheduleType(webBackendConnectionPatch.getScheduleType());
+    connectionPatch.scheduleData(webBackendConnectionPatch.getScheduleData());
+    connectionPatch.status(webBackendConnectionPatch.getStatus());
+    connectionPatch.resourceRequirements(webBackendConnectionPatch.getResourceRequirements());
+    connectionPatch.sourceCatalogId(webBackendConnectionPatch.getSourceCatalogId());
 
-    return connectionUpdate;
+    connectionPatch.operationIds(finalOperationIds);
+
+    return connectionPatch;
   }
 
   @VisibleForTesting

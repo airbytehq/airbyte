@@ -7,7 +7,7 @@ interface IProps {
 
 const allowedAttributes = {
   ...sanitizeHtml.defaults.allowedAttributes,
-  a: [...sanitizeHtml.defaults.allowedAttributes["a"], "rel"],
+  a: [...sanitizeHtml.defaults.allowedAttributes.a, "rel"],
 };
 
 const TextWithHTML: React.FC<IProps> = ({ text }) => {
