@@ -1,1 +1,1 @@
-export { H2, H3, H5 } from "./Titles";
+export { H3, H5 } from "./Titles";
