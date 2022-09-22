@@ -2,8 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from copy import deepcopy
 import json
+from copy import deepcopy
 
 from pytest import fixture
 
@@ -175,3 +175,8 @@ def attribution_report_response():
         return json.dumps(responses[report_type])
 
     return _internal
+
+
+@fixture
+def attribution_report_bad_response():
+    return "bad response"
