@@ -55,14 +55,14 @@
     }
 
     &.typeSecondary,
-    &.typeNoStroke,
+    &.typeClear,
     &.typeLight {
       color: colors.$grey-300;
     }
 
     &.isRegularIcon {
       &.typeSecondary,
-      &.typeNoStroke {
+      &.typeClear {
         &:hover {
           color: colors.$grey-400;
         }
@@ -150,7 +150,7 @@
   }
 
   &.typeSecondary {
-    background-color: colors.$white;
+    background-color: colors.$transparentColor;
     color: colors.$grey-300;
     border: 1px solid colors.$grey-200;
     box-shadow: none;
@@ -166,7 +166,7 @@
     }
   }
 
-  &.typeNoStroke {
+  &.typeClear {
     background-color: colors.$transparentColor;
     color: colors.$grey-300;
     box-shadow: none;

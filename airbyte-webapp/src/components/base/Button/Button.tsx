@@ -28,7 +28,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
     [styles.sizeS]: size === "sm",
     [styles.sizeXS]: size === "xs",
     [styles.typeDanger]: variant === "danger",
-    [styles.typeNoStroke]: variant === "noStroke",
+    [styles.typeClear]: variant === "clear",
     [styles.typeLight]: variant === "light",
     [styles.typePrimary]: variant === "primary",
     [styles.typeSecondary]: variant === "secondary",
@@ -77,7 +77,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
 
 Button.defaultProps = {
   full: false,
-  size: "sm",
+  size: "xs",
   variant: "primary",
   iconPosition: "left",
 };

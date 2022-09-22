@@ -104,7 +104,7 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
           tabIndex={-1}
           size="xs"
           type="button"
-          variant="noStroke"
+          variant="clear"
           aria-label={formatMessage({
             id: `ui.input.${isContentVisible ? "hide" : "show"}Password`,
           })}

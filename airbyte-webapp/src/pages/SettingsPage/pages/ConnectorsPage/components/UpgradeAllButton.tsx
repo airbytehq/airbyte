@@ -46,6 +46,7 @@ const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading,
         </ErrorBlock>
       )}
       <Button
+        size="xs"
         className={styles.updateButton}
         onClick={onUpdate}
         isLoading={isLoading}

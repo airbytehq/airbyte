@@ -11,7 +11,6 @@ import styles from "./ConfirmationModal.module.scss";
 const Content = styled.div`
   width: 585px;
   font-size: 14px;
-  line-height: 28px;
   padding: 25px;
   white-space: pre-line;
 `;

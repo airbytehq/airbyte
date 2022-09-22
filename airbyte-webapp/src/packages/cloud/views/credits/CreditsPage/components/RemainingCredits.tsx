@@ -1,3 +1,5 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { useSearchParams } from "react-router-dom";
@@ -126,12 +128,14 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         <Button
           disabled={!selfServiceCheckoutEnabled}
           type="button"
+          size="xs"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
+          icon={<FontAwesomeIcon icon={faPlus} />}
         >
           <FormattedMessage id="credits.buyCredits" />
         </Button>
-        <Button size="lg" onClick={() => window.open(config.links.contactSales, "_blank")}>
+        <Button size="xs" onClick={() => window.open(config.links.contactSales, "_blank")}>
           <FormattedMessage id="credits.talkToSales" />
         </Button>
       </Actions>
