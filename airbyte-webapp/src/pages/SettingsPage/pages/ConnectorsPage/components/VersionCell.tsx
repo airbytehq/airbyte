@@ -106,11 +106,7 @@ const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, curren
                 </InputField>
               )}
             </Field>
-            <Button
-              isLoading={isSubmitting}
-              type="submit"
-              disabled={(isSubmitting || !dirty) && !isConnectorUpdateable}
-            >
+            <Button size="xs" isLoading type="submit" disabled={(isSubmitting || !dirty) && !isConnectorUpdateable}>
               <FormattedMessage id="form.change" />
             </Button>
           </Form>
