@@ -17,7 +17,7 @@ import {
   useConnectionFormService,
 } from "./ConnectionFormService";
 
-["packages/cloud/services/workspaces/WorkspacesService", "services/workspaces/WorkspacesService"].forEach((s) =>
+["services/workspaces/WorkspacesService"].forEach((s) =>
   jest.mock(s, () => ({
     useCurrentWorkspaceId: () => mockWorkspace.workspaceId,
     useCurrentWorkspace: () => mockWorkspace,
