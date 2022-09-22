@@ -15,9 +15,7 @@ interface FieldSectionProps {
 export const FieldSection: React.FC<FieldSectionProps> = ({ streams, diffVerb }) => {
   const { formatMessage } = useIntl();
   return (
-    // eslint-disable-next-line css-modules/no-undef-class
     <div className={styles.sectionContainer}>
-      {/* eslint-disable-next-line css-modules/no-undef-class */}
       <div className={styles.fieldHeader}>
         <DiffHeader diffCount={streams.length} diffVerb={diffVerb} diffType="stream" />
       </div>
