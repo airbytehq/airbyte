@@ -20,6 +20,16 @@
             "type": "string",
             "airbyte_secret": true,
             "description": "Access Token for making authenticated requests. See the docs for more information on how to generate this key: https://go.estuary.dev/Y8iqCr"
+          },
+            "client_id": {
+              "title": "Client ID",
+              "type": "string",
+              "airbyte_secret": true,
+          },
+            "client_secret": {
+              "title": "Client Secret",
+              "type": "string",
+              "airbyte_secret": true,
           }
         }
     },
