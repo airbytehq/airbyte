@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, urlparse
 
 import requests
 
+from ..utils import read_full_refresh
 from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
 
 
@@ -38,11 +39,11 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         return "funnels"
 
     def get_funnel_slices(self, sync_mode) -> List[dict]:
-        funnel_slices = FunnelsList(**self.get_stream_params()).read_records(sync_mode=sync_mode)
-        funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
+        stream = FunnelsList(**self.get_stream_params())
+        funnel_slices = list(read_full_refresh(stream))  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
 
         # save all funnels in dict(<funnel_id1>:<name1>, ...)
-        self.funnels = dict((funnel["funnel_id"], funnel["name"]) for funnel in funnel_slices)
+        self.funnels = {funnel["funnel_id"]: funnel["name"] for funnel in funnel_slices}
         return funnel_slices
 
     def funnel_slices(self, sync_mode) -> List[dict]:
