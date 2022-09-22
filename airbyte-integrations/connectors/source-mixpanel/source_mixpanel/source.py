@@ -64,6 +64,13 @@ class SourceMixpanel(AbstractSource):
         for k in ["attribution_window", "select_properties_by_default", "region", "date_window_size"]:
             if k not in config:
                 config[k] = source_spec.connectionSpecification["properties"][k]["default"]
+
+        auth = self.get_authenticator(config)
+        if isinstance(auth, TokenAuthenticatorBase64) and "project_id" in config:
+            config.pop("project_id")
+        elif isinstance(auth, ServiceAccountAuthenticator) and "project_id" not in config:
+            raise ValueError("missing required parameter 'project_id'")
+
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
