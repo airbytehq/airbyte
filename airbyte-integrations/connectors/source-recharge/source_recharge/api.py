@@ -22,7 +22,7 @@ class RechargeStream(HttpStream, ABC):
 
     # regestring the default schema transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    
+
     @property
     def data_path(self):
         return self.name
