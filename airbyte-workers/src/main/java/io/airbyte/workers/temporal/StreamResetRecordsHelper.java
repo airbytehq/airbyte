@@ -6,9 +6,9 @@ package io.airbyte.workers.temporal;
 
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import java.io.IOException;
 import java.util.List;
