@@ -38,8 +38,3 @@ export const H5 = styled(H1).attrs({ as: "h5" })`
   font-size: ${({ theme }) => theme.h5?.fontSize || "16px"};
   line-height: ${({ theme }) => theme.h5?.lineHeight || "28px"};
 `;
-
-export const H6 = styled(H1).attrs({ as: "h6" })`
-  font-size: ${({ theme }) => theme.h5?.fontSize || "14px"};
-  line-height: ${({ theme }) => theme.h5?.lineHeight || "17px"};
-`;
