@@ -20,6 +20,9 @@ class RechargeStream(HttpStream, ABC):
     limit = 250
     page_num = 1
 
+    # regestring the default schema transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     @property
     def data_path(self):
         return self.name
@@ -109,20 +112,6 @@ class Charges(IncrementalRechargeStream):
     Charges Stream: https://developer.rechargepayments.com/v1-shopify?python#list-charges
     """
 
-    def get_stream_data(self, response_data: Any) -> List[dict]:
-        # We expect total_weight to be an integer, but the API is returning numbers like 42.0
-        # Cast these down to int if possible, and error if not.
-        data = super().get_stream_data(response_data)
-        for record in data:
-            if "total_weight" in record:
-                total_weight = record["total_weight"]
-                int_total_weight = int(total_weight)
-                if total_weight == int_total_weight:
-                    record["total_weight"] = int_total_weight
-                else:
-                    raise ValueError(f"Expected total_weight to be an integer, got {total_weight}")
-        return data
-
 
 class Collections(RechargeStream):
     """
@@ -163,8 +152,6 @@ class Orders(IncrementalRechargeStream):
     """
     Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
     """
-
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
 
 class Products(RechargeStream):

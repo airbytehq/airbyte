@@ -101,21 +101,12 @@ public class WebBackendConnectionsHandler {
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    return listConnectionsForWorkspaceInternal(workspaceIdRequestBody, false);
-  }
 
-  public WebBackendConnectionReadList webBackendListAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    return listConnectionsForWorkspaceInternal(workspaceIdRequestBody, true);
-  }
-
-  public WebBackendConnectionReadList listConnectionsForWorkspaceInternal(final WorkspaceIdRequestBody workspaceIdRequestBody,
-                                                                          final boolean includeDeleted)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<WebBackendConnectionListItem> connectionItems = Lists.newArrayList();
 
     for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId())) {
-      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
+      // don't include deleted connections
+      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED) {
         continue;
       }
 

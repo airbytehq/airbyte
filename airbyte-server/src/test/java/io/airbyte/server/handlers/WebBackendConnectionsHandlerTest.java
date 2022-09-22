@@ -309,19 +309,6 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testWebBackendListAllConnectionsForWorkspace() throws ConfigNotFoundException, IOException,
-      JsonValidationException {
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
-    workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
-
-    final WebBackendConnectionReadList WebBackendConnectionReadList =
-        wbHandler.webBackendListAllConnectionsForWorkspace(workspaceIdRequestBody);
-
-    assertEquals(1, WebBackendConnectionReadList.getConnections().size());
-    assertEquals(expectedListItem, WebBackendConnectionReadList.getConnections().get(0));
-  }
-
-  @Test
   void testWebBackendSearchConnections() throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionReadList connectionReadList = new ConnectionReadList();
     connectionReadList.setConnections(Collections.singletonList(connectionRead));
