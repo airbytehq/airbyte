@@ -6,7 +6,7 @@ import { DropDownRow } from "components";
 
 import { getDestinationNamespace, SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 

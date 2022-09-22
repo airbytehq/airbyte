@@ -8,7 +8,7 @@ import { Button, Cell, Header, Switch } from "components";
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchemaToField } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";

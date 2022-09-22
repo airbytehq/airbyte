@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { QueryClient, useMutation, useQueryClient } from "react-query";
 
 import { getFrequencyType } from "config/utils";
@@ -58,39 +58,20 @@ export interface ListConnection {
   connections: WebBackendConnectionRead[];
 }
 
-function useWebConnectionService() {
+export const useWebConnectionService = () => {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
     () => new WebBackendConnectionService(config.apiUrl, middlewares),
     [config.apiUrl, middlewares]
   );
-}
+};
 
 export function useConnectionService() {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(() => new ConnectionService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
 }
-
-export const useConnectionLoad = (connectionId: string) => {
-  const [connection, setConnection] = useState(useGetConnection(connectionId));
-  const connectionService = useWebConnectionService();
-  const [schemaHasBeenRefreshed, setSchemaHasBeenRefreshed] = useState(false);
-
-  const refreshConnectionCatalog = async () => {
-    setConnection(await connectionService.getConnection(connectionId, true));
-    setSchemaHasBeenRefreshed(true);
-  };
-
-  return {
-    connection,
-    schemaHasBeenRefreshed,
-    setConnection,
-    setSchemaHasBeenRefreshed,
-    refreshConnectionCatalog,
-  };
-};
 
 export const useSyncConnection = () => {
   const service = useConnectionService();

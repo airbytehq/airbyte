@@ -149,13 +149,15 @@ const useUpdateSource = () => {
   );
 };
 
+export type SchemaError = { status: number; response: SynchronousJobRead } | null;
+
 const useDiscoverSchema = (
   sourceId: string,
   disableCache?: boolean
 ): {
   isLoading: boolean;
   schema: SyncSchema;
-  schemaErrorStatus: { status: number; response: SynchronousJobRead } | null;
+  schemaErrorStatus: SchemaError;
   catalogId: string | undefined;
   onDiscoverSchema: () => Promise<void>;
 } => {

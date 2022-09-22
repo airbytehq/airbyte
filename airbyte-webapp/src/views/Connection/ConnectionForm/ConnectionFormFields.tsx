@@ -8,7 +8,7 @@ import styled from "styled-components";
 import { Button, Card, ControlLabels, H5, Input } from "components";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";

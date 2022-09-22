@@ -1,5 +1,5 @@
 import { Formik, FormikHelpers } from "formik";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 import styled from "styled-components";
@@ -13,11 +13,14 @@ import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType } from "core/request/AirbyteClient";
 import { PageTrackingCodes, useAnalyticsService, useTrackPage } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { tidyConnectionFormValues, useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import {
+  tidyConnectionFormValues,
+  useConnectionFormService,
+} from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, useUpdateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
-import { generateMessageFromError } from "utils/errorStatusMessage";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
@@ -88,16 +91,15 @@ export const ConnectionReplication: React.FC = () => {
 
   const {
     connection,
-    initialValues,
-    isRefreshingCatalog,
+    schemaRefreshing,
     connectionDirty,
-    submitError,
     schemaHasBeenRefreshed,
-    // onRefreshSourceSchema,
-    setSubmitError,
+    onRefreshSourceSchema,
     setConnection,
     setSchemaHasBeenRefreshed,
-  } = useConnectionFormService();
+  } = useConnectionEditService();
+
+  const { initialValues, getErrorMessage, setSubmitError } = useConnectionFormService();
 
   const workspaceId = useCurrentWorkspaceId();
 
@@ -107,7 +109,7 @@ export const ConnectionReplication: React.FC = () => {
   });
 
   const saveConnection = async (values: ValuesProps, { skipReset }: { skipReset: boolean }) => {
-    if (isRefreshingCatalog) {
+    if (schemaRefreshing) {
       return;
     }
     const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
@@ -199,19 +201,9 @@ export const ConnectionReplication: React.FC = () => {
     setSchemaHasBeenRefreshed?.(false);
   };
 
-  const getErrorMessage = useCallback(
-    (formValid: boolean, dirty: boolean) =>
-      submitError
-        ? generateMessageFromError(submitError)
-        : dirty && !formValid
-        ? formatMessage({ id: "connectionForm.validation.error" })
-        : null,
-    [formatMessage, submitError]
-  );
-
   return (
     <Content>
-      {!isRefreshingCatalog && connection ? (
+      {!schemaRefreshing && connection ? (
         <Formik initialValues={initialValues} validationSchema={connectionValidationSchema} onSubmit={onFormSubmit}>
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
             <>

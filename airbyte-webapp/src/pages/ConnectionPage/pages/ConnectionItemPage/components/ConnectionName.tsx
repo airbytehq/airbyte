@@ -5,7 +5,7 @@ import React, { ChangeEvent, useState } from "react";
 import { Input } from "components";
 
 import { buildConnectionUpdate } from "core/domain/connection";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import withKeystrokeHandler from "utils/withKeystrokeHandler";
 
@@ -14,7 +14,7 @@ import styles from "./ConnectionName.module.scss";
 const InputWithKeystroke = withKeystrokeHandler(Input);
 
 export const ConnectionName: React.FC = () => {
-  const { connection } = useConnectionFormService();
+  const { connection } = useConnectionEditService();
   const { name } = connection;
   const [editingState, setEditingState] = useState(false);
   const [loading, setLoading] = useState(false);

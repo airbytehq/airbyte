@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { ConnectorCard } from "components";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";

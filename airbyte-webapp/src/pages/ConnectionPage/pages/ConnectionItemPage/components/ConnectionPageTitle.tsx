@@ -8,7 +8,7 @@ import { InfoBox } from "components/InfoBox";
 import StepsMenu from "components/StepsMenu";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 import { ConnectionName } from "./ConnectionName";

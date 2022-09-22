@@ -9,7 +9,7 @@ import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { buildConnectionUpdate } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 
 import { ConnectionStatus } from "../../../../../core/request/AirbyteClient";
@@ -40,7 +40,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled, onStatusUpdat
   const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
   const analyticsService = useAnalyticsService();
 
-  const { connection } = useConnectionFormService();
+  const { connection } = useConnectionEditService();
   const frequencyType = getFrequencyType(connection.scheduleData?.basicSchedule);
 
   const onChangeStatus = async () => {

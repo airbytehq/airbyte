@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 
 import { Card, H5 } from "components";
 
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { StyledSection } from "../ConnectionForm";
