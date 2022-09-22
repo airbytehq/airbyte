@@ -1,3 +1,5 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
@@ -27,7 +29,7 @@ const AllDestinationsPage: React.FC = () => {
         <PageTitle
           title={<FormattedMessage id="admin.destinations" />}
           endComponent={
-            <Button onClick={onCreateDestination} data-id="new-destination">
+            <Button icon={<FontAwesomeIcon icon={faPlus} />} onClick={onCreateDestination} data-id="new-destination">
               <FormattedMessage id="destinations.newDestination" />
             </Button>
           }

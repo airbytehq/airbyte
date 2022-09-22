@@ -74,7 +74,12 @@ export const SingletonCard: React.FC<SingletonCardProps> = (props) => (
       {props.text && <Text>{props.text}</Text>}
     </div>
     {props.onClose && (
-      <Button className={styles.closeButton} onClick={props.onClose} icon={<FontAwesomeIcon icon={faTimes} />} />
+      <Button
+        className={styles.closeButton}
+        variant="noStroke"
+        onClick={props.onClose}
+        icon={<FontAwesomeIcon icon={faTimes} />}
+      />
     )}
   </Singleton>
 );

@@ -1,3 +1,5 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +27,7 @@ const AllSourcesPage: React.FC = () => {
         <PageTitle
           title={<FormattedMessage id="sidebar.sources" />}
           endComponent={
-            <Button onClick={onCreateSource} data-id="new-source">
+            <Button icon={<FontAwesomeIcon icon={faPlus} />} onClick={onCreateSource} data-id="new-source">
               <FormattedMessage id="sources.newSource" />
             </Button>
           }
