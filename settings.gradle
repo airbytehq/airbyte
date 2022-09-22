@@ -80,8 +80,6 @@ include ':airbyte-config:config-persistence' // transitively used by airbyte-wor
 include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
-include ':airbyte-scheduler:scheduler-models' // transitively used by airbyte-workers.
-include ':airbyte-scheduler:scheduler-persistence' // used by airbyte-workers.
 
 // platform
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
@@ -91,7 +89,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-config:specs'
     include ':airbyte-container-orchestrator'
     include ':airbyte-metrics:reporter'
-    include ':airbyte-scheduler:client'
     include ':airbyte-server'
     include ':airbyte-temporal'
     include ':airbyte-tests'
