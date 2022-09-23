@@ -262,14 +262,7 @@ class IncrementalNetsuiteStream(NetsuiteStream):
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice),
         )
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice)
-
-        self.logger.debug(
-            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
-        )
-        response: requests.Response = self._session.send(request, **request_kwargs)
-        self.logger.debug(
-            "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
-        )
+        response = self._send(request, request_kwargs)
 
         if response.status_code == 400:
             message = response.json().get("o:errorDetails")
