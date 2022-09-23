@@ -2,7 +2,6 @@ export * from "./base";
 
 export * from "./ArrayOfObjectsEditor";
 export * from "./DefaultLogoCatalog";
-export * from "./ImageBlock";
 export * from "./Label";
 export * from "./LabeledControl";
 export * from "./LabeledInput";
