@@ -4,10 +4,7 @@
   "port": 443,
   "scheme": "https",
   "collection": {
-    "name": "COLLECTION_NAME",
     "page_size": 64,
-    "data_column": true,
-    "index": "INDEX_NAME",
     "deletions": {
       "deletion_mode": "deleted_field",
       "column": "deleted_at"
