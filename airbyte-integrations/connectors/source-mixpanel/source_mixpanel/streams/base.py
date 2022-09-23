@@ -139,9 +139,6 @@ class DateSlicesMixin:
             stream_state_date = datetime.fromisoformat(stream_state["date"]).date()
             start_date = max(start_date, stream_state_date)
 
-        if start_date > self.end_date:
-            return []
-
         # move start_date back <attribution_window> days to sync data since that time as well
         start_date = start_date - timedelta(days=self.attribution_window)
 
