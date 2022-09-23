@@ -38,7 +38,6 @@ import io.airbyte.api.client.model.generated.AttemptStatus;
 import io.airbyte.api.client.model.generated.CheckConnectionRead;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
-import io.airbyte.api.client.model.generated.ConnectionSchedule;
 import io.airbyte.api.client.model.generated.ConnectionScheduleData;
 import io.airbyte.api.client.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.client.model.generated.ConnectionScheduleDataBasicSchedule.TimeUnitEnum;
@@ -725,8 +724,10 @@ class BasicAcceptanceTests {
     testHarness.terminateTemporalWorkflow(connectionId);
 
     // we should still be able to update the connection when the temporal workflow is in this state
-    testHarness.updateConnectionSchedule(connectionId,
-        new ConnectionSchedule().timeUnit(ConnectionSchedule.TimeUnitEnum.HOURS).units(1L));
+    testHarness.updateConnectionSchedule(
+        connectionId,
+        ConnectionScheduleType.BASIC,
+        new ConnectionScheduleData().basicSchedule(new ConnectionScheduleDataBasicSchedule().timeUnit(TimeUnitEnum.HOURS).units(1L)));
 
     LOGGER.info("Waiting for workflow to be recreated...");
     Thread.sleep(500);

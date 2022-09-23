@@ -1,8 +1,13 @@
 @use "../../../../../scss/variables" as vars;
+@use "../../../../../scss/colors";
 
 .container {
   text-align: center;
   padding: vars.$spacing-lg vars.$spacing-xl;
+}
+
+.connectionTitle {
+  color: colors.$orange;
 }
 
 .connectionDeleted {
