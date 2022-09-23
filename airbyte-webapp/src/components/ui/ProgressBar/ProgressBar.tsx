@@ -64,7 +64,7 @@ const Text = styled.div<{ delay: number }>`
   opacity: 0;
 `;
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ runTime, text }) => {
+export const ProgressBar: React.FC<ProgressBarProps> = ({ runTime, text }) => {
   const animationRunTime = runTime || 20;
   return (
     <Bar>
@@ -73,5 +73,3 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ runTime, text }) => {
     </Bar>
   );
 };
-
-export default ProgressBar;
