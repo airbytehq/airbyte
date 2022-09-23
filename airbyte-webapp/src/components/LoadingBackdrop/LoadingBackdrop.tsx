@@ -1,6 +1,7 @@
 import React from "react";
 
-import Spinner from "../Spinner/Spinner";
+import { Spinner } from "components/ui/Spinner";
+
 import styles from "./LoadingBackdrop.module.scss";
 
 interface LoadingBackdropProps {
