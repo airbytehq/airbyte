@@ -212,7 +212,6 @@ class IncrementalNetsuiteStream(NetsuiteStream):
             start = stream_slice["start"].strftime(self.input_datetime_format)
             end = stream_slice["end"].strftime(self.input_datetime_format)
             params.update(**{"q": f'{self.cursor_field} AFTER "{start}" AND {self.cursor_field} BEFORE "{end}"'})
-            self.logger.debug(f"******************************** params: {params}")
         return params
 
     def stream_slices(
