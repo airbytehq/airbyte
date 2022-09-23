@@ -13,7 +13,7 @@ def config_fixture(requests_mock):
         "site_urls": ["https://example.com"],
         "start_date": "start_date",
         "end_date": "end_date",
-        "authorization": {
+        "credentials": {
             "auth_type": "Client",
             "client_id": "client_id",
             "client_secret": "client_secret",

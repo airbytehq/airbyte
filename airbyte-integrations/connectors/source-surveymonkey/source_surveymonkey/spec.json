@@ -12,7 +12,7 @@
         "title": "Credentials",
         "description": "Credentials for the service",
         "x-oauth2-provider": "surveymonkey", 
-        "required": ["access_token"],
+        "required": ["access_token", "client_id", "client_secret"],
         "properties": {     
           "access_token": {
             "title": "Access Token",

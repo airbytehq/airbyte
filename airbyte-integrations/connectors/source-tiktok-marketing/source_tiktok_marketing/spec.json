@@ -21,17 +21,18 @@
                             "auth_type": {
                                 "title": "Auth Type",
                                 "const": "oauth2.0",
+                                "default": "oauth2.0",
                                 "order": 0,
                                 "type": "string"
                             },
-                            "app_id": {
-                                "title": "App ID",
+                            "client_id": {
+                                "title": "Client ID",
                                 "description": "The Developer Application App ID.",
                                 "airbyte_secret": true,
                                 "type": "string"
                             },
-                            "secret": {
-                                "title": "Secret",
+                            "client_secret": {
+                                "title": "Client Secret",
                                 "description": "The Developer Application Secret.",
                                 "airbyte_secret": true,
                                 "type": "string"
@@ -111,6 +112,7 @@
       "provider": "tiktok",
       "authUrlTemplate": "https://ads.tiktok.com/marketing_api/auth?app_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}&rid=vb4nmczfrgo",
       "accessTokenUrlTemplate": "https://open-api.tiktok.com/oauth/access_token/?client_key={{ client_key }}&client_secret={{ client_secret }}&code={{ code }}&grant_type=authorization_code",
+      "accessTokenBody": "",
       "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
     }
 }

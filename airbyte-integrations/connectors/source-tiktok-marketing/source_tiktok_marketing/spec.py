@@ -18,8 +18,8 @@ class OauthCredSpec(BaseModel):
         title = "OAuth2.0"
 
     auth_type: str = Field(default="oauth2.0", const=True, order=0)
-    app_id: str = Field(title="App ID", description="The Developer Application App ID.", airbyte_secret=True)
-    secret: str = Field(title="Secret", description="The Developer Application Secret.", airbyte_secret=True)
+    client_id: str = Field(title="Client ID", description="The Developer Application App ID.", airbyte_secret=True)
+    client_secret: str = Field(title="Client Secret", description="The Developer Application Secret.", airbyte_secret=True)
     access_token: str = Field(title="Access Token", description="Long-term Authorized Access Token.", airbyte_secret=True)
 
 

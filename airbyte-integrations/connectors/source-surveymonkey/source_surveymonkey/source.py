@@ -59,7 +59,7 @@ class SourceSurveymonkey(AbstractSource):
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
-        token = config["access_token"]
+        token = config["credentials"]["access_token"]
         return TokenAuthenticator(token=token)
 
     @classmethod

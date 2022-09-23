@@ -64,13 +64,13 @@ class SourceTiktokMarketing(AbstractSource):
         if credentials:
             # used for new config format
             access_token = credentials["access_token"]
-            secret = credentials.get("secret")
-            app_id = int(credentials.get("app_id", 0))
+            client_secret = credentials.get("client_secret")
+            client_id = int(credentials.get("client_id", 0))
             advertiser_id = int(credentials.get("advertiser_id", 0))
         else:
             access_token = config["access_token"]
-            secret = config.get("environment", {}).get("secret")
-            app_id = int(config.get("environment", {}).get("app_id", 0))
+            client_secret = config.get("environment", {}).get("client_secret")
+            client_id = int(config.get("environment", {}).get("client_id", 0))
             advertiser_id = int(config.get("environment", {}).get("advertiser_id", 0))
 
         return {

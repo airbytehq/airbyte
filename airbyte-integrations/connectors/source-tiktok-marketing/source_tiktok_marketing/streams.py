@@ -226,16 +226,16 @@ class AdvertiserIds(TiktokStream):
     primary_key = "advertiser_id"
     use_cache = True  # it is used in all streams
 
-    def __init__(self, app_id: int, secret: str, access_token: str, **kwargs):
+    def __init__(self, client_id: int, client_secret: str, access_token: str, **kwargs):
         super().__init__(advertiser_id=0, authenticator=None)
 
         # for Production env
-        self._secret = secret
-        self._app_id = app_id
+        self._client_secret = client_secret
+        self._client_id = client_id
         self._access_token = access_token
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {"access_token": self._access_token, "secret": self._secret, "app_id": self._app_id}
+        return {"access_token": self._access_token, "secret": self._client_secret, "app_id": self._client_id}
 
     def path(self, *args, **kwargs) -> str:
         return "oauth2/advertiser/get/"

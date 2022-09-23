@@ -119,7 +119,7 @@ class SourceGoogleSearchConsole(AbstractSource):
 
     @staticmethod
     def get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        authorization = config.get("authorization", {})
+        credentials = config.get("credentials", {})
 
         stream_kwargs = {
             "site_urls": config.get("site_urls"),
@@ -127,17 +127,17 @@ class SourceGoogleSearchConsole(AbstractSource):
             "end_date": config.get("end_date") or pendulum.now().to_date_string(),
         }
 
-        auth_type = authorization.get("auth_type")
+        auth_type = credentials.get("auth_type")
         if auth_type == "Client":
             stream_kwargs["authenticator"] = Oauth2Authenticator(
                 token_refresh_endpoint="https://oauth2.googleapis.com/token",
-                client_secret=authorization.get("client_secret"),
-                client_id=authorization.get("client_id"),
-                refresh_token=authorization.get("refresh_token"),
+                client_secret=credentials.get("client_secret"),
+                client_id=credentials.get("client_id"),
+                refresh_token=credentials.get("refresh_token"),
             )
         elif auth_type == "Service":
             stream_kwargs["authenticator"] = ServiceAccountAuthenticator(
-                service_account_info=json.loads(authorization.get("service_account_info")), email=authorization.get("email")
+                service_account_info=json.loads(credentials.get("service_account_info")), email=credentials.get("email")
             )
         else:
             raise Exception(f"Invalid auth type: {auth_type}")
