@@ -1,5 +1,44 @@
+@use "../../scss/colors";
+@use "../../scss/variables";
+
+.mainContainer {
+  padding: variables.$spacing-xl;
+  position: relative;
+  color: colors.$dark-blue;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  &.withLine {
+    border-bottom: variables.$border-thin solid colors.$grey-100;
+  }
+}
+
 .middleBlock {
   flex: 1 0 0;
   display: flex;
   justify-content: center;
+}
+
+.middleTitleBlock {
+  flex: 1 0 0;
+  display: flex;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.endBlock {
+  flex: 1 0 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.titleBlock {
+  flex: 1 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
