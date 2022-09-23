@@ -45,7 +45,8 @@ cd airbyte-integrations/connectors/source-fauna
 ```
 
 The integration tests require a secret config.json. Ping me on slack to get this file.
-Once you have this file, put it in `secrets/config.json`. After that, build the connector:
+Once you have this file, put it in `secrets/config.json`. A sample of this file can be
+found at `examples/secret_config.json`. Once the file is created, build the connector:
 ```
 docker build . -t airbyte/source-fauna:dev
 ```
@@ -97,7 +98,7 @@ From the Airbyte repository root, run:
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/fauna)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_fauna/spec.yaml` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
+See `examples/secret_config.json` for a sample config file.
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source fauna test creds`
 and place them into `secrets/config.json`.
