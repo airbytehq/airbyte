@@ -2,36 +2,39 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mysql;
-
-import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
+package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
+import io.airbyte.db.MySqlUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import java.io.IOException;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
-public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
+public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
+
+  protected static MySqlUtils.Certificate certs;
+  protected static final String PASSWORD = "Passw0rd";
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
+    addTestData(container);
+    certs = getCertificates();
+
+    var sslMode = getSslConfig();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
             .put("method", "STANDARD")
             .build());
-
-    var sslMode = ImmutableMap.builder()
-        .put(JdbcUtils.MODE_KEY, "required")
-        .build();
-
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
@@ -42,15 +45,21 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
         .put(JdbcUtils.SSL_MODE_KEY, sslMode)
         .put("replication_method", replicationMethod)
         .build());
+  }
 
+  public abstract MySqlUtils.Certificate getCertificates() throws IOException, InterruptedException;
+
+  public abstract ImmutableMap getSslConfig();
+
+  private void addTestData(MySQLContainer container) throws Exception {
     try (final DSLContext dslContext = DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        container.getUsername(),
+        container.getPassword(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s/%s",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asText(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
+            container.getHost(),
+            container.getFirstMappedPort(),
+            container.getDatabaseName()),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
 
