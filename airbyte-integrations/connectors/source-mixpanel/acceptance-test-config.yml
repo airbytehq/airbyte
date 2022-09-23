@@ -29,6 +29,7 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
       future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
+        cohorts: ["created"]
         export: ["date"]
         funnels: ["8901755", "date"]
         revenue: ["date"]
