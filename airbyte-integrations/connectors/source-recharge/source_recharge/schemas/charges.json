@@ -244,7 +244,7 @@
       "type": ["null", "string"]
     },
     "total_weight": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "transaction_id": {
       "type": ["null", "string"]
