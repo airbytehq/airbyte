@@ -100,8 +100,7 @@ public class WebBackendConnectionsHandler {
     return Enums.convertTo(stateHandler.getState(connectionIdRequestBody).getStateType(), ConnectionStateType.class);
   }
 
-  public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) throws IOException {
 
     // passing 'false' so that deleted connections are not included
     final List<StandardSync> standardSyncs =
@@ -119,7 +118,11 @@ public class WebBackendConnectionsHandler {
 
     for (final StandardSync standardSync : standardSyncs) {
       connectionItems.add(
-          buildWebBackendConnectionListItem(standardSync, sourceReadById, destinationReadById, latestJobByConnectionId,
+          buildWebBackendConnectionListItem(
+              standardSync,
+              sourceReadById,
+              destinationReadById,
+              latestJobByConnectionId,
               runningJobByConnectionId));
     }
 

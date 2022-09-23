@@ -101,6 +101,23 @@ public class ConnectionHelpers {
         .withManual(true);
   }
 
+  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId) {
+    final UUID connectionId = UUID.randomUUID();
+
+    return new StandardSync()
+        .withConnectionId(connectionId)
+        .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
+        .withPrefix("presto_to_hudi")
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withCatalog(generateBasicConfiguredAirbyteCatalog())
+        .withSourceId(sourceId)
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(UUID.randomUUID()))
+        .withManual(true);
+  }
+
   public static ConnectionSchedule generateBasicConnectionSchedule() {
     return new ConnectionSchedule()
         .timeUnit(ConnectionSchedule.TimeUnitEnum.fromValue(BASIC_SCHEDULE_TIME_UNIT))
