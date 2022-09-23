@@ -20,11 +20,16 @@ const BreadcrumbsItem = styled.div`
   }
 `;
 
-interface IProps {
-  data: Array<{ name: string | React.ReactNode; onClick?: () => void }>;
+export interface BreadcrumbsDataItem {
+  name: string | React.ReactNode;
+  onClick?: () => void;
 }
 
-const Breadcrumbs: React.FC<IProps> = ({ data }) => {
+interface BreadcrumbsProps {
+  data: BreadcrumbsDataItem[];
+}
+
+export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ data }) => {
   const lastIndex = data.length - 1;
 
   return (
@@ -42,5 +47,3 @@ const Breadcrumbs: React.FC<IProps> = ({ data }) => {
     </BreadcrumbsContainer>
   );
 };
-
-export default Breadcrumbs;
