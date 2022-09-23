@@ -209,9 +209,10 @@ class IncrementalNetsuiteStream(NetsuiteStream):
     ) -> MutableMapping[str, Any]:
         params = {**(next_page_token or {})}
         if stream_slice:
-            params.update(
-                **{"q": f'{self.cursor_field} AFTER "{stream_slice["start"]}" AND {self.cursor_field} BEFORE "{stream_slice["end"]}"'}
-            )
+            start = stream_slice["start"].strftime(self.input_datetime_format)
+            end = stream_slice["end"].strftime(self.input_datetime_format)
+            params.update(**{"q": f'{self.cursor_field} AFTER "{start}" AND {self.cursor_field} BEFORE "{end}"'})
+            self.logger.debug(f"******************************** params: {params}")
         return params
 
     def stream_slices(
@@ -230,12 +231,7 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         else:
             while start <= date.today():
                 next_day = start + timedelta(days=self.window_in_days)
-                slices.append(
-                    {
-                        "start": start.strftime(self.input_datetime_format),
-                        "end": next_day.strftime(self.input_datetime_format),
-                    }
-                )
+                slices.append({"start": start, "end": next_day})
                 start = next_day
         return slices
 
