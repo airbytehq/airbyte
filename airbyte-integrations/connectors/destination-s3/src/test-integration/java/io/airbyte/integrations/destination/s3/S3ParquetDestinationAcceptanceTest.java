@@ -64,6 +64,7 @@ public class S3ParquetDestinationAcceptanceTest extends S3AvroParquetDestination
           .build()) {
         final ObjectReader jsonReader = MAPPER.reader();
         GenericData.Record record;
+
         while ((record = parquetReader.read()) != null) {
           final byte[] jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record);
           JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
