@@ -266,7 +266,7 @@ To refresh the source schema:
 2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
 
 ## Display Connection State
-**Connection State** provides additional information about incremental syncs, such as when a stream was created or updated. 
+**Connection State** provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next syncs. 
 
 To display **Connection State**:
 1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
