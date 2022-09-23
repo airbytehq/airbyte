@@ -1,6 +1,6 @@
 # Pagination
 
-Given a page size and a pagination strategy, the `LimitPaginator` will point to pages of results for as long as its strategy returns a `next_page_token`.
+Given a page size and a pagination strategy, the `DefaultPaginator` will point to pages of results for as long as its strategy returns a `next_page_token`.
 
 Iterating over pages of result is different from iterating over stream slices.
 Stream slices have semantic value, for instance, a Datetime stream slice defines data for a specific date range. Two stream slices will have data for different date ranges.
@@ -29,7 +29,7 @@ The following paginator example will fetch 5 records per page, and specify the p
 
 ```yaml
 paginator:
-  type: "LimitPaginator"
+  type: "DefaultPaginator"
   page_size: 5
   limit_option:
     inject_into: request_parameter
@@ -56,7 +56,7 @@ The following paginator example will fetch 5 records per page, and specify the o
 
 ```yaml
 paginator:
-  type: "LimitPaginator"
+  type: "DefaultPaginator"
   page_size: 5
   limit_option:
     inject_into: request_parameter
@@ -89,7 +89,7 @@ In this example, the next page of record is defined by setting the `from` reques
 
 ```yaml
 paginator:
-  type: "LimitPaginator"
+  type: "DefaultPaginator"
   <...>
   pagination_strategy:
     type: "CursorPaginationStrategy"
@@ -111,7 +111,7 @@ Some APIs directly point to the URL of the next page to fetch. In this example, 
 
 ```yaml
 paginator:
-  type: "LimitPaginator"
+  type: "DefaultPaginator"
   <...>
   pagination_strategy:
     type: "CursorPaginationStrategy"

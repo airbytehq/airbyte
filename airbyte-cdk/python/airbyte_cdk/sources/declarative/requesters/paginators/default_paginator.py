@@ -17,7 +17,7 @@ from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class LimitPaginator(Paginator, JsonSchemaMixin):
+class DefaultPaginator(Paginator, JsonSchemaMixin):
     """
     Limit paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
 
@@ -26,7 +26,7 @@ class LimitPaginator(Paginator, JsonSchemaMixin):
         * fetches up to 10 records at a time by setting the "limit" request param to 10
         * updates the request path with  "{{ response._metadata.next }}"
           paginator:
-            type: "LimitPaginator"
+            type: "DefaultPaginator"
             limit_option:
               inject_into: request_parameter
               field_name: page_size
@@ -42,7 +42,7 @@ class LimitPaginator(Paginator, JsonSchemaMixin):
         * increments a record counter and set the request parameter "offset" to the value of the counter
         `
           paginator:
-            type: "LimitPaginator"
+            type: "DefaultPaginator"
             limit_option:
               inject_into: header
               field_name: page_size
@@ -59,7 +59,7 @@ class LimitPaginator(Paginator, JsonSchemaMixin):
         * increments a page counter and set the request parameter "page" to the value of the counter
         `
           paginator:
-            type: "LimitPaginator"
+            type: "DefaultPaginator"
             limit_option:
               inject_into: request_parameter
               field_name: page_size
