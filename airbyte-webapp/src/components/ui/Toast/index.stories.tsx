@@ -1,18 +1,18 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { SingletonCard } from "./SingletonCard";
+import { Toast } from "./Toast";
 
 export default {
-  title: "Ui/SingletonCard",
-  component: SingletonCard,
+  title: "UI/Toast",
+  component: Toast,
   argTypes: {
     title: { type: { name: "string", required: false } },
     text: { type: { name: "string", required: false } },
     onClose: { table: { disable: true } },
   },
-} as ComponentMeta<typeof SingletonCard>;
+} as ComponentMeta<typeof Toast>;
 
-const Template: ComponentStory<typeof SingletonCard> = (args) => <SingletonCard {...args} />;
+const Template: ComponentStory<typeof Toast> = (args) => <Toast {...args} />;
 
 export const Basic = Template.bind({});
 Basic.args = {

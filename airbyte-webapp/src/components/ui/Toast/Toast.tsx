@@ -5,9 +5,9 @@ import styled, { keyframes } from "styled-components";
 
 import { Button, H5 } from "components";
 
-import ErrorSign from "./components/ErrorSign";
+import ErrorSign from "./ErrorSign";
 
-interface SingletonCardProps {
+interface ToastProps {
   title: string | React.ReactNode;
   text?: string | React.ReactNode;
   hasError?: boolean;
@@ -69,7 +69,7 @@ const CloseButton = styled(Button)`
   margin-left: 10px;
 `;
 
-export const SingletonCard: React.FC<SingletonCardProps> = (props) => (
+export const Toast: React.FC<ToastProps> = (props) => (
   <Singleton hasError={props.hasError}>
     {props.hasError && <ErrorSign />}
     <div>
@@ -84,4 +84,4 @@ export const SingletonCard: React.FC<SingletonCardProps> = (props) => (
   </Singleton>
 );
 
-export default SingletonCard;
+export default Toast;
