@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import MenuItem from "./components/MenuItem";
+import MenuItem from "./MenuItem";
 
 export interface SideMenuItem {
   path: string;
@@ -39,7 +39,7 @@ const CategoryName = styled.div`
   text-transform: uppercase;
 `;
 
-const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }) => {
+export const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }) => {
   return (
     <Content>
       {data.map((categoryItem, index) => (
@@ -60,5 +60,3 @@ const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }) => {
     </Content>
   );
 };
-
-export default SideMenu;
