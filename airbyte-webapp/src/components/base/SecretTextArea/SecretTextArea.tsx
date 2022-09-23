@@ -12,7 +12,7 @@ interface SecretTextAreaProps
   extends Omit<TextInputContainerProps, "onFocus" | "onBlur">,
     React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
-export const SecretTextArea: React.VFC<SecretTextAreaProps> = ({
+export const SecretTextArea: React.FC<SecretTextAreaProps> = ({
   name,
   disabled,
   value,
