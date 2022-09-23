@@ -83,9 +83,9 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
     page_token_option: RequestOption
     pagination_strategy: PaginationStrategy
     config: Config
-    url_base: Union[InterpolatedString, str]
     options: InitVar[Mapping[str, Any]]
     decoder: Decoder = JsonDecoder(options={})
+    url_base: Union[InterpolatedString, str] = ""
     _token: Optional[Any] = field(init=False, repr=False, default=None)
 
     def __post_init__(self, options: Mapping[str, Any]):

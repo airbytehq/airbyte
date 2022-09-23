@@ -222,5 +222,5 @@ def test_reset():
     url_base = "https://airbyte.io"
     config = {}
     strategy = MagicMock()
-    DefaultPaginator(limit_request_option, page_token_request_option, strategy, config, url_base, options={}).reset()
+    DefaultPaginator(limit_request_option, page_token_request_option, strategy, config, url_base=url_base, options={}).reset()
     assert strategy.reset.called

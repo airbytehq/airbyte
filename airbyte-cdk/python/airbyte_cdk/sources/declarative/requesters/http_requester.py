@@ -37,11 +37,11 @@ class HttpRequester(Requester, JsonSchemaMixin):
     """
 
     name: str
-    url_base: Union[InterpolatedString, str]
     path: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
     http_method: Union[str, HttpMethod] = HttpMethod.GET
+    url_base: Optional[Union[InterpolatedString, str]] = None
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
     authenticator: DeclarativeAuthenticator = None
     error_handler: Optional[ErrorHandler] = None
