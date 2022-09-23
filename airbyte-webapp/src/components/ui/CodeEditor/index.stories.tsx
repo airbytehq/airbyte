@@ -10,12 +10,14 @@ export default {
 
 const Template: ComponentStory<typeof CodeEditor> = (args) => <CodeEditor {...args} />;
 
-const code = `
-if __name__ == "__main__":
-  print("Hello, Airbyte!")
-`;
+const code = `{
+  "name": "Airbyte",
+  "about": "Open-source data integration for the modern data stack",
+  "url": "https://airbyte.com",
+}`;
 
-export const Primary = Template.bind({
+export const Primary = Template.bind({});
+Primary.args = {
   code,
-  language: "python",
-});
+  language: "json",
+};
