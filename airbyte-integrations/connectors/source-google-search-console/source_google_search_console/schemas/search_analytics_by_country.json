@@ -23,10 +23,10 @@
       "type": ["null", "integer"]
     },
     "ctr": {
-      "type": ["null", "number"],
+      "type": ["null", "number"]
     },
     "position": {
-      "type": ["null", "number"],
+      "type": ["null", "number"]
     }
   }
 }
