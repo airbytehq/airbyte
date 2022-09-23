@@ -95,6 +95,7 @@ class MixpanelStream(HttpStream, ABC):
         if self.reqs_per_hour_limit > 0:
             # we skip this block, if self.reqs_per_hour_limit = 0,
             # in all other cases wait for X seconds to match API limitations
+            self.logger.info("Sleep for %s seconds to match API limitations", 3600 / self.reqs_per_hour_limit)
             time.sleep(3600 / self.reqs_per_hour_limit)
 
     def backoff_time(self, response: requests.Response) -> float:
