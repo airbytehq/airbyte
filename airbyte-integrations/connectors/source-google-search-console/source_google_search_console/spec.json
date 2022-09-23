@@ -89,6 +89,7 @@
               "auth_type": {
                 "type": "string",
                 "const": "Service",
+                "default": "Service",
                 "order": 0
               },
               "service_account_info": {
