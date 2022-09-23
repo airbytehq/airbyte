@@ -23,14 +23,12 @@ def transform_custom_fields(record: Dict[str, Any]) -> Dict[str, Any]:
             ...
         }
     """
+    custom_fields = []
 
-    custom_fields = [key for key in record.keys() if key.startswith('cf_')]
-    new_custom_fields = []
+    for key, value in record.items():
+        if key.startswith('cf_'):
+            custom_fields.append({"name": key, "value": value})
 
-    if custom_fields:
-        for custom_field in custom_fields:
-            new_custom_fields.append({"name": custom_field, "value": record[custom_field]})
-
-        record['custom_fields'] = new_custom_fields
+    record['custom_fields'] = custom_fields
 
     yield record
