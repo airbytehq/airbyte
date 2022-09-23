@@ -110,8 +110,8 @@
     },
     "authSpecification": {
       "provider": "tiktok",
-      "authUrlTemplate": "https://ads.tiktok.com/marketing_api/auth?app_id={{ urlencode client_id }}&redirect_uri={{ urlencode redirect_uri }}&response_type=code&state={{ urlencode state }}&rid=vb4nmczfrgo",
-      "accessTokenUrlTemplate": "https://open-api.tiktok.com/oauth/access_token/?client_key={{ urlencode client_id }}&client_secret={{ urlencode client_secret }}&code={{ urlencode code }}&grant_type=authorization_code",
+      "authUrlTemplate": "https://ads.tiktok.com/marketing_api/auth?app_id={{ urlencode client_id }}&redirect_uri={{ urlencode redirect_uri }}&response_type=code&state={{ urlencode state }}",
+      "accessTokenUrlTemplate": "https://ads.tiktok.com/open_api/v1.2/oauth2/access_token/?app_id={{ urlencode client_id }}&secret={{ urlencode client_secret }}&auth_code={{ urlencode code }}&grant_type=authorization_code",
       "accessTokenBody": "",
       "accessTokenResponseMap": "{\"access_token\": \"/data/access_token\"}"
     }
