@@ -273,7 +273,7 @@ To display **Connection State**:
 2. In the Workspace Settings sidebar, click **General Settings**.
 3. Toggle **Enable advanced mode** and click **Save changes**.
 4. Click **Connections** in the navigation bar and then click the connection in the list you want to display.
-5. Click **Settings**. 
+5. Click the **Settings** tab on the Connection page. 
     The **Connection State** displays. 
 
 ## Buy credits
