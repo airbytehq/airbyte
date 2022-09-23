@@ -24,11 +24,9 @@
     },
     "ctr": {
       "type": ["null", "number"],
-      "multipleOf": 1e-25
     },
     "position": {
       "type": ["null", "number"],
-      "multipleOf": 1e-25
     }
   }
 }
