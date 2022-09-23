@@ -77,7 +77,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
             }
             if (!shouldRun) {
               LOGGER.info("Skipping normalization because there are no records to normalize.");
-              break;
+              continue;
             }
           }
 
