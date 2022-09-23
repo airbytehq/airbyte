@@ -25,13 +25,11 @@ class NotionAuthenticator:
             auth_type = credentials.get("auth_type")
             if auth_type == "OAuth2.0":
                 return TokenAuthenticator(credentials.get("access_token"))
-            else:
-                return TokenAuthenticator(self.config.get("access_token"))
- #           return TokenAuthenticator(credentials.get("token"))
+            return TokenAuthenticator(credentials.get("token"))
 
         # support the old config
-#       if "access_token" in self.config:
-#            return TokenAuthenticator(self.config.get("access_token"))
+        if "access_token" in self.config:
+            return TokenAuthenticator(self.config.get("access_token"))
 
 
 class SourceNotion(AbstractSource):
