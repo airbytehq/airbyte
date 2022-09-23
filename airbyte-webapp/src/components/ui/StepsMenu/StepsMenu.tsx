@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import Step from "./components/Step";
+import Step from "./Step";
 
 export interface StepMenuItem {
   id: string;
@@ -25,7 +25,7 @@ const Content = styled.div`
   font-family: ${({ theme }) => theme.regularFont};
 `;
 
-const StepsMenu: React.FC<IProps> = ({ data, onSelect, activeStep, lightMode }) => {
+export const StepsMenu: React.FC<IProps> = ({ data, onSelect, activeStep, lightMode }) => {
   return (
     <Content>
       {data.map((item, key) => (
@@ -43,5 +43,3 @@ const StepsMenu: React.FC<IProps> = ({ data, onSelect, activeStep, lightMode }) 
     </Content>
   );
 };
-
-export default StepsMenu;
