@@ -1,5 +1,7 @@
+@use "../../../scss/variables";
+
 .title {
-  margin: 21px 0;
+  margin: variables.$spacing-xl 0;
 }
 
 .videos {
@@ -8,7 +10,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 20px 0 50px;
+  margin: variables.$spacing-xl 0 50px;
   background: url("./images/video-background.svg") no-repeat;
   padding: 0 27px;
 }

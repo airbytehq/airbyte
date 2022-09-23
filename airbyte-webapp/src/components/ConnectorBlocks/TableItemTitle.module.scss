@@ -1,4 +1,5 @@
 @use "../../scss/colors";
+@use "../../scss/variables";
 
 .content,
 .entityInfo {
@@ -18,9 +19,9 @@
 
 .entityInfo {
   justify-content: left;
-  padding-top: 15px;
+  padding-top: variables.$spacing-lg;
   padding-bottom: 39px;
-  gap: 15px;
+  gap: variables.$spacing-lg;
 }
 
 .entityIcon {
