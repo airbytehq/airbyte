@@ -12,7 +12,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.scheduler.client.EventRunner;
+import io.airbyte.server.scheduler.EventRunner;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
