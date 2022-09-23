@@ -135,10 +135,20 @@ class TestBaseStream:
                 {
                     "json": [
                         {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
-                        {"body": json.dumps({"error": {
-                            "message": "Request aborted. This could happen if a dependent request failed or the entire request timed out.",
-                            "type": "FacebookApiException", "code": 960, "fbtrace_id": "AWuyQlmgct0a_n64b-D1AFQ"
-                        }}), "code": 500, "headers": {}},
+                        {
+                            "body": json.dumps(
+                                {
+                                    "error": {
+                                        "message": "Request aborted. This could happen if a dependent request failed or the entire request timed out.",
+                                        "type": "FacebookApiException",
+                                        "code": 960,
+                                        "fbtrace_id": "AWuyQlmgct0a_n64b-D1AFQ",
+                                    }
+                                }
+                            ),
+                            "code": 500,
+                            "headers": {},
+                        },
                         {"body": json.dumps({"name": "creative 3"}), "code": 200, "headers": {}},
                     ],
                 },
@@ -146,7 +156,7 @@ class TestBaseStream:
                     "json": [
                         {"body": json.dumps({"name": "creative 2"}), "code": 200, "headers": {}},
                     ],
-                }
+                },
             ]
         )
 
