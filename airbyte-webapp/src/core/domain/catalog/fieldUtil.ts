@@ -1,13 +1,12 @@
 import { JSONSchema7Definition } from "json-schema";
 
-import { NamespaceDefinitionType } from "../../request/AirbyteClient";
 import { SyncSchemaField } from "./models";
 
 type AirbyteJsonSchema = JSONSchema7Definition & {
   airbyte_type?: string;
 };
 
-const traverseSchemaToField = (
+export const traverseSchemaToField = (
   jsonSchema: AirbyteJsonSchema | undefined,
   key: string | undefined
 ): SyncSchemaField[] => {
@@ -46,24 +45,3 @@ const traverseJsonSchemaProperties = (
     },
   ];
 };
-
-interface NamespaceOptions {
-  namespaceDefinition:
-    | typeof NamespaceDefinitionType.source
-    | typeof NamespaceDefinitionType.destination
-    | typeof NamespaceDefinitionType.customformat;
-  namespaceFormat?: string;
-}
-
-function getDestinationNamespace(opt: NamespaceOptions) {
-  switch (opt.namespaceDefinition) {
-    case NamespaceDefinitionType.source:
-      return "<source schema>";
-    case NamespaceDefinitionType.destination:
-      return "<destination schema>";
-    case NamespaceDefinitionType.customformat:
-      return opt.namespaceFormat;
-  }
-}
-
-export { getDestinationNamespace, traverseSchemaToField };
