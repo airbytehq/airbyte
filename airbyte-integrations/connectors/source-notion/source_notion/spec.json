@@ -32,8 +32,8 @@
             "properties": {
               "auth_type": {
                 "type": "string",
-                "const": "OAuth2.0",
-                "default": "OAuth2.0"
+                "default": "OAuth2.0",
+                "const": "OAuth2.0"
               },
               "client_id": {
                 "title": "Client ID",
