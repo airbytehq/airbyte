@@ -3,7 +3,7 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 import { SecretTextArea } from "./SecretTextArea";
 
 export default {
-  title: "Ui/SecretTextArea",
+  title: "UI/SecretTextArea",
   component: SecretTextArea,
   argTypes: {
     value: { control: { type: { name: "text", required: false } } },

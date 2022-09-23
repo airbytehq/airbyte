@@ -1,10 +1,10 @@
 import { FieldArray, useField } from "formik";
 import React from "react";
 
-import { SecretTextArea } from "components/base/SecretTextArea";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
+import { SecretTextArea } from "components/ui/SecretTextArea";
 import { TagInput } from "components/ui/TagInput";
 import { TextArea } from "components/ui/TextArea";
 
