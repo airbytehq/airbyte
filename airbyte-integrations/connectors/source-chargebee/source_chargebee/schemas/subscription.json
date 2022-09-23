@@ -678,7 +678,7 @@
             "type": ["null", "string"]
           },
           "value": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
