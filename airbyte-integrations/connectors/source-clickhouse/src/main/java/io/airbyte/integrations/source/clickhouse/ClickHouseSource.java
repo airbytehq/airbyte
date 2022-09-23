@@ -91,8 +91,8 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     boolean isAdditionalParamsExists = config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty();
-    // assume ssl if not explicitly mentioned.
     List<String> params = new ArrayList<>();
+    // assume ssl if not explicitly mentioned.
     if (isSsl) {
       params.add(SSL_MODE);
     }
