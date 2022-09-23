@@ -185,7 +185,7 @@ it("apply func at", () => {
 
     sch.properties = sch.properties ?? {};
 
-    sch.properties["marked"] = {
+    sch.properties.marked = {
       type: "string",
     };
 

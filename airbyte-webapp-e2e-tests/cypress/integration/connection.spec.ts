@@ -1,4 +1,4 @@
-import { deleteEntity, submitButtonClick } from "commands/common";
+import { appendRandomString, deleteEntity, submitButtonClick } from "commands/common";
 import { createTestConnection } from "commands/connection";
 import { deleteDestination } from "commands/destination";
 import { deleteSource } from "commands/source";
@@ -15,115 +15,126 @@ import {
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
 
-// describe("Connection main actions", () => {
-//   beforeEach(() => {
-//     initialSetupCompleted();
-//   });
+describe("Connection main actions", () => {
+  beforeEach(() => {
+    initialSetupCompleted();
+  });
 
-//   it("Create new connection", () => {
-//     createTestConnection("Test connection source cypress", "Test connection destination cypress");
+  it("Create new connection", () => {
+    const sourceName = appendRandomString("Test connection source cypress");
+    const destName = appendRandomString("Test connection destination cypress")
 
-//     cy.get("div").contains("Test connection source cypress").should("exist");
-//     cy.get("div").contains("Test connection destination cypress").should("exist");
+    createTestConnection(sourceName, destName);
 
-//     deleteSource("Test connection source cypress");
-//     deleteDestination("Test connection destination cypress");
-//   });
+    cy.get("div").contains(sourceName).should("exist");
+    cy.get("div").contains(destName).should("exist");
 
-//   it("Update connection", () => {
-//     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
 
-//     createTestConnection("Test update connection source cypress", "Test update connection destination cypress");
+  it("Update connection", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
-//     goToSourcePage();
-//     openSourceDestinationFromGrid("Test update connection source cypress");
-//     openSourceDestinationFromGrid("Test update connection destination cypress");
+    const sourceName = appendRandomString("Test update connection source cypress");
+    const destName = appendRandomString("Test update connection destination cypress");
 
-//     goToReplicationTab();
+    createTestConnection(sourceName, destName);
 
-//     selectSchedule("Every hour");
-//     fillOutDestinationPrefix("auto_test");
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
 
-//     submitButtonClick();
+    goToReplicationTab();
 
-//     cy.wait("@updateConnection").then((interception) => {
-//       assert.isNotNull(interception.response?.statusCode, "200");
-//     });
+    selectSchedule("Every hour");
+    fillOutDestinationPrefix("auto_test");
 
-//     checkSuccessResult();
+    submitButtonClick();
 
-//     deleteSource("Test update connection source cypress");
-//     deleteDestination("Test update connection destination cypress");
-//   });
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+    });
 
-//   it("Update connection (pokeAPI)", () => {
-//     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+    checkSuccessResult();
 
-//     createTestConnection(
-//       "Test update connection PokeAPI source cypress",
-//       "Test update connection Local JSON destination cypress"
-//     );
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
 
-//     goToSourcePage();
-//     openSourceDestinationFromGrid("Test update connection PokeAPI source cypress");
-//     openSourceDestinationFromGrid("Test update connection Local JSON destination cypress");
+  it("Update connection (pokeAPI)", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
-//     goToReplicationTab();
+    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
+    const destName = appendRandomString("Test update connection Local JSON destination cypress")
 
-//     selectSchedule("Every hour");
-//     fillOutDestinationPrefix("auto_test");
-//     setupDestinationNamespaceCustomFormat("_test");
-//     selectFullAppendSyncMode();
+    createTestConnection(
+      sourceName,
+      destName
+    );
 
-//     submitButtonClick();
-//     confirmStreamConfigurationChangedPopup();
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid("Test update connection Local JSON destination cypress");
 
-//     cy.wait("@updateConnection").then((interception) => {
-//       assert.isNotNull(interception.response?.statusCode, "200");
-//       expect(interception.request.method).to.eq("POST");
-//       expect(interception.request).property("body").to.contain({
-//         name: "Test update connection PokeAPI source cypress <> Test update connection Local JSON destination cypressConnection name",
-//         prefix: "auto_test",
-//         namespaceDefinition: "customformat",
-//         namespaceFormat: "${SOURCE_NAMESPACE}_test",
-//         status: "active",
-//       });
-//       expect(interception.request.body.scheduleData.basicSchedule).to.contain({
-//         units: 1,
-//         timeUnit: "hours",
-//       });
+    goToReplicationTab();
 
-//       const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+    selectSchedule("Every hour");
+    fillOutDestinationPrefix("auto_test");
+    setupDestinationNamespaceCustomFormat("_test");
+    selectFullAppendSyncMode();
 
-//       expect(streamToUpdate.config).to.contain({
-//         aliasName: "pokemon",
-//         destinationSyncMode: "append",
-//         selected: true,
-//       });
+    submitButtonClick();
+    confirmStreamConfigurationChangedPopup();
 
-//       expect(streamToUpdate.stream).to.contain({
-//         name: "pokemon",
-//       });
-//       expect(streamToUpdate.stream.supportedSyncModes).to.contain("full_refresh");
-//     });
-//     checkSuccessResult();
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+      expect(interception.request.method).to.eq("POST");
+      expect(interception.request).property("body").to.contain({
+        name: sourceName + " <> " + destName + "Connection name",
+        prefix: "auto_test",
+        namespaceDefinition: "customformat",
+        namespaceFormat: "${SOURCE_NAMESPACE}_test",
+        status: "active",
+      });
+      expect(interception.request.body.scheduleData.basicSchedule).to.contain({
+        units: 1,
+        timeUnit: "hours",
+      });
 
-//     deleteSource("Test update connection PokeAPI source cypress");
-//     deleteDestination("Test update connection Local JSON destination cypress");
-//   });
+      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
 
-//   it("Delete connection", () => {
-//     createTestConnection("Test delete connection source cypress", "Test delete connection destination cypress");
+      expect(streamToUpdate.config).to.contain({
+        aliasName: "pokemon",
+        destinationSyncMode: "append",
+        selected: true,
+      });
 
-//     goToSourcePage();
-//     openSourceDestinationFromGrid("Test delete connection source cypress");
-//     openSourceDestinationFromGrid("Test delete connection destination cypress");
+      expect(streamToUpdate.stream).to.contain({
+        name: "pokemon",
+      });
+      expect(streamToUpdate.stream.supportedSyncModes).to.contain("full_refresh");
+    });
+    checkSuccessResult();
 
-//     goToSettingsPage();
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
 
-//     deleteEntity();
+  it("Delete connection", () => {
+    const sourceName = "Test delete connection source cypress";
+    const destName = "Test delete connection destination cypress";
+    createTestConnection(sourceName, destName);
 
-//     deleteSource("Test delete connection source cypress");
-//     deleteDestination("Test delete connection destination cypress");
-//   });
-// });
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToSettingsPage();
+
+    deleteEntity();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
+});
