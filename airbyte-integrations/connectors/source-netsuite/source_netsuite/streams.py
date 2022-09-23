@@ -42,7 +42,7 @@ class NetsuiteStream(HttpStream, ABC):
     primary_key = "id"
     raise_on_http_errors = True
     output_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
-    input_datetime_format = "%m/%d/%Y"
+    input_datetime_format = None
 
     @property
     def name(self) -> str:
@@ -233,6 +233,52 @@ class IncrementalNetsuiteStream(NetsuiteStream):
                 slices.append({"start": start, "end": next_day})
                 start = next_day
         return slices
+
+    def read_records(
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs,
+    ) -> Iterable[Mapping[str, Any]]:
+        if self.input_datetime_format is None:
+            self._determine_input_datetime_format(stream_state=stream_state, stream_slice=stream_slice)
+        yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
+
+    def _determine_input_datetime_format(
+        self,
+        stream_slice: Mapping[str, Any],
+        stream_state: Mapping[str, Any],
+    ) -> Iterable[Mapping[str, Any]]:
+        self.input_datetime_format = "%m/%d/%Y"
+
+        stream_state = stream_state or {}
+        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice)
+        request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice)
+        request = self._create_prepared_request(
+            path=self.path(stream_state=stream_state, stream_slice=stream_slice),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=dict(request_params, **{"limit": 1}),
+            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice),
+            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice),
+        )
+        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice)
+
+        self.logger.debug(
+            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
+        )
+        response: requests.Response = self._session.send(request, **request_kwargs)
+        self.logger.debug(
+            "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+        )
+
+        if response.status_code == 400:
+            message = response.json().get("o:errorDetails")
+            if isinstance(message, list):
+                error_code = message[0].get("o:errorCode")
+                detail_message = message[0].get("detail")
+                if 'Unparseable date:' in detail_message and "INVALID_PARAMETER" == error_code:
+                    self.logger.debug('input date format changing')
+                    self.input_datetime_format = "%Y-%m-%d"
 
 
 class CustomIncrementalNetsuiteStream(IncrementalNetsuiteStream):
