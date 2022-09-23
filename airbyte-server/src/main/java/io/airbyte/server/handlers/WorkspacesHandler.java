@@ -269,7 +269,7 @@ public class WorkspacesHandler {
     if (workspacePatch.getSecurityUpdates() != null) {
       workspace.setSecurityUpdates(workspacePatch.getSecurityUpdates());
     }
-    if (workspacePatch.getEmail() != null) {
+    if (!Strings.isNullOrEmpty(workspacePatch.getEmail())) {
       workspace.setEmail(workspacePatch.getEmail());
     }
     if (workspacePatch.getInitialSetupComplete() != null) {
