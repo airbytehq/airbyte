@@ -20,6 +20,7 @@ This section contains additional information on the different components that ca
 - [Record selection](record-selector.md)
 - [Request options](request-options.md)
 - [Stream slicers](stream-slicers.md)
+- [Substreams](substreams.md)
 
 ## Tutorial
 
