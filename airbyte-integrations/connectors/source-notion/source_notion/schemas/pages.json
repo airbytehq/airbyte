@@ -50,7 +50,7 @@
                   "type": {
                     "enum": ["title"]
                   },
-                  "title": { "$ref": "title.json" }
+                  "title": { "$ref": "title.json" }                  
                 }
               },
               {
@@ -71,6 +71,11 @@
                   "id": { "type": "string" },
                   "type": { "enum": ["select"] },
                   "select": { "$ref": "options.json" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
                 }
               },
               {
