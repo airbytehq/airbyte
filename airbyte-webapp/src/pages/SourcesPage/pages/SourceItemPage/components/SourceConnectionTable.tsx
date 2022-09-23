@@ -11,6 +11,7 @@ import { useDestinationDefinitionList } from "services/connector/DestinationDefi
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
 import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
+import styles from "./SourceConnectionTable.module.scss";
 
 interface IProps {
   connections: WebBackendConnectionRead[];
@@ -38,7 +39,11 @@ const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
 
   const clickRow = (source: ITableDataItem) => navigate(`../../../${RoutePaths.Connections}/${source.connectionId}`);
 
-  return <ConnectionTable data={data} onClickRow={clickRow} entity="source" onSync={onSync} />;
+  return (
+    <div className={styles.content}>
+      <ConnectionTable data={data} onClickRow={clickRow} entity="source" onSync={onSync} />
+    </div>
+  );
 };
 
 export default SourceConnectionTable;
