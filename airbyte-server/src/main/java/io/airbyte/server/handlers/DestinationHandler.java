@@ -310,7 +310,7 @@ public class DestinationHandler {
         .connectionConfiguration(destinationConnection.getConfiguration())
         .name(destinationConnection.getName())
         .destinationName(standardDestinationDefinition.getName())
-        .icon(standardDestinationDefinition.getIcon());
+        .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
   }
 
 }

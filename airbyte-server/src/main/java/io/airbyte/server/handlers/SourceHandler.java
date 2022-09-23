@@ -319,7 +319,7 @@ public class SourceHandler {
         .sourceDefinitionId(sourceConnection.getSourceDefinitionId())
         .connectionConfiguration(sourceConnection.getConfiguration())
         .name(sourceConnection.getName())
-        .icon(standardSourceDefinition.getIcon());
+        .icon(SourceDefinitionsHandler.loadIcon(standardSourceDefinition.getIcon()));
   }
 
 }
