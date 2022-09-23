@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.db.jdbc.JdbcUtils.JDBC_URL_KEY;
+import static io.airbyte.integrations.source.clickhouse.ClickHouseSource.SSL_MODE;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,6 +22,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -118,23 +121,58 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   @Test
-  public void testEmptyExtraParams() {
+  public void testEmptyExtraParamsWithSsl() {
     final String extraParam = "";
-    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam, true);
     final JsonNode jdbcConfig = new ClickHouseSource().toDatabaseConfig(config);
-    assertNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+    JsonNode jdbcUrlNode = jdbcConfig.get(JDBC_URL_KEY);
+    assertNotNull(jdbcUrlNode);
+    String actualJdbcUrl = jdbcUrlNode.asText();
+    assertTrue(actualJdbcUrl.endsWith("?" + SSL_MODE));
+  }
+
+  @Test
+  public void testEmptyExtraParamsWithoutSsl() {
+    final String extraParam = "";
+    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam, false);
+    final JsonNode jdbcConfig = new ClickHouseSource().toDatabaseConfig(config);
+    JsonNode jdbcUrlNode = jdbcConfig.get(JDBC_URL_KEY);
+    assertNotNull(jdbcUrlNode);
+    String actualJdbcUrl = jdbcUrlNode.asText();
+    assertTrue(actualJdbcUrl.endsWith(config.get("database").asText()));
   }
 
   @Test
   public void testExtraParamsWithSsl() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
-    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam, true);
     final JsonNode jdbcConfig = new ClickHouseSource().toDatabaseConfig(config);
-    assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
-    assertTrue(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText().endsWith(extraParam));
+    JsonNode jdbcUrlNode = jdbcConfig.get(JDBC_URL_KEY);
+    assertNotNull(jdbcUrlNode);
+    String actualJdbcUrl = jdbcUrlNode.asText();
+    assertTrue(actualJdbcUrl.endsWith(getFullExpectedValue(extraParam, SSL_MODE)));
   }
 
-  private JsonNode buildConfigWithExtraJdbcParameters(String extraParam) {
+  @Test
+  public void testExtraParamsWithoutSsl() {
+    final String extraParam = "key1=value1&key2=value2&key3=value3";
+    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam, false);
+    final JsonNode jdbcConfig = new ClickHouseSource().toDatabaseConfig(config);
+    JsonNode jdbcUrlNode = jdbcConfig.get(JDBC_URL_KEY);
+    assertNotNull(jdbcUrlNode);
+    String actualJdbcUrl = jdbcUrlNode.asText();
+    assertTrue(actualJdbcUrl.endsWith("?" + extraParam));
+  }
+
+  //  "?" + extraParam
+//  "?" + SSL_MODE
+
+  private String getFullExpectedValue(String extraParam, String sslMode) {
+    StringBuilder expected = new StringBuilder();
+    return expected.append("?").append(sslMode).append("&").append(extraParam).toString();
+  }
+
+  private JsonNode buildConfigWithExtraJdbcParameters(String extraParam, boolean isSsl) {
 
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
             "host", "localhost",
@@ -143,7 +181,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
             "username", "username",
             "password", "verysecure",
             "jdbc_url_params", extraParam,
-            "ssl", false));
+            "ssl", isSsl));
   }
 
 }
