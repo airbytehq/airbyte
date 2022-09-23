@@ -164,9 +164,6 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     assertTrue(actualJdbcUrl.endsWith("?" + extraParam));
   }
 
-  //  "?" + extraParam
-//  "?" + SSL_MODE
-
   private String getFullExpectedValue(String extraParam, String sslMode) {
     StringBuilder expected = new StringBuilder();
     return expected.append("?").append(sslMode).append("&").append(extraParam).toString();
