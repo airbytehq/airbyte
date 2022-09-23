@@ -113,6 +113,6 @@
       "authUrlTemplate": "https://ads.tiktok.com/marketing_api/auth?app_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}&rid=vb4nmczfrgo",
       "accessTokenUrlTemplate": "https://open-api.tiktok.com/oauth/access_token/?client_key={{ client_key }}&client_secret={{ client_secret }}&code={{ code }}&grant_type=authorization_code",
       "accessTokenBody": "",
-      "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
+      "accessTokenResponseMap": "{\"access_token\": \"/data/access_token\"}"
     }
 }
