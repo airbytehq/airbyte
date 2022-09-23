@@ -21,7 +21,7 @@ interface BarChartProps {
   yLabel?: string;
 }
 
-const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel }) => {
+export const BarChart: React.FC<BarChartProps> = React.memo(({ data, legendLabels, xLabel, yLabel }) => {
   const chartLinesColor = theme.grey100;
   const chartTicksColor = theme.grey;
   const chartHoverFill = theme.grey100;
@@ -70,6 +70,4 @@ const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel 
       </BasicBarChart>
     </ResponsiveContainer>
   );
-};
-
-export default React.memo(BarChart);
+});
