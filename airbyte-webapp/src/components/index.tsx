@@ -15,5 +15,4 @@ export * from "./Modal";
 export * from "./PageTitle";
 export * from "./SimpleTableComponents";
 export * from "./StatusIcon";
-export * from "./TextWithHTML";
 export * from "./ConnectorCard";
