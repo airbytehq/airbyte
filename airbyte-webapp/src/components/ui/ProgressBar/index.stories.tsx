@@ -10,7 +10,8 @@ export default {
 
 const Template: ComponentStory<typeof ProgressBar> = (args) => <ProgressBar {...args} />;
 
-export const Primary = Template.bind({
-  text: "Text...",
-  runTime: 50,
-});
+export const Primary = Template.bind({});
+Primary.args = {
+  runTime: 10,
+  text: "This is taking a long time...",
+};
