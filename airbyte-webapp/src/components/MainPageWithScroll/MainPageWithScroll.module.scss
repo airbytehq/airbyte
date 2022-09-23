@@ -7,4 +7,5 @@
 
 .content {
   padding: variables.$spacing-lg variables.$spacing-xl variables.$spacing-page-bottom variables.$spacing-xl;
+  min-width: fit-content;
 }
