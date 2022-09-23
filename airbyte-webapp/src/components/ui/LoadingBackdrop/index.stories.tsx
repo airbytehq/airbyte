@@ -21,3 +21,6 @@ const Template: ComponentStory<typeof LoadingBackdrop> = (args) => (
   </div>
 );
 export const Primary = Template.bind({});
+Primary.args = {
+  loading: true,
+};
