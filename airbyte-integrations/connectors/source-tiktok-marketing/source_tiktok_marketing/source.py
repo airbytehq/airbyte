@@ -78,8 +78,8 @@ class SourceTiktokMarketing(AbstractSource):
             "start_date": config.get("start_date") or DEFAULT_START_DATE,
             "end_date": config.get("end_date") or DEFAULT_END_DATE,
             "advertiser_id": advertiser_id,
-            "app_id": app_id,
-            "secret": secret,
+            "client_id": client_id,
+            "client_secret": client_secret,
             "access_token": access_token,
         }
 
