@@ -34,3 +34,6 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
 
     def reset(self):
         self._offset = 0
+
+    def limit(self) -> Optional[int]:
+        return self.page_size

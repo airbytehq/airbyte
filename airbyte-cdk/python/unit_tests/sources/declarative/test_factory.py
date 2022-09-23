@@ -281,7 +281,6 @@ selector:
     condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
     type: "LimitPaginator"
-    page_size: 10
     limit_option:
       inject_into: request_parameter
       field_name: page_size
@@ -290,6 +289,7 @@ metadata_paginator:
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ response._metadata.next }}"
+      page_size: 10
     url_base: "https://api.sendgrid.com/v3/"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
@@ -477,7 +477,6 @@ def test_config_with_defaults():
         retriever:
           paginator:
             type: "LimitPaginator"
-            page_size: 10
             limit_option:
               inject_into: request_parameter
               field_name: page_size
@@ -486,6 +485,7 @@ def test_config_with_defaults():
             pagination_strategy:
               type: "CursorPagination"
               cursor_value: "{{ response._metadata.next }}"
+              page_size: 10
           requester:
             path: "/v3/marketing/lists"
             authenticator:
@@ -518,14 +518,13 @@ def test_config_with_defaults():
     assert isinstance(stream.retriever.paginator, LimitPaginator)
 
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com"
-    assert stream.retriever.paginator.page_size == 10
+    assert stream.retriever.paginator.pagination_strategy.limit() == 10
 
 
 def test_create_limit_paginator():
     content = """
       paginator:
         type: "LimitPaginator"
-        page_size: 10
         url_base: "https://airbyte.io"
         limit_option:
           inject_into: request_parameter
@@ -534,6 +533,7 @@ def test_create_limit_paginator():
           inject_into: path
         pagination_strategy:
           type: "CursorPagination"
+          page_size: 50
           cursor_value: "{{ response._metadata.next }}"
     """
     config = parser.parse(content)

@@ -331,10 +331,7 @@ def test_generate_schema():
     assert default_error_handler["properties"]["backoff_strategies"]["type"] == "array"
 
     limit_paginator = schema["definitions"]["LimitPaginator"]["allOf"][1]
-    assert {"page_size", "limit_option", "page_token_option", "pagination_strategy", "config", "url_base"}.issubset(
-        limit_paginator["required"]
-    )
-    assert limit_paginator["properties"]["page_size"]["type"] == "integer"
+    assert {"page_token_option", "pagination_strategy", "config", "url_base"}.issubset(limit_paginator["required"])
     assert limit_paginator["properties"]["limit_option"]["$ref"] == "#/definitions/RequestOption"
     assert limit_paginator["properties"]["page_token_option"]["$ref"] == "#/definitions/RequestOption"
     assert {"$ref": "#/definitions/CursorPaginationStrategy"} in limit_paginator["properties"]["pagination_strategy"]["anyOf"]

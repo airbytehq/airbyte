@@ -30,3 +30,9 @@ class PaginationStrategy(JsonSchemaMixin):
         """
         Reset the pagination's inner state
         """
+
+    @abstractmethod
+    def limit(self) -> Optional[int]:
+        """
+        :return:
+        """

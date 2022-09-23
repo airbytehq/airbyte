@@ -14,7 +14,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
 
 
 @pytest.mark.parametrize(
-    "test_name, page_token_request_option, stop_condition, expected_updated_path, expected_request_params, expected_headers, expected_body_data, expected_body_json, last_records, expected_next_page_token",
+    "test_name, page_token_request_option, stop_condition, expected_updated_path, expected_request_params, expected_headers, expected_body_data, expected_body_json, last_records, expected_next_page_token, limit",
     [
         (
             "test_limit_paginator_path",
@@ -27,6 +27,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
             {},
             [{"id": 0}, {"id": 1}],
             {"next_page_token": "https://airbyte.io/next_url"},
+            2,
         ),
         (
             "test_limit_paginator_request_param",
@@ -39,6 +40,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
             {},
             [{"id": 0}, {"id": 1}],
             {"next_page_token": "https://airbyte.io/next_url"},
+            2,
         ),
         (
             "test_limit_paginator_no_token",
@@ -51,6 +53,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
             {},
             [{"id": 0}, {"id": 1}],
             None,
+            2,
         ),
         (
             "test_limit_paginator_cursor_header",
@@ -63,6 +66,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
             {},
             [{"id": 0}, {"id": 1}],
             {"next_page_token": "https://airbyte.io/next_url"},
+            2,
         ),
         (
             "test_limit_paginator_cursor_body_data",
@@ -75,6 +79,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
             {},
             [{"id": 0}, {"id": 1}],
             {"next_page_token": "https://airbyte.io/next_url"},
+            2,
         ),
         (
             "test_limit_paginator_cursor_body_json",
@@ -87,10 +92,11 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
             {"from": "https://airbyte.io/next_url"},
             [{"id": 0}, {"id": 1}],
             {"next_page_token": "https://airbyte.io/next_url"},
+            2,
         ),
     ],
 )
-def test_limit_paginator(
+def test_limit_paginator_with_cursor(
     test_name,
     page_token_request_option,
     stop_condition,
@@ -101,6 +107,7 @@ def test_limit_paginator(
     expected_body_json,
     last_records,
     expected_next_page_token,
+    limit,
 ):
     limit_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", options={})
     cursor_value = "{{ response.next }}"
@@ -108,10 +115,14 @@ def test_limit_paginator(
     config = {}
     options = {}
     strategy = CursorPaginationStrategy(
-        cursor_value=cursor_value, stop_condition=stop_condition, decoder=JsonDecoder(options={}), config=config, options=options
+        page_size=limit,
+        cursor_value=cursor_value,
+        stop_condition=stop_condition,
+        decoder=JsonDecoder(options={}),
+        config=config,
+        options=options,
     )
     paginator = LimitPaginator(
-        page_size=2,
         limit_option=limit_request_option,
         page_token_option=page_token_request_option,
         pagination_strategy=strategy,
@@ -146,10 +157,53 @@ def test_limit_cannot_be_set_in_path():
     url_base = "https://airbyte.io"
     config = {}
     options = {}
-    strategy = CursorPaginationStrategy(cursor_value=cursor_value, config=config, options=options)
+    strategy = CursorPaginationStrategy(page_size=5, cursor_value=cursor_value, config=config, options=options)
     try:
         LimitPaginator(
-            page_size=2,
+            limit_option=limit_request_option,
+            page_token_option=page_token_request_option,
+            pagination_strategy=strategy,
+            config=config,
+            url_base=url_base,
+            options={},
+        )
+        assert False
+    except ValueError:
+        pass
+
+
+def test_limit_option_cannot_be_set_if_strategy_has_no_limit():
+    limit_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="page_size", options={})
+    page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", options={})
+    cursor_value = "{{ response.next }}"
+    url_base = "https://airbyte.io"
+    config = {}
+    options = {}
+    strategy = CursorPaginationStrategy(page_size=None, cursor_value=cursor_value, config=config, options=options)
+    try:
+        LimitPaginator(
+            limit_option=limit_request_option,
+            page_token_option=page_token_request_option,
+            pagination_strategy=strategy,
+            config=config,
+            url_base=url_base,
+            options={},
+        )
+        assert False
+    except ValueError:
+        pass
+
+
+def test_limit_option_must_be_set_if_strategy_has_limit():
+    limit_request_option = None
+    page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", options={})
+    cursor_value = "{{ response.next }}"
+    url_base = "https://airbyte.io"
+    config = {}
+    options = {}
+    strategy = CursorPaginationStrategy(page_size=5, cursor_value=cursor_value, config=config, options=options)
+    try:
+        LimitPaginator(
             limit_option=limit_request_option,
             page_token_option=page_token_request_option,
             pagination_strategy=strategy,
@@ -168,5 +222,5 @@ def test_reset():
     url_base = "https://airbyte.io"
     config = {}
     strategy = MagicMock()
-    LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base, options={}).reset()
+    LimitPaginator(limit_request_option, page_token_request_option, strategy, config, url_base, options={}).reset()
     assert strategy.reset.called
