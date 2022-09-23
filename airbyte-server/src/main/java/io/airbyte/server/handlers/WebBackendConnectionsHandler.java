@@ -43,6 +43,8 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -62,6 +64,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -99,14 +103,73 @@ public class WebBackendConnectionsHandler {
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
+    // passing 'false' so that deleted connections are not included
+    final List<StandardSync> standardSyncs =
+        configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), false);
+    final Map<UUID, SourceRead> sourceReadById =
+        getSourceReadById(standardSyncs.stream().map(StandardSync::getSourceId).toList());
+    final Map<UUID, DestinationRead> destinationReadById =
+        getDestinationReadById(standardSyncs.stream().map(StandardSync::getDestinationId).toList());
+    final Map<UUID, JobRead> latestJobByConnectionId =
+        getLatestJobByConnectionId(standardSyncs.stream().map(StandardSync::getConnectionId).toList());
+    final Map<UUID, JobRead> runningJobByConnectionId =
+        getRunningJobByConnectionId(standardSyncs.stream().map(StandardSync::getConnectionId).toList());
+
     final List<WebBackendConnectionListItem> connectionItems = Lists.newArrayList();
 
-    // passing 'false' so that deleted connections are not included
-    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), false)) {
-      connectionItems.add(buildWebBackendConnectionListItem(standardSync));
+    for (final StandardSync standardSync : standardSyncs) {
+      connectionItems.add(
+          buildWebBackendConnectionListItem(standardSync, sourceReadById, destinationReadById, latestJobByConnectionId,
+              runningJobByConnectionId));
     }
 
     return new WebBackendConnectionReadList().connections(connectionItems);
+  }
+
+  private Map<UUID, JobRead> getLatestJobByConnectionId(final List<UUID> connectionIds) throws IOException {
+    return jobHistoryHandler.getLatestSyncJobsForConnections(connectionIds).stream()
+        .filter(Optional::isPresent)
+        .collect(Collectors.toMap(
+            j -> UUID.fromString(j.get().getConfigId()),
+            Optional::get));
+  }
+
+  private Map<UUID, JobRead> getRunningJobByConnectionId(final List<UUID> connectionIds) throws IOException {
+    return jobHistoryHandler.getRunningSyncJobForConnections(connectionIds).stream()
+        .filter(Optional::isPresent)
+        .collect(Collectors.toMap(
+            j -> UUID.fromString(j.get().getConfigId()),
+            Optional::get));
+  }
+
+  private Map<UUID, SourceRead> getSourceReadById(final List<UUID> sourceIds) throws IOException {
+    final Map<UUID, StandardSourceDefinition> sourceDefinitionsById = configRepository
+        .getSourceDefinitionsFromSourceIds(sourceIds)
+        .stream()
+        .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, Function.identity()));
+
+    final List<SourceRead> sourceReads = configRepository.getSourceConnections(sourceIds).stream()
+        .map(sourceConnection -> SourceHandler.toSourceRead(
+            sourceConnection,
+            sourceDefinitionsById.get(sourceConnection.getSourceDefinitionId())))
+        .toList();
+
+    return sourceReads.stream().collect(Collectors.toMap(SourceRead::getSourceId, Function.identity()));
+  }
+
+  private Map<UUID, DestinationRead> getDestinationReadById(final List<UUID> destinationIds) throws IOException {
+    final Map<UUID, StandardDestinationDefinition> destinationDefinitionsById = configRepository
+        .getDestinationDefinitionsFromDestinationIds(destinationIds)
+        .stream()
+        .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, Function.identity()));
+
+    final List<DestinationRead> destinationReads = configRepository.getDestinationConnections(destinationIds).stream()
+        .map(destinationConnection -> DestinationHandler.toDestinationRead(
+            destinationConnection,
+            destinationDefinitionsById.get(destinationConnection.getDestinationDefinitionId())))
+        .toList();
+
+    return destinationReads.stream().collect(Collectors.toMap(DestinationRead::getDestinationId, Function.identity()));
   }
 
   private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead)
@@ -130,12 +193,17 @@ public class WebBackendConnectionsHandler {
     return webBackendConnectionRead;
   }
 
-  private WebBackendConnectionListItem buildWebBackendConnectionListItem(final StandardSync standardSync)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
-    final SourceRead source = getSourceRead(standardSync.getSourceId());
-    final DestinationRead destination = getDestinationRead(standardSync.getDestinationId());
-    final Optional<JobRead> latestSyncJob = jobHistoryHandler.getLatestSyncJob(standardSync.getConnectionId());
-    final Optional<JobRead> latestRunningSyncJob = jobHistoryHandler.getLatestRunningSyncJob(standardSync.getConnectionId());
+  private WebBackendConnectionListItem buildWebBackendConnectionListItem(
+                                                                         final StandardSync standardSync,
+                                                                         final Map<UUID, SourceRead> sourceReadById,
+                                                                         final Map<UUID, DestinationRead> destinationReadById,
+                                                                         final Map<UUID, JobRead> latestJobByConnectionId,
+                                                                         final Map<UUID, JobRead> runningJobByConnectionId) {
+
+    final SourceRead source = sourceReadById.get(standardSync.getSourceId());
+    final DestinationRead destination = destinationReadById.get(standardSync.getDestinationId());
+    final Optional<JobRead> latestSyncJob = Optional.ofNullable(latestJobByConnectionId.get(standardSync.getConnectionId()));
+    final Optional<JobRead> latestRunningSyncJob = Optional.ofNullable(runningJobByConnectionId.get(standardSync.getConnectionId()));
 
     final WebBackendConnectionListItem listItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())

@@ -794,6 +794,60 @@ public class ConfigRepository {
     return result;
   }
 
+  public List<SourceConnection> getSourceConnections(final List<UUID> sourceIds) throws IOException {
+    return database.query(ctx -> getSourceConnections(sourceIds, ctx));
+  }
+
+  public List<SourceConnection> getSourceConnections(final List<UUID> sourceIds, final DSLContext ctx) {
+    return ctx
+        .select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source), ACTOR.ID.in(sourceIds))
+        .fetchInto(SourceConnection.class);
+  }
+
+  public List<DestinationConnection> getDestinationConnections(final List<UUID> destinationIds) throws IOException {
+    return database.query(ctx -> getDestinationConnections(destinationIds, ctx));
+  }
+
+  public List<DestinationConnection> getDestinationConnections(final List<UUID> destinationIds, final DSLContext ctx) {
+    return ctx
+        .select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination), ACTOR.ID.in(destinationIds))
+        .fetchInto(DestinationConnection.class);
+  }
+
+  public List<StandardSourceDefinition> getSourceDefinitionsFromSourceIds(final List<UUID> sourceIds)
+      throws IOException {
+    return database.query(ctx -> getSourceDefinitionsFromSourceIds(sourceIds, ctx));
+  }
+
+  public List<StandardSourceDefinition> getSourceDefinitionsFromSourceIds(final List<UUID> sourceIds, final DSLContext ctx) {
+    return ctx
+        .select(ACTOR_DEFINITION.fields())
+        .from(ACTOR_DEFINITION)
+        .join(ACTOR)
+        .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
+        .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source), ACTOR.ID.in(sourceIds))
+        .fetchInto(StandardSourceDefinition.class);
+  }
+
+  public List<StandardDestinationDefinition> getDestinationDefinitionsFromDestinationIds(final List<UUID> destinationIds)
+      throws IOException {
+    return database.query(ctx -> getDestinationDefinitionsFromDestinationIds(destinationIds, ctx));
+  }
+
+  public List<StandardDestinationDefinition> getDestinationDefinitionsFromDestinationIds(final List<UUID> destinationIds, final DSLContext ctx) {
+    return ctx
+        .select(ACTOR_DEFINITION.fields())
+        .from(ACTOR_DEFINITION)
+        .join(ACTOR)
+        .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
+        .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination), ACTOR.ID.in(destinationIds))
+        .fetchInto(StandardDestinationDefinition.class);
+  }
+
   public ActorCatalog getActorCatalogById(final UUID actorCatalogId)
       throws IOException, ConfigNotFoundException {
     final Result<Record> result = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk())

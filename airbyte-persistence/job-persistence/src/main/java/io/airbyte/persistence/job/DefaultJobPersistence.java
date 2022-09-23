@@ -108,6 +108,7 @@ public class DefaultJobPersistence implements JobPersistence {
   private static final String AIRBYTE_METADATA_TABLE = "airbyte_metadata";
   public static final String ORDER_BY_JOB_TIME_ATTEMPT_TIME =
       "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC ";
+  public static final String ORDER_BY_JOB_CREATED_AT_DESC_LIMIT_1 = "ORDER BY jobs.created_at DESC LIMIT 1";
 
   private final ExceptionWrappingDatabase jobDatabase;
   private final Supplier<Instant> timeSupplier;
@@ -554,7 +555,7 @@ public class DefaultJobPersistence implements JobPersistence {
             "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + AND +
             SCOPE_CLAUSE +
             "CAST(jobs.status AS VARCHAR) <> ? " +
-            "ORDER BY jobs.created_at DESC LIMIT 1",
+            ORDER_BY_JOB_CREATED_AT_DESC_LIMIT_1,
             connectionId.toString(),
             Sqls.toSqlName(JobStatus.CANCELLED))
         .stream()
@@ -568,12 +569,52 @@ public class DefaultJobPersistence implements JobPersistence {
         .fetch(BASE_JOB_SELECT_AND_JOIN + WHERE +
             "CAST(jobs.config_type AS VARCHAR) = ? " + AND +
             "scope = ? " +
-            "ORDER BY jobs.created_at DESC LIMIT 1",
+            ORDER_BY_JOB_CREATED_AT_DESC_LIMIT_1,
             Sqls.toSqlName(ConfigType.SYNC),
             connectionId.toString())
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get(JOB_ID, Long.class))));
+  }
+
+  /**
+   * For each connection ID in the input, find that connection's latest sync job and return it in an
+   * Optional if one exists.
+   */
+  @Override
+  public List<Optional<Job>> getLastSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobDatabase.query(ctx -> ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + WHERE +
+            "CAST(jobs.config_type AS VARCHAR) = ? " + AND +
+            "scope IN (?) " +
+            "GROUP BY jobs.scope " +
+            ORDER_BY_JOB_CREATED_AT_DESC_LIMIT_1,
+            Sqls.toSqlName(ConfigType.SYNC),
+            connectionIds.stream().map(UUID::toString).map(Names::singleQuote).collect(Collectors.joining(",")))
+        .stream()
+        .map(r -> getJobOptional(ctx, r.get(JOB_ID, Long.class)))
+        .collect(Collectors.toList()));
+  }
+
+  /**
+   * For each connection ID in the input, find that connection's most recent non-terminal sync job and
+   * return it in an Optional if one exists.
+   */
+  @Override
+  public List<Optional<Job>> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobDatabase.query(ctx -> ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + WHERE +
+            "CAST(jobs.config_type AS VARCHAR) = ? " + AND +
+            "scope IN (?) " + AND +
+            "status IN (?) " +
+            "GROUP BY jobs.scope " +
+            ORDER_BY_JOB_CREATED_AT_DESC_LIMIT_1,
+            Sqls.toSqlName(ConfigType.SYNC),
+            connectionIds.stream().map(UUID::toString).map(Names::singleQuote).collect(Collectors.joining(",")),
+            JobStatus.NON_TERMINAL_STATUSES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")))
+        .stream()
+        .map(r -> getJobOptional(ctx, r.get(JOB_ID, Long.class)))
+        .collect(Collectors.toList()));
   }
 
   @Override
