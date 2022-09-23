@@ -1,12 +1,18 @@
+:warning: This framework is in alpha stage. Support is not in production and is available only to select users. :warning:
+
 # Index
 
 ## From scratch
+
+This section gives an overview of the low-code framework.
 
 - [Overview](overview.md)
 - [Yaml structure](yaml-structure.md)
 - [Reference docs](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.html)
 
 ## Concepts
+
+This section contains additional information on the different components that can be used to define a low-code connector.
 
 - [Authentication](authentication.md)
 - [Error handling](error-handling.md)
@@ -16,6 +22,8 @@
 - [Stream slicers](stream-slicers.md)
 
 ## Tutorial
+
+This section a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
 
 0. [Getting started](tutorial/0-getting-started.md)
 1. [Creating a source](tutorial/1-create-source.md)

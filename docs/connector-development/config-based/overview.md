@@ -53,11 +53,11 @@ The only pagination mechanisms supported are
 
 ### What is the authorization mechanism?
 
-Endpoints that require authenticating using a query param or a HTTP header, as is the case for the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#authentication), are supported.
+Endpoints that require [authenticating using a query param or a HTTP header](./authentication.md#apikeyauthenticator), as is the case for the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api#authentication), are supported.
 
-Endpoints that require authenticating using Basic Auth over HTTPS, as is the case for [Greenhouse](https://developers.greenhouse.io/harvest.html#authentication), are supported.
+Endpoints that require [authenticating using Basic Auth over HTTPS](./authentication.md#basichttpauthenticator), as is the case for [Greenhouse](https://developers.greenhouse.io/harvest.html#authentication), are supported.
 
-Endpoints that require authenticating using OAuth 2.0, as is the case for [Strava](https://developers.strava.com/docs/authentication/#introduction), are supported.
+Endpoints that require [authenticating using OAuth 2.0](./authentication.md#oauth), as is the case for [Strava](https://developers.strava.com/docs/authentication/#introduction), are supported.
 
 Other authentication schemes such as GWT are not supported.
 
@@ -122,9 +122,9 @@ The data retriever defines how to read the data for a Stream, and acts as an orc
 There is currently only one implementation, the `SimpleRetriever`, which is defined by
 
 1. Requester: Describes how to submit requests to the API source
-2. Paginator: Describes how to navigate through the API's pages
-3. Record selector: Describes how to extract records from a HTTP response
-4. Stream Slicer: Describes how to partition the stream, enabling incremental syncs and checkpointing
+2. [Paginator](./pagination.md): Describes how to navigate through the API's pages
+3. [Record selector](./record-selector.md): Describes how to extract records from a HTTP response
+4. [Stream Slicer](./stream-slicers.md): Describes how to partition the stream, enabling incremental syncs and checkpointing
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
@@ -157,13 +157,9 @@ There is currently only one implementation, the `HttpRequester`, which is define
 1. A base url: The root of the API source
 2. A path: The specific endpoint to fetch data from for a resource
 3. The HTTP method: the HTTP method to use (GET or POST)
-4. A request options provider: Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
-5. An authenticator: Defines how to authenticate to the source
-6. An error handler: Defines how to handle errors
-
-More details on authentication can be found in the [authentication section](authentication.md).
-
-More details on error handling can be found in the [error handling section](error-handling.md).
+4. [A request options provider](./request-options.md): Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
+5. [An authenticator](./authentication.md): Defines how to authenticate to the source
+6. [An error handler](./error-handling.md): Defines how to handle errors
 
 ## Connection Checker
 
@@ -207,6 +203,7 @@ pagination_strategy:
 ## Sample connectors
 
 The following connectors can serve as example of what production-ready config-based connectors look like
+#TODO: make sure these links are still right!
 
 - [Greenhouse](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse)
 - [Sendgrid](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-sendgrid)
