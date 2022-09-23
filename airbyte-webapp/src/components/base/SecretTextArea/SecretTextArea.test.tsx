@@ -12,7 +12,7 @@ describe("SecretTextArea", () => {
     const { queryByTestId, container } = await render(<SecretTextArea />);
 
     expect(container.querySelector("textarea")).toBeInTheDocument();
-    expect(queryByTestId("visibilityButton")).not.toBeInTheDocument();
+    expect(queryByTestId("secretTextArea-visibilityButton")).not.toBeInTheDocument();
     expect(container.querySelector('input[type="password"]')).not.toBeInTheDocument();
   });
 
@@ -21,9 +21,9 @@ describe("SecretTextArea", () => {
     const { getByTestId, queryByTestId, container } = await render(<SecretTextArea value={value} onChange={emptyFn} />);
 
     expect(container.querySelector("textarea")).not.toBeInTheDocument();
-    expect(queryByTestId("visibilityButton")).toBeInTheDocument();
+    expect(queryByTestId("secretTextArea-visibilityButton")).toBeInTheDocument();
 
-    const input = getByTestId("input");
+    const input = getByTestId("secretTextArea-input");
     expect(input).toHaveAttribute("type", "password");
     expect(input).toHaveAttribute("aria-hidden");
     expect(input).toHaveValue(value);
@@ -33,7 +33,7 @@ describe("SecretTextArea", () => {
     const { getByTestId } = await render(<SecretTextArea disabled />);
 
     expect(getByTestId("textInputContainer")).toHaveClass("disabled");
-    expect(getByTestId("textarea")).toBeDisabled();
+    expect(getByTestId("secretTextArea-textarea")).toBeDisabled();
   });
 
   it("renders disabled when disabled is set and with initial value", async () => {
@@ -41,7 +41,7 @@ describe("SecretTextArea", () => {
     const { getByTestId } = await render(<SecretTextArea value={value} onChange={emptyFn} disabled />);
 
     expect(getByTestId("textInputContainer")).toHaveClass("disabled");
-    expect(getByTestId("visibilityButton")).toBeDisabled();
+    expect(getByTestId("secretTextArea-visibilityButton")).toBeDisabled();
   });
 
   it("calls onChange handler when typing", async () => {
@@ -49,7 +49,7 @@ describe("SecretTextArea", () => {
     const value = "Here is my secret text";
     const { getByTestId } = await render(<SecretTextArea onChange={onChange} />);
 
-    const textarea = getByTestId("textarea");
+    const textarea = getByTestId("secretTextArea-textarea");
 
     userEvent.type(textarea, value);
 
@@ -60,10 +60,10 @@ describe("SecretTextArea", () => {
     const value = "Here is my secret text";
     const { getByTestId, container } = await render(<SecretTextArea value={value} onChange={emptyFn} />);
 
-    userEvent.click(getByTestId("visibilityButton"));
+    userEvent.click(getByTestId("secretTextArea-visibilityButton"));
 
-    expect(getByTestId("textarea")).toHaveFocus();
-    expect(container.querySelector("textarea")).toHaveValue(value);
+    expect(getByTestId("secretTextArea-textarea")).toHaveFocus();
+    expect(getByTestId("secretTextArea-textarea")).toHaveValue(value);
     expect(container.querySelector('input[type="password"]')).not.toBeInTheDocument();
   });
 
@@ -71,15 +71,15 @@ describe("SecretTextArea", () => {
     const value = "Here is my secret text";
     const { queryByTestId, getByTestId, container } = await render(<SecretTextArea value={value} onChange={emptyFn} />);
 
-    userEvent.click(getByTestId("visibilityButton"));
-    expect(getByTestId("textarea")).toHaveFocus();
+    userEvent.click(getByTestId("secretTextArea-visibilityButton"));
+    expect(getByTestId("secretTextArea-textarea")).toHaveFocus();
 
     act(() => {
-      getByTestId("textarea").blur();
+      getByTestId("secretTextArea-textarea").blur();
     });
 
     expect(container.querySelector("textarea")).not.toBeInTheDocument();
-    expect(queryByTestId("visibilityButton")).toBeInTheDocument();
+    expect(queryByTestId("secretTextArea-visibilityButton")).toBeInTheDocument();
     expect(container.querySelector('input[type="password"]')).toHaveValue(value);
   });
 });
