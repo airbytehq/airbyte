@@ -76,11 +76,6 @@
               {
                 "type": "object",
                 "properties": {
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
                   "id": { "type": "string" },
                   "type": { "enum": ["multi_select"] },
                   "multi_select": {
@@ -106,7 +101,7 @@
                     "type": ["null", "object"],
                     "properties": {
                       "type": {
-                        "enum": ["string", "number", "boolean", "date"]
+                        "enum": ["string", "number", "boolean"]
                       },
                       "string": { "type": ["null", "string"] },
                       "number": { "type": ["null", "number"] },
