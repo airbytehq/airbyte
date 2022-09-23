@@ -4,8 +4,9 @@ import { useToggle } from "react-use";
 
 import { DropDownRow } from "components";
 
-import { getDestinationNamespace, SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
+import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
+import { useDestinationNamespace } from "hooks/connection/useDestinationNamespace";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
@@ -106,7 +107,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     [stream?.supportedSyncModes, supportedDestinationSyncModes]
   );
 
-  const destNamespace = getDestinationNamespace({
+  const destNamespace = useDestinationNamespace({
     namespaceDefinition,
     namespaceFormat,
   });

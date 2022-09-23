@@ -3,12 +3,12 @@ import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { H6 } from "components";
+import { Text } from "components/base/Text";
 import { InfoBox } from "components/InfoBox";
 import StepsMenu from "components/StepsMenu";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
-import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 import { ConnectionName } from "./ConnectionName";
@@ -24,7 +24,7 @@ export const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ onStat
   const navigate = useNavigate();
   const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
 
-  const { connection } = useConnectionFormService();
+  const { connection } = useConnectionEditService();
 
   const steps = useMemo(() => {
     const steps = [
@@ -69,9 +69,9 @@ export const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ onStat
           <FormattedMessage id="connection.connectionDeletedView" />
         </InfoBox>
       )}
-      <H6 center bold highlighted>
+      <Text as="div" centered bold className={styles.connectionTitle}>
         <FormattedMessage id="connection.title" />
-      </H6>
+      </Text>
       <ConnectionName />
       <div className={styles.statusContainer}>
         <StatusMainInfo onStatusUpdating={onStatusUpdating} />
