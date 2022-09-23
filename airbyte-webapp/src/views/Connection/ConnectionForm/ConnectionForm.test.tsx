@@ -10,8 +10,9 @@ import {
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
+import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
 
-import { ConnectionForm, ConnectionFormProps } from "./ConnectionForm";
+import { ConnectionForm, ConnectionFormMode } from "./ConnectionForm";
 
 const mockSource: SourceRead = {
   sourceId: "test-source",
@@ -66,13 +67,24 @@ jest.mock("services/workspaces/WorkspacesService", () => {
     useCurrentWorkspace: () => {
       return "currentWorkspace";
     },
+    useCurrentWorkspaceId: () => {
+      return "currentWorkspace";
+    },
   };
 });
 
-const renderConnectionForm = (props: ConnectionFormProps) =>
+const renderConnectionForm = (mode: ConnectionFormMode, connection = mockConnection) =>
   render(
     <ConfirmationModalService>
-      <ConnectionForm {...props} />
+      <ConnectionFormServiceProvider
+        mode={mode}
+        connection={connection}
+        formId={Math.random().toString()}
+        onSubmit={jest.fn()}
+        formDirty={false}
+      >
+        <ConnectionForm />
+      </ConnectionFormServiceProvider>
     </ConfirmationModalService>
   );
 
@@ -80,15 +92,11 @@ describe("<ConnectionForm />", () => {
   let container: HTMLElement;
   describe("edit mode", () => {
     beforeEach(async () => {
-      const renderResult = await renderConnectionForm({
-        onSubmit: jest.fn(),
-        mode: "edit",
-        connection: mockConnection,
-      });
+      const renderResult = await renderConnectionForm("edit");
 
       container = renderResult.container;
     });
-    test("it renders relevant items", async () => {
+    it("renders relevant items", async () => {
       const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
 
@@ -96,25 +104,21 @@ describe("<ConnectionForm />", () => {
       userEvent.type(prefixInput!, "{selectall}{del}prefix");
       await waitFor(() => userEvent.keyboard("{enter}"));
     });
-    test("pointer events are not turned off anywhere in the component", async () => {
+    it("pointer events are not turned off anywhere in the component", async () => {
       expect(container.innerHTML).toContain("checkbox");
     });
   });
   describe("readonly mode", () => {
     beforeEach(async () => {
-      const renderResult = await renderConnectionForm({
-        onSubmit: jest.fn(),
-        mode: "readonly",
-        connection: mockConnection,
-      });
+      const renderResult = await renderConnectionForm("readonly");
 
       container = renderResult.container;
     });
-    test("it renders only relevant items for the mode", async () => {
+    it("renders only relevant items for the mode", async () => {
       const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
     });
-    test("pointer events are turned off in the fieldset", async () => {
+    it("pointer events are turned off in the fieldset", async () => {
       expect(container.innerHTML).not.toContain("checkbox");
     });
   });
