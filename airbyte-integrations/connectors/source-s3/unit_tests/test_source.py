@@ -63,5 +63,9 @@ def test_check_provider_added():
         SourceFilesAbstractSpec.check_provider_added({"properties": []})
 
 
-def test_change_format_to_oneOf():
-    assert SourceFilesAbstractSpec.change_format_and_authentication_to_oneOf({"properties": {"format": {"oneOf": ""}}})
+def change_format_to_oneOf():
+    assert SourceFilesAbstractSpec.change_format_to_oneOf({"properties": {"format": {"oneOf": ""}}})
+
+
+def change_authentication_to_oneOf():
+    assert SourceFilesAbstractSpec.change_format_to_oneOf({"properties": {"authentication": {"oneOf": ""}}})

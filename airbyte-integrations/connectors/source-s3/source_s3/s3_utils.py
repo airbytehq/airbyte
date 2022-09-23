@@ -24,7 +24,7 @@ def get_authentication_method(provider: dict, authentication: dict = {}) -> Auth
     """
     if provider.get("aws_access_key_id") and provider.get("aws_secret_access_key"):
         return AuthenticationMethod.ACCESS_KEY_SECRET_ACCESS_KEY
-    elif authentication.get("auth_method") == "default_credentials":
+    elif authentication is None or authentication.get("auth_method") == "default_credentials":
         return AuthenticationMethod.DEFAULT
     else:
         return AuthenticationMethod.UNSIGNED

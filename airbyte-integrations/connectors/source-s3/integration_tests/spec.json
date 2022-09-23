@@ -24,7 +24,7 @@
       },
       "authentication": {
         "title": "Authentication Method",
-        "description": "The authentication method to use for accessing the bucket",
+        "description": "The authentication method to use for accessing the source",
         "default": "default_credentials",
         "order": 12,
         "type": "object",

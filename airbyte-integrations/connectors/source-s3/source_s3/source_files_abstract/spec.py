@@ -78,8 +78,8 @@ class SourceFilesAbstractSpec(BaseModel):
     )
 
     @staticmethod
-    def change_format_and_authentication_to_oneOf(schema: dict) -> dict:
-        props_to_change = ["format", "authentication"]
+    def change_format_to_oneOf(schema: dict) -> dict:
+        props_to_change = ["format"]
         for prop in props_to_change:
             schema["properties"][prop]["type"] = "object"
             if "oneOf" in schema["properties"][prop]:
@@ -107,7 +107,9 @@ class SourceFilesAbstractSpec(BaseModel):
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema(*args, **kwargs)
+        print("\n\nPre-Schema: %s\n\n" % json.dumps(schema))
         cls.check_provider_added(schema)
-        schema = cls.change_format_and_authentication_to_oneOf(schema)
+        schema = cls.change_format_to_oneOf(schema)
+        print("\n\nPost-Schema: %s\n\n" % json.dumps(schema))
         schema = cls.resolve_refs(schema)
         return schema

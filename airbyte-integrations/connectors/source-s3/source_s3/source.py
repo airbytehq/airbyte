@@ -7,9 +7,9 @@ from typing import Any, Mapping, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from .source_files_abstract.auth_methods.default_credentials_spec import DefaultCredentials
-from .source_files_abstract.auth_methods.no_credentials_spec import NoCredentials
-from .source_files_abstract.auth_methods.provided_credentials_spec import ProvidedCredentials
+from .auth_methods.default_credentials_spec import DefaultCredentials
+from .auth_methods.no_credentials_spec import NoCredentials
+from .auth_methods.provided_credentials_spec import ProvidedCredentials
 from .source_files_abstract.source import SourceFilesAbstract
 from .source_files_abstract.spec import SourceFilesAbstractSpec
 from .stream import IncrementalFileStreamS3
@@ -20,9 +20,30 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
     authentication: Union[DefaultCredentials, ProvidedCredentials, NoCredentials] = Field(
         default="default_credentials",
         title="Authentication Method",
-        description="The authentication method to use for accessing the bucket.",
+        description="The authentication method to use for accessing the source.",
         order=3,
     )
+
+    @staticmethod
+    def change_authentication_to_oneOf(schema: dict) -> dict:
+        props_to_change = ["authentication"]
+        for prop in props_to_change:
+            schema["properties"][prop]["type"] = "object"
+            if "oneOf" in schema["properties"][prop]:
+                continue
+            schema["properties"][prop]["oneOf"] = schema["properties"][prop].pop("anyOf")
+        return schema
+
+    @classmethod
+    def schema(cls, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        """we're overriding the schema classmethod to enable some post-processing"""
+        import json
+
+        schema = super().schema(*args, **kwargs)
+        print("\n\nPre-Schema: %s\n\n" % json.dumps(schema))
+        schema = cls.change_authentication_to_oneOf(schema)
+        print("\n\nPost-Schema: %s\n\n" % json.dumps(schema))
+        return schema
 
     class Config:
         title = "S3 Source Spec"
