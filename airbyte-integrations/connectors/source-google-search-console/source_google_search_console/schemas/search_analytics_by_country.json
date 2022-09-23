@@ -24,7 +24,7 @@
     },
     "ctr": {
       "type": ["null", "number"]
-    },
+        },
     "position": {
       "type": ["null", "number"]
     }
