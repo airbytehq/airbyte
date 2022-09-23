@@ -3,7 +3,7 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 import { SlickSlider } from "./SlickSlider";
 
 export default {
-  title: "Ui/SlickSlider",
+  title: "UI/SlickSlider",
   component: SlickSlider,
 } as ComponentMeta<typeof SlickSlider>;
 

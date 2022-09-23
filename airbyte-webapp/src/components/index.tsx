@@ -19,4 +19,3 @@ export * from "./StatusIcon";
 export * from "./TextWithHTML";
 export * from "./ProgressBar";
 export * from "./ConnectorCard";
-export * from "./SlickSlider";
