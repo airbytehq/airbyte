@@ -150,17 +150,26 @@ class WebBackendConnectionsHandlerTest {
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     standardSourceDefinition.setIcon(SOURCE_ICON);
-    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    final SourceConnection source = SourceHelpers.generateSource(standardSourceDefinition.getSourceDefinitionId());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
     final StandardDestinationDefinition destinationDefinition = DestinationDefinitionHelpers.generateDestination();
     destinationDefinition.setIcon(DESTINATION_ICON);
-    final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
+    final DestinationConnection destination = DestinationHelpers.generateDestination(destinationDefinition.getDestinationDefinitionId());
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
-    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId());
     when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
         .thenReturn(Collections.singletonList(standardSync));
+    when(configRepository.getSourceConnections(Collections.singletonList(source.getSourceId())))
+        .thenReturn(Collections.singletonList(source));
+    when(configRepository.getDestinationConnections(Collections.singletonList(destination.getDestinationId())))
+        .thenReturn(Collections.singletonList(destination));
+    when(configRepository.getSourceDefinitionsFromSourceIds(Collections.singletonList(source.getSourceId())))
+        .thenReturn(Collections.singletonList(standardSourceDefinition));
+    when(configRepository.getDestinationDefinitionsFromDestinationIds(Collections.singletonList(destination.getDestinationId())))
+        .thenReturn(Collections.singletonList(destinationDefinition));
+
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
     operationReadList = new OperationReadList()
         .operations(List.of(new OperationRead()
@@ -194,6 +203,9 @@ class WebBackendConnectionsHandlerTest {
             .endedAt(now.getEpochSecond())));
 
     when(jobHistoryHandler.getLatestSyncJob(connectionRead.getConnectionId())).thenReturn(Optional.of(jobRead.getJob()));
+
+    when(jobHistoryHandler.getLatestSyncJobsForConnections(Collections.singletonList(connectionRead.getConnectionId())))
+        .thenReturn(Collections.singletonList(Optional.of(jobRead.getJob())));
 
     expectedListItem = ConnectionHelpers.generateExpectedWebBackendConnectionListItem(
         standardSync,
@@ -300,8 +312,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testWebBackendListConnectionsForWorkspace() throws ConfigNotFoundException, IOException,
-      JsonValidationException {
+  void testWebBackendListConnectionsForWorkspace() throws IOException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
 
