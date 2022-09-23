@@ -86,13 +86,8 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   @Override
   public void accept(final AirbyteMessage message) throws IOException {
     Preconditions.checkState(destinationProcess != null && !inputHasEnded.get());
-
-    if (message.getType() != Type.UNSERIALIZED) {
-      writer.write(Jsons.serialize(message));
-    } else {
-      writer.write(message.getUnserialized().getData());
-    }
-      writer.newLine();
+    writer.write(message.getSerializedMessage());
+    writer.newLine();
   }
 
   @Override

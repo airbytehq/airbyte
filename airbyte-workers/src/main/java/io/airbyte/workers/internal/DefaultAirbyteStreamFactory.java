@@ -10,8 +10,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteUnserialisedMessage;
 import java.io.BufferedReader;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -56,16 +54,6 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     return bufferedReader
         .lines()
         .flatMap(line -> {
-          // only deserialise STATE or LOG or TRACE - how to?
-          // todo!!
-          final boolean skipDeserilisation = line.contains("RECORD") && !line.contains("STATE") && !line.contains("LOG") && !line.contains("TRACE");
-          if (skipDeserilisation) {
-            System.out.println("==== test!");
-            final JsonNode base = Jsons.emptyObject();
-            ((ObjectNode) base).put("type", Type.UNSERIALIZED.toString());
-            ((ObjectNode) base).put("data", line);
-            return Optional.of(base).stream();
-          }
 
           final Optional<JsonNode> jsonLine = Jsons.tryDeserialize(line);
           if (jsonLine.isEmpty()) {
@@ -75,6 +63,8 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
             try (final var mdcScope = containerLogMdcBuilder.build()) {
               logger.info(line);
             }
+          } else if (!jsonLine.get().isEmpty()) {
+            ((ObjectNode) jsonLine.get()).put("_serialized_message", line);
           }
           return jsonLine.stream();
         })
