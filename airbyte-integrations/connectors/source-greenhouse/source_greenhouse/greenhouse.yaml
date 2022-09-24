@@ -422,4 +422,4 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: [ "applications" ]
+  stream_names: ["applications"]
