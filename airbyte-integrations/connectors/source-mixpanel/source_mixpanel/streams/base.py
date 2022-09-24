@@ -136,10 +136,10 @@ class DateSlicesMixin:
 
         # use the latest date between self.start_date and stream_state
         start_date = self.start_date
-        if stream_state:
+        if stream_state and self.cursor_field and self.cursor_field in stream_state:
             # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
             # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
-            stream_state_date = pendulum.parse(stream_state["date"]).date()
+            stream_state_date = pendulum.parse(stream_state[self.cursor_field]).date()
             start_date = max(start_date, stream_state_date)
 
         # move start_date back <attribution_window> days to sync data since that time as well
@@ -174,7 +174,9 @@ class DateSlicesMixin:
 
 class IncrementalMixpanelStream(MixpanelStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        current_stream_state = current_stream_state or {}
-        current_stream_state: str = current_stream_state.get("date", str(self.start_date))
-        latest_record_date: str = latest_record.get(self.cursor_field, str(self.start_date))
-        return {"date": max(current_stream_state, latest_record_date)}
+        updated_state = latest_record[self.cursor_field]
+        state_value = current_stream_state.get(self.cursor_field)
+        if state_value:
+            updated_state = max(updated_state, state_value)
+        current_stream_state[self.cursor_field] = updated_state
+        return current_stream_state

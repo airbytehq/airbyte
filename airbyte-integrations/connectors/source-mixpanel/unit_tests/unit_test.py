@@ -5,7 +5,7 @@
 from datetime import date, timedelta
 
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_mixpanel.streams import Annotations
+from source_mixpanel.streams import Annotations, Export
 
 
 def test_date_slices():
@@ -105,12 +105,12 @@ def test_date_slices():
     assert [{"start_date": "2021-07-01", "end_date": "2021-07-02"}, {"start_date": "2021-07-03", "end_date": "2021-07-03"}] == stream_slices
 
     # test with stream_state
-    stream_slices = Annotations(
+    stream_slices = Export(
         authenticator=NoAuth(),
         start_date=date.fromisoformat("2021-07-01"),
         end_date=date.fromisoformat("2021-07-03"),
         date_window_size=1,
         region="US",
         project_timezone="US/Pacific",
-    ).stream_slices(sync_mode="any", stream_state={"date": "2021-07-02"})
+    ).stream_slices(sync_mode="any", stream_state={"time": "2021-07-02T00:00:00Z"})
     assert [{"start_date": "2021-07-02", "end_date": "2021-07-02"}, {"start_date": "2021-07-03", "end_date": "2021-07-03"}] == stream_slices
