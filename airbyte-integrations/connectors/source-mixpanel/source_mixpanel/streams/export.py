@@ -3,7 +3,6 @@
 #
 
 import json
-from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping
 
 import pendulum
@@ -154,7 +153,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     ) -> MutableMapping[str, Any]:
         mapping = super().request_params(stream_state, stream_slice, next_page_token)
         if stream_state and "date" in stream_state:
-            mapping["where"] = f"properties[\"$time\"]>=datetime({int(datetime.fromisoformat(stream_state['date']).timestamp())})"
+            timestamp = int(pendulum.parse(stream_state["date"]).timestamp())
+            mapping["where"] = f'properties["$time"]>=datetime({timestamp})'
         return mapping
 
     def request_kwargs(

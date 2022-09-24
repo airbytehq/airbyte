@@ -4,7 +4,7 @@
 
 import time
 from abc import ABC
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
@@ -139,7 +139,7 @@ class DateSlicesMixin:
         if stream_state:
             # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
             # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
-            stream_state_date = datetime.fromisoformat(stream_state["date"]).date()
+            stream_state_date = pendulum.parse(stream_state["date"]).date()
             start_date = max(start_date, stream_state_date)
 
         # move start_date back <attribution_window> days to sync data since that time as well
