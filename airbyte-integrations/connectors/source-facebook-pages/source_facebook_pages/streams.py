@@ -27,10 +27,6 @@ class FacebookPagesStream(HttpStream, ABC):
         self._access_token = access_token
         self._page_id = page_id
 
-    @property
-    def path_param(self):
-        return self.name[:-1]
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         data = response.json()
 
