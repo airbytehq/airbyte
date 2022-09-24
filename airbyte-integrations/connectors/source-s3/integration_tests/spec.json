@@ -22,52 +22,6 @@
         "order": 10,
         "type": "string"
       },
-      "authentication": {
-        "title": "Authentication Method",
-        "description": "The authentication method to use for accessing the source",
-        "default": "aws_provided_credentials",
-        "order": 12,
-        "type": "object",
-        "oneOf": [
-          {
-            "title": "AWS Access Key ID and Access Key Secret",
-            "description": "Use AWS Access Key ID and Access Key Secret as credentials. Needs proper permissions for accessing S3-Bucket.",
-            "type": "object",
-            "properties": {
-              "auth_method": {
-                "title": "Authentication Method",
-                "const": "aws_provided_credentials",
-                "description": "Use AWS Access Key ID and Access Key Secret as credentials. Needs proper permissions for accessing S3-Bucket.",
-                "type": "string"
-              }
-            }
-          },
-          {
-            "title": "AWS Default Credential Provider Chain",
-            "description": "Use default <a href=\"https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#configuring-credentials\" target=\"_blank\">AWS credential provider</html> chain (such as EC2 instance profile).",
-            "type": "object",
-            "properties": {
-              "auth_method": {
-                "title": "Authentication Method",
-                "const": "aws_default_credentials",
-                "type": "string"
-              }
-            }
-          },
-          {
-            "title": "No Credentials",
-            "description": "For access to public S3-Buckets or non AWS sources no credentials are required. Request will be unsigned.",
-            "type": "string",
-            "properties": {
-              "auth_method": {
-                "title": "Authentication Method",
-                "const": "no_credentials",
-                "type": "string"
-              }
-            }
-          }
-        ]
-      },
       "provider": {
         "title": "S3: Amazon Web Services",
         "type": "object",
@@ -124,6 +78,51 @@
         ],
         "order": 11,
         "description": "Use this to load files from S3 or S3-compatible services"
+      },
+      "authentication": {
+        "title": "Authentication Method",
+        "description": "The authentication method to use for accessing the source",
+        "default": "aws_provided_credentials",
+        "order": 12,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "AWS Access Key ID and Access Key Secret",
+            "description": "Use AWS Access Key ID and Access Key Secret as credentials. Needs proper permissions for accessing S3-Bucket.",
+            "type": "object",
+            "properties": {
+              "auth_method": {
+                "title": "Authentication Method",
+                "const": "aws_provided_credentials",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "title": "AWS Default Credential Provider Chain",
+            "description": "Use default <a href=\"https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#configuring-credentials\" target=\"_blank\">AWS credential provider</html> chain (such as EC2 instance profile).",
+            "type": "object",
+            "properties": {
+              "auth_method": {
+                "title": "Authentication Method",
+                "const": "aws_default_credentials",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "title": "No Credentials",
+            "description": "For access to public S3-Buckets or non AWS sources no credentials are required. Request will be unsigned.",
+            "type": "string",
+            "properties": {
+              "auth_method": {
+                "title": "Authentication Method",
+                "const": "no_credentials",
+                "type": "string"
+              }
+            }
+          }
+        ]
       },
       "format": {
         "title": "File Format",

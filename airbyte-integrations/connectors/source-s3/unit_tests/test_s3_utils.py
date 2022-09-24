@@ -23,12 +23,12 @@ class TestS3Utils:
             ),
             (
                 {"storage": "S3", "bucket": "dummy", "aws_access_key_id": "id", "aws_secret_access_key": "key", "path_prefix": "dummy"},
-                {"auth_method": "default_credentials"},
+                {"auth_method": "aws_default_credentials"},
                 AuthenticationMethod.ACCESS_KEY_SECRET_ACCESS_KEY,
             ),
             (
                 {"storage": "S3", "bucket": "dummy", "aws_access_key_id": "id", "aws_secret_access_key": "key", "path_prefix": "dummy"},
-                {"auth_method": "provided_credentials"},
+                {"auth_method": "aws_provided_credentials"},
                 AuthenticationMethod.ACCESS_KEY_SECRET_ACCESS_KEY,
             ),
             (
@@ -43,7 +43,7 @@ class TestS3Utils:
             ),
             (
                 {"storage": "S3", "bucket": "dummy", "aws_access_key_id": None, "aws_secret_access_key": None, "path_prefix": "dummy"},
-                {"auth_method": "default_credentials"},
+                {"auth_method": "aws_default_credentials"},
                 AuthenticationMethod.DEFAULT,
             ),
             (
@@ -54,7 +54,7 @@ class TestS3Utils:
             ({"storage": "S3", "bucket": "dummy", "path_prefix": "dummy"}, None, AuthenticationMethod.DEFAULT),
             (
                 {"storage": "S3", "bucket": "dummy", "path_prefix": "dummy"},
-                {"auth_method": "default_credentials"},
+                {"auth_method": "aws_default_credentials"},
                 AuthenticationMethod.DEFAULT,
             ),
             (
@@ -69,7 +69,7 @@ class TestS3Utils:
             ),
             (
                 {"storage": "S3", "bucket": "dummy", "aws_access_key_id": "id", "aws_secret_access_key": None, "path_prefix": "dummy"},
-                {"auth_method": "default_credentials"},
+                {"auth_method": "aws_default_credentials"},
                 AuthenticationMethod.DEFAULT,
             ),
             (
@@ -84,7 +84,7 @@ class TestS3Utils:
             ),
             (
                 {"storage": "S3", "bucket": "dummy", "aws_access_key_id": None, "aws_secret_access_key": "key", "path_prefix": "dummy"},
-                {"auth_method": "default_credentials"},
+                {"auth_method": "aws_default_credentials"},
                 AuthenticationMethod.DEFAULT,
             ),
             (
@@ -99,7 +99,7 @@ class TestS3Utils:
             ),
             (
                 {"storage": "S3", "bucket": "dummy", "aws_access_key_id": "id", "path_prefix": "dummy"},
-                {"auth_method": "default_credentials"},
+                {"auth_method": "aws_default_credentials"},
                 AuthenticationMethod.DEFAULT,
             ),
             (
@@ -114,7 +114,7 @@ class TestS3Utils:
             ),
             (
                 {"storage": "S3", "bucket": "dummy", "aws_secret_access_key": "key", "path_prefix": "dummy"},
-                {"auth_method": "default_credentials"},
+                {"auth_method": "aws_default_credentials"},
                 AuthenticationMethod.DEFAULT,
             ),
             (

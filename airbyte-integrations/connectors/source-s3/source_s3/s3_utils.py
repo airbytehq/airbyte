@@ -15,7 +15,7 @@ class AuthenticationMethod(Enum):
     UNSIGNED = 3
 
 
-def get_authentication_method(provider: dict, authentication: dict = {}) -> AuthenticationMethod:
+def get_authentication_method(provider: dict, authentication: dict = None) -> AuthenticationMethod:
     """
     Return authentication method for this provider.
     :param provider provider configuration from connector configuration.
@@ -30,7 +30,7 @@ def get_authentication_method(provider: dict, authentication: dict = {}) -> Auth
         return AuthenticationMethod.UNSIGNED
 
 
-def make_s3_client(provider: dict, authentication: dict = {}, session: boto3.session.Session = None, config: Config = None) -> BaseClient:
+def make_s3_client(provider: dict, authentication: dict = None, session: boto3.session.Session = None, config: Config = None) -> BaseClient:
     """
     Construct boto3 client with specified config and remote endpoint
     :param provider provider configuration from connector configuration.
@@ -46,10 +46,11 @@ def make_s3_client(provider: dict, authentication: dict = {}, session: boto3.ses
         return session.client("s3", **client_kv_args)
 
 
-def _get_s3_client_args(provider: dict, authentication: dict = {}) -> dict:
+def _get_s3_client_args(provider: dict, authentication: dict = None) -> dict:
     """
     Returns map of args used for creating s3 boto3 client.
     :param provider provider configuration from connector configuration.
+    :param authentication authentication configuration from connector configuration.
     :return map of s3 client arguments.
     """
     client_kv_args = {}

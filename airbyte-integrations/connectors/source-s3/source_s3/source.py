@@ -8,8 +8,8 @@ from typing import Any, Mapping, Optional, Union
 from pydantic import BaseModel, Field
 
 from .auth_methods.aws_default_credentials_spec import AWSDefaultCredentials
-from .auth_methods.no_credentials_spec import NoCredentials
 from .auth_methods.aws_provided_credentials_spec import AWSProvidedCredentials
+from .auth_methods.no_credentials_spec import NoCredentials
 from .source_files_abstract.source import SourceFilesAbstract
 from .source_files_abstract.spec import SourceFilesAbstractSpec
 from .stream import IncrementalFileStreamS3
@@ -79,6 +79,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
         )
 
         endpoint: str = Field("", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4)
+
         use_ssl: bool = Field(
             default=None,
             title="Use TLS",

@@ -58,7 +58,7 @@ class SourceFilesAbstractSpec(BaseModel):
         'blank">this page</a> to understand pattern syntax (GLOBSTAR and SPLIT flags are enabled). '
         "Use pattern <strong>**</strong> to pick up all files.",
         examples=["**", "myFolder/myTableFiles/*.csv|myFolder/myOtherTableFiles/*.csv"],
-        order=10,
+        order=1,
     )
 
     format: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat] = Field(
