@@ -62,7 +62,7 @@ class SourceFilesAbstractSpec(BaseModel):
     )
 
     format: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat] = Field(
-        default="csv", title="File Format", description="The format of the files you'd like to replicate", order=30
+        default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20
     )
 
     user_schema: str = Field(
@@ -74,7 +74,7 @@ class SourceFilesAbstractSpec(BaseModel):
         '<a href="https://json-schema.org/understanding-json-schema/reference/type.html" target="_blank">JSON Schema '
         "datatypes</a>. Leave as {} to auto-infer the schema.",
         examples=['{"column_1": "number", "column_2": "string", "column_3": "array", "column_4": "object", "column_5": "boolean"}'],
-        order=40,
+        order=30,
     )
 
     @staticmethod

@@ -25,37 +25,38 @@
       "authentication": {
         "title": "Authentication Method",
         "description": "The authentication method to use for accessing the source",
-        "default": "default_credentials",
+        "default": "aws_provided_credentials",
         "order": 12,
         "type": "object",
         "oneOf": [
           {
-            "title": "Default Credential Provider Chain",
-            "description": "Use default <a href=\"https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#configuring-credentials\" target=\"_blank\">AWS credential provider</html> chain (such as EC2 instance profile).",
+            "title": "AWS Access Key ID and Access Key Secret",
+            "description": "Use AWS Access Key ID and Access Key Secret as credentials. Needs proper permissions for accessing S3-Bucket.",
             "type": "object",
             "properties": {
               "auth_method": {
                 "title": "Authentication Method",
-                "const": "default_credentials",
+                "const": "aws_provided_credentials",
+                "description": "Use AWS Access Key ID and Access Key Secret as credentials. Needs proper permissions for accessing S3-Bucket.",
                 "type": "string"
               }
             }
           },
           {
-            "title": "Provide Credentials",
-            "description": "Use Access Key ID and Access Key Secret as credentials. Needs proper permissions for accessing S3-Bucket.",
+            "title": "AWS Default Credential Provider Chain",
+            "description": "Use default <a href=\"https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#configuring-credentials\" target=\"_blank\">AWS credential provider</html> chain (such as EC2 instance profile).",
             "type": "object",
             "properties": {
               "auth_method": {
                 "title": "Authentication Method",
-                "const": "provided_credentials",
+                "const": "aws_default_credentials",
                 "type": "string"
               }
             }
           },
           {
             "title": "No Credentials",
-            "description": "For access to public S3-Buckets no credentials are required. Request will be unsigned.",
+            "description": "For access to public S3-Buckets or non AWS sources no credentials are required. Request will be unsigned.",
             "type": "string",
             "properties": {
               "auth_method": {
@@ -79,14 +80,16 @@
           },
           "aws_access_key_id": {
             "title": "Aws Access Key Id",
-            "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+            "description": "When Authentication method is AWS Access Key ID and Access Key Secret the values must be set here. Leave empty for all other Authentication Methods.",
             "airbyte_secret": true,
+            "order": 1,
             "type": "string"
           },
           "aws_secret_access_key": {
             "title": "Aws Secret Access Key",
-            "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+            "description": "When Authentication method is AWS Access Key ID and Access Key Secret the values must be set here. Leave empty for all other Authentication Methods.",
             "airbyte_secret": true,
+            "order": 2,
             "type": "string"
           },
           "path_prefix": {

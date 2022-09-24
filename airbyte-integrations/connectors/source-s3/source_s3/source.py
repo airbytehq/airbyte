@@ -7,9 +7,9 @@ from typing import Any, Mapping, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from .auth_methods.default_credentials_spec import DefaultCredentials
+from .auth_methods.aws_default_credentials_spec import AWSDefaultCredentials
 from .auth_methods.no_credentials_spec import NoCredentials
-from .auth_methods.provided_credentials_spec import ProvidedCredentials
+from .auth_methods.aws_provided_credentials_spec import AWSProvidedCredentials
 from .source_files_abstract.source import SourceFilesAbstract
 from .source_files_abstract.spec import SourceFilesAbstractSpec
 from .stream import IncrementalFileStreamS3
@@ -17,8 +17,8 @@ from .stream import IncrementalFileStreamS3
 
 class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
 
-    authentication: Union[DefaultCredentials, ProvidedCredentials, NoCredentials] = Field(
-        default="default_credentials",
+    authentication: Union[AWSProvidedCredentials, AWSDefaultCredentials, NoCredentials] = Field(
+        default="aws_provided_credentials",
         title="Authentication Method",
         description="The authentication method to use for accessing the source.",
         order=3,
@@ -58,19 +58,18 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
 
         aws_access_key_id: Optional[str] = Field(
             default=None,
-            description="In order to access private Buckets stored on AWS S3, this connector requires credentials "
-            "with the proper permissions. If accessing publicly available data, this field is not necessary.",
+            description="When Authentication Method is AWS Access Key ID and Access Key Secret the values must be set here.  "
+            "Leave empty for all other Authentication Methods.",
             airbyte_secret=True,
             order=1,
         )
         aws_secret_access_key: Optional[str] = Field(
             default=None,
-            description="In order to access private Buckets stored on AWS S3, this connector requires credentials "
-            "with the proper permissions. If accessing publicly available data, this field is not necessary.",
+            description="When Authentication method is AWS Access Key ID and Access Key Secret the values must be set here. "
+            "Leave empty for all other Authentication Methods.",
             airbyte_secret=True,
             order=2,
         )
-
         path_prefix: str = Field(
             default="",
             description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, "

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class NoCredentials(BaseModel):
-    "For access to public S3-Buckets no credentials are required. Request will be unsigned."
+    "For access to public S3-Buckets or non AWS sources no credentials are required. Request will be unsigned."
 
     class Config:
         title = "No Credentials"
