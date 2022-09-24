@@ -12,23 +12,38 @@ def test_date_slices():
 
     now = date.today()
     # Test with start_date now range
-    stream_slices = Annotations(authenticator=NoAuth(), start_date=now, end_date=now, date_window_size=1, region="EU").stream_slices(
-        sync_mode="any"
-    )
+    stream_slices = Annotations(
+        authenticator=NoAuth(), start_date=now, end_date=now, date_window_size=1, region="EU", project_timezone="US/Pacific"
+    ).stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
     stream_slices = Annotations(
-        authenticator=NoAuth(), start_date=now - timedelta(days=1), end_date=now, date_window_size=1, region="US"
+        authenticator=NoAuth(),
+        start_date=now - timedelta(days=1),
+        end_date=now,
+        date_window_size=1,
+        region="US",
+        project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
     assert 2 == len(stream_slices)
 
     stream_slices = Annotations(
-        authenticator=NoAuth(), region="US", start_date=now - timedelta(days=2), end_date=now, date_window_size=1
+        authenticator=NoAuth(),
+        region="US",
+        start_date=now - timedelta(days=2),
+        end_date=now,
+        date_window_size=1,
+        project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
     assert 3 == len(stream_slices)
 
     stream_slices = Annotations(
-        authenticator=NoAuth(), region="US", start_date=now - timedelta(days=2), end_date=now, date_window_size=10
+        authenticator=NoAuth(),
+        region="US",
+        start_date=now - timedelta(days=2),
+        end_date=now,
+        date_window_size=10,
+        project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
@@ -40,6 +55,7 @@ def test_date_slices():
         date_window_size=1,
         attribution_window=5,
         region="US",
+        project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
     assert 8 == len(stream_slices)
 
@@ -50,6 +66,7 @@ def test_date_slices():
         end_date=date.fromisoformat("2021-07-01"),
         date_window_size=1,
         region="US",
+        project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
     assert [{"start_date": "2021-07-01", "end_date": "2021-07-01"}] == stream_slices
 
@@ -59,6 +76,7 @@ def test_date_slices():
         end_date=date.fromisoformat("2021-07-02"),
         date_window_size=1,
         region="EU",
+        project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
     assert [{"start_date": "2021-07-01", "end_date": "2021-07-01"}, {"start_date": "2021-07-02", "end_date": "2021-07-02"}] == stream_slices
 
@@ -68,6 +86,7 @@ def test_date_slices():
         end_date=date.fromisoformat("2021-07-03"),
         date_window_size=1,
         region="US",
+        project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
     assert [
         {"start_date": "2021-07-01", "end_date": "2021-07-01"},
@@ -81,6 +100,7 @@ def test_date_slices():
         end_date=date.fromisoformat("2021-07-03"),
         date_window_size=2,
         region="US",
+        project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
     assert [{"start_date": "2021-07-01", "end_date": "2021-07-02"}, {"start_date": "2021-07-03", "end_date": "2021-07-03"}] == stream_slices
 
@@ -91,5 +111,6 @@ def test_date_slices():
         end_date=date.fromisoformat("2021-07-03"),
         date_window_size=1,
         region="US",
+        project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any", stream_state={"date": "2021-07-02"})
     assert [{"start_date": "2021-07-02", "end_date": "2021-07-02"}, {"start_date": "2021-07-03", "end_date": "2021-07-03"}] == stream_slices

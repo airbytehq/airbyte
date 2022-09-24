@@ -34,6 +34,7 @@ class MixpanelStream(HttpStream, ABC):
         self,
         authenticator: HttpAuthenticator,
         region: str,
+        project_timezone: str,
         start_date: Date = None,
         end_date: Date = None,
         date_window_size: int = 30,  # in days
@@ -48,6 +49,7 @@ class MixpanelStream(HttpStream, ABC):
         self.attribution_window = attribution_window
         self.additional_properties = select_properties_by_default
         self.region = region
+        self.project_timezone = project_timezone
         self.project_id = project_id
 
         super().__init__(authenticator=authenticator)
@@ -109,7 +111,7 @@ class MixpanelStream(HttpStream, ABC):
         """
         Fetch required parameters in a given stream. Used to create sub-streams
         """
-        params = {"authenticator": self.authenticator, "region": self.region}
+        params = {"authenticator": self.authenticator, "region": self.region, "project_timezone": self.project_timezone}
         if self.project_id:
             params["project_id"] = self.project_id
         return params
