@@ -6,6 +6,7 @@ import json
 from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 
@@ -119,8 +120,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 item[result.transformed_name] = str(properties[result.source_name])
 
             # convert timestamp to datetime string
-            if item.get("time") and item["time"].isdigit():
-                item["time"] = datetime.fromtimestamp(int(item["time"])).isoformat()
+            item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
 
             yield item
 
