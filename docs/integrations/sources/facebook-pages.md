@@ -81,8 +81,11 @@ You can easily get the page id from the page url. For example, if you have a pag
 
 ## Changelog
 
+https://github.com/airbytehq/airbyte/pull/17119
+
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.7 | 2022-09-25 | [17119](https://github.com/airbytehq/airbyte/pull/17119) | Remove deprecated method `path_param` |
 | 0.1.6 | 2021-12-22 | [9032](https://github.com/airbytehq/airbyte/pull/9032) | Remove deprecated field `live_encoders` from Page stream |
 | 0.1.5 | 2021-11-26 | [8267](https://github.com/airbytehq/airbyte/pull/) | updated all empty objects in schemas for Page and Post streams |
 | 0.1.4 | 2021-11-26 | [](https://github.com/airbytehq/airbyte/pull/) | Remove unsupported insights_export field from Pages request |
