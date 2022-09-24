@@ -551,7 +551,7 @@ class DefaultJobPersistenceTest {
       final String tableName = tableSchema.name();
       final JsonNode schema = tableSchema.getTableDefinition();
       assertNotNull(schema,
-          "Json schema files should be created in airbyte-scheduler/src/main/resources/tables for every table in the Database to validate its content");
+          "Json schema files should be created in airbyte-persistence/job-persistence/src/main/resources/tables for every table in the Database to validate its content");
       tableStream.forEach(row -> {
         try {
           jsonSchemaValidator.ensure(schema, row);

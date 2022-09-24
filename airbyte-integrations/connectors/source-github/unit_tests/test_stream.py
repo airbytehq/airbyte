@@ -59,12 +59,7 @@ def test_internal_server_error_retry(time_mock):
     stream_slice = {"repository": "airbytehq/airbyte", "comment_id": "id"}
 
     time_mock.reset_mock()
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions",
-        status=HTTPStatus.INTERNAL_SERVER_ERROR,
-        json={"message": "Server Error"},
-    )
+    responses.add("GET", "https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions", status=HTTPStatus.INTERNAL_SERVER_ERROR)
     with pytest.raises(BaseBackoffException):
         list(stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
 
@@ -1094,10 +1089,42 @@ def test_stream_workflow_jobs_read_incremental():
     stream = WorkflowJobs(workflow_runs_stream, **repository_args_with_start_date)
 
     data = [
-        {"id": 1, "completed_at": "2022-09-02T09:11:02Z", "run_id": 1, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}]},
-        {"id": 2, "completed_at": "2022-09-02T10:11:02Z", "run_id": 1, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}]},
-        {"id": 3, "completed_at": "2022-09-02T09:11:02Z", "run_id": 2, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}]},
-        {"id": 4, "completed_at": "2022-09-02T10:11:02Z", "run_id": 2, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}]}
+        {
+            "id": 1,
+            "completed_at": "2022-09-02T09:11:02Z",
+            "run_id": 1,
+            "steps": [
+                {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+        },
+        {
+            "id": 2,
+            "completed_at": "2022-09-02T10:11:02Z",
+            "run_id": 1,
+            "steps": [
+                {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+        },
+        {
+            "id": 3,
+            "completed_at": "2022-09-02T09:11:02Z",
+            "run_id": 2,
+            "steps": [
+                {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+        },
+        {
+            "id": 4,
+            "completed_at": "2022-09-02T10:11:02Z",
+            "run_id": 2,
+            "steps": [
+                {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+        },
     ]
 
     responses.add(
@@ -1106,38 +1133,76 @@ def test_stream_workflow_jobs_read_incremental():
         json={
             "total_count": 2,
             "workflow_runs": [
-                {"id": 1, "created_at": "2022-09-02T09:10:02Z", "updated_at": "2022-09-02T09:10:02Z", "repository": {"full_name": "org/repo"}},
-                {"id": 2, "created_at": "2022-09-02T09:10:04Z", "updated_at": "2022-09-02T09:10:04Z", "repository": {"full_name": "org/repo"}},
-            ]
-        }
+                {
+                    "id": 1,
+                    "created_at": "2022-09-02T09:10:02Z",
+                    "updated_at": "2022-09-02T09:10:02Z",
+                    "repository": {"full_name": "org/repo"},
+                },
+                {
+                    "id": 2,
+                    "created_at": "2022-09-02T09:10:04Z",
+                    "updated_at": "2022-09-02T09:10:04Z",
+                    "repository": {"full_name": "org/repo"},
+                },
+            ],
+        },
     )
 
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/org/repo/actions/runs/1/jobs",
-        json={
-            "jobs": data[0:2]
-        }
-    )
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/1/jobs", json={"jobs": data[0:2]})
 
     responses.add(
         "GET",
         "https://api.github.com/repos/org/repo/actions/runs/2/jobs",
-        json={
-            "jobs": data[2:4]
-        },
+        json={"jobs": data[2:4]},
     )
 
     state = {}
     records = read_incremental(stream, state)
-    
-    assert state == {"org/repo": {"completed_at": "2022-09-02T10:11:02Z"}}    
+
+    assert state == {"org/repo": {"completed_at": "2022-09-02T10:11:02Z"}}
 
     assert records == [
-        {"id": 1, "completed_at": "2022-09-02T09:11:02Z", "run_id": 1, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}], "repository": "org/repo"},
-        {"id": 2, "completed_at": "2022-09-02T10:11:02Z", "run_id": 1, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}], "repository": "org/repo"},
-        {"id": 3, "completed_at": "2022-09-02T09:11:02Z", "run_id": 2, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}], "repository": "org/repo"},
-        {"id": 4, "completed_at": "2022-09-02T10:11:02Z", "run_id": 2, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}], "repository": "org/repo"}
+        {
+            "id": 1,
+            "completed_at": "2022-09-02T09:11:02Z",
+            "run_id": 1,
+            "steps": [
+                {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+            "repository": "org/repo",
+        },
+        {
+            "id": 2,
+            "completed_at": "2022-09-02T10:11:02Z",
+            "run_id": 1,
+            "steps": [
+                {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+            "repository": "org/repo",
+        },
+        {
+            "id": 3,
+            "completed_at": "2022-09-02T09:11:02Z",
+            "run_id": 2,
+            "steps": [
+                {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+            "repository": "org/repo",
+        },
+        {
+            "id": 4,
+            "completed_at": "2022-09-02T10:11:02Z",
+            "run_id": 2,
+            "steps": [
+                {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+            "repository": "org/repo",
+        },
     ]
 
     assert len(responses.calls) == 3
@@ -1150,52 +1215,54 @@ def test_stream_workflow_jobs_read_incremental():
             "run_id": 2,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
-                { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}
-            ]
-        }
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+        },
     )
-    
-    data[2]["completed_at"] = "2022-09-04T01:00:00Z"    # data with ID 2
+
+    data[2]["completed_at"] = "2022-09-04T01:00:00Z"  # data with ID 2
+
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/1/jobs", json={"jobs": data[0:1]})
+
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/1/jobs", json={"jobs": data[1:2]})
 
     responses.add(
         "GET",
-        "https://api.github.com/repos/org/repo/actions/runs/1/jobs",
-        json={
-            "jobs": data[0:1]
-        }
-    )
-    
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/org/repo/actions/runs/1/jobs",
-        json={
-            "jobs": data[1:2]
-        }
+        "https://api.github.com/repos/org/repo/actions/runs/2/jobs",
+        json={"jobs": data[2:3]},
     )
 
     responses.add(
         "GET",
         "https://api.github.com/repos/org/repo/actions/runs/2/jobs",
-        json={
-            "jobs": data[2:3]
-        },
+        json={"jobs": data[3:4]},
     )
-    
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/org/repo/actions/runs/2/jobs",
-        json={
-            "jobs": data[3:4]
-        },
-    )
-    
+
     responses.calls.reset()
     records = read_incremental(stream, state)
 
     assert state == {"org/repo": {"completed_at": "2022-09-04T01:00:00Z"}}
     assert records == [
-        {"id": 5, "completed_at": "2022-09-03T01:00:00Z", "run_id": 1, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}], "repository": "org/repo"},
-        {"id": 2, "completed_at": "2022-09-04T01:00:00Z", "run_id": 2, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1}, {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2}], "repository": "org/repo"},
+        {
+            "id": 5,
+            "completed_at": "2022-09-03T01:00:00Z",
+            "run_id": 1,
+            "steps": [
+                {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+            "repository": "org/repo",
+        },
+        {
+            "id": 2,
+            "completed_at": "2022-09-04T01:00:00Z",
+            "run_id": 2,
+            "steps": [
+                {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
+                {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2},
+            ],
+            "repository": "org/repo",
+        },
     ]
 
 
@@ -1217,10 +1284,20 @@ def test_stream_workflow_jobs_full_refresh():
         json={
             "total_count": 2,
             "workflow_runs": [
-                {"id": 1, "created_at": "2022-09-02T09:10:02Z", "updated_at": "2022-09-02T09:10:02Z", "repository": {"full_name": "org/repo"}},
-                {"id": 2, "created_at": "2022-09-02T09:10:04Z", "updated_at": "2022-09-02T09:10:04Z", "repository": {"full_name": "org/repo"}},
-            ]
-        }
+                {
+                    "id": 1,
+                    "created_at": "2022-09-02T09:10:02Z",
+                    "updated_at": "2022-09-02T09:10:02Z",
+                    "repository": {"full_name": "org/repo"},
+                },
+                {
+                    "id": 2,
+                    "created_at": "2022-09-02T09:10:04Z",
+                    "updated_at": "2022-09-02T09:10:04Z",
+                    "repository": {"full_name": "org/repo"},
+                },
+            ],
+        },
     )
 
     responses.add(
@@ -1228,10 +1305,50 @@ def test_stream_workflow_jobs_full_refresh():
         "https://api.github.com/repos/org/repo/actions/runs/1/jobs",
         json={
             "jobs": [
-                {"id": 1, "completed_at": "2022-09-02T09:11:02Z", "run_id": 1, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1, "completed_at": "2022-09-02T09:01:00.000-00:00"}, { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2, "completed_at": "2022-09-02T09:02:00.000-00:00"}]},
-                {"id": 2, "completed_at": "2022-09-02T10:11:02Z", "run_id": 1, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1, "completed_at": "2022-09-02T10:01:00.000-00:00"}, { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2, "completed_at": "2022-09-02T10:02:00.000-00:00"}]}
+                {
+                    "id": 1,
+                    "completed_at": "2022-09-02T09:11:02Z",
+                    "run_id": 1,
+                    "steps": [
+                        {
+                            "name": "Set up job",
+                            "status": "completed",
+                            "conclusion": "success",
+                            "number": 1,
+                            "completed_at": "2022-09-02T09:01:00.000-00:00",
+                        },
+                        {
+                            "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0",
+                            "status": "completed",
+                            "conclusion": "success",
+                            "number": 2,
+                            "completed_at": "2022-09-02T09:02:00.000-00:00",
+                        },
+                    ],
+                },
+                {
+                    "id": 2,
+                    "completed_at": "2022-09-02T10:11:02Z",
+                    "run_id": 1,
+                    "steps": [
+                        {
+                            "name": "Set up job",
+                            "status": "completed",
+                            "conclusion": "success",
+                            "number": 1,
+                            "completed_at": "2022-09-02T10:01:00.000-00:00",
+                        },
+                        {
+                            "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0",
+                            "status": "completed",
+                            "conclusion": "success",
+                            "number": 2,
+                            "completed_at": "2022-09-02T10:02:00.000-00:00",
+                        },
+                    ],
+                },
             ]
-        }
+        },
     )
 
     responses.add(
@@ -1239,8 +1356,48 @@ def test_stream_workflow_jobs_full_refresh():
         "https://api.github.com/repos/org/repo/actions/runs/2/jobs",
         json={
             "jobs": [
-                {"id": 3, "completed_at": "2022-09-02T09:11:02Z", "run_id": 2, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1, "completed_at": "2022-09-02T09:01:00.000-00:00"}, { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2, "completed_at": "2022-09-02T09:02:00.000-00:00"}]},
-                {"id": 4, "completed_at": "2022-09-02T10:11:02Z", "run_id": 2, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1, "completed_at": "2022-09-02T10:01:00.000-00:00"}, { "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2, "completed_at": "2022-09-02T10:02:00.000-00:00"}]}
+                {
+                    "id": 3,
+                    "completed_at": "2022-09-02T09:11:02Z",
+                    "run_id": 2,
+                    "steps": [
+                        {
+                            "name": "Set up job",
+                            "status": "completed",
+                            "conclusion": "success",
+                            "number": 1,
+                            "completed_at": "2022-09-02T09:01:00.000-00:00",
+                        },
+                        {
+                            "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0",
+                            "status": "completed",
+                            "conclusion": "success",
+                            "number": 2,
+                            "completed_at": "2022-09-02T09:02:00.000-00:00",
+                        },
+                    ],
+                },
+                {
+                    "id": 4,
+                    "completed_at": "2022-09-02T10:11:02Z",
+                    "run_id": 2,
+                    "steps": [
+                        {
+                            "name": "Set up job",
+                            "status": "completed",
+                            "conclusion": "success",
+                            "number": 1,
+                            "completed_at": "2022-09-02T10:01:00.000-00:00",
+                        },
+                        {
+                            "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0",
+                            "status": "completed",
+                            "conclusion": "success",
+                            "number": 2,
+                            "completed_at": "2022-09-02T10:02:00.000-00:00",
+                        },
+                    ],
+                },
             ]
         },
     )
@@ -1248,10 +1405,94 @@ def test_stream_workflow_jobs_full_refresh():
     records = list(read_full_refresh(stream))
 
     assert records == [
-        {"id": 1, "completed_at": "2022-09-02T09:11:02Z", "run_id": 1, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1, "completed_at": "2022-09-02T09:01:00.000-00:00"}, {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2, "completed_at": "2022-09-02T09:02:00.000-00:00"}], "repository": "org/repo"},
-        {"id": 2, "completed_at": "2022-09-02T10:11:02Z", "run_id": 1, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1, "completed_at": "2022-09-02T10:01:00.000-00:00"}, {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2, "completed_at": "2022-09-02T10:02:00.000-00:00"}], "repository": "org/repo"},
-        {"id": 3, "completed_at": "2022-09-02T09:11:02Z", "run_id": 2, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1, "completed_at": "2022-09-02T09:01:00.000-00:00"}, {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2, "completed_at": "2022-09-02T09:02:00.000-00:00"}], "repository": "org/repo"},
-        {"id": 4, "completed_at": "2022-09-02T10:11:02Z", "run_id": 2, "steps": [{"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1, "completed_at": "2022-09-02T10:01:00.000-00:00"}, {"name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0", "status": "completed", "conclusion": "success", "number": 2, "completed_at": "2022-09-02T10:02:00.000-00:00"}], "repository": "org/repo"}
+        {
+            "id": 1,
+            "completed_at": "2022-09-02T09:11:02Z",
+            "run_id": 1,
+            "steps": [
+                {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "completed_at": "2022-09-02T09:01:00.000-00:00",
+                },
+                {
+                    "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "completed_at": "2022-09-02T09:02:00.000-00:00",
+                },
+            ],
+            "repository": "org/repo",
+        },
+        {
+            "id": 2,
+            "completed_at": "2022-09-02T10:11:02Z",
+            "run_id": 1,
+            "steps": [
+                {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "completed_at": "2022-09-02T10:01:00.000-00:00",
+                },
+                {
+                    "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "completed_at": "2022-09-02T10:02:00.000-00:00",
+                },
+            ],
+            "repository": "org/repo",
+        },
+        {
+            "id": 3,
+            "completed_at": "2022-09-02T09:11:02Z",
+            "run_id": 2,
+            "steps": [
+                {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "completed_at": "2022-09-02T09:01:00.000-00:00",
+                },
+                {
+                    "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "completed_at": "2022-09-02T09:02:00.000-00:00",
+                },
+            ],
+            "repository": "org/repo",
+        },
+        {
+            "id": 4,
+            "completed_at": "2022-09-02T10:11:02Z",
+            "run_id": 2,
+            "steps": [
+                {
+                    "name": "Set up job",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 1,
+                    "completed_at": "2022-09-02T10:01:00.000-00:00",
+                },
+                {
+                    "name": "Pull ghcr.io/rtcamp/action-slack-notify:v2.2.0",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "number": 2,
+                    "completed_at": "2022-09-02T10:02:00.000-00:00",
+                },
+            ],
+            "repository": "org/repo",
+        },
     ]
 
     assert len(responses.calls) == 3
