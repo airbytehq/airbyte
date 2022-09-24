@@ -31,7 +31,7 @@ tests:
       future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
         cohorts: ["created"]
-        export: ["date"]
+        export: ["time"]
         funnels: ["8901755", "date"]
         revenue: ["date"]
       timeout_seconds: 3600
