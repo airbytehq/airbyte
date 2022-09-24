@@ -30,7 +30,7 @@ class SnowflakeDataSourceUtilsTest {
                                 }
                                 """;
   private final String expectedJdbcUrl =
-      "jdbc:snowflake://host/?role=role&warehouse=WAREHOUSE&database=DATABASE&schema=SOURCE_SCHEMA&JDBC_QUERY_RESULT_FORMAT=JSON&CLIENT_SESSION_KEEP_ALIVE=true";
+      "jdbc:snowflake://host/?role=role&warehouse=WAREHOUSE&database=DATABASE&schema=SOURCE_SCHEMA&JDBC_QUERY_RESULT_FORMAT=JSON&CLIENT_SESSION_KEEP_ALIVE=true&application=Airbyte_Connector";
 
   @Test
   void testBuildJDBCUrl() {
