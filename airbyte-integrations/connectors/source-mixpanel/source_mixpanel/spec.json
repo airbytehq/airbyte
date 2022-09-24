@@ -114,6 +114,7 @@
         "title": "Date slicing window",
         "description": "Defines window size in days, that used to slice through data. You can reduce it, if amount of data in each window is too big for your environment.",
         "type": "integer",
+        "minimum": 1,
         "default": 30
       }
     }
