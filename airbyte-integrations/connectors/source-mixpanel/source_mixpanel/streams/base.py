@@ -7,6 +7,7 @@ from abc import ABC
 from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
@@ -144,16 +145,19 @@ class DateSlicesMixin:
         # move start_date back <attribution_window> days to sync data since that time as well
         start_date = start_date - timedelta(days=self.attribution_window)
 
-        while start_date <= self.end_date:
-            end_date = start_date + timedelta(days=self.date_window_size - 1)  # -1 is needed because dates are inclusive
+        # end_date cannot be later than today
+        end_date = min(self.end_date, pendulum.today(tz=self.project_timezone).date())
+
+        while start_date <= end_date:
+            current_end_date = start_date + timedelta(days=self.date_window_size - 1)  # -1 is needed because dates are inclusive
             date_slices.append(
                 {
                     "start_date": str(start_date),
-                    "end_date": str(min(end_date, self.end_date)),
+                    "end_date": str(min(current_end_date, end_date)),
                 }
             )
             # add 1 additional day because date range is inclusive
-            start_date = end_date + timedelta(days=1)
+            start_date = current_end_date + timedelta(days=1)
 
         return date_slices
 
