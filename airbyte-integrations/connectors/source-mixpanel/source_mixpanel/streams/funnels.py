@@ -165,13 +165,9 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
             - str in current_stream_state
         """
         funnel_id: str = str(latest_record["funnel_id"])
-
-        latest_record_date: str = latest_record.get(self.cursor_field, str(self.start_date))
-        stream_state_date: str = str(self.start_date)
-        if current_stream_state and funnel_id in current_stream_state:
-            stream_state_date = current_stream_state[funnel_id]["date"]
-
-        # update existing stream state
-        current_stream_state[funnel_id] = {"date": max(latest_record_date, stream_state_date)}
-
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(funnel_id, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(funnel_id, {})[self.cursor_field] = updated_state
         return current_stream_state
