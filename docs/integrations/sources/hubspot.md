@@ -132,6 +132,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.1   | 2022-09-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate to per-stream state.  
 | 0.2.0   | 2022-09-13 | [16632](https://github.com/airbytehq/airbyte/pull/16632) | Remove Feedback Submissions stream as the one using unstable (beta) API.                                                                       |
 | 0.1.83  | 2022-09-01 | [16214](https://github.com/airbytehq/airbyte/pull/16214) | Update Tickets, fix missing properties and change how state is updated.                                                                        |
 | 0.1.82  | 2022-08-18 | [15110](https://github.com/airbytehq/airbyte/pull/15110) | Check if it has a state on search streams before first sync                                                                                    | 
