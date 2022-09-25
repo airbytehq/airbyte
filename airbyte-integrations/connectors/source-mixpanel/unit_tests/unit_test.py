@@ -4,13 +4,14 @@
 
 from datetime import date, timedelta
 
+import pendulum
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_mixpanel.streams import Annotations, Export
 
 
 def test_date_slices():
 
-    now = date.today()
+    now = pendulum.today(tz="US/Pacific").date()
     # Test with start_date now range
     stream_slices = Annotations(
         authenticator=NoAuth(), start_date=now, end_date=now, date_window_size=1, region="EU", project_timezone="US/Pacific"
