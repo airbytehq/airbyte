@@ -2,7 +2,7 @@
 
 Substreams are streams that depend on the records on another stream
 
-We might for instance want to read all the commits for a given repository (parent resource).
+We might for instance want to read all the commits for a given repository (parent stream).
 
 ## Substream slicer
 
