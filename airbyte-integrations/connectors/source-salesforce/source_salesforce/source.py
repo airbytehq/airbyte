@@ -4,6 +4,7 @@
 
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
@@ -26,14 +27,20 @@ class SourceSalesforce(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         try:
-            _ = self._get_sf_object(config)
+            salesforce = self._get_sf_object(config)
+            salesforce.describe()
         except exceptions.HTTPError as error:
-            error_data = error.response.json()[0]
-            error_code = error_data.get("errorCode")
-            if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
-                return False, "API Call limit is exceeded"
-
+            error_msg = f"An error occurred: {error.response.text}"
+            try:
+                error_data = error.response.json()[0]
+            except (KeyError, requests.exceptions.JSONDecodeError):
+                pass
+            else:
+                error_code = error_data.get("errorCode")
+                if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                    logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
+                    error_msg = "API Call limit is exceeded"
+            return False, error_msg
         return True, None
 
     @classmethod
