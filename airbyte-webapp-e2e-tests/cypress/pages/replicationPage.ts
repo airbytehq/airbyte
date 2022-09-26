@@ -1,4 +1,4 @@
-const scheduleDropdown = "div[data-testid='scheduleData.basicSchedule']";
+const scheduleDropdown = "div[data-testid='scheduleData']";
 const scheduleValue = (value: string) => `div[data-testid='${value}']`;
 const destinationPrefix = "input[data-testid='prefixInput']";
 const replicationTab = "div[data-id='replication-step']";
@@ -7,37 +7,40 @@ const destinationNamespaceCustom = "div[data-testid='namespaceDefinition-customf
 const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source']";
 const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
-const successResult = "span[data-id='success-result']";
+const successResult = "div[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
 const connectionNameInput = "input[data-testid='connectionName']";
 
 export const goToReplicationTab = () => {
-    cy.get(replicationTab).click();
-}
+  cy.get(replicationTab).click();
+};
 
 export const enterConnectionName = (name: string) => {
-    cy.get(connectionNameInput).type(name);
-}
+  cy.get(connectionNameInput).type(name);
+};
 
 export const selectSchedule = (value: string) => {
-    cy.get(scheduleDropdown).click();
-    cy.get(scheduleValue(value)).click();
-}
+  cy.get(scheduleDropdown).click();
+  cy.get(scheduleValue(value)).click();
+};
 
 export const fillOutDestinationPrefix = (value: string) => {
-    cy.get(destinationPrefix).clear().type(value).should('have.value', value);;
-}
+  cy.get(destinationPrefix).clear().type(value).should("have.value", value);
+};
 
 export const setupDestinationNamespaceCustomFormat = (value: string) => {
-    cy.get(destinationNamespace).click();
-    cy.get(destinationNamespaceCustom).click();
-    cy.get(destinationNamespaceCustomInput).first().type(value).should('have.value', '${SOURCE_NAMESPACE}' + value);
-}
+  cy.get(destinationNamespace).click();
+  cy.get(destinationNamespaceCustom).click();
+  cy.get(destinationNamespaceCustomInput)
+    .first()
+    .type(value)
+    .should("have.value", "${SOURCE_NAMESPACE}" + value);
+};
 
 export const setupDestinationNamespaceSourceFormat = () => {
-    cy.get(destinationNamespace).click();
-    cy.get(destinationNamespaceSource).click();
-}
+  cy.get(destinationNamespace).click();
+  cy.get(destinationNamespaceSource).click();
+};
 
 export const selectFullAppendSyncMode = () => {
   cy.get(syncModeDropdown).first().click({ force: true });
@@ -48,9 +51,9 @@ export const selectFullAppendSyncMode = () => {
 };
 
 export const checkSuccessResult = () => {
-    cy.get(successResult).should("exist");
-}
+  cy.get(successResult).should("exist");
+};
 
 export const confirmStreamConfigurationChangedPopup = () => {
-    cy.get(saveStreamChangesButton).click();
-}
+  cy.get(saveStreamChangesButton).click();
+};

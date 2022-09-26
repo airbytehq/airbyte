@@ -4,9 +4,17 @@ import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { ContentCard, H4 } from "components";
+import { Card } from "components/base/Card";
+import { Text } from "components/base/Text";
 
 import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
+import {
+  ConnectionStatus,
+  OperationCreate,
+  OperationRead,
+  OperatorType,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
@@ -20,17 +28,8 @@ import {
   getInitialNormalization,
   getInitialTransformations,
   mapFormPropsToOperation,
-  useDefaultTransformation,
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
-
-import {
-  ConnectionStatus,
-  OperationCreate,
-  OperationRead,
-  OperatorType,
-  WebBackendConnectionRead,
-} from "../../../../../core/request/AirbyteClient";
 
 interface TransformationViewProps {
   connection: WebBackendConnectionRead;
@@ -42,7 +41,7 @@ const Content = styled.div`
   padding-bottom: 10px;
 `;
 
-const NoSupportedTransformationCard = styled(ContentCard)`
+const NoSupportedTransformationCard = styled(Card)`
   max-width: 500px;
   margin: 0 auto;
   min-height: 100px;
@@ -56,7 +55,6 @@ const CustomTransformationsCard: React.FC<{
   onSubmit: FormikOnSubmit<{ transformations?: OperationRead[] }>;
   mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
-  const defaultTransformation = useDefaultTransformation();
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
 
   const initialValues = useMemo(
@@ -82,7 +80,6 @@ const CustomTransformationsCard: React.FC<{
       <FieldArray name="transformations">
         {(formProps) => (
           <TransformationField
-            defaultTransformation={defaultTransformation}
             {...formProps}
             mode={mode}
             onStartEdit={toggleEditingTransformation}
@@ -175,9 +172,9 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
         )}
         {!supportsNormalization && !supportsDbt && (
           <NoSupportedTransformationCard>
-            <H4 center>
+            <Text as="p" size="lg" centered>
               <FormattedMessage id="connectionForm.operations.notSupported" />
-            </H4>
+            </Text>
           </NoSupportedTransformationCard>
         )}
       </fieldset>

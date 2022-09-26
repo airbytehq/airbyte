@@ -6,10 +6,11 @@ package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.OperatorDbtInput;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.WorkerApp;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
+import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.activity.ActivityExecutionContext;
 import java.util.Map;
 import java.util.UUID;
@@ -25,8 +26,10 @@ public class DbtLauncherWorker extends LauncherWorker<OperatorDbtInput, Void> {
                            final IntegrationLauncherConfig destinationLauncherConfig,
                            final JobRunConfig jobRunConfig,
                            final WorkerConfigs workerConfigs,
-                           final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
-                           final Supplier<ActivityExecutionContext> activityContext) {
+                           final ContainerOrchestratorConfig containerOrchestratorConfig,
+                           final Supplier<ActivityExecutionContext> activityContext,
+                           final Integer serverPort,
+                           final TemporalUtils temporalUtils) {
     super(
         connectionId,
         DBT,
@@ -37,7 +40,9 @@ public class DbtLauncherWorker extends LauncherWorker<OperatorDbtInput, Void> {
         containerOrchestratorConfig,
         workerConfigs.getResourceRequirements(),
         Void.class,
-        activityContext);
+        activityContext,
+        serverPort,
+        temporalUtils);
   }
 
 }
