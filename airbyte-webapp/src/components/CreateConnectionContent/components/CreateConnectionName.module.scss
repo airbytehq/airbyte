@@ -1,0 +1,12 @@
+@forward "../../../views/Connection/ConnectionForm/ConnectionFormFields.module.scss";
+
+.labelHeading {
+  line-height: 16px;
+  display: inline;
+}
+
+.connectionLabel {
+  max-width: 328px;
+  margin-right: 20px;
+  vertical-align: top;
+}

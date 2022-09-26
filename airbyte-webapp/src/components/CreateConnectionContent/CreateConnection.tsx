@@ -1,10 +1,8 @@
-import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import React, { Suspense, useCallback } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { useToggle } from "react-use";
 
-import { Input } from "components/base";
 import { FormChangeTracker } from "components/FormChangeTracker";
 import LoadingSchema from "components/LoadingSchema";
 
@@ -20,17 +18,10 @@ import { SchemaError as SchemaErrorType, useDiscoverSchema } from "hooks/service
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import CreateControls from "views/Connection/ConnectionForm/components/CreateControls";
 import { OperationsSection } from "views/Connection/ConnectionForm/components/OperationsSection";
-import {
-  ConnectionFormFields,
-  ConnectorLabel,
-  FlexRow,
-  LabelHeading,
-  LeftFieldCol,
-  RightFieldCol,
-  Section,
-} from "views/Connection/ConnectionForm/ConnectionFormFields";
+import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
 import { connectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
+import { CreateConnectionName } from "./components/CreateConnectionName";
 import { SchemaError } from "./components/SchemaError";
 import styles from "./CreateConnection.module.scss";
 
@@ -56,7 +47,6 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
   const { clearFormChange } = useFormChangeTrackerService();
   const navigate = useNavigate();
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
-  const { formatMessage } = useIntl();
 
   const { connection, initialValues, getErrorMessage, setSubmitError } = useConnectionFormService();
 
@@ -113,38 +103,7 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
           {({ values, isSubmitting, isValid, dirty }) => (
             <Form>
               <FormChangeTracker changed={dirty} formId={formId} />
-              <Section>
-                <Field name="name">
-                  {({ field, meta }: FieldProps<string>) => (
-                    <FlexRow>
-                      <LeftFieldCol>
-                        <ConnectorLabel
-                          nextLine
-                          error={!!meta.error && meta.touched}
-                          label={
-                            <LabelHeading bold>
-                              <FormattedMessage id="form.connectionName" />
-                            </LabelHeading>
-                          }
-                          message={formatMessage({
-                            id: "form.connectionName.message",
-                          })}
-                        />
-                      </LeftFieldCol>
-                      <RightFieldCol>
-                        <Input
-                          {...field}
-                          error={!!meta.error}
-                          data-testid="connectionName"
-                          placeholder={formatMessage({
-                            id: "form.connectionName.placeholder",
-                          })}
-                        />
-                      </RightFieldCol>
-                    </FlexRow>
-                  )}
-                </Field>
-              </Section>
+              <CreateConnectionName />
               <ConnectionFormFields values={values} isSubmitting={isSubmitting} refreshSchema={onDiscoverSchema} />
               <OperationsSection
                 onStartEditTransformation={toggleEditingTransformation}

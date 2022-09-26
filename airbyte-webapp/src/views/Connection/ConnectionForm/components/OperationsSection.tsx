@@ -7,8 +7,8 @@ import { Card, H5 } from "components";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
-import { StyledSection } from "../ConnectionForm";
 import { NormalizationField } from "./NormalizationField";
+import styles from "./OperationsSection.module.scss";
 import { TransformationField } from "./TransformationField";
 
 interface OperationsSectionProps {
@@ -34,7 +34,7 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
 
   return (
     <Card>
-      <StyledSection>
+      <div className={styles.styledSection}>
         {supportsNormalization || supportsTransformations ? (
           <H5 bold>
             {[
@@ -57,7 +57,7 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
             )}
           </FieldArray>
         )}
-      </StyledSection>
+      </div>
     </Card>
   );
 };

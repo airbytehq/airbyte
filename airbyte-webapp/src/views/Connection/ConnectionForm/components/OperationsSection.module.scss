@@ -1,0 +1,10 @@
+.styledSection {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  &:not(:last-child) {
+    box-shadow: 0 1px 0 rgba(139, 139, 160, 25%);
+  }
+}
