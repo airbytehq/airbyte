@@ -1,6 +1,6 @@
 # Config-based connectors overview
 
-:warning: This framework is in alpha stage. Support is not in production and is available only to select users. :warning:
+:warning: This framework is in [alpha](https://docs.airbyte.com/project-overview/product-release-stages/#alpha). It is still in active development and may include backward-incompatible changes. Please share feedback and requests directly with us at feedback@airbyte.io :warning:
 
 The goal of this document is to give enough technical specifics to understand how config-based connectors work.
 When you're ready to start building a connector, you can start with [the tutorial](./tutorial/0-getting-started.md), or dive into [more detailed documentation](./index.md).
