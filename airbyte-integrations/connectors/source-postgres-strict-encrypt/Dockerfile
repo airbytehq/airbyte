@@ -16,5 +16,6 @@ ENV APPLICATION source-postgres-strict-encrypt
 
 COPY --from=build /airbyte /airbyte
 
+
 LABEL io.airbyte.version=1.0.11
 LABEL io.airbyte.name=airbyte/source-postgres-strict-encrypt
