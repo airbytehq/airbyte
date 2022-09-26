@@ -9,24 +9,24 @@ interface PaddingProps {
   right?: number;
 }
 
-type IHeaderProps = {
+interface HeaderProps extends ColumnInstance<Record<string, unknown>> {
   headerHighlighted?: boolean;
   collapse?: boolean;
   customWidth?: number;
   customPadding?: PaddingProps;
-} & ColumnInstance<Record<string, unknown>>;
+}
 
-type ICellProps = {
-  column: IHeaderProps;
-} & Cell;
+interface CellProps extends Cell {
+  column: HeaderProps;
+}
 
-type IThProps = {
+interface TableHeaderProps extends React.ThHTMLAttributes<HTMLTableHeaderCellElement> {
   highlighted?: boolean;
   collapse?: boolean;
   customWidth?: number;
   customPadding?: PaddingProps;
   light?: boolean;
-} & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
+}
 
 const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
   border-spacing: 0;
@@ -77,7 +77,7 @@ const Td = styled.td<{
   }
 `;
 
-const Th = styled.th<IThProps>`
+const Th = styled.th<TableHeaderProps>`
   background: ${({ theme, light }) => (light ? "none" : theme.textColor)};
   padding: ${({ customPadding }) => `9px ${customPadding?.right ?? 13}px 10px ${customPadding?.left ?? 13}px`};
   text-align: left;
@@ -100,9 +100,9 @@ const Th = styled.th<IThProps>`
   }
 `;
 
-interface IProps {
+interface TableProps {
   light?: boolean;
-  columns: Array<IHeaderProps | Column<Record<string, unknown>>>;
+  columns: Array<HeaderProps | Column<Record<string, unknown>>>;
   erroredRows?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
@@ -112,7 +112,7 @@ interface IProps {
   sortBy?: Array<SortingRule<any>>;
 }
 
-const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortBy, light }) => {
+const Table: React.FC<TableProps> = ({ columns, data, onClickRow, erroredRows, sortBy, light }) => {
   const [plugins, config] = useMemo(() => {
     const pl = [];
     const plConfig: Record<string, unknown> = {};
@@ -137,7 +137,7 @@ const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortB
       <thead>
         {headerGroups.map((headerGroup, key) => (
           <tr {...headerGroup.getHeaderGroupProps()} key={`table-header-${key}`}>
-            {headerGroup.headers.map((column: IHeaderProps, columnKey) => (
+            {headerGroup.headers.map((column: HeaderProps, columnKey) => (
               <Th
                 {...column.getHeaderProps()}
                 highlighted={column.headerHighlighted}
@@ -164,7 +164,7 @@ const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortB
               onClick={() => onClickRow?.(row.original)}
               erroredRows={erroredRows && !!row.original.error}
             >
-              {row.cells.map((cell: ICellProps, key) => {
+              {row.cells.map((cell: CellProps, key) => {
                 return (
                   <Td
                     {...cell.getCellProps()}
