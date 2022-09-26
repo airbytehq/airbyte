@@ -1,7 +1,7 @@
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import React from "react";
+import React, { useMemo } from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
 import { StatusIcon } from "components";
@@ -42,42 +42,36 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
   const streamsToReset = "job" in job ? job.job.resetConfig?.streamsToReset : undefined;
   const isPartialSuccess = partialSuccessCheck(attempts);
 
-  const statusIcon = () => {
-    switch (true) {
-      case jobStatus === JobStatus.cancelled:
-      case !isPartialSuccess && isFailed:
-        return <StatusIcon status="error" />;
-      case jobStatus === JobStatus.running:
-        return <StatusIcon status="loading" />;
-      case jobStatus === JobStatus.succeeded:
-        return <StatusIcon status="success" />;
-      case isPartialSuccess:
-        return <StatusIcon status="warning" />;
-      default:
-        return null;
+  const statusIcon = useMemo(() => {
+    if (jobStatus === JobStatus.cancelled || (!isPartialSuccess && isFailed)) {
+      return <StatusIcon status="error" />;
     }
-  };
+    if (jobStatus === JobStatus.running) {
+      return <StatusIcon status="loading" />;
+    }
+    if (jobStatus === JobStatus.succeeded) {
+      return <StatusIcon status="success" />;
+    }
+    if (isPartialSuccess) {
+      return <StatusIcon status="warning" />;
+    }
+    return null;
+  }, [isFailed, isPartialSuccess, jobStatus]);
 
-  const label = () => {
+  const label = useMemo(() => {
     let status = "";
-    switch (true) {
-      case jobStatus === JobStatus.failed:
-        status = "failed";
-        break;
-      case jobStatus === JobStatus.cancelled:
-        status = "cancelled";
-        break;
-      case jobStatus === JobStatus.running:
-        status = "running";
-        break;
-      case jobStatus === JobStatus.succeeded:
-        status = "succeeded";
-        break;
-      case isPartialSuccess:
-        status = "partialSuccess";
-        break;
-      default:
-        break;
+    if (jobStatus === JobStatus.failed) {
+      status = "failed";
+    } else if (jobStatus === JobStatus.cancelled) {
+      status = "cancelled";
+    } else if (jobStatus === JobStatus.running) {
+      status = "running";
+    } else if (jobStatus === JobStatus.succeeded) {
+      status = "succeeded";
+    } else if (isPartialSuccess) {
+      status = "partialSuccess";
+    } else {
+      return <FormattedMessage id="sources.jobStatus.unknown" />;
     }
     return (
       <FormattedMessage
@@ -85,7 +79,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         id={`sources.jobStatus.${jobConfigType}.${status}`}
       />
     );
-  };
+  }, [isPartialSuccess, jobConfigType, jobStatus, streamsToReset?.length]);
 
   return (
     <Row
@@ -93,9 +87,9 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
       onClick={onExpand}
     >
       <Cell className={styles.titleCell}>
-        <div className={styles.statusIcon}>{statusIcon()}</div>
+        <div className={styles.statusIcon}>{statusIcon}</div>
         <div className={styles.justification}>
-          {label()}
+          {label}
           {attempts.length > 0 && (
             <>
               {attempts.length > 1 && (

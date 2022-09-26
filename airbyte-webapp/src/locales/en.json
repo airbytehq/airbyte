@@ -278,6 +278,7 @@
   "sources.jobStatus.sync.succeeded": "Sync Succeeded",
   "sources.jobStatus.sync.cancelled": "Sync Cancelled",
   "sources.jobStatus.sync.partialSuccess": "Sync Partial Success",
+  "sources.jobStatus.unknown": "Status Unknown",
   "sources.additionLogs": " Logs",
   "sources.emptyLogs": "Waiting for logs...",
   "sources.hour": "{hour}h ",
