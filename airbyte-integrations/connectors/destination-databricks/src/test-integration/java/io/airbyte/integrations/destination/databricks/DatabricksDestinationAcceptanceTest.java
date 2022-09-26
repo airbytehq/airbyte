@@ -22,6 +22,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
