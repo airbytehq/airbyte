@@ -1,8 +1,9 @@
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Button, DropDownRow, H3, H5 } from "components";
+import { Button, DropDownRow } from "components";
 import { Popout } from "components/base/Popout/Popout";
+import { Text } from "components/base/Text";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
@@ -45,19 +46,21 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
   return (
     <>
       <div className={styles.entityInfo}>
-        {entityIcon && <span className={styles.entityIcon}>{entityIcon}</span>}
+        {entityIcon && <div className={styles.entityIcon}>{entityIcon}</div>}
         <div>
-          <H3 bold>{entityName}</H3>
-          <H5 className={styles.entityType}>
+          <Text as="h2" size="md">
+            {entityName}
+          </Text>
+          <Text as="p" size="lg" bold className={styles.entityType}>
             <span>{entity}</span>
             <ReleaseStageBadge stage={releaseStage} />
-          </H5>
+          </Text>
         </div>
       </div>
       <div className={styles.content}>
-        <H5>
+        <Text as="h3" size="sm">
           <FormattedMessage id="tables.connections" />
-        </H5>
+        </Text>
         <Popout
           data-testid={`select-${type}`}
           options={options}

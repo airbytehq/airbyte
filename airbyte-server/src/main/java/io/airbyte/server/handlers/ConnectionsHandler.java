@@ -43,7 +43,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.CatalogDiffConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
@@ -51,6 +50,7 @@ import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.ConnectionScheduleHelper;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
 import io.airbyte.server.handlers.helpers.SourceMatcher;
+import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.IOException;
@@ -363,12 +363,7 @@ public class ConnectionsHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
-    // listing all of this is also bad
-    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId())) {
-      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
-        continue;
-      }
-
+    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), includeDeleted)) {
       connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
