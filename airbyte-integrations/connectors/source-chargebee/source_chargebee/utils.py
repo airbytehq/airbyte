@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from typing import Any, Dict
 
 
@@ -26,9 +30,9 @@ def transform_custom_fields(record: Dict[str, Any]) -> Dict[str, Any]:
     custom_fields = []
 
     for key, value in record.items():
-        if key.startswith('cf_'):
+        if key.startswith("cf_"):
             custom_fields.append({"name": key, "value": value})
 
-    record['custom_fields'] = custom_fields
+    record["custom_fields"] = custom_fields
 
     yield record
