@@ -6,7 +6,7 @@ import Modal from "components/Modal";
 import { CatalogDiffModal } from "./CatalogDiffModal";
 
 export default {
-  title: "Ui/CatalogDiffModal",
+  title: "connection/CatalogDiffModal",
   component: CatalogDiffModal,
 } as ComponentMeta<typeof CatalogDiffModal>;
 

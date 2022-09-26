@@ -1,7 +1,8 @@
 import { useField } from "formik";
 import React from "react";
 
-import { LabeledSwitch, TextWithHTML } from "components";
+import { LabeledSwitch } from "components";
+import { TextWithHTML } from "components/ui/TextWithHTML";
 
 import { FormBaseItem } from "core/form/types";
 
