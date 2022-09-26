@@ -2,11 +2,11 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.temporal.scheduling.state;
+package io.airbyte.workers.temporal.scheduling.state;
 
-import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChangedListener;
-import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
-import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChangedListener.StateField;
+import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener;
+import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
+import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.StateField;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

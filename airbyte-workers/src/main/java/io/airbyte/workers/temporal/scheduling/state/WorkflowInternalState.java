@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.temporal.scheduling.state;
+package io.airbyte.workers.temporal.scheduling.state;
 
 import io.airbyte.config.FailureReason;
 import java.util.HashSet;
@@ -20,7 +20,7 @@ public class WorkflowInternalState {
   private Integer attemptNumber = null;
 
   // StandardSyncOutput standardSyncOutput = null;
-  private Set<FailureReason> failures = new HashSet<>();
+  private final Set<FailureReason> failures = new HashSet<>();
   private Boolean partialSuccess = null;
 
 }
