@@ -16,13 +16,13 @@ import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.persistence.job.errorreporter.SentryExceptionHelper;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
@@ -126,6 +126,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private boolean runProcess(final String jobId,
                              final int attempt,
                              final Path jobRoot,
@@ -160,7 +161,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         dbtErrorStack = String.join("\n", streamFactory.getDbtErrors());
 
         if (!"".equals(dbtErrorStack)) {
-          AirbyteMessage dbtTraceMessage = new AirbyteMessage()
+          final AirbyteMessage dbtTraceMessage = new AirbyteMessage()
               .withType(Type.TRACE)
               .withTrace(new AirbyteTraceMessage()
                   .withType(AirbyteTraceMessage.Type.ERROR)
@@ -213,7 +214,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   private String buildInternalErrorMessageFromDbtStackTrace() {
-    Map<SentryExceptionHelper.ERROR_MAP_KEYS, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
+    final Map<SentryExceptionHelper.ERROR_MAP_KEYS, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
     return errorMap.get(SentryExceptionHelper.ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY);
   }
 

@@ -36,17 +36,14 @@ import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
-import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.TemporalEventRunner;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.WebUrlHelper;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClient;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClientFactory;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
-import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.persistence.job.DefaultJobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WebUrlHelper;
+import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
+import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
+import io.airbyte.persistence.job.errorreporter.JobErrorReportingClientFactory;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
+import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
@@ -54,10 +51,16 @@ import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.DbMigrationHandler;
+import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
+import io.airbyte.server.scheduler.EventRunner;
+import io.airbyte.server.scheduler.TemporalEventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.airbyte.workers.temporal.ConnectionManagerUtils;
+import io.airbyte.workers.temporal.StreamResetRecordsHelper;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -100,6 +103,7 @@ public class ServerApp implements ServerRunnable {
   }
 
   @Override
+  @SuppressWarnings("PMD.InvalidLogMessageFormat")
   public void start() throws Exception {
     final Server server = new Server(PORT);
 
@@ -138,7 +142,7 @@ public class ServerApp implements ServerRunnable {
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
       try {
         server.stop();
-      } catch (Exception ex) {
+      } catch (final Exception ex) {
         // silently fail at this stage because server is terminating.
         LOGGER.warn("exception: " + ex);
       }
@@ -223,14 +227,27 @@ public class ServerApp implements ServerRunnable {
             webUrlHelper,
             jobErrorReportingClient);
 
+    final TemporalUtils temporalUtils = new TemporalUtils(
+        configs.getTemporalCloudClientCert(),
+        configs.getTemporalCloudClientKey(),
+        configs.temporalCloudEnabled(),
+        configs.getTemporalCloudHost(),
+        configs.getTemporalCloudNamespace(),
+        configs.getTemporalHost(),
+        configs.getTemporalRetentionInDays());
+
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configsDatabase);
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
+    final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService();
+    final ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils();
+    final StreamResetRecordsHelper streamResetRecordsHelper = new StreamResetRecordsHelper(jobPersistence, streamResetPersistence);
 
     final TemporalClient temporalClient = new TemporalClient(
-        TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace()),
         configs.getWorkspaceRoot(),
+        TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace()),
         temporalService,
-        streamResetPersistence);
+        streamResetPersistence,
+        connectionManagerUtils,
+        streamResetRecordsHelper);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =

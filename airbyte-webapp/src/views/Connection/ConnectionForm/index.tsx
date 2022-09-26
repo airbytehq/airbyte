@@ -1,3 +1,1 @@
-import ConnectionForm from "./ConnectionForm";
-
-export default ConnectionForm;
+export * from "./ConnectionForm";

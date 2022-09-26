@@ -1,5 +1,6 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
@@ -10,7 +11,6 @@ import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace from "hooks/services/useWorkspace";
-import useRouterHook from "hooks/useRouter";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
@@ -29,7 +29,7 @@ import useGetStepsConfig from "./useStepsConfig";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
-  max-width: ${({ big, medium }) => (big ? 1140 : medium ? 730 : 550)}px;
+  max-width: ${({ big, medium }) => (big ? 1279 : medium ? 730 : 550)}px;
   margin: 0 auto;
   padding: 75px 0 30px;
   display: flex;
@@ -37,7 +37,6 @@ const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   align-items: center;
   min-height: 100%;
   position: relative;
-  z-index: 2;
 `;
 
 const Footer = styled.div`
@@ -47,7 +46,6 @@ const Footer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px 0;
 `;
 
 const ScreenContent = styled.div`
@@ -65,7 +63,7 @@ const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalyticsService();
   useTrackPage(PageTrackingCodes.ONBOARDING);
 
-  const { push } = useRouterHook();
+  const navigate = useNavigate();
 
   useEffectOnce(() => {
     analyticsService.page("Onboarding Page");
@@ -90,7 +88,7 @@ const OnboardingPage: React.FC = () => {
 
   const handleFinishOnboarding = () => {
     finishOnboarding(currentStep);
-    push(RoutePaths.Connections);
+    navigate(RoutePaths.Connections);
   };
 
   return (

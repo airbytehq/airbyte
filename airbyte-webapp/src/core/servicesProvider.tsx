@@ -15,7 +15,10 @@ interface ServicesProviderApi {
 
 const ServicesProviderContext = React.createContext<ServicesProviderApi | null>(null);
 
-export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({ children, inject }) => {
+export const ServicesProvider: React.FC<React.PropsWithChildren<{ inject?: ServiceContainer }>> = ({
+  children,
+  inject,
+}) => {
   const [registeredServices, { remove, set }] = useMap<ServiceContainer>(inject);
 
   const ctxValue = useMemo<ServicesProviderApi>(

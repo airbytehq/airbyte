@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/mouse-events-have-key-events */
 import { autoUpdate, flip, offset, shift, useFloating, UseFloatingProps } from "@floating-ui/react-dom";
 import classNames from "classnames";
 import React, { useState, useEffect } from "react";
@@ -18,7 +19,7 @@ const FLOATING_OPTIONS: UseFloatingProps = {
   whileElementsMounted: autoUpdate,
 };
 
-export const Tooltip: React.FC<TooltipProps> = (props) => {
+export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) => {
   const { children, control, className, disabled, cursor, theme = "dark", placement = "bottom" } = props;
 
   const [isMouseOver, setIsMouseOver] = useState(false);

@@ -33,7 +33,7 @@ const MessageText = styled.span<Pick<IProps, "error" | "success">>`
   font-size: 13px;
 `;
 
-const Label: React.FC<IProps> = (props) => (
+const Label: React.FC<React.PropsWithChildren<IProps>> = (props) => (
   <Content additionLength={props.additionLength} className={props.className} onClick={props.onClick}>
     {props.children}
     {props.message && (
