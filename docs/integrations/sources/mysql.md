@@ -148,7 +148,7 @@ This produces the private key in pem format, and the public key remains in the s
 
 ## Data Type Mapping
 
-MySQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/source/mysql/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+MySQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | MySQL Type                                | Resulting Type         | Notes                                                                                                          |
 |:------------------------------------------|:-----------------------|:---------------------------------------------------------------------------------------------------------------|
