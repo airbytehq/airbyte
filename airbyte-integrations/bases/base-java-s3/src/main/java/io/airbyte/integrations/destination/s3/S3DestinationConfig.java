@@ -137,9 +137,9 @@ public class S3DestinationConfig {
           builder = builder.withEndpoint(endpoint);
         }
         builder = builder.withCheckIntegrity(false)
-                // https://developers.cloudflare.com/r2/platform/s3-compatibility/api/#implemented-object-level-operations
-                // 3 or less
-                .withUploadThreadsCount(S3StorageOperations.R2_UPLOAD_THREADS);
+            // https://developers.cloudflare.com/r2/platform/s3-compatibility/api/#implemented-object-level-operations
+            // 3 or less
+            .withUploadThreadsCount(S3StorageOperations.R2_UPLOAD_THREADS);
       }
       default -> {
         if (config.has(S_3_ENDPOINT)) {
