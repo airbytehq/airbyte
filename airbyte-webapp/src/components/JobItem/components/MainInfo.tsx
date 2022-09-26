@@ -104,7 +104,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
                 </div>
               )}
               {jobConfigType === "reset_connection" ? (
-                <ResetStreamsDetails isOpen={isOpen} names={streamsToReset?.map((stream) => stream.name) || []} />
+                <ResetStreamsDetails isOpen={isOpen} names={streamsToReset?.map((stream) => stream.name)} />
               ) : (
                 <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
               )}
