@@ -24,7 +24,11 @@ def get_authentication_method(provider: dict, authentication: dict = None) -> Au
     """
     if provider.get("aws_access_key_id") and provider.get("aws_secret_access_key"):
         return AuthenticationMethod.ACCESS_KEY_SECRET_ACCESS_KEY
-    elif authentication is None or authentication.get("auth_method") == "aws_default_credentials":
+    elif authentication is None:
+        # authentication is new field, might be empty for users coming from previous
+        # versions. Avoid breaking change by replicating previous behaviour
+        return AuthenticationMethod.UNSIGNED
+    if authentication.get("auth_method") == "aws_default_credentials":
         return AuthenticationMethod.DEFAULT
     else:
         return AuthenticationMethod.UNSIGNED
