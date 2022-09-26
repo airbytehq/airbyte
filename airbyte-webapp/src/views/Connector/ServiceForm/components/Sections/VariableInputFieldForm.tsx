@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { useAsync, useEffectOnce } from "react-use";
 import * as yup from "yup";
 
-import { Button } from "components/base/Button";
+import { Button } from "components/ui/Button";
 import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { FormGroupItem, FormObjectArrayItem } from "core/form/types";

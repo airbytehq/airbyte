@@ -33,7 +33,7 @@ const CheckBoxContainer = styled.label<{
   position: relative;
 `;
 
-const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { indeterminate?: boolean }> = ({
+export const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { indeterminate?: boolean }> = ({
   indeterminate,
   ...props
 }) => (
@@ -47,5 +47,3 @@ const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { indeter
     {indeterminate ? <FontAwesomeIcon icon={faMinus} /> : props.checked && <FontAwesomeIcon icon={faCheck} />}
   </CheckBoxContainer>
 );
-
-export default CheckBox;

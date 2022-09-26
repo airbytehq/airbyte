@@ -9,4 +9,3 @@ export * from "./RadioButton";
 export * from "./TagInput";
 export * from "./Switch";
 export * from "./TextArea";
-export * from "./Titles";

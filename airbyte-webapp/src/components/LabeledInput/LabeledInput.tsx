@@ -1,7 +1,7 @@
 import React from "react";
 
-import { Input, InputProps } from "components/base";
 import { ControlLabels, ControlLabelsProps } from "components/LabeledControl";
+import { Input, InputProps } from "components/ui/Input";
 
 type LabeledInputProps = Pick<ControlLabelsProps, "success" | "message" | "label" | "labelAdditionLength"> & InputProps;
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Text } from "components/base/Text";
+import { Text } from "components/ui/Text";
 
 import { useConfig } from "config";
 import Status from "core/statuses";
