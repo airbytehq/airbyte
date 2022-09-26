@@ -8,6 +8,9 @@ import static io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowIm
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
+import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
@@ -26,7 +29,6 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.exception.DeletedWorkflowException;
 import io.airbyte.workers.temporal.exception.UnreachableWorkflowException;
-import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.micronaut.context.annotation.Requires;
@@ -462,18 +464,6 @@ public class TemporalClient {
     return new ManualOperationResult(
         Optional.empty(),
         Optional.of(resetJobId), Optional.empty());
-  }
-
-  public void restartClosedWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
-    final Set<UUID> workflowExecutionInfos = fetchClosedWorkflowsByStatus(executionStatus);
-
-    final Set<UUID> nonRunningWorkflow = filterOutRunningWorkspaceId(workflowExecutionInfos);
-
-    nonRunningWorkflow.forEach(connectionId -> {
-      connectionManagerUtils.safeTerminateWorkflow(client, connectionId, "Terminating workflow in "
-          + "unreachable state before starting a new workflow for this connection");
-      connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
-    });
   }
 
   /**

@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal.spec;
 
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobGetSpecConfig;
@@ -18,7 +19,6 @@ import io.airbyte.workers.general.DefaultGetSpecWorker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
