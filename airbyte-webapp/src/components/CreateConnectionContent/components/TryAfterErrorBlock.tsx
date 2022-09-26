@@ -1,20 +1,11 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
-import { Button, H4, StatusIcon } from "components";
+import { Button } from "components/base/Button";
+import { Text } from "components/base/Text";
+import { StatusIcon } from "components/StatusIcon";
 
-const Block = styled.div`
-  padding: 40px;
-  text-align: center;
-`;
-const Title = styled(H4)`
-  padding: 16px 0 10px;
-`;
-
-const AgainButton = styled(Button)`
-  min-width: 239px;
-`;
+import styles from "./TryAfterErrorBlock.module.scss";
 
 interface TryAfterErrorBlockProps {
   message?: React.ReactNode;
@@ -22,13 +13,15 @@ interface TryAfterErrorBlockProps {
 }
 
 const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClick }) => (
-  <Block>
+  <div className={styles.container}>
     <StatusIcon big />
-    <Title center>{message || <FormattedMessage id="form.schemaFailed" />}</Title>
-    <AgainButton onClick={onClick} danger>
+    <Text as="p" size="lg" centered className={styles.message}>
+      {message || <FormattedMessage id="form.schemaFailed" />}
+    </Text>
+    <Button className={styles.retryButton} onClick={onClick} danger>
       <FormattedMessage id="form.tryAgain" />
-    </AgainButton>
-  </Block>
+    </Button>
+  </div>
 );
 
 export default TryAfterErrorBlock;

@@ -1268,7 +1268,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigquery:0.2.1"
+- dockerImage: "airbyte/source-bigquery:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigquery"
     connectionSpecification:
@@ -1557,7 +1557,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.1.13"
+- dockerImage: "airbyte/source-chargebee:0.1.14"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -2321,7 +2321,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.63"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.64"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -3166,7 +3166,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.3.0"
+- dockerImage: "airbyte/source-github:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -5709,7 +5709,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:0.1.7"
+- dockerImage: "airbyte/source-marketo:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/marketo"
     connectionSpecification:
@@ -6223,25 +6223,69 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.23"
+- dockerImage: "airbyte/source-mixpanel:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Mixpanel Spec"
       type: "object"
-      required:
-      - "api_secret"
       properties:
-        api_secret:
+        credentials:
+          title: "Authentication *"
+          description: "Choose how to authenticate to Mixpanel"
+          type: "object"
           order: 0
-          title: "Project Secret"
-          type: "string"
-          description: "Mixpanel project secret. See the <a href=\"https://developer.mixpanel.com/reference/project-secret#managing-a-projects-secret\"\
-            >docs</a> for more information on how to obtain this."
-          airbyte_secret: true
-        attribution_window:
+          oneOf:
+          - type: "object"
+            title: "Service Account"
+            required:
+            - "username"
+            - "secret"
+            properties:
+              option_title:
+                type: "string"
+                const: "Service Account"
+                order: 0
+              username:
+                order: 1
+                title: "Username"
+                type: "string"
+                description: "Mixpanel Service Account Username. See the <a href=\"\
+                  https://developer.mixpanel.com/reference/service-accounts\">docs</a>\
+                  \ for more information on how to obtain this."
+              secret:
+                order: 2
+                title: "Secret"
+                type: "string"
+                description: "Mixpanel Service Account Secret. See the <a href=\"\
+                  https://developer.mixpanel.com/reference/service-accounts\">docs</a>\
+                  \ for more information on how to obtain this."
+                airbyte_secret: true
+          - type: "object"
+            title: "Project Secret"
+            required:
+            - "api_secret"
+            properties:
+              option_title:
+                type: "string"
+                const: "Project Secret"
+                order: 0
+              api_secret:
+                order: 1
+                title: "Project Secret"
+                type: "string"
+                description: "Mixpanel project secret. See the <a href=\"https://developer.mixpanel.com/reference/project-secret#managing-a-projects-secret\"\
+                  >docs</a> for more information on how to obtain this."
+                airbyte_secret: true
+        project_id:
           order: 1
+          title: "Project ID"
+          description: "Your project ID number. See the <a href=\"https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id\"\
+            >docs</a> for more information on how to obtain this."
+          type: "integer"
+        attribution_window:
+          order: 2
           title: "Attribution Window"
           type: "integer"
           description: " A period of time for attributing results to ads and the lookback\
@@ -6249,7 +6293,7 @@
             \ Default attribution window is 5 days."
           default: 5
         project_timezone:
-          order: 2
+          order: 3
           title: "Project Timezone"
           type: "string"
           description: "Time zone in which integer date times are stored. The project\
@@ -6260,7 +6304,7 @@
           - "US/Pacific"
           - "UTC"
         select_properties_by_default:
-          order: 3
+          order: 4
           title: "Select Properties By Default"
           type: "boolean"
           description: "Setting this config parameter to TRUE ensures that new properties\
@@ -6268,7 +6312,7 @@
             \ will be ignored."
           default: true
         start_date:
-          order: 4
+          order: 5
           title: "Start Date"
           type: "string"
           description: "The date in the format YYYY-MM-DD. Any data before this date\
@@ -6278,7 +6322,7 @@
           - "2021-11-16"
           pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
         end_date:
-          order: 5
+          order: 6
           title: "End Date"
           type: "string"
           description: "The date in the format YYYY-MM-DD. Any data after this date\
@@ -6287,7 +6331,7 @@
           - "2021-11-16"
           pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
         region:
-          order: 6
+          order: 7
           title: "Region"
           description: "The region of mixpanel domain instance either US or EU."
           type: "string"
@@ -6296,12 +6340,13 @@
           - "EU"
           default: "US"
         date_window_size:
-          order: 7
+          order: 8
           title: "Date slicing window"
           description: "Defines window size in days, that used to slice through data.\
             \ You can reduce it, if amount of data in each window is too big for your\
             \ environment."
           type: "integer"
+          minimum: 1
           default: 30
     supportsNormalization: false
     supportsDBT: false
@@ -6906,7 +6951,87 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.8"
+- dockerImage: "airbyte/source-netsuite:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Netsuite Spec"
+      type: "object"
+      required:
+      - "realm"
+      - "consumer_key"
+      - "consumer_secret"
+      - "token_key"
+      - "token_secret"
+      - "start_datetime"
+      additionalProperties: true
+      properties:
+        realm:
+          type: "string"
+          title: "Realm (Account Id)"
+          description: "Netsuite realm e.g. 2344535, as for `production` or 2344535_SB1,\
+            \ as for the `sandbox`"
+          order: 0
+          airbyte_secret: true
+        consumer_key:
+          type: "string"
+          title: "Consumer Key"
+          description: "Consumer key associated with your integration"
+          order: 1
+          airbyte_secret: true
+        consumer_secret:
+          type: "string"
+          title: "Consumer Secret"
+          description: "Consumer secret associated with your integration"
+          order: 2
+          airbyte_secret: true
+        token_key:
+          type: "string"
+          title: "Token Key (Token Id)"
+          description: "Access token key"
+          order: 3
+          airbyte_secret: true
+        token_secret:
+          type: "string"
+          title: "Token Secret"
+          description: "Access token secret"
+          order: 4
+          airbyte_secret: true
+        object_types:
+          type: "array"
+          title: "Object Types (Optional)"
+          items:
+            type: "string"
+          description: "The API names of the Netsuite objects you want to sync. Setting\
+            \ this speeds up the connection setup process by limiting the number of\
+            \ schemas that need to be retrieved from Netsuite."
+          order: 5
+          examples:
+          - "customer"
+          - "salesorder"
+          - "etc"
+          default: []
+        start_datetime:
+          type: "string"
+          title: "Start Date"
+          description: "Starting point for your data replication, in format of \"\
+            YYYY-MM-DDTHH:mm:ssZ\""
+          order: 6
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          examples:
+          - "2017-01-25T00:00:00Z"
+        window_in_days:
+          type: "integer"
+          title: "Window in Days (Optional)"
+          description: "The amount of days used to query the data with date chunks.\
+            \ Set smaller value, if you have lots of data."
+          order: 7
+          default: 30
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-notion:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
     connectionSpecification:
@@ -7805,7 +7930,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.1.4"
+- dockerImage: "airbyte/source-pinterest:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pinterest"
     connectionSpecification:
@@ -7909,7 +8034,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.12"
+- dockerImage: "airbyte/source-pipedrive:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pipedrive"
     connectionSpecification:
@@ -8114,7 +8239,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.10"
+- dockerImage: "airbyte/source-postgres:1.0.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -8542,6 +8667,40 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-primetric:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Primetric Spec"
+      type: "object"
+      required:
+      - "client_id"
+      - "client_secret"
+      properties:
+        client_id:
+          type: "string"
+          title: "Client ID"
+          description: "The Client ID of your Primetric developer application. The\
+            \ Client ID is visible <a href=\\\"https://app.primetric.com/administrator/integrations\"\
+            >here</a>."
+          pattern: "^[a-zA-Z0-9]+$"
+          airbyte_secret: true
+          examples:
+          - "1234aBcD5678EFGh9045Neq79sdDlA15082VMYcj"
+          order: 0
+        client_secret:
+          type: "string"
+          title: "Client Secret"
+          description: "The Client Secret of your Primetric developer application.\
+            \ You can manage your client's credentials <a href=\\\"https://app.primetric.com/administrator/integrations\"\
+            >here</a>."
+          pattern: "^[a-zA-Z0-9]+$"
+          airbyte_secret: true
+          order: 1
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-qualaroo:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/qualaroo"
@@ -8658,7 +8817,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.1.8"
+- dockerImage: "airbyte/source-recharge:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -9265,7 +9424,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.15"
+- dockerImage: "airbyte/source-salesforce:1.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -9912,7 +10071,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.21"
+- dockerImage: "airbyte/source-snowflake:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -11720,6 +11879,25 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
+- dockerImage: "airbyte/source-zenefits:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Zenefits Integration Spec"
+      type: "object"
+      required:
+      - "token"
+      additionalProperties: false
+      properties:
+        token:
+          title: "token"
+          type: "string"
+          description: "Use Sync with Zenefits button on the link given on the readme\
+            \ file, and get the token to access the api"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-zenloop:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zenloop"
