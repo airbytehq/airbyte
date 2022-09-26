@@ -1,4 +1,5 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
 import { Popout } from "components";
 import { Tooltip } from "components/base/Tooltip";
@@ -36,12 +37,8 @@ type PathPopoutProps = PathPopoutBaseProps & (PathMultiProps | PathProps);
 
 export const PathPopout: React.FC<PathPopoutProps> = (props) => {
   if (props.pathType === "sourceDefined") {
-    if (props.path) {
-      const text = props.path
-        ? props.isMulti
-          ? props.path.map(pathDisplayName).join(", ")
-          : pathDisplayName(props.path)
-        : "";
+    if (props.path && props.path.length > 0) {
+      const text = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
 
       return (
         <Tooltip placement="bottom-start" control={<div className={styles.text}>{text}</div>}>
@@ -49,7 +46,8 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
         </Tooltip>
       );
     }
-    return <>{"<sourceDefined>"}</>;
+
+    return <FormattedMessage id="connection.catalogTree.sourceDefined" />;
   }
 
   const text = props.path

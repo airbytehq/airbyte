@@ -7,8 +7,7 @@ import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
-import SideMenu from "components/SideMenu";
-import { CategoryItem } from "components/SideMenu/SideMenu";
+import { SideMenu, CategoryItem } from "components/ui/SideMenu";
 
 import useConnector from "hooks/services/useConnector";
 

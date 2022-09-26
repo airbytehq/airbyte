@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
-import Spinner from "components/Spinner";
+import { Spinner } from "components/ui/Spinner";
 
 interface IProps {
   isSubmitting: boolean;

@@ -1,0 +1,14 @@
+{
+  "title": "FBA Amazon Fulfilled Inventory Report",
+  "description": "",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "seller-sku": { "type": ["null", "string"] },
+    "fulfillment-channel-sku": { "type": ["null", "string"] },
+    "asin": { "type": ["null", "string"] },
+    "condition-type": { "type": ["null", "string"] },
+    "Warehouse-Condition-code": { "type": ["null", "string"] },
+    "Quantity Available": { "type": ["null", "number"] }
+  }
+}
