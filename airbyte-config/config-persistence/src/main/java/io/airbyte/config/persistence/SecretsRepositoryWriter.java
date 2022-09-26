@@ -83,8 +83,7 @@ public class SecretsRepositoryWriter {
         previousSourceConnection,
         source.getConfiguration(),
         connectorSpecification,
-        source.getTombstone() == null || !source.getTombstone()
-        );
+        source.getTombstone() == null || !source.getTombstone());
     final SourceConnection partialSource = Jsons.clone(source).withConfiguration(partialConfig);
 
     configRepository.writeSourceConnectionNoSecrets(partialSource);
@@ -147,8 +146,8 @@ public class SecretsRepositoryWriter {
                                          final Optional<JsonNode> oldConfig,
                                          final JsonNode fullConfig,
                                          final ConnectorSpecification spec,
-                                         final boolean validate
-  ) throws JsonValidationException {
+                                         final boolean validate)
+      throws JsonValidationException {
     if (validate) {
       validator.ensure(spec.getConnectionSpecification(), fullConfig);
     }
