@@ -1,0 +1,3 @@
+---
+import:
+  - estuary/monitoring/notion-1/flow.yaml

@@ -198,7 +198,7 @@
                 "properties": {
                   "id": { "type": "string" },
                   "type": { "enum": ["url"] },
-                  "url": { "type": "string" }
+                  "url": { "type": ["string", "null"] }
                 }
               },
               {

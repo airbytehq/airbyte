@@ -1,0 +1,45 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+additionalProperties: true
+properties:
+  avatar_url:
+    type:
+      - "null"
+      - string
+  bot:
+    additionalProperties: true
+    properties:
+      owner:
+        properties:
+          type:
+            type: string
+          workspace:
+            type:
+              - "null"
+              - boolean
+        type: object
+    type:
+      - "null"
+      - object
+  id:
+    type: string
+  name:
+    type: string
+  object:
+    enum:
+      - user
+  person:
+    additionalProperties: true
+    properties:
+      email:
+        type: string
+    type:
+      - "null"
+      - object
+  type:
+    enum:
+      - person
+      - bot
+required:
+  - id
+type: object

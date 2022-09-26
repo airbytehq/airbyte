@@ -1,0 +1,6 @@
+---
+collections:
+  estuary/monitoring/notion-1/users:
+    schema: users.schema.yaml
+    key:
+      - /id

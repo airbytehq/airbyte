@@ -1,0 +1,34 @@
+{
+  "dependencies": {},
+  "bundledDependencies": [],
+  "bin": "dist/flow_generated/flow/main.js",
+  "description": "NodeJS runtime of an Estuary catalog",
+  "devDependencies": {
+    "@types/node": "^14.17.5",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
+    "eslint": "^7.30.0",
+    "eslint-config-prettier": "^7.2",
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.3.2",
+    "typescript": "^4.3.5"
+  },
+  "engines": {
+    "node": ">=10.10"
+  },
+  "enginesStrict": true,
+  "files": [
+    "dist",
+    "node_modules"
+  ],
+  "license": "UNLICENSED",
+  "name": "catalog-js-transformer",
+  "private": true,
+  "scripts": {
+    "clean": "rm -r dist/",
+    "compile": "tsc",
+    "develop": "node dist/flow_generated/flow/main.js",
+    "lint": "cd flow_generated && eslint --fix $(jq '.files[]' -r tsconfig-files.json)"
+  },
+  "version": "0.0.0"
+}

@@ -1,0 +1,38 @@
+{
+	"compilerOptions": {
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"forceConsistentCasingInFileNames": true,
+		"incremental": true,
+		"lib": [
+			"ES2019",
+			// DOM is added here only to provide the `AbortController` types, which are
+			// used by other nodejs types. This fix was taken from
+			// (https://stackoverflow.com/a/59893096) to fix the Typescript compilation
+			// issue described in estuary/flow#279
+			"DOM"
+		],
+		"module": "commonjs",
+		"noEmitOnError": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"pretty": true,
+		"sourceMap": true,
+		"strict": true,
+		"target": "ES2019",
+		"rootDir": ".",
+		"outDir": "dist",
+		// Any non-relative modules are resolved against this base directory.
+		"baseUrl": ".",
+		"paths": {
+			// As a bit of sugar, resolve flow/* to flow_generated/types/*.
+			// These are types-only modules, and don't require runtime loading.
+			// Otherwise, a tool like `tspath` must be used to re-write absolute
+			// imports in TypeScript code into relative imports in produced JavaScript.
+			"flow/*": [
+				"flow_generated/types/*"
+			]
+		}
+	},
+	"extends": "./flow_generated/tsconfig-files"
+}

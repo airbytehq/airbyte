@@ -1,0 +1,8 @@
+{
+  "files": [
+    "../flow_generated/flow/main.ts",
+    "../flow_generated/flow/routes.ts",
+    "../flow_generated/flow/server.ts",
+    "../flow_generated/types/estuary/monitoring/notion-1/users.d.ts"
+  ]
+}
