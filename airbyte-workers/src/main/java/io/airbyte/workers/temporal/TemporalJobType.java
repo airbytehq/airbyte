@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.temporal;
+package io.airbyte.workers.temporal;
 
 public enum TemporalJobType {
   GET_SPEC,

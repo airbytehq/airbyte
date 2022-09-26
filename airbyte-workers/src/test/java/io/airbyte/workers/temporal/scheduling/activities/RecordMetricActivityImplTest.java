@@ -9,11 +9,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
+import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity.FailureCause;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity.RecordMetricInput;
 import java.util.Optional;

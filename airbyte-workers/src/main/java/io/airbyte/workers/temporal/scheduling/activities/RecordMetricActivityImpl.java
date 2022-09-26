@@ -4,10 +4,10 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricTags;
+import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.micronaut.context.annotation.Requires;
 import java.util.ArrayList;
 import java.util.List;
