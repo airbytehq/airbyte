@@ -8,7 +8,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .base import MixpanelStream
+from .base import IncrementalMixpanelStream, MixpanelStream
 
 
 class EngageSchema(MixpanelStream):
@@ -55,7 +55,7 @@ class EngageSchema(MixpanelStream):
             }
 
 
-class Engage(MixpanelStream):
+class Engage(IncrementalMixpanelStream):
     """Return list of all users
     API Docs: https://developer.mixpanel.com/reference/engage
     Endpoint: https://mixpanel.com/api/2.0/engage
@@ -66,6 +66,7 @@ class Engage(MixpanelStream):
     primary_key: str = "distinct_id"
     page_size: int = 1000  # min 100
     _total: Any = None
+    cursor_field = None
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -148,7 +149,6 @@ class Engage(MixpanelStream):
         }
         """
         records = response.json().get(self.data_field, {})
-        cursor_field = stream_state.get(self.usr_cursor_key())
         for record in records:
             item = {"distinct_id": record["$distinct_id"]}
             properties = record["$properties"]
@@ -160,8 +160,8 @@ class Engage(MixpanelStream):
                     # to stream: 'browser'
                     this_property_name = this_property_name[1:]
                 item[this_property_name] = properties[property_name]
-            item_cursor = item.get(cursor_field, "")
-            state_cursor = stream_state.get(cursor_field, "")
+            item_cursor = item.get(self.cursor_field, "")
+            state_cursor = stream_state.get(self.cursor_field, "")
             if not stream_state or item_cursor >= state_cursor:
                 yield item
 
@@ -204,28 +204,16 @@ class Engage(MixpanelStream):
 
         return schema
 
-    def usr_cursor_key(self):
-        return "usr_cursor_key"
+    def set_cursor(self, cursor_field: List[str]):
+        if not cursor_field:
+            raise Exception("cursor_field is not defined")
+        if len(cursor_field) > 1:
+            raise Exception("multidimensional cursor_field is not supported")
+        self.cursor_field = cursor_field[0]
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         if sync_mode == SyncMode.incremental:
-            cursor_name = cursor_field[-1]
-            if stream_state:
-                stream_state[self.usr_cursor_key()] = cursor_name
-            else:
-                stream_state = {self.usr_cursor_key(): cursor_name}
-        return super().read_records(sync_mode, cursor_field, stream_slice, stream_state=stream_state)
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        cursor_field = current_stream_state.get(self.usr_cursor_key())
-        state_cursor = (current_stream_state or {}).get(cursor_field, "")
-
-        record_cursor = latest_record.get(cursor_field, self.start_date)
-
-        return {cursor_field: max(state_cursor, record_cursor)}
+            self.set_cursor(cursor_field)
+        return super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)

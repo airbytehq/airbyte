@@ -25,7 +25,7 @@ from source_mixpanel.streams import (
 )
 from source_mixpanel.utils import read_full_refresh
 
-from .utils import get_url_to_mock, setup_response
+from .utils import get_url_to_mock, read_incremental, setup_response
 
 logger = AirbyteLogger()
 
@@ -109,7 +109,7 @@ def test_cohorts_stream_incremental(requests_mock, cohorts_response, config):
 
     stream = Cohorts(authenticator=MagicMock(), **config)
 
-    records = stream.read_records(sync_mode=SyncMode.incremental, stream_state={"created": "2019-04-02 23:22:01"})
+    records = read_incremental(stream, stream_state={"created": "2019-04-02 23:22:01"}, cursor_field=["created"])
 
     records_length = sum(1 for _ in records)
     assert records_length == 1
@@ -161,9 +161,8 @@ def test_engage_stream_incremental(requests_mock, engage_response, config):
     stream = Engage(authenticator=MagicMock(), **config)
 
     stream_state = {"created": "2008-12-12T11:20:47"}
-    records = stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state)
+    records = list(read_incremental(stream, stream_state, cursor_field=["created"]))
 
-    records = [item for item in records]
     assert len(records) == 1
     assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
 
@@ -173,6 +172,7 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, cohor
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
 
     stream = CohortMembers(authenticator=MagicMock(), **config)
+    stream.set_cursor(["created"])
     stream_state = {"created": "2008-12-12T11:20:47"}
     records = stream.read_records(
         sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state, stream_slice={"id": 1000}
