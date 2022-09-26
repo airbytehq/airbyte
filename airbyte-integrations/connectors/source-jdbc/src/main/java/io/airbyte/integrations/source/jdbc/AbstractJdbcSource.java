@@ -109,7 +109,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
           .filter(sslMode -> sslMode.spec.contains(spec))
           .findFirst();
     }
-
   }
 
 
