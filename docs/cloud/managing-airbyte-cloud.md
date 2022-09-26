@@ -107,7 +107,7 @@ Understanding the following limitations will help you better manage Airbyte Clou
 * Schedule accuracy: +/- 30 min
 
 ## View the sync log summary
-The sync log summary displays information about the data moved during a sync.
+The sync log summary displays information about data moved during a sync.
  
 To view the sync log summary:
 1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** in the navigation bar.   
@@ -118,13 +118,13 @@ To view the sync log summary:
 
     Sync History displays the sync status (Succeeded, Failed, Cancelled, Partial Success, or Running) and the [summary of the sync log](#sync-log-summary).  
 
-3. For more information about a sync, click the sync log dropdown.
-
     :::note 
     
     Airbyte will try to sync your data three times. After a third failure, it will stop attempting to sync.
     
     :::
+    
+3. To view the full sync log, click the sync log dropdown.
  
 ### Sync log summary
 #### Succeeded
