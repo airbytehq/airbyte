@@ -720,6 +720,7 @@ class ConnectionsHandlerTest {
           .thenReturn(destinationDefinition);
 
       final ConnectionSearch connectionSearch = new ConnectionSearch();
+      connectionSearch.namespaceDefinition(NamespaceDefinitionType.SOURCE);
       ConnectionReadList actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
       assertEquals(1, actualConnectionReadList.getConnections().size());
       assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
