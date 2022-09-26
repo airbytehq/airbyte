@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { TextWithHTML } from "components";
+import { TextWithHTML } from "components/ui/TextWithHTML";
 
 import { FormBaseItem } from "core/form/types";
 

@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
-import { Label, TextWithHTML } from "components";
+import { Label } from "components";
+import { TextWithHTML } from "components/ui/TextWithHTML";
 
 const GroupTitle = styled.div<{ $fullWidthTitle: boolean }>`
   margin-top: -23px;
