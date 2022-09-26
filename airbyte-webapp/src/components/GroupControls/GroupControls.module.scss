@@ -31,7 +31,7 @@ $border-width: variables.$border-thick;
   border-color: colors.$grey-100;
   border-style: solid;
   border-width: 0 $border-width $border-width;
-  border-radius: variables.$border-radius-sm;
+  border-radius: variables.$border-radius-md;
 
   // box-shadow is used for the top border, so that it overlaps with bottom border when height is 0
   box-shadow: 0 $border-width colors.$grey-100 inset;
