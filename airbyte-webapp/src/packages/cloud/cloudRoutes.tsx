@@ -27,7 +27,7 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import { RoutePaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
-import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
+import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
 import { DefaultView } from "./views/DefaultView";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
