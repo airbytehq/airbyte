@@ -8,7 +8,6 @@ import io.airbyte.integrations.base.IntegrationRunner;
 
 public class S3Destination extends BaseS3Destination {
 
-
   public S3Destination() {}
 
   public S3Destination(final S3DestinationConfigFactory s3DestinationConfigFactory) {
@@ -23,4 +22,5 @@ public class S3Destination extends BaseS3Destination {
   public StorageProvider storageProvider() {
     return StorageProvider.AWS_S3;
   }
+
 }

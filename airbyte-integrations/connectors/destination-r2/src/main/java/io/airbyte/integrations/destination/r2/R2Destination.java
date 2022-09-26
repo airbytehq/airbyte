@@ -16,9 +16,9 @@ public class R2Destination extends BaseS3Destination {
     new IntegrationRunner(new R2Destination()).run(args);
   }
 
-
   @Override
   public StorageProvider storageProvider() {
     return StorageProvider.CF_R2;
   }
+
 }

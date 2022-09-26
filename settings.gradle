@@ -149,6 +149,3 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
         }
     }
 }
-include 'airbyte-integrations:bases:s3-destination-base-integration-test'
-findProject(':airbyte-integrations:bases:s3-destination-base-integration-test')?.name = 's3-destination-base-integration-test'
-
