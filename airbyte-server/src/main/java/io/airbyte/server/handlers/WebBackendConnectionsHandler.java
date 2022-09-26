@@ -47,8 +47,8 @@ import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
+import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ProtocolConverters;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
@@ -100,16 +100,6 @@ public class WebBackendConnectionsHandler {
 
     final List<WebBackendConnectionRead> reads = Lists.newArrayList();
     for (final ConnectionRead connection : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
-      reads.add(buildWebBackendConnectionRead(connection));
-    }
-    return new WebBackendConnectionReadList().connections(reads);
-  }
-
-  public WebBackendConnectionReadList webBackendListAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-
-    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
-    for (final ConnectionRead connection : connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
       reads.add(buildWebBackendConnectionRead(connection));
     }
     return new WebBackendConnectionReadList().connections(reads);
