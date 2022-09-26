@@ -112,7 +112,7 @@ interface TableProps {
   sortBy?: Array<SortingRule<any>>;
 }
 
-export const Table: React.FC<TableProps> = ({ columns, data, onClickRow, erroredRows, sortBy, light }) => {
+export const Table: React.FC<TableProps> = memo(({ columns, data, onClickRow, erroredRows, sortBy, light }) => {
   const [plugins, config] = useMemo(() => {
     const pl = [];
     const plConfig: Record<string, unknown> = {};
@@ -183,6 +183,4 @@ export const Table: React.FC<TableProps> = ({ columns, data, onClickRow, errored
       </tbody>
     </TableView>
   );
-};
-
-export default memo(Table);
+});
