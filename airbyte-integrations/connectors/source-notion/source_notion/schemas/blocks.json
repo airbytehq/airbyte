@@ -43,7 +43,8 @@
         "pdf",
         "bookmark",
         "equation",
-        "unsupported"
+        "unsupported",
+        "synced_block"
       ]
     },
     "paragraph": { "$ref": "text_element.json" },
