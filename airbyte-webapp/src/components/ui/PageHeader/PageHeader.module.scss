@@ -1,5 +1,5 @@
-@use "../../scss/colors";
-@use "../../scss/variables";
+@use "../../../scss/colors";
+@use "../../../scss/variables";
 
 .container {
   padding: variables.$spacing-xl 32px 0;
@@ -20,7 +20,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  
+
   &.middle {
     justify-content: center;
   }

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, MainPageWithScroll } from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
-import PageTitle from "components/PageTitle";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useSourceList } from "hooks/services/useSourceHook";
@@ -22,7 +22,7 @@ const AllSourcesPage: React.FC = () => {
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
       pageTitle={
-        <PageTitle
+        <PageHeader
           title={<FormattedMessage id="sidebar.sources" />}
           endComponent={
             <Button onClick={onCreateSource} data-id="new-source">
