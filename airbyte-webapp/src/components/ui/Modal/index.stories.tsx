@@ -1,9 +1,9 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { Modal, ModalBody, ModalFooter } from "./";
+import { Modal, ModalBody, ModalFooter } from ".";
 
 export default {
-  title: "Ui/Modal",
+  title: "UI/Modal",
   component: Modal,
   argTypes: {
     title: { type: { name: "string", required: false } },
