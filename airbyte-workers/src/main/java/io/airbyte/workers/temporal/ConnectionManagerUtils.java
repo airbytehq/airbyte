@@ -4,14 +4,12 @@
 
 package io.airbyte.workers.temporal;
 
-import io.airbyte.commons.temporal.TemporalJobType;
-import io.airbyte.commons.temporal.TemporalWorkflowUtils;
-import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
-import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
-import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.exception.DeletedWorkflowException;
 import io.airbyte.workers.temporal.exception.UnreachableWorkflowException;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
+import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
+import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
 import io.temporal.api.workflowservice.v1.DescribeWorkflowExecutionRequest;

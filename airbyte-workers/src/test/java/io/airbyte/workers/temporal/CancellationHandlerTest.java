@@ -2,16 +2,17 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.temporal;
+package io.airbyte.workers.temporal;
 
-import io.airbyte.commons.temporal.stubs.HeartbeatWorkflow;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+import io.airbyte.workers.temporal.stubs.HeartbeatWorkflow;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class CancellationHandlerTest {
@@ -39,7 +40,7 @@ class CancellationHandlerTest {
             .setTaskQueue("task-queue")
             .build());
 
-    Assertions.assertDoesNotThrow(heartbeatWorkflow::execute);
+    assertDoesNotThrow(heartbeatWorkflow::execute);
 
   }
 

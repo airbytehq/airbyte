@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.temporal;
+package io.airbyte.workers.temporal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,7 +13,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.temporal.stubs.HeartbeatWorkflow;
+import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.temporal.stubs.HeartbeatWorkflow;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityExecutionContext;
@@ -306,7 +307,7 @@ class TemporalUtilsTest {
 
     class Activity1Impl implements Activity1 {
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(Activity1Impl.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(TestWorkflow.Activity1Impl.class);
       private static final String ACTIVITY1 = "activity1";
 
       private final VoidCallable callable;
@@ -398,7 +399,7 @@ class TemporalUtilsTest {
                   Thread.sleep(10000);
                   return null;
                 } else {
-                  throw new Exception("failed");
+                  throw new WorkerException("failed");
                 }
               } else {
                 return null;

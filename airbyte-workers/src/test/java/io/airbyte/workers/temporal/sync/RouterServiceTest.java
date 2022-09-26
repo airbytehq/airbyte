@@ -7,7 +7,7 @@ package io.airbyte.workers.temporal.sync;
 import static io.airbyte.workers.temporal.sync.RouterService.MVP_DATA_PLANE_TASK_QUEUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.workers.temporal.TemporalJobType;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
