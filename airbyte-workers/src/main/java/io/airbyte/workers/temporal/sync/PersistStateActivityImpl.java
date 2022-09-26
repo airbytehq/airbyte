@@ -26,20 +26,18 @@ import io.airbyte.workers.helper.StateConverter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Inject;
 import javax.inject.Singleton;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Singleton
 public class PersistStateActivityImpl implements PersistStateActivity {
 
-  @Inject
-  private AirbyteApiClient airbyteApiClient;
-  @Inject
-  private FeatureFlags featureFlags;
+  private final AirbyteApiClient airbyteApiClient;
+  private final FeatureFlags featureFlags;
+
+  public PersistStateActivityImpl(final AirbyteApiClient airbyteApiClient, final FeatureFlags featureFlags) {
+    this.airbyteApiClient = airbyteApiClient;
+    this.featureFlags = featureFlags;
+  }
 
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput, final ConfiguredAirbyteCatalog configuredCatalog) {

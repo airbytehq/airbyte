@@ -51,42 +51,50 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Inject;
 import javax.inject.Singleton;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Slf4j
 @Singleton
 @Requires(property = "airbyte.worker.plane",
           pattern = "(?i)^(?!data_plane).*")
 public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndStatusUpdateActivity {
 
-  @Inject
-  private SyncJobFactory jobFactory;
-  @Inject
-  private JobPersistence jobPersistence;
-  @Inject
-  private TemporalWorkerRunFactory temporalWorkerRunFactory;
-  @Inject
-  private WorkerEnvironment workerEnvironment;
-  @Inject
-  private LogConfigs logConfigs;
-  @Inject
-  private JobNotifier jobNotifier;
-  @Inject
-  private JobTracker jobTracker;
-  @Inject
-  private ConfigRepository configRepository;
-  @Inject
-  private JobCreator jobCreator;
-  @Inject
-  private StreamResetPersistence streamResetPersistence;
-  @Inject
-  private JobErrorReporter jobErrorReporter;
+  private final SyncJobFactory jobFactory;
+  private final JobPersistence jobPersistence;
+  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+  private final JobNotifier jobNotifier;
+  private final JobTracker jobTracker;
+  private final ConfigRepository configRepository;
+  private final JobCreator jobCreator;
+  private final StreamResetPersistence streamResetPersistence;
+  private final JobErrorReporter jobErrorReporter;
+
+  public JobCreationAndStatusUpdateActivityImpl(final SyncJobFactory jobFactory,
+                                                final JobPersistence jobPersistence,
+                                                final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                                                final WorkerEnvironment workerEnvironment,
+                                                final LogConfigs logConfigs,
+                                                final JobNotifier jobNotifier,
+                                                final JobTracker jobTracker,
+                                                final ConfigRepository configRepository,
+                                                final JobCreator jobCreator,
+                                                final StreamResetPersistence streamResetPersistence,
+                                                final JobErrorReporter jobErrorReporter) {
+    this.jobFactory = jobFactory;
+    this.jobPersistence = jobPersistence;
+    this.temporalWorkerRunFactory = temporalWorkerRunFactory;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.jobNotifier = jobNotifier;
+    this.jobTracker = jobTracker;
+    this.configRepository = configRepository;
+    this.jobCreator = jobCreator;
+    this.streamResetPersistence = streamResetPersistence;
+    this.jobErrorReporter = jobErrorReporter;
+  }
 
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
