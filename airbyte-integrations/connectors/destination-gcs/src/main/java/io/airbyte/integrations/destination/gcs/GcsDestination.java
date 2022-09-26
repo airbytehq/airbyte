@@ -16,8 +16,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.integrations.destination.s3.S3BaseChecks;
 import io.airbyte.integrations.destination.s3.S3ConsumerFactory;
-import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.SerializedBufferFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -50,10 +50,10 @@ public class GcsDestination extends BaseConnector implements Destination {
       final AmazonS3 s3Client = destinationConfig.getS3Client();
 
       // Test single upload (for small files) permissions
-      S3Destination.testSingleUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
+      S3BaseChecks.testSingleUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
 
       // Test multipart upload with stream transfer manager
-      S3Destination.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
+      S3BaseChecks.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final AmazonS3Exception e) {
