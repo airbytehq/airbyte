@@ -8,7 +8,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.Metadata;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper.SentryParsedException;
+import io.airbyte.persistence.job.errorreporter.SentryExceptionHelper.SentryParsedException;
 import io.sentry.Hub;
 import io.sentry.IHub;
 import io.sentry.NoOpHub;
