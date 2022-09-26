@@ -55,6 +55,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.avro.Schema;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -209,7 +210,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
-      stream.setNamespace(BigQueryUtils.getDatasetId(config));
+      if (StringUtils.isEmpty(stream.getNamespace())) {
+        stream.setNamespace(BigQueryUtils.getDatasetId(config));
+      }
       final String streamName = stream.getName();
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
