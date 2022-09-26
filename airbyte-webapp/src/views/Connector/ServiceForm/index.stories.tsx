@@ -19,7 +19,7 @@ const TempConnector = {
 };
 
 export default {
-  title: "Views/ServiceForm",
+  title: "Connector/ServiceForm",
   component: ServiceForm,
   parameters: {
     actions: { argTypesRegex: "^on.*" },
@@ -29,7 +29,7 @@ export default {
         method: "POST",
         status: 200,
         response: {
-          workspaceId: "",
+          workspaceId: "abc",
         },
       },
     ],
