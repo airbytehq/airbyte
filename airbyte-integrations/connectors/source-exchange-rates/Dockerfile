@@ -19,3 +19,4 @@ ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint
 
 LABEL io.airbyte.version=v1
 LABEL io.airbyte.name=airbyte/source-exchange-rates
+LABEL FLOW_TCP_PORT=2222

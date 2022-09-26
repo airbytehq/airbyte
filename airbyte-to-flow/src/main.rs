@@ -34,23 +34,8 @@ async fn main() -> Result<(), Error> {
     } = Args::parse();
     init_logging(&log_args);
 
-    // We wait for a line of stdin that tells us where the socket is listening on
-    let mut buf = String::new();
-    let stdin = std::io::stdin();
-    stdin.read_line(&mut buf)?;
-    // pop the newline character \n
-    buf.pop();
-
-    // the received line must be in the format of
-    // <Protocol> <Address>
-    // e.g.: unix-socket /flow-socket
-    //       tcp localhost:2222
-    let words = buf.split(" ").collect::<Vec<&str>>();
-    if words.len() != 2 {
-        return Err(Error::InvalidSocketSpecification("socket specification requires two words".to_string()))
-    }
-    let stream_mode = StreamMode::from_str(words[0], true).map_err(Error::InvalidSocketSpecification)?;
-    let socket = words[1];
+    let stream_mode = StreamMode::TCP;
+    let socket = "0.0.0.0:2222";
 
     let result = run_airbyte_source_connector(connector_entrypoint, operation, socket, stream_mode).await;
 
