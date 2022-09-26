@@ -62,7 +62,7 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing, onSync
   }
 
   return (
-    <SmallButton onClick={OnLaunch} isLoading={loading} disabled={!allowSync}>
+    <SmallButton onClick={OnLaunch} isLoading={loading} disabled={!allowSync || !enabled}>
       <FormattedMessage id="tables.launch" />
     </SmallButton>
   );
