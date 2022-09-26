@@ -211,6 +211,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Oracle](destinations/oracle.md)                           | Alpha                | Yes                 |
 | [Postgres](destinations/postgres.md)                       | Alpha                | Yes                 |
 | [Pulsar](destinations/pulsar.md)                           | Alpha                | No                  |
+| [R2](destinations/r2.md)                                   | Alpha                | No                  |
 | [RabbitMQ](destinations/rabbitmq.md)                       | Alpha                | No                  |
 | [Redis](destinations/redis.md)                             | Alpha                | No                  |
 | [Redshift](destinations/redshift.md)                       | Beta                 | Yes                 |
