@@ -11,7 +11,7 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, TokenAuthenticator
 
 from .streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, FunnelsList, Revenue
 from .testing import adapt_streams_if_testing, adapt_validate_if_testing
@@ -24,13 +24,6 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
         super().__init__(token=token, auth_method="Basic")
 
 
-class ServiceAccountAuthenticator(TokenAuthenticator):
-    def __init__(self, username: str, secret: str):
-        token = username + ":" + secret
-        token = base64.b64encode(token.encode("ascii")).decode("ascii")
-        super().__init__(token=token, auth_method="Basic")
-
-
 class SourceMixpanel(AbstractSource):
     def get_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
         credentials = config.get("credentials")
@@ -38,7 +31,7 @@ class SourceMixpanel(AbstractSource):
             username = credentials.get("username")
             secret = credentials.get("secret")
             if username and secret:
-                return ServiceAccountAuthenticator(username=username, secret=secret)
+                return BasicHttpAuthenticator(username=username, password=secret)
             return TokenAuthenticatorBase64(token=credentials["api_secret"])
         return TokenAuthenticatorBase64(token=config["api_secret"])
 
@@ -69,7 +62,7 @@ class SourceMixpanel(AbstractSource):
         auth = self.get_authenticator(config)
         if isinstance(auth, TokenAuthenticatorBase64) and "project_id" in config:
             config.pop("project_id")
-        elif isinstance(auth, ServiceAccountAuthenticator) and "project_id" not in config:
+        elif isinstance(auth, BasicHttpAuthenticator) and "project_id" not in config:
             raise ValueError("missing required parameter 'project_id'")
 
         return config
