@@ -5,6 +5,7 @@
 package io.airbyte.cron.selfhealing;
 
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.micronaut.scheduling.annotation.Scheduled;
 import java.io.File;
@@ -26,6 +27,7 @@ public class WorkspaceCleaner {
 
   private final Path workspaceRoot;
   private final long maxAgeFilesInDays;
+  private final boolean shouldRunCleanup;
 
   WorkspaceCleaner() {
     // TODO Configs should get injected through micronaut
@@ -35,6 +37,9 @@ public class WorkspaceCleaner {
     // We align max file age on temporal for history consistency
     // It might make sense configure this independently in the future
     this.maxAgeFilesInDays = configs.getTemporalRetentionInDays();
+
+    // Task is only valid for docker, ignore if running on kubernetes
+    this.shouldRunCleanup = configs.getWorkerEnvironment() == WorkerEnvironment.DOCKER;
   }
 
   /*
@@ -44,6 +49,9 @@ public class WorkspaceCleaner {
    */
   @Scheduled(fixedRate = "1d")
   public void deleteOldFiles() throws IOException {
+    if (!shouldRunCleanup)
+      return;
+
     final Date oldestAllowed = getDateFromDaysAgo(maxAgeFilesInDays);
     log.info("Deleting files older than {} days ({})", maxAgeFilesInDays, oldestAllowed);
 
