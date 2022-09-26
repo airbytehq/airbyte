@@ -4,6 +4,7 @@
 
 package io.airbyte.commons.protocol;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.protocol.serde.AirbyteMessageDeserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageSerializer;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -61,7 +62,8 @@ public class AirbyteSerDeProvider {
     return Optional.ofNullable(serializers.get(version.getMajorVersion()));
   }
 
-  public void registerDeserializer(final AirbyteMessageDeserializer<?> deserializer) {
+  @VisibleForTesting
+  void registerDeserializer(final AirbyteMessageDeserializer<?> deserializer) {
     final String key = deserializer.getTargetVersion().getMajorVersion();
     if (!deserializers.containsKey(key)) {
       deserializers.put(key, deserializer);
@@ -71,7 +73,8 @@ public class AirbyteSerDeProvider {
     }
   }
 
-  public void registerSerializer(final AirbyteMessageSerializer<?> serializer) {
+  @VisibleForTesting
+  void registerSerializer(final AirbyteMessageSerializer<?> serializer) {
     final String key = serializer.getTargetVersion().getMajorVersion();
     if (!serializers.containsKey(key)) {
       serializers.put(key, serializer);

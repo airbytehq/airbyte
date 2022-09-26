@@ -4,6 +4,7 @@
 
 package io.airbyte.commons.protocol;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.protocol.migrations.AirbyteMessageMigration;
 import io.airbyte.commons.version.AirbyteVersion;
 import java.util.Collection;
@@ -41,7 +42,8 @@ public class AirbyteMessageMigrator {
     migrationsToRegister.forEach(this::registerMigration);
   }
 
-  public void registerMigration(final AirbyteMessageMigration<?, ?> migration) {
+  @VisibleForTesting
+  void registerMigration(final AirbyteMessageMigration<?, ?> migration) {
     final String key = migration.getOldVersion().getMajorVersion();
     if (!migrations.containsKey(key)) {
       migrations.put(key, migration);
