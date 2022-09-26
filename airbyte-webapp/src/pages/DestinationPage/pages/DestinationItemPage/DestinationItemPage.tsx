@@ -4,11 +4,11 @@ import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { DropDownRow, LoadingPage, PageTitle } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
-import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
+import { Breadcrumbs } from "components/ui/Breadcrumbs";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
