@@ -725,15 +725,8 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   private void disableConnection(final UUID connectionId) throws ApiException {
-    final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final ConnectionUpdate connectionUpdate =
-        new ConnectionUpdate()
-            .prefix(connection.getPrefix())
-            .connectionId(connectionId)
-            .operationIds(connection.getOperationIds())
-            .status(ConnectionStatus.DEPRECATED)
-            .schedule(connection.getSchedule())
-            .syncCatalog(connection.getSyncCatalog());
+        new ConnectionUpdate().connectionId(connectionId).status(ConnectionStatus.DEPRECATED);
     apiClient.getConnectionApi().updateConnection(connectionUpdate);
   }
 
