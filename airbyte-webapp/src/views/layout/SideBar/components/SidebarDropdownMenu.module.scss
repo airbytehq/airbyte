@@ -30,7 +30,12 @@
     background-color: colors.$dark-blue-600;
   }
 
-  &:hover:not(.open) {
+  &:focus-visible {
+    outline: 1px solid colors.$white;
+  }
+
+  &:hover:not(.open),
+  &:focus-visible:not(.open) {
     background-color: colors.$dark-blue-800;
   }
 }
@@ -71,7 +76,7 @@
     }
 
     &.active {
-      background-color: colors.$grey-50;
+      background-color: colors.$grey-100;
     }
   }
 }
