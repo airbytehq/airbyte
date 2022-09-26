@@ -107,7 +107,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Mongo DB](sources/mongodb-v2.md)                                                           | Alpha                | Yes                 |
 | [My Hours](sources/my-hours.md)                                                             | Alpha                | Yes                 |
 | [MySQL](sources/mysql.md)                                                                   | Alpha                | Yes                 |
-| [Notion](sources/notion.md)                                                                 | Beta                 | No                  |
+| [Notion](sources/notion.md)                                                                 | Generally Available  | Yes                 |
 | [Okta](sources/okta.md)                                                                     | Alpha                | Yes                 |
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
