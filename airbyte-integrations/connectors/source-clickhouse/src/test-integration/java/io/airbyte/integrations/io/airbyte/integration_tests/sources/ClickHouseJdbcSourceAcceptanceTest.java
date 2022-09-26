@@ -21,12 +21,10 @@ import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
-
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ClickHouseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -172,13 +170,13 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   private JsonNode buildConfigWithExtraJdbcParameters(String extraParam, boolean isSsl) {
 
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
-            "host", "localhost",
-            "port", 8123,
-            "database", "db",
-            "username", "username",
-            "password", "verysecure",
-            "jdbc_url_params", extraParam,
-            "ssl", isSsl));
+        "host", "localhost",
+        "port", 8123,
+        "database", "db",
+        "username", "username",
+        "password", "verysecure",
+        "jdbc_url_params", extraParam,
+        "ssl", isSsl));
   }
 
 }

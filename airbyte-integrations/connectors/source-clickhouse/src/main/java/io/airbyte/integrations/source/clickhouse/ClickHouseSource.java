@@ -20,12 +20,13 @@ import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
 
 public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements Source {
 
@@ -90,7 +91,8 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
         config.get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 
-    boolean isAdditionalParamsExists = config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty();
+    boolean isAdditionalParamsExists =
+        config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty();
     List<String> params = new ArrayList<>();
     // assume ssl if not explicitly mentioned.
     if (isSsl) {
