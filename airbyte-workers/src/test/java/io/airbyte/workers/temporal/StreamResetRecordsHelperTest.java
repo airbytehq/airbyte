@@ -11,9 +11,9 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;

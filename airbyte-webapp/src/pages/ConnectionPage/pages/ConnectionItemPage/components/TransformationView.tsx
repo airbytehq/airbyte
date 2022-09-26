@@ -4,10 +4,17 @@ import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { H4 } from "components";
 import { Card } from "components/base/Card";
+import { Text } from "components/base/Text";
 
 import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
+import {
+  ConnectionStatus,
+  OperationCreate,
+  OperationRead,
+  OperatorType,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
@@ -23,14 +30,6 @@ import {
   mapFormPropsToOperation,
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
-
-import {
-  ConnectionStatus,
-  OperationCreate,
-  OperationRead,
-  OperatorType,
-  WebBackendConnectionRead,
-} from "../../../../../core/request/AirbyteClient";
 
 interface TransformationViewProps {
   connection: WebBackendConnectionRead;
@@ -173,9 +172,9 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
         )}
         {!supportsNormalization && !supportsDbt && (
           <NoSupportedTransformationCard>
-            <H4 center>
+            <Text as="p" size="lg" centered>
               <FormattedMessage id="connectionForm.operations.notSupported" />
-            </H4>
+            </Text>
           </NoSupportedTransformationCard>
         )}
       </fieldset>

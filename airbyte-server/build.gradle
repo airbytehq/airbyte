@@ -15,11 +15,7 @@ dependencies {
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
     implementation project(':airbyte-protocol:protocol-models')
-    implementation(project(':airbyte-scheduler:client')) {
-        exclude module: 'airbyte-workers'
-    }
-    implementation project(':airbyte-scheduler:scheduler-models')
-    implementation project(':airbyte-scheduler:scheduler-persistence')
+    implementation project(':airbyte-persistence:job-persistence')
     implementation(project(':airbyte-workers')) {
         // Temporary hack to avoid dependency conflicts
         exclude group: 'io.micronaut'

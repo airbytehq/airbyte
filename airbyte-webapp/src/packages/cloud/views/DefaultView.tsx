@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 
 import { RoutePaths } from "../../../pages/routePaths";
 import { CloudRoutes } from "../cloudRoutes";
-import { useListCloudWorkspaces } from "../services/workspaces/WorkspacesService";
+import { useListCloudWorkspaces } from "../services/workspaces/CloudWorkspacesService";
 
 export const DefaultView: React.FC = () => {
   const workspaces = useListCloudWorkspaces();
