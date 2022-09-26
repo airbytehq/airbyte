@@ -6,18 +6,21 @@ package io.airbyte.commons.protocol.serde;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.protocol.models.AirbyteMessage;
+import lombok.AllArgsConstructor;
 
-public class AirbyteMessageSerializerDefault implements AirbyteMessageSerializer<AirbyteMessage> {
+@AllArgsConstructor
+public class AirbyteMessageGenericSerializer<T> implements AirbyteMessageSerializer<T> {
+
+  private final AirbyteVersion version;
 
   @Override
-  public String serialize(AirbyteMessage message) {
+  public String serialize(T message) {
     return Jsons.serialize(message);
   }
 
   @Override
   public AirbyteVersion getTargetVersion() {
-    return new AirbyteVersion("0.2.0");
+    return version;
   }
 
 }
