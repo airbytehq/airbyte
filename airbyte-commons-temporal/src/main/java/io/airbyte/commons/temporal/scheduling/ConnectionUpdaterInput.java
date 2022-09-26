@@ -2,9 +2,9 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal.scheduling;
+package io.airbyte.commons.temporal.scheduling;
 
-import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import lombok.AllArgsConstructor;
@@ -39,7 +39,7 @@ public class ConnectionUpdaterInput {
   private WorkflowState workflowState;
   private boolean resetConnection;
   @Builder.Default
-  private boolean fromJobResetFailure = false;
+  private final boolean fromJobResetFailure = false;
 
   @Builder.Default
   private boolean skipScheduling = false;
