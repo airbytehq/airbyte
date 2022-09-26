@@ -3453,6 +3453,7 @@ components:
     NamespaceDefinitionType:
       type: string
       description: Method used for computing final namespace in destination
+      default: source
       enum:
         - source
         - destination
