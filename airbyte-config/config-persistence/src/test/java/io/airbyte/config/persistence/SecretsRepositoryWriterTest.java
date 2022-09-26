@@ -432,4 +432,5 @@ class SecretsRepositoryWriterTest {
         Map.of(PASSWORD_FIELD_NAME, jsonSecretNewCoordinate.getFullCoordinate()))).withHmacKey(Jsons.jsonNode(
             Map.of(PASSWORD_FIELD_NAME, hmacSecretNewCoordinate.getFullCoordinate()))));
   }
+
 }
