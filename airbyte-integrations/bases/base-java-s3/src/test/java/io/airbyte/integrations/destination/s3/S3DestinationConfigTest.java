@@ -99,4 +99,5 @@ class S3DestinationConfigTest {
     assertThat(awsCredentials.getAWSSecretKey()).isEqualTo("paste-secret-access-key-here");
     assertThat(result.isCheckIntegrity()).isEqualTo(false);
   }
+
 }
