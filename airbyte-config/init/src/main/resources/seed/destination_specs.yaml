@@ -495,7 +495,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.3"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
