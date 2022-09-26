@@ -6,10 +6,10 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk==0.1.6-rc1",
-    "boto3",
+    "airbyte-cdk~=0.1",
     "retrying",
-    "nanoid",
+    "awswrangler==2.16.1",
+    "pandas==1.4.4",
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.1"]

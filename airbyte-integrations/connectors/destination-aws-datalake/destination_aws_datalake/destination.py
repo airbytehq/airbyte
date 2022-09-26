@@ -2,21 +2,28 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+import pandas as pd
 
-import json
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Dict
+from botocore.exceptions import ClientError, InvalidRegionError
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-from botocore.exceptions import ClientError
 
-from .aws import AwsHandler, LakeformationTransaction
+from .aws import AwsHandler
 from .config_reader import ConnectorConfig
 from .stream_writer import StreamWriter
 
+logger = logging.getLogger("airbyte")
+
 
 class DestinationAwsDatalake(Destination):
+    def _flush_streams(self, streams: Dict[str, StreamWriter]) -> None:
+        for stream in streams:
+            streams[stream].flush()
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -35,38 +42,39 @@ class DestinationAwsDatalake(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
-
         connector_config = ConnectorConfig(**config)
 
         try:
             aws_handler = AwsHandler(connector_config, self)
         except ClientError as e:
-            self.logger.error(f"Could not create session due to exception {repr(e)}")
-            raise
-        self.logger.debug("AWS session creation OK")
+            logger.error(f"Could not create session due to exception {repr(e)}")
+            raise Exception(f"Could not create session due to exception {repr(e)}")
 
         # creating stream writers
         streams = {
-            s.stream.name: StreamWriter(
-                name=s.stream.name,
-                aws_handler=aws_handler,
-                connector_config=connector_config,
-                schema=s.stream.json_schema["properties"],
-                sync_mode=s.destination_sync_mode,
-            )
+            s.stream.name: StreamWriter(aws_handler=aws_handler, config=connector_config, configured_stream=s)
             for s in configured_catalog.streams
         }
 
         for message in input_messages:
             if message.type == Type.STATE:
+                if not message.state.data:
+                    # if state is empty, reset all streams
+                    logger.info(f"Received empty state, resetting streams: {message}")
+                    for stream in streams:
+                        streams[stream].reset()
+
                 yield message
-            else:
+
+            elif message.type == Type.RECORD:
                 data = message.record.data
                 stream = message.record.stream
-                streams[stream].append_message(json.dumps(data, default=str))
+                streams[stream].append_message(data)
 
-        for stream_name, stream in streams.items():
-            stream.add_to_datalake()
+            else:
+                logger.info(f"Unhandled message type {message.type}: {message}")
+
+        self._flush_streams(streams)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -89,6 +97,10 @@ class DestinationAwsDatalake(Destination):
             logger.error(f"""Could not create session on {connector_config.aws_account_id} Exception: {repr(e)}""")
             message = f"""Could not authenticate using {connector_config.credentials_type} on Account {connector_config.aws_account_id} Exception: {repr(e)}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
+        except InvalidRegionError as e:
+            message = f"{connector_config.region} is not a valid AWS region"
+            logger.error(message)
+            return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
         try:
             aws_handler.head_bucket()
@@ -96,16 +108,21 @@ class DestinationAwsDatalake(Destination):
             message = f"""Could not find bucket {connector_config.bucket_name} in aws://{connector_config.aws_account_id}:{connector_config.region} Exception: {repr(e)}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
-        with LakeformationTransaction(aws_handler) as tx:
-            table_location = "s3://" + connector_config.bucket_name + "/" + connector_config.bucket_prefix + "/" + "airbyte_test/"
-            table = aws_handler.get_table(
-                txid=tx.txid,
-                database_name=connector_config.lakeformation_database_name,
-                table_name="airbyte_test",
-                location=table_location,
-            )
-        if table is None:
-            message = f"Could not create a table in database {connector_config.lakeformation_database_name}"
+        try:
+            df = pd.DataFrame({"id": [1, 2], "value": ["foo", "bar"]})
+
+            bucket = f"s3://{connector_config.bucket_name}"
+            if connector_config.bucket_prefix:
+                bucket += f"/{connector_config.bucket_prefix}"
+
+            path = f"{bucket}/{connector_config.lakeformation_database_name}/airbyte_test/"
+            logger.debug(f"Writing test file to {path}")
+            aws_handler.write(df, path, connector_config.lakeformation_database_name, "airbyte_test", None)
+            aws_handler.delete_table(connector_config.lakeformation_database_name, "airbyte_test")
+
+        except Exception as e:
+            message = f"Could not create a table in database {connector_config.lakeformation_database_name}: {repr(e)}"
+            logger.error(message)
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
