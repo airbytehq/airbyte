@@ -112,7 +112,7 @@
 - name: BigQuery
   sourceDefinitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
   dockerRepository: airbyte/source-bigquery
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/bigquery
   icon: bigquery.svg
   sourceType: database
@@ -144,7 +144,7 @@
 - name: Chargebee
   sourceDefinitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
   dockerRepository: airbyte/source-chargebee
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/chargebee
   icon: chargebee.svg
   sourceType: api
@@ -264,7 +264,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.63
+  dockerImageTag: 0.2.64
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -431,7 +431,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/harvest
   icon: harvest.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Hellobaton
   sourceDefinitionId: 492b56d1-937c-462e-8076-21ad2031e784
   dockerRepository: airbyte/source-hellobaton
@@ -853,7 +853,7 @@
 - name: Recharge
   sourceDefinitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
   dockerRepository: airbyte/source-recharge
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/recharge
   icon: recharge.svg
   sourceType: api
@@ -908,7 +908,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.15
+  dockerImageTag: 1.0.17
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -1153,6 +1153,14 @@
   icon: zendesk.svg
   sourceType: api
   releaseStage: beta
+- name: Zenefits
+  sourceDefinitionId: 8baba53d-2fe3-4e33-bc85-210d0eb62884
+  dockerRepository: airbyte/source-zenefits
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/zenefits
+  icon: zenefits.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Zenloop
   sourceDefinitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
   dockerRepository: airbyte/source-zenloop
