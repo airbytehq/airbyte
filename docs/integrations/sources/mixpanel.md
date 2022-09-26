@@ -4,7 +4,9 @@ This page contains the setup guide and reference information for the Mixpanel so
 
 ## Prerequisites
 
-* Mixpanel API Secret
+* Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts)
+* Mixpanel [Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id)
+* Mixpanel [Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel)
 * Project region `US` or `EU`
 
 ## Setup guide
@@ -12,7 +14,7 @@ This page contains the setup guide and reference information for the Mixpanel so
 ### Step 1: Set up
 
 <!-- markdown-link-check-disable-next-line -->
-Please read [Find Project Secret](https://developer.mixpanel.com/reference/project-secret#managing-a-projects-secret), and get your Project Secret.
+Please read [Find Service Account](https://developer.mixpanel.com/reference/service-accounts), and create your Service Account.
 
 <!-- markdown-link-check-disable-next-line -->
 Select the correct region \(EU or US\) for your Mixpanel project. See detail [here](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU)
@@ -43,12 +45,12 @@ Please note, that incremental sync could return duplicated \(old records\) for t
 ### Supported Streams
 
 * [Export](https://developer.mixpanel.com/reference/raw-event-export) \(Incremental\)
-* [Engage](https://developer.mixpanel.com/reference/engage-query) \(Full table\)
+* [Engage](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 * [Funnels](https://developer.mixpanel.com/reference/funnels-query) \(Incremental\)
 * [Revenue](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 * [Annotations](https://developer.mixpanel.com/reference/overview-1) \(Full table\)
-* [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Full table\)
-* [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Full table\)
+* [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Incremental\)
+* [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 
 
 ## Performance considerations
