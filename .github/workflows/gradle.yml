@@ -9,8 +9,7 @@ on:
     branches-ignore:
       - "gitbook/v1"
 
-permissions:
-  all: write
+permissions: write-all
 
 jobs:
   # COMMON TASKS
