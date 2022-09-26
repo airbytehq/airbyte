@@ -6,8 +6,8 @@ import styled from "styled-components";
 
 import { CheckBox, H5 } from "components";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/base/Tooltip";
-import { LoadingBackdrop } from "components/LoadingBackdrop";
 import { Cell, Header } from "components/SimpleTableComponents";
+import { LoadingBackdrop } from "components/ui/LoadingBackdrop";
 
 import { useConfig } from "config";
 import { SyncSchemaStream } from "core/domain/catalog";
