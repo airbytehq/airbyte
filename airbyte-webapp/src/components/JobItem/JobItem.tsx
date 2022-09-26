@@ -1,7 +1,7 @@
 import React, { Suspense, useCallback, useRef, useState } from "react";
 import styled from "styled-components";
 
-import { Spinner } from "components";
+import { Spinner } from "components/ui/Spinner";
 
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
