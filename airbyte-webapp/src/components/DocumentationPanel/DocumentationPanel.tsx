@@ -9,7 +9,7 @@ import rehypeSlug from "rehype-slug";
 import urls from "rehype-urls";
 
 import { LoadingPage, PageTitle } from "components";
-import { Markdown } from "components/Markdown";
+import { Markdown } from "components/ui/Markdown";
 
 import { useConfig } from "config";
 import { useDocumentation } from "hooks/services/useDocumentation";
