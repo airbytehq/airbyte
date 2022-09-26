@@ -62,8 +62,8 @@ class SecretsRepositoryWriterTest {
   private static final ConnectorSpecification SPEC = new ConnectorSpecification()
       .withConnectionSpecification(
           Jsons.deserialize("""
-                                     { "properties": { "username": { "type": "string" }, "password": { "type": "string", "airbyte_secret": true } } }
-                                     """));
+                            { "properties": { "username": { "type": "string" }, "password": { "type": "string", "airbyte_secret": true } } }
+                            """));
 
   private static final String SECRET = "abc";
   private static final JsonNode FULL_CONFIG = Jsons.deserialize(String.format("""
