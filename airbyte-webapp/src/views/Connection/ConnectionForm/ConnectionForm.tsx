@@ -234,7 +234,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 onCancel?.();
               }}
               successMessage={successMessage}
-              errorMessage={errorMessage}
+              errorMessage={!isValid && errorMessage}
               enableControls={canSubmitUntouchedForm}
             />
           )}
@@ -247,7 +247,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
               <CreateControls
                 isSubmitting={isSubmitting}
                 isValid={isValid && !editingTransformation}
-                errorMessage={errorMessage}
+                errorMessage={!isValid && errorMessage}
               />
             </>
           )}

@@ -231,7 +231,7 @@ subprojects { subproj ->
 
         tasks.register("buildDockerImage", DockerBuildImage) {
             // This is currently only used for connectors.
-            def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
+            def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.4'
 
             def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
             def isArm64 = arch == "aarch64" || arch == "arm64"
@@ -239,7 +239,7 @@ subprojects { subproj ->
             def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
             def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
             def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:alpine' : 'amd64/nginx:alpine'
-            def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:19-slim-bullseye" : "amd64/openjdk:19-slim-bullseye"
+            def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/amazoncorretto:17.0.4" : "amd64/amazoncorretto:17.0.4"
             def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
             platform = buildPlatform

@@ -50,3 +50,4 @@ Define imageTag
 {{- else }}
     {{- printf "%s" .Chart.AppVersion }}
 {{- end }}
+{{- end }}
