@@ -37,12 +37,8 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """we're overriding the schema classmethod to enable some post-processing"""
-        import json
-
         schema = super().schema(*args, **kwargs)
-        print("\n\nPre-Schema: %s\n\n" % json.dumps(schema))
         schema = cls.change_authentication_to_oneOf(schema)
-        print("\n\nPost-Schema: %s\n\n" % json.dumps(schema))
         return schema
 
     class Config:
