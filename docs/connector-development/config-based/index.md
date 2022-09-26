@@ -7,7 +7,7 @@
 This section gives an overview of the low-code framework.
 
 - [Overview](overview.md)
-- [Yaml structure](yaml-structure.md)
+- [YAML structure](yaml-structure.md)
 - [Reference docs](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.html)
 
 ## Concepts
