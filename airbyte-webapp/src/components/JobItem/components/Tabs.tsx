@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { StepsMenu } from "components/StepsMenu";
+import { StepsMenu } from "components/ui/StepsMenu";
 
 import { AttemptStatus } from "core/request/AirbyteClient";
 
