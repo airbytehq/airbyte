@@ -5,7 +5,7 @@
 package io.airbyte.workers.temporal.scheduling.state;
 
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl.FailureCause;
+import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity.FailureCause;
 import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener;
 import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
 import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChangedListener.StateField;

@@ -17,7 +17,6 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.metrics.lib.MetricAttribute;
-import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
@@ -78,8 +77,6 @@ import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -798,6 +795,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     if (workflowConfigVersion < WORKFLOW_CONFIG_CURRENT_VERSION) {
       return Duration.ofMinutes(10L);
     }
+    return workflowConfigActivity.getWorkflowRestartDelaySeconds();
   }
 
   /**
@@ -806,12 +804,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * @param connectionUpdaterInput The {@link ConnectionUpdaterInput} that represents the workflow to
    *        be executed.
    * @return The list of {@link MetricAttribute}s to be included when recording a metric.
+   *
+   *         private List<MetricAttribute> generateMetricAttributes(final ConnectionUpdaterInput
+   *         connectionUpdaterInput) { final List<MetricAttribute> metricAttributes = new
+   *         ArrayList<>(); metricAttributes.add(new MetricAttribute(MetricTags.CONNECTION_ID,
+   *         String.valueOf(connectionUpdaterInput.getConnectionId()))); return metricAttributes; }
    */
-  private List<MetricAttribute> generateMetricAttributes(final ConnectionUpdaterInput connectionUpdaterInput) {
-    final List<MetricAttribute> metricAttributes = new ArrayList<>();
-    metricAttributes.add(new MetricAttribute(MetricTags.CONNECTION_ID, String.valueOf(connectionUpdaterInput.getConnectionId())));
-    return metricAttributes;
-  }
 
   private void initInternalState(final ConnectionUpdaterInput connectionUpdaterInput) {
     connectionId = connectionUpdaterInput.getConnectionId();
@@ -856,8 +854,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return getJobInput();
   }
 
+  @SuppressWarnings("PMD.EmptyIfStmt")
   private void checkConnectionAndRunSync(final ConnectionUpdaterInput connectionUpdaterInput, final GeneratedJobInput jobInputs) {
-    reportJobStarting();
+    reportJobStarting(connectionUpdaterInput.getConnectionId());
 
     try {
       final SyncCheckConnectionFailure syncCheckConnectionFailure = checkConnections(jobInputs);
@@ -880,7 +879,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // silently ignore it.
       if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
         // do nothing, cancellation handled by cancellationScope
-        recordWorkflowFailureCountMetric(connectionUpdaterInput, FailureCause.CANCELED);
       } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
         // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
         // activity throws an exception, for
@@ -907,7 +905,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     if (workflowState.isDeleted()) {
       if (workflowState.isRunning()) {
         log.info("Cancelling the current running job because a connection deletion was requested");
-        reportCancelled();
+        reportCancelled(connectionUpdaterInput.getConnectionId());
       }
       log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
       deleteConnectionBeforeTerminatingTheWorkflow();
@@ -932,17 +930,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
 
     prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-  }
-
-  /**
-   * Enumeration of workflow failure causes.
-   */
-  public enum FailureCause {
-    ACTIVITY,
-    CANCELED,
-    CONNECTION,
-    UNKNOWN,
-    WORKFLOW
   }
 
 }
