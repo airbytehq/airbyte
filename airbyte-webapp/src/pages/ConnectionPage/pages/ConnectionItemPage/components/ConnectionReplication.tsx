@@ -125,7 +125,8 @@ export const ConnectionReplication: React.FC = () => {
           });
           if (result.type !== "canceled") {
             // Save the connection taking into account the correct skipRefresh value from the dialog choice.
-            await saveConnection(formValues, { skipReset: !result.reason });
+            // We also want to skip the refresh sync if the connection is not in an "active" status
+            await saveConnection(formValues, { skipReset: !result.reason || connection.status !== "active" });
           } else {
             // We don't want to set saved to true or schema has been refreshed to false.
             return;
