@@ -24,7 +24,7 @@ import javax.inject.Singleton;
  * Airbyte Protocol.
  */
 @Singleton
-public class AirbyteSerDeProvider {
+public class AirbyteMessageSerDeProvider {
 
   private final List<AirbyteMessageDeserializer<?>> deserializersToRegister;
   private final List<AirbyteMessageSerializer<?>> serializersToRegister;
@@ -32,13 +32,13 @@ public class AirbyteSerDeProvider {
   private final Map<String, AirbyteMessageDeserializer<?>> deserializers = new HashMap<>();
   private final Map<String, AirbyteMessageSerializer<?>> serializers = new HashMap<>();
 
-  public AirbyteSerDeProvider(final List<AirbyteMessageDeserializer<?>> deserializers,
-                              final List<AirbyteMessageSerializer<?>> serializers) {
+  public AirbyteMessageSerDeProvider(final List<AirbyteMessageDeserializer<?>> deserializers,
+                                     final List<AirbyteMessageSerializer<?>> serializers) {
     deserializersToRegister = deserializers;
     serializersToRegister = serializers;
   }
 
-  public AirbyteSerDeProvider() {
+  public AirbyteMessageSerDeProvider() {
     this(Collections.emptyList(), Collections.emptyList());
   }
 

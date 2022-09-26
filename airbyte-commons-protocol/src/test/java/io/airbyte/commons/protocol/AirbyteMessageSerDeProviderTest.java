@@ -16,9 +16,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class AirbyteSerDeProviderTest {
+class AirbyteMessageSerDeProviderTest {
 
-  AirbyteSerDeProvider serDeProvider;
+  AirbyteMessageSerDeProvider serDeProvider;
   AirbyteMessageDeserializer<String> deserV0;
   AirbyteMessageDeserializer<String> deserV1;
 
@@ -27,7 +27,7 @@ class AirbyteSerDeProviderTest {
 
   @BeforeEach
   void beforeEach() {
-    serDeProvider = new AirbyteSerDeProvider();
+    serDeProvider = new AirbyteMessageSerDeProvider();
 
     deserV0 = buildDeserializer(new AirbyteVersion("0.1.0"));
     deserV1 = buildDeserializer(new AirbyteVersion("1.1.0"));

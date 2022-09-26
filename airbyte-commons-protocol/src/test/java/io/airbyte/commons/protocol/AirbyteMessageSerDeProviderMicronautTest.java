@@ -14,10 +14,10 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 @MicronautTest
-class AirbyteSerDeProviderMicronautTest {
+class AirbyteMessageSerDeProviderMicronautTest {
 
   @Inject
-  AirbyteSerDeProvider serDeProvider;
+  AirbyteMessageSerDeProvider serDeProvider;
 
   @Test
   void testSerDeInjection() {
