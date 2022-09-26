@@ -35,13 +35,13 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 
-  protected GcsAvroParquetDestinationAcceptanceTest(S3Format s3Format) {
+  protected GcsAvroParquetDestinationAcceptanceTest(final S3Format s3Format) {
     super(s3Format);
   }
 
   @ParameterizedTest
   @ArgumentsSource(NumberDataTypeTestArgumentProvider.class)
-  public void testNumberDataType(String catalogFileName, String messagesFileName) throws Exception {
+  public void testNumberDataType(final String catalogFileName, final String messagesFileName) throws Exception {
     final AirbyteCatalog catalog = readCatalogFromFile(catalogFileName);
     final List<AirbyteMessage> messages = readMessagesFromFile(messagesFileName);
 
@@ -54,16 +54,16 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
 
-      Map<String, Set<Type>> actualSchemaTypes = retrieveDataTypesFromPersistedFiles(streamName, schema);
-      Map<String, Set<Type>> expectedSchemaTypes = retrieveExpectedDataTypes(stream);
+      final Map<String, Set<Type>> actualSchemaTypes = retrieveDataTypesFromPersistedFiles(streamName, schema);
+      final Map<String, Set<Type>> expectedSchemaTypes = retrieveExpectedDataTypes(stream);
 
       assertEquals(expectedSchemaTypes, actualSchemaTypes);
     }
   }
 
-  private Map<String, Set<Type>> retrieveExpectedDataTypes(AirbyteStream stream) {
-    Iterable<String> iterableNames = () -> stream.getJsonSchema().get("properties").fieldNames();
-    Map<String, JsonNode> nameToNode = StreamSupport.stream(iterableNames.spliterator(), false)
+  private Map<String, Set<Type>> retrieveExpectedDataTypes(final AirbyteStream stream) {
+    final Iterable<String> iterableNames = () -> stream.getJsonSchema().get("properties").fieldNames();
+    final Map<String, JsonNode> nameToNode = StreamSupport.stream(iterableNames.spliterator(), false)
         .collect(Collectors.toMap(
             Function.identity(),
             name -> getJsonNode(stream, name)));
@@ -76,15 +76,15 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
             entry -> getExpectedSchemaType(entry.getValue())));
   }
 
-  private JsonNode getJsonNode(AirbyteStream stream, String name) {
-    JsonNode properties = stream.getJsonSchema().get("properties");
+  private JsonNode getJsonNode(final AirbyteStream stream, final String name) {
+    final JsonNode properties = stream.getJsonSchema().get("properties");
     if (properties.size() == 1) {
       return properties.get("data");
     }
     return properties.get(name).get("items");
   }
 
-  private Set<Type> getExpectedSchemaType(JsonNode fieldDefinition) {
+  private Set<Type> getExpectedSchemaType(final JsonNode fieldDefinition) {
     final JsonNode typeProperty = fieldDefinition.get("type");
     final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
     final String airbyteTypePropertyText = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
@@ -95,7 +95,7 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
         .collect(Collectors.toSet());
   }
 
-  private boolean compareAirbyteTypes(String airbyteTypePropertyText, JsonSchemaType value) {
+  private boolean compareAirbyteTypes(final String airbyteTypePropertyText, final JsonSchemaType value) {
     if (airbyteTypePropertyText == null) {
       return value.getJsonSchemaAirbyteType() == null;
     }
@@ -113,9 +113,9 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
 
   protected abstract Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception;
 
-  protected Map<String, Set<Type>> getTypes(Record record) {
+  protected Map<String, Set<Type>> getTypes(final Record record) {
 
-    List<Field> fieldList = record
+    final List<Field> fieldList = record
         .getSchema()
         .getFields()
         .stream()

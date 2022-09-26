@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -22,6 +22,8 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -41,6 +43,7 @@ import io.temporal.client.WorkflowOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -48,6 +51,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings({"PMD.UnusedPrivateField", "PMD.UnusedPrivateMethod"})
 class SyncWorkflowTest {
 
   // TEMPORAL
@@ -59,6 +63,7 @@ class SyncWorkflowTest {
   private NormalizationActivityImpl normalizationActivity;
   private DbtTransformationActivityImpl dbtTransformationActivity;
   private PersistStateActivityImpl persistStateActivity;
+  private NormalizationSummaryCheckActivityImpl normalizationSummaryCheckActivity;
 
   private static final String SYNC_TASK_QUEUE = "SYNC_TASK_QUEUE";
 
@@ -84,13 +89,15 @@ class SyncWorkflowTest {
   private NormalizationInput normalizationInput;
   private OperatorDbtInput operatorDbtInput;
   private StandardSyncOutput replicationSuccessOutput;
+  private StandardSyncSummary standardSyncSummary;
+  private SyncStats syncStats;
   private NormalizationSummary normalizationSummary;
   private ActivityOptions longActivityOptions;
   private ActivityOptions shortActivityOptions;
   private TemporalProxyHelper temporalProxyHelper;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException {
     testEnv = TestWorkflowEnvironment.newInstance();
     syncWorker = testEnv.newWorker(SYNC_TASK_QUEUE);
     client = testEnv.getWorkflowClient();
@@ -98,7 +105,10 @@ class SyncWorkflowTest {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     sync = syncPair.getKey();
     syncInput = syncPair.getValue();
-    replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog());
+
+    syncStats = new SyncStats().withRecordsCommitted(10L);
+    standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
+    replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog()).withStandardSyncSummary(standardSyncSummary);
     normalizationSummary = new NormalizationSummary();
 
     normalizationInput = new NormalizationInput()
@@ -114,7 +124,10 @@ class SyncWorkflowTest {
     normalizationActivity = mock(NormalizationActivityImpl.class);
     dbtTransformationActivity = mock(DbtTransformationActivityImpl.class);
     persistStateActivity = mock(PersistStateActivityImpl.class);
+    normalizationSummaryCheckActivity = mock(NormalizationSummaryCheckActivityImpl.class);
+
     when(normalizationActivity.generateNormalizationInput(any(), any())).thenReturn(normalizationInput);
+    when(normalizationSummaryCheckActivity.shouldRunNormalization(any(), any(), any())).thenReturn(true);
 
     longActivityOptions = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofDays(3))
@@ -156,7 +169,7 @@ class SyncWorkflowTest {
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity,
-        persistStateActivity);
+        persistStateActivity, normalizationSummaryCheckActivity);
     testEnv.start();
     final SyncWorkflow workflow =
         client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(SYNC_TASK_QUEUE).build());
@@ -182,8 +195,10 @@ class SyncWorkflowTest {
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
-    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
-    assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary), actualOutput);
+    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
+        operatorDbtInput);
+    assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary),
+        actualOutput);
   }
 
   @Test
@@ -264,6 +279,29 @@ class SyncWorkflowTest {
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
+  }
+
+  @Test
+  void testSkipNormalization() throws IOException {
+    final SyncStats syncStats = new SyncStats().withRecordsCommitted(0L);
+    final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
+    final StandardSyncOutput replicationSuccessOutputNoRecordsCommitted =
+        new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog()).withStandardSyncSummary(standardSyncSummary);
+    when(normalizationSummaryCheckActivity.shouldRunNormalization(any(), any(), any())).thenReturn(false);
+
+    doReturn(replicationSuccessOutputNoRecordsCommitted).when(replicationActivity).replicate(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        syncInput);
+
+    execute();
+
+    verifyReplication(replicationActivity, syncInput);
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutputNoRecordsCommitted, syncInput.getCatalog());
+    verifyNoInteractions(normalizationActivity);
+    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
+        operatorDbtInput);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
