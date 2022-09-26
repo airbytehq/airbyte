@@ -31,6 +31,7 @@ dependencies {
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
+    testImplementation "org.mockito:mockito-inline:4.1.0"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
