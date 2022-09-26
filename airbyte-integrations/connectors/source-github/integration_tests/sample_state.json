@@ -71,7 +71,7 @@
   },
   "workflow_jobs": {
     "airbytehq/integration-test": {
-      "completed_at": "2021-08-30T12:01:15Z"
+      "started_at": "2021-08-30T12:01:15Z"
     }
   }
 }

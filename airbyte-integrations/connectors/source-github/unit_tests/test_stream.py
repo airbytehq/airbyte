@@ -1091,7 +1091,7 @@ def test_stream_workflow_jobs_read_incremental():
     data = [
         {
             "id": 1,
-            "completed_at": "2022-09-02T09:11:02Z",
+            "started_at": "2022-09-02T09:11:02Z",
             "run_id": 1,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1100,7 +1100,7 @@ def test_stream_workflow_jobs_read_incremental():
         },
         {
             "id": 2,
-            "completed_at": "2022-09-02T10:11:02Z",
+            "started_at": "2022-09-02T10:11:02Z",
             "run_id": 1,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1109,7 +1109,7 @@ def test_stream_workflow_jobs_read_incremental():
         },
         {
             "id": 3,
-            "completed_at": "2022-09-02T09:11:02Z",
+            "started_at": "2022-09-02T09:11:02Z",
             "run_id": 2,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1118,7 +1118,7 @@ def test_stream_workflow_jobs_read_incremental():
         },
         {
             "id": 4,
-            "completed_at": "2022-09-02T10:11:02Z",
+            "started_at": "2022-09-02T10:11:02Z",
             "run_id": 2,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1160,12 +1160,12 @@ def test_stream_workflow_jobs_read_incremental():
     state = {}
     records = read_incremental(stream, state)
 
-    assert state == {"org/repo": {"completed_at": "2022-09-02T10:11:02Z"}}
+    assert state == {"org/repo": {"started_at": "2022-09-02T10:11:02Z"}}
 
     assert records == [
         {
             "id": 1,
-            "completed_at": "2022-09-02T09:11:02Z",
+            "started_at": "2022-09-02T09:11:02Z",
             "run_id": 1,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1175,7 +1175,7 @@ def test_stream_workflow_jobs_read_incremental():
         },
         {
             "id": 2,
-            "completed_at": "2022-09-02T10:11:02Z",
+            "started_at": "2022-09-02T10:11:02Z",
             "run_id": 1,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1185,7 +1185,7 @@ def test_stream_workflow_jobs_read_incremental():
         },
         {
             "id": 3,
-            "completed_at": "2022-09-02T09:11:02Z",
+            "started_at": "2022-09-02T09:11:02Z",
             "run_id": 2,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1195,7 +1195,7 @@ def test_stream_workflow_jobs_read_incremental():
         },
         {
             "id": 4,
-            "completed_at": "2022-09-02T10:11:02Z",
+            "started_at": "2022-09-02T10:11:02Z",
             "run_id": 2,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1211,7 +1211,7 @@ def test_stream_workflow_jobs_read_incremental():
         0,
         {
             "id": 5,
-            "completed_at": "2022-09-03T01:00:00Z",
+            "started_at": "2022-09-03T01:00:00Z",
             "run_id": 2,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1220,7 +1220,7 @@ def test_stream_workflow_jobs_read_incremental():
         },
     )
 
-    data[2]["completed_at"] = "2022-09-04T01:00:00Z"  # data with ID 2
+    data[2]["started_at"] = "2022-09-04T01:00:00Z"  # data with ID 2
 
     responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/1/jobs", json={"jobs": data[0:1]})
 
@@ -1241,11 +1241,11 @@ def test_stream_workflow_jobs_read_incremental():
     responses.calls.reset()
     records = read_incremental(stream, state)
 
-    assert state == {"org/repo": {"completed_at": "2022-09-04T01:00:00Z"}}
+    assert state == {"org/repo": {"started_at": "2022-09-04T01:00:00Z"}}
     assert records == [
         {
             "id": 5,
-            "completed_at": "2022-09-03T01:00:00Z",
+            "started_at": "2022-09-03T01:00:00Z",
             "run_id": 1,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1255,7 +1255,7 @@ def test_stream_workflow_jobs_read_incremental():
         },
         {
             "id": 2,
-            "completed_at": "2022-09-04T01:00:00Z",
+            "started_at": "2022-09-04T01:00:00Z",
             "run_id": 2,
             "steps": [
                 {"name": "Set up job", "status": "completed", "conclusion": "success", "number": 1},
@@ -1307,7 +1307,7 @@ def test_stream_workflow_jobs_full_refresh():
             "jobs": [
                 {
                     "id": 1,
-                    "completed_at": "2022-09-02T09:11:02Z",
+                    "started_at": "2022-09-02T09:11:02Z",
                     "run_id": 1,
                     "steps": [
                         {
@@ -1328,7 +1328,7 @@ def test_stream_workflow_jobs_full_refresh():
                 },
                 {
                     "id": 2,
-                    "completed_at": "2022-09-02T10:11:02Z",
+                    "started_at": "2022-09-02T10:11:02Z",
                     "run_id": 1,
                     "steps": [
                         {
@@ -1358,7 +1358,7 @@ def test_stream_workflow_jobs_full_refresh():
             "jobs": [
                 {
                     "id": 3,
-                    "completed_at": "2022-09-02T09:11:02Z",
+                    "started_at": "2022-09-02T09:11:02Z",
                     "run_id": 2,
                     "steps": [
                         {
@@ -1379,7 +1379,7 @@ def test_stream_workflow_jobs_full_refresh():
                 },
                 {
                     "id": 4,
-                    "completed_at": "2022-09-02T10:11:02Z",
+                    "started_at": "2022-09-02T10:11:02Z",
                     "run_id": 2,
                     "steps": [
                         {
@@ -1407,7 +1407,7 @@ def test_stream_workflow_jobs_full_refresh():
     assert records == [
         {
             "id": 1,
-            "completed_at": "2022-09-02T09:11:02Z",
+            "started_at": "2022-09-02T09:11:02Z",
             "run_id": 1,
             "steps": [
                 {
@@ -1429,7 +1429,7 @@ def test_stream_workflow_jobs_full_refresh():
         },
         {
             "id": 2,
-            "completed_at": "2022-09-02T10:11:02Z",
+            "started_at": "2022-09-02T10:11:02Z",
             "run_id": 1,
             "steps": [
                 {
@@ -1451,7 +1451,7 @@ def test_stream_workflow_jobs_full_refresh():
         },
         {
             "id": 3,
-            "completed_at": "2022-09-02T09:11:02Z",
+            "started_at": "2022-09-02T09:11:02Z",
             "run_id": 2,
             "steps": [
                 {
@@ -1473,7 +1473,7 @@ def test_stream_workflow_jobs_full_refresh():
         },
         {
             "id": 4,
-            "completed_at": "2022-09-02T10:11:02Z",
+            "started_at": "2022-09-02T10:11:02Z",
             "run_id": 2,
             "steps": [
                 {

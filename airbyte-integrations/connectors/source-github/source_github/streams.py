@@ -1344,7 +1344,7 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
     API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
     """
 
-    cursor_field = "completed_at"
+    cursor_field = "started_at"
 
     def __init__(self, parent: WorkflowRuns, **kwargs):
         super().__init__(**kwargs)
