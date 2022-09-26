@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.databricks;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import java.util.UUID;

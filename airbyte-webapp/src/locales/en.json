@@ -114,7 +114,7 @@
 
   "connectionForm.validation.error": "The form is invalid. Please make sure that all fields are correct.",
   "connectionForm.normalization.title": "Normalization",
-  "connectionForm.operations.notSupported": "Transformation and Normalization operations are not supported for this connection",
+  "connectionForm.operations.notSupported": "Normalization and Transformation operations are not supported for this connection.",
   "connectionForm.transformation.title": "Transformation",
   "connectionForm.namespaceDefinition.title": "Destination Namespace*",
   "connectionForm.namespaceDefinition.subtitle": "Define the location where the data will be stored in the destination",
@@ -355,6 +355,10 @@
   "connection.updateSchema.streamName": "Stream name",
   "connection.updateSchema.namespace": "Namespace",
   "connection.updateSchema.dataType": "Data type",
+
+  "connection.catalogTree.sourceDefined": "<source defined>",
+  "connection.catalogTree.sourceSchema": "<source schema>",
+  "connection.catalogTree.destinationSchema": "<destination schema>",
 
   "connection.newConnection": "+ New connection",
   "connection.newConnectionTitle": "New connection",
