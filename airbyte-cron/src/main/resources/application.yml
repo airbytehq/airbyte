@@ -1,0 +1,7 @@
+micronaut:
+  application:
+    name: airbyte-cron
+
+airbyte:
+  worker:
+    env: ${WORKER_ENVIRONMENT:DOCKER}
