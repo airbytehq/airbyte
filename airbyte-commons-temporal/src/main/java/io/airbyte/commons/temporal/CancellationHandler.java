@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal;
+package io.airbyte.commons.temporal;
 
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.client.ActivityCompletionException;

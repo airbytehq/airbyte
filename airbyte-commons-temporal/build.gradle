@@ -1,0 +1,42 @@
+import org.jsonschema2pojo.SourceType
+
+plugins {
+    id "java-library"
+    id 'com.github.eirnym.js2p' version '1.0'
+}
+
+dependencies {
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+
+    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation 'io.temporal:temporal-serviceclient:1.8.1'
+
+    testAnnotationProcessor platform(libs.micronaut.bom)
+    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+
+
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-metrics:metrics-lib')
+
+    testImplementation 'io.temporal:temporal-testing:1.8.1'
+    // Needed to be able to mock final class
+    testImplementation 'org.mockito:mockito-inline:4.7.0'
+}
+
+jsonSchema2Pojo {
+    sourceType = SourceType.YAMLSCHEMA
+    source = files("${sourceSets.main.output.resourcesDir}/workers_models")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+    removeOldOutput = true
+
+    targetPackage = 'io.airbyte.persistence.job.models'
+
+    useLongIntegers = true
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
+}
