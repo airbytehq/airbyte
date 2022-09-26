@@ -4,36 +4,48 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import static io.airbyte.scheduler.models.Job.REPLICATION_TYPES;
-import static io.airbyte.scheduler.persistence.JobNotifier.CONNECTION_DISABLED_NOTIFICATION;
-import static io.airbyte.scheduler.persistence.JobNotifier.CONNECTION_DISABLED_WARNING_NOTIFICATION;
+import static io.airbyte.persistence.job.JobNotifier.CONNECTION_DISABLED_NOTIFICATION;
+import static io.airbyte.persistence.job.JobNotifier.CONNECTION_DISABLED_WARNING_NOTIFICATION;
+import static io.airbyte.persistence.job.models.Job.REPLICATION_TYPES;
 import static java.time.temporal.ChronoUnit.DAYS;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.config.Configs;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.models.JobStatus;
-import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
-import io.airbyte.scheduler.persistence.JobNotifier;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobNotifier;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.Job;
+import io.airbyte.persistence.job.models.JobStatus;
+import io.airbyte.persistence.job.models.JobWithStatusAndTimestamp;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.exception.RetryableException;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.annotation.Value;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import lombok.AllArgsConstructor;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@AllArgsConstructor
+@Singleton
+@Requires(property = "airbyte.worker.plane",
+          pattern = "(?i)^(?!data_plane).*")
 public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionActivity {
 
+  @Inject
   private ConfigRepository configRepository;
+  @Inject
   private JobPersistence jobPersistence;
+  @Inject
   private FeatureFlags featureFlags;
-  private Configs configs;
+  @Value("${airbyte.worker.job.failed.max-days}")
+  private Integer maxDaysOfOnlyFailedJobsBeforeConnectionDisable;
+  @Value("${airbyte.worker.job.failed.max-jobs}")
+  private Integer maxFailedJobsInARowBeforeConnectionDisable;
+  @Inject
   private JobNotifier jobNotifier;
 
   // Given a connection id and current timestamp, this activity will set a connection to INACTIVE if
@@ -54,9 +66,9 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
           return new AutoDisableConnectionOutput(false);
         }
 
-        final int maxDaysOfOnlyFailedJobs = configs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
+        final int maxDaysOfOnlyFailedJobs = maxDaysOfOnlyFailedJobsBeforeConnectionDisable;
         final int maxDaysOfOnlyFailedJobsBeforeWarning = maxDaysOfOnlyFailedJobs / 2;
-        final int maxFailedJobsInARowBeforeConnectionDisableWarning = configs.getMaxFailedJobsInARowBeforeConnectionDisable() / 2;
+        final int maxFailedJobsInARowBeforeConnectionDisableWarning = maxFailedJobsInARowBeforeConnectionDisable / 2;
         final long currTimestampInSeconds = input.getCurrTimestamp().getEpochSecond();
         final Job lastJob = jobPersistence.getLastReplicationJob(input.getConnectionId())
             .orElseThrow(() -> new Exception("Auto-Disable Connection should not have been attempted if can't get latest replication job."));
@@ -84,7 +96,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
 
         if (numFailures == 0) {
           return new AutoDisableConnectionOutput(false);
-        } else if (numFailures >= configs.getMaxFailedJobsInARowBeforeConnectionDisable()) {
+        } else if (numFailures >= maxFailedJobsInARowBeforeConnectionDisable) {
           // disable connection if max consecutive failed jobs limit has been hit
           disableConnection(standardSync, lastJob);
           return new AutoDisableConnectionOutput(true);
@@ -184,6 +196,36 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
     // explicitly send to email if customer.io api key is set, since email notification cannot be set by
     // configs through UI yet
     jobNotifier.notifyJobByEmail(null, CONNECTION_DISABLED_NOTIFICATION, lastJob);
+  }
+
+  @VisibleForTesting
+  void setConfigRepository(final ConfigRepository configRepository) {
+    this.configRepository = configRepository;
+  }
+
+  @VisibleForTesting
+  void setJobPersistence(final JobPersistence jobPersistence) {
+    this.jobPersistence = jobPersistence;
+  }
+
+  @VisibleForTesting
+  void setFeatureFlags(final FeatureFlags featureFlags) {
+    this.featureFlags = featureFlags;
+  }
+
+  @VisibleForTesting
+  void setMaxDaysOfOnlyFailedJobsBeforeConnectionDisable(final Integer maxDaysOfOnlyFailedJobsBeforeConnectionDisable) {
+    this.maxDaysOfOnlyFailedJobsBeforeConnectionDisable = maxDaysOfOnlyFailedJobsBeforeConnectionDisable;
+  }
+
+  @VisibleForTesting
+  void setMaxFailedJobsInARowBeforeConnectionDisable(final Integer maxFailedJobsInARowBeforeConnectionDisable) {
+    this.maxFailedJobsInARowBeforeConnectionDisable = maxFailedJobsInARowBeforeConnectionDisable;
+  }
+
+  @VisibleForTesting
+  void setJobNotifier(final JobNotifier jobNotifier) {
+    this.jobNotifier = jobNotifier;
   }
 
 }

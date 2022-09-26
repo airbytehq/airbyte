@@ -12,7 +12,7 @@ interface LabelMessageProps {
   touched: boolean;
 }
 
-const Label: React.FC<LabelMessageProps> = ({ property, error, touched, children }) => {
+const Label: React.FC<React.PropsWithChildren<LabelMessageProps>> = ({ property, error, touched, children }) => {
   const labelText = property.title || property.fieldKey;
   const labelRequiredAppendix = property.isRequired ? " *" : "";
   const label = `${labelText}${labelRequiredAppendix}`;

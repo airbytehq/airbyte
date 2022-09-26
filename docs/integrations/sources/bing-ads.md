@@ -1,73 +1,66 @@
 # Bing Ads
+This page contains the setup guide and reference information for the Bing Ads source connector.
 
-This page guides you through the process of setting up the Bing Ads source connector.
+## Setup guide
+### Step 1: Set up Bing Ads
+1. [Register your application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in the Azure portal.
+2. [Request user consent](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get the authorization code.
+3. Use the authorization code to [get a refresh token](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13).
 
-## Prerequisites (Airbyte Cloud)
+:::note
 
-- A Bing Ads account with permission to access data from accounts you want to sync
+The refresh token expires in 90 days. Repeat the authorization process to get a new refresh token. The full authentication process described [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token).
 
-## Prerequisites (Airbyte Open Source)
+:::
 
-- Tenant ID
-- Developer Token
-- Client ID
-- Client Secret
-- Refresh Token
-- Reports replication start date
+4. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token).
+5. If your OAuth app has a custom tenant and you cannot use Microsoft’s recommended common tenant, use the custom tenant in the **Tenant ID** field when you set up the connector.
 
-## Step 1: Set up Bing Ads
+:::info
 
-1. Create a developer application using the instructions for [registering an application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in Azure portal
-2. Perform [these steps](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get auth code, and use that to [get a refresh token](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13). For reference, the full authentication process described [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token). Be aware that the refresh token will expire in 90 days. You need to repeat the auth process to get a new refresh token.
-3. Find your Microsoft developer token by following [these instructions](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token)
-4. Optionally, if your oauth app lives under a custom tenant which cannot use Microsoft's recommended `common` tenant, make sure to get the tenant ID ready for input when configuring the connector. The tenant will be used in the auth URL e.g: `https://login.microsoftonline.com/<tenant>/oauth2/v2.0/authorize`.
+The tenant is used in the authentication URL, for example: `https://login.microsoftonline.com/<tenant>/oauth2/v2.0/authorize`
 
-## Step 2: Set up the source connector in Airbyte
+:::
 
-**For Airbyte Cloud:**
+### Step 2: Set up the source connector in Airbyte
+#### For Airbyte Cloud
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Bing Ads** from the **Source type** dropdown.
+4. Enter a name for your source.
+5. For **Tenant ID**, enter the custom tenant or use the common tenant. 
+6. Add the developer token from [Step 1](#step-1-set-up-bing-ads). 
+7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+8. Click **Authenticate your Bing Ads account**.
+9. Log in and authorize the Bing Ads account.
+10. Click **Set up source**.  
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Bing Ads** from the Source type dropdown and enter a name for this connector.
-4. Add Tenant ID
-5. Click `Authenticate your account`.
-6. Log in and Authorize to the BingAds account
-7. Choose required Start date
-8. click `Set up source`.
-
-**For Airbyte Open Source:**
-
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the Set up the source page, enter the name for the connector and select **Bing Ads** from the Source type dropdown.
-4. Add Tenant ID
-5. Copy and paste info from step 1:
-   - client ID
-   - client secret
-   - refresh_token
-   - A developer token
-6. Choose required Start date and type of aggregation report
-7. Click `Set up source`.
+#### For Airbyte Open Source
+1. Log in to your Airbyte Open Source account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Bing Ads** from the **Source type** dropdown.
+4. Enter a name for your source.
+5. For **Tenant ID**, enter the custom tenant or use the common tenant. 
+6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
+7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+8. Click **Set up source**.
 
 ## Supported sync modes
-
 The Bing Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
-
-- Full Refresh
-- Incremental
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
-
-Basic streams:
-
+### Basic streams
 - [accounts](https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13)
-- [campaigns](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13)
 - [ad_groups](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13)
 - [ads](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13)
+- [campaigns](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13)
 
-Report Streams:
-
-- [budget_summary_report](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
+### Report Streams
+The Bing Ads source connector supports the following streams. For more information, see the [Bing Ads API](https://docs.microsoft.com/en-us/advertising/guides/?view=bingads-13).
 - [account_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
 - [account_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
 - [account_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
@@ -80,6 +73,7 @@ Report Streams:
 - [ad_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
 - [ad_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
 - [ad_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [budget_summary_report](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
 - [campaign_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [campaign_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [campaign_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
@@ -89,20 +83,17 @@ Report Streams:
 - [keyword_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 - [keyword_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 
-For more information, see the [Bing Ads API](https://docs.microsoft.com/en-us/advertising/guides/?view=bingads-13).
+### Report aggregation
+All reports synced by this connector can be [aggregated](https://docs.microsoft.com/en-us/advertising/reporting-service/reportaggregation?view=bingads-13) using hourly, daily, weekly, or monthly time windows. 
 
-### Report Aggregation
+For example, if you select a report with daily aggregation, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
 
-All reports synced by this connector can be aggregated using hourly, daily, weekly, or monthly windows. Performance data is aggregated using the selected window. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
+A report's aggregation window is indicated in its name. For example, `account_performance_report_hourly` is the Account Performance Reported aggregated using an hourly window.
 
-A report's aggregation window is indicated in its name e.g: `account_performance_report_hourly` is the Account Performance Reported aggregated using an hourly window.
-
-### Performance considerations
-
-API limits number of requests for all Microsoft Advertising clients. You can find detailied info [here](https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling)
+## Performance considerations
+The Bing Ads API limits the number of requests for all Microsoft Advertising clients. You can find detailed info [here](https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling).
 
 ## Changelog
-
 | Version | Date       | Pull Request                                             | Subject                                                                                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.12  | 2022-09-05 | [16335](https://github.com/airbytehq/airbyte/pull/16335) | Added backoff for socket.timeout                                                                                           |

@@ -1,36 +1,22 @@
-import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
-import React, { useCallback, useEffect, useState } from "react";
+import { Field, FieldProps, Form, Formik } from "formik";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { Card, ControlLabels, DropDown, DropDownRow, H5, Input } from "components";
+import { Card, ControlLabels, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import {
-  ConnectionScheduleDataBasicSchedule,
-  ConnectionScheduleType,
-  NamespaceDefinitionType,
-  WebBackendConnectionRead,
-} from "core/request/AirbyteClient";
-import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
-import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { generateMessageFromError } from "utils/errorStatusMessage";
+import { NamespaceDefinitionType } from "core/request/AirbyteClient";
+import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import { OperationsSection } from "./components/OperationsSection";
+import ScheduleField from "./components/ScheduleField";
 import SchemaField from "./components/SyncCatalogField";
-import {
-  ConnectionFormValues,
-  connectionValidationSchema,
-  FormikConnectionFormValues,
-  mapFormPropsToOperation,
-  useFrequencyDropdownData,
-  useInitialValues,
-} from "./formConfig";
+import { connectionValidationSchema } from "./formConfig";
 
 const ConnectorLabel = styled(ControlLabels)`
   max-width: 328px;
@@ -64,7 +50,7 @@ export const RightFieldCol = styled.div`
   max-width: 300px;
 `;
 
-const StyledSection = styled.div`
+export const StyledSection = styled.div`
   padding: 20px 20px;
   display: flex;
   flex-direction: column;
@@ -84,7 +70,7 @@ const LabelHeading = styled(H5)`
   display: inline;
 `;
 
-const Section: React.FC<SectionProps> = ({ title, children }) => (
+const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({ title, children }) => (
   <Card>
     <StyledSection>
       {title && <H5 bold>{title}</H5>}
@@ -99,103 +85,27 @@ const FormContainer = styled(Form)`
   gap: 10px;
 `;
 
-export interface ConnectionFormSubmitResult {
-  onSubmitComplete?: () => void;
-  submitCancelled?: boolean;
-}
-
 export type ConnectionFormMode = "create" | "edit" | "readonly";
 
-interface DirtyChangeTrackerProps {
-  dirty: boolean;
-  onChanges: (dirty: boolean) => void;
-}
-
-const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChanges }) => {
-  useEffect(() => {
-    onChanges(dirty);
-  }, [dirty, onChanges]);
-  return null;
-};
-
-export type ConnectionOrPartialConnection =
-  | WebBackendConnectionRead
-  | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
-
 export interface ConnectionFormProps {
-  onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
   successMessage?: React.ReactNode;
-  onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
-  onCancel?: () => void;
-  onFormDirtyChanges?: (dirty: boolean) => void;
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   canSubmitUntouchedForm?: boolean;
-  mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
-
-  connection: ConnectionOrPartialConnection;
 }
 
 export const ConnectionForm: React.FC<ConnectionFormProps> = ({
-  onSubmit,
-  onCancel,
   className,
-  onDropDownSelect,
-  mode,
   successMessage,
   canSubmitUntouchedForm,
   additionalSchemaControl,
-  connection,
-  onFormDirtyChanges,
 }) => {
-  const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
-  const { clearFormChange } = useFormChangeTrackerService();
-  const formId = useUniqueFormId();
-  const [submitError, setSubmitError] = useState<Error | null>(null);
+  const { initialValues, formId, mode, onFormSubmit, errorMessage, onCancel } = useConnectionFormService();
+
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
-
   const { formatMessage } = useIntl();
-
-  const isEditMode: boolean = mode !== "create";
-  const initialValues = useInitialValues(connection, destDefinition, isEditMode);
-  const workspace = useCurrentWorkspace();
-
-  const onFormSubmit = useCallback(
-    async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      // Set the scheduleType based on the schedule value
-      values["scheduleType"] = values.scheduleData?.basicSchedule
-        ? ConnectionScheduleType.basic
-        : ConnectionScheduleType.manual;
-
-      const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
-        context: { isRequest: true },
-      }) as unknown as ConnectionFormValues;
-
-      formValues.operations = mapFormPropsToOperation(values, connection.operations, workspace.workspaceId);
-
-      setSubmitError(null);
-      try {
-        const result = await onSubmit(formValues);
-
-        if (result?.submitCancelled) {
-          return;
-        }
-
-        formikHelpers.resetForm({ values });
-        clearFormChange(formId);
-
-        result?.onSubmitComplete?.();
-      } catch (e) {
-        setSubmitError(e);
-      }
-    },
-    [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId]
-  );
-
-  const errorMessage = submitError ? generateMessageFromError(submitError) : null;
-  const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
   return (
     <Formik
@@ -204,11 +114,10 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
       enableReinitialize
       onSubmit={onFormSubmit}
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
+      {({ isSubmitting, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
-          {onFormDirtyChanges && <DirtyChangeTracker dirty={dirty} onChanges={onFormDirtyChanges} />}
-          {!isEditMode && (
+          {mode === "create" && (
             <Section>
               <Field name="name">
                 {({ field, meta }: FieldProps<string>) => (
@@ -230,7 +139,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                     <RightFieldCol>
                       <Input
                         {...field}
-                        disabled={mode === "readonly"}
                         error={!!meta.error}
                         data-testid="connectionName"
                         placeholder={formatMessage({
@@ -244,35 +152,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
             </Section>
           )}
           <Section title={<FormattedMessage id="connection.transfer" />}>
-            <Field name="scheduleData.basicSchedule">
-              {({ field, meta }: FieldProps<ConnectionScheduleDataBasicSchedule>) => (
-                <FlexRow>
-                  <LeftFieldCol>
-                    <ConnectorLabel
-                      nextLine
-                      error={!!meta.error && meta.touched}
-                      label={formatMessage({
-                        id: "form.frequency",
-                      })}
-                      message={formatMessage({
-                        id: "form.frequency.message",
-                      })}
-                    />
-                  </LeftFieldCol>
-                  <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
-                    <DropDown
-                      {...field}
-                      error={!!meta.error && meta.touched}
-                      options={frequencies}
-                      onChange={(item) => {
-                        onDropDownSelect?.(item);
-                        setFieldValue(field.name, item.value);
-                      }}
-                    />
-                  </RightFieldCol>
-                </FlexRow>
-              )}
-            </Field>
+            <ScheduleField />
           </Section>
           <Card>
             <StyledSection>
@@ -339,11 +219,9 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
             <StyledSection>
               <Field
                 name="syncCatalog.streams"
-                destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
                 additionalControl={additionalSchemaControl}
                 component={SchemaField}
                 isSubmitting={isSubmitting}
-                mode={mode}
               />
             </StyledSection>
           </Card>
@@ -356,28 +234,20 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 onCancel?.();
               }}
               successMessage={successMessage}
-              errorMessage={errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null}
+              errorMessage={!isValid && errorMessage}
               enableControls={canSubmitUntouchedForm}
             />
           )}
           {mode === "create" && (
             <>
               <OperationsSection
-                wrapper={({ children }) => (
-                  <Card>
-                    <StyledSection>{children}</StyledSection>
-                  </Card>
-                )}
-                destDefinition={destDefinition}
                 onStartEditTransformation={toggleEditingTransformation}
                 onEndEditTransformation={toggleEditingTransformation}
               />
               <CreateControls
                 isSubmitting={isSubmitting}
                 isValid={isValid && !editingTransformation}
-                errorMessage={
-                  errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
-                }
+                errorMessage={!isValid && errorMessage}
               />
             </>
           )}

@@ -1,4 +1,4 @@
-import { deleteEntity, submitButtonClick } from "commands/common";
+import { appendRandomString, deleteEntity, submitButtonClick } from "commands/common";
 import { createTestConnection } from "commands/connection";
 import { deleteDestination } from "commands/destination";
 import { deleteSource } from "commands/source";
@@ -21,23 +21,29 @@ describe("Connection main actions", () => {
   });
 
   it("Create new connection", () => {
-    createTestConnection("Test connection source cypress", "Test connection destination cypress");
+    const sourceName = appendRandomString("Test connection source cypress");
+    const destName = appendRandomString("Test connection destination cypress")
 
-    cy.get("div").contains("Test connection source cypress").should("exist");
-    cy.get("div").contains("Test connection destination cypress").should("exist");
+    createTestConnection(sourceName, destName);
 
-    deleteSource("Test connection source cypress");
-    deleteDestination("Test connection destination cypress");
+    cy.get("div").contains(sourceName).should("exist");
+    cy.get("div").contains(destName).should("exist");
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
   });
 
   it("Update connection", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
-    createTestConnection("Test update connection source cypress", "Test update connection destination cypress");
+    const sourceName = appendRandomString("Test update connection source cypress");
+    const destName = appendRandomString("Test update connection destination cypress");
+
+    createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid("Test update connection source cypress");
-    openSourceDestinationFromGrid("Test update connection destination cypress");
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
 
     goToReplicationTab();
 
@@ -52,20 +58,23 @@ describe("Connection main actions", () => {
 
     checkSuccessResult();
 
-    deleteSource("Test update connection source cypress");
-    deleteDestination("Test update connection destination cypress");
+    deleteSource(sourceName);
+    deleteDestination(destName);
   });
 
   it("Update connection (pokeAPI)", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
+    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
+    const destName = appendRandomString("Test update connection Local JSON destination cypress")
+
     createTestConnection(
-      "Test update connection PokeAPI source cypress",
-      "Test update connection Local JSON destination cypress"
+      sourceName,
+      destName
     );
 
     goToSourcePage();
-    openSourceDestinationFromGrid("Test update connection PokeAPI source cypress");
+    openSourceDestinationFromGrid(sourceName);
     openSourceDestinationFromGrid("Test update connection Local JSON destination cypress");
 
     goToReplicationTab();
@@ -82,7 +91,7 @@ describe("Connection main actions", () => {
       assert.isNotNull(interception.response?.statusCode, "200");
       expect(interception.request.method).to.eq("POST");
       expect(interception.request).property("body").to.contain({
-        name: "Test update connection PokeAPI source cypress <> Test update connection Local JSON destination cypressConnection name",
+        name: sourceName + " <> " + destName + "Connection name",
         prefix: "auto_test",
         namespaceDefinition: "customformat",
         namespaceFormat: "${SOURCE_NAMESPACE}_test",
@@ -108,22 +117,24 @@ describe("Connection main actions", () => {
     });
     checkSuccessResult();
 
-    deleteSource("Test update connection PokeAPI source cypress");
-    deleteDestination("Test update connection Local JSON destination cypress");
+    deleteSource(sourceName);
+    deleteDestination(destName);
   });
 
   it("Delete connection", () => {
-    createTestConnection("Test delete connection source cypress", "Test delete connection destination cypress");
+    const sourceName = "Test delete connection source cypress";
+    const destName = "Test delete connection destination cypress";
+    createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid("Test delete connection source cypress");
-    openSourceDestinationFromGrid("Test delete connection destination cypress");
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
 
     goToSettingsPage();
 
     deleteEntity();
 
-    deleteSource("Test delete connection source cypress");
-    deleteDestination("Test delete connection destination cypress");
+    deleteSource(sourceName);
+    deleteDestination(destName);
   });
 });

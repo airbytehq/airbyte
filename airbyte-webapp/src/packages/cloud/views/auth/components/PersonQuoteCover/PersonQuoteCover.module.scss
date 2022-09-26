@@ -50,7 +50,7 @@
   .quote {
     margin: 0;
     color: colors.$white;
-    font-family: fonts.$regularFont;
+    font-family: fonts.$primary;
     font-weight: 400;
     font-size: 17px;
     line-height: 28px;
@@ -80,7 +80,7 @@
 
   .quoteAuthorFullName {
     color: colors.$white;
-    font-family: fonts.$regularFont;
+    font-family: fonts.$primary;
     font-weight: 500;
     font-size: 14px;
     margin-bottom: 0;
@@ -88,7 +88,7 @@
 
   .quoteAuthorJobTitle {
     color: colors.$white;
-    font-family: fonts.$regularFont;
+    font-family: fonts.$primary;
     font-weight: 700;
     font-size: 18px;
     margin: 10px 0;
