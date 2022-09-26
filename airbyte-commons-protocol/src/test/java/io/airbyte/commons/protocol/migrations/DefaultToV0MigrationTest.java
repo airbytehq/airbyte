@@ -5,7 +5,6 @@
 package io.airbyte.commons.protocol.migrations;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.net.URI;
 import lombok.SneakyThrows;
@@ -23,7 +22,7 @@ class DefaultToV0MigrationTest {
 
   @Test
   void testVersionMetadata() {
-    assertNull(v0migration.getOldVersion().getMajorVersion());
+    assertEquals("0", v0migration.getOldVersion().getMajorVersion());
     assertEquals("0", v0migration.getNewVersion().getMajorVersion());
   }
 

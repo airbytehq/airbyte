@@ -7,8 +7,13 @@ package io.airbyte.commons.protocol;
 import io.airbyte.commons.protocol.migrations.AirbyteMessageMigration;
 import io.airbyte.commons.version.AirbyteVersion;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.annotation.PostConstruct;
+import javax.inject.Singleton;
 
 /**
  * AirbyteProtocol Message Migrator
@@ -16,10 +21,25 @@ import java.util.TreeMap;
  * This class is intended to apply the transformations required to go from one version of the
  * AirbyteProtocol to another.
  */
+@Singleton
 public class AirbyteMessageMigrator {
 
+  private final List<AirbyteMessageMigration<?, ?>> migrationsToRegister;
   private final SortedMap<String, AirbyteMessageMigration<?, ?>> migrations = new TreeMap<>();
   private String mostRecentVersion = "";
+
+  public AirbyteMessageMigrator(List<AirbyteMessageMigration<?, ?>> migrations) {
+    migrationsToRegister = migrations;
+  }
+
+  public AirbyteMessageMigrator() {
+    this(Collections.emptyList());
+  }
+
+  @PostConstruct
+  public void initialize() {
+    migrationsToRegister.forEach(this::registerMigration);
+  }
 
   public void registerMigration(final AirbyteMessageMigration<?, ?> migration) {
     final String key = migration.getOldVersion().getMajorVersion();
@@ -64,6 +84,13 @@ public class AirbyteMessageMigrator {
       result = applyUpgrade(migration, result);
     }
     return (New) result;
+  }
+
+  /**
+   * returns the list of migration keys, mostly for test purpose
+   */
+  public Set<String> getMigrationKeys() {
+    return migrations.keySet();
   }
 
   private Collection<AirbyteMessageMigration<?, ?>> selectMigrations(final AirbyteVersion version) {

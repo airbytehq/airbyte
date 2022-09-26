@@ -12,6 +12,8 @@ import io.airbyte.protocol.models.AirbyteMessage;
  * Demo migration to illustrate the template. This should be deleted once we added the v0 to v1
  * migration.
  */
+// NOTE, to actually wire this migration, uncomment the annotation
+// @Singleton
 public class AirbyteMessageMigrationV0
     implements AirbyteMessageMigration<AirbyteMessage, io.airbyte.protocol.models.v0.AirbyteMessage> {
 
@@ -31,7 +33,7 @@ public class AirbyteMessageMigrationV0
 
   @Override
   public AirbyteVersion getOldVersion() {
-    return new AirbyteVersion("dev");
+    return new AirbyteVersion("0.2.0");
   }
 
   @Override
