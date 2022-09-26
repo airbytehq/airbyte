@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
@@ -78,7 +79,7 @@ public class GcsAvroDestinationAcceptanceTest extends GcsAvroParquetDestinationA
   protected Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception {
 
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
-    Map<String, Set<Type>> resultDataTypes = new HashMap<>();
+    final Map<String, Set<Type>> resultDataTypes = new HashMap<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
       final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
@@ -87,7 +88,7 @@ public class GcsAvroDestinationAcceptanceTest extends GcsAvroParquetDestinationA
           new GenericDatumReader<>())) {
         while (dataFileReader.hasNext()) {
           final GenericData.Record record = dataFileReader.next();
-          Map<String, Set<Type>> actualDataTypes = getTypes(record);
+          final Map<String, Set<Type>> actualDataTypes = getTypes(record);
           resultDataTypes.putAll(actualDataTypes);
         }
       }

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
+import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
@@ -99,7 +100,7 @@ public class GcsParquetDestinationAcceptanceTest extends GcsAvroParquetDestinati
           .build()) {
         GenericData.Record record;
         while ((record = parquetReader.read()) != null) {
-          Map<String, Set<Type>> actualDataTypes = getTypes(record);
+          final Map<String, Set<Type>> actualDataTypes = getTypes(record);
           resultDataTypes.putAll(actualDataTypes);
         }
       }
