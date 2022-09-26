@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ImageBlock from "components/ImageBlock";
+import { ImageBlock } from "components/ui/ImageBlock";
 
 interface IProps {
   values: Array<{

@@ -16,7 +16,6 @@ import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
@@ -35,7 +34,6 @@ import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
-import io.airbyte.api.model.generated.WebBackendConnectionSearch;
 import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
@@ -165,19 +163,6 @@ public class WebBackendConnectionsHandler {
         .destination(destination)
         .operations(operations.getOperations())
         .resourceRequirements(connectionRead.getResourceRequirements());
-  }
-
-  public WebBackendConnectionReadList webBackendSearchConnections(final WebBackendConnectionSearch webBackendConnectionSearch)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-
-    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
-    for (final ConnectionRead connectionRead : connectionsHandler.listConnections().getConnections()) {
-      if (connectionsHandler.matchSearch(toConnectionSearch(webBackendConnectionSearch), connectionRead)) {
-        reads.add(buildWebBackendConnectionRead(connectionRead));
-      }
-    }
-
-    return new WebBackendConnectionReadList().connections(reads);
   }
 
   // todo (cgardens) - This logic is a headache to follow it stems from the internal data model not
@@ -540,24 +525,6 @@ public class WebBackendConnectionsHandler {
     connectionPatch.operationIds(finalOperationIds);
 
     return connectionPatch;
-  }
-
-  @VisibleForTesting
-  protected static ConnectionSearch toConnectionSearch(final WebBackendConnectionSearch webBackendConnectionSearch) {
-    return new ConnectionSearch()
-        .name(webBackendConnectionSearch.getName())
-        .connectionId(webBackendConnectionSearch.getConnectionId())
-        .source(webBackendConnectionSearch.getSource())
-        .sourceId(webBackendConnectionSearch.getSourceId())
-        .destination(webBackendConnectionSearch.getDestination())
-        .destinationId(webBackendConnectionSearch.getDestinationId())
-        .namespaceDefinition(webBackendConnectionSearch.getNamespaceDefinition())
-        .namespaceFormat(webBackendConnectionSearch.getNamespaceFormat())
-        .prefix(webBackendConnectionSearch.getPrefix())
-        .schedule(webBackendConnectionSearch.getSchedule())
-        .scheduleType(webBackendConnectionSearch.getScheduleType())
-        .scheduleData(webBackendConnectionSearch.getScheduleData())
-        .status(webBackendConnectionSearch.getStatus());
   }
 
   @VisibleForTesting
