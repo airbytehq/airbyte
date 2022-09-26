@@ -3,6 +3,7 @@ import sanitizeHtml from "sanitize-html";
 
 interface TextWithHTMLProps {
   text?: string;
+  className?: string;
 }
 
 const allowedAttributes = {
@@ -10,7 +11,7 @@ const allowedAttributes = {
   a: [...sanitizeHtml.defaults.allowedAttributes.a, "rel"],
 };
 
-export const TextWithHTML: React.FC<TextWithHTMLProps> = ({ text }) => {
+export const TextWithHTML: React.FC<TextWithHTMLProps> = ({ text, className }) => {
   if (!text) {
     return null;
   }
@@ -25,5 +26,5 @@ export const TextWithHTML: React.FC<TextWithHTMLProps> = ({ text }) => {
     },
   });
 
-  return <span dangerouslySetInnerHTML={{ __html: sanitizedHtmlText }} />;
+  return <span className={className} dangerouslySetInnerHTML={{ __html: sanitizedHtmlText }} />;
 };
