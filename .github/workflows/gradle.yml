@@ -9,6 +9,9 @@ on:
     branches-ignore:
       - "gitbook/v1"
 
+permissions:
+  all: write
+
 jobs:
   # COMMON TASKS
   ensure-images-exist:
@@ -173,7 +176,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   build-connectors-base:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -266,7 +269,7 @@ jobs:
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           label: ${{ needs.start-connectors-base-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-connectors-base-build-runner.outputs.ec2-instance-id }}
 
@@ -295,7 +298,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
   frontend-build:
     name: "Frontend: Build"
     needs:
@@ -342,7 +345,7 @@ jobs:
         uses: chromaui/action@v1
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          token: ${{ needs.find_valid_pat.outputs.pat }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           workingDir: ./airbyte-webapp/
           storybookBuildDir: build/storybook/
           exitOnceUploaded: true
@@ -416,7 +419,7 @@ jobs:
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           label: ${{ needs.start-frontend-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-frontend-runner.outputs.ec2-instance-id }}
 
@@ -445,7 +448,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
   platform-build:
     name: "Platform: Build"
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
@@ -552,7 +555,7 @@ jobs:
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           label: ${{ needs.start-platform-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
 
@@ -582,7 +585,7 @@ jobs:
           ec2-image-id: ami-0c1a9bc22624339d8
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
   kube-acceptance-test:
     name: "Platform: Acceptance Tests (Kube)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -696,7 +699,7 @@ jobs:
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           label: ${{ needs.start-kube-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}
 
@@ -729,7 +732,7 @@ jobs:
           ec2-image-id: ami-0c1a9bc22624339d8
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
 
   # Todo: Kyrylo turn this on.
@@ -858,7 +861,7 @@ jobs:
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           label: ${{ needs.start-helm-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-helm-acceptance-test-runner.outputs.ec2-instance-id }}
 
