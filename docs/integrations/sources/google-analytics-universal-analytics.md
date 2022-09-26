@@ -4,11 +4,11 @@ This page contains the setup guide and reference information for the Google Anal
 
 This connector supports Universal Analytics properties through the [Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4).
 
-## Set up Google Sheets as a source in Airbyte 
+## Set up Google Analytics as a source in Airbyte 
 
 ### For Airbyte Cloud
 
-To set up Google Sheets as a source in Airbyte Cloud:
+To set up Google Analytics as a source in Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
@@ -23,7 +23,7 @@ To set up Google Sheets as a source in Airbyte Cloud:
 
 ### For Airbyte Open Source
 
-To set up Google Sheets as a source in Airbyte Open Source:
+To set up Google Analytics as a source in Airbyte Open Source:
 
 1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview) in the project for your service user and enable the Reporting API for your account. Then go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview) in the project for your service user and enable the API for your account. 
 2. Go to the Airbyte UI and click **Sources** and then click **+ New source**.

@@ -1,0 +1,40 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Yandex Metrica Spec
+  type: object
+  required:
+    - auth_token
+    - counter_id
+    - start_date
+    - end_date
+  additionalProperties: true
+  properties:
+    auth_token:
+      type: string
+      title: Authentication Token
+      description: Your Yandex Metrica API access token
+      airbyte_secret: true
+      order: 0
+    counter_id:
+      type: string
+      title: Counter ID
+      description: Counter ID
+      pattern: ^[0-9]+$
+      order: 1
+    start_date:
+      title: Start Date
+      type: string
+      description: UTC date and time in the format YYYY-MM-DD.
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - "2022-01-01"
+      order: 2
+    end_date:
+      title: End Date
+      type: string
+      description: UTC date and time in the format YYYY-MM-DD.
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - "2022-01-01"
+      order: 3

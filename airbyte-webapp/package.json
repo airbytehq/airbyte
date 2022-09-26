@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.4",
+  "version": "0.40.9",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -48,25 +48,26 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-helmet": "6.1.0",
-    "react-intl": "^5.24.8",
+    "react-intl": "^6.1.1",
     "react-lazylog": "^4.5.3",
     "react-markdown": "^7.0.1",
     "react-query": "^3.39.1",
     "react-reflex": "^4.0.9",
     "react-router-dom": "^6.3.0",
-    "react-select": "^4.3.1",
+    "react-select": "^5.4.0",
+    "react-slick": "^0.29.0",
     "react-table": "^7.8.0",
-    "react-use": "^15.3.8",
+    "react-use": "^17.4.0",
     "react-use-intercom": "^1.5.2",
     "react-widgets": "^4.6.1",
-    "recharts": "^2.1.10",
+    "recharts": "^2.1.13",
     "rehype-slug": "^5.0.1",
     "rehype-urls": "^1.1.1",
     "remark-directive": "^2.0.1",
     "remark-frontmatter": "^4.0.1",
     "remark-gfm": "^3.0.0",
     "rxjs": "^7.5.5",
-    "sanitize-html": "^2.7.0",
+    "sanitize-html": "^2.7.1",
     "sass": "^1.52.2",
     "styled-components": "^5.3.5",
     "typesafe-actions": "^5.1.0",
@@ -95,7 +96,7 @@
     "@types/react-dom": "^17.0.11",
     "@types/react-helmet": "^6.1.5",
     "@types/react-lazylog": "^4.5.1",
-    "@types/react-select": "^4.0.16",
+    "@types/react-slick": "^0.23.10",
     "@types/react-table": "^7.7.12",
     "@types/react-widgets": "^4.4.7",
     "@types/sanitize-html": "^2.6.2",
@@ -143,7 +144,7 @@
     "src/**/*.{css,scss,md,json}": [
       "prettier --write"
     ],
-    "src/**/*.{css,scss}": [
+    "{public,src}/**/*.{css,scss}": [
       "stylelint --fix"
     ]
   },
@@ -160,6 +161,9 @@
     ]
   },
   "jest": {
-    "transformIgnorePatterns": []
+    "transformIgnorePatterns": [],
+    "coveragePathIgnorePatterns": [
+      ".stories.tsx"
+    ]
   }
 }

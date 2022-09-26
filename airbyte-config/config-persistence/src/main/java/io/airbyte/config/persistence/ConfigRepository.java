@@ -15,6 +15,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OP
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.noCondition;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
@@ -23,6 +24,7 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
@@ -206,6 +208,8 @@ public class ConfigRepository {
     final List<StandardSourceDefinition> sourceDefinitions = new ArrayList<>();
     for (final StandardSourceDefinition sourceDefinition : persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION,
         StandardSourceDefinition.class)) {
+      sourceDefinition.withProtocolVersion(AirbyteProtocolVersion
+          .getWithDefault(sourceDefinition.getSpec() != null ? sourceDefinition.getSpec().getProtocolVersion() : null).serialize());
       if (!MoreBooleans.isTruthy(sourceDefinition.getTombstone()) || includeTombstone) {
         sourceDefinitions.add(sourceDefinition);
       }
@@ -306,6 +310,8 @@ public class ConfigRepository {
 
     for (final StandardDestinationDefinition destinationDefinition : persistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         StandardDestinationDefinition.class)) {
+      destinationDefinition.withProtocolVersion(AirbyteProtocolVersion
+          .getWithDefault(destinationDefinition.getSpec() != null ? destinationDefinition.getSpec().getProtocolVersion() : null).serialize());
       if (!MoreBooleans.isTruthy(destinationDefinition.getTombstone()) || includeTombstone) {
         destinationDefinitions.add(destinationDefinition);
       }
@@ -617,11 +623,13 @@ public class ConfigRepository {
     return getStandardSyncsFromResult(result);
   }
 
-  public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId) throws IOException {
+  public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId, final boolean includeDeleted) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
-        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId)
+            .and(includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated))))
+        .fetch();
     return getStandardSyncsFromResult(result);
   }
 

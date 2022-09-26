@@ -205,7 +205,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   private List<String> extractCursorFields(final List<JsonNode> fields) {
     return fields.stream()
         .filter(field -> isCursorType(getFieldType(field)))
-        .filter(field -> "NO".equals(field.get(INTERNAL_IS_NULLABLE).asText()))
         .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
         .collect(Collectors.toList());
   }

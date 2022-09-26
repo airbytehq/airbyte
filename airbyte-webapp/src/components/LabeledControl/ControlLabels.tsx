@@ -19,7 +19,7 @@ const ControlContainer = styled.div`
   display: inline-block;
 `;
 
-const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
+const ControlLabels: React.FC<React.PropsWithChildren<ControlLabelsProps>> = (props) => (
   <ControlContainer className={props.className}>
     <Label
       error={props.error}
