@@ -5,7 +5,7 @@ tests:
   spec:
     - spec_path: "source_mixpanel/spec.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.20"
+        disable_for_version: "0.1.23"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -14,7 +14,7 @@ tests:
   discovery:
     - config_path: "secrets/config.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.20"
+        disable_for_version: "0.1.23"
       timeout_seconds: 60
   basic_read:
     - config_path: "secrets/config.json"
