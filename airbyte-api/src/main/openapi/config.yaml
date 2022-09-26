@@ -2374,12 +2374,9 @@ components:
           type: string
     WorkspaceUpdate:
       type: object
+      description: Used to apply a patch-style update to a workspace, which means that null properties remain unchanged
       required:
         - workspaceId
-        - initialSetupComplete
-        - anonymousDataCollection
-        - news
-        - securityUpdates
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"

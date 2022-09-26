@@ -5,8 +5,8 @@ export const fetchDocumentation = async (url: string): Promise<string> => {
 
   const contentType = response.headers.get("content-type");
 
-  if (!contentType?.toLowerCase().includes("text/markdown")) {
-    throw new Error(`Documentation to be expected text/markdown, was ${contentType}`);
+  if (contentType?.toLowerCase().includes("text/html")) {
+    throw new Error(`Documentation was text/html and such ignored since markdown couldn't be found.`);
   }
 
   return await response.text();

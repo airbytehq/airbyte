@@ -8,7 +8,7 @@ import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import mockWorkspace from "test-utils/mock-data/mockWorkspace.json";
 import { TestWrapper } from "test-utils/testutils";
 
-import { WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionScheduleType, WebBackendConnectionRead } from "core/request/AirbyteClient";
 
 import { ModalCancel } from "../Modal";
 import {
@@ -74,13 +74,71 @@ describe("ConnectionFormService", () => {
     expect(resetForm).toBeCalledWith({ values: testValues });
     expect(onSubmit).toBeCalledWith({
       operations: [],
-      scheduleType: "manual",
+      scheduleData: {
+        cron: {
+          cronExpression: undefined,
+          cronTimeZone: undefined,
+        },
+      },
       syncCatalog: {
         streams: undefined,
       },
     });
     expect(onAfterSubmit).toBeCalledWith();
     expect(result.current.errorMessage).toBe(null);
+  });
+
+  const expectation = {
+    [ConnectionScheduleType.basic]: {
+      basicSchedule: {
+        timeUnit: undefined,
+        units: undefined,
+      },
+    },
+    [ConnectionScheduleType.manual]: undefined,
+    [ConnectionScheduleType.cron]: {
+      cron: {
+        cronExpression: undefined,
+        cronTimeZone: undefined,
+      },
+    },
+  };
+
+  Object.values(ConnectionScheduleType).forEach((scheduleType) => {
+    it(`should return expected results when onSubmit is called with ${scheduleType}`, async () => {
+      const { result } = renderHook(useConnectionFormService, {
+        wrapper: Wrapper,
+        initialProps: {
+          connection: mockConnection as WebBackendConnectionRead,
+          mode: "create",
+          formId: Math.random().toString(),
+          onSubmit,
+          onAfterSubmit,
+          onCancel,
+          formDirty: false,
+        },
+      });
+
+      const resetForm = jest.fn();
+      const testValues: any = {
+        scheduleType,
+      };
+      await act(async () => {
+        await result.current.onFormSubmit(testValues, { resetForm } as any);
+      });
+
+      expect(resetForm).toBeCalledWith({ values: testValues });
+      expect(onSubmit).toBeCalledWith({
+        operations: [],
+        scheduleData: expectation[scheduleType],
+        scheduleType,
+        syncCatalog: {
+          streams: undefined,
+        },
+      });
+      expect(onAfterSubmit).toBeCalledWith();
+      expect(result.current.errorMessage).toBe(null);
+    });
   });
 
   it("should catch if onSubmit throws and generate an error message", async () => {
