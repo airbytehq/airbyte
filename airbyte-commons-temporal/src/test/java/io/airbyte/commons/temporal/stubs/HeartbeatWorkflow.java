@@ -2,9 +2,9 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal.stubs;
+package io.airbyte.commons.temporal.stubs;
 
-import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
