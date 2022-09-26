@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useToggle } from "react-use";
 
 import { Input } from "components/base";
+import { FormChangeTracker } from "components/FormChangeTracker";
 import LoadingSchema from "components/LoadingSchema";
 
 import { DestinationRead, SourceRead } from "core/request/AirbyteClient";
@@ -111,6 +112,7 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
         <Formik initialValues={initialValues} validationSchema={connectionValidationSchema} onSubmit={onFormSubmit}>
           {({ values, isSubmitting, isValid, dirty }) => (
             <Form>
+              <FormChangeTracker changed={dirty} formId={formId} />
               <Section>
                 <Field name="name">
                   {({ field, meta }: FieldProps<string>) => (

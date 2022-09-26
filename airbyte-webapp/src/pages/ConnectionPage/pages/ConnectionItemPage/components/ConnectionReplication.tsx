@@ -4,6 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 import styled from "styled-components";
 
+import { FormChangeTracker } from "components/FormChangeTracker";
 import LoadingSchema from "components/LoadingSchema";
 
 import { getFrequencyType } from "config/utils";
@@ -16,6 +17,7 @@ import {
   tidyConnectionFormValues,
   useConnectionFormService,
 } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, useUpdateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
@@ -36,16 +38,16 @@ const Content = styled.div`
 export const ConnectionReplication: React.FC = () => {
   const analyticsService = useAnalyticsService();
   const connectionService = useConnectionService();
-  const { formatMessage } = useIntl();
+  const workspaceId = useCurrentWorkspaceId();
 
+  const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
   const { closeConfirmationModal } = useConfirmationModalService();
-  const [saved, setSaved] = useState(false);
-
-  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
-
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
+  const [saved, setSaved] = useState(false);
+
+  const formId = useUniqueFormId();
   const {
     connection,
     schemaRefreshing,
@@ -54,11 +56,9 @@ export const ConnectionReplication: React.FC = () => {
     setSchemaHasBeenRefreshed,
     refreshSchema,
   } = useConnectionEditService();
-
   const { initialValues, getErrorMessage, setSubmitError } = useConnectionFormService();
 
-  const workspaceId = useCurrentWorkspaceId();
-
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
   useUnmount(() => {
     closeModal();
     closeConfirmationModal();
@@ -175,6 +175,7 @@ export const ConnectionReplication: React.FC = () => {
         <Formik initialValues={initialValues} validationSchema={connectionValidationSchema} onSubmit={onFormSubmit}>
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
             <Form>
+              <FormChangeTracker changed={dirty} formId={formId} />
               <ConnectionFormFields values={values} isSubmitting={isSubmitting} refreshSchema={refreshSchema} />
               <EditControls
                 isSubmitting={isSubmitting}
