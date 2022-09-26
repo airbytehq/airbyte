@@ -2,6 +2,10 @@ plugins {
     id 'application'
 }
 
+configurations.all {
+    exclude group: 'io.micronaut.jaxrs'
+}
+
 dependencies {
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
