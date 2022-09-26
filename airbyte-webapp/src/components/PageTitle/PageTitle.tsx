@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import React from "react";
 
-import { H3 } from "components";
+import { Text } from "components/base/Text";
 
 import styles from "./PageTitle.module.scss";
 
@@ -15,15 +15,19 @@ interface PageTitleProps {
 
 const PageTitle: React.FC<PageTitleProps> = ({ title, withLine, middleComponent, middleTitleBlock, endComponent }) => (
   <div className={classNames(styles.container)} data-withLine={withLine}>
-    <H3
+    <Text
+      as="h3"
+      size="md"
       className={classNames(styles.titleBlock, {
         [styles.withLine]: withLine,
       })}
     >
       {title}
-    </H3>
+    </Text>
     {middleTitleBlock ? (
-      <H3 className={classNames(styles.middleTitleBlock)}>{middleTitleBlock}</H3>
+      <Text as="h3" size="md" className={classNames(styles.middleTitleBlock)}>
+        {middleTitleBlock}
+      </Text>
     ) : (
       <div className={classNames(styles.middleBlock)}>{middleComponent}</div>
     )}
