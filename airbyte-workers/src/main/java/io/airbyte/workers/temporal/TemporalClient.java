@@ -8,9 +8,6 @@ import static io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowIm
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
-import io.airbyte.commons.temporal.TemporalJobType;
-import io.airbyte.commons.temporal.TemporalWorkflowUtils;
-import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
@@ -29,15 +26,16 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.exception.DeletedWorkflowException;
 import io.airbyte.workers.temporal.exception.UnreachableWorkflowException;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.micronaut.context.annotation.Requires;
 import io.temporal.api.common.v1.WorkflowType;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
-import io.temporal.api.workflowservice.v1.ListClosedWorkflowExecutionsRequest;
-import io.temporal.api.workflowservice.v1.ListClosedWorkflowExecutionsResponse;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
+import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsRequest;
+import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
@@ -466,6 +464,18 @@ public class TemporalClient {
         Optional.of(resetJobId), Optional.empty());
   }
 
+  public void restartWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
+    final Set<UUID> workflowExecutionInfos = fetchWorkflowsByStatus(executionStatus);
+
+    final Set<UUID> nonRunningWorkflow = filterOutRunningWorkspaceId(workflowExecutionInfos);
+
+    nonRunningWorkflow.forEach(connectionId -> {
+      connectionManagerUtils.safeTerminateWorkflow(client, connectionId, "Terminating workflow in "
+          + "unreachable state before starting a new workflow for this connection");
+      connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
+    });
+  }
+
   /**
    * This should be in the class {@li}
    *
@@ -481,17 +491,17 @@ public class TemporalClient {
             stringUUID -> UUID.fromString(stringUUID));
   }
 
-  Set<UUID> fetchClosedWorkflowsByStatus(final WorkflowExecutionStatus executionStatus) {
+  Set<UUID> fetchWorkflowsByStatus(final WorkflowExecutionStatus executionStatus) {
     ByteString token;
-    ListClosedWorkflowExecutionsRequest workflowExecutionsRequest =
-        ListClosedWorkflowExecutionsRequest.newBuilder()
+    ListWorkflowExecutionsRequest workflowExecutionsRequest =
+        ListWorkflowExecutionsRequest.newBuilder()
             .setNamespace(client.getOptions().getNamespace())
             .build();
 
     final Set<UUID> workflowExecutionInfos = new HashSet<>();
     do {
-      final ListClosedWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
-          service.blockingStub().listClosedWorkflowExecutions(workflowExecutionsRequest);
+      final ListWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
+          service.blockingStub().listWorkflowExecutions(workflowExecutionsRequest);
       final WorkflowType connectionManagerWorkflowType = WorkflowType.newBuilder().setName(ConnectionManagerWorkflow.class.getSimpleName()).build();
       workflowExecutionInfos.addAll(listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
           .filter(workflowExecutionInfo -> workflowExecutionInfo.getType() == connectionManagerWorkflowType ||
@@ -501,7 +511,7 @@ public class TemporalClient {
       token = listOpenWorkflowExecutionsRequest.getNextPageToken();
 
       workflowExecutionsRequest =
-          ListClosedWorkflowExecutionsRequest.newBuilder()
+          ListWorkflowExecutionsRequest.newBuilder()
               .setNamespace(client.getOptions().getNamespace())
               .setNextPageToken(token)
               .build();

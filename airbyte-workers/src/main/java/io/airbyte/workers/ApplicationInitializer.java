@@ -6,8 +6,6 @@ package io.airbyte.workers;
 
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.commons.temporal.TemporalJobType;
-import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
@@ -24,6 +22,8 @@ import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.workers.process.KubePortManagerSingleton;
+import io.airbyte.workers.temporal.TemporalJobType;
+import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
