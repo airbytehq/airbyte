@@ -15,7 +15,7 @@ interface PropertyLabelProps {
   htmlFor?: string;
 }
 
-const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>> = ({
+export const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>> = ({
   property,
   label,
   description,
@@ -41,5 +41,3 @@ const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>> = ({
     </ControlLabels>
   );
 };
-
-export { PropertyLabel };

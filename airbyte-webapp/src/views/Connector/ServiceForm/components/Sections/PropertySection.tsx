@@ -58,7 +58,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
   const errorMessage = <FormattedMessage id={meta.error} values={errorValues} />;
 
   return (
-    <PropertyLabel property={property} label={labelText}>
+    <PropertyLabel className={styles.defaultLabel} property={property} label={labelText}>
       <Control
         property={property}
         name={propertyPath}
