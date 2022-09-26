@@ -3,9 +3,9 @@
 #
 
 import json
-from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 
@@ -119,8 +119,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 item[result.transformed_name] = str(properties[result.source_name])
 
             # convert timestamp to datetime string
-            if item.get("time") and item["time"].isdigit():
-                item["time"] = datetime.fromtimestamp(int(item["time"])).isoformat()
+            item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
 
             yield item
 
@@ -152,9 +151,10 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        mapping = {"from_date": stream_slice["start_date"], "to_date": stream_slice["end_date"]}
+        mapping = super().request_params(stream_state, stream_slice, next_page_token)
         if stream_state and "date" in stream_state:
-            mapping["where"] = f"properties[\"$time\"]>=datetime({int(datetime.fromisoformat(stream_state['date']).timestamp())})"
+            timestamp = int(pendulum.parse(stream_state["date"]).timestamp())
+            mapping["where"] = f'properties["$time"]>=datetime({timestamp})'
         return mapping
 
     def request_kwargs(

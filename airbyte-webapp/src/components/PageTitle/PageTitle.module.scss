@@ -1,0 +1,43 @@
+@use "../../scss/colors";
+@use "../../scss/variables";
+
+.container {
+  padding: variables.$spacing-xl 32px 0;
+  position: relative;
+  z-index: 2;
+  color: colors.$dark-blue;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  &.withLine {
+    border-bottom: 1px solid colors.$grey-100;
+  }
+}
+
+.heading {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  &.middle {
+    justify-content: center;
+  }
+}
+
+.start {
+  flex: 1 0 0;
+}
+
+.middle {
+  flex: 1 0 0;
+  display: flex;
+  justify-content: center;
+}
+
+.end {
+  flex: 1 0 0;
+  display: flex;
+  justify-content: flex-end;
+}
