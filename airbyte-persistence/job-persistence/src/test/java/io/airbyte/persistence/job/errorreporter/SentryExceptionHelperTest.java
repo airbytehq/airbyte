@@ -4,8 +4,8 @@
 
 package io.airbyte.persistence.job.errorreporter;
 
-import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper.SentryExceptionPlatform;
-import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper.SentryParsedException;
+import io.airbyte.persistence.job.errorreporter.SentryExceptionHelper.SentryExceptionPlatform;
+import io.airbyte.persistence.job.errorreporter.SentryExceptionHelper.SentryParsedException;
 import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryStackFrame;
 import io.sentry.protocol.SentryStackTrace;
