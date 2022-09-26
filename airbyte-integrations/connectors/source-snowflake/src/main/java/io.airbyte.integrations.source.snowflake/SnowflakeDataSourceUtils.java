@@ -34,8 +34,8 @@ public class SnowflakeDataSourceUtils {
   public static final String OAUTH_METHOD = "OAuth";
   public static final String USERNAME_PASSWORD_METHOD = "username/password";
   public static final String UNRECOGNIZED = "Unrecognized";
-  private static final String CONNECTION_STRING_IDENTIFIER_KEY = "application";
-  private static final String CONNECTION_STRING_IDENTIFIER_VAL = "Airbyte_Connector";
+  private static final String JDBC_CONNECTION_STRING =
+      "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s&application=Airbyte_Connector";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDataSourceUtils.class);
   private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token's TTL is 10min and can't be modified
@@ -135,8 +135,7 @@ public class SnowflakeDataSourceUtils {
         config.get(JdbcUtils.HOST_KEY).asText()));
 
     // Add required properties
-    jdbcUrl.append(String.format(
-        "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s&%s=%s",
+    jdbcUrl.append(String.format(JDBC_CONNECTION_STRING,
         config.get("role").asText(),
         config.get("warehouse").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText(),
@@ -144,9 +143,7 @@ public class SnowflakeDataSourceUtils {
         // Needed for JDK17 - see
         // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
         "JSON",
-        true,
-        CONNECTION_STRING_IDENTIFIER_KEY,
-        CONNECTION_STRING_IDENTIFIER_VAL));
+        true));
 
     // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
