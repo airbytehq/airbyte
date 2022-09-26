@@ -34,4 +34,5 @@ tests:
         export: ["time"]
         funnels: ["8901755", "date"]
         revenue: ["date"]
+        cohort_members": ["last_seen"]
       timeout_seconds: 3600
