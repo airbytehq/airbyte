@@ -103,8 +103,9 @@ public class SentryJobErrorReportingClient implements JobErrorReportingClient {
       final Optional<SentryParsedException> optParsedException = exceptionHelper.buildSentryExceptions(failureStackTrace);
       if (optParsedException.isPresent()) {
         final SentryParsedException parsedException = optParsedException.get();
-        event.setPlatform(parsedException.platform());
-        event.setTag(STACKTRACE_PLATFORM_TAG_KEY, parsedException.platform());
+        final String platform = parsedException.platform().getValue();
+        event.setPlatform(platform);
+        event.setTag(STACKTRACE_PLATFORM_TAG_KEY, platform);
         event.setExceptions(parsedException.exceptions());
       } else {
         event.setTag(STACKTRACE_PARSE_ERROR_TAG_KEY, "1");

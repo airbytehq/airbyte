@@ -23,13 +23,41 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
 public class SentryExceptionHelper {
 
-  public record SentryParsedException(String platform, List<SentryException> exceptions) {}
+  public record SentryParsedException(SentryExceptionPlatform platform, List<SentryException> exceptions) {}
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SentryExceptionHelper.class);
 
   public enum ERROR_MAP_KEYS {
     ERROR_MAP_MESSAGE_KEY,
     ERROR_MAP_TYPE_KEY
+  }
+
+  /**
+   * Specifies the platform for a thrown exception. Values must be supported by Sentry as specified in
+   * https://develop.sentry.dev/sdk/event-payloads/#required-attributes. Currently, only java, python
+   * and dbt (other) exceptions are supported.
+   */
+  public enum SentryExceptionPlatform {
+
+    JAVA("java"),
+    PYTHON("python"),
+    OTHER("other");
+
+    private final String value;
+
+    SentryExceptionPlatform(final String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
   }
 
   /**
@@ -114,7 +142,7 @@ public class SentryExceptionHelper {
     if (sentryExceptions.isEmpty())
       return Optional.empty();
 
-    return Optional.of(new SentryParsedException("python", sentryExceptions));
+    return Optional.of(new SentryParsedException(SentryExceptionPlatform.PYTHON, sentryExceptions));
   }
 
   private static Optional<SentryParsedException> buildJavaSentryExceptions(final String stacktrace) {
@@ -181,7 +209,7 @@ public class SentryExceptionHelper {
     if (sentryExceptions.isEmpty())
       return Optional.empty();
 
-    return Optional.of(new SentryParsedException("java", sentryExceptions));
+    return Optional.of(new SentryParsedException(SentryExceptionPlatform.JAVA, sentryExceptions));
   }
 
   private static Optional<SentryParsedException> buildNormalizationDbtSentryExceptions(final String stacktrace) {
@@ -201,7 +229,7 @@ public class SentryExceptionHelper {
     if (sentryExceptions.isEmpty())
       return Optional.empty();
 
-    return Optional.of(new SentryParsedException("other", sentryExceptions));
+    return Optional.of(new SentryParsedException(SentryExceptionPlatform.OTHER, sentryExceptions));
   }
 
   public static Map<ERROR_MAP_KEYS, String> getUsefulErrorMessageAndTypeFromDbtError(final String stacktrace) {

@@ -18,6 +18,7 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper.SentryExceptionPlatform;
 import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper.SentryParsedException;
 import io.sentry.IHub;
 import io.sentry.NoOpHub;
@@ -138,7 +139,7 @@ class SentryJobErrorReportingClientTest {
     exception.setValue("Something went wrong");
     exceptions.add(exception);
 
-    final SentryParsedException parsedException = new SentryParsedException("python", exceptions);
+    final SentryParsedException parsedException = new SentryParsedException(SentryExceptionPlatform.PYTHON, exceptions);
     when(mockSentryExceptionHelper.buildSentryExceptions("Some valid stacktrace")).thenReturn(Optional.of(parsedException));
 
     final FailureReason failureReason = new FailureReason()
