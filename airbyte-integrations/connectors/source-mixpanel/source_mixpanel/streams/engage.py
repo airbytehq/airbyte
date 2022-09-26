@@ -148,7 +148,7 @@ class Engage(IncrementalMixpanelStream):
 
         }
         """
-        records = response.json().get(self.data_field, {})
+        records = response.json().get(self.data_field, [])
         for record in records:
             item = {"distinct_id": record["$distinct_id"]}
             properties = record["$properties"]
@@ -160,9 +160,9 @@ class Engage(IncrementalMixpanelStream):
                     # to stream: 'browser'
                     this_property_name = this_property_name[1:]
                 item[this_property_name] = properties[property_name]
-            item_cursor = item.get(self.cursor_field, "")
-            state_cursor = stream_state.get(self.cursor_field, "")
-            if not stream_state or item_cursor >= state_cursor:
+            item_cursor = item.get(self.cursor_field)
+            state_cursor = stream_state.get(self.cursor_field)
+            if not item_cursor or not state_cursor or item_cursor >= state_cursor:
                 yield item
 
     def get_json_schema(self) -> Mapping[str, Any]:

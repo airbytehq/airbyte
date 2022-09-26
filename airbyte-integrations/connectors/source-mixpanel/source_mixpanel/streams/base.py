@@ -174,9 +174,10 @@ class DateSlicesMixin:
 
 class IncrementalMixpanelStream(MixpanelStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        updated_state = latest_record[self.cursor_field]
-        state_value = current_stream_state.get(self.cursor_field)
-        if state_value:
-            updated_state = max(updated_state, state_value)
-        current_stream_state[self.cursor_field] = updated_state
+        updated_state = latest_record.get(self.cursor_field)
+        if updated_state:
+            state_value = current_stream_state.get(self.cursor_field)
+            if state_value:
+                updated_state = max(updated_state, state_value)
+            current_stream_state[self.cursor_field] = updated_state
         return current_stream_state
