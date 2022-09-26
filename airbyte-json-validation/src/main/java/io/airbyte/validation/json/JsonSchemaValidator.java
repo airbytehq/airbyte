@@ -68,7 +68,7 @@ public class JsonSchemaValidator {
     final Set<ValidationMessage> validationMessages = validateInternal(schemaJson, objectJson);
 
     if (!validationMessages.isEmpty()) {
-      LOGGER.info("JSON schema validation failed. \nerrors: {}", Strings.join(validationMessages, ", "));
+      LOGGER.info("JSON schema has some validation warnings. \nFields need be updated in your configuration: {}", Strings.join(validationMessages, ", "));
     }
 
     return validationMessages.isEmpty();
