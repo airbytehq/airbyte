@@ -11,19 +11,30 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, TokenAuthenticator
 
 from .streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, FunnelsList, Revenue
 from .testing import adapt_streams_if_testing, adapt_validate_if_testing
+from .utils import read_full_refresh
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
-    def __init__(self, token: str, auth_method: str = "Basic", **kwargs):
+    def __init__(self, token: str):
         token = base64.b64encode(token.encode("utf8")).decode("utf8")
-        super().__init__(token=token, auth_method=auth_method, **kwargs)
+        super().__init__(token=token, auth_method="Basic")
 
 
 class SourceMixpanel(AbstractSource):
+    def get_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
+        credentials = config.get("credentials")
+        if credentials:
+            username = credentials.get("username")
+            secret = credentials.get("secret")
+            if username and secret:
+                return BasicHttpAuthenticator(username=username, password=secret)
+            return TokenAuthenticatorBase64(token=credentials["api_secret"])
+        return TokenAuthenticatorBase64(token=config["api_secret"])
+
     @adapt_validate_if_testing
     def _validate_and_transform(self, config: Mapping[str, Any]):
         logger = logging.getLogger("airbyte")
@@ -47,6 +58,13 @@ class SourceMixpanel(AbstractSource):
         for k in ["attribution_window", "select_properties_by_default", "region", "date_window_size"]:
             if k not in config:
                 config[k] = source_spec.connectionSpecification["properties"][k]["default"]
+
+        auth = self.get_authenticator(config)
+        if isinstance(auth, TokenAuthenticatorBase64) and "project_id" in config:
+            config.pop("project_id")
+        elif isinstance(auth, BasicHttpAuthenticator) and "project_id" not in config:
+            raise ValueError("missing required parameter 'project_id'")
+
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -60,23 +78,12 @@ class SourceMixpanel(AbstractSource):
         """
         config = self._validate_and_transform(config)
         try:
-            auth = TokenAuthenticatorBase64(token=config["api_secret"])
+            auth = self.get_authenticator(config)
+            FunnelsList.max_retries = 0
             funnels = FunnelsList(authenticator=auth, **config)
-            response = requests.request(
-                "GET",
-                url=funnels.url_base + funnels.path(),
-                headers={
-                    "Accept": "application/json",
-                    **auth.get_auth_header(),
-                },
-            )
-
-            if response.status_code != 200:
-                message = response.json()
-                error_message = message.get("error")
-                if error_message:
-                    return False, error_message
-                response.raise_for_status()
+            next(read_full_refresh(funnels))
+        except requests.HTTPError as e:
+            return False, e.response.json()["error"]
         except Exception as e:
             return False, e
 
@@ -91,7 +98,7 @@ class SourceMixpanel(AbstractSource):
         logger = logging.getLogger("airbyte")
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
-        auth = TokenAuthenticatorBase64(token=config["api_secret"])
+        auth = self.get_authenticator(config)
         return [
             Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
