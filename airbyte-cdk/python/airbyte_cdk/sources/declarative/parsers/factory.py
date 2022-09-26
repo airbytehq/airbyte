@@ -9,6 +9,7 @@ import enum
 import importlib
 import inspect
 import typing
+import warnings
 from dataclasses import fields
 from typing import Any, List, Literal, Mapping, Type, Union, get_args, get_origin, get_type_hints
 
@@ -153,7 +154,12 @@ class DeclarativeComponentFactory:
             # concrete classes that implement the interface before generating the schema
             class_copy = copy.deepcopy(class_)
             DeclarativeComponentFactory._transform_interface_to_union(class_copy)
-            schema = class_copy.json_schema()
+
+            # dataclasses_jsonschema can throw warnings when a declarative component has a fields cannot be turned into a schema.
+            # Some builtin field types like Any or DateTime get flagged, but are not as critical to schema generation and validation
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=UserWarning)
+                schema = class_copy.json_schema()
 
             component_definition = {
                 **updated_kwargs,

@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.relationaldb;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -19,10 +21,13 @@ import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.relationaldb.InvalidCursorException.InvalidCursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
@@ -50,6 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -61,8 +67,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class contains helper functions and boilerplate for implementing a source connector for a
- * NoSql DB source.
+ * This class contains helper functions and boilerplate for implementing a source connector for a DB
+ * source of both non-relational and relational type
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
@@ -80,6 +86,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    } catch (final ConnectionErrorException ex) {
+      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage(message);
     } catch (final Exception e) {
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
@@ -109,6 +121,16 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     }
   }
 
+  /**
+   * Creates a list of AirbyteMessageIterators with all the streams selected in a configured catalog
+   *
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
+   * @param catalog - schema of the incoming messages.
+   * @param state - state of the incoming messages.
+   * @return AirbyteMessageIterator with all the streams that are to be synced
+   * @throws Exception
+   */
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
@@ -126,6 +148,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()), Function
                 .identity()));
 
+    validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog);
+
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
         getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
@@ -141,6 +165,40 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           Exceptions.toRuntime(this::close);
           LOGGER.info("Closed database connection pool.");
         });
+  }
+
+  private void validateCursorFieldForIncrementalTables(final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable, final ConfiguredAirbyteCatalog catalog) {
+    final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
+    for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
+      final AirbyteStream stream = airbyteStream.getStream();
+      final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
+          stream.getName());
+      final boolean hasSourceDefinedCursor =
+          !Objects.isNull(airbyteStream.getStream().getSourceDefinedCursor()) && airbyteStream.getStream().getSourceDefinedCursor();
+      if (!tableNameToTable.containsKey(fullyQualifiedTableName) || airbyteStream.getSyncMode() != SyncMode.INCREMENTAL || hasSourceDefinedCursor) {
+        continue;
+      }
+
+      final TableInfo<CommonField<DataType>> table = tableNameToTable
+          .get(fullyQualifiedTableName);
+      final Optional<String> cursorField = IncrementalUtils.getCursorFieldOptional(airbyteStream);
+      if (cursorField.isEmpty()) {
+        continue;
+      }
+      final DataType cursorType = table.getFields().stream()
+          .filter(info -> info.getName().equals(cursorField.get()))
+          .map(CommonField::getType)
+          .findFirst()
+          .orElseThrow();
+
+      if (!isCursorType(cursorType)) {
+        tablesWithInvalidCursor.add(new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(), cursorType.toString()));
+      }
+    }
+
+    if (!tablesWithInvalidCursor.isEmpty()) {
+      throw new InvalidCursorException(tablesWithInvalidCursor);
+    }
   }
 
   protected List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(final Database database) throws Exception {
@@ -179,6 +237,17 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         configuredStream -> configuredStream.getSyncMode().equals(SyncMode.INCREMENTAL));
   }
 
+  /**
+   * Creates a list of read iterators for each stream within an ConfiguredAirbyteCatalog
+   *
+   * @param database Source Database
+   * @param catalog List of streams (e.g. database tables or API endpoints) with settings on sync mode
+   * @param tableNameToTable Mapping of table name to table
+   * @param stateManager Manager used to track the state of data synced by the connector
+   * @param emittedAt Time when data was emitted from the Source database
+   * @param selector essentially a boolean that verifies if configuredStream has selected a sync mode
+   * @return List of AirbyteMessageIterators containing all iterators for a catalog
+   */
   protected List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(final Database database,
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
@@ -212,6 +281,16 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     return iteratorList;
   }
 
+  /**
+   * ReadIterator is used to retrieve records from a source connector
+   *
+   * @param database Source Database
+   * @param airbyteStream represents an ingestion source (e.g. API endpoint or database table)
+   * @param table information in tabular format
+   * @param stateManager Manager used to track the state of data synced by the connector
+   * @param emittedAt Time when data was emitted from the Source database
+   * @return
+   */
   protected AutoCloseableIterator<AirbyteMessage> createReadIterator(final Database database,
                                                                      final ConfiguredAirbyteStream airbyteStream,
                                                                      final TableInfo<CommonField<DataType>> table,
@@ -228,6 +307,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         .collect(Collectors.toList());
 
     final AutoCloseableIterator<AirbyteMessage> iterator;
+    // checks for which sync mode we're using based on the configured airbytestream
+    // this is where the bifurcation between full refresh and incremental
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
       final Optional<String> cursorOptional = stateManager.getCursor(pair);
@@ -269,6 +350,15 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     });
   }
 
+  /**
+   * @param database Source Database
+   * @param airbyteStream represents an ingestion source (e.g. API endpoint or database table)
+   * @param selectedDatabaseFields subset of database fields selected for replication
+   * @param table information in tabular format
+   * @param cursor state of where to start the sync from
+   * @param emittedAt Time when data was emitted from the Source database
+   * @return AirbyteMessage Iterator that
+   */
   protected AutoCloseableIterator<AirbyteMessage> getIncrementalStream(final Database database,
                                                                        final ConfiguredAirbyteStream airbyteStream,
                                                                        final List<String> selectedDatabaseFields,
@@ -299,6 +389,18 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli());
   }
 
+  /**
+   * Creates a AirbyteMessageIterator that contains all records for a database source connection
+   *
+   * @param database Source Database
+   * @param streamName name of an individual stream in which a stream represents a source (e.g. API
+   *        endpoint or database table)
+   * @param namespace Namespace of the database (e.g. public)
+   * @param selectedDatabaseFields List of all interested database column names
+   * @param table information in tabular format
+   * @param emittedAt Time when data was emitted from the Source database
+   * @return AirbyteMessageIterator with all records for a database source
+   */
   protected AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(final Database database,
                                                                        final String streamName,
                                                                        final String namespace,

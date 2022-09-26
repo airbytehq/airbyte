@@ -5,6 +5,7 @@
 import inspect
 import json
 import logging
+import pkgutil
 import typing
 from dataclasses import dataclass, fields
 from enum import Enum, EnumMeta
@@ -65,9 +66,11 @@ class YamlDeclarativeSource(DeclarativeSource):
         return [self._factory.create_component(stream_config, config, True)() for stream_config in self._stream_configs()]
 
     def _read_and_parse_yaml_file(self, path_to_yaml_file):
-        with open(path_to_yaml_file, "r") as f:
-            config_content = f.read()
-            return YamlParser().parse(config_content)
+        package = self.__class__.__module__.split(".")[0]
+
+        yaml_config = pkgutil.get_data(package, path_to_yaml_file)
+        decoded_yaml = yaml_config.decode()
+        return YamlParser().parse(decoded_yaml)
 
     def _validate_source(self):
         full_config = {}

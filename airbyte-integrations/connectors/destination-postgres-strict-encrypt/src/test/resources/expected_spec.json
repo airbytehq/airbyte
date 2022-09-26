@@ -61,6 +61,36 @@
         "order": 7,
         "oneOf": [
           {
+            "title": "disable",
+            "additionalProperties": false,
+            "description": "Disable SSL.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "disable",
+                "enum": ["disable"],
+                "default": "disable",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "allow",
+            "additionalProperties": false,
+            "description": "Allow SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "allow",
+                "enum": ["allow"],
+                "default": "allow",
+                "order": 0
+              }
+            }
+          },
+          {
             "title": "prefer",
             "additionalProperties": false,
             "description": "Prefer SSL mode.",

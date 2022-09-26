@@ -9,6 +9,10 @@ import {
 } from "../../core/request/AirbyteClient";
 import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
+const getConnectorTypeName = (connectorSpec: DestinationRead | SourceRead) => {
+  return "sourceName" in connectorSpec ? connectorSpec.sourceName : connectorSpec.destinationName;
+};
+
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
   S extends "source" | "destination",
@@ -46,8 +50,7 @@ export function getEntityTableData<
 
     const connectEntities = entityConnections.map((connection) => ({
       name: connection[connectType]?.name || "",
-      // @ts-expect-error ts is not that clever to infer such types
-      connector: connection[connectType]?.[`${connectType}Name`] || "",
+      connector: getConnectorTypeName(connection[connectType]),
       status: connection.status,
       lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),
     }));
@@ -98,10 +101,11 @@ export const getConnectionTableData = (
       connectorName:
         type === "connection"
           ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
-          : connection[connectType]?.name || "",
+          : getConnectorTypeName(connection[connectType]),
       lastSync: connection.latestSyncJobCreatedAt,
       enabled: connection.status === ConnectionStatus.active,
-      schedule: connection.schedule,
+      scheduleData: connection.scheduleData,
+      scheduleType: connection.scheduleType,
       status: connection.status,
       isSyncing: connection.isSyncing,
       lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),

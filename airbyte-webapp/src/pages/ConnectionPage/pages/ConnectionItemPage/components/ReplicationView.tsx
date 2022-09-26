@@ -1,6 +1,6 @@
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
@@ -10,18 +10,20 @@ import LoadingSchema from "components/LoadingSchema";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { useModalService } from "hooks/services/Modal";
+import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
+import { useChangedFormsById, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { ModalCancel, useModalService } from "hooks/services/Modal";
 import {
   useConnectionLoad,
   useConnectionService,
   useUpdateConnection,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
-import { equal } from "utils/objects";
+import { equal, naturalComparatorBy } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
-import ConnectionForm from "views/Connection/ConnectionForm";
-import { ConnectionFormSubmitResult } from "views/Connection/ConnectionForm/ConnectionForm";
+import { ConnectionForm } from "views/Connection/ConnectionForm";
 
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
@@ -85,10 +87,11 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const connectionFormDirtyRef = useRef<boolean>(false);
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
   const connectionService = useConnectionService();
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
+
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
@@ -97,6 +100,11 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     refreshConnectionCatalog,
     [connectionId]
   );
+
+  const formId = useUniqueFormId();
+
+  const [changedFormsById] = useChangedFormsById();
+  const formDirty = useMemo(() => !!changedFormsById?.[formId], [changedFormsById, formId]);
 
   useUnmount(() => {
     closeModal();
@@ -135,13 +143,17 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     }
   };
 
-  const onSubmitForm = async (values: ValuesProps): Promise<void | ConnectionFormSubmitResult> => {
+  const onSubmitForm = async (values: ValuesProps): Promise<void> => {
     // Detect whether the catalog has any differences in its enabled streams compared to the original one.
     // This could be due to user changes (e.g. in the sync mode) or due to new/removed
     // streams due to a "refreshed source schema".
     const hasCatalogChanged = !equal(
-      values.syncCatalog.streams.filter((s) => s.config?.selected),
-      initialConnection.syncCatalog.streams.filter((s) => s.config?.selected)
+      values.syncCatalog.streams
+        .filter((s) => s.config?.selected)
+        .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
+      initialConnection.syncCatalog.streams
+        .filter((s) => s.config?.selected)
+        .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? ""))
     );
     // Whenever the catalog changed show a warning to the user, that we're about to reset their data.
     // Given them a choice to opt-out in which case we'll be sending skipRefresh: true to the update
@@ -154,9 +166,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         content: (props) => <ResetWarningModal {...props} stateType={stateType} />,
       });
       if (result.type === "canceled") {
-        return {
-          submitCancelled: true,
-        };
+        throw new ModalCancel();
       }
       // Save the connection taking into account the correct skipRefresh value from the dialog choice.
       await saveConnection(values, { skipReset: !result.reason });
@@ -166,6 +176,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     }
   };
 
+  // TODO: Move this into the service next
   const refreshSourceSchema = async () => {
     setSaved(false);
     setActiveUpdatingSchemaMode(true);
@@ -182,7 +193,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   };
 
   const onRefreshSourceSchema = async () => {
-    if (connectionFormDirtyRef.current) {
+    if (formDirty) {
       // The form is dirty so we show a warning before proceeding.
       openConfirmationModal({
         title: "connection.updateSchema.formChanged.title",
@@ -204,28 +215,28 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     setActiveUpdatingSchemaMode(false);
   };
 
-  const onDirtyChanges = useCallback((dirty: boolean) => {
-    connectionFormDirtyRef.current = dirty;
-  }, []);
-
   return (
     <Content>
       {!isRefreshingCatalog && connection ? (
-        <ConnectionForm
-          mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
+        <ConnectionFormServiceProvider
           connection={connection}
+          mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
           onSubmit={onSubmitForm}
-          successMessage={saved && <FormattedMessage id="form.changesSaved" />}
           onCancel={onCancelConnectionFormEdit}
-          canSubmitUntouchedForm={activeUpdatingSchemaMode}
-          additionalSchemaControl={
-            <Button onClick={onRefreshSourceSchema} type="button" secondary>
-              <TryArrow icon={faSyncAlt} />
-              <FormattedMessage id="connection.updateSchema" />
-            </Button>
-          }
-          onFormDirtyChanges={onDirtyChanges}
-        />
+          formId={formId}
+          formDirty={formDirty}
+        >
+          <ConnectionForm
+            successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+            canSubmitUntouchedForm={activeUpdatingSchemaMode}
+            additionalSchemaControl={
+              <Button onClick={onRefreshSourceSchema} type="button" secondary>
+                <TryArrow icon={faSyncAlt} />
+                <FormattedMessage id="connection.updateSchema" />
+              </Button>
+            }
+          />
+        </ConnectionFormServiceProvider>
       ) : (
         <LoadingSchema />
       )}

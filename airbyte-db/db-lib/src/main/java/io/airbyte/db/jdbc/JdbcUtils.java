@@ -52,6 +52,7 @@ public class JdbcUtils {
   public static final String USERNAME_KEY = "username";
   public static final String MODE_KEY = "mode";
   public static final String AMPERSAND = "&";
+  public static final String EQUALS = "=";
   public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
       BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
@@ -86,6 +87,7 @@ public class JdbcUtils {
     return parseJdbcParameters(jdbcPropertiesString, "&");
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString, final String delimiter) {
     final Map<String, String> parameters = new HashMap<>();
     if (!jdbcPropertiesString.isBlank()) {

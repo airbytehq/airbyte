@@ -4,7 +4,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
 
-import { Button, H1 } from "components/base";
+import { Button } from "components/base";
+import { Text } from "components/base/Text";
 import Link from "components/Link";
 
 import Status from "core/statuses";
@@ -84,7 +85,9 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => 
   if (connection.latestSyncJobStatus !== Status.RUNNING && connection.latestSyncJobStatus !== Status.INCOMPLETE) {
     return (
       <ControlBlock>
-        <H1 bold>{showMessage(connection.latestSyncJobStatus)}</H1>
+        <Text as="h1" size="xl">
+          {showMessage(connection.latestSyncJobStatus)}
+        </Text>
         <PaddedButton onClick={onSync}>
           <FormattedMessage id="sources.syncNow" />
         </PaddedButton>

@@ -46,7 +46,8 @@
       "password": {
         "title": "Password",
         "description": "Password to use for the connection.",
-        "type": "string"
+        "type": "string",
+        "airbyte_secret": true
       },
       "topic_pattern": {
         "title": "Topic pattern",

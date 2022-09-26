@@ -25,8 +25,8 @@ import static java.sql.JDBCType.VARCHAR;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.sql.JDBCType;
 import java.time.Duration;
-import java.util.Set;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

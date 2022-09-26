@@ -38,7 +38,7 @@ Authenticating this Alpha connector is currently blocked. This is a known issue 
 6. Paste all other data to required fields using your IAM user.
 7. Click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token. 
 2. Go to local Airbyte page.
@@ -65,6 +65,7 @@ This source is capable of syncing the following tables and their data:
 - [FBA Shipments Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100)
 - [FBA Replacements Reports](https://sellercentral.amazon.com/help/hub/reference/200453300)
 - [FBA Storage Fees Report](https://sellercentral.amazon.com/help/hub/reference/G202086720)
+- [Restock Inventory Reports](https://sellercentral.amazon.com/help/hub/reference/202105670)
 - [Flat File Open Listings Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Flat File Orders Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Flat File Orders Reports By Last Update](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
@@ -83,6 +84,10 @@ This source is capable of syncing the following tables and their data:
 - [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups)
 - [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents)
 
+## Report options
+
+Make sure to configure the [required parameters](https://developer-docs.amazon.com/sp-api/docs/report-type-values) in the report options setting for the reports configured.
+
 ## Data type mapping
 
 | Integration Type         | Airbyte Type |
@@ -99,6 +104,8 @@ This source is capable of syncing the following tables and their data:
 
 | Version  | Date       | Pull Request                                               | Subject                                                                |
 |:---------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------|
+| `0.2.26` | 2022-09-24 | [\#16629](https://github.com/airbytehq/airbyte/pull/16629) | Report API version to 2021-06-30, added multiple (5) report types      |
+| `0.2.25` | 2022-07-27 | [\#15063](https://github.com/airbytehq/airbyte/pull/15063) | Add Restock Inventory Report                                           |
 | `0.2.24` | 2022-07-12 | [\#14625](https://github.com/airbytehq/airbyte/pull/14625) | Add FBA Storage Fees Report                                            |
 | `0.2.23` | 2022-06-08 | [\#13604](https://github.com/airbytehq/airbyte/pull/13604) | Add new streams: Fullfiments returns and Settlement reports            |
 | `0.2.22` | 2022-06-15 | [\#13633](https://github.com/airbytehq/airbyte/pull/13633) | Fix - handle start date for financial stream                           |
