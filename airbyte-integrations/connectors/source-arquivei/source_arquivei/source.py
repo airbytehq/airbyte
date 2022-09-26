@@ -120,7 +120,7 @@ class NfeReceived(BaseClass):
             "invoice_id": "NFe" + xml_item["access_key"],
             "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "cnpjs": [],
+            "cnpjs": "[]",
             "invoice_type": "inbound",
             "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "sensible": True
@@ -164,7 +164,7 @@ class NfeEmitted(BaseClass):
             "invoice_id": "NFe" + xml_item["access_key"],
             "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "cnpjs": [],
+            "cnpjs": "[]",
             "invoice_type": "outbound",
             "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "sensible": True
@@ -208,8 +208,8 @@ class NfeEvents(BaseClass):
             "invoice_id": "NFe" + xml_item["access_key"],
             "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "cnpjs": [],
-            "invoice_type": "nfe_event",
+            "cnpjs": "[]",
+            "invoice_type": "evento_nfe",
             "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "sensible": True
         }
@@ -252,7 +252,7 @@ class Cte(BaseClass):
             "invoice_id": "CTe" + xml_item["access_key"],
             "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "cnpjs": [],
+            "cnpjs": "[]",
             "invoice_type": "cte",
             "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "sensible": True
@@ -296,8 +296,8 @@ class CteEvents(BaseClass):
             "invoice_id": "CTe" + xml_item["access_key"],
             "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "cnpjs": [],
-            "invoice_type": "cte_event",
+            "cnpjs": "[]",
+            "invoice_type": "evento_cte",
             "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "sensible": True
         }
