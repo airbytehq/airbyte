@@ -40,9 +40,11 @@ import io.micronaut.discovery.event.ServiceReadyEvent;
 import io.micronaut.scheduling.TaskExecutors;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceRequest;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.worker.NonDeterministicException;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
+import io.temporal.worker.WorkflowImplementationOptions;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -244,8 +246,10 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private void registerConnectionManager(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
+    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
     connectionUpdaterWorker
-        .registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
+        .registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
     connectionUpdaterWorker.registerActivitiesImplementations(connectionManagerActivities.orElseThrow().toArray(new Object[] {}));
     log.info("Connection Manager Workflow registered.");
   }
