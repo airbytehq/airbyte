@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.r2;
 
 import io.airbyte.integrations.destination.s3.S3BaseParquetDestinationAcceptanceTest;
@@ -19,4 +23,5 @@ public class R2ParquetDestinationAcceptanceTest extends S3BaseParquetDestination
   public StorageProvider storageProvider() {
     return StorageProvider.CF_R2;
   }
+
 }

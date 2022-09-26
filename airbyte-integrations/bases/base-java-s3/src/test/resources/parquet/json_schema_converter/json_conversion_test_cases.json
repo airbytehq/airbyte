@@ -1655,44 +1655,26 @@
     "namespace": "namespace23",
     "appendAirbyteFields": true,
     "jsonSchema": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "same_record_name_field": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "sub_field_1": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
         "any_of_field": {
           "anyOf": [
             {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "same_record_name_field": {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "properties": {
                     "sub_field_2": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
@@ -1742,10 +1724,7 @@
               "fields": [
                 {
                   "name": "sub_field_1",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "default": null
                 },
                 {
@@ -1784,10 +1763,7 @@
                       "fields": [
                         {
                           "name": "sub_field_2",
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "default": null
                         },
                         {
@@ -1851,44 +1827,26 @@
     "namespace": "namespace24",
     "appendAirbyteFields": true,
     "jsonSchema": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "same_record_name_field": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "sub_field_1": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
         "any_of_field": {
           "allOf": [
             {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "same_record_name_field": {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "properties": {
                     "sub_field_2": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
@@ -1938,10 +1896,7 @@
               "fields": [
                 {
                   "name": "sub_field_1",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "default": null
                 },
                 {
@@ -1980,10 +1935,7 @@
                       "fields": [
                         {
                           "name": "sub_field_2",
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "default": null
                         },
                         {
@@ -2047,44 +1999,26 @@
     "namespace": "namespace25",
     "appendAirbyteFields": true,
     "jsonSchema": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "same_record_name_field": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "sub_field_1": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
         "any_of_field": {
           "anyOf": [
             {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "same_record_name_field": {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "properties": {
                     "sub_field_2": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     }
                   }
                 }
@@ -2134,10 +2068,7 @@
               "fields": [
                 {
                   "name": "sub_field_1",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "default": null
                 },
                 {
@@ -2176,10 +2107,7 @@
                       "fields": [
                         {
                           "name": "sub_field_2",
-                          "type": [
-                            "null",
-                            "string"
-                          ],
+                          "type": ["null", "string"],
                           "default": null
                         },
                         {

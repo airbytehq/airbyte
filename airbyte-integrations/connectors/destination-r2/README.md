@@ -3,6 +3,8 @@
 This is the repository for the R2 destination connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/r2).
 
+**Currently, no integration test has been set up for this connector, which requires either a local R2 container, or a remote R2 account.**
+
 ## Local development
 
 #### Building via Gradle
