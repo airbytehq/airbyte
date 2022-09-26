@@ -18,7 +18,7 @@ public class Temporal {
   private final TemporalClient temporalClient;
 
   public Temporal(@Named("temporalClient") final TemporalClient temporalClient) {
-    log.info("Creating temporal self-healing");
+    log.debug("Creating temporal self-healing");
     this.temporalClient = temporalClient;
   }
 

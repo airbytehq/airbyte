@@ -15,14 +15,6 @@ dependencies {
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-metrics:metrics-lib')
-    implementation (project(':airbyte-scheduler:scheduler-persistence')) {
-        // Temporary hack to avoid dependency conflicts
-        exclude group: 'io.micronaut'
-        exclude group: 'io.micronaut.flyway'
-        exclude group: 'io.micronaut.jaxrs'
-        exclude group: 'io.micronaut.security'
-        exclude group: 'io.micronaut.sql'
-    }
     implementation project(':airbyte-workers')
 
     runtimeOnly 'io.micronaut:micronaut-http-server-netty:3.6.0'
