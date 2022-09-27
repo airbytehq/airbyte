@@ -160,7 +160,6 @@ class PersistStateActivityTest {
     mockedStateMessageHelper.when(() -> StateMessageHelper.isMigration(Mockito.eq(StateType.GLOBAL), Mockito.any(StateType.class))).thenReturn(true);
     persistStateActivity.persist(CONNECTION_ID, syncOutput, migrationConfiguredCatalog);
     final PersistStateActivityImpl persistStateSpy = spy(persistStateActivity);
-    Mockito.verify(persistStateSpy, Mockito.times(0)).validateStreamStates(Mockito.any(), Mockito.any());
     Mockito.verify(connectionApi).createOrUpdateState(Mockito.any(ConnectionStateCreateOrUpdate.class));
   }
 
