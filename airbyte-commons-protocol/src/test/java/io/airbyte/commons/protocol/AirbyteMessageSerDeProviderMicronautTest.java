@@ -10,7 +10,7 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 @MicronautTest

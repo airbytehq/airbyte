@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import javax.annotation.PostConstruct;
-import javax.inject.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Singleton;
 
 /**
  * AirbyteProtocol Message Migrator
