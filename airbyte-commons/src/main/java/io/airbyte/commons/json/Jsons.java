@@ -275,6 +275,15 @@ public class Jsons {
   }
 
   /**
+   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
+   * New usage of this function is best to explicitly declare the intended array mode.
+   * This version is provided for backward compatibility.
+   */
+  public static Map<String, Object> flatten(final JsonNode node) {
+    return flatten(node, false);
+  }
+
+  /**
    * Prepend all keys in subMap with prefix, then merge that map into originalMap.
    * <p>
    * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
