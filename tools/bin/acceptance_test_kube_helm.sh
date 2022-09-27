@@ -22,8 +22,6 @@ fi
 echo "Replacing default Chart.yaml and values.yaml with a test one"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old
 mv charts/airbyte/Chart.yaml.test charts/airbyte/Chart.yaml 
-mv charts/airbyte/values.yaml charts/airbyte/values.yaml.old
-mv charts/airbyte/values.yaml.test charts/airbyte/values.yaml 
 
 echo "Starting app..."
 
@@ -101,5 +99,3 @@ KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tes
 echo "Reverting changes back"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.test
 mv charts/airbyte/Chart.yaml.old charts/airbyte/Chart.yaml
-mv charts/airbyte/values.yaml charts/airbyte/values.yaml.test
-mv charts/airbyte/values.yaml.old charts/airbyte/values.yaml
