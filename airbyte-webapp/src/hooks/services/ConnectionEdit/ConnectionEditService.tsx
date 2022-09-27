@@ -1,7 +1,7 @@
 import { useContext, useState, createContext, useCallback } from "react";
 import { useAsyncFn } from "react-use";
 
-import { WebBackendConnectionUpdate } from "core/request/AirbyteClient";
+import { ConnectionStatus, WebBackendConnectionUpdate } from "core/request/AirbyteClient";
 
 import { ConnectionFormServiceProvider } from "../ConnectionForm/ConnectionFormService";
 import { useGetConnection, useUpdateConnection, useWebConnectionService } from "../useConnectionHook";
@@ -44,10 +44,13 @@ const ConnectionEditContext = createContext<Omit<ReturnType<typeof useConnection
 
 export const ConnectionEditServiceProvider: React.FC<ConnectionEditProps> = ({ children, ...props }) => {
   const { refreshSchema, ...data } = useConnectionEdit(props);
-  // TODO: Mode needs to be able to be set to 'readonly'
   return (
     <ConnectionEditContext.Provider value={data}>
-      <ConnectionFormServiceProvider mode="edit" connection={data.connection} refreshSchema={refreshSchema}>
+      <ConnectionFormServiceProvider
+        mode={data.connection.status === ConnectionStatus.deprecated ? "readonly" : "edit"}
+        connection={data.connection}
+        refreshSchema={refreshSchema}
+      >
         {children}
       </ConnectionFormServiceProvider>
     </ConnectionEditContext.Provider>
