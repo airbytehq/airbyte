@@ -49,7 +49,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
         if (maybeStateWrapper.isPresent()) {
           final ConnectionState previousState = airbyteApiClient.getConnectionApi()
               .getState(new ConnectionIdRequestBody().connectionId(connectionId));
-          if (featureFlags.needStateValidation() && previousState != null) {
+          if (previousState != null) {
             final StateType newStateType = maybeStateWrapper.get().getStateType();
             final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
 
