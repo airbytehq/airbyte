@@ -19,20 +19,18 @@ import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
 import java.util.List;
-import javax.inject.Inject;
 import javax.inject.Singleton;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Singleton
 @Requires(property = "airbyte.worker.plane",
           pattern = "(?i)^(?!data_plane).*")
 public class GenerateInputActivityImpl implements GenerateInputActivity {
 
-  @Inject
-  private JobPersistence jobPersistence;
+  private final JobPersistence jobPersistence;
+
+  public GenerateInputActivityImpl(final JobPersistence jobPersistence) {
+    this.jobPersistence = jobPersistence;
+  }
 
   @Override
   public GeneratedJobInput getSyncWorkflowInput(final SyncInput input) {
