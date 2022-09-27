@@ -62,7 +62,13 @@ public interface ProcessFactory {
    * can be used by the factories implementing this interface for easier operations.
    */
   static String createProcessName(final String fullImagePath, final String jobType, final String jobId, final int attempt, final int lenLimit) {
-    final var noVersion = fullImagePath.substring(0, fullImagePath.lastIndexOf(VERSION_DELIMITER));
+    final var delimiterIndex = fullImagePath.lastIndexOf(VERSION_DELIMITER);
+    String noVersion;
+    if (delimiterIndex < 0) {
+      noVersion = fullImagePath;
+    } else {
+      noVersion = fullImagePath.substring(0, delimiterIndex);
+    }
 
     final var nameParts = noVersion.split(DOCKER_DELIMITER);
     var imageName = nameParts[nameParts.length - 1];
