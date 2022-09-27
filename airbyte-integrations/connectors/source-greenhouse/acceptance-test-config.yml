@@ -7,8 +7,6 @@ tests:
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
-    - config_path: "secrets/config.json"
-      status: "succeed"
     - config_path: "integration_tests/config_invalid.json"
       status: "failed"
   discovery:
