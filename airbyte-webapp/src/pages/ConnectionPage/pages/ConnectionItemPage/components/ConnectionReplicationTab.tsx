@@ -27,7 +27,7 @@ import { equal, naturalComparatorBy } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
 
-interface ConnectionReplicationProps {
+interface ConnectionReplicationTabProps {
   onAfterSaveSchema: () => void;
   connectionId: string;
 }
@@ -85,7 +85,10 @@ const TryArrow = styled(FontAwesomeIcon)`
   font-size: 14px;
 `;
 
-export const ConnectionReplication: React.FC<ConnectionReplicationProps> = ({ onAfterSaveSchema, connectionId }) => {
+export const ConnectionReplicationTab: React.FC<ConnectionReplicationTabProps> = ({
+  onAfterSaveSchema,
+  connectionId,
+}) => {
   const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();

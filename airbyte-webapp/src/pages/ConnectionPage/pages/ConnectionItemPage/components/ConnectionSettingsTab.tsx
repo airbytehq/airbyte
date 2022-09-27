@@ -7,14 +7,14 @@ import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
 import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
-import styles from "./SettingsView.module.scss";
+import styles from "./ConnectionSettingsTab.module.scss";
 import { StateBlock } from "./StateBlock";
 
-interface SettingsViewProps {
+interface ConnectionSettingsTabProps {
   connection: WebBackendConnectionRead;
 }
 
-const SettingsView: React.FC<SettingsViewProps> = ({ connection }) => {
+export const ConnectionSettingsTab: React.FC<ConnectionSettingsTabProps> = ({ connection }) => {
   const { mutateAsync: deleteConnection } = useDeleteConnection();
 
   const [isAdvancedMode] = useAdvancedModeSetting();
@@ -28,5 +28,3 @@ const SettingsView: React.FC<SettingsViewProps> = ({ connection }) => {
     </div>
   );
 };
-
-export default SettingsView;

@@ -9,12 +9,12 @@ import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useGetConnection } from "hooks/services/useConnectionHook";
-import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
+import { ConnectionTransformationTab } from "pages/ConnectionPage/pages/ConnectionItemPage/components/ConnectionTransformationTab";
 
-import ConnectionPageTitle from "./components/ConnectionPageTitle";
-import { ConnectionReplication } from "./components/ConnectionReplication";
-import SettingsView from "./components/SettingsView";
-import StatusView from "./components/StatusView";
+import { ConnectionPageTitle } from "./components/ConnectionPageTitle";
+import { ConnectionReplicationTab } from "./components/ConnectionReplicationTab";
+import { ConnectionSettingsTab } from "./components/ConnectionSettingsTab";
+import { ConnectionStatusTab } from "./components/ConnectionStatusTab";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 
 export const ConnectionItemPage: React.FC = () => {
@@ -74,19 +74,21 @@ export const ConnectionItemPage: React.FC = () => {
         <Routes>
           <Route
             path={ConnectionSettingsRoutes.STATUS}
-            element={<StatusView connection={connection} isStatusUpdating={isStatusUpdating} />}
+            element={<ConnectionStatusTab connection={connection} isStatusUpdating={isStatusUpdating} />}
           />
           <Route
             path={ConnectionSettingsRoutes.REPLICATION}
-            element={<ConnectionReplication onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
+            element={<ConnectionReplicationTab onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
           />
           <Route
             path={ConnectionSettingsRoutes.TRANSFORMATION}
-            element={<TransformationView connection={connection} />}
+            element={<ConnectionTransformationTab connection={connection} />}
           />
           <Route
             path={ConnectionSettingsRoutes.SETTINGS}
-            element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connection={connection} />}
+            element={
+              isConnectionDeleted ? <Navigate replace to=".." /> : <ConnectionSettingsTab connection={connection} />
+            }
           />
           <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
         </Routes>

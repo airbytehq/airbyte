@@ -22,7 +22,7 @@ interface ConnectionPageTitleProps {
   onStatusUpdating?: (updating: boolean) => void;
 }
 
-const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
+export const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
   source,
   destination,
   connection,
@@ -90,5 +90,3 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
     </div>
   );
 };
-
-export default ConnectionPageTitle;
