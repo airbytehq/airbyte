@@ -15,10 +15,15 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
   const connectionService = useWebConnectionService();
   const [schemaHasBeenRefreshed, setSchemaHasBeenRefreshed] = useState(false);
 
-  const [{ loading: schemaRefreshing }, refreshSchema] = useAsyncFn(async () => {
-    setConnection(await connectionService.getConnection(connectionId, true));
-    setSchemaHasBeenRefreshed(true);
-  }, [connectionId]);
+  // TODO: Pull error out here, utilize down-line. Maybe use schema error component like on the create page?
+  const [{ loading: schemaRefreshing }, refreshSchema] = useAsyncFn(
+    async (refreshSchema = false) => {
+      const refreshedConnection = await connectionService.getConnection(connectionId, refreshSchema);
+      setConnection(refreshedConnection);
+      setSchemaHasBeenRefreshed(true);
+    },
+    [connectionId]
+  );
 
   const { mutateAsync: updateConnectionAction, isLoading: connectionUpdating } = useUpdateConnection();
 
