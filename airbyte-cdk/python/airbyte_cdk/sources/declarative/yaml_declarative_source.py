@@ -59,7 +59,6 @@ class YamlDeclarativeSource(DeclarativeSource):
         return self._factory.create_component(check, dict())(source=self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        print(f"yaml_declarative_source.streams with logger={self.logger.getEffectiveLevel()}")
         self.logger.debug(
             "parsed YAML into declarative source",
             extra={"path_to_yaml_file": self._path_to_yaml, "source_name": self.name, "parsed_config": json.dumps(self._source_config)},
