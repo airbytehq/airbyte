@@ -80,6 +80,7 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 
 | Version | Date       | Pull Request | Subject                                      |
 |:--------|:-----------| :--- |:---------------------------------------------|
+| 0.2.0  | 2022-09-27 | [16970](https://github.com/airbytehq/airbyte/pull/16970)   | Remove TCP port from spec parameters |
 | 0.1.12  | 2022-09-08 | [16444](https://github.com/airbytehq/airbyte/pull/16444)   | Added custom jdbc params field |
 | 0.1.10  | 2022-07-05 | [\#13639](https://github.com/airbytehq/airbyte/pull/13639) | Change JDBC ClickHouse version into 0.3.2-patch9 |
 | 0.1.8   | 2022-07-05 | [\#13516](https://github.com/airbytehq/airbyte/pull/13516) | Added JDBC default parameter socket timeout |
