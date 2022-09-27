@@ -13,6 +13,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from source_freshdesk.utils import CallCredit
 
@@ -26,6 +27,9 @@ class FreshdeskStream(HttpStream, ABC):
     link_regex = re.compile(r'<(.*?)>;\s*rel="next"')
     raise_on_http_errors = True
     forbidden_stream = False
+    
+    # regestring the default schema transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(authenticator=authenticator)
