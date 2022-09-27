@@ -141,6 +141,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.51  | 2022-09-27 | [\#17273](https://github.com/airbytehq/airbyte/pull/17273) | Fixed handling of arrays in SUPER maximum size check |
 | 0.3.50  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage |
 | 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
 | 0.3.48  | 2022-09-01 |  | Added JDBC URL params                                                                                                                                                                                            |
