@@ -74,7 +74,8 @@ public class TemporalUtils {
                        @Value("${temporal.cloud.host}") final String temporalCloudHost,
                        @Value("${temporal.cloud.namespace}") final String temporalCloudNamespace,
                        @Value("${temporal.host}") final String temporalHost,
-                       @Value("${temporal.retention}") final Integer temporalRetentionInDays) {
+                       @Property(name = "${temporal.retention}",
+                                 defaultValue = "30") final Integer temporalRetentionInDays) {
     this.temporalCloudClientCert = temporalCloudClientCert;
     this.temporalCloudClientKey = temporalCloudClientKey;
     this.temporalCloudEnabled = temporalCloudEnabled;
