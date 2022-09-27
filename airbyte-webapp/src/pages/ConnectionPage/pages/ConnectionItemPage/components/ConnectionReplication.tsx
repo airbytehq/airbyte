@@ -85,6 +85,7 @@ export const ConnectionReplication: React.FC = () => {
       // Detect whether the catalog has any differences in its enabled streams compared to the original one.
       // This could be due to user changes (e.g. in the sync mode) or due to new/removed
       // streams due to a "refreshed source schema".
+      // TODO: Can pass this value into the saveConnection function for the analytics call so we don't compare twice
       const hasCatalogChanged = !equal(
         formValues.syncCatalog.streams
           .filter((s) => s.config?.selected)

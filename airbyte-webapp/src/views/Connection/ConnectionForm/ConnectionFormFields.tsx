@@ -21,22 +21,15 @@ import styles from "./ConnectionFormFields.module.scss";
 import { FormikConnectionFormValues } from "./formConfig";
 
 interface ConnectionFormFieldsProps {
-  className?: string;
   values: ValuesProps | FormikConnectionFormValues;
   isSubmitting: boolean;
   dirty: boolean;
 }
 
-export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({
-  className,
-  values,
-  isSubmitting,
-  dirty,
-}) => {
+export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ values, isSubmitting, dirty }) => {
   const { mode, refreshSchema } = useConnectionFormService();
   const { formatMessage } = useIntl();
 
-  const formContainerClassnames = classNames(className, styles.formContainer);
   const readonlyClass = classNames({
     [styles.readonly]: mode === "readonly",
   });
@@ -44,7 +37,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({
   const doRefreshSchema = usePreventRefreshOnDirty(dirty, refreshSchema);
 
   return (
-    <div className={formContainerClassnames}>
+    <div className={styles.formContainer}>
       <Section title={<FormattedMessage id="connection.transfer" />}>
         <ScheduleField />
       </Section>

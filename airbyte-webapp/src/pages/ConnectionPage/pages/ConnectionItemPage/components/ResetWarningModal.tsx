@@ -15,6 +15,7 @@ export const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, 
   const { formatMessage } = useIntl();
   const [withReset, setWithReset] = useState(true);
   const requireFullReset = stateType === ConnectionStateType.legacy;
+
   return (
     <>
       <ModalBody>
