@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -38,6 +39,7 @@ import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.HashMap;
@@ -58,11 +60,14 @@ class SecretsRepositoryWriterTest {
   private static final UUID UUID1 = UUID.randomUUID();
 
   private static final ConnectorSpecification SPEC = new ConnectorSpecification()
-      .withConnectionSpecification(Jsons.deserialize(
-          "{ \"properties\": { \"username\": { \"type\": \"string\" }, \"password\": { \"type\": \"string\", \"airbyte_secret\": true } } }"));
+      .withConnectionSpecification(
+          Jsons.deserialize("""
+                            { "properties": { "username": { "type": "string" }, "password": { "type": "string", "airbyte_secret": true } } }
+                            """));
 
   private static final String SECRET = "abc";
-  private static final JsonNode FULL_CONFIG = Jsons.deserialize(String.format("{ \"username\": \"airbyte\", \"password\": \"%s\"}", SECRET));
+  private static final JsonNode FULL_CONFIG = Jsons.deserialize(String.format("""
+                                                                              { "username": "airbyte", "password": "%s"}""", SECRET));
 
   private static final SourceConnection SOURCE_WITH_FULL_CONFIG = new SourceConnection()
       .withSourceId(UUID1)
@@ -92,16 +97,18 @@ class SecretsRepositoryWriterTest {
   private RealSecretsHydrator longLivedSecretsHydrator;
   private SecretsRepositoryReader longLivedSecretsRepositoryReader;
   private RealSecretsHydrator ephemeralSecretsHydrator;
-  private SecretsRepositoryReader ephemeralSecretsRepositoryReader;
+  private JsonSchemaValidator jsonSchemaValidator;
 
   @BeforeEach
   void setup() {
     configRepository = spy(mock(ConfigRepository.class));
     longLivedSecretPersistence = new MemorySecretPersistence();
     ephemeralSecretPersistence = new MemorySecretPersistence();
+    jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
     secretsRepositoryWriter = new SecretsRepositoryWriter(
         configRepository,
+        jsonSchemaValidator,
         Optional.of(longLivedSecretPersistence),
         Optional.of(ephemeralSecretPersistence));
 
@@ -109,7 +116,6 @@ class SecretsRepositoryWriterTest {
     longLivedSecretsRepositoryReader = new SecretsRepositoryReader(configRepository, longLivedSecretsHydrator);
 
     ephemeralSecretsHydrator = new RealSecretsHydrator(ephemeralSecretPersistence);
-    ephemeralSecretsRepositoryReader = new SecretsRepositoryReader(configRepository, ephemeralSecretsHydrator);
   }
 
   @Test
@@ -120,8 +126,9 @@ class SecretsRepositoryWriterTest {
     final SecretCoordinate coordinate = getCoordinateFromSecretsStore(longLivedSecretPersistence);
 
     assertNotNull(coordinate);
-    final SourceConnection partialSource = injectCoordinateIntoSource(coordinate.getFullCoordinate());
+    final var partialSource = Jsons.clone(SOURCE_WITH_FULL_CONFIG).withConfiguration(injectCoordinate(coordinate.getFullCoordinate()));
     verify(configRepository).writeSourceConnectionNoSecrets(partialSource);
+    verify(jsonSchemaValidator, times(1)).ensure(any(), any());
     final Optional<String> persistedSecret = longLivedSecretPersistence.read(coordinate);
     assertTrue(persistedSecret.isPresent());
     assertEquals(SECRET, persistedSecret.get());
@@ -140,9 +147,10 @@ class SecretsRepositoryWriterTest {
     final SecretCoordinate coordinate = getCoordinateFromSecretsStore(longLivedSecretPersistence);
 
     assertNotNull(coordinate);
-    final DestinationConnection partialDestination = injectCoordinateIntoDestination(coordinate.getFullCoordinate());
+    final var partialDestination = Jsons.clone(DESTINATION_WITH_FULL_CONFIG).withConfiguration(injectCoordinate(coordinate.getFullCoordinate()));
     verify(configRepository).writeDestinationConnectionNoSecrets(partialDestination);
-    final Optional<String> persistedSecret = longLivedSecretPersistence.read(coordinate);
+    verify(jsonSchemaValidator, times(1)).ensure(any(), any());
+    final var persistedSecret = longLivedSecretPersistence.read(coordinate);
     assertTrue(persistedSecret.isPresent());
     assertEquals(SECRET, persistedSecret.get());
 
@@ -150,6 +158,57 @@ class SecretsRepositoryWriterTest {
     reset(configRepository);
     when(configRepository.getDestinationConnection(UUID1)).thenReturn(partialDestination);
     assertEquals(DESTINATION_WITH_FULL_CONFIG, longLivedSecretsRepositoryReader.getDestinationConnectionWithSecrets(UUID1));
+  }
+
+  @Test
+  void testWriteSourceConnectionWithTombstone() throws JsonValidationException, IOException, ConfigNotFoundException {
+    doThrow(ConfigNotFoundException.class).when(configRepository).getSourceConnection(UUID1);
+    final var sourceWithTombstone = new SourceConnection()
+        .withSourceId(UUID1)
+        .withSourceDefinitionId(UUID.randomUUID())
+        .withConfiguration(FULL_CONFIG)
+        .withTombstone(true);
+
+    secretsRepositoryWriter.writeSourceConnection(sourceWithTombstone, SPEC);
+    final SecretCoordinate coordinate = getCoordinateFromSecretsStore(longLivedSecretPersistence);
+
+    assertNotNull(coordinate);
+    final var partialSource = Jsons.clone(sourceWithTombstone).withConfiguration(injectCoordinate(coordinate.getFullCoordinate()));
+    verify(configRepository).writeSourceConnectionNoSecrets(partialSource);
+    verify(jsonSchemaValidator, times(0)).ensure(any(), any());
+    final var persistedSecret = longLivedSecretPersistence.read(coordinate);
+    assertTrue(persistedSecret.isPresent());
+    assertEquals(SECRET, persistedSecret.get());
+
+    // verify that the round trip works.
+    reset(configRepository);
+    when(configRepository.getSourceConnection(UUID1)).thenReturn(partialSource);
+    assertEquals(sourceWithTombstone, longLivedSecretsRepositoryReader.getSourceConnectionWithSecrets(UUID1));
+  }
+
+  @Test
+  void testWriteDestinationConnectionWithTombstone() throws JsonValidationException, IOException, ConfigNotFoundException {
+    doThrow(ConfigNotFoundException.class).when(configRepository).getDestinationConnection(UUID1);
+    final var destinationWithTombstone = new DestinationConnection()
+        .withDestinationId(UUID1)
+        .withConfiguration(FULL_CONFIG)
+        .withTombstone(true);
+
+    secretsRepositoryWriter.writeDestinationConnection(destinationWithTombstone, SPEC);
+    final SecretCoordinate coordinate = getCoordinateFromSecretsStore(longLivedSecretPersistence);
+
+    assertNotNull(coordinate);
+    final var partialDestination = Jsons.clone(destinationWithTombstone).withConfiguration(injectCoordinate(coordinate.getFullCoordinate()));
+    verify(configRepository).writeDestinationConnectionNoSecrets(partialDestination);
+    verify(jsonSchemaValidator, times(0)).ensure(any(), any());
+    final Optional<String> persistedSecret = longLivedSecretPersistence.read(coordinate);
+    assertTrue(persistedSecret.isPresent());
+    assertEquals(SECRET, persistedSecret.get());
+
+    // verify that the round trip works.
+    reset(configRepository);
+    when(configRepository.getDestinationConnection(UUID1)).thenReturn(partialDestination);
+    assertEquals(destinationWithTombstone, longLivedSecretsRepositoryReader.getDestinationConnectionWithSecrets(UUID1));
   }
 
   @Test
@@ -216,14 +275,6 @@ class SecretsRepositoryWriterTest {
 
   private static JsonNode injectCoordinate(final String coordinate) {
     return Jsons.deserialize(String.format("{ \"username\": \"airbyte\", \"password\": { \"_secret\": \"%s\" } }", coordinate));
-  }
-
-  private static SourceConnection injectCoordinateIntoSource(final String coordinate) {
-    return Jsons.clone(SOURCE_WITH_FULL_CONFIG).withConfiguration(injectCoordinate(coordinate));
-  }
-
-  private static DestinationConnection injectCoordinateIntoDestination(final String coordinate) {
-    return Jsons.clone(DESTINATION_WITH_FULL_CONFIG).withConfiguration(injectCoordinate(coordinate));
   }
 
   @Test
