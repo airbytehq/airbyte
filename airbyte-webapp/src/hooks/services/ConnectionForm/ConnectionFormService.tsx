@@ -23,7 +23,7 @@ export type ConnectionOrPartialConnection =
 export interface ConnectionServiceProps {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
-  refreshSchema: (refreshSchema?: boolean) => Promise<void>;
+  refreshSchema: () => Promise<void>;
 }
 
 export const tidyConnectionFormValues = (

@@ -1,5 +1,5 @@
 import { Form, Formik, FormikHelpers } from "formik";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 import styled from "styled-components";
@@ -49,7 +49,7 @@ export const ConnectionReplication: React.FC = () => {
   const formId = useUniqueFormId();
   const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, setSchemaHasBeenRefreshed } =
     useConnectionEditService();
-  const { initialValues, getErrorMessage, setSubmitError, refreshSchema } = useConnectionFormService();
+  const { initialValues, getErrorMessage, setSubmitError } = useConnectionFormService();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
   useUnmount(() => {
@@ -148,15 +148,10 @@ export const ConnectionReplication: React.FC = () => {
     ]
   );
 
-  const catalogIsDifferent = useMemo(
-    () => connection.catalogDiff?.transforms && connection.catalogDiff.transforms?.length > 0,
-    [connection.catalogDiff?.transforms]
-  );
-
   useEffect(() => {
     // If we have a catalogDiff we always want to show the modal
     const { catalogDiff, syncCatalog } = connection;
-    if (catalogDiff && catalogIsDifferent) {
+    if (catalogDiff?.transforms && catalogDiff.transforms?.length > 0) {
       openModal<void>({
         title: formatMessage({ id: "connection.updateSchema.completed" }),
         preventCancel: true,
@@ -165,7 +160,7 @@ export const ConnectionReplication: React.FC = () => {
         ),
       });
     }
-  }, [catalogIsDifferent, connection, formatMessage, openModal]);
+  }, [connection, formatMessage, openModal]);
 
   return (
     <Content>
@@ -184,10 +179,6 @@ export const ConnectionReplication: React.FC = () => {
                 isSubmitting={isSubmitting}
                 dirty={dirty}
                 resetForm={async () => {
-                  if (catalogIsDifferent) {
-                    // Refetch original connection + schema if different
-                    await refreshSchema();
-                  }
                   resetForm();
                   setSchemaHasBeenRefreshed(false);
                 }}
