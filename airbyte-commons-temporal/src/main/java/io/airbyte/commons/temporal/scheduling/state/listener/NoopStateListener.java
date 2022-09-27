@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal.scheduling.state.listener;
+package io.airbyte.commons.temporal.scheduling.state.listener;
 
 import java.util.LinkedList;
 import java.util.Queue;
