@@ -42,7 +42,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   }
 
   @Override public boolean needStateValidation() {
-    return getEnvOrDefault(LOG_CONNECTOR_MESSAGES, true, Boolean::parseBoolean);
+    return getEnvOrDefault(NEED_STATE_VALIDATION, true, Boolean::parseBoolean);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java
