@@ -5,6 +5,7 @@
 |name |status |
 | :--- | :--- |
 | 3PL Central  | [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-tplcentral%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-tplcentral) |
+| Adjust  | [![source-adjust](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-adjust%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-adjust) |
 | Airtable  | [![source-airtable](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-airtable%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-airtable) |
 | AlloyDB   | [![source-alloydb](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-alloydb%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-alloydb) |
 | Amazon Seller Partner  | [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amazon-seller-partner) |
@@ -150,6 +151,7 @@
 | MySQL                      | [![destination-mysql](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-mysql%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-mysql)                                           |
 | Postgres                   | [![destination-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-postgres%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-postgres)                                  |
 | Pulsar                     | [![destination-pulsar](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-pulsar%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-pulsar)                                        |
+| R2                         | (Not Setup) |
 | Redshift                   | [![destination-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-redshift%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-redshift)                                  |
 | Rockset                    | [![destination-rockset](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-rockset%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-rockset)                                     |
 | S3                         | [![destination-s3](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-s3%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-s3)                                                    |

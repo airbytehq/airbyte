@@ -9,6 +9,7 @@ import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Clustering;
@@ -31,6 +32,7 @@ import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -43,9 +45,11 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.util.Strings;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -59,6 +63,7 @@ public class BigQueryUtils {
   private static final DateTimeFormatter formatter =
       DateTimeFormatter.ofPattern("[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
           "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
+  private static final String USER_AGENT_FORMAT = "%s (GPN: Airbyte)";
 
   public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -347,6 +352,17 @@ public class BigQueryUtils {
         throw new BigQueryException(e.getCode(), errorMessage, e);
       }
     }
+  }
+
+  public static HeaderProvider getHeaderProvider() {
+    String connectorName = getConnectorNameOrDefault();
+    return () -> ImmutableMap.of("user-agent", String.format(USER_AGENT_FORMAT, connectorName));
+  }
+
+  private static String getConnectorNameOrDefault() {
+    return Optional.ofNullable(System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE))
+        .map(name -> name.replace("airbyte/", Strings.EMPTY).replace(":", "/"))
+        .orElse("destination-bigquery");
   }
 
   private static String convertDateToInstantFormat(final String data) {

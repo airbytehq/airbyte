@@ -121,11 +121,17 @@ public class ConnectionsHandler {
 
     final UUID connectionId = uuidGenerator.get();
 
+    // If not specified, default the NamespaceDefinition to 'source'
+    final NamespaceDefinitionType namespaceDefinitionType =
+        connectionCreate.getNamespaceDefinition() == null
+            ? NamespaceDefinitionType.SOURCE
+            : Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class);
+
     // persist sync
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : defaultName)
-        .withNamespaceDefinition(Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class))
+        .withNamespaceDefinition(namespaceDefinitionType)
         .withNamespaceFormat(connectionCreate.getNamespaceFormat())
         .withPrefix(connectionCreate.getPrefix())
         .withSourceId(connectionCreate.getSourceId())
@@ -363,12 +369,7 @@ public class ConnectionsHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
-    // listing all of this is also bad
-    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId())) {
-      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
-        continue;
-      }
-
+    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), includeDeleted)) {
       connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
