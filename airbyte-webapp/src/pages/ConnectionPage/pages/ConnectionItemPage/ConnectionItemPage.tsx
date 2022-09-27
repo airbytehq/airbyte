@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
@@ -20,7 +20,6 @@ import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 
 export const ConnectionItemPageInner: React.FC = () => {
   const { connection } = useConnectionEditService();
-  const [isStatusUpdating, setStatusUpdating] = useState(false);
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM);
 
@@ -42,14 +41,11 @@ export const ConnectionItemPageInner: React.FC = () => {
           ]}
         />
       }
-      pageTitle={<ConnectionPageTitle onStatusUpdating={setStatusUpdating} />}
+      pageTitle={<ConnectionPageTitle />}
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
-          <Route
-            path={ConnectionSettingsRoutes.STATUS}
-            element={<StatusView connection={connection} isStatusUpdating={isStatusUpdating} />}
-          />
+          <Route path={ConnectionSettingsRoutes.STATUS} element={<StatusView connection={connection} />} />
           <Route path={ConnectionSettingsRoutes.REPLICATION} element={<ConnectionReplication />} />
           <Route
             path={ConnectionSettingsRoutes.TRANSFORMATION}

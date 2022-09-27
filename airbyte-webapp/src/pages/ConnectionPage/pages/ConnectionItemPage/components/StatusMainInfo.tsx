@@ -15,11 +15,7 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import EnabledControl from "./EnabledControl";
 import styles from "./StatusMainInfo.module.scss";
 
-interface StatusMainInfoProps {
-  onStatusUpdating?: (updating: boolean) => void;
-}
-
-export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({ onStatusUpdating }) => {
+export const StatusMainInfo: React.FC = () => {
   const {
     connection: { source, destination, status },
   } = useConnectionEditService();
@@ -54,7 +50,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({ onStatusUpdating
       </div>
       {status !== ConnectionStatus.deprecated && (
         <div className={styles.enabledControlContainer}>
-          <EnabledControl onStatusUpdating={onStatusUpdating} disabled={!allowSync} />
+          <EnabledControl disabled={!allowSync} />
         </div>
       )}
     </div>

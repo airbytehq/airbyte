@@ -39,7 +39,6 @@ interface ActiveJob {
 
 interface StatusViewProps {
   connection: WebBackendConnectionRead;
-  isStatusUpdating?: boolean;
 }
 
 const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {

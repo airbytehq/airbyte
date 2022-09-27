@@ -15,11 +15,7 @@ import { ConnectionName } from "./ConnectionName";
 import styles from "./ConnectionPageTitle.module.scss";
 import { StatusMainInfo } from "./StatusMainInfo";
 
-interface ConnectionPageTitleProps {
-  onStatusUpdating?: (updating: boolean) => void;
-}
-
-export const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ onStatusUpdating }) => {
+export const ConnectionPageTitle: React.FC = () => {
   const params = useParams<{ id: string; "*": ConnectionSettingsRoutes }>();
   const navigate = useNavigate();
   const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
@@ -74,7 +70,7 @@ export const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ onStat
       </Text>
       <ConnectionName />
       <div className={styles.statusContainer}>
-        <StatusMainInfo onStatusUpdating={onStatusUpdating} />
+        <StatusMainInfo />
       </div>
       <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
     </div>

@@ -1,6 +1,5 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useUpdateEffect } from "react-use";
 import styled from "styled-components";
 
 import { Switch } from "components";
@@ -31,10 +30,9 @@ const Content = styled.div`
 
 interface EnabledControlProps {
   disabled?: boolean;
-  onStatusUpdating?: (updating: boolean) => void;
 }
 
-const EnabledControl: React.FC<EnabledControlProps> = ({ disabled, onStatusUpdating }) => {
+const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
   const analyticsService = useAnalyticsService();
 
   const { connection, updateConnection, connectionUpdating } = useConnectionEditService();
@@ -57,10 +55,6 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled, onStatusUpdat
       frequency: frequencyType,
     });
   };
-
-  useUpdateEffect(() => {
-    onStatusUpdating?.(connectionUpdating);
-  }, [connectionUpdating]);
 
   return (
     <Content>
