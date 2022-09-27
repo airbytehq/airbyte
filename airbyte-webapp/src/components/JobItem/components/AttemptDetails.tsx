@@ -18,15 +18,11 @@ const getFailureFromAttempt = (attempt: AttemptRead) => {
   return attempt.failureSummary && attempt.failureSummary.failures[0];
 };
 
-const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) => {
+const AttemptDetails: React.FC<IProps> = ({ attempt, className }) => {
   const { formatMessage } = useIntl();
 
   if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
-    return (
-      <div className={classNames(styles.details, className)}>
-        <FormattedMessage id={`sources.${configType}`} defaultMessage={configType} />
-      </div>
-    );
+    return null;
   }
 
   const formatBytes = (bytes?: number) => {
@@ -89,11 +85,6 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
           {hours || minutes ? <FormattedMessage id="sources.minute" values={{ minute: minutes }} /> : null}
           <FormattedMessage id="sources.second" values={{ second: seconds }} />
         </span>
-        {configType && (
-          <span>
-            <FormattedMessage id={`sources.${configType}`} defaultMessage={configType} />
-          </span>
-        )}
       </div>
       {isFailed && (
         <div className={styles.failedMessage}>

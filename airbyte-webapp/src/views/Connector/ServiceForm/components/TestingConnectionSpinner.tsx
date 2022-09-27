@@ -2,7 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, ProgressBar } from "components";
+import { Button } from "components";
+import { ProgressBar } from "components/ui/ProgressBar";
 
 import styles from "./TestingConnectionSpinner.module.scss";
 

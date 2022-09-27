@@ -5,7 +5,7 @@ export const Row = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  height: 32px;
+  min-height: 70px;
   position: relative;
 
   font-size: 14px;
