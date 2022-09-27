@@ -134,12 +134,23 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         config.has("uploading_method") ? EncryptionConfig.fromJson(config.get("uploading_method").get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
+
+    final int numFileBuffers = s3Options.get("file_buffer_count").intValue();
+    if (numFileBuffers < catalog.getStreams().size()) {
+      LOGGER.warn(
+          "Potential performance issue: catalog contains %d streams, destination configuration "
+              + "allocates buffers for %s streams. If the source sends data for multiple streams "
+              + "in arbitrary order, this destination may be forced to flush small chunks of data repeatedly. "
+              + "Increase the configured File Buffer Count to improve performance",
+          catalog.getStreams().size(), numFileBuffers);
+    }
+
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
         new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
         getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, catalog.getStreams().size())),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, numFileBuffers)),
         config,
         catalog,
         isPurgeStagingData(s3Options));

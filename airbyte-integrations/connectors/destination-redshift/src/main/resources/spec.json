@@ -206,6 +206,15 @@
                     }
                   }
                 ]
+              },
+              "file_buffer_count": {
+                "description": "The number of file buffers to allocate for writing staging data to S3. This should be greater than the stream count of the biggest source. Configuring this too low may hurt performance for some connections.",
+                "type": "integer",
+                "minimum": 10,
+                "maximum": 10000,
+                "default": 100,
+                "examples": ["100"],
+                "title": "File Buffer Count"
               }
             }
           }
