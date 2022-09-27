@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { LoadingPage, PageTitle } from "components";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
-import CreateConnectionContent from "components/CreateConnectionContent";
+import { CreateConnection } from "components/CreateConnection/CreateConnection";
 import HeadTitle from "components/HeadTitle";
 import { StepsMenu } from "components/ui/StepsMenu";
 
@@ -167,7 +167,7 @@ export const CreationFormPage: React.FC = () => {
       return <LoadingPage />;
     }
 
-    return <CreateConnectionContent source={source} destination={destination} />;
+    return <CreateConnection source={source} destination={destination} />;
   };
 
   const steps =

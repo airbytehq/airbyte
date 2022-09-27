@@ -8,7 +8,7 @@ import { Card, ControlLabels, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";

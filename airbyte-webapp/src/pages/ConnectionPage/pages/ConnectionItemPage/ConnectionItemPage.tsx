@@ -12,12 +12,12 @@ import { useGetConnection } from "hooks/services/useConnectionHook";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
 
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
-import { ReplicationView } from "./components/ReplicationView";
+import { ConnectionReplication } from "./components/ConnectionReplication";
 import SettingsView from "./components/SettingsView";
 import StatusView from "./components/StatusView";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 
-const ConnectionItemPage: React.FC = () => {
+export const ConnectionItemPage: React.FC = () => {
   const params = useParams<{
     connectionId: string;
     "*": ConnectionSettingsRoutes;
@@ -78,7 +78,7 @@ const ConnectionItemPage: React.FC = () => {
           />
           <Route
             path={ConnectionSettingsRoutes.REPLICATION}
-            element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
+            element={<ConnectionReplication onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
           />
           <Route
             path={ConnectionSettingsRoutes.TRANSFORMATION}
@@ -94,5 +94,3 @@ const ConnectionItemPage: React.FC = () => {
     </MainPageWithScroll>
   );
 };
-
-export default ConnectionItemPage;

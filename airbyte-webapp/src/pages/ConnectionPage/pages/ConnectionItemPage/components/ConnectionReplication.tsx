@@ -14,7 +14,7 @@ import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
+import { ConnectionFormServiceProvider } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useChangedFormsById, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { ModalCancel, useModalService } from "hooks/services/Modal";
 import {
@@ -27,7 +27,7 @@ import { equal, naturalComparatorBy } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
 
-interface ReplicationViewProps {
+interface ConnectionReplicationProps {
   onAfterSaveSchema: () => void;
   connectionId: string;
 }
@@ -85,7 +85,7 @@ const TryArrow = styled(FontAwesomeIcon)`
   font-size: 14px;
 `;
 
-export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
+export const ConnectionReplication: React.FC<ConnectionReplicationProps> = ({ onAfterSaveSchema, connectionId }) => {
   const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
