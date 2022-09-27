@@ -13,9 +13,7 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
 import io.temporal.workflow.Workflow;
-import javax.inject.Singleton;
 
-@Singleton
 public class CheckConnectionWorkflowImpl implements CheckConnectionWorkflow {
 
   private static final String CHECK_JOB_OUTPUT_TAG = "check_job_output";
