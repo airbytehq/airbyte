@@ -113,7 +113,7 @@ export const ConnectionReplication: React.FC = () => {
       setSubmitError(null);
 
       // Whenever the catalog changed show a warning to the user, that we're about to reset their data.
-      // Given them a choice to opt-out in which case we'll be sending skipRefresh: true to the update
+      // Given them a choice to opt-out in which case we'll be sending skipRe: true to the update
       // endpoint.
       try {
         if (hasCatalogChanged) {
@@ -124,8 +124,8 @@ export const ConnectionReplication: React.FC = () => {
             content: (props) => <ResetWarningModal {...props} stateType={stateType} />,
           });
           if (result.type !== "canceled") {
-            // Save the connection taking into account the correct skipRefresh value from the dialog choice.
-            // We also want to skip the refresh sync if the connection is not in an "active" status
+            // Save the connection taking into account the correct skipReset value from the dialog choice.
+            // We also want to skip the reset sync if the connection is not in an "active" status
             await saveConnection(formValues, { skipReset: !result.reason || connection.status !== "active" });
           } else {
             // We don't want to set saved to true or schema has been refreshed to false.
@@ -145,6 +145,7 @@ export const ConnectionReplication: React.FC = () => {
     [
       connection.connectionId,
       connection.operations,
+      connection.status,
       connection.syncCatalog.streams,
       connectionService,
       formatMessage,
