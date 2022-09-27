@@ -42,19 +42,6 @@ public class AirbyteMessageMigrator {
     migrationsToRegister.forEach(this::registerMigration);
   }
 
-  @VisibleForTesting
-  void registerMigration(final AirbyteMessageMigration<?, ?> migration) {
-    final String key = migration.getOldVersion().getMajorVersion();
-    if (!migrations.containsKey(key)) {
-      migrations.put(key, migration);
-      if (migration.getNewVersion().getMajorVersion().compareTo(mostRecentVersion) > 0) {
-        mostRecentVersion = migration.getNewVersion().getMajorVersion();
-      }
-    } else {
-      throw new RuntimeException("Trying to register a duplicated migration " + migration.getClass().getName());
-    }
-  }
-
   /**
    * Downgrade a message from the most recent version to the target version by chaining all the
    * required migrations
@@ -88,13 +75,6 @@ public class AirbyteMessageMigrator {
     return (New) result;
   }
 
-  /**
-   * returns the list of migration keys, mostly for test purpose
-   */
-  public Set<String> getMigrationKeys() {
-    return migrations.keySet();
-  }
-
   private Collection<AirbyteMessageMigration<?, ?>> selectMigrations(final AirbyteVersion version) {
     final Collection<AirbyteMessageMigration<?, ?>> results = migrations.tailMap(version.getMajorVersion()).values();
     if (results.isEmpty()) {
@@ -111,6 +91,25 @@ public class AirbyteMessageMigrator {
   // Helper function to work around type casting
   private <Old, New> New applyUpgrade(final AirbyteMessageMigration<Old, New> migration, final Object message) {
     return migration.upgrade((Old) message);
+  }
+
+  @VisibleForTesting
+  void registerMigration(final AirbyteMessageMigration<?, ?> migration) {
+    final String key = migration.getOldVersion().getMajorVersion();
+    if (!migrations.containsKey(key)) {
+      migrations.put(key, migration);
+      if (migration.getNewVersion().getMajorVersion().compareTo(mostRecentVersion) > 0) {
+        mostRecentVersion = migration.getNewVersion().getMajorVersion();
+      }
+    } else {
+      throw new RuntimeException("Trying to register a duplicated migration " + migration.getClass().getName());
+    }
+  }
+
+  // Used for inspection of the injection
+  @VisibleForTesting
+  Set<String> getMigrationKeys() {
+    return migrations.keySet();
   }
 
 }

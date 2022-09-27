@@ -84,17 +84,15 @@ public class AirbyteMessageSerDeProvider {
     }
   }
 
-  /**
-   * returns the list of deserializer keys, mostly for test purpose
-   */
-  public Set<String> getDeserializerKeys() {
+  // Used for inspection of the injection
+  @VisibleForTesting
+  Set<String> getDeserializerKeys() {
     return deserializers.keySet();
   }
 
-  /**
-   * returns the list of serializer keys, mostly for test purpose
-   */
-  public Set<String> getSerializerKeys() {
+  // Used for inspection of the injection
+  @VisibleForTesting
+  Set<String> getSerializerKeys() {
     return serializers.keySet();
   }
 
