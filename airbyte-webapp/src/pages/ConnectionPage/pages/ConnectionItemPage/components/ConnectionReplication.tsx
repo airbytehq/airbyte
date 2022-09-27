@@ -1,7 +1,6 @@
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useUnmount } from "react-use";
 import styled from "styled-components";
 
 import { FormChangeTracker } from "components/FormChangeTracker";
@@ -40,7 +39,7 @@ export const ConnectionReplication: React.FC = () => {
   const workspaceId = useCurrentWorkspaceId();
 
   const { formatMessage } = useIntl();
-  const { openModal, closeModal } = useModalService();
+  const { openModal } = useModalService();
 
   const [saved, setSaved] = useState(false);
 
@@ -50,9 +49,6 @@ export const ConnectionReplication: React.FC = () => {
   const { initialValues, getErrorMessage, setSubmitError } = useConnectionFormService();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
-  useUnmount(() => {
-    closeModal();
-  });
 
   const saveConnection = useCallback(
     async (values: ValuesProps, { skipReset }: { skipReset: boolean }) => {
