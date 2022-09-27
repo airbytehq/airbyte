@@ -70,7 +70,6 @@
   dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
   releaseStage: alpha
-  icon: clickhouse.svg
 - name: Cloudflare R2
   destinationDefinitionId: 0fb07be9-7c3b-4336-850d-5efc006152ee
   dockerRepository: airbyte/destination-r2

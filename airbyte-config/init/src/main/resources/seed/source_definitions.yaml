@@ -178,7 +178,7 @@
   dockerRepository: airbyte/source-clickhouse
   dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/clickhouse
-  icon: clickhouse.svg
+  icon: cliskhouse.svg
   sourceType: database
   releaseStage: alpha
 - name: Close.com
