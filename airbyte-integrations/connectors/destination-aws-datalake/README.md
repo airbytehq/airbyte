@@ -140,7 +140,7 @@ To run acceptance and custom integration tests:
 ./gradlew :airbyte-integrations:connectors:destination-aws-datalake:integrationTest
 ```
 
-#### Running the Integration Acceptance Tests
+#### Running the Destination Integration Tests
 
 To successfully run the Destination Acceptance Tests, you need a `secrets/config.json` file with appropriate information. For example:
 
