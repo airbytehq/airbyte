@@ -73,7 +73,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.2.11  | 2022-09-27 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Always install the latest version of Airbyte CDK                               |
+| 0.2.11  | 2022-09-27 | [17239](https://github.com/airbytehq/airbyte/pull/17239) | Always install the latest version of Airbyte CDK                               |
 | 0.2.10  | 2022-09-05 | [16338](https://github.com/airbytehq/airbyte/pull/16338) | Implement incremental syncs & fix SATs                                         |
 | 0.2.9   | 2022-08-22 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml and schemas at runtime                     |
 | 0.2.8   | 2022-08-10 | [15344](https://github.com/airbytehq/airbyte/pull/15344) | Migrate connector to config-based framework                                    |
