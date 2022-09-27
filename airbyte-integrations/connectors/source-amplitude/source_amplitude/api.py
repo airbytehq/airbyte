@@ -135,7 +135,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 
 
 class Events(IncrementalAmplitudeStream):
-    cursor_field = "event_time"
+    cursor_field = "server_upload_time"
     date_template = "%Y%m%dT%H"
     compare_date_template = "%Y-%m-%d %H:%M:%S.%f"
     primary_key = "uuid"
