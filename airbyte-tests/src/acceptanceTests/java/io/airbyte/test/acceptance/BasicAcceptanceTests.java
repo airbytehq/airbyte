@@ -1095,6 +1095,8 @@ class BasicAcceptanceTests {
       LOGGER.info("Submit the update request");
       final WebBackendConnectionUpdate update = new WebBackendConnectionUpdate()
           .connectionId(connection.getConnectionId())
+          .namespaceDefinition(connection.getNamespaceDefinition())
+          .namespaceFormat(connection.getNamespaceFormat())
           .syncCatalog(updatedCatalog);
       webBackendApi.webBackendUpdateConnection(update);
 
