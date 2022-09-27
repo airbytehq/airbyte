@@ -41,7 +41,8 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
     return getEnvOrDefault(LOG_CONNECTOR_MESSAGES, false, Boolean::parseBoolean);
   }
 
-  @Override public boolean needStateValidation() {
+  @Override
+  public boolean needStateValidation() {
     return getEnvOrDefault(NEED_STATE_VALIDATION, true, Boolean::parseBoolean);
   }
 
