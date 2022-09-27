@@ -32,12 +32,12 @@ public class AirbyteMessageMigrationV0
   }
 
   @Override
-  public AirbyteVersion getOldVersion() {
+  public AirbyteVersion getPreviousVersion() {
     return new AirbyteVersion("0.2.0");
   }
 
   @Override
-  public AirbyteVersion getNewVersion() {
+  public AirbyteVersion getCurrentVersion() {
     return new AirbyteVersion("0.2.0");
   }
 

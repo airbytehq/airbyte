@@ -22,8 +22,8 @@ class DefaultToV0MigrationTest {
 
   @Test
   void testVersionMetadata() {
-    assertEquals("0", v0migration.getOldVersion().getMajorVersion());
-    assertEquals("0", v0migration.getNewVersion().getMajorVersion());
+    assertEquals("0", v0migration.getPreviousVersion().getMajorVersion());
+    assertEquals("0", v0migration.getCurrentVersion().getMajorVersion());
   }
 
   @Test

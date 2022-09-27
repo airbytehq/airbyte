@@ -37,12 +37,12 @@ class AirbyteMessageMigratorTest {
     }
 
     @Override
-    public AirbyteVersion getOldVersion() {
+    public AirbyteVersion getPreviousVersion() {
       return v0;
     }
 
     @Override
-    public AirbyteVersion getNewVersion() {
+    public AirbyteVersion getCurrentVersion() {
       return v1;
     }
 
@@ -61,12 +61,12 @@ class AirbyteMessageMigratorTest {
     }
 
     @Override
-    public AirbyteVersion getOldVersion() {
+    public AirbyteVersion getPreviousVersion() {
       return v1;
     }
 
     @Override
-    public AirbyteVersion getNewVersion() {
+    public AirbyteVersion getCurrentVersion() {
       return v2;
     }
 

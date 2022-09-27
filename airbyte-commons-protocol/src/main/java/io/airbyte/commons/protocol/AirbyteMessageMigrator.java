@@ -46,9 +46,9 @@ public class AirbyteMessageMigrator {
    * Downgrade a message from the most recent version to the target version by chaining all the
    * required migrations
    */
-  public <Old, New> Old downgrade(final New message, final AirbyteVersion target) {
+  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message, final AirbyteVersion target) {
     if (target.getMajorVersion().equals(mostRecentVersion)) {
-      return (Old) message;
+      return (PreviousVersion) message;
     }
 
     Object result = message;
@@ -56,23 +56,23 @@ public class AirbyteMessageMigrator {
     for (int i = selectedMigrations.length; i > 0; --i) {
       result = applyDowngrade((AirbyteMessageMigration<?, ?>) selectedMigrations[i - 1], result);
     }
-    return (Old) result;
+    return (PreviousVersion) result;
   }
 
   /**
    * Upgrade a message from the source version to the most recent version by chaining all the required
    * migrations
    */
-  public <Old, New> New upgrade(final Old message, final AirbyteVersion source) {
+  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message, final AirbyteVersion source) {
     if (source.getMajorVersion().equals(mostRecentVersion)) {
-      return (New) message;
+      return (CurrentVersion) message;
     }
 
     Object result = message;
     for (var migration : selectMigrations(source)) {
       result = applyUpgrade(migration, result);
     }
-    return (New) result;
+    return (CurrentVersion) result;
   }
 
   private Collection<AirbyteMessageMigration<?, ?>> selectMigrations(final AirbyteVersion version) {
@@ -84,22 +84,22 @@ public class AirbyteMessageMigrator {
   }
 
   // Helper function to work around type casting
-  private <Old, New> Old applyDowngrade(final AirbyteMessageMigration<Old, New> migration, final Object message) {
-    return migration.downgrade((New) message);
+  private <PreviousVersion, CurrentVersion> PreviousVersion applyDowngrade(final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration, final Object message) {
+    return migration.downgrade((CurrentVersion) message);
   }
 
   // Helper function to work around type casting
-  private <Old, New> New applyUpgrade(final AirbyteMessageMigration<Old, New> migration, final Object message) {
-    return migration.upgrade((Old) message);
+  private <PreviousVersion, CurrentVersion> CurrentVersion applyUpgrade(final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration, final Object message) {
+    return migration.upgrade((PreviousVersion) message);
   }
 
   @VisibleForTesting
   void registerMigration(final AirbyteMessageMigration<?, ?> migration) {
-    final String key = migration.getOldVersion().getMajorVersion();
+    final String key = migration.getPreviousVersion().getMajorVersion();
     if (!migrations.containsKey(key)) {
       migrations.put(key, migration);
-      if (migration.getNewVersion().getMajorVersion().compareTo(mostRecentVersion) > 0) {
-        mostRecentVersion = migration.getNewVersion().getMajorVersion();
+      if (migration.getCurrentVersion().getMajorVersion().compareTo(mostRecentVersion) > 0) {
+        mostRecentVersion = migration.getCurrentVersion().getMajorVersion();
       }
     } else {
       throw new RuntimeException("Trying to register a duplicated migration " + migration.getClass().getName());
