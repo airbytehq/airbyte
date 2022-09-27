@@ -13,6 +13,11 @@ definitions:
     name: "{{ options['name'] }}"
     url_base: "https://harvest.greenhouse.io/v1/"
     http_method: "GET"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - http_codes: [ 403 ]
+          action: IGNORE
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
