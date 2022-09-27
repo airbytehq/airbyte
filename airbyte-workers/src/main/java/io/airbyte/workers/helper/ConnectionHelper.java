@@ -19,9 +19,9 @@ import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import io.micronaut.context.annotation.Requires;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.AllArgsConstructor;
@@ -31,7 +31,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @Singleton
 @Requires(property = "airbyte.worker.plane",
-          notEquals = "DATA_PLANE")
+          pattern = "(?i)^(?!data_plane).*")
 public class ConnectionHelper {
 
   @Inject
@@ -71,7 +71,7 @@ public class ConnectionHelper {
    * @return new sync object
    */
   public static StandardSync updateConnectionObject(final WorkspaceHelper workspaceHelper, final StandardSync original, final StandardSync update) {
-    validateWorkspace(workspaceHelper, original.getSourceId(), original.getDestinationId(), new HashSet<>(update.getOperationIds()));
+    validateWorkspace(workspaceHelper, original.getSourceId(), original.getDestinationId(), update.getOperationIds());
 
     final StandardSync newConnection = Jsons.clone(original)
         .withNamespaceDefinition(Enums.convertTo(update.getNamespaceDefinition(), NamespaceDefinitionType.class))
@@ -122,7 +122,7 @@ public class ConnectionHelper {
   public static void validateWorkspace(final WorkspaceHelper workspaceHelper,
                                        final UUID sourceId,
                                        final UUID destinationId,
-                                       final Set<UUID> operationIds) {
+                                       final @Nullable List<UUID> operationIds) {
     final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId);
     final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId);
 
@@ -135,15 +135,17 @@ public class ConnectionHelper {
             destinationId,
             destinationWorkspace));
 
-    for (final UUID operationId : operationIds) {
-      final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId);
-      Preconditions.checkArgument(
-          sourceWorkspace.equals(operationWorkspace),
-          String.format(
-              "Operation and connection do not belong to the same workspace. Workspace id: %s, Operation id: %s, Operation workspace id: %s",
-              sourceWorkspace,
-              operationId,
-              operationWorkspace));
+    if (operationIds != null) {
+      for (final UUID operationId : operationIds) {
+        final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId);
+        Preconditions.checkArgument(
+            sourceWorkspace.equals(operationWorkspace),
+            String.format(
+                "Operation and connection do not belong to the same workspace. Workspace id: %s, Operation id: %s, Operation workspace id: %s",
+                sourceWorkspace,
+                operationId,
+                operationWorkspace));
+      }
     }
   }
 

@@ -496,21 +496,21 @@ pod-sweeper:
 
 server:
   enabled: true
-  ##  worker.replicaCount Number of worker replicas
+  ##  server.replicaCount Number of server replicas
   replicaCount: 1
 
-  ##  worker.image.repository The repository to use for the airbyte worker image.
-  ##  worker.image.pullPolicy the pull policy to use for the airbyte worker image
-  ##  worker.image.tag The airbyte worker image tag. Defaults to the chart's AppVersion
+  ##  server.image.repository The repository to use for the airbyte server image.
+  ##  server.image.pullPolicy the pull policy to use for the airbyte server image
+  ##  server.image.tag The airbyte server image tag. Defaults to the chart's AppVersion
   image:
-    repository: airbyte/worker
+    repository: airbyte/server
     pullPolicy: IfNotPresent
 
-  ##  worker.podAnnotations [object] Add extra annotations to the worker pod(s)
+  ##  server.podAnnotations [object] Add extra annotations to the server pod(s)
   ##
   podAnnotations: {}
 
-  ##  worker.containerSecurityContext Security context for the container
+  ##  server.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
   ##    runAsNonRoot: true
@@ -518,14 +518,14 @@ server:
   ##    readOnlyRootFilesystem: true
   containerSecurityContext: {}
 
-  ## Configure extra options for the worker containers' liveness and readiness probes
+  ## Configure extra options for the server containers' liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
-  ##  worker.livenessProbe.enabled Enable livenessProbe on the worker
-  ##  worker.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
-  ##  worker.livenessProbe.periodSeconds Period seconds for livenessProbe
-  ##  worker.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
-  ##  worker.livenessProbe.failureThreshold Failure threshold for livenessProbe
-  ##  worker.livenessProbe.successThreshold Success threshold for livenessProbe
+  ##  server.livenessProbe.enabled Enable livenessProbe on the server
+  ##  server.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+  ##  server.livenessProbe.periodSeconds Period seconds for livenessProbe
+  ##  server.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+  ##  server.livenessProbe.failureThreshold Failure threshold for livenessProbe
+  ##  server.livenessProbe.successThreshold Success threshold for livenessProbe
   ##
   livenessProbe:
     enabled: true
@@ -535,12 +535,12 @@ server:
     failureThreshold: 3
     successThreshold: 1
 
-  ##  worker.readinessProbe.enabled Enable readinessProbe on the worker
-  ##  worker.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
-  ##  worker.readinessProbe.periodSeconds Period seconds for readinessProbe
-  ##  worker.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
-  ##  worker.readinessProbe.failureThreshold Failure threshold for readinessProbe
-  ##  worker.readinessProbe.successThreshold Success threshold for readinessProbe
+  ##  server.readinessProbe.enabled Enable readinessProbe on the server
+  ##  server.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+  ##  server.readinessProbe.periodSeconds Period seconds for readinessProbe
+  ##  server.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+  ##  server.readinessProbe.failureThreshold Failure threshold for readinessProbe
+  ##  server.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
   readinessProbe:
     enabled: true
@@ -550,14 +550,14 @@ server:
     failureThreshold: 3
     successThreshold: 1
 
-  ## worker resource requests and limits
+  ## server resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ## We usually recommend not to specify default resources and to leave this as a conscious
   ## choice for the user. This also increases chances charts run on environments with little
   ## resources, such as Minikube. If you do want to specify resources, uncomment the following
   ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  ##  worker.resources.limits [object] The resources limits for the worker container
-  ##  worker.resources.requests [object] The requested resources for the worker container
+  ##  server.resources.limits [object] The resources limits for the server container
+  ##  server.resources.requests [object] The requested resources for the server container
   resources:
     ## Example:
     ## limits:
@@ -570,37 +570,37 @@ server:
     ##    cpu: 250m
     requests: {}
 
-  ##  worker.nodeSelector [object] Node labels for pod assignment
+  ##  server.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
   nodeSelector: {}
 
-  ##  worker.tolerations [array] Tolerations for worker pod assignment.
+  ##  server.tolerations [array] Tolerations for server pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
 
-  ##  worker.affinity [object] Affinity and anti-affinity for worker pod assignment.
+  ##  server.affinity [object] Affinity and anti-affinity for server pod assignment.
   ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   ##
   affinity: {}
 
-  ##  worker.log.level The log level to log at.
+  ##  server.log.level The log level to log at.
   log:
     level: "INFO"
 
 
 
-  ##  worker.extraVolumeMounts [array] Additional volumeMounts for worker container(s).
-  ## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ##  server.extraVolumeMounts [array] Additional volumeMounts for server container(s).
+  ## Examples (when using `server.containerSecurityContext.readOnlyRootFilesystem=true`):
   ## extraVolumeMounts:
   ##   - name: tmpdir
   ##     mountPath: /tmp
   ##
   extraVolumeMounts: []
 
-  ##  worker.extraVolumes [array] Additional volumes for worker pod(s).
-  ## Examples (when using `worker.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ##  server.extraVolumes [array] Additional volumes for server pod(s).
+  ## Examples (when using `server.containerSecurityContext.readOnlyRootFilesystem=true`):
   ## extraVolumes:
   ##   - name: tmpdir
   ##     emptyDir: {}
@@ -689,7 +689,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.40.6
+    tag: 0.40.7
 
   ##  worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
