@@ -51,14 +51,25 @@ def test_check_connection_incomplete(config_raw):
     assert command_check(source, config_raw) == AirbyteConnectionStatus(status=Status.FAILED, message="KeyError('api_secret')")
 
 
-def test_streams(config_raw):
+def test_streams(requests_mock, config_raw):
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
     streams = SourceMixpanel().streams(config_raw)
     assert len(streams) == 7
 
 
-def test_streams_string_date(config_raw):
+def test_streams_string_date(requests_mock, config_raw):
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
     config = copy.deepcopy(config_raw)
     config["start_date"] = "2020-01-01"
     config["end_date"] = "2020-01-02"
     streams = SourceMixpanel().streams(config)
     assert len(streams) == 7
+
+
+def test_streams_disabled_402(requests_mock, config_raw):
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(402, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(402, {}))
+    streams = SourceMixpanel().streams(config_raw)
+    assert {s.name for s in streams} == {"cohort_members", "funnels", "revenue", "annotations", "cohorts"}
