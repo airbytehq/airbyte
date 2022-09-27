@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,11 +46,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 class SourceHandlerTest {
 
@@ -66,10 +64,10 @@ class SourceHandlerTest {
   private Supplier<UUID> uuidGenerator;
   private JsonSecretsProcessor secretsProcessor;
   private ConnectorSpecification connectorSpecification;
-  private MockedStatic<SourceDefinitionsHandler> mSourceDefinitionsHandler;
 
-  private static final String ICON_PATH = "some/icon/path.svg";
-  private static final String LOADED_ICON_PATH = "some/loaded/icon/path.svg";
+  // needs to match name of file in src/test/resources/icons
+  private static final String ICON = "test-source.svg";
+  private static final String LOADED_ICON = SourceDefinitionsHandler.loadIcon(ICON);
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -92,7 +90,7 @@ class SourceHandlerTest {
         .withDockerImageTag("thelatesttag")
         .withDocumentationUrl("https://wikipedia.org")
         .withSpec(connectorSpecification)
-        .withIcon(ICON_PATH);
+        .withIcon(ICON);
 
     sourceDefinitionSpecificationRead = new SourceDefinitionSpecificationRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -109,15 +107,6 @@ class SourceHandlerTest {
         uuidGenerator,
         secretsProcessor,
         configurationUpdate);
-
-    mSourceDefinitionsHandler = Mockito.mockStatic(SourceDefinitionsHandler.class);
-    mSourceDefinitionsHandler.when(() -> SourceDefinitionsHandler.loadIcon(ICON_PATH))
-        .thenReturn(LOADED_ICON_PATH);
-  }
-
-  @AfterEach
-  void teardown() {
-    mSourceDefinitionsHandler.close();
   }
 
   @Test
@@ -207,6 +196,10 @@ class SourceHandlerTest {
     final SourceRead actualSourceRead = sourceHandler.getSource(sourceIdRequestBody);
 
     assertEquals(expectedSourceRead, actualSourceRead);
+
+    // make sure the icon was loaded into actual svg content
+    assertTrue(expectedSourceRead.getIcon().startsWith("<svg>"));
+
     verify(secretsProcessor).prepareSecretsForOutput(sourceConnection.getConfiguration(),
         sourceDefinitionSpecificationRead.getConnectionSpecification());
   }

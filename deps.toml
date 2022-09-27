@@ -81,7 +81,6 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "4.0.0" }
-mockito-inline = { module = "org.mockito:mockito-inline", version = "4.0.0" }
 assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
 junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
 findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.11.0" }
