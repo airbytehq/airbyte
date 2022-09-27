@@ -24,6 +24,7 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
 
   const updateConnection = useCallback(
     async (connection: WebBackendConnectionUpdate) => {
+      // TODO: Check if the form is dirty before firing off an update action
       setConnection(await updateConnectionAction(connection));
     },
     [updateConnectionAction]

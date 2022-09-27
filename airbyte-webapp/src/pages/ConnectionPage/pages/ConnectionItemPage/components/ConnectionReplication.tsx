@@ -165,7 +165,12 @@ export const ConnectionReplication: React.FC = () => {
   return (
     <Content>
       {!schemaRefreshing && connection ? (
-        <Formik initialValues={initialValues} validationSchema={connectionValidationSchema} onSubmit={onFormSubmit}>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={connectionValidationSchema}
+          onSubmit={onFormSubmit}
+          enableReinitialize
+        >
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
             <Form>
               <FormChangeTracker changed={dirty} formId={formId} />
