@@ -91,7 +91,7 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({ schemaErr
   );
 
   if (schemaError) {
-    return <SchemaError schemaErrorStatus={schemaError} />;
+    return <SchemaError schemaError={schemaError} />;
   }
 
   return (

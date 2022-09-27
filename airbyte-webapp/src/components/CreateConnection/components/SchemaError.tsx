@@ -8,11 +8,11 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import TryAfterErrorBlock from "./TryAfterErrorBlock";
 
 export const SchemaError = ({
-  schemaErrorStatus,
+  schemaError,
 }: {
-  schemaErrorStatus: { status: number; response: SynchronousJobRead } | null;
+  schemaError: { status: number; response: SynchronousJobRead } | null;
 }) => {
-  const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
+  const job = LogsRequestError.extractJobInfo(schemaError);
   const { refreshSchema } = useConnectionFormService();
   return (
     <Card>
