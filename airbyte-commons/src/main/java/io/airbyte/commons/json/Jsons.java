@@ -242,7 +242,7 @@ public class Jsons {
         final Entry<String, JsonNode> entry = it.next();
         final String field = entry.getKey();
         final JsonNode value = entry.getValue();
-        mergeMaps(output, field, flatten(value, false));
+        mergeMaps(output, field, flatten(value, applyFlattenToArray));
       }
       return output;
     } else if (node.isArray() && applyFlattenToArray) {
@@ -251,7 +251,7 @@ public class Jsons {
       for (int i = 0; i < arrayLen; i++) {
         final String field = String.format("[%d]", i);
         final JsonNode value = node.get(i);
-        mergeMaps(output, field, flatten(value, true));
+        mergeMaps(output, field, flatten(value, applyFlattenToArray));
       }
       return output;
     } else {
