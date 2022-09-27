@@ -432,11 +432,6 @@ class PostgresSourceTest {
       }
 
       final AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
-      actual.getStreams().stream().forEach(airbyteStream -> {
-        assertEquals(2, airbyteStream.getSupportedSyncModes().size());
-        assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.FULL_REFRESH));
-        assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL));
-      });
       final Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
       final Set<String> expectedVisibleNames = Sets.newHashSet(
           "table_granted_by_role",

@@ -355,9 +355,8 @@ public abstract class JdbcSourceAcceptanceTest {
         actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)).findFirst().orElse(null);
     assertNotNull(stream);
     assertEquals(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE.toLowerCase(), stream.getName().toLowerCase());
-    assertEquals(2, stream.getSupportedSyncModes().size());
-    assertTrue(stream.getSupportedSyncModes().contains(SyncMode.FULL_REFRESH));
-    assertTrue(stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL));
+    assertEquals(1, stream.getSupportedSyncModes().size());
+    assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
   }
 
   protected AirbyteCatalog filterOutOtherSchemas(final AirbyteCatalog catalog) {
