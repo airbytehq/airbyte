@@ -35,8 +35,8 @@ The connector buffer size should also be tweaked according to your data size and
 
 * The connector is compatible with the latest Kinesis service version at the time of this writing. 
 * Configuration
-    * **_Endpoint_**(`Optional`): Aws Kinesis endpoint to connect to. Default endpoint if not provided   
-    * **_Region_**(`Optional`): Aws Kinesis region to connect to. Default region if not provided.  
+    * **_Endpoint_**: Aws Kinesis endpoint to connect to. Default endpoint if not provided   
+    * **_Region_**: Aws Kinesis region to connect to. Default region if not provided.  
     * **_shardCount_**: The number of shards with which the stream should be created. The amount of shards affects the throughput of your stream. 
     * **_accessKey_**: Access key credential for authenticating with the service.  
     * **_privateKey_**: Private key credential for authenticating with the service.
