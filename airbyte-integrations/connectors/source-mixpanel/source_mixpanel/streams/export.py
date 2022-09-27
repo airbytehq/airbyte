@@ -3,6 +3,7 @@
 #
 
 import json
+from functools import cache
 from typing import Any, Iterable, Mapping, MutableMapping
 
 import pendulum
@@ -123,6 +124,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
             yield item
 
+    @cache
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.

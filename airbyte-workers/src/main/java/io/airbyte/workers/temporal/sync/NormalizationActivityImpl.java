@@ -33,48 +33,57 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 @Singleton
 public class NormalizationActivityImpl implements NormalizationActivity {
 
-  @Inject
-  @Named("containerOrchestratorConfig")
-  private Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
-  @Inject
-  @Named("defaultWorkerConfigs")
-  private WorkerConfigs workerConfigs;
-  @Inject
-  @Named("defaultProcessFactory")
-  private ProcessFactory processFactory;
-  @Inject
-  private SecretsHydrator secretsHydrator;
-  @Inject
-  @Named("workspaceRoot")
-  private Path workspaceRoot;
-  @Inject
-  private WorkerEnvironment workerEnvironment;
-  @Inject
-  private LogConfigs logConfigs;
-  @Value("${airbyte.version}")
-  private String airbyteVersion;
-  @Value("${micronaut.server.port}")
-  private Integer serverPort;
-  @Inject
-  private AirbyteConfigValidator airbyteConfigValidator;
-  @Inject
-  private TemporalUtils temporalUtils;
-  @Inject
-  @Named("normalizationResourceRequirements")
-  private ResourceRequirements normalizationResourceRequirements;
-  @Inject
-  private AirbyteApiClient airbyteApiClient;
+  private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
+  private final WorkerConfigs workerConfigs;
+  private final ProcessFactory processFactory;
+  private final SecretsHydrator secretsHydrator;
+  private final Path workspaceRoot;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+  private final String airbyteVersion;
+  private final Integer serverPort;
+  private final AirbyteConfigValidator airbyteConfigValidator;
+  private final TemporalUtils temporalUtils;
+  private final ResourceRequirements normalizationResourceRequirements;
+  private final AirbyteApiClient airbyteApiClient;
+
+  public NormalizationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
+                                   @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
+                                   @Named("defaultProcessFactory") final ProcessFactory processFactory,
+                                   final SecretsHydrator secretsHydrator,
+                                   @Named("workspaceRoot") final Path workspaceRoot,
+                                   final WorkerEnvironment workerEnvironment,
+                                   final LogConfigs logConfigs,
+                                   @Value("${airbyte.version}") final String airbyteVersion,
+                                   @Value("${micronaut.server.port}") final Integer serverPort,
+                                   final AirbyteConfigValidator airbyteConfigValidator,
+                                   final TemporalUtils temporalUtils,
+                                   @Named("normalizationResourceRequirements") final ResourceRequirements normalizationResourceRequirements,
+                                   final AirbyteApiClient airbyteApiClient) {
+    this.containerOrchestratorConfig = containerOrchestratorConfig;
+    this.workerConfigs = workerConfigs;
+    this.processFactory = processFactory;
+    this.secretsHydrator = secretsHydrator;
+    this.workspaceRoot = workspaceRoot;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.airbyteVersion = airbyteVersion;
+    this.serverPort = serverPort;
+    this.airbyteConfigValidator = airbyteConfigValidator;
+    this.temporalUtils = temporalUtils;
+    this.normalizationResourceRequirements = normalizationResourceRequirements;
+    this.airbyteApiClient = airbyteApiClient;
+  }
 
   @Override
   public NormalizationSummary normalize(final JobRunConfig jobRunConfig,

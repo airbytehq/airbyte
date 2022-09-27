@@ -4,7 +4,7 @@ import { CellProps } from "react-table";
 import { useToggle } from "react-use";
 
 import { Button, H5, LoadingButton } from "components";
-import Table from "components/Table";
+import { Table } from "components/ui/Table";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";

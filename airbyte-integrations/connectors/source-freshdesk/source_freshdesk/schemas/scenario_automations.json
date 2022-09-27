@@ -29,10 +29,10 @@
       "type": ["null", "boolean"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

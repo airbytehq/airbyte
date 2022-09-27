@@ -6,13 +6,13 @@ package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
