@@ -33,14 +33,9 @@ interface CreateConnectionProps {
 
 interface CreateConnectionPropsInner extends Pick<CreateConnectionProps, "afterSubmitConnection"> {
   schemaError: SchemaErrorType;
-  onDiscoverSchema: () => Promise<void>;
 }
 
-const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
-  schemaError,
-  onDiscoverSchema,
-  afterSubmitConnection,
-}) => {
+const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({ schemaError, afterSubmitConnection }) => {
   const navigate = useNavigate();
 
   const { mutateAsync: createConnection } = useCreateConnection();
@@ -96,7 +91,7 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
   );
 
   if (schemaError) {
-    return <SchemaError onDiscoverSchema={onDiscoverSchema} schemaErrorStatus={schemaError} />;
+    return <SchemaError schemaErrorStatus={schemaError} />;
   }
 
   return (
@@ -107,12 +102,7 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
             <Form>
               <FormChangeTracker changed={dirty} formId={formId} />
               <CreateConnectionName />
-              <ConnectionFormFields
-                values={values}
-                isSubmitting={isSubmitting}
-                dirty={dirty}
-                refreshSchema={onDiscoverSchema}
-              />
+              <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
               <OperationsSection
                 onStartEditTransformation={toggleEditingTransformation}
                 onEndEditTransformation={toggleEditingTransformation}
@@ -144,15 +134,11 @@ export const CreateConnection: React.FC<CreateConnectionProps> = ({ source, dest
   };
 
   return (
-    <ConnectionFormServiceProvider connection={partialConnection} mode="create">
+    <ConnectionFormServiceProvider connection={partialConnection} mode="create" refreshSchema={onDiscoverSchema}>
       {isLoading ? (
         <LoadingSchema />
       ) : (
-        <CreateConnectionInner
-          afterSubmitConnection={afterSubmitConnection}
-          schemaError={schemaErrorStatus}
-          onDiscoverSchema={onDiscoverSchema}
-        />
+        <CreateConnectionInner afterSubmitConnection={afterSubmitConnection} schemaError={schemaErrorStatus} />
       )}
     </ConnectionFormServiceProvider>
   );

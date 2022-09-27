@@ -47,14 +47,8 @@ export const ConnectionReplication: React.FC = () => {
   const [saved, setSaved] = useState(false);
 
   const formId = useUniqueFormId();
-  const {
-    connection,
-    schemaRefreshing,
-    schemaHasBeenRefreshed,
-    updateConnection,
-    setSchemaHasBeenRefreshed,
-    refreshSchema,
-  } = useConnectionEditService();
+  const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, setSchemaHasBeenRefreshed } =
+    useConnectionEditService();
   const { initialValues, getErrorMessage, setSubmitError } = useConnectionFormService();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
@@ -175,12 +169,7 @@ export const ConnectionReplication: React.FC = () => {
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
             <Form>
               <FormChangeTracker changed={dirty} formId={formId} />
-              <ConnectionFormFields
-                values={values}
-                isSubmitting={isSubmitting}
-                dirty={dirty}
-                refreshSchema={refreshSchema}
-              />
+              <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
               <EditControls
                 isSubmitting={isSubmitting}
                 dirty={dirty}

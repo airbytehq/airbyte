@@ -25,7 +25,6 @@ interface ConnectionFormFieldsProps {
   values: ValuesProps | FormikConnectionFormValues;
   isSubmitting: boolean;
   dirty: boolean;
-  refreshSchema: () => void;
 }
 
 export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({
@@ -33,9 +32,8 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({
   values,
   isSubmitting,
   dirty,
-  refreshSchema,
 }) => {
-  const { mode } = useConnectionFormService();
+  const { mode, refreshSchema } = useConnectionFormService();
   const { formatMessage } = useIntl();
 
   const formContainerClassnames = classNames(className, styles.formContainer);

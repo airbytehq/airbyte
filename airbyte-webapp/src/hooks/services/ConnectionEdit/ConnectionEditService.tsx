@@ -40,14 +40,14 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
   };
 };
 
-const ConnectionEditContext = createContext<ReturnType<typeof useConnectionEdit> | null>(null);
+const ConnectionEditContext = createContext<Omit<ReturnType<typeof useConnectionEdit>, "refreshSchema"> | null>(null);
 
 export const ConnectionEditServiceProvider: React.FC<ConnectionEditProps> = ({ children, ...props }) => {
-  const data = useConnectionEdit(props);
+  const { refreshSchema, ...data } = useConnectionEdit(props);
   // TODO: Mode needs to be able to be set to 'readonly'
   return (
     <ConnectionEditContext.Provider value={data}>
-      <ConnectionFormServiceProvider mode="edit" connection={data.connection}>
+      <ConnectionFormServiceProvider mode="edit" connection={data.connection} refreshSchema={refreshSchema}>
         {children}
       </ConnectionFormServiceProvider>
     </ConnectionEditContext.Provider>

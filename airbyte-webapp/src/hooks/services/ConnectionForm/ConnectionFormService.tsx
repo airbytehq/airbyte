@@ -23,6 +23,7 @@ export type ConnectionOrPartialConnection =
 export interface ConnectionServiceProps {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
+  refreshSchema: () => void;
 }
 
 export const tidyConnectionFormValues = (
@@ -39,7 +40,7 @@ export const tidyConnectionFormValues = (
   return formValues;
 };
 
-const useConnectionForm = ({ connection, mode }: ConnectionServiceProps) => {
+const useConnectionForm = ({ connection, mode, refreshSchema }: ConnectionServiceProps) => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition);
   const { formatMessage } = useIntl();
@@ -62,6 +63,7 @@ const useConnectionForm = ({ connection, mode }: ConnectionServiceProps) => {
     initialValues,
     setSubmitError,
     getErrorMessage,
+    refreshSchema,
   };
 };
 
