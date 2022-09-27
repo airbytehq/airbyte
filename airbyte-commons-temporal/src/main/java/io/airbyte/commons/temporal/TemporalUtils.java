@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal;
+package io.airbyte.commons.temporal;
 
 import com.uber.m3.tally.RootScopeBuilder;
 import com.uber.m3.tally.Scope;
@@ -74,7 +74,8 @@ public class TemporalUtils {
                        @Value("${temporal.cloud.host}") final String temporalCloudHost,
                        @Value("${temporal.cloud.namespace}") final String temporalCloudNamespace,
                        @Value("${temporal.host}") final String temporalHost,
-                       @Value("${temporal.retention}") final Integer temporalRetentionInDays) {
+                       @Property(name = "${temporal.retention}",
+                                 defaultValue = "30") final Integer temporalRetentionInDays) {
     this.temporalCloudClientCert = temporalCloudClientCert;
     this.temporalCloudClientKey = temporalCloudClientKey;
     this.temporalCloudEnabled = temporalCloudEnabled;
