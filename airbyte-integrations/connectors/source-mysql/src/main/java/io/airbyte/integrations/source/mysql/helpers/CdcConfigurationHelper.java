@@ -65,7 +65,7 @@ public class CdcConfigurationHelper {
     };
   }
 
-  private static Optional<Integer> getFirstRecordWaitSeconds(final JsonNode config) {
+  public static Optional<Integer> getFirstRecordWaitSeconds(final JsonNode config) {
     final JsonNode replicationMethod = config.get("replication_method");
     if (replicationMethod != null && replicationMethod.has("initial_waiting_seconds")) {
       final int seconds = config.get("replication_method").get("initial_waiting_seconds").asInt();
