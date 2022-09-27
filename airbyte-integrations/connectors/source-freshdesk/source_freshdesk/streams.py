@@ -45,10 +45,10 @@ class FreshdeskStream(HttpStream, ABC):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
             return float(response.headers.get("Retry-After", 0))
-        
-    def should_retry(self, response: requests.Response) -> bool:        
+
+    def should_retry(self, response: requests.Response) -> bool:
         if isinstance(response.json(), dict):
-            if response.status_code == requests.codes.FORBIDDEN and response.json().get("code") == 'require_feature':
+            if response.status_code == requests.codes.FORBIDDEN and response.json().get("code") == "require_feature":
                 self.forbidden_stream = True
                 setattr(self, "raise_on_http_errors", False)
                 self.logger.warn(f"Stream `{self.name}` is not available. {response.json().get('message')}")
@@ -96,7 +96,6 @@ class FreshdeskStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()
         return {} if self.forbidden_stream else data if data else []
-
 
 
 class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
