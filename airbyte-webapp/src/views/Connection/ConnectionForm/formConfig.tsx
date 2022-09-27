@@ -24,11 +24,11 @@ import {
   SyncMode,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
+import { ConnectionOrPartialConnection } from "hooks/services/Connection/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
-import { ConnectionOrPartialConnection } from "./ConnectionForm";
 
 export interface FormikConnectionFormValues {
   name?: string;
@@ -77,19 +77,32 @@ export function useDefaultTransformation(): OperationCreate {
 export const connectionValidationSchema = yup
   .object({
     name: yup.string().required("form.empty.error"),
-    scheduleType: yup.string().oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic]),
-    scheduleData: yup
-      .object({
-        basicSchedule: yup
+    scheduleType: yup
+      .string()
+      .oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic, ConnectionScheduleType.cron]),
+    scheduleData: yup.mixed().when("scheduleType", (scheduleType) => {
+      if (scheduleType === ConnectionScheduleType.basic) {
+        return yup.object({
+          basicSchedule: yup
+            .object({
+              units: yup.number().required("form.empty.error"),
+              timeUnit: yup.string().required("form.empty.error"),
+            })
+            .defined("form.empty.error"),
+        });
+      } else if (scheduleType === ConnectionScheduleType.manual) {
+        return yup.mixed().notRequired();
+      }
+
+      return yup.object({
+        cron: yup
           .object({
-            units: yup.number().required("form.empty.error"),
-            timeUnit: yup.string().required("form.empty.error"),
+            cronExpression: yup.string().required("form.empty.error"),
+            cronTimeZone: yup.string().required("form.empty.error"),
           })
-          .nullable()
           .defined("form.empty.error"),
-      })
-      .nullable()
-      .defined("form.empty.error"),
+      });
+    }),
     namespaceDefinition: yup
       .string()
       .oneOf([
@@ -243,6 +256,7 @@ export const useInitialValues = (
     const initialValues: FormikConnectionFormValues = {
       name: connection.name ?? `${connection.source.name} <> ${connection.destination.name}`,
       syncCatalog: initialSchema,
+      scheduleType: connection.connectionId ? connection.scheduleType : ConnectionScheduleType.basic,
       scheduleData: connection.connectionId ? connection.scheduleData ?? null : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
@@ -269,6 +283,7 @@ export const useInitialValues = (
     connection.operations,
     connection.prefix,
     connection.scheduleData,
+    connection.scheduleType,
     connection.source.name,
     destDefinition.supportsDbt,
     destDefinition.supportsNormalization,
@@ -295,16 +310,34 @@ export const useFrequencyDropdownData = (
       }
     }
 
-    return frequencies.map((frequency) => ({
+    const basicFrequencies = frequencies.map((frequency) => ({
       value: frequency,
-      label: frequency
-        ? formatMessage(
-            {
-              id: `form.every.${frequency.timeUnit}`,
-            },
-            { value: frequency.units }
-          )
-        : formatMessage({ id: "frequency.manual" }),
+      label: formatMessage(
+        {
+          id: `form.every.${frequency.timeUnit}`,
+        },
+        { value: frequency.units }
+      ),
     }));
+
+    // Add Manual and Custom to the frequencies list
+    const customFrequency = formatMessage({
+      id: "frequency.cron",
+    });
+    const manualFrequency = formatMessage({
+      id: "frequency.manual",
+    });
+    const otherFrequencies = [
+      {
+        label: manualFrequency,
+        value: manualFrequency.toLowerCase(),
+      },
+      {
+        label: customFrequency,
+        value: customFrequency.toLowerCase(),
+      },
+    ];
+
+    return [...otherFrequencies, ...basicFrequencies];
   }, [formatMessage, additionalFrequency]);
 };

@@ -13,6 +13,7 @@
 }
 
 .failedMessage {
+  color: colors.$red-300;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

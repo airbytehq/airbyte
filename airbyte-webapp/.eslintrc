@@ -19,9 +19,10 @@
   "rules": {
     "jsx-a11y/label-has-associated-control": "error",
     "curly": "warn",
-    "css-modules/no-undef-class": ["error", { "camelCase": true }],
+    "css-modules/no-undef-class": "off",
     "css-modules/no-unused-class": ["error", { "camelCase": true }],
     "dot-location": "warn",
+    "dot-notation": "warn",
     "eqeqeq": "error",
     "prettier/prettier": "warn",
     "unused-imports/no-unused-imports": "warn",
@@ -81,6 +82,7 @@
         "unnamedComponents": "arrow-function"
       }
     ],
+    "jest/consistent-test-it": ["warn", { "fn": "it", "withinDescribe": "it" }],
     "react/jsx-boolean-value": "warn",
     "react/jsx-curly-brace-presence": "warn",
     "react/jsx-fragments": "warn",

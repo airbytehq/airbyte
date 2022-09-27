@@ -35,7 +35,7 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseTestProvider;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.persistence.job.DefaultJobPersistence;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -128,7 +128,7 @@ class BootloaderAppTest {
       bootloader.load();
 
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
-      assertEquals("0.40.4.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.40.4.002", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
       // this line should change with every new migration

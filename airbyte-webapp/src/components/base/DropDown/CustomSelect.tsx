@@ -19,16 +19,15 @@ export const CustomSelect = styled(Select)<
     font-size: 14px;
     line-height: 20px;
     min-height: 36px;
+    flex-wrap: nowrap;
 
     &:hover {
-      border-color: ${({ theme, $error }) => ($error ? theme.dangerColor : theme.greyColor20)};
-      background: ${({ theme }) => theme.greyColor20};
+      border-color: ${({ theme, $error }) => ($error ? theme.dangerColor : theme.greyColor10)};
     }
 
     &.react-select__control--menu-is-open {
       border: 1px solid ${({ theme }) => theme.primaryColor};
       box-shadow: none;
-      background: ${({ theme }) => theme.primaryColor12};
     }
 
     & .react-select__multi-value {
@@ -36,7 +35,9 @@ export const CustomSelect = styled(Select)<
     }
 
     & .react-select__value-container {
-      overflow: visible;
+      overflow: hidden;
+      display: flex;
+      flex-wrap: nowrap;
     }
   }
 `;

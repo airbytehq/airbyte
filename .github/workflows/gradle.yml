@@ -347,6 +347,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           workingDir: ./airbyte-webapp/
           storybookBuildDir: build/storybook/
+          autoAcceptChanges: true
           exitOnceUploaded: true
 
 
@@ -591,7 +592,7 @@ jobs:
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     environment: more-secrets
-    timeout-minutes: 90
+    timeout-minutes: 40
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
