@@ -20,16 +20,16 @@ if [ -n "$CI" ]; then
 fi
 
 echo "Replacing default Chart.yaml and values.yaml with a test one"
-mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old
-mv charts/airbyte/Chart.yaml.test charts/airbyte/Chart.yaml 
-mv charts/airbyte/values.yaml charts/airbyte/values.yaml.old
-mv charts/airbyte/values.yaml.test charts/airbyte/values.yaml 
+# mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old
+# mv charts/airbyte/Chart.yaml.test charts/airbyte/Chart.yaml 
+# mv charts/airbyte/values.yaml charts/airbyte/values.yaml.old
+# mv charts/airbyte/values.yaml.test charts/airbyte/values.yaml 
 
 echo "Starting app..."
 
 echo "Applying dev-integration-test manifests to kubernetes..."
 cd charts/airbyte && helm dep update && cd -
-helm upgrade --install --debug airbyte charts/airbyte
+helm upgrade --install --debug --values chart/airbyte/values.yaml.test airbyte charts/airbyte
 
 echo "Waiting for server to be ready..."
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
@@ -84,6 +84,15 @@ if [ -n "$CI" ]; then
 
   echo "Printing docker disk usage after pruning..."
   docker system df
+fi
+echo "Check if server connection still alive..."
+
+if curl -sSf -o /dev/null http://localhost:8001/api/v1/health; then
+  echo "Connection is alive..."
+else
+  echo "Connection is not alive..."
+  echo "Port forwarding pod..."
+  kubectl port-forward svc/airbyte-airbyte-server-svc 8001:8001 &
 fi
 
 echo "Running e2e tests via gradle..."
