@@ -19,11 +19,9 @@ import io.temporal.workflow.Workflow;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Singleton
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class SyncWorkflowImpl implements SyncWorkflow {
 

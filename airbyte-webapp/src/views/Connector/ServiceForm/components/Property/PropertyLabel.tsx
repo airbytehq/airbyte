@@ -25,6 +25,7 @@ export const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>
   htmlFor,
 }) => {
   const examples = property._type === "formItem" || property._type === "formGroup" ? property.examples : undefined;
+  const descriptionToDisplay = description ?? property.description;
 
   return (
     <ControlLabels
@@ -32,7 +33,9 @@ export const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>
       labelAdditionLength={0}
       label={label}
       infoTooltipContent={
-        <LabelInfo label={label} examples={examples} description={description ?? property.description} />
+        (descriptionToDisplay || examples) && (
+          <LabelInfo label={label} description={descriptionToDisplay} examples={examples} />
+        )
       }
       optional={optional ?? !property.isRequired}
       htmlFor={htmlFor}
