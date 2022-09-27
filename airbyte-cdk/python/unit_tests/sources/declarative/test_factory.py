@@ -328,7 +328,7 @@ list_stream:
     primary_key: "id"
     extractor:
       $ref: "*ref(extractor)"
-      field_pointer: ["result"]
+      field_pointer: ["{{ options['name'] }}"]
   retriever:
     $ref: "*ref(retriever)"
     requester:
@@ -365,7 +365,7 @@ check:
     assert type(stream.retriever.record_selector) == RecordSelector
     assert type(stream.retriever.record_selector.extractor.decoder) == JsonDecoder
 
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["result"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["lists"]
     assert type(stream.retriever.record_selector.record_filter) == RecordFilter
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -378,19 +378,26 @@ check:
     assert stream.retriever.requester.path.default == "marketing/lists"
 
 
-def test_create_record_selector():
+@pytest.mark.parametrize(
+    "test_name, record_selector, expected_runtime_selector",
+    [("test_static_record_selector", "result", "result"), ("test_static_record_selector", "{{ options['name'] }}", "lists")],
+)
+def test_create_record_selector(test_name, record_selector, expected_runtime_selector):
     content = """
     extractor:
       type: DpathExtractor
     selector:
+      $options:
+        name: "lists"
       class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
       record_filter:
         class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
         $ref: "*ref(extractor)"
-        field_pointer: ["result"]
+        field_pointer: ["replace_me"]
     """
+    content = content.replace("replace_me", record_selector)
     config = parser.parse(content)
 
     factory.create_component(config["selector"], input_config, False)
@@ -398,7 +405,7 @@ def test_create_record_selector():
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in selector.extractor.field_pointer] == ["result"]
+    assert [fp.eval(input_config) for fp in selector.extractor.field_pointer] == [expected_runtime_selector]
     assert isinstance(selector.record_filter, RecordFilter)
 
 

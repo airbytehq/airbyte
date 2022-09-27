@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Union
+from typing import Any, List, Mapping
 
 import dpath.util
 import requests
@@ -54,15 +54,14 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
         decoder (Decoder): The decoder responsible to transfom the response in a Mapping
     """
 
-    field_pointer: List[Union[InterpolatedString, str]]
+    field_pointer: List[str]
     config: Config
     options: InitVar[Mapping[str, Any]]
     decoder: Decoder = JsonDecoder(options={})
 
     def __post_init__(self, options: Mapping[str, Any]):
         for pointer_index in range(len(self.field_pointer)):
-            if isinstance(self.field_pointer[pointer_index], str):
-                self.field_pointer[pointer_index] = InterpolatedString.create(self.field_pointer[pointer_index], options=options)
+            self.field_pointer[pointer_index] = InterpolatedString.create(self.field_pointer[pointer_index], options=options)
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
@@ -70,6 +69,7 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
             extracted = response_body
         else:
             pointer = [pointer.eval(self.config) for pointer in self.field_pointer]
+            print(f"pointer: {pointer}")
             extracted = dpath.util.get(response_body, pointer, default=[])
         if isinstance(extracted, list):
             return extracted
