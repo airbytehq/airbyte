@@ -71,14 +71,13 @@ import io.airbyte.api.client.model.generated.StreamDescriptor;
 import io.airbyte.api.client.model.generated.StreamState;
 import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
-import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.test.utils.SchemaTableNamePair;
-import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
@@ -1024,10 +1023,6 @@ class BasicAcceptanceTests {
     final SourceRead source = testHarness.createPostgresSource(true);
     final UUID sourceId = source.getSourceId();
     final UUID sourceDefinitionId = source.getSourceDefinitionId();
-    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final UUID destinationId = testHarness.createPostgresDestination(true).getDestinationId();
-    final OperationRead operation = testHarness.createOperation();
-    final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
     // Fetch the current/most recent source definition version
     final SourceDefinitionRead sourceDefinitionRead =
@@ -1039,6 +1034,11 @@ class BasicAcceptanceTests {
       LOGGER.info("Setting source connector to pre-per-stream state version {}...",
           AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
       testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
+
+      final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+      final UUID destinationId = testHarness.createPostgresDestination(true).getDestinationId();
+      final OperationRead operation = testHarness.createOperation();
+      final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
       LOGGER.info("Discovered catalog: {}", catalog);
 
@@ -1095,22 +1095,8 @@ class BasicAcceptanceTests {
       // Update with refreshed catalog
       LOGGER.info("Submit the update request");
       final WebBackendConnectionUpdate update = new WebBackendConnectionUpdate()
-          .name(connection.getName())
           .connectionId(connection.getConnectionId())
-          .namespaceDefinition(connection.getNamespaceDefinition())
-          .namespaceFormat(connection.getNamespaceFormat())
-          .prefix(connection.getPrefix())
-          .operations(List.of(
-              new WebBackendOperationCreateOrUpdate()
-                  .name(operation.getName())
-                  .operationId(operation.getOperationId())
-                  .workspaceId(operation.getWorkspaceId())
-                  .operatorConfiguration(operation.getOperatorConfiguration())))
-          .syncCatalog(updatedCatalog)
-          .schedule(connection.getSchedule())
-          .sourceCatalogId(connection.getSourceCatalogId())
-          .status(connection.getStatus())
-          .resourceRequirements(connection.getResourceRequirements());
+          .syncCatalog(updatedCatalog);
       webBackendApi.webBackendUpdateConnection(update);
 
       LOGGER.info("Inspecting Destination DB after the update request, tables should be empty");

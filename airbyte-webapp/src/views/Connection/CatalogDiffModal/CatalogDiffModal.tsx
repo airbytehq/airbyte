@@ -7,7 +7,7 @@ import { Button } from "components";
 import { AirbyteCatalog, CatalogDiff } from "core/request/AirbyteClient";
 import { useModalService } from "hooks/services/Modal";
 
-import { ModalBody, ModalFooter } from "../../../components/Modal";
+import { ModalBody, ModalFooter } from "../../../components/ui/Modal";
 import styles from "./CatalogDiffModal.module.scss";
 import { DiffSection } from "./components/DiffSection";
 import { FieldSection } from "./components/FieldSection";

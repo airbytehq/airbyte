@@ -4,8 +4,8 @@ import { FormattedMessage } from "react-intl";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Text } from "components/base/Text";
-import { InfoBox } from "components/InfoBox";
-import StepsMenu from "components/StepsMenu";
+import { InfoBox } from "components/ui/InfoBox";
+import { StepsMenu } from "components/ui/StepsMenu";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";

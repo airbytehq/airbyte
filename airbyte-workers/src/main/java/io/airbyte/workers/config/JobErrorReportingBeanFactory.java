@@ -16,9 +16,9 @@ import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.util.Optional;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * Micronaut bean factory for job error reporting-related singletons.

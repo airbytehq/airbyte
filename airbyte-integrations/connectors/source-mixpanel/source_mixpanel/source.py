@@ -81,7 +81,8 @@ class SourceMixpanel(AbstractSource):
             auth = self.get_authenticator(config)
             FunnelsList.max_retries = 0
             funnels = FunnelsList(authenticator=auth, **config)
-            next(read_full_refresh(funnels))
+            funnels.reqs_per_hour_limit = 0
+            next(read_full_refresh(funnels), None)
         except requests.HTTPError as e:
             return False, e.response.json()["error"]
         except Exception as e:
@@ -99,12 +100,23 @@ class SourceMixpanel(AbstractSource):
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
         auth = self.get_authenticator(config)
-        return [
+        streams = [
             Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
             CohortMembers(authenticator=auth, **config),
-            Engage(authenticator=auth, **config),
-            Export(authenticator=auth, **config),
             Funnels(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
         ]
+
+        # streams with dynamically generated schema
+        for stream in [Engage(authenticator=auth, **config), Export(authenticator=auth, **config)]:
+            try:
+                stream.get_json_schema()
+            except requests.HTTPError as e:
+                if e.response.status_code != 402:
+                    raise e
+                logger.warning("Stream '%s' - is disabled, reason: 402 Payment Required", stream.name)
+            else:
+                streams.append(stream)
+
+        return streams

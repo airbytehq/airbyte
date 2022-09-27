@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Button, LabeledSwitch, ModalBody, ModalFooter } from "components";
+import { Button, LabeledSwitch } from "components";
+import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { ConnectionStateType } from "core/request/AirbyteClient";
 
