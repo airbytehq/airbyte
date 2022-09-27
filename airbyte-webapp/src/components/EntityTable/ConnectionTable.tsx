@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
-import Table from "components/Table";
+import { Table } from "components/ui/Table";
 
 import { ConnectionScheduleType } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";

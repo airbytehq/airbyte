@@ -9,7 +9,6 @@ import static io.airbyte.persistence.job.JobNotifier.CONNECTION_DISABLED_WARNING
 import static io.airbyte.persistence.job.models.Job.REPLICATION_TYPES;
 import static java.time.temporal.ChronoUnit.DAYS;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
@@ -23,30 +22,37 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 @Singleton
 @Requires(property = "airbyte.worker.plane",
           pattern = "(?i)^(?!data_plane).*")
 public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionActivity {
 
-  @Inject
-  private ConfigRepository configRepository;
-  @Inject
-  private JobPersistence jobPersistence;
-  @Inject
-  private FeatureFlags featureFlags;
-  @Value("${airbyte.worker.job.failed.max-days}")
-  private Integer maxDaysOfOnlyFailedJobsBeforeConnectionDisable;
-  @Value("${airbyte.worker.job.failed.max-jobs}")
-  private Integer maxFailedJobsInARowBeforeConnectionDisable;
-  @Inject
-  private JobNotifier jobNotifier;
+  private final ConfigRepository configRepository;
+  private final JobPersistence jobPersistence;
+  private final FeatureFlags featureFlags;
+  private final Integer maxDaysOfOnlyFailedJobsBeforeConnectionDisable;
+  private final Integer maxFailedJobsInARowBeforeConnectionDisable;
+  private final JobNotifier jobNotifier;
+
+  public AutoDisableConnectionActivityImpl(final ConfigRepository configRepository,
+                                           final JobPersistence jobPersistence,
+                                           final FeatureFlags featureFlags,
+                                           @Value("${airbyte.worker.job.failed.max-days}") final Integer maxDaysOfOnlyFailedJobsBeforeConnectionDisable,
+                                           @Value("${airbyte.worker.job.failed.max-jobs}") final Integer maxFailedJobsInARowBeforeConnectionDisable,
+                                           final JobNotifier jobNotifier) {
+    this.configRepository = configRepository;
+    this.jobPersistence = jobPersistence;
+    this.featureFlags = featureFlags;
+    this.maxDaysOfOnlyFailedJobsBeforeConnectionDisable = maxDaysOfOnlyFailedJobsBeforeConnectionDisable;
+    this.maxFailedJobsInARowBeforeConnectionDisable = maxFailedJobsInARowBeforeConnectionDisable;
+    this.jobNotifier = jobNotifier;
+  }
 
   // Given a connection id and current timestamp, this activity will set a connection to INACTIVE if
   // either:
@@ -196,36 +202,6 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
     // explicitly send to email if customer.io api key is set, since email notification cannot be set by
     // configs through UI yet
     jobNotifier.notifyJobByEmail(null, CONNECTION_DISABLED_NOTIFICATION, lastJob);
-  }
-
-  @VisibleForTesting
-  void setConfigRepository(final ConfigRepository configRepository) {
-    this.configRepository = configRepository;
-  }
-
-  @VisibleForTesting
-  void setJobPersistence(final JobPersistence jobPersistence) {
-    this.jobPersistence = jobPersistence;
-  }
-
-  @VisibleForTesting
-  void setFeatureFlags(final FeatureFlags featureFlags) {
-    this.featureFlags = featureFlags;
-  }
-
-  @VisibleForTesting
-  void setMaxDaysOfOnlyFailedJobsBeforeConnectionDisable(final Integer maxDaysOfOnlyFailedJobsBeforeConnectionDisable) {
-    this.maxDaysOfOnlyFailedJobsBeforeConnectionDisable = maxDaysOfOnlyFailedJobsBeforeConnectionDisable;
-  }
-
-  @VisibleForTesting
-  void setMaxFailedJobsInARowBeforeConnectionDisable(final Integer maxFailedJobsInARowBeforeConnectionDisable) {
-    this.maxFailedJobsInARowBeforeConnectionDisable = maxFailedJobsInARowBeforeConnectionDisable;
-  }
-
-  @VisibleForTesting
-  void setJobNotifier(final JobNotifier jobNotifier) {
-    this.jobNotifier = jobNotifier;
   }
 
 }
