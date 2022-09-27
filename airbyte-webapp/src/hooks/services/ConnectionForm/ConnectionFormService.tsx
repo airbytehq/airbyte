@@ -31,6 +31,7 @@ export const tidyConnectionFormValues = (
   workspaceId: string,
   operations?: OperationRead[]
 ): ValuesProps => {
+  // TODO: We should try to fix the types so we don't need the casting.
   const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
     context: { isRequest: true },
   }) as unknown as ConnectionFormValues;
