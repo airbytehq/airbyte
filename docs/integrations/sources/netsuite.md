@@ -2,6 +2,8 @@
 
 One unified business management suite, encompassing ERP/Financials, CRM and ecommerce for more than 31,000 customers.
 
+This connector implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html) and uses REST API to fetch the customers data.
+
 ## Prerequisites
 * Oracle NetSuite [account](https://system.netsuite.com/pages/customerlogin.jsp?country=US)
 * Allowed access to all Account permissions options
@@ -108,7 +110,7 @@ The NetSuite source connector supports the following [sync modes](https://docs.a
 
 ## Performance considerations
 
-The connector is restricted by normal Okta [requests limitation](https://developer.okta.com/docs/reference/rate-limits/).
+The connector is restricted by Netsuite [Concurrency Limit per Integration](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/bridgehead_156224824287.html).
 
 ## Changelog
 
