@@ -33,12 +33,12 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 @Singleton
 public class NormalizationActivityImpl implements NormalizationActivity {

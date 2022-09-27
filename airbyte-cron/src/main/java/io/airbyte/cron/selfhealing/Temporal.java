@@ -5,7 +5,7 @@
 package io.airbyte.cron.selfhealing;
 
 import io.micronaut.scheduling.annotation.Scheduled;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton

@@ -9,8 +9,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.io.IOException;
-import javax.inject.Singleton;
 
 @Singleton
 @Requires(property = "airbyte.worker.plane",
