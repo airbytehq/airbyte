@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.Cron;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
@@ -12,12 +11,14 @@ import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.Job;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.DateTimeException;
@@ -27,9 +28,6 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTimeZone;
 import org.quartz.CronExpression;
@@ -37,21 +35,26 @@ import org.quartz.CronExpression;
 @Slf4j
 @Singleton
 @Requires(property = "airbyte.worker.plane",
-          notEquals = "DATA_PLANE")
+          pattern = "(?i)^(?!data_plane).*")
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   private final static long MS_PER_SECOND = 1000L;
   private final static long MIN_CRON_INTERVAL_SECONDS = 60;
 
-  @Inject
-  private ConfigRepository configRepository;
-  @Inject
-  private JobPersistence jobPersistence;
-  @Value("${airbyte.worker.sync.max-attempts}")
-  private Integer syncJobMaxAttempts;
-  @Inject
-  @Named("currentSecondsSupplier")
-  private Supplier<Long> currentSecondsSupplier;
+  private final ConfigRepository configRepository;
+  private final JobPersistence jobPersistence;
+  private final Integer syncJobMaxAttempts;
+  private final Supplier<Long> currentSecondsSupplier;
+
+  public ConfigFetchActivityImpl(final ConfigRepository configRepository,
+                                 final JobPersistence jobPersistence,
+                                 @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
+                                 @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier) {
+    this.configRepository = configRepository;
+    this.jobPersistence = jobPersistence;
+    this.syncJobMaxAttempts = syncJobMaxAttempts;
+    this.currentSecondsSupplier = currentSecondsSupplier;
+  }
 
   @Override
   public ScheduleRetrieverOutput getTimeToWait(final ScheduleRetrieverInput input) {
@@ -156,26 +159,6 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   @Override
   public GetMaxAttemptOutput getMaxAttempt() {
     return new GetMaxAttemptOutput(syncJobMaxAttempts);
-  }
-
-  @VisibleForTesting
-  void setConfigRepository(final ConfigRepository configRepository) {
-    this.configRepository = configRepository;
-  }
-
-  @VisibleForTesting
-  void setJobPersistence(final JobPersistence jobPersistence) {
-    this.jobPersistence = jobPersistence;
-  }
-
-  @VisibleForTesting
-  void setSyncJobMaxAttempts(final Integer syncJobMaxAttempts) {
-    this.syncJobMaxAttempts = syncJobMaxAttempts;
-  }
-
-  @VisibleForTesting
-  void setCurrentSecondsSupplier(final Supplier<Long> currentSecondsSupplier) {
-    this.currentSecondsSupplier = currentSecondsSupplier;
   }
 
 }

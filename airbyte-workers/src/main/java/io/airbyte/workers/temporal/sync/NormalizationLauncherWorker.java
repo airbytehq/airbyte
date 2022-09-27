@@ -5,13 +5,13 @@
 package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.activity.ActivityExecutionContext;
 import java.util.Map;
 import java.util.UUID;

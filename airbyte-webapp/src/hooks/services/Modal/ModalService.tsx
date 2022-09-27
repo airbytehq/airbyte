@@ -1,9 +1,11 @@
 import React, { useContext, useMemo, useRef, useState } from "react";
 import { firstValueFrom, Subject } from "rxjs";
 
-import { Modal } from "components";
+import { Modal } from "components/ui/Modal";
 
 import { ModalOptions, ModalResult, ModalServiceContext } from "./types";
+
+export class ModalCancel extends Error {}
 
 const modalServiceContext = React.createContext<ModalServiceContext | undefined>(undefined);
 

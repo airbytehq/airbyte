@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.config;
 
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
@@ -20,6 +20,7 @@ import io.airbyte.workers.temporal.scheduling.activities.WorkflowConfigActivity;
 import io.airbyte.workers.temporal.spec.SpecActivity;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
 import io.airbyte.workers.temporal.sync.NormalizationActivity;
+import io.airbyte.workers.temporal.sync.NormalizationSummaryCheckActivity;
 import io.airbyte.workers.temporal.sync.PersistStateActivity;
 import io.airbyte.workers.temporal.sync.ReplicationActivity;
 import io.micronaut.context.annotation.Factory;
@@ -29,10 +30,10 @@ import io.micronaut.context.annotation.Value;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.util.List;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * Micronaut bean factory for activity-related singletons.
@@ -43,7 +44,7 @@ public class ActivityBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("checkConnectionActivities")
   public List<Object> checkConnectionActivities(
                                                 final CheckConnectionActivity checkConnectionActivity) {
@@ -52,7 +53,7 @@ public class ActivityBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("connectionManagerActivities")
   public List<Object> connectionManagerActivities(
                                                   final GenerateInputActivity generateInputActivity,
@@ -79,7 +80,7 @@ public class ActivityBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("discoverActivities")
   public List<Object> discoverActivities(
                                          final DiscoverCatalogActivity discoverCatalogActivity) {
@@ -88,7 +89,7 @@ public class ActivityBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("specActivities")
   public List<Object> specActivities(
                                      final SpecActivity specActivity) {
@@ -101,8 +102,9 @@ public class ActivityBeanFactory {
                                      final ReplicationActivity replicationActivity,
                                      final NormalizationActivity normalizationActivity,
                                      final DbtTransformationActivity dbtTransformationActivity,
-                                     final PersistStateActivity persistStateActivity) {
-    return List.of(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+                                     final PersistStateActivity persistStateActivity,
+                                     final NormalizationSummaryCheckActivity normalizationSummaryCheckActivity) {
+    return List.of(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity, normalizationSummaryCheckActivity);
   }
 
   @Singleton
@@ -153,7 +155,7 @@ public class ActivityBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   @Named("specActivityOptions")
   public ActivityOptions specActivityOptions() {
     return ActivityOptions.newBuilder()

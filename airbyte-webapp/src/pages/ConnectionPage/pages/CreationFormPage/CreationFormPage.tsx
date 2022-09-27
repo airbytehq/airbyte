@@ -7,7 +7,7 @@ import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
 import CreateConnectionContent from "components/CreateConnectionContent";
 import HeadTitle from "components/HeadTitle";
-import StepsMenu from "components/StepsMenu";
+import { StepsMenu } from "components/ui/StepsMenu";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
@@ -22,7 +22,6 @@ import {
   DestinationRead,
   SourceDefinitionRead,
   SourceRead,
-  WebBackendConnectionRead,
 } from "../../../../core/request/AirbyteClient";
 import { ConnectionCreateDestinationForm } from "./components/DestinationForm";
 import ExistingEntityForm from "./components/ExistingEntityForm";
@@ -163,32 +162,12 @@ export const CreationFormPage: React.FC = () => {
       }
     }
 
-    const afterSubmitConnection = (connection: WebBackendConnectionRead) => {
-      switch (type) {
-        case EntityStepsTypes.DESTINATION:
-          navigate(`../${source?.sourceId}`);
-          break;
-        case EntityStepsTypes.SOURCE:
-          navigate(`../${destination?.destinationId}`);
-          break;
-        default:
-          navigate(`../${connection.connectionId}`);
-          break;
-      }
-    };
-
     if (!source || !destination) {
       console.error("unexpected state met");
       return <LoadingPage />;
     }
 
-    return (
-      <CreateConnectionContent
-        source={source}
-        destination={destination}
-        afterSubmitConnection={afterSubmitConnection}
-      />
-    );
+    return <CreateConnectionContent source={source} destination={destination} />;
   };
 
   const steps =

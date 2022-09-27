@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
-import Table from "components/Table";
+import { Table } from "components/ui/Table";
 
 import { ConnectionScheduleType } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -28,11 +28,10 @@ interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
-  onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
 }
 
-const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeStatus, onSync }) => {
+const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync }) => {
   const navigate = useNavigate();
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const allowSync = useFeature(FeatureItem.AllowSync);
@@ -177,7 +176,6 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
             id={row.original.connectionId}
             isSyncing={row.original.isSyncing}
             isManual={row.original.scheduleType === ConnectionScheduleType.manual}
-            onChangeStatus={onChangeStatus}
             onSync={onSync}
             allowSync={allowSync}
           />
@@ -190,7 +188,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
         Cell: ({ cell }: CellProps<ITableDataItem>) => <ConnectionSettingsCell id={cell.value} />,
       },
     ],
-    [allowSync, entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
+    [allowSync, entity, onSync, onSortClick, sortBy, sortOrder]
   );
 
   return (

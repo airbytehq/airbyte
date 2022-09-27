@@ -25,6 +25,7 @@ import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -37,11 +38,15 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -205,7 +210,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   private List<String> extractCursorFields(final List<JsonNode> fields) {
     return fields.stream()
         .filter(field -> isCursorType(getFieldType(field)))
-        .filter(field -> "NO".equals(field.get(INTERNAL_IS_NULLABLE).asText()))
         .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
         .collect(Collectors.toList());
   }
@@ -521,5 +525,24 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   protected String toSslJdbcParam(final SslMode sslMode) {
     // Default implementation
     return sslMode.name();
+  }
+
+
+
+  protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
+    final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams = stateManager.getCdcStateManager().getInitialStreamsSynced();
+    if (alreadySyncedStreams.isEmpty() && (stateManager.getCdcStateManager().getCdcState() == null
+        || stateManager.getCdcStateManager().getCdcState().getState() == null)) {
+      return Collections.emptyList();
+    }
+
+    final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
+
+    final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
+
+    return catalog.getStreams().stream()
+        .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream())))
+        .map(Jsons::clone)
+        .collect(Collectors.toList());
   }
 }

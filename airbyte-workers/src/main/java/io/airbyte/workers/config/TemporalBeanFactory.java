@@ -7,15 +7,14 @@ package io.airbyte.workers.config;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.DefaultJobCreator;
-import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
-import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.persistence.job.DefaultJobCreator;
+import io.airbyte.persistence.job.factory.DefaultSyncJobFactory;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
+import io.airbyte.persistence.job.factory.SyncJobFactory;
 import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
@@ -23,8 +22,8 @@ import io.micronaut.context.annotation.Value;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.WorkerFactory;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
-import javax.inject.Singleton;
 
 /**
  * Micronaut bean factory for Temporal-related singletons.
@@ -34,14 +33,14 @@ public class TemporalBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public TrackingClient trackingClient() {
     return TrackingClientSingleton.get();
   }
 
   @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public SyncJobFactory jobFactory(
                                    final ConfigRepository configRepository,
                                    @Property(name = "airbyte.connector.specific-resource-defaults-enabled",
@@ -56,20 +55,8 @@ public class TemporalBeanFactory {
   }
 
   @Singleton
-  public WorkflowServiceStubs temporalService(final TemporalUtils temporalUtils) {
-    return temporalUtils.createTemporalService();
-  }
-
-  @Singleton
-  public WorkflowClient workflowClient(
-                                       final TemporalUtils temporalUtils,
-                                       final WorkflowServiceStubs temporalService) {
-    return TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace());
-  }
-
-  @Singleton
   @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!data_plane).*")
   public TemporalWorkerRunFactory temporalWorkerRunFactory(
                                                            @Value("${airbyte.version}") final String airbyteVersion,
                                                            final FeatureFlags featureFlags,
