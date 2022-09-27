@@ -2,9 +2,9 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal.scheduling;
+package io.airbyte.commons.temporal.scheduling;
 
-import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.WorkflowInterface;
