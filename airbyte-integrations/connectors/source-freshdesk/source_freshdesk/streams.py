@@ -27,7 +27,7 @@ class FreshdeskStream(HttpStream, ABC):
     link_regex = re.compile(r'<(.*?)>;\s*rel="next"')
     raise_on_http_errors = True
     forbidden_stream = False
-    
+
     # regestring the default schema transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
