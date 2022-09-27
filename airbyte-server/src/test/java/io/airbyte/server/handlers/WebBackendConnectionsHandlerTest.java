@@ -92,9 +92,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 class WebBackendConnectionsHandlerTest {
 
@@ -112,6 +115,8 @@ class WebBackendConnectionsHandlerTest {
   private WebBackendConnectionRead expectedWithNewSchema;
   private EventRunner eventRunner;
   private ConfigRepository configRepository;
+  private MockedStatic<SourceDefinitionsHandler> mSourceDefinitionsHandler;
+  private MockedStatic<DestinationDefinitionsHandler> mDestinationDefinitionsHandler;
 
   private static final String STREAM1 = "stream1";
   private static final String STREAM2 = "stream2";
@@ -119,6 +124,11 @@ class WebBackendConnectionsHandlerTest {
   private static final String FIELD2 = "field2";
   private static final String FIELD3 = "field3";
   private static final String FIELD5 = "field5";
+
+  private static final String SOURCE_ICON_PATH = "source/icon/path.svg";
+  private static final String LOADED_SOURCE_ICON_PATH = "source/loaded/icon/path.svg";
+  private static final String DESTINATION_ICON_PATH = "destination/icon/path.svg";
+  private static final String LOADED_DESTINATION_ICON_PATH = "destination/loaded/icon/path.svg";
 
   @BeforeEach
   void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
@@ -263,6 +273,20 @@ class WebBackendConnectionsHandlerTest {
 
     when(schedulerHandler.resetConnection(any(ConnectionIdRequestBody.class)))
         .thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
+
+    mSourceDefinitionsHandler = Mockito.mockStatic(SourceDefinitionsHandler.class);
+    mSourceDefinitionsHandler.when(() -> SourceDefinitionsHandler.loadIcon(SOURCE_ICON_PATH))
+        .thenReturn(LOADED_SOURCE_ICON_PATH);
+
+    mDestinationDefinitionsHandler = Mockito.mockStatic(DestinationDefinitionsHandler.class);
+    mDestinationDefinitionsHandler.when(() -> DestinationDefinitionsHandler.loadIcon(DESTINATION_ICON_PATH))
+        .thenReturn(LOADED_DESTINATION_ICON_PATH);
+  }
+
+  @AfterEach
+  void teardown() {
+    mSourceDefinitionsHandler.close();
+    mDestinationDefinitionsHandler.close();
   }
 
   @Test
