@@ -82,7 +82,8 @@ The Freshdesk connector should not run into Freshdesk API limitations under norm
 
 | Version | Date       | Pull Request                                                | Subject                                                                        |
 |:--------|:-----------|:------------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.3.4   | 2022-09-27 | [17243](https://github.com/airbytehq/airbyte/pull/17243)    | Fixed the issue, when selected stream is not available due to Subscription Plan.
+| 0.3.5   | 2022-09-27 | [17249](https://github.com/airbytehq/airbyte/pull/17249)    | Added nullable to all stream schemas, added transformation into declared schema types
+| 0.3.4   | 2022-09-27 | [17243](https://github.com/airbytehq/airbyte/pull/17243)    | Fixed the issue, when selected stream is not available due to Subscription Plan
 | 0.3.3   | 2022-08-06 | [15378](https://github.com/airbytehq/airbyte/pull/15378)    | Allow backward campatibility for input configuration
 | 0.3.2   | 2022-06-23 | [14049](https://github.com/airbytehq/airbyte/pull/14049)    | Update parsing of start_date                                                   |
 | 0.3.1   | 2022-06-03 | [13332](https://github.com/airbytehq/airbyte/pull/13332)    | Add new streams                                                                |
