@@ -27,7 +27,7 @@ echo "Starting app..."
 
 echo "Applying dev-integration-test manifests to kubernetes..."
 cd charts/airbyte && helm repo add bitnami https://charts.bitnami.com/bitnami && helm dep update && cd -
-helm upgrade --install --debug --values chart/airbyte/values.yaml.test airbyte charts/airbyte
+helm upgrade --install --debug --values charts/airbyte/values.yaml.test airbyte charts/airbyte
 
 echo "Waiting for server to be ready..."
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
