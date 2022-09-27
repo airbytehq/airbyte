@@ -121,11 +121,17 @@ public class ConnectionsHandler {
 
     final UUID connectionId = uuidGenerator.get();
 
+    // If not specified, default the NamespaceDefinition to 'source'
+    final NamespaceDefinitionType namespaceDefinitionType =
+        connectionCreate.getNamespaceDefinition() == null
+            ? NamespaceDefinitionType.SOURCE
+            : Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class);
+
     // persist sync
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : defaultName)
-        .withNamespaceDefinition(Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class))
+        .withNamespaceDefinition(namespaceDefinitionType)
         .withNamespaceFormat(connectionCreate.getNamespaceFormat())
         .withPrefix(connectionCreate.getPrefix())
         .withSourceId(connectionCreate.getSourceId())

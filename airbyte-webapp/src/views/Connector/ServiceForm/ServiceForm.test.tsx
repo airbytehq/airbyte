@@ -13,7 +13,7 @@ import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/Docum
 import { ServiceFormValues } from "./types";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
-jest.mock("components/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
+jest.mock("components/ui/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
 
 jest.mock("../../../hooks/services/useDestinationHook", () => ({
   useDestinationList: () => ({ destinations: [] }),
