@@ -14,9 +14,12 @@ Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and ca
 
 To add a user to your workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar. 
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
+
 2. In the Workspace Settings sidebar, click **Access Management**.
+
 3. Click **+ New user**.
+
 4. On the **Add new users** dialog, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
 
     :::info
@@ -27,9 +30,12 @@ To add a user to your workspace:
 
 To remove a user from your workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar. 
+1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
+
 2. In the Workspace Settings sidebar, click **Access Management**.
+
 3. Click **Remove** next to the user’s name.
+
 4. The **Remove user** dialog displays. Click **Remove**.
 
 ### Switch between multiple workspaces
@@ -238,11 +244,17 @@ To refresh the source schema:
 **Connection State** provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next syncs. 
 
 To display **Connection State**:
+
 1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
+
 2. In the Workspace Settings sidebar, click **General Settings**.
+
 3. Toggle **Enable advanced mode** and click **Save changes**.
+
 4. Click **Connections** in the navigation bar and then click the connection in the list you want to display.
-5. Click the **Settings** tab on the Connection page. 
+
+5. Click the **Settings** tab on the Connection page.
+
     The **Connection State** displays. 
 
 ## Buy credits
