@@ -81,7 +81,7 @@ const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, curren
     return null;
   };
 
-  const isConnectorUpdateable = currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
+  const isConnectorUpdatable = currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
 
   return (
     <FormContent>
@@ -106,7 +106,12 @@ const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, curren
                 </InputField>
               )}
             </Field>
-            <Button size="xs" isLoading type="submit" disabled={(isSubmitting || !dirty) && !isConnectorUpdateable}>
+            <Button
+              size="xs"
+              isLoading={isSubmitting}
+              type="submit"
+              disabled={(isSubmitting || !dirty) && !isConnectorUpdatable}
+            >
               <FormattedMessage id="form.change" />
             </Button>
           </Form>

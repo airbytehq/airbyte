@@ -29,7 +29,12 @@ const AllDestinationsPage: React.FC = () => {
         <PageTitle
           title={<FormattedMessage id="admin.destinations" />}
           endComponent={
-            <Button icon={<FontAwesomeIcon icon={faPlus} />} onClick={onCreateDestination} data-id="new-destination">
+            <Button
+              icon={<FontAwesomeIcon icon={faPlus} />}
+              onClick={onCreateDestination}
+              size="sm"
+              data-id="new-destination"
+            >
               <FormattedMessage id="destinations.newDestination" />
             </Button>
           }
