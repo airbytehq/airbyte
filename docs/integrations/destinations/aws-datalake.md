@@ -2,7 +2,7 @@
 
 This page contains the setup guide and reference information for the AWS Datalake destination connector.
 
-The AWS Datalake destination connector allows you to sync data to AWS. It will write data as JSON files in S3 and 
+The AWS Datalake destination connector allows you to sync data to AWS. It will write data as JSON files in S3 and
 will make it available through a [Lake Formation Governed Table](https://docs.aws.amazon.com/lake-formation/latest/dg/governed-tables.html) in the Glue Data Catalog so that the data is available throughout other AWS services such as Athena, Glue jobs, EMR, Redshift, etc.
 
 ## Prerequisites
@@ -69,5 +69,6 @@ and types in the destination table as in the source except for the following typ
 
 ## Changelog
 
+| 0.1.2 | 2022-09-26 | [\#17193](https://github.com/airbytehq/airbyte/pull/17193) | Fix schema keyerror and add parquet support |
 | 0.1.1 | 2022-04-20 | [\#11811](https://github.com/airbytehq/airbyte/pull/11811) | Fix name of required param in specification |
 | 0.1.0 | 2022-03-29 | [\#10760](https://github.com/airbytehq/airbyte/pull/10760) | Initial release |
