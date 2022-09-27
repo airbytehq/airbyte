@@ -10,6 +10,7 @@ import io.temporal.activity.ActivityOptions;
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.WorkflowMethod;
+import jakarta.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -17,9 +18,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.TypeCache;
@@ -37,7 +35,6 @@ import org.springframework.util.ReflectionUtils;
  * https://github.com/applicaai/spring-boot-starter-temporal.
  */
 @Singleton
-@NoArgsConstructor
 @Slf4j
 public class TemporalProxyHelper {
 
@@ -50,8 +47,7 @@ public class TemporalProxyHelper {
    * Collection of available {@link ActivityOptions} beans which will be used to initialize Temporal
    * activity stubs in each registered Temporal workflow.
    */
-  @Inject
-  private Collection<BeanRegistration<ActivityOptions>> availableActivityOptions;
+  private final Collection<BeanRegistration<ActivityOptions>> availableActivityOptions;
 
   private Optional<TemporalActivityStubGeneratorFunction<Class<?>, ActivityOptions, Object>> activityStubGenerator = Optional.empty();
 
