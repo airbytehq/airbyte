@@ -2,11 +2,11 @@ import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import BarChart from "components/BarChart";
 import { Card } from "components/base/Card";
+import { BarChart } from "components/ui/BarChart";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useGetUsage } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useGetCloudWorkspaceUsage } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 
 import UsagePerConnectionTable from "./UsagePerConnectionTable";
 
@@ -35,7 +35,7 @@ const CreditsUsage: React.FC = () => {
   const { formatMessage, formatDate } = useIntl();
 
   const { workspaceId } = useCurrentWorkspace();
-  const data = useGetUsage(workspaceId);
+  const data = useGetCloudWorkspaceUsage(workspaceId);
 
   const chartData = useMemo(
     () =>

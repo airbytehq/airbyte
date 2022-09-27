@@ -1,17 +1,15 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
-import SideMenu from "components/SideMenu";
-import { CategoryItem } from "components/SideMenu/SideMenu";
+import { SideMenu, CategoryItem } from "components/ui/SideMenu";
 
 import useConnector from "hooks/services/useConnector";
-import useRouter from "hooks/useRouter";
 
 import AccountPage from "./pages/AccountPage";
 import ConfigurationsPage from "./pages/ConfigurationsPage";
@@ -48,7 +46,8 @@ export const SettingsRoute = {
 } as const;
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
-  const { push, pathname } = useRouter();
+  const push = useNavigate();
+  const { pathname } = useLocation();
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [

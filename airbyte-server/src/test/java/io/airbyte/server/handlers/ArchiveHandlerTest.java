@@ -45,11 +45,11 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
+import io.airbyte.persistence.job.DefaultJobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
@@ -98,6 +98,7 @@ class ArchiveHandlerTest {
   private JsonSecretsProcessor jsonSecretsProcessor;
   private ConfigRepository configRepository;
   private ArchiveHandler archiveHandler;
+  private WorkspaceHelper workspaceHelper;
 
   private static class NoOpFileTtlManager extends FileTtlManager {
 
@@ -146,6 +147,8 @@ class ArchiveHandlerTest {
 
     jobPersistence.setVersion(VERSION.serialize());
 
+    workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
+
     archiveHandler = new ArchiveHandler(
         VERSION,
         configRepository,
@@ -153,7 +156,7 @@ class ArchiveHandlerTest {
         secretsRepositoryWriter,
         jobPersistence,
         seedPersistence,
-        new WorkspaceHelper(configRepository, jobPersistence),
+        workspaceHelper,
         new NoOpFileTtlManager(),
         true);
   }

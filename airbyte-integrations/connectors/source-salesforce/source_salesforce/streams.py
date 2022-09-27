@@ -272,13 +272,13 @@ class BulkSalesforceStream(SalesforceStream):
             return None, job_status
         return job_full_url, job_status
 
-    def filter_null_bytes(self, s: str):
+    def filter_null_bytes(self, b: bytes):
         """
         https://github.com/airbytehq/airbyte/issues/8300
         """
-        res = s.replace("\x00", "")
-        if len(res) < len(s):
-            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
+        res = b.replace(b"\x00", b"")
+        if len(res) < len(b):
+            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(b), len(res))
         return res
 
     def download_data(self, url: str, chunk_size: float = 1024) -> os.PathLike:
@@ -292,9 +292,9 @@ class BulkSalesforceStream(SalesforceStream):
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response:
-            with open(tmp_file, "w") as data_file:
+            with open(tmp_file, "wb") as data_file:
                 for chunk in response.iter_content(chunk_size=chunk_size):
-                    data_file.writelines(self.filter_null_bytes(self.decode(chunk)))
+                    data_file.write(self.filter_null_bytes(chunk))
         # check the file exists
         if os.path.isfile(tmp_file):
             return tmp_file

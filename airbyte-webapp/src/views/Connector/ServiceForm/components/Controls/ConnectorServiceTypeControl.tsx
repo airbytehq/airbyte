@@ -17,7 +17,6 @@ import { GAIcon } from "components/icons/GAIcon";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
-import { FormBaseItem } from "core/form/types";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -29,17 +28,16 @@ import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumenta
 import { WarningMessage } from "../WarningMessage";
 
 const BottomElement = styled.div`
-  background: ${(props) => props.theme.greyColro0};
+  background: ${({ theme }) => theme.greyColor0};
   padding: 6px 16px 8px;
   width: 100%;
   min-height: 34px;
-  border-top: 1px solid ${(props) => props.theme.greyColor20};
-`;
+  border-top: 1px solid ${({ theme }) => theme.greyColor20};
+  position: relative;
 
-const Block = styled.div`
   cursor: pointer;
-  color: ${({ theme }) => theme.textColor};
 
+  color: ${({ theme }) => theme.textColor};
   &:hover {
     color: ${({ theme }) => theme.primaryColor};
   }
@@ -99,13 +97,13 @@ function getOrderForReleaseStage(stage?: ReleaseStage): number {
   }
 }
 
-const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({ children, ...props }) => (
+const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => (
   <>
     <components.MenuList {...props}>{children}</components.MenuList>
-    <BottomElement>
-      <Block onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}>
-        <FormattedMessage id="connector.requestConnectorBlock" />
-      </Block>
+    <BottomElement
+      onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}
+    >
+      <FormattedMessage id="connector.requestConnectorBlock" />
     </BottomElement>
   </>
 );
@@ -156,7 +154,7 @@ const SingleValue: React.FC<SingleValueProps<any>> = (props) => {
 };
 
 interface ConnectorServiceTypeControlProps {
-  property: FormBaseItem;
+  propertyPath: string;
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
@@ -167,7 +165,7 @@ interface ConnectorServiceTypeControlProps {
 }
 
 const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
-  property,
+  propertyPath,
   formType,
   isEditMode,
   onChangeServiceType,
@@ -178,7 +176,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
 }) => {
   const { formatMessage } = useIntl();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
-  const [field, fieldMeta, { setValue }] = useField(property.path);
+  const [field, fieldMeta, { setValue }] = useField(propertyPath);
   const analytics = useAnalyticsService();
   const workspace = useCurrentWorkspace();
   const availableConnectorDefinitions = useAvailableConnectorDefinitions(availableServices, workspace);
@@ -202,8 +200,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
           }
           return naturalComparator(a.label, b.label);
         }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [availableServices, orderOverwrite]
+    [availableConnectorDefinitions, orderOverwrite]
   );
 
   const { setDocumentationUrl } = useDocumentationPanelContext();

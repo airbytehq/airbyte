@@ -18,7 +18,11 @@ const RowContent = styled(Row)`
   font-size: 12px;
 `;
 
-const TreeRowWrapper: React.FC<{ depth?: number; noBorder?: boolean }> = ({ depth, children, noBorder }) => (
+const TreeRowWrapper: React.FC<React.PropsWithChildren<{ depth?: number; noBorder?: boolean }>> = ({
+  depth,
+  children,
+  noBorder,
+}) => (
   <RowWrapper depth={depth} noBorder={noBorder}>
     <RowContent>{children}</RowContent>
   </RowWrapper>
