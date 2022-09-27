@@ -21,10 +21,10 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.workflow.Functions.Proc;
 import io.temporal.workflow.Functions.Proc1;
 import io.temporal.workflow.Functions.TemporalFunctionalInterfaceMarker;
+import jakarta.inject.Singleton;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import javax.inject.Singleton;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

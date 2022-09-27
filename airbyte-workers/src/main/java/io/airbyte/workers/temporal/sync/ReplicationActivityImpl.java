@@ -48,13 +48,12 @@ import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,36 +62,47 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
-  @Inject
-  @Named("containerOrchestratorConfig")
-  private Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
-  @Inject
-  @Named("replicationWorkerConfigs")
-  private WorkerConfigs workerConfigs;
-  @Inject
-  @Named("replicationProcessFactory")
-  private ProcessFactory processFactory;
-  @Inject
-  private SecretsHydrator secretsHydrator;
-  @Inject
-  @Named("workspaceRoot")
-  private Path workspaceRoot;
-  @Inject
-  private WorkerEnvironment workerEnvironment;
-  @Inject
-  private LogConfigs logConfigs;
-  @Value("${airbyte.version}")
-  private String airbyteVersion;
-  @Inject
-  private FeatureFlags featureFlags;
-  @Value("${micronaut.server.port}")
-  private Integer serverPort;
-  @Inject
-  private AirbyteConfigValidator airbyteConfigValidator;
-  @Inject
-  private TemporalUtils temporalUtils;
-  @Inject
-  private AirbyteApiClient airbyteApiClient;
+  private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
+  private final WorkerConfigs workerConfigs;
+  private final ProcessFactory processFactory;
+  private final SecretsHydrator secretsHydrator;
+  private final Path workspaceRoot;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+  private final String airbyteVersion;
+  private final FeatureFlags featureFlags;
+  private final Integer serverPort;
+  private final AirbyteConfigValidator airbyteConfigValidator;
+  private final TemporalUtils temporalUtils;
+  private final AirbyteApiClient airbyteApiClient;
+
+  public ReplicationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
+                                 @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
+                                 @Named("replicationProcessFactory") final ProcessFactory processFactory,
+                                 final SecretsHydrator secretsHydrator,
+                                 @Named("workspaceRoot") final Path workspaceRoot,
+                                 final WorkerEnvironment workerEnvironment,
+                                 final LogConfigs logConfigs,
+                                 @Value("${airbyte.version}") final String airbyteVersion,
+                                 final FeatureFlags featureFlags,
+                                 @Value("${micronaut.server.port}") final Integer serverPort,
+                                 final AirbyteConfigValidator airbyteConfigValidator,
+                                 final TemporalUtils temporalUtils,
+                                 final AirbyteApiClient airbyteApiClient) {
+    this.containerOrchestratorConfig = containerOrchestratorConfig;
+    this.workerConfigs = workerConfigs;
+    this.processFactory = processFactory;
+    this.secretsHydrator = secretsHydrator;
+    this.workspaceRoot = workspaceRoot;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.airbyteVersion = airbyteVersion;
+    this.featureFlags = featureFlags;
+    this.serverPort = serverPort;
+    this.airbyteConfigValidator = airbyteConfigValidator;
+    this.temporalUtils = temporalUtils;
+    this.airbyteApiClient = airbyteApiClient;
+  }
 
   @Override
   public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,

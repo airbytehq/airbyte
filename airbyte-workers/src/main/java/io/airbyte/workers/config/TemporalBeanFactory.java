@@ -22,8 +22,8 @@ import io.micronaut.context.annotation.Value;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.WorkerFactory;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
-import javax.inject.Singleton;
 
 /**
  * Micronaut bean factory for Temporal-related singletons.
