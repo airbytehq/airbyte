@@ -4,9 +4,7 @@ import React, { ChangeEvent, useState } from "react";
 
 import { Input } from "components";
 
-import { buildConnectionUpdate } from "core/domain/connection";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
-import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import withKeystrokeHandler from "utils/withKeystrokeHandler";
 
 import styles from "./ConnectionName.module.scss";
@@ -14,13 +12,12 @@ import styles from "./ConnectionName.module.scss";
 const InputWithKeystroke = withKeystrokeHandler(Input);
 
 export const ConnectionName: React.FC = () => {
-  const { connection } = useConnectionEditService();
+  const { connection, updateConnection } = useConnectionEditService();
   const { name } = connection;
   const [editingState, setEditingState] = useState(false);
   const [loading, setLoading] = useState(false);
   const [connectionName, setConnectionName] = useState<string | undefined>(connection.name);
   const [connectionNameBackup, setConnectionNameBackup] = useState(connectionName);
-  const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const inputChange = ({ currentTarget: { value } }: ChangeEvent<HTMLInputElement>) => setConnectionName(value);
 
@@ -50,13 +47,10 @@ export const ConnectionName: React.FC = () => {
     try {
       setLoading(true);
 
-      // TODO: Once PATCH work is merged this will be fine.
-      // await updateConnection({
-      //   name: connectionNameTrimmed,
-      //   connectionId: connection.connectionId,
-      // });
-      // TODO: Make sure the top level connection object is updated after this
-      await updateConnection(buildConnectionUpdate(connection, { name: connectionNameTrimmed }));
+      await updateConnection({
+        name: connectionNameTrimmed,
+        connectionId: connection.connectionId,
+      });
 
       setConnectionName(connectionNameTrimmed);
       setConnectionNameBackup(connectionNameTrimmed);

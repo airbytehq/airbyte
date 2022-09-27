@@ -7,10 +7,8 @@ import { Switch } from "components";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
-import { buildConnectionUpdate } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
-import { useUpdateConnection } from "hooks/services/useConnectionHook";
 
 import { ConnectionStatus } from "../../../../../core/request/AirbyteClient";
 
@@ -37,18 +35,16 @@ interface EnabledControlProps {
 }
 
 const EnabledControl: React.FC<EnabledControlProps> = ({ disabled, onStatusUpdating }) => {
-  const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
   const analyticsService = useAnalyticsService();
 
-  const { connection } = useConnectionEditService();
+  const { connection, updateConnection, connectionUpdating } = useConnectionEditService();
   const frequencyType = getFrequencyType(connection.scheduleData?.basicSchedule);
 
   const onChangeStatus = async () => {
-    await updateConnection(
-      buildConnectionUpdate(connection, {
-        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
-      })
-    );
+    await updateConnection({
+      connectionId: connection.connectionId,
+      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
+    });
 
     const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
 
@@ -63,8 +59,8 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled, onStatusUpdat
   };
 
   useUpdateEffect(() => {
-    onStatusUpdating?.(isLoading);
-  }, [isLoading]);
+    onStatusUpdating?.(connectionUpdating);
+  }, [connectionUpdating]);
 
   return (
     <Content>
@@ -75,7 +71,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled, onStatusUpdat
         disabled={disabled}
         onChange={onChangeStatus}
         checked={connection.status === ConnectionStatus.active}
-        loading={isLoading}
+        loading={connectionUpdating}
         id="toggle-enabled-source"
       />
     </Content>

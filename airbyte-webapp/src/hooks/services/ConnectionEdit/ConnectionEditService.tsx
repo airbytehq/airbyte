@@ -1,8 +1,10 @@
-import { useContext, useState, createContext } from "react";
+import { useContext, useState, createContext, useCallback } from "react";
 import { useAsyncFn } from "react-use";
 
+import { WebBackendConnectionUpdate } from "core/request/AirbyteClient";
+
 import { ConnectionFormServiceProvider } from "../ConnectionForm/ConnectionFormService";
-import { useGetConnection, useWebConnectionService } from "../useConnectionHook";
+import { useGetConnection, useUpdateConnection, useWebConnectionService } from "../useConnectionHook";
 
 interface ConnectionEditProps {
   connectionId: string;
@@ -18,11 +20,21 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
     setSchemaHasBeenRefreshed(true);
   }, [connectionId]);
 
+  const { mutateAsync: updateConnectionAction, isLoading: connectionUpdating } = useUpdateConnection();
+
+  const updateConnection = useCallback(
+    async (connection: WebBackendConnectionUpdate) => {
+      setConnection(await updateConnectionAction(connection));
+    },
+    [updateConnectionAction]
+  );
+
   return {
     connection,
+    connectionUpdating,
     schemaRefreshing,
     schemaHasBeenRefreshed,
-    setConnection,
+    updateConnection,
     setSchemaHasBeenRefreshed,
     refreshSchema,
   };

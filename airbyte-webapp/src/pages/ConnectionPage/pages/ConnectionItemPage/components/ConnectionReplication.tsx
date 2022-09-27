@@ -19,7 +19,7 @@ import {
 } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useModalService } from "hooks/services/Modal";
-import { useConnectionService, useUpdateConnection, ValuesProps } from "hooks/services/useConnectionHook";
+import { useConnectionService, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
@@ -43,7 +43,6 @@ export const ConnectionReplication: React.FC = () => {
   const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
   const { closeConfirmationModal } = useConfirmationModalService();
-  const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const [saved, setSaved] = useState(false);
 
@@ -52,7 +51,7 @@ export const ConnectionReplication: React.FC = () => {
     connection,
     schemaRefreshing,
     schemaHasBeenRefreshed,
-    setConnection,
+    updateConnection,
     setSchemaHasBeenRefreshed,
     refreshSchema,
   } = useConnectionEditService();
@@ -71,7 +70,7 @@ export const ConnectionReplication: React.FC = () => {
       }
       const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
-      const updatedConnection = await updateConnection({
+      await updateConnection({
         ...connectionAsUpdate,
         ...values,
         connectionId: connection.connectionId,
@@ -88,10 +87,8 @@ export const ConnectionReplication: React.FC = () => {
           frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
         });
       }
-
-      setConnection(updatedConnection);
     },
-    [analyticsService, connection, schemaRefreshing, setConnection, updateConnection]
+    [analyticsService, connection, schemaRefreshing, updateConnection]
   );
 
   const onFormSubmit = useCallback(
@@ -178,7 +175,12 @@ export const ConnectionReplication: React.FC = () => {
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
             <Form>
               <FormChangeTracker changed={dirty} formId={formId} />
-              <ConnectionFormFields values={values} isSubmitting={isSubmitting} refreshSchema={refreshSchema} />
+              <ConnectionFormFields
+                values={values}
+                isSubmitting={isSubmitting}
+                dirty={dirty}
+                refreshSchema={refreshSchema}
+              />
               <EditControls
                 isSubmitting={isSubmitting}
                 dirty={dirty}

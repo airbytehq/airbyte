@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { ConnectorCard } from "components";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
-import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
@@ -22,7 +22,7 @@ interface StatusMainInfoProps {
 export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({ onStatusUpdating }) => {
   const {
     connection: { source, destination, status },
-  } = useConnectionFormService();
+  } = useConnectionEditService();
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 

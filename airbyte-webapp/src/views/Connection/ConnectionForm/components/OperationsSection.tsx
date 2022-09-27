@@ -2,13 +2,14 @@ import { Field, FieldArray } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { Card, H5 } from "components";
+import { Card } from "components";
+import { Text } from "components/base/Text";
 
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { NormalizationField } from "./NormalizationField";
-import styles from "./OperationsSection.module.scss";
+import { Section } from "./Section";
 import { TransformationField } from "./TransformationField";
 
 interface OperationsSectionProps {
@@ -34,16 +35,16 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
 
   return (
     <Card>
-      <div className={styles.styledSection}>
+      <Section>
         {supportsNormalization || supportsTransformations ? (
-          <H5 bold>
+          <Text as="h5">
             {[
               supportsNormalization && formatMessage({ id: "connectionForm.normalization.title" }),
               supportsTransformations && formatMessage({ id: "connectionForm.transformation.title" }),
             ]
               .filter(Boolean)
               .join(" & ")}
-          </H5>
+          </Text>
         ) : null}
         {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
         {supportsTransformations && (
@@ -57,7 +58,7 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
             )}
           </FieldArray>
         )}
-      </div>
+      </Section>
     </Card>
   );
 };

@@ -41,14 +41,17 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
   onDiscoverSchema,
   afterSubmitConnection,
 }) => {
+  const navigate = useNavigate();
+
   const { mutateAsync: createConnection } = useCreateConnection();
+
+  const { clearFormChange } = useFormChangeTrackerService();
+
   const workspaceId = useCurrentWorkspaceId();
   const formId = useUniqueFormId();
-  const { clearFormChange } = useFormChangeTrackerService();
-  const navigate = useNavigate();
-  const [editingTransformation, toggleEditingTransformation] = useToggle(false);
 
   const { connection, initialValues, getErrorMessage, setSubmitError } = useConnectionFormService();
+  const [editingTransformation, toggleEditingTransformation] = useToggle(false);
 
   const onFormSubmit = useCallback(
     async (formValues: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
@@ -104,7 +107,12 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({
             <Form>
               <FormChangeTracker changed={dirty} formId={formId} />
               <CreateConnectionName />
-              <ConnectionFormFields values={values} isSubmitting={isSubmitting} refreshSchema={onDiscoverSchema} />
+              <ConnectionFormFields
+                values={values}
+                isSubmitting={isSubmitting}
+                dirty={dirty}
+                refreshSchema={onDiscoverSchema}
+              />
               <OperationsSection
                 onStartEditTransformation={toggleEditingTransformation}
                 onEndEditTransformation={toggleEditingTransformation}
