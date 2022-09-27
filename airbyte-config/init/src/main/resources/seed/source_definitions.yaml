@@ -253,6 +253,13 @@
   icon: drift.svg
   sourceType: api
   releaseStage: alpha
+- name: DV 360
+  sourceDefinitionId: 1356e1d9-977f-4057-ad4b-65f25329cf61
+  dockerRepository: airbyte/source-dv-360
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/dv-360
+  sourceType: api
+  releaseStage: alpha
 - name: E2E Testing
   sourceDefinitionId: d53f9084-fa6b-4a5a-976c-5b8392f4ad8a
   dockerRepository: airbyte/source-e2e-test
