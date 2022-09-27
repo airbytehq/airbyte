@@ -12,6 +12,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   public static final String USE_STREAM_CAPABLE_STATE = "USE_STREAM_CAPABLE_STATE";
   public static final String LOG_CONNECTOR_MESSAGES = "LOG_CONNECTOR_MESSAGES";
+  public static final String NEED_STATE_VALIDATION = "NEED_STATE_VALIDATION";
 
   @Override
   public boolean autoDisablesFailingConnections() {
@@ -38,6 +39,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   @Override
   public boolean logConnectorMessages() {
     return getEnvOrDefault(LOG_CONNECTOR_MESSAGES, false, Boolean::parseBoolean);
+  }
+
+  @Override
+  public boolean needStateValidation() {
+    return getEnvOrDefault(NEED_STATE_VALIDATION, true, Boolean::parseBoolean);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java
