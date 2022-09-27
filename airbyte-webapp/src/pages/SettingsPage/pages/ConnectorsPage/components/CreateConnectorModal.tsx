@@ -4,7 +4,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, LabeledInput, Link, Modal, StatusIcon } from "components";
+import { Button, LabeledInput, Link, StatusIcon } from "components";
+import { Modal } from "components/ui/Modal";
 
 import { useConfig } from "config";
 

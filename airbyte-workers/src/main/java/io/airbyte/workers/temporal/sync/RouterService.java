@@ -5,7 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.workers.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalJobType;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Singleton;
