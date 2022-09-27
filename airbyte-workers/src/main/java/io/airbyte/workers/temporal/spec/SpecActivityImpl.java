@@ -10,8 +10,8 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultGetSpecWorker;
@@ -26,7 +26,6 @@ import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.util.function.Supplier;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -35,23 +34,29 @@ import javax.inject.Singleton;
           pattern = "(?i)^(?!data_plane).*")
 public class SpecActivityImpl implements SpecActivity {
 
-  @Inject
-  @Named("specWorkerConfigs")
-  private WorkerConfigs workerConfigs;
-  @Inject
-  @Named("specProcessFactory")
-  private ProcessFactory processFactory;
-  @Inject
-  @Named("workspaceRoot")
-  private Path workspaceRoot;
-  @Inject
-  private WorkerEnvironment workerEnvironment;
-  @Inject
-  private LogConfigs logConfigs;
-  @Inject
-  private AirbyteApiClient airbyteApiClient;
-  @Value("${airbyte.version}")
-  private String airbyteVersion;
+  private final WorkerConfigs workerConfigs;
+  private final ProcessFactory processFactory;
+  private final Path workspaceRoot;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+  private final AirbyteApiClient airbyteApiClient;
+  private final String airbyteVersion;
+
+  public SpecActivityImpl(@Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
+                          @Named("specProcessFactory") final ProcessFactory processFactory,
+                          @Named("workspaceRoot") final Path workspaceRoot,
+                          final WorkerEnvironment workerEnvironment,
+                          final LogConfigs logConfigs,
+                          final AirbyteApiClient airbyteApiClient,
+                          @Value("${airbyte.version}") final String airbyteVersion) {
+    this.workerConfigs = workerConfigs;
+    this.processFactory = processFactory;
+    this.workspaceRoot = workspaceRoot;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.airbyteApiClient = airbyteApiClient;
+    this.airbyteVersion = airbyteVersion;
+  }
 
   @Override
   public ConnectorJobOutput run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {

@@ -12,8 +12,8 @@ import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
@@ -29,7 +29,6 @@ import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -40,25 +39,32 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
-  @Inject
-  @Named("discoverWorkerConfigs")
-  private WorkerConfigs workerConfigs;
-  @Inject
-  @Named("discoverProcessFactory")
-  private ProcessFactory processFactory;
-  @Inject
-  private SecretsHydrator secretsHydrator;
-  @Inject
-  @Named("workspaceRoot")
-  private Path workspaceRoot;
-  @Inject
-  private WorkerEnvironment workerEnvironment;
-  @Inject
-  private LogConfigs logConfigs;
-  @Inject
-  private AirbyteApiClient airbyteApiClient;;
-  @Value("${airbyte.version}")
-  private String airbyteVersion;
+  private final WorkerConfigs workerConfigs;
+  private final ProcessFactory processFactory;
+  private final SecretsHydrator secretsHydrator;
+  private final Path workspaceRoot;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+  private final AirbyteApiClient airbyteApiClient;;
+  private final String airbyteVersion;
+
+  public DiscoverCatalogActivityImpl(@Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
+                                     @Named("discoverProcessFactory") final ProcessFactory processFactory,
+                                     final SecretsHydrator secretsHydrator,
+                                     @Named("workspaceRoot") final Path workspaceRoot,
+                                     final WorkerEnvironment workerEnvironment,
+                                     final LogConfigs logConfigs,
+                                     final AirbyteApiClient airbyteApiClient,
+                                     @Value("${airbyte.version}") final String airbyteVersion) {
+    this.workerConfigs = workerConfigs;
+    this.processFactory = processFactory;
+    this.secretsHydrator = secretsHydrator;
+    this.workspaceRoot = workspaceRoot;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.airbyteApiClient = airbyteApiClient;
+    this.airbyteVersion = airbyteVersion;
+  }
 
   @Override
   public ConnectorJobOutput run(final JobRunConfig jobRunConfig,
