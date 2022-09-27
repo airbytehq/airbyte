@@ -30,7 +30,7 @@ class MailChimpAuthenticator:
     def get_auth(self, config: Mapping[str, Any]) -> AuthBase:
         authorization = config.get("credentials", {})
         auth_type = authorization.get("auth_type")
-        if auth_type == "apikey" or not authorization:
+        if auth_type == "apikey" or not Authorization:
             # API keys have the format <key>-<data_center>.
             # See https://mailchimp.com/developer/marketing/docs/fundamentals/#api-structure
             apikey = authorization.get("apikey") or config.get("apikey")
@@ -41,7 +41,7 @@ class MailChimpAuthenticator:
             auth = TokenAuthenticator(token=b64_encoded, auth_method="Basic")
             auth.data_center = apikey.split("-").pop()
 
-        elif auth_type == "oauth2.0":
+        elif auth_type == "OAuth2.0":
             access_token = authorization["access_token"]
             auth = TokenAuthenticator(token=access_token, auth_method="Bearer")
             auth.data_center = self.get_server_prefix(access_token)

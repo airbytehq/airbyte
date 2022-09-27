@@ -15,12 +15,12 @@
                 "type": "object",
                 "title": "OAuth2.0",
                 "x-oauth2-provider": "mailchimp",
-                "required": ["auth_method", "client_id", "client_secret", "access_token"],
+                "required": ["auth_type", "client_id", "client_secret", "access_token"],
                 "properties": {
-                  "auth_method": {
+                  "auth_type": {
                     "type": "string",
-                    "const": "oAuth2.0",
-                    "default": "oAuth2.0"
+                    "const": "OAuth2.0",
+                    "default": "OAuth2.0"
                   },
                   "client_id": {
                     "type": "string",
