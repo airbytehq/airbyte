@@ -4,7 +4,7 @@ import React from "react";
 import styled from "styled-components";
 
 import { Button } from "components/base";
-import Modal from "components/Modal";
+import { Modal } from "components/ui/Modal";
 
 interface ShowVideoProps {
   videoId?: string;
