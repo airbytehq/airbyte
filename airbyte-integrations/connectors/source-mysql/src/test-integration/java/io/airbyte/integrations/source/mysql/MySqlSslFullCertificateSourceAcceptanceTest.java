@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mysql;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.db.MySqlUtils;
 import io.airbyte.db.jdbc.JdbcUtils;
-
 import java.io.IOException;
 
 public class MySqlSslFullCertificateSourceAcceptanceTest extends AbstractMySqlSslCertificateSourceAcceptanceTest {
@@ -20,7 +19,7 @@ public class MySqlSslFullCertificateSourceAcceptanceTest extends AbstractMySqlSs
   @Override
   public ImmutableMap getSslConfig() {
     return ImmutableMap.builder()
-        .put(JdbcUtils.MODE_KEY, "verify_identity")
+        .put(JdbcUtils.MODE_KEY, "verify_ca")
         .put("ca_certificate", certs.getCaCertificate())
         .put("client_certificate", certs.getClientCertificate())
         .put("client_key", certs.getClientKey())

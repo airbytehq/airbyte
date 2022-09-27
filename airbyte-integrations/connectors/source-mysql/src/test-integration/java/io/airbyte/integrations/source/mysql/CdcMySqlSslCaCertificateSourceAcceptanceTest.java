@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -29,17 +33,12 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -105,12 +104,15 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
     certs = MySqlUtils.getCertificate(container, true);
 
     var sslMode = ImmutableMap.builder()
-            .put(JdbcUtils.MODE_KEY, "verify_ca")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", "Passw0rd")
-            .build();
+        .put(JdbcUtils.MODE_KEY, "verify_ca")
+        .put("ca_certificate", certs.getCaCertificate())
+        .put("client_certificate", certs.getClientCertificate())
+        .put("client_key", certs.getClientKey())
+        .put("client_key_password", "Passw0rd")
+        .build();
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+            .put("method", "CDC")
+            .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
@@ -120,7 +122,7 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put(JdbcUtils.SSL_KEY, true)
         .put(JdbcUtils.SSL_MODE_KEY, sslMode)
-        .put("replication_method", ReplicationMethod.CDC)
+        .put("replication_method", replicationMethod)
         .build());
 
     revokeAllPermissions();

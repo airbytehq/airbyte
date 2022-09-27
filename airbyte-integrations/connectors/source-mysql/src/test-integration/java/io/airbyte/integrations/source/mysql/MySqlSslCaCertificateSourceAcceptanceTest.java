@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mysql;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.db.MySqlUtils;
 import io.airbyte.db.jdbc.JdbcUtils;
-
 import java.io.IOException;
 
 public class MySqlSslCaCertificateSourceAcceptanceTest extends AbstractMySqlSslCertificateSourceAcceptanceTest {

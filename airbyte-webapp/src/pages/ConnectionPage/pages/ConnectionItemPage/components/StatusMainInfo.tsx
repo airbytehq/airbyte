@@ -3,9 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Link } from "react-router-dom";
 
-import ConnectorCard from "components/ConnectorCard";
+import { ConnectorCard } from "components";
 
-import { getFrequencyConfig } from "config/utils";
+import { getFrequencyType } from "config/utils";
 import { ConnectionStatus, SourceRead, DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
@@ -32,7 +32,6 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
   const allowSync = useFeature(FeatureItem.AllowSync);
-  const frequency = getFrequencyConfig(connection.schedule);
 
   const sourceConnectionPath = `../../${RoutePaths.Source}/${source.sourceId}`;
   const destinationConnectionPath = `../../${RoutePaths.Destination}/${destination.destinationId}`;
@@ -64,7 +63,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
             onStatusUpdating={onStatusUpdating}
             disabled={!allowSync}
             connection={connection}
-            frequencyType={frequency?.type}
+            frequencyType={getFrequencyType(connection.scheduleData?.basicSchedule)}
           />
         </div>
       )}

@@ -31,7 +31,7 @@ Follow the link to read more about [how to find your API key](https://support.fr
 6. Choose the `Start Date` as the starting point for your data replication.
 5. Click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 

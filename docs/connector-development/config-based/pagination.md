@@ -32,12 +32,12 @@ paginator:
   type: "LimitPaginator"
   page_size: 5
   limit_option:
-    option_type: request_parameter
+    inject_into: request_parameter
     field_name: page_size
   pagination_strategy:
     type: "PageIncrement"
   page_token:
-    option_type: "request_parameter"
+    inject_into: "request_parameter"
     field_name: "page"
 ```
 
@@ -59,7 +59,7 @@ paginator:
   type: "LimitPaginator"
   page_size: 5
   limit_option:
-    option_type: request_parameter
+    inject_into: request_parameter
     field_name: page_size
   pagination_strategy:
     type: "OffsetIncrement"
@@ -100,9 +100,10 @@ paginator:
 ```
 
 Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_data`,
-the first request will be sent as `https://cloud.airbyte.com/api/get_data`
+the first request will be sent as `https://cloud.airbyte.com/api/get_data`.
+
 Assuming the id of the last record fetched is 1000,
-the next request will be sent as `https://cloud.airbyte.com/api/get_data?from=1000`
+the next request will be sent as `https://cloud.airbyte.com/api/get_data?from=1000`.
 
 #### Cursor paginator in path
 
@@ -121,5 +122,6 @@ paginator:
 
 Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_data`,
 the first request will be sent as `https://cloud.airbyte.com/api/get_data`
+
 Assuming the response's next url is `https://cloud.airbyte.com/api/get_data?page=1&page_size=100`,
 the next request will be sent as `https://cloud.airbyte.com/api/get_data?page=1&page_size=100`

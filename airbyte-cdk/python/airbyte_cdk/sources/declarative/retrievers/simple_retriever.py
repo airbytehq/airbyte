@@ -48,9 +48,9 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
     record_selector: HttpSelector
     options: InitVar[Mapping[str, Any]]
     name: str
-    _name: str = field(init=False, repr=False)
+    _name: str = field(init=False, repr=False, default="")
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
-    _primary_key: str = field(init=False, repr=False)
+    _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
     stream_slicer: Optional[StreamSlicer] = SingleSlice(options={})
 

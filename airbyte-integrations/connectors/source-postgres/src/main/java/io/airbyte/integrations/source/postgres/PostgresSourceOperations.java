@@ -328,4 +328,9 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     return moneyString.replaceAll("[^\\d.-]", "");
   }
 
+  @Override
+  public boolean isCursorType(JDBCType type) {
+    return PostgresUtils.ALLOWED_CURSOR_TYPES.contains(type);
+  }
+
 }

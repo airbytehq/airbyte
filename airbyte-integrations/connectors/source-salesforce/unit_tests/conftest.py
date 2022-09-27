@@ -11,9 +11,22 @@ from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 @pytest.fixture(scope="module")
-def configured_catalog():
-    with open("unit_tests/configured_catalog.json") as f:
+def bulk_catalog():
+    with open("unit_tests/bulk_catalog.json") as f:
+        data = json.loads(f.read())
+    return ConfiguredAirbyteCatalog.parse_obj(data)
+
+
+@pytest.fixture(scope="module")
+def rest_catalog():
+    with open("unit_tests/rest_catalog.json") as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
 
@@ -86,5 +99,5 @@ def stream_api_v2(stream_config):
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 
-def generate_stream(stream_name, stream_config, stream_api, state=None):
-    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api, state=state)[0]
+def generate_stream(stream_name, stream_config, stream_api):
+    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api)[0]

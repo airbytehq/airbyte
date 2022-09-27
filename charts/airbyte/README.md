@@ -1,6 +1,6 @@
 # airbyte
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.0-alpha](https://img.shields.io/badge/AppVersion-0.39.41--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.9](https://img.shields.io/badge/AppVersion-0.40.9-informational?style=flat-square)
 
 Helm chart to deploy airbyte
 
@@ -9,6 +9,7 @@ Helm chart to deploy airbyte
 | Repository | Name | Version |
 |------------|------|---------|
 | https://airbytehq.github.io/helm-charts/ | airbyte-bootloader | placeholder |
+| https://airbytehq.github.io/helm-charts/ | metrics | placeholder |
 | https://airbytehq.github.io/helm-charts/ | pod-sweeper | placeholder |
 | https://airbytehq.github.io/helm-charts/ | server | placeholder |
 | https://airbytehq.github.io/helm-charts/ | temporal | placeholder |
@@ -24,13 +25,19 @@ Helm chart to deploy airbyte
 |-----|------|---------|-------------|
 | airbyte-bootloader.affinity | object | `{}` |  |
 | airbyte-bootloader.enabled | bool | `true` |  |
+| airbyte-bootloader.env_vars | object | `{}` |  |
+| airbyte-bootloader.extraContainers | list | `[]` |  |
+| airbyte-bootloader.extraEnv | list | `[]` |  |
+| airbyte-bootloader.extraInitContainers | list | `[]` |  |
+| airbyte-bootloader.extraVolumeMounts | list | `[]` |  |
+| airbyte-bootloader.extraVolumes | list | `[]` |  |
 | airbyte-bootloader.image.pullPolicy | string | `"IfNotPresent"` |  |
 | airbyte-bootloader.image.repository | string | `"airbyte/bootloader"` |  |
-| airbyte-bootloader.image.tag | string | `"0.40.0-alpha"` |  |
 | airbyte-bootloader.nodeSelector | object | `{}` |  |
 | airbyte-bootloader.podAnnotations | object | `{}` |  |
 | airbyte-bootloader.resources.limits | object | `{}` |  |
 | airbyte-bootloader.resources.requests | object | `{}` |  |
+| airbyte-bootloader.secrets | object | `{}` |  |
 | airbyte-bootloader.tolerations | list | `[]` |  |
 | externalDatabase.database | string | `"db-airbyte"` |  |
 | externalDatabase.existingSecret | string | `""` |  |
@@ -40,11 +47,11 @@ Helm chart to deploy airbyte
 | externalDatabase.port | int | `5432` |  |
 | externalDatabase.user | string | `"airbyte"` |  |
 | fullnameOverride | string | `""` |  |
-| global.database.host | string | `"test"` |  |
+| global.database.host | string | `"example.com"` |  |
 | global.database.port | string | `"5432"` |  |
+| global.database.secretName | string | `""` |  |
 | global.database.secretValue | string | `""` |  |
 | global.deploymentMode | string | `"oss"` |  |
-| global.imageRegistry | string | `""` |  |
 | global.jobs.kube.annotations | object | `{}` |  |
 | global.jobs.kube.main_container_image_pull_secret | string | `""` |  |
 | global.jobs.kube.nodeSelector | object | `{}` |  |
@@ -67,10 +74,29 @@ Helm chart to deploy airbyte
 | global.logs.secretKey.existingSecret | string | `""` |  |
 | global.logs.secretKey.existingSecretKey | string | `""` |  |
 | global.logs.secretKey.password | string | `""` |  |
-| global.secretName | string | `"airbyte-secrets"` |  |
+| global.metrics.metricClient | string | `""` |  |
+| global.metrics.otelCollectorEndpoint | string | `""` |  |
 | global.serviceAccountName | string | `"airbyte-admin"` |  |
+| metrics.affinity | object | `{}` |  |
+| metrics.containerSecurityContext | object | `{}` |  |
+| metrics.enabled | bool | `false` |  |
+| metrics.env_vars | object | `{}` |  |
+| metrics.extraContainers | list | `[]` |  |
+| metrics.extraEnv | list | `[]` |  |
+| metrics.extraVolumeMounts | list | `[]` |  |
+| metrics.extraVolumes | list | `[]` |  |
+| metrics.image.pullPolicy | string | `"IfNotPresent"` |  |
+| metrics.image.repository | string | `"airbyte/metrics-reporter"` |  |
+| metrics.nodeSelector | object | `{}` |  |
+| metrics.podAnnotations | object | `{}` |  |
+| metrics.replicaCount | int | `1` |  |
+| metrics.resources.limits | object | `{}` |  |
+| metrics.resources.requests | object | `{}` |  |
+| metrics.secrets | object | `{}` |  |
+| metrics.tolerations | list | `[]` |  |
 | minio.auth.rootPassword | string | `"minio123"` |  |
 | minio.auth.rootUser | string | `"minio"` |  |
+| minio.enabled | bool | `true` |  |
 | nameOverride | string | `""` |  |
 | pod-sweeper.affinity | object | `{}` |  |
 | pod-sweeper.containerSecurityContext | object | `{}` |  |
@@ -108,12 +134,14 @@ Helm chart to deploy airbyte
 | server.affinity | object | `{}` |  |
 | server.containerSecurityContext | object | `{}` |  |
 | server.enabled | bool | `true` |  |
+| server.env_vars | object | `{}` |  |
+| server.extraContainers | list | `[]` |  |
 | server.extraEnv | list | `[]` |  |
+| server.extraInitContainers | list | `[]` |  |
 | server.extraVolumeMounts | list | `[]` |  |
 | server.extraVolumes | list | `[]` |  |
 | server.image.pullPolicy | string | `"IfNotPresent"` |  |
-| server.image.repository | string | `"airbyte/server"` |  |
-| server.image.tag | string | `"0.40.0-alpha"` |  |
+| server.image.repository | string | `"airbyte/worker"` |  |
 | server.livenessProbe.enabled | bool | `true` |  |
 | server.livenessProbe.failureThreshold | int | `3` |  |
 | server.livenessProbe.initialDelaySeconds | int | `30` |  |
@@ -132,8 +160,7 @@ Helm chart to deploy airbyte
 | server.replicaCount | int | `1` |  |
 | server.resources.limits | object | `{}` |  |
 | server.resources.requests | object | `{}` |  |
-| server.service.port | int | `8001` |  |
-| server.service.type | string | `"ClusterIP"` |  |
+| server.secrets | object | `{}` |  |
 | server.tolerations | list | `[]` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |
@@ -141,13 +168,14 @@ Helm chart to deploy airbyte
 | temporal.affinity | object | `{}` |  |
 | temporal.containerSecurityContext | object | `{}` |  |
 | temporal.enabled | bool | `true` |  |
+| temporal.extraContainers | list | `[]` |  |
 | temporal.extraEnv | list | `[]` |  |
 | temporal.extraInitContainers | list | `[]` |  |
 | temporal.extraVolumeMounts | list | `[]` |  |
 | temporal.extraVolumes | list | `[]` |  |
 | temporal.image.pullPolicy | string | `"IfNotPresent"` |  |
 | temporal.image.repository | string | `"temporalio/auto-setup"` |  |
-| temporal.image.tag | string | `"1.13.0"` |  |
+| temporal.image.tag | string | `"1.7.0"` |  |
 | temporal.livenessProbe.enabled | bool | `true` |  |
 | temporal.livenessProbe.failureThreshold | int | `3` |  |
 | temporal.livenessProbe.initialDelaySeconds | int | `5` |  |
@@ -173,19 +201,20 @@ Helm chart to deploy airbyte
 | webapp.api.url | string | `"/api/v1/"` |  |
 | webapp.containerSecurityContext | object | `{}` |  |
 | webapp.enabled | bool | `true` |  |
+| webapp.env_vars | object | `{}` |  |
+| webapp.extraContainers | list | `[]` |  |
 | webapp.extraEnv | list | `[]` |  |
+| webapp.extraInitContainers | list | `[]` |  |
 | webapp.extraVolumeMounts | list | `[]` |  |
 | webapp.extraVolumes | list | `[]` |  |
 | webapp.fullstory.enabled | bool | `false` |  |
 | webapp.image.pullPolicy | string | `"IfNotPresent"` |  |
 | webapp.image.repository | string | `"airbyte/webapp"` |  |
-| webapp.image.tag | string | `"0.40.0-alpha"` |  |
 | webapp.ingress.annotations | object | `{}` |  |
 | webapp.ingress.className | string | `""` |  |
-| webapp.ingress.enabled | bool | `false` |  |
+| webapp.ingress.enabled | bool | `true` |  |
 | webapp.ingress.hosts | list | `[]` |  |
 | webapp.ingress.tls | list | `[]` |  |
-| webapp.isDemo | bool | `false` |  |
 | webapp.livenessProbe.enabled | bool | `true` |  |
 | webapp.livenessProbe.failureThreshold | int | `3` |  |
 | webapp.livenessProbe.initialDelaySeconds | int | `30` |  |
@@ -203,19 +232,23 @@ Helm chart to deploy airbyte
 | webapp.replicaCount | int | `1` |  |
 | webapp.resources.limits | object | `{}` |  |
 | webapp.resources.requests | object | `{}` |  |
+| webapp.secrets | object | `{}` |  |
 | webapp.service.annotations | object | `{}` |  |
 | webapp.service.port | int | `80` |  |
 | webapp.service.type | string | `"ClusterIP"` |  |
 | webapp.tolerations | list | `[]` |  |
 | worker.affinity | object | `{}` |  |
+| worker.containerOrchestrator.enabled | bool | `true` |  |
+| worker.containerOrchestrator.image | string | `""` |  |
 | worker.containerSecurityContext | object | `{}` |  |
 | worker.enabled | bool | `true` |  |
 | worker.extraEnv | list | `[]` |  |
 | worker.extraVolumeMounts | list | `[]` |  |
 | worker.extraVolumes | list | `[]` |  |
+| worker.hpa.enabled | bool | `false` |  |
 | worker.image.pullPolicy | string | `"IfNotPresent"` |  |
 | worker.image.repository | string | `"airbyte/worker"` |  |
-| worker.image.tag | string | `"0.40.0-alpha"` |  |
+| worker.image.tag | string | `"0.40.9"` |  |
 | worker.livenessProbe.enabled | bool | `true` |  |
 | worker.livenessProbe.failureThreshold | int | `3` |  |
 | worker.livenessProbe.initialDelaySeconds | int | `30` |  |

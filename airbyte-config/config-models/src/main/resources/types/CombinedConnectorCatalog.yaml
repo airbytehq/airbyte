@@ -1,0 +1,18 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/CombinedConnectorCatalog.yaml
+title: CombinedConnectorCatalog
+description: Used to provide the connector catalog from a remote source
+type: object
+required:
+  - destinations
+  - sources
+properties:
+  destinations:
+    type: array
+    items:
+      existingJavaType: io.airbyte.config.StandardDestinationDefinition
+  sources:
+    type: array
+    items:
+      existingJavaType: io.airbyte.config.StandardSourceDefinition

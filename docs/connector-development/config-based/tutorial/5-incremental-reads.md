@@ -87,10 +87,11 @@ For example:
 > "historical": true, "base": "USD", "date": "2022-07-18"
 
 The connector will now always read data for the start date, which is not exactly what we want.
-Instead, we would like to iterate over all the dates between the start_date and today and read data for each day.
+Instead, we would like to iterate over all the dates between the `start_date` and today and read data for each day.
 
 We can do this by adding a `DatetimeStreamSlicer` to the connector definition, and update the `path` to point to the stream_slice's `start_date`:
-More details on the stream slicers can be found [here](../stream-slicers.md) <FIXME: need to fix links>
+
+More details on the stream slicers can be found [here](../stream-slicers.md).
 
 Let's first define a stream slicer at the top level of the connector definition:
 

@@ -7,6 +7,7 @@ from functools import lru_cache
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
@@ -14,10 +15,8 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
-from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
 from dataclasses_jsonschema import JsonSchemaMixin
 
 
@@ -28,33 +27,35 @@ class HttpRequester(Requester, JsonSchemaMixin):
 
     Attributes:
         name (str): Name of the stream. Only used for request/response caching
-        url_base (InterpolatedString): Base url to send requests to
-        path (InterpolatedString): Path to send requests to
+        url_base (Union[InterpolatedString, str]): Base url to send requests to
+        path (Union[InterpolatedString, str]): Path to send requests to
         http_method (Union[str, HttpMethod]): HTTP method to use when sending requests
-        request_options_provider (Optional[RequestOptionsProvider]): request option provider defining the options to set on outgoing requests
-        authenticator (HttpAuthenticator): Authenticator defining how to authenticate to the source
+        request_options_provider (Optional[InterpolatedRequestOptionsProvider]): request option provider defining the options to set on outgoing requests
+        authenticator (DeclarativeAuthenticator): Authenticator defining how to authenticate to the source
         error_handler (Optional[ErrorHandler]): Error handler defining how to detect and handle errors
         config (Config): The user-provided configuration as specified by the source's spec
     """
 
     name: str
-    url_base: InterpolatedString
-    path: InterpolatedString
+    url_base: Union[InterpolatedString, str]
+    path: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
     http_method: Union[str, HttpMethod] = HttpMethod.GET
-    request_options_provider: Optional[RequestOptionsProvider] = None
-    authenticator: HttpAuthenticator = None
+    request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
+    authenticator: DeclarativeAuthenticator = None
     error_handler: Optional[ErrorHandler] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
+        self.url_base = InterpolatedString.create(self.url_base, options=options)
+        self.path = InterpolatedString.create(self.path, options=options)
         if self.request_options_provider is None:
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, options=options)
         elif isinstance(self.request_options_provider, dict):
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
         else:
             self._request_options_provider = self.request_options_provider
-        self.authenticator = self.authenticator or NoAuth()
+        self.authenticator = self.authenticator or NoAuth(options)
         if type(self.http_method) == str:
             self.http_method = HttpMethod[self.http_method]
         self._method = self.http_method

@@ -69,7 +69,7 @@ Where `airbyte` is the name of the repository that will be indexed locally.
 
 After adding the repo, perform the repo indexing process by running `helm repo update`.
 
-After this you can browse all charts uploaded to repository by running `helm search repo aribyte`
+After this you can browse all charts uploaded to repository by running `helm search repo airbyte`
 
 It'll produce the output below:
 

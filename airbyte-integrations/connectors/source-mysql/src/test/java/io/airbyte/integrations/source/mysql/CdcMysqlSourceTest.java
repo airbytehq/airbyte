@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest.setEnv;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
 import static io.airbyte.integrations.source.mysql.MySqlSource.DRIVER_CLASS;
@@ -19,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -38,22 +39,18 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -67,6 +64,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @BeforeEach
   public void setup() throws SQLException {
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     init();
     revokeAllPermissions();
     grantCorrectPermissions();

@@ -1,40 +1,46 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { ContentCard } from "components";
+import { Card } from "components";
 import { JobItem } from "components/JobItem/JobItem";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorT } from "core/domain/connector";
-import { CheckConnectionRead, SynchronousJobRead } from "core/request/AirbyteClient";
+import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { useTestConnector } from "./useTestConnector";
 
-export interface ConnectorCardProvidedProps {
-  isTestConnectionInProgress: boolean;
-  isSuccess: boolean;
-  onStopTesting: () => void;
-  testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
+type ConnectorCardProvidedProps = Omit<
+  ServiceFormProps,
+  "isKeyConnectionInProgress" | "isSuccess" | "onStopTesting" | "testConnector"
+>;
+
+interface ConnectorCardBaseProps extends ConnectorCardProvidedProps {
+  title?: React.ReactNode;
+  full?: boolean;
+  jobInfo?: SynchronousJobRead | null;
 }
 
-export const ConnectorCard: React.FC<
-  {
-    title?: React.ReactNode;
-    full?: boolean;
-    jobInfo?: SynchronousJobRead | null;
-  } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
-    (
-      | {
-          isEditMode: true;
-          connector: ConnectorT;
-        }
-      | { isEditMode?: false }
-    )
-> = ({ title, full, jobInfo, onSubmit, ...props }) => {
+interface ConnectorCardCreateProps extends ConnectorCardBaseProps {
+  isEditMode?: false;
+}
+
+interface ConnectorCardEditProps extends ConnectorCardBaseProps {
+  isEditMode: true;
+  connector: ConnectorT;
+}
+
+export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
+  title,
+  full,
+  jobInfo,
+  onSubmit,
+  ...props
+}) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
 
@@ -90,10 +96,10 @@ export const ConnectorCard: React.FC<
   const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
   return (
-    <ContentCard title={title} full={full}>
+    <Card title={title} fullWidth={full}>
       <ServiceForm
         {...props}
-        errorMessage={props.errorMessage || (error && createFormErrorMessage(error))}
+        errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
         isTestConnectionInProgress={isTestConnectionInProgress}
         onStopTesting={onStopTesting}
         testConnector={testConnector}
@@ -103,6 +109,6 @@ export const ConnectorCard: React.FC<
         }
       />
       {job && <JobItem job={job} />}
-    </ContentCard>
+    </Card>
   );
 };

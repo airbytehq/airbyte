@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.MinioS3ClientFactory;
-import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.storage.S3DocumentStoreClient;
@@ -23,6 +22,7 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +31,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 @Disabled
@@ -95,12 +96,14 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         Path.of("/"));
   }
 
-  @Test
-  public void test() throws InterruptedException {
+  @ValueSource(strings = {"IfNotPresent", " Always"})
+  @ParameterizedTest
+  public void testAsyncOrchestratorPodProcess(final String pullPolicy) throws InterruptedException {
+    final var serverPort = 8080;
     final var podName = "test-async-" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
-
+    final var mainContainerInfo = new KubeContainerInfo("airbyte/container-orchestrator:dev", pullPolicy);
     // make kubepodinfo
-    final var kubePodInfo = new KubePodInfo("default", podName);
+    final var kubePodInfo = new KubePodInfo("default", podName, mainContainerInfo);
 
     // another activity issues the request to create the pod process -> here we'll just create it
     final var asyncProcess = new AsyncOrchestratorPodProcess(
@@ -109,12 +112,12 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         kubernetesClient,
         null,
         null,
-        "airbyte/container-orchestrator:dev",
         null,
-        true);
+        true,
+        serverPort);
 
     final Map<Integer, Integer> portMap = Map.of(
-        WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
+        serverPort, serverPort,
         OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
         OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
         OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
@@ -137,21 +140,13 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
     assertEquals(0, exitValue);
     assertTrue(output.isPresent());
     assertEquals("expected output", output.get());
+
   }
 
   @AfterAll
-  public static void teardown() {
-    try {
-      portForwardProcess.destroyForcibly();
-    } catch (final Exception e) {
-      e.printStackTrace();
-    }
-
-    try {
-      kubernetesClient.pods().delete();
-    } catch (final Exception e) {
-      e.printStackTrace();
-    }
+  public static void teardown() throws KubernetesClientException {
+    portForwardProcess.destroyForcibly();
+    kubernetesClient.pods().delete();
   }
 
 }

@@ -497,7 +497,7 @@ class VersionApiAuthenticator(TokenAuthenticator):
     Docs: https://developers.intercom.com/building-apps/docs/update-your-api-version#section-selecting-the-version-via-the-developer-hub
     """
 
-    relevant_supported_version = "2.2"
+    relevant_supported_version = "2.5"
 
     def get_auth_header(self) -> Mapping[str, Any]:
         headers = super().get_auth_header()

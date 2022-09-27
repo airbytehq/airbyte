@@ -5,14 +5,27 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static com.mongodb.client.model.Filters.gt;
+import static org.bson.BsonType.DATE_TIME;
+import static org.bson.BsonType.DECIMAL128;
+import static org.bson.BsonType.DOCUMENT;
+import static org.bson.BsonType.DOUBLE;
+import static org.bson.BsonType.INT32;
+import static org.bson.BsonType.INT64;
+import static org.bson.BsonType.OBJECT_ID;
+import static org.bson.BsonType.STRING;
+import static org.bson.BsonType.TIMESTAMP;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
+import com.mongodb.MongoException;
+import com.mongodb.MongoSecurityException;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
@@ -53,6 +66,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private static final String REPLICA_SET = "replica_set";
   private static final String AUTH_SOURCE = "auth_source";
   private static final String PRIMARY_KEY = "_id";
+  private static final Set<BsonType> ALLOWED_CURSOR_TYPES = Set.of(DOUBLE, STRING, DOCUMENT, OBJECT_ID, DATE_TIME,
+      INT32, TIMESTAMP, INT64, DECIMAL128);
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -81,12 +96,11 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  public List<CheckedConsumer<MongoDatabase, Exception>> getCheckOperations(final JsonNode config)
-      throws Exception {
+  public List<CheckedConsumer<MongoDatabase, Exception>> getCheckOperations(final JsonNode config) {
     final List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
       if (getAuthorizedCollections(database).isEmpty()) {
-        throw new Exception("Unable to execute any operation on the source!");
+        throw new ConnectionErrorException("Unable to execute any operation on the source!");
       } else {
         LOGGER.info("The source passed the basic operation test!");
       }
@@ -134,17 +148,24 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      * find or any other action, on the database resource, the command lists all collections in the
      * database.
      */
-    final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-        .append("authorizedCollections", true)
-        .append("nameOnly", true))
-        .append("filter", "{ 'type': 'collection' }");
-    return document.toBsonDocument()
-        .get("cursor").asDocument()
-        .getArray("firstBatch")
-        .stream()
-        .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
-        .collect(Collectors.toSet());
+    try {
+      final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
+              .append("authorizedCollections", true)
+              .append("nameOnly", true))
+          .append("filter", "{ 'type': 'collection' }");
+      return document.toBsonDocument()
+          .get("cursor").asDocument()
+          .getArray("firstBatch")
+          .stream()
+          .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+          .collect(Collectors.toSet());
 
+    } catch (final MongoSecurityException e) {
+      final MongoCommandException exception = (MongoCommandException) e.getCause();
+      throw new ConnectionErrorException(String.valueOf(exception.getCode()), e);
+    } catch (final MongoException e) {
+      throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
+    }
   }
 
   @Override
@@ -185,6 +206,15 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final String cursorValue) {
     final Bson greaterComparison = gt(cursorField, MongoUtils.getBsonValue(cursorFieldType, cursorValue));
     return queryTable(database, columnNames, tableName, greaterComparison);
+  }
+
+  @Override
+  public boolean isCursorType(final BsonType bsonType) {
+    // while reading from mongo primary key "id" is always added, so there will be no situation
+    // when we have no cursor field here, at least id could be used as cursor here.
+    // This logic will be used feather when we will implement part which will show only list of possible
+    // cursor fields on UI
+    return ALLOWED_CURSOR_TYPES.contains(bsonType);
   }
 
   private AutoCloseableIterator<JsonNode> queryTable(final MongoDatabase database,

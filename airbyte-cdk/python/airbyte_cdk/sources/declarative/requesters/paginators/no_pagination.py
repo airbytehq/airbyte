@@ -8,10 +8,11 @@ from typing import Any, List, Mapping, Optional, Union
 import requests
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class NoPagination(Paginator):
+class NoPagination(Paginator, JsonSchemaMixin):
     """
     Pagination implementation that never returns a next page.
     """

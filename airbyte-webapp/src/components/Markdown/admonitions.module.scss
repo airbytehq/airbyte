@@ -19,6 +19,7 @@
   &--warning {
     background-color: colors.$yellow-50;
     border-left-color: colors.$yellow-300;
+
     &::before {
       content: "⚠️";
     }
@@ -27,6 +28,7 @@
   &--danger {
     background-color: colors.$red-50;
     border-left-color: colors.$red-300;
+
     &::before {
       content: "⚠️";
     }

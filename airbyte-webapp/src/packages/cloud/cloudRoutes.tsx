@@ -6,11 +6,10 @@ import ApiErrorBoundary from "components/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
-import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
-import useRouter from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
@@ -27,10 +26,8 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
 import { RoutePaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
-import { useConfig } from "./services/config";
-import useFullStory from "./services/thirdParty/fullstory/useFullStory";
-import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly/LDExperimentService";
-import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
+import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
+import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
 import { DefaultView } from "./views/DefaultView";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
@@ -113,7 +110,7 @@ const MainRoutes: React.FC = () => {
 const MainViewRoutes = () => {
   useApiHealthPoll();
   useIntercom();
-  const { query } = useRouter();
+  const query = useQuery<{ from: string }>();
 
   return (
     <Routes>
@@ -137,8 +134,6 @@ const MainViewRoutes = () => {
 
 export const Routing: React.FC = () => {
   const { user, inited, providers } = useAuthService();
-  const config = useConfig();
-  useFullStory(config.fullstory, config.fullstory.enabled, user);
 
   const { search } = useLocation();
 
@@ -156,8 +151,7 @@ export const Routing: React.FC = () => {
     [user]
   );
   useAnalyticsRegisterValues(analyticsContext);
-  useAnalyticsIdentifyUser(user?.userId, { providers });
-  useTrackPageAnalytics();
+  useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
 
   if (!inited) {
     return <LoadingPage />;

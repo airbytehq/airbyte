@@ -21,6 +21,7 @@
   &.darkBlue {
     background: colors.$dark-blue-100;
   }
+
   &.green {
     background: colors.$green;
     color: colors.$white;
@@ -47,12 +48,12 @@
 }
 
 .number {
-  font-family: fonts.$regularFont;
+  font-family: fonts.$primary;
   font-style: normal;
   font-weight: 600;
   font-size: 10px;
   color: colors.$white;
-  padding: 3px 0 3px;
+  padding: 3px 0;
 
   &.light {
     font-weight: 500;

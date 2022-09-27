@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.1.14"
+- dockerImage: "airbyte/destination-bigquery:1.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -495,7 +495,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.15"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -693,7 +693,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-cassandra:0.1.3"
+- dockerImage: "airbyte/destination-cassandra:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/cassandra"
     connectionSpecification:
@@ -797,7 +797,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-clickhouse:0.1.11"
+- dockerImage: "airbyte/destination-clickhouse:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -852,12 +852,19 @@
           type: "string"
           airbyte_secret: true
           order: 5
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          title: "JDBC URL Params"
+          type: "string"
+          order: 6
         ssl:
           title: "SSL Connection"
           description: "Encrypt data using SSL."
           type: "boolean"
           default: false
-          order: 6
+          order: 7
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -966,6 +973,282 @@
     - "overwrite"
     - "append"
     - "append_dedup"
+- dockerImage: "airbyte/destination-r2:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/r2"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "R2 Destination Spec"
+      type: "object"
+      required:
+      - "account_id"
+      - "access_key_id"
+      - "secret_access_key"
+      - "s3_bucket_name"
+      - "s3_bucket_path"
+      - "format"
+      properties:
+        account_id:
+          type: "string"
+          description: "Cloudflare account ID"
+          title: "Cloudflare account ID"
+          examples:
+          - "12345678aa1a1a11111aaa1234567abc"
+          order: 0
+        access_key_id:
+          type: "string"
+          description: "The access key ID to access the R2 bucket. Airbyte requires\
+            \ Read and Write permissions to the given bucket. Read more <a href=\"\
+            https://developers.cloudflare.com/r2/platform/s3-compatibility/tokens/\"\
+            >here</a>."
+          title: "R2 Key ID *"
+          airbyte_secret: true
+          examples:
+          - "A012345678910EXAMPLE"
+          order: 1
+        secret_access_key:
+          type: "string"
+          description: "The corresponding secret to the access key ID. Read more <a\
+            \ href=\"https://developers.cloudflare.com/r2/platform/s3-compatibility/tokens/\"\
+            >here</a>"
+          title: "R2 Access Key *"
+          airbyte_secret: true
+          examples:
+          - "a012345678910ABCDEFGHAbCdEfGhEXAMPLEKEY"
+          order: 2
+        s3_bucket_name:
+          title: "R2 Bucket Name"
+          type: "string"
+          description: "The name of the R2 bucket. Read more <a href=\"https://developers.cloudflare.com/r2/get-started/#3-create-your-bucket\"\
+            >here</a>."
+          examples:
+          - "r2_sync"
+          order: 3
+        s3_bucket_path:
+          title: "R2 Bucket Path"
+          description: "Directory under the R2 bucket where data will be written."
+          type: "string"
+          examples:
+          - "data_sync/test"
+          order: 4
+        format:
+          title: "Output Format *"
+          type: "object"
+          description: "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\"\
+            >here</a> for more details"
+          oneOf:
+          - title: "Avro: Apache Avro"
+            required:
+            - "format_type"
+            - "compression_codec"
+            properties:
+              format_type:
+                title: "Format Type *"
+                type: "string"
+                enum:
+                - "Avro"
+                default: "Avro"
+                order: 0
+              compression_codec:
+                title: "Compression Codec *"
+                description: "The compression algorithm used to compress data. Default\
+                  \ to no compression."
+                type: "object"
+                oneOf:
+                - title: "No Compression"
+                  required:
+                  - "codec"
+                  properties:
+                    codec:
+                      type: "string"
+                      enum:
+                      - "no compression"
+                      default: "no compression"
+                - title: "Deflate"
+                  required:
+                  - "codec"
+                  - "compression_level"
+                  properties:
+                    codec:
+                      type: "string"
+                      enum:
+                      - "Deflate"
+                      default: "Deflate"
+                    compression_level:
+                      title: "Deflate Level"
+                      description: "0: no compression & fastest, 9: best compression\
+                        \ & slowest."
+                      type: "integer"
+                      default: 0
+                      minimum: 0
+                      maximum: 9
+                - title: "bzip2"
+                  required:
+                  - "codec"
+                  properties:
+                    codec:
+                      type: "string"
+                      enum:
+                      - "bzip2"
+                      default: "bzip2"
+                - title: "xz"
+                  required:
+                  - "codec"
+                  - "compression_level"
+                  properties:
+                    codec:
+                      type: "string"
+                      enum:
+                      - "xz"
+                      default: "xz"
+                    compression_level:
+                      title: "Compression Level"
+                      description: "See <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\"\
+                        >here</a> for details."
+                      type: "integer"
+                      default: 6
+                      minimum: 0
+                      maximum: 9
+                - title: "zstandard"
+                  required:
+                  - "codec"
+                  - "compression_level"
+                  properties:
+                    codec:
+                      type: "string"
+                      enum:
+                      - "zstandard"
+                      default: "zstandard"
+                    compression_level:
+                      title: "Compression Level"
+                      description: "Negative levels are 'fast' modes akin to lz4 or\
+                        \ snappy, levels above 9 are generally for archival purposes,\
+                        \ and levels above 18 use a lot of memory."
+                      type: "integer"
+                      default: 3
+                      minimum: -5
+                      maximum: 22
+                    include_checksum:
+                      title: "Include Checksum"
+                      description: "If true, include a checksum with each data block."
+                      type: "boolean"
+                      default: false
+                - title: "snappy"
+                  required:
+                  - "codec"
+                  properties:
+                    codec:
+                      type: "string"
+                      enum:
+                      - "snappy"
+                      default: "snappy"
+                order: 1
+          - title: "CSV: Comma-Separated Values"
+            required:
+            - "format_type"
+            - "flattening"
+            properties:
+              format_type:
+                title: "Format Type *"
+                type: "string"
+                enum:
+                - "CSV"
+                default: "CSV"
+              flattening:
+                type: "string"
+                title: "Normalization (Flattening)"
+                description: "Whether the input json data should be normalized (flattened)\
+                  \ in the output CSV. Please refer to docs for details."
+                default: "No flattening"
+                enum:
+                - "No flattening"
+                - "Root level flattening"
+              compression:
+                title: "Compression"
+                type: "object"
+                description: "Whether the output files should be compressed. If compression\
+                  \ is selected, the output filename will have an extra extension\
+                  \ (GZIP: \".csv.gz\")."
+                oneOf:
+                - title: "No Compression"
+                  requires:
+                  - "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "No Compression"
+                      default: "No Compression"
+                - title: "GZIP"
+                  requires:
+                  - "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "GZIP"
+                      default: "GZIP"
+          - title: "JSON Lines: Newline-delimited JSON"
+            required:
+            - "format_type"
+            properties:
+              format_type:
+                title: "Format Type *"
+                type: "string"
+                enum:
+                - "JSONL"
+                default: "JSONL"
+              compression:
+                title: "Compression"
+                type: "object"
+                description: "Whether the output files should be compressed. If compression\
+                  \ is selected, the output filename will have an extra extension\
+                  \ (GZIP: \".jsonl.gz\")."
+                oneOf:
+                - title: "No Compression"
+                  requires: "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "No Compression"
+                      default: "No Compression"
+                - title: "GZIP"
+                  requires: "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "GZIP"
+                      default: "GZIP"
+          order: 5
+        s3_path_format:
+          title: "R2 Path Format (Optional)"
+          description: "Format string on how data will be organized inside the R2\
+            \ bucket directory. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/r2#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format\"\
+            >here</a>"
+          type: "string"
+          examples:
+          - "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
+          order: 6
+        file_name_pattern:
+          type: "string"
+          description: "The pattern allows you to set the file-name format for the\
+            \ R2 staging file(s)"
+          title: "R2 Filename pattern (Optional)"
+          examples:
+          - "{date}"
+          - "{date:yyyy_MM}"
+          - "{timestamp}"
+          - "{part_number}"
+          - "{sync_id}"
+          order: 7
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "overwrite"
+    - "append"
 - dockerImage: "airbyte/destination-databricks:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/databricks"
@@ -1563,7 +1846,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-gcs:0.2.10"
+- dockerImage: "airbyte/destination-gcs:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -2296,7 +2579,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-kinesis:0.1.4"
+- dockerImage: "airbyte/destination-kinesis:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/kinesis"
     connectionSpecification:
@@ -2304,6 +2587,8 @@
       title: "Kinesis Destination Spec"
       type: "object"
       required:
+      - "endpoint"
+      - "region"
       - "shardCount"
       - "accessKey"
       - "privateKey"
@@ -2314,12 +2599,16 @@
           title: "Endpoint"
           description: "AWS Kinesis endpoint."
           type: "string"
+          examples:
+          - "kinesis.us‑west‑1.amazonaws.com"
           order: 0
         region:
           title: "Region"
           description: "AWS region. Your account determines the Regions that are available\
             \ to you."
           type: "string"
+          examples:
+          - "us‑west‑1"
           order: 1
         shardCount:
           title: "Shard Count"
@@ -2406,7 +2695,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mqtt:0.1.2"
+- dockerImage: "airbyte/destination-mqtt:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mqtt"
     connectionSpecification:
@@ -2447,6 +2736,7 @@
           title: "Password"
           description: "Password to use for the connection."
           type: "string"
+          airbyte_secret: true
         topic_pattern:
           title: "Topic pattern"
           description: "Topic pattern in which the records will be sent. You can use\
@@ -2763,7 +3053,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mongodb:0.1.6"
+- dockerImage: "airbyte/destination-mongodb:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mongodb"
     connectionSpecification:
@@ -2773,7 +3063,6 @@
       required:
       - "database"
       - "auth_type"
-      additionalProperties: true
       properties:
         instance_type:
           description: "MongoDb instance to connect to. For MongoDB Atlas and Replica\
@@ -2841,7 +3130,6 @@
                 description: "A replica set name."
                 order: 1
           - title: "MongoDB Atlas"
-            additionalProperties: false
             required:
             - "instance"
             - "cluster_url"
@@ -2867,7 +3155,6 @@
           description: "Authorization type."
           oneOf:
           - title: "None"
-            additionalProperties: false
             description: "None."
             required:
             - "authorization"
@@ -2877,7 +3164,6 @@
                 type: "string"
                 const: "none"
           - title: "Login/Password"
-            additionalProperties: false
             description: "Login/Password."
             required:
             - "authorization"
@@ -3302,7 +3588,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-postgres:0.3.22"
+- dockerImage: "airbyte/destination-postgres:0.3.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
     connectionSpecification:
@@ -3771,7 +4057,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-rabbitmq:0.1.0"
+- dockerImage: "airbyte/destination-rabbitmq:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/rabbitmq"
     connectionSpecification:
@@ -3801,7 +4087,9 @@
           description: "The username to connect."
         password:
           type: "string"
+          title: "Password"
           description: "The password to connect."
+          airbyte_secret: true
         exchange:
           type: "string"
           description: "The exchange name."
@@ -3868,7 +4156,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.3.47"
+- dockerImage: "airbyte/destination-redshift:0.3.50"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -3889,6 +4177,7 @@
             \ region and end with .redshift.amazonaws.com)"
           type: "string"
           title: "Host"
+          order: 1
         port:
           description: "Port of the database."
           type: "integer"
@@ -3898,19 +4187,23 @@
           examples:
           - "5439"
           title: "Port"
+          order: 2
         username:
           description: "Username to use to access the database."
           type: "string"
           title: "Username"
+          order: 3
         password:
           description: "Password associated with the username."
           type: "string"
           airbyte_secret: true
           title: "Password"
+          order: 4
         database:
           description: "Name of the database."
           type: "string"
           title: "Database"
+          order: 5
         schema:
           description: "The default schema tables are written to if the source does\
             \ not specify a namespace. Unless specifically configured, the usual value\
@@ -3920,10 +4213,19 @@
           - "public"
           default: "public"
           title: "Default Schema"
+          order: 6
+        jdbc_url_params:
+          title: "JDBC URL Params"
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          type: "string"
+          order: 7
         uploading_method:
           title: "Uploading Method"
           type: "object"
           description: "The method how the data will be uploaded to the database."
+          order: 8
           oneOf:
           - title: "Standard"
             required:
@@ -4118,7 +4420,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.13"
+- dockerImage: "airbyte/destination-s3:0.3.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -4548,7 +4850,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.34"
+- dockerImage: "airbyte/destination-snowflake:0.4.37"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -5005,7 +5307,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/destination-mariadb-columnstore:0.1.6"
+- dockerImage: "airbyte/destination-mariadb-columnstore:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mariadb-columnstore"
     connectionSpecification:
@@ -5050,6 +5352,13 @@
           type: "string"
           airbyte_secret: true
           order: 4
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          title: "JDBC URL Params"
+          type: "string"
+          order: 5
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -5322,6 +5631,172 @@
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
+    supported_destination_sync_modes:
+    - "overwrite"
+    - "append"
+- dockerImage: "airbyte/destination-tidb:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/tidb"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "TiDB Destination Spec"
+      type: "object"
+      required:
+      - "host"
+      - "port"
+      - "username"
+      - "database"
+      additionalProperties: true
+      properties:
+        host:
+          title: "Host"
+          description: "Hostname of the database."
+          type: "string"
+          order: 0
+        port:
+          title: "Port"
+          description: "Port of the database."
+          type: "integer"
+          minimum: 0
+          maximum: 65536
+          default: 4000
+          examples:
+          - "4000"
+          order: 1
+        database:
+          title: "Database"
+          description: "Name of the database."
+          type: "string"
+          order: 2
+        username:
+          title: "User"
+          description: "Username to use to access the database."
+          type: "string"
+          order: 3
+        password:
+          title: "Password"
+          description: "Password associated with the username."
+          type: "string"
+          airbyte_secret: true
+          default: ""
+          order: 4
+        ssl:
+          title: "SSL Connection"
+          description: "Encrypt data using SSL."
+          type: "boolean"
+          default: false
+          order: 5
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          title: "JDBC URL Params"
+          type: "string"
+          order: 6
+        tunnel_method:
+          type: "object"
+          title: "SSH Tunnel Method"
+          description: "Whether to initiate an SSH tunnel before connecting to the\
+            \ database, and if so, which kind of authentication to use."
+          oneOf:
+          - title: "No Tunnel"
+            required:
+            - "tunnel_method"
+            properties:
+              tunnel_method:
+                description: "No ssh tunnel needed to connect to database"
+                type: "string"
+                const: "NO_TUNNEL"
+                order: 0
+          - title: "SSH Key Authentication"
+            required:
+            - "tunnel_method"
+            - "tunnel_host"
+            - "tunnel_port"
+            - "tunnel_user"
+            - "ssh_key"
+            properties:
+              tunnel_method:
+                description: "Connect through a jump server tunnel host using username\
+                  \ and ssh key"
+                type: "string"
+                const: "SSH_KEY_AUTH"
+                order: 0
+              tunnel_host:
+                title: "SSH Tunnel Jump Server Host"
+                description: "Hostname of the jump server host that allows inbound\
+                  \ ssh tunnel."
+                type: "string"
+                order: 1
+              tunnel_port:
+                title: "SSH Connection Port"
+                description: "Port on the proxy/jump server that accepts inbound ssh\
+                  \ connections."
+                type: "integer"
+                minimum: 0
+                maximum: 65536
+                default: 22
+                examples:
+                - "22"
+                order: 2
+              tunnel_user:
+                title: "SSH Login Username"
+                description: "OS-level username for logging into the jump server host."
+                type: "string"
+                order: 3
+              ssh_key:
+                title: "SSH Private Key"
+                description: "OS-level user account ssh key credentials in RSA PEM\
+                  \ format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )"
+                type: "string"
+                airbyte_secret: true
+                multiline: true
+                order: 4
+          - title: "Password Authentication"
+            required:
+            - "tunnel_method"
+            - "tunnel_host"
+            - "tunnel_port"
+            - "tunnel_user"
+            - "tunnel_user_password"
+            properties:
+              tunnel_method:
+                description: "Connect through a jump server tunnel host using username\
+                  \ and password authentication"
+                type: "string"
+                const: "SSH_PASSWORD_AUTH"
+                order: 0
+              tunnel_host:
+                title: "SSH Tunnel Jump Server Host"
+                description: "Hostname of the jump server host that allows inbound\
+                  \ ssh tunnel."
+                type: "string"
+                order: 1
+              tunnel_port:
+                title: "SSH Connection Port"
+                description: "Port on the proxy/jump server that accepts inbound ssh\
+                  \ connections."
+                type: "integer"
+                minimum: 0
+                maximum: 65536
+                default: 22
+                examples:
+                - "22"
+                order: 2
+              tunnel_user:
+                title: "SSH Login Username"
+                description: "OS-level username for logging into the jump server host"
+                type: "string"
+                order: 3
+              tunnel_user_password:
+                title: "Password"
+                description: "OS-level password for logging into the jump server host"
+                type: "string"
+                airbyte_secret: true
+                order: 4
+    supportsIncremental: true
+    supportsNormalization: true
+    supportsDBT: true
     supported_destination_sync_modes:
     - "overwrite"
     - "append"

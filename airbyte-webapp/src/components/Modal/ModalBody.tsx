@@ -7,7 +7,11 @@ interface ModalBodyProps {
   padded?: boolean;
 }
 
-export const ModalBody: React.FC<ModalBodyProps> = ({ children, maxHeight, padded = true }) => {
+export const ModalBody: React.FC<React.PropsWithChildren<ModalBodyProps>> = ({
+  children,
+  maxHeight,
+  padded = true,
+}) => {
   const modalStyles = classnames(styles.modalBody, {
     [styles.paddingNone]: !padded,
   });

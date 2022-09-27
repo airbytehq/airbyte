@@ -10,42 +10,50 @@
   },
 
   "ads_reports_daily": {
+    "stat_time_day": "2030-01-01",
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
   "advertisers_reports_daily": {
+    "stat_time_day": "2030-01-01",
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
   "ad_groups_reports_daily": {
+    "stat_time_day": "2030-01-01",
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
   "campaigns_reports_daily": {
+    "stat_time_day": "2030-01-01",
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
 
   "ads_audience_reports_daily": {
+    "stat_time_day": "2030-01-01",
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
   "advertisers_audience_reports_daily": {
+    "stat_time_day": "2030-01-01",
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
   "ad_group_audience_reports_daily": {
+    "stat_time_day": "2030-01-01",
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
   "campaigns_audience_reports_by_country_daily": {
+    "stat_time_day": "2030-01-01",
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }

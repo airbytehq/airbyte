@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -13,11 +14,10 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import java.io.IOException;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
-
-import java.io.IOException;
 
 public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
@@ -33,7 +33,9 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
     certs = getCertificates();
 
     var sslMode = getSslConfig();
-
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+            .put("method", "STANDARD")
+            .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
@@ -42,7 +44,7 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put(JdbcUtils.SSL_KEY, true)
         .put(JdbcUtils.SSL_MODE_KEY, sslMode)
-        .put("replication_method", ReplicationMethod.STANDARD)
+        .put("replication_method", replicationMethod)
         .build());
   }
 

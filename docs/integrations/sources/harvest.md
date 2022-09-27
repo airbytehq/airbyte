@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Harvest sou
 
 ## Prerequisites
 
-See [docs](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/) for more details.
+See [Harvest documentation](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/) for more details.
 
 ## Setup guide
 ### Step 1: Set up Harvest
@@ -17,17 +17,6 @@ This connector supports only authentication with API Key. To obtain API key foll
 
 ## Step 2: Set up the Harvest connector in Airbyte
 
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Harvest connector and select **Harvest** from the Source type dropdown.
-4. For Airbyte Cloud, click **Authenticate your Harvest account** to sign in with Harvest and authorize your account.
-5. Enter your `account_id` 
-6. Enter the `replication_start_date` you want your sync to start from
-7. Click **Set up source**
-
-### For Airbyte OSS:
 1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source 
 3. Enter your `api_token`

@@ -3,10 +3,10 @@
 #
 
 import concurrent.futures
+import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests  # type: ignore[import]
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from requests import adapters as request_adapters
 from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
@@ -137,6 +137,11 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "DeclinedEventRelation",
     "EventWhoRelation",
     "FieldSecurityClassification",
+    "KnowledgeArticle",
+    "KnowledgeArticleVersion",
+    "KnowledgeArticleVersionHistory",
+    "KnowledgeArticleViewStat",
+    "KnowledgeArticleVoteStat",
     "OrderStatus",
     "PartnerRole",
     "QuoteTemplateRichTextData",
@@ -173,9 +178,12 @@ UNSUPPORTED_FILTERING_STREAMS = [
 
 
 class Salesforce:
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
     version = "v52.0"
     parallel_tasks_size = 100
+    # https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm
+    # Request Size Limits
+    REQUEST_SIZE_LIMITS = 16_384
 
     def __init__(
         self,

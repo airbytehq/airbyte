@@ -40,7 +40,7 @@ requester:
 It is also possible for authenticators to set request parameters or headers as needed.
 For instance, the `BearerAuthenticator` will always set the `Authorization` header.
 
-More details on the various authenticators can be found in the [authentication section](authentication.md)
+More details on the various authenticators can be found in the [authentication section](authentication.md).
 
 ## Paginators
 
@@ -54,16 +54,16 @@ paginator:
   type: "LimitPaginator"
   page_size: 5
   limit_option:
-    option_type: request_parameter
+    inject_into: request_parameter
     field_name: page_size
   pagination_strategy:
     type: "PageIncrement"
   page_token:
-    option_type: "request_parameter"
+    inject_into: "request_parameter"
     field_name: "page"
 ```
 
-More details on paginators can be found in the [pagination section](pagination.md)
+More details on paginators can be found in the [pagination section](pagination.md).
 
 ## Stream slicers
 
@@ -85,4 +85,4 @@ stream_slicer:
     inject_into: "request_parameter"
 ```
 
-More details on the stream slicers can be found in the [stream-slicers section](stream-slicers.md)
+More details on the stream slicers can be found in the [stream-slicers section](stream-slicers.md).

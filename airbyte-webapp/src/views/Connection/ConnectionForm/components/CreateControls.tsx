@@ -8,7 +8,6 @@ interface CreateControlsProps {
   isSubmitting: boolean;
   isValid: boolean;
   errorMessage?: React.ReactNode;
-  additionBottomControls?: React.ReactNode;
 }
 
 const ButtonContainer = styled.div`
@@ -59,12 +58,7 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const CreateControls: React.FC<CreateControlsProps> = ({
-  isSubmitting,
-  errorMessage,
-  additionBottomControls,
-  isValid,
-}) => {
+const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMessage, isValid }) => {
   if (isSubmitting) {
     return (
       <LoadingContainer>
@@ -90,7 +84,6 @@ const CreateControls: React.FC<CreateControlsProps> = ({
         <div />
       )}
       <div>
-        {additionBottomControls || null}
         <Button type="submit" disabled={isSubmitting || !isValid}>
           <FormattedMessage id="onboarding.setUpConnection" />
         </Button>

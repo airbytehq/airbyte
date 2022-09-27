@@ -1,7 +1,10 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
+import { Text } from "components/base/Text";
 import HeadTitle from "components/HeadTitle";
+
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 
 import { OAuthLogin } from "../OAuthLogin";
 import { Disclaimer, SignupForm } from "./components/SignupForm";
@@ -13,10 +16,11 @@ interface SignupPageProps {
 }
 
 const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
+  useTrackPage(PageTrackingCodes.SIGNUP);
   return (
     <div>
       <HeadTitle titles={[{ id: "login.signup" }]} />
-      <h1 className={styles.title}>
+      <Text as="h1" size="xl" className={styles.title}>
         <FormattedMessage
           id="login.activateAccess"
           values={{
@@ -27,7 +31,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
             ),
           }}
         />
-      </h1>
+      </Text>
       <SpecialBlock />
       <SignupForm />
       <OAuthLogin isSignUpPage />

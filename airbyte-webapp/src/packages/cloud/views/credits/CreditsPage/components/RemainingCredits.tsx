@@ -15,7 +15,7 @@ import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService"
 import {
   useGetCloudWorkspace,
   useInvalidateCloudWorkspace,
-} from "packages/cloud/services/workspaces/WorkspacesService";
+} from "packages/cloud/services/workspaces/CloudWorkspacesService";
 
 interface Props {
   selfServiceCheckoutEnabled: boolean;
@@ -30,6 +30,7 @@ const Block = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 10px 0px;
 `;
 const CreditView = styled.div`
   text-transform: uppercase;
@@ -61,7 +62,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   const currentWorkspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(currentWorkspace.workspaceId);
   const [searchParams, setSearchParams] = useSearchParams();
-  const invalidateWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
+  const invalidateCloudWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
   const { isLoading, mutateAsync: createCheckout } = useStripeCheckout();
   const analytics = useAnalyticsService();
   const [isWaitingForCredits, setIsWaitingForCredits] = useState(false);
@@ -78,10 +79,12 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       if (!hasRecentCreditIncrease(cloudWorkspace)) {
         setIsWaitingForCredits(true);
         retryIntervalId.current = window.setInterval(() => {
-          invalidateWorkspace();
+          invalidateCloudWorkspace();
         }, 3000);
       }
     }
+
+    return () => clearInterval(retryIntervalId.current);
   });
 
   useEffect(() => {

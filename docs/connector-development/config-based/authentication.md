@@ -27,7 +27,7 @@ authenticator:
   token: "hello"
 ```
 
-More information on bearer authentication can be found [here](https://swagger.io/docs/specification/authentication/bearer-authentication/)
+More information on bearer authentication can be found [here](https://swagger.io/docs/specification/authentication/bearer-authentication/).
 
 ### BasicHttpAuthenticator
 

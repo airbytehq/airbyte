@@ -7,10 +7,11 @@ from dataclasses import dataclass
 from typing import Optional
 
 import requests
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class BackoffStrategy:
+class BackoffStrategy(JsonSchemaMixin):
     """
     Backoff strategy defining how long to wait before retrying a request that resulted in an error.
     """

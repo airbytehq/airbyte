@@ -18,4 +18,6 @@ public interface FeatureFlags {
 
   boolean useStreamCapableState();
 
+  boolean logConnectorMessages();
+
 }
