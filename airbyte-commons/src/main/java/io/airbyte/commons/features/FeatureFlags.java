@@ -20,4 +20,5 @@ public interface FeatureFlags {
 
   boolean logConnectorMessages();
 
+  boolean needStateValidation();
 }
