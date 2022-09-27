@@ -67,4 +67,3 @@ resources/examples/airflow/logs/*
 
 # Summary.md keeps getting added and we just don't like it
 docs/SUMMARY.md
-**/bin/

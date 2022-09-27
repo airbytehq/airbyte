@@ -1,7 +1,3 @@
-task distTar(type: Exec) {
-    commandLine 'echo', "Ignored."
-}
-
 tasks.named("buildDockerImage") {
     dependsOn copyDocker
 }

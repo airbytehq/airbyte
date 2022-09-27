@@ -29,10 +29,6 @@ npm_run_build {
     outputs.dir 'build/app'
 }
 
-task distTar(type: Exec) {
-    commandLine 'echo', "Ignored."
-}
-
 task test(type: NpmTask) {
     dependsOn assemble
 
