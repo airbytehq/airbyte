@@ -49,6 +49,8 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers.postgresql
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
+
+    testImplementation libs.mockito.inline
 }
 
 // we want to be able to access the generated db files from config/init when we build the server docker image.

@@ -45,8 +45,11 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 class SourceHandlerTest {
 
@@ -63,6 +66,10 @@ class SourceHandlerTest {
   private Supplier<UUID> uuidGenerator;
   private JsonSecretsProcessor secretsProcessor;
   private ConnectorSpecification connectorSpecification;
+  private MockedStatic<SourceDefinitionsHandler> mSourceDefinitionsHandler;
+
+  private static final String ICON_PATH = "some/icon/path.svg";
+  private static final String LOADED_ICON_PATH = "some/loaded/icon/path.svg";
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -84,7 +91,8 @@ class SourceHandlerTest {
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")
         .withDocumentationUrl("https://wikipedia.org")
-        .withSpec(connectorSpecification);
+        .withSpec(connectorSpecification)
+        .withIcon(ICON_PATH);
 
     sourceDefinitionSpecificationRead = new SourceDefinitionSpecificationRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -101,6 +109,15 @@ class SourceHandlerTest {
         uuidGenerator,
         secretsProcessor,
         configurationUpdate);
+
+    mSourceDefinitionsHandler = Mockito.mockStatic(SourceDefinitionsHandler.class);
+    mSourceDefinitionsHandler.when(() -> SourceDefinitionsHandler.loadIcon(ICON_PATH))
+        .thenReturn(LOADED_ICON_PATH);
+  }
+
+  @AfterEach
+  void teardown() {
+    mSourceDefinitionsHandler.close();
   }
 
   @Test
