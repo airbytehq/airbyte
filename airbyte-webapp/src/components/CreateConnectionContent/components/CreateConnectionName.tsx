@@ -11,6 +11,7 @@ import styles from "./CreateConnectionName.module.scss";
 
 export const CreateConnectionName = () => {
   const { formatMessage } = useIntl();
+
   return (
     <Section>
       <Field name="name">
