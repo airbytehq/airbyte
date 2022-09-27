@@ -36,4 +36,5 @@ jobs:
           pal-repo-name: airbytehq/workflow-actions@production
           # the following input gets passed to the private action
           token: "${{ needs.find_valid_pat.outputs.pat }}"
+          # ref: https://github.com/airbytehq/workflow-actions/blob/main/src/bin_issue.ts
           command: "issue"
