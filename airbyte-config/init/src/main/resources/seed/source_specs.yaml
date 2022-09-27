@@ -10226,7 +10226,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.23"
+- dockerImage: "airbyte/source-snowflake:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
