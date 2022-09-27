@@ -1,6 +1,6 @@
 import React from "react";
 
-import { CreateConnection } from "components/CreateConnectionContent";
+import { CreateConnection } from "components/CreateConnection";
 
 import { useDestinationList } from "hooks/services/useDestinationHook";
 import { useSourceList } from "hooks/services/useSourceHook";

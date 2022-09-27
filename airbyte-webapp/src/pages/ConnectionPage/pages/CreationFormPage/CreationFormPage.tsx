@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { LoadingPage, PageTitle } from "components";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { CreateConnection } from "components/CreateConnectionContent";
+import { CreateConnection } from "components/CreateConnection";
 import HeadTitle from "components/HeadTitle";
 import StepsMenu from "components/StepsMenu";
 
