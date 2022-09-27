@@ -167,6 +167,5 @@ class SourceBambooHr(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = SourceBambooHr.add_authenticator_to_config(config)
         return [
-            EmployeesDirectoryStream(config),
             CustomReportsStream(config),
         ]

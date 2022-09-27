@@ -6,9 +6,8 @@ The BambooHr source supports Full Refresh sync. You can choose if this connector
 
 ### Output schema
 
-This connector outputs the following streams:
+This connector outputs the following stream:
 
-* [Employees](https://documentation.bamboohr.com/reference#get-employees-directory-1)
 * [Custom Reports](https://documentation.bamboohr.com/reference/request-custom-report-1)
 
 ### Features
