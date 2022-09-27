@@ -3,7 +3,8 @@
 
 .mainView {
   cursor: pointer;
-  height: auto;
+  min-height: 70px;
+  height: auto !important; // important to override Row styled component
   padding: variables.$spacing-lg 0;
 
   .titleCell {
