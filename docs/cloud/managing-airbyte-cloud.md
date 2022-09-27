@@ -106,17 +106,17 @@ Understanding the following limitations will help you better manage Airbyte Clou
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
 
-## View the sync log summary
-The sync log summary displays information about data moved during a sync.
+## View the sync summary
+The sync summary displays information about the data moved during a sync.
  
-To view the sync log summary:
+To view the sync summary:
 1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** in the navigation bar.   
 
     The Connections page displays.
 
 2. Click a connection in the list to view its sync history.
 
-    Sync History displays the sync status (Succeeded, Failed, Cancelled, Partial Success, or Running) and the [summary of the sync log](#sync-log-summary).  
+    Sync History displays the sync status or [reset](https://docs.airbyte.com/operator-guides/reset/) status (Succeeded, Partial Success, Failed, Cancelled, or Running) and the [sync summary](#sync-summary).  
 
     :::note 
     
@@ -124,17 +124,15 @@ To view the sync log summary:
     
     :::
     
-3. To view the full sync log, click the sync log dropdown.
+3. To view the full sync log, click the sync summary dropdown.
  
-### Sync log summary
-#### Succeeded
+### Sync summary
 | Data                            | Description                                                                                                                                             |
 |--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | x GB (also measured in KB, MB) | Amount of data moved during the sync. If basic normalization is on, the amount of data would not change since normalization occurs in the destination.  |
 | x emitted records              | Number of records read from the source during the sync.                                                                                                 |
 | x committed records            | Number of records the destination confirmed it received.                                                                                                |
-| xh xm xs                   | Total time (hours, minutes, seconds) for the sync and basic normalization, if enabled, to complete.                                                     |
-| Sync or Reset                    | The action that was performed (either a sync or a [reset](https://docs.airbyte.com/operator-guides/reset/)).                                                                                               | 
+| xh xm xs                   | Total time (hours, minutes, seconds) for the sync and basic normalization, if enabled, to complete.                                                     | 
 
 :::note
 
