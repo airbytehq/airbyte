@@ -3,6 +3,7 @@
 #
 
 import json
+import re
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
@@ -100,10 +101,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     ERRORS = [
         (400, "KDP authors do not have access to Sponsored Brands functionality"),
-        # Check if the connector received an error: 'Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3.'
-        # A1C3SOZRARQ6R3 - Poland Marketplace
+        (401, re.compile(r"^Not authorized to access scope \d+$")),
+        # Check if the connector received an error like: 'Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3.'
         # https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
-        (400, "Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3."),
+        (400, re.compile(r"^Tactic T00020 is not supported for report API in marketplace [A-Z\d]+\.$")),
         # Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
         # In theory, it does not have to get such an error because the connector correctly calculates the start date,
         # but from practice, we can still catch such errors from time to time.
@@ -423,6 +424,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         response_details = self._get_response_error_details(response)
         if response_details:
             for status_code, details in self.ERRORS:
-                if response.status_code == status_code and response_details == details:
-                    return True
+                if response.status_code == status_code:
+                    if isinstance(details, re.Pattern):
+                        if details.match(response_details):
+                            return True
+                    elif details == response_details:
+                        return True
         return False
