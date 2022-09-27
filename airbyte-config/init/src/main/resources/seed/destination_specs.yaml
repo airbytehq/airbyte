@@ -5800,3 +5800,188 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
+- dockerImage: "airbyte/destination-iomete:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/iomete"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "iomete Destination Spec"
+      type: "object"
+      required:
+        - "warehouse_hostname"
+        - "warehouse_name"
+        - "iomete_account_number"
+        - "iomete_username"
+        - "iomete_password"
+      properties:
+        warehouse_hostname:
+          title: "Warehouse Hostname"
+          type: "string"
+          description: "The host name of the connection. It starts with\
+            \ your region name like <region_name>.iomete.com."
+          examples:
+            - "frankfurt.iomete.com"
+          order: 1
+        warehouse_name:
+          title: "Warehouse Name"
+          type: "string"
+          description: "Warehouse Name."
+          examples:
+            - "reporting"
+          order: 2
+        warehouse_port:
+          title: "Port"
+          type: "string"
+          description: "iomete Warehouse Port."
+          default: "443"
+          examples:
+            - "443"
+          order: 3
+        ssl:
+          title: "TLS Connection"
+          type: "boolean"
+          description: "Default to 'true'. Switch it to 'false' for plain http\ 
+            \ (not recommended) connection."
+          default: true
+          order: 4
+        iomete_account_number:
+          title: "iomete Account Number"
+          type: "string"
+          description: "Account Number to use to access iomete."
+          examples:
+            - "123456789102"
+          order: 5
+        iomete_username:
+          title: "iomete Username"
+          type: "string"
+          description: "Username to use to access iomete."
+          order: 6
+        iomete_password:
+          title: "iomete Password"
+          type: "string"
+          description: "Password associated with username."
+          airbyte_secret: true
+          order: 6
+        database_schema:
+          title: "Database Schema"
+          type: "string"
+          description: "The default schema tables are written to if the source does\
+            \ not specify a namespace. Unless specifically configured, the usual value\
+            \ for this field is \"public\"."
+          default: "public"
+          examples:
+            - "default"
+          order: 7
+        data_source:
+          title: "Data Source"
+          type: "object"
+          description: "Storage on which the delta lake is built."
+          oneOf:
+            - title: "Amazon S3"
+              required:
+                - "data_source_type"
+                - "s3_bucket_name"
+                - "s3_bucket_path"
+                - "s3_bucket_region"
+                - "s3_access_key_id"
+                - "s3_secret_access_key"
+              properties:
+                data_source_type:
+                  type: "string"
+                  enum:
+                    - "S3"
+                  default: "S3"
+                  order: 1
+                s3_bucket_name:
+                  title: "S3 Bucket Name"
+                  type: "string"
+                  description: "The name of the S3 bucket to use for intermittent staging\
+                  \ of the data."
+                  examples:
+                    - "airbyte.staging"
+                  order: 2
+                s3_bucket_path:
+                  title: "S3 Bucket Path"
+                  type: "string"
+                  description: "The directory under the S3 bucket where data will be\
+                  \ written."
+                  examples:
+                    - "data_sync/test"
+                  order: 3
+                s3_bucket_region:
+                  title: "S3 Bucket Region"
+                  type: "string"
+                  default: ""
+                  description: "The region of the S3 staging bucket to use if utilising\
+                  \ a copy strategy."
+                  enum:
+                    - ""
+                    - "us-east-1"
+                    - "us-east-2"
+                    - "us-west-1"
+                    - "us-west-2"
+                    - "af-south-1"
+                    - "ap-east-1"
+                    - "ap-south-1"
+                    - "ap-northeast-1"
+                    - "ap-northeast-2"
+                    - "ap-northeast-3"
+                    - "ap-southeast-1"
+                    - "ap-southeast-2"
+                    - "ca-central-1"
+                    - "cn-north-1"
+                    - "cn-northwest-1"
+                    - "eu-central-1"
+                    - "eu-north-1"
+                    - "eu-south-1"
+                    - "eu-west-1"
+                    - "eu-west-2"
+                    - "eu-west-3"
+                    - "sa-east-1"
+                    - "me-south-1"
+                    - "us-gov-east-1"
+                    - "us-gov-west-1"
+                  order: 4
+                s3_access_key_id:
+                  type: "string"
+                  description: "The Access Key Id granting allow one to access the above\
+                  \ S3 staging bucket. Airbyte requires Read and Write permissions\
+                  \ to the given bucket."
+                  title: "S3 Access Key ID"
+                  examples:
+                    - "A012345678910EXAMPLE"
+                  airbyte_secret: true
+                  order: 5
+                s3_secret_access_key:
+                  title: "S3 Secret Access Key"
+                  type: "string"
+                  description: "The corresponding secret to the above access key id."
+                  examples:
+                    - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
+                  airbyte_secret: true
+                  order: 6
+                file_name_pattern:
+                  type: "string"
+                  description: "The pattern allows you to set the file-name format for\
+                  \ the S3 staging file(s)"
+                  title: "S3 Filename pattern (Optional)"
+                  examples:
+                    - "{date}"
+                    - "{date:yyyy_MM}"
+                    - "{timestamp}"
+                    - "{part_number}"
+                    - "{sync_id}"
+                  order: 7
+          order: 8
+        purge_staging_data:
+          title: "Purge Staging Files and Tables"
+          type: "boolean"
+          description: "Default to 'true'. Switch it to 'false' for debugging purpose."
+          default: true
+          order: 9
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+      - "overwrite"
+      - "append"
