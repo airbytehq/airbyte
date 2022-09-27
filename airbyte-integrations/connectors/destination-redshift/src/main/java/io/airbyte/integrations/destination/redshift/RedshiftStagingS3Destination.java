@@ -138,8 +138,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final int numFileBuffers = s3Options.has("file_buffer_count") ? s3Options.get("file_buffer_count").intValue() : 100;
     if (numFileBuffers < catalog.getStreams().size()) {
       LOGGER.warn(
-          "Potential performance issue: catalog contains %d streams, destination configuration "
-              + "allocates buffers for %s streams. If the source sends data for multiple streams "
+          "Potential performance issue: catalog contains {} streams, destination configuration "
+              + "allocates buffers for {} streams. If the source sends data for multiple streams "
               + "in arbitrary order, this destination may be forced to flush small chunks of data repeatedly. "
               + "Increase the configured File Buffer Count to improve performance",
           catalog.getStreams().size(), numFileBuffers);
