@@ -5,14 +5,14 @@
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.workers.temporal.TemporalJobType;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
+import jakarta.inject.Singleton;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.inject.Singleton;
 
 @Singleton
 public class RouterService {

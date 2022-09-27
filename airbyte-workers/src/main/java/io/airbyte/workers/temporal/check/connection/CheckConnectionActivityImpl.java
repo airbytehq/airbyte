@@ -7,7 +7,6 @@ package io.airbyte.workers.temporal.check.connection;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
-import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -22,40 +21,47 @@ import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 @Singleton
 @Requires(property = "airbyte.worker.plane",
           pattern = "(?i)^(?!data_plane).*")
 public class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
-  @Inject
-  @Named("checkWorkerConfigs")
-  private WorkerConfigs workerConfigs;
-  @Inject
-  @Named("checkProcessFactory")
-  private ProcessFactory processFactory;
-  @Inject
-  private SecretsHydrator secretsHydrator;
-  @Inject
-  @Named("workspaceRoot")
-  private Path workspaceRoot;
-  @Inject
-  private WorkerEnvironment workerEnvironment;
-  @Inject
-  private LogConfigs logConfigs;
-  @Inject
-  private AirbyteApiClient airbyteApiClient;
-  @Value("${airbyte.version}")
-  private String airbyteVersion;
+  private final WorkerConfigs workerConfigs;
+  private final ProcessFactory processFactory;
+  private final SecretsHydrator secretsHydrator;
+  private final Path workspaceRoot;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+  private final AirbyteApiClient airbyteApiClient;
+  private final String airbyteVersion;
+
+  public CheckConnectionActivityImpl(@Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
+                                     @Named("checkProcessFactory") final ProcessFactory processFactory,
+                                     final SecretsHydrator secretsHydrator,
+                                     @Named("workspaceRoot") final Path workspaceRoot,
+                                     final WorkerEnvironment workerEnvironment,
+                                     final LogConfigs logConfigs,
+                                     final AirbyteApiClient airbyteApiClient,
+                                     @Value("${airbyte.version}") final String airbyteVersion) {
+    this.workerConfigs = workerConfigs;
+    this.processFactory = processFactory;
+    this.workspaceRoot = workspaceRoot;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.airbyteApiClient = airbyteApiClient;
+    this.secretsHydrator = secretsHydrator;
+    this.airbyteVersion = airbyteVersion;
+  }
 
   @Override
   public ConnectorJobOutput runWithJobOutput(final CheckConnectionInput args) {

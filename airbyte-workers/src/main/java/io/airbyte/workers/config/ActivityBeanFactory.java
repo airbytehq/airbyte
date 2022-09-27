@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.config;
 
-import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
@@ -30,10 +30,10 @@ import io.micronaut.context.annotation.Value;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.util.List;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * Micronaut bean factory for activity-related singletons.

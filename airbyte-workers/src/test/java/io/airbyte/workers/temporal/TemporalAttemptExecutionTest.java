@@ -17,7 +17,6 @@ import static org.mockito.Mockito.when;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.AttemptApi;
 import io.airbyte.commons.functional.CheckedSupplier;
-import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.config.Configs;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.persistence.job.models.JobRunConfig;

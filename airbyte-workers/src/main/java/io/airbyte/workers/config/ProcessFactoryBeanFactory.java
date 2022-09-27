@@ -14,11 +14,11 @@ import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * Micronaut bean factory for process factory-related singletons.
