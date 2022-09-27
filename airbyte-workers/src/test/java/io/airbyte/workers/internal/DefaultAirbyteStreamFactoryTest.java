@@ -48,9 +48,10 @@ class DefaultAirbyteStreamFactoryTest {
   @Test
   void testValid() {
     final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
+    final AirbyteMessage record2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green").withSerializedMessage(null);
 
-    final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(record1));
     final Stream<AirbyteMessage> expectedStream = Stream.of(record1);
+    final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(record2));
 
     assertEquals(expectedStream.collect(Collectors.toList()), messageStream.collect(Collectors.toList()));
     verifyNoInteractions(logger);

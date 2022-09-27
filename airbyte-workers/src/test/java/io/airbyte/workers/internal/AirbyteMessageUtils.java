@@ -29,12 +29,18 @@ public class AirbyteMessageUtils {
                                                    final JsonNode record,
                                                    final Instant timeExtracted) {
 
-    return new AirbyteMessage()
+    final AirbyteRecordMessage recordMessage = new AirbyteRecordMessage()
+        .withData(record)
+        .withStream(tableName)
+        .withEmittedAt(timeExtracted.getEpochSecond());
+
+    final AirbyteMessage message = new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withData(record)
-            .withStream(tableName)
-            .withEmittedAt(timeExtracted.getEpochSecond()));
+        .withRecord(recordMessage);
+
+    message.withSerializedMessage(Jsons.serialize(message));
+
+    return message;
   }
 
   public static AirbyteMessage createLogMessage(final AirbyteLogMessage.Level level,

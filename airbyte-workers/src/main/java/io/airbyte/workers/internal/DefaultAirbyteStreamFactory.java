@@ -64,7 +64,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
               logger.info(line);
             }
           } else if (!jsonLine.get().isEmpty()) {
-            ((ObjectNode) jsonLine.get()).put("_serialized_message", line);
+            ((ObjectNode) jsonLine.get()).put("serialized_message", line);
           }
           return jsonLine.stream();
         })
@@ -77,9 +77,13 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
           return res;
         })
         .flatMap(jsonLine -> {
+          final JsonNode serialized_message = jsonLine.get("serialized_message");
+          ((ObjectNode) jsonLine).remove("serialized_message");
           final Optional<AirbyteMessage> m = Jsons.tryObject(jsonLine, AirbyteMessage.class);
           if (m.isEmpty()) {
             logger.error("Deserialization failed: {}", Jsons.serialize(jsonLine));
+          } else if (serialized_message != null) {
+            m.get().withSerializedMessage(serialized_message.toString());
           }
           return m.stream();
         })
