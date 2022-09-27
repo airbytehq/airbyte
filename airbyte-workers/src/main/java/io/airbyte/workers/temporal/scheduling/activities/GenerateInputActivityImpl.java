@@ -18,8 +18,8 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.util.List;
-import javax.inject.Singleton;
 
 @Singleton
 @Requires(property = "airbyte.worker.plane",

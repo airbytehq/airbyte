@@ -6,8 +6,8 @@ package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.time.Duration;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**

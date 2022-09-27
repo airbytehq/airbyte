@@ -6,7 +6,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.workers.temporal.StreamResetRecordsHelper;
 import io.micronaut.context.annotation.Requires;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
