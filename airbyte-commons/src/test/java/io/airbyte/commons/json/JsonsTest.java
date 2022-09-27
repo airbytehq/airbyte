@@ -291,6 +291,18 @@ class JsonsTest {
     }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
     assertEquals(expected, Jsons.flatten(json, false));
   }
+
+  @Test
+  void testFlatten__checkBackwardCompatiblity() {
+    final JsonNode json = Jsons
+        .deserialize("{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }");
+    Map<String, Object> expected = Stream.of(new Object[][] {
+        { "abc", "[{\"def\":\"ghi\"},{\"fed\":\"ihg\"}]" },
+        { "jkl", true },
+        { "pqr", 1 },
+    }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
+    assertEquals(expected, Jsons.flatten(json));
+  }
   
   @Test
   void testFlatten__withArraysApplyFlatten() {
