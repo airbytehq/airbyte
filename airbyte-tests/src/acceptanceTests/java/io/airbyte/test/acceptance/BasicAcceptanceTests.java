@@ -1023,10 +1023,6 @@ class BasicAcceptanceTests {
     final SourceRead source = testHarness.createPostgresSource(true);
     final UUID sourceId = source.getSourceId();
     final UUID sourceDefinitionId = source.getSourceDefinitionId();
-    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final UUID destinationId = testHarness.createPostgresDestination(true).getDestinationId();
-    final OperationRead operation = testHarness.createOperation();
-    final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
     // Fetch the current/most recent source definition version
     final SourceDefinitionRead sourceDefinitionRead =
@@ -1038,6 +1034,11 @@ class BasicAcceptanceTests {
       LOGGER.info("Setting source connector to pre-per-stream state version {}...",
           AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
       testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
+
+      final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+      final UUID destinationId = testHarness.createPostgresDestination(true).getDestinationId();
+      final OperationRead operation = testHarness.createOperation();
+      final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
       LOGGER.info("Discovered catalog: {}", catalog);
 
