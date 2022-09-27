@@ -1,9 +1,14 @@
 import { useCallback } from "react";
+import { useUnmount } from "react-use";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 
 export const usePreventRefreshOnDirty = (dirty: boolean, refreshSourceSchema: () => Promise<void>) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+
+  useUnmount(() => {
+    closeConfirmationModal();
+  });
 
   return useCallback(() => {
     if (dirty) {

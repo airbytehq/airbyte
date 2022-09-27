@@ -11,7 +11,6 @@ import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { PageTrackingCodes, useAnalyticsService, useTrackPage } from "hooks/services/Analytics";
-import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import {
   tidyConnectionFormValues,
@@ -42,7 +41,6 @@ export const ConnectionReplication: React.FC = () => {
 
   const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
-  const { closeConfirmationModal } = useConfirmationModalService();
 
   const [saved, setSaved] = useState(false);
 
@@ -54,7 +52,6 @@ export const ConnectionReplication: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
   useUnmount(() => {
     closeModal();
-    closeConfirmationModal();
   });
 
   const saveConnection = useCallback(
