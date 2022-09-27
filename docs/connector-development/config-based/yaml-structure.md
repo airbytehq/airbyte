@@ -261,7 +261,7 @@ This means that both these string templates will evaluate to the same string:
 1. `"{{ options.name }}"`
 2. `"{{ options['name'] }}"`
 
-In additional to passing additional values through the $options argument, macros can be called from within the string interpolation.
+In addition to passing additional values through the $options argument, macros can be called from within the string interpolation.
 For example,
 `"{{ max(2, 3) }}" -> 3`
 
