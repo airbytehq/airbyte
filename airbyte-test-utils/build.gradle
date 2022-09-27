@@ -5,7 +5,6 @@ plugins {
 dependencies {
     api project(':airbyte-db:db-lib')
     implementation project(':airbyte-api')
-    implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-workers')
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'

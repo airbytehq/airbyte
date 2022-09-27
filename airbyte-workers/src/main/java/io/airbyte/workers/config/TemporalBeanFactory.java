@@ -7,7 +7,6 @@ package io.airbyte.workers.config;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.DefaultJobCreator;
 import io.airbyte.persistence.job.factory.DefaultSyncJobFactory;
@@ -15,6 +14,8 @@ import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.factory.SyncJobFactory;
 import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import io.airbyte.workers.temporal.TemporalClient;
+import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
@@ -52,6 +53,18 @@ public class TemporalBeanFactory {
         jobCreator,
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
+  }
+
+  @Singleton
+  public WorkflowServiceStubs temporalService(final TemporalUtils temporalUtils) {
+    return temporalUtils.createTemporalService();
+  }
+
+  @Singleton
+  public WorkflowClient workflowClient(
+                                       final TemporalUtils temporalUtils,
+                                       final WorkflowServiceStubs temporalService) {
+    return TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace());
   }
 
   @Singleton

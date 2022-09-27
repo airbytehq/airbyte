@@ -57,14 +57,14 @@ import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.temporal.TemporalUtils;
-import io.airbyte.commons.temporal.TemporalWorkflowUtils;
-import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
-import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
+import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.TemporalWorkflowUtils;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.client.WorkflowClient;
@@ -725,15 +725,8 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   private void disableConnection(final UUID connectionId) throws ApiException {
-    final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final ConnectionUpdate connectionUpdate =
-        new ConnectionUpdate()
-            .prefix(connection.getPrefix())
-            .connectionId(connectionId)
-            .operationIds(connection.getOperationIds())
-            .status(ConnectionStatus.DEPRECATED)
-            .schedule(connection.getSchedule())
-            .syncCatalog(connection.getSyncCatalog());
+        new ConnectionUpdate().connectionId(connectionId).status(ConnectionStatus.DEPRECATED);
     apiClient.getConnectionApi().updateConnection(connectionUpdate);
   }
 
