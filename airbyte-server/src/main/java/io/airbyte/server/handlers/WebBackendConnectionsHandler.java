@@ -385,7 +385,7 @@ public class WebBackendConnectionsHandler {
         final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
         final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
 
-        if (stateType == ConnectionStateType.LEGACY) {
+        if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET) {
           streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
         }
         ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
