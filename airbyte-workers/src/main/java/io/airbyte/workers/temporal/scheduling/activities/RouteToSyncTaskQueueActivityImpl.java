@@ -5,7 +5,7 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.workers.temporal.sync.RouterService;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class RouteToSyncTaskQueueActivityImpl implements RouteToSyncTaskQueueActivity {
