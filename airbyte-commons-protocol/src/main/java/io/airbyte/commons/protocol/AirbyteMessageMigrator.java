@@ -7,14 +7,14 @@ package io.airbyte.commons.protocol;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.protocol.migrations.AirbyteMessageMigration;
 import io.airbyte.commons.version.AirbyteVersion;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Singleton;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Singleton;
 
 /**
  * AirbyteProtocol Message Migrator
@@ -84,15 +84,24 @@ public class AirbyteMessageMigrator {
   }
 
   // Helper function to work around type casting
-  private <PreviousVersion, CurrentVersion> PreviousVersion applyDowngrade(final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration, final Object message) {
+  private <PreviousVersion, CurrentVersion> PreviousVersion applyDowngrade(final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration,
+                                                                           final Object message) {
     return migration.downgrade((CurrentVersion) message);
   }
 
   // Helper function to work around type casting
-  private <PreviousVersion, CurrentVersion> CurrentVersion applyUpgrade(final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration, final Object message) {
+  private <PreviousVersion, CurrentVersion> CurrentVersion applyUpgrade(final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration,
+                                                                        final Object message) {
     return migration.upgrade((PreviousVersion) message);
   }
 
+  /**
+   * Store migration in a sorted map key by the major of the lower version of the migration.
+   *
+   * The goal is to be able to retrieve the list of migrations to apply to get to/from a given
+   * version. We are only keying on the lower version because the right side (most recent version of
+   * the migration range) is always current version.
+   */
   @VisibleForTesting
   void registerMigration(final AirbyteMessageMigration<?, ?> migration) {
     final String key = migration.getPreviousVersion().getMajorVersion();

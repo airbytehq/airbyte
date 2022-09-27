@@ -8,14 +8,14 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.protocol.serde.AirbyteMessageDeserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageSerializer;
 import io.airbyte.commons.version.AirbyteVersion;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Singleton;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Singleton;
 
 /**
  * AirbyteProtocol Message Serializer/Deserializer provider

@@ -7,8 +7,8 @@ package io.airbyte.commons.protocol;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import java.util.HashSet;
 import jakarta.inject.Inject;
+import java.util.HashSet;
 import org.junit.jupiter.api.Test;
 
 @MicronautTest
