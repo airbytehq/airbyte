@@ -21,7 +21,7 @@ import { OperationsSection } from "views/Connection/ConnectionForm/components/Op
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
 import { connectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
-import { CreateConnectionName } from "./components/CreateConnectionName";
+import { CreateConnectionNameField } from "./components/CreateConnectionNameField";
 import { SchemaError } from "./components/SchemaError";
 import styles from "./CreateConnection.module.scss";
 
@@ -101,7 +101,7 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({ schemaErr
           {({ values, isSubmitting, isValid, dirty }) => (
             <Form>
               <FormChangeTracker changed={dirty} formId={formId} />
-              <CreateConnectionName />
+              <CreateConnectionNameField />
               <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
               <OperationsSection
                 onStartEditTransformation={toggleEditingTransformation}

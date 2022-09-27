@@ -7,9 +7,9 @@ import { ControlLabels } from "components/LabeledControl";
 
 import { Section } from "views/Connection/ConnectionForm/components/Section";
 
-import styles from "./CreateConnectionName.module.scss";
+import styles from "./CreateConnectionNameField.module.scss";
 
-export const CreateConnectionName = () => {
+export const CreateConnectionNameField = () => {
   const { formatMessage } = useIntl();
 
   return (
