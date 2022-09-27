@@ -3,9 +3,19 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-config:config-models')
+    implementation 'com.auth0:java-jwt:3.19.2'
+    implementation 'io.fabric8:kubernetes-client:5.12.2'
+    implementation 'io.sentry:sentry:6.3.1'
+    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation 'io.temporal:temporal-serviceclient:1.8.1'
 
-    runtimeOnly 'io.micronaut:micronaut-http-server-netty:3.6.0'
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-analytics')
+    implementation project(':airbyte-commons-temporal')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-metrics:metrics-lib')
 
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor
