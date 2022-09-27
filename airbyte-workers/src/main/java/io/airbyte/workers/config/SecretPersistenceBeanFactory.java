@@ -31,8 +31,7 @@ public class SecretPersistenceBeanFactory {
             pattern = "(?i)^(?!google_secret_manager).*")
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^(?!vault).*")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("secretPersistence")
   public SecretPersistence defaultSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return localTestingSecretPersistence(configDatabase);
@@ -41,8 +40,7 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^testing_config_db_table$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("secretPersistence")
   public SecretPersistence localTestingSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return new LocalTestingSecretPersistence(configDatabase);
@@ -60,8 +58,7 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^vault$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("secretPersistence")
   public SecretPersistence vaultSecretPersistence(@Value("${airbyte.secret.store.vault.address}") final String address,
                                                   @Value("${airbyte.secret.store.vault.prefix}") final String prefix,

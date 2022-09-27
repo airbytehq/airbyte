@@ -131,7 +131,6 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
-  private static final String WORKER_PLANE = "WORKER_PLANE";
 
   // Worker - Control plane configs
   private static final String DEFAULT_DATA_SYNC_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
@@ -229,8 +228,6 @@ public class EnvConfigs implements Configs {
     this.getAllEnvKeys = envMap::keySet;
     this.logConfigs = new LogConfigs(getLogConfiguration());
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
-
-    validateSyncWorkflowConfigs();
   }
 
   private Optional<CloudStorageConfigs> getLogConfiguration() {
@@ -931,11 +928,6 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS, true);
   }
 
-  @Override
-  public WorkerPlane getWorkerPlane() {
-    return getEnvOrDefault(WORKER_PLANE, WorkerPlane.CONTROL_PLANE, s -> WorkerPlane.valueOf(s.toUpperCase()));
-  }
-
   // Worker - Control plane
 
   @Override
@@ -971,22 +963,6 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDataPlaneServiceAccountEmail() {
     return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_EMAIL, "");
-  }
-
-  /**
-   * Ensures the user hasn't configured themselves into a corner by making sure that the worker is set
-   * up to properly process sync workflows. With sensible defaults, it should be hard to fail this
-   * validation, but this provides a safety net regardless.
-   */
-  private void validateSyncWorkflowConfigs() {
-    if (shouldRunSyncWorkflows()) {
-      if (getWorkerPlane().equals(WorkerPlane.DATA_PLANE) && getDataSyncTaskQueues().isEmpty()) {
-        throw new IllegalArgumentException(String.format(
-            "When %s is true, the worker must either be configured as a Control Plane worker, or %s must be non-empty.",
-            SHOULD_RUN_SYNC_WORKFLOWS,
-            DATA_SYNC_TASK_QUEUES));
-      }
-    }
   }
 
   @Override
