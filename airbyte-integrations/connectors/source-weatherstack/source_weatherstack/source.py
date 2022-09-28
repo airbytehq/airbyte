@@ -57,7 +57,98 @@ class CurrentWeatherStream(HttpStream):
         return None
 
 
-class ForecastStream(HttpStream):
+class WeatherstackStream(HttpStream):
+    url_base = "http://api.weatherstack.com/"
+
+    # Set this as a noop.
+    primary_key = None
+
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__()
+        self.query = config['query']
+        self.access_key = config['access_key']
+
+    def path(
+        self, 
+        stream_state: Mapping[str, Any] = None, 
+        stream_slice: Mapping[str, Any] = None, 
+        next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        # The "/current" path gives us the latest current city weather
+        return "current"  
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        # The api requires that we include api_key as a query param so we do that in this method
+        return {'access_key': self.access_key , 'query' : self.query }
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        # The response is a simple JSON whose schema matches our stream's schema exactly, 
+        # so we just return a list containing the response
+        return [response.json()]
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # The API does not offer pagination,
+        # so we return None to indicate there are no more pages in the response
+        return None
+
+
+class IncrementalWeatherstackStream(HttpStream):
+    url_base = "http://api.weatherstack.com/"
+
+    # Set this as a noop.
+    primary_key = None
+
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__()
+        self.query = config['query']
+        self.access_key = config['access_key']
+
+    def path(
+        self, 
+        stream_state: Mapping[str, Any] = None, 
+        stream_slice: Mapping[str, Any] = None, 
+        next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        # The "/current" path gives us the latest current city weather
+        return "current"  
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        # The api requires that we include api_key as a query param so we do that in this method
+        return {'access_key': self.access_key , 'query' : self.query }
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        # The response is a simple JSON whose schema matches our stream's schema exactly, 
+        # so we just return a list containing the response
+        return [response.json()]
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # The API does not offer pagination,
+        # so we return None to indicate there are no more pages in the response
+        return None
+
+class Forecast(HttpStream):
     url_base = "http://api.weatherstack.com/"
 
     # Set this as a noop.
