@@ -49,6 +49,19 @@ public class S3DestinationTest {
         .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
         .withS3Client(s3)
         .get();
+
+    factoryConfig = new S3DestinationConfigFactory() {
+
+      // endpoint defaults to "s3-accesspoint" to allow tests to pass with secured custom S3 endpoint
+      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
+        return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
+            .withEndpoint("s3-accesspoint.us-west-1.amazonaws.com")
+            .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
+            .withS3Client(s3)
+            .get();
+      }
+
+    };
   }
 
   @Test
@@ -56,17 +69,7 @@ public class S3DestinationTest {
    * Test that check will fail if IAM user does not have listObjects permission
    */
   public void checksS3WithoutListObjectPermission() {
-    final S3Destination destinationFail = new S3Destination(new S3DestinationConfigFactory() {
-
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
-        return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
-            .withEndpoint("fake-endpoint")
-            .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
-            .withS3Client(s3)
-            .get();
-      }
-
-    });
+    final S3Destination destinationFail = new S3Destination(factoryConfig);
     doThrow(new AmazonS3Exception("Access Denied")).when(s3).listObjects(any(ListObjectsRequest.class));
     final AirbyteConnectionStatus status = destinationFail.check(null);
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
@@ -78,17 +81,7 @@ public class S3DestinationTest {
    * Test that check will succeed when IAM user has all required permissions
    */
   public void checksS3WithListObjectPermission() {
-    final S3Destination destinationSuccess = new S3Destination(new S3DestinationConfigFactory() {
-
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
-        return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
-            .withEndpoint("fake-endpoint")
-            .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
-            .withS3Client(s3)
-            .get();
-      }
-
-    });
+    final S3Destination destinationSuccess = new S3Destination(factoryConfig);
     final AirbyteConnectionStatus status = destinationSuccess.check(null);
     assertEquals(Status.SUCCEEDED, status.getStatus(), "Connection check should have succeeded");
   }
@@ -119,11 +112,12 @@ public class S3DestinationTest {
   public void checksCustomEndpointIsHttpsOnly() {
     final S3Destination destinationWithHttpsOnlyEndpoint = new S3Destination(factoryConfig);
     final AirbyteConnectionStatus status = destinationWithHttpsOnlyEndpoint.check(null);
-    assertEquals(Status.SUCCEEDED, status.getStatus());
+    assertEquals(Status.SUCCEEDED, status.getStatus(), "custom endpoint did not contain `s3-accesspoint`");
   }
 
   /**
    * Test that checks if user is using a connection that is deemed insecure since it does not always enforce HTTPS only
+   * <p>https://docs.aws.amazon.com/general/latest/gr/s3.html</p>
    */
   @Test
   public void checksCustomEndpointIsNotHttpsOnly() {
