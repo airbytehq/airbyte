@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
 import HeadTitle from "components/HeadTitle";
-import Table from "components/Table";
+import { Table } from "components/ui/Table";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";

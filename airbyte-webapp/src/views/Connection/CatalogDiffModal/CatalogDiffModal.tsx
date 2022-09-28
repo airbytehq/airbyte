@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
-import { ModalBody, ModalFooter } from "components/Modal";
+import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { AirbyteCatalog, CatalogDiff } from "core/request/AirbyteClient";
 

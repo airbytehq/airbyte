@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
 import { Button } from "components/base";
-import Modal from "components/Modal";
+import { Modal } from "components/ui/Modal";
 
 import styles from "./ShowVideo.module.scss";
 

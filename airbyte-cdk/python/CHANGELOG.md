@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.89
+- Fix: properly emit state when a stream has empty slices, provided by an iterator
+
 ## 0.1.88
 - Bugfix: Evaluate `response.text` only in debug mode
 

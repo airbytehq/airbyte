@@ -7,7 +7,7 @@ import styled from "styled-components";
 
 import SortIcon from "components/EntityTable/components/SortIcon";
 import { SortOrderEnum } from "components/EntityTable/types";
-import Table from "components/Table";
+import { Table } from "components/ui/Table";
 
 import { useQuery } from "hooks/useQuery";
 import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";

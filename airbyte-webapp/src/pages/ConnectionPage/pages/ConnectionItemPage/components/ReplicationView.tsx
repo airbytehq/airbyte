@@ -5,8 +5,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
-import { Button, LabeledSwitch, ModalBody, ModalFooter } from "components";
+import { Button } from "components/base/Button";
+import { LabeledSwitch } from "components/LabeledSwitch";
 import LoadingSchema from "components/LoadingSchema";
+import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";

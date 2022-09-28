@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 
-import Table from "components/Table";
+import { Table } from "components/ui/Table";
 
 import { useQuery } from "hooks/useQuery";
 

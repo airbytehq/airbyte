@@ -5,8 +5,12 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { Button, ControlLabels, DropDown, Input, ModalBody, ModalFooter } from "components";
+import { Button } from "components/base/Button";
+import { DropDown } from "components/base/DropDown";
+import { Input } from "components/base/Input";
 import { FormChangeTracker } from "components/FormChangeTracker";
+import { ControlLabels } from "components/LabeledControl";
+import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { useConfig } from "config";
 import { OperationService } from "core/domain/connection";
