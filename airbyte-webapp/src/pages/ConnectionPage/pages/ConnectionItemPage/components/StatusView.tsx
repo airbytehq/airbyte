@@ -152,7 +152,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   );
 
   return (
-    <div className={styles.statusView}>
+    <>
       <Card
         className={styles.contentCard}
         title={
@@ -199,7 +199,6 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
         )}
       </Card>
-
       {(moreJobPagesAvailable || isJobPageLoading) && (
         <footer className={styles.footer}>
           <LoadingButton isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
@@ -207,7 +206,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           </LoadingButton>
         </footer>
       )}
-    </div>
+    </>
   );
 };
 
