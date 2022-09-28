@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,6 +65,9 @@ class SourceHandlerTest {
   private JsonSecretsProcessor secretsProcessor;
   private ConnectorSpecification connectorSpecification;
 
+  // needs to match name of file in src/test/resources/icons
+  private static final String ICON = "test-source.svg";
+
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() throws IOException {
@@ -84,7 +88,8 @@ class SourceHandlerTest {
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")
         .withDocumentationUrl("https://wikipedia.org")
-        .withSpec(connectorSpecification);
+        .withSpec(connectorSpecification)
+        .withIcon(ICON);
 
     sourceDefinitionSpecificationRead = new SourceDefinitionSpecificationRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -190,6 +195,10 @@ class SourceHandlerTest {
     final SourceRead actualSourceRead = sourceHandler.getSource(sourceIdRequestBody);
 
     assertEquals(expectedSourceRead, actualSourceRead);
+
+    // make sure the icon was loaded into actual svg content
+    assertTrue(expectedSourceRead.getIcon().startsWith("<svg>"));
+
     verify(secretsProcessor).prepareSecretsForOutput(sourceConnection.getConfiguration(),
         sourceDefinitionSpecificationRead.getConnectionSpecification());
   }
