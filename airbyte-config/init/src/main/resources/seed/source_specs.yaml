@@ -647,7 +647,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.20"
+- dockerImage: "airbyte/source-amazon-ads:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -1359,7 +1359,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bamboo-hr:0.2.0"
+- dockerImage: "airbyte/source-bamboo-hr:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bamboo-hr"
     connectionSpecification:
@@ -1369,7 +1369,7 @@
       required:
       - "subdomain"
       - "api_key"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         subdomain:
           type: "string"
@@ -1823,7 +1823,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickhouse:0.1.13"
+- dockerImage: "airbyte/source-clickhouse:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -1840,6 +1840,7 @@
           description: "The host endpoint of the Clickhouse cluster."
           title: "Host"
           type: "string"
+          order: 0
         port:
           description: "The port of the database."
           title: "Port"
@@ -1849,26 +1850,40 @@
           default: 8123
           examples:
           - "8123"
+          order: 1
         database:
           description: "The name of the database."
           title: "Database"
           type: "string"
           examples:
           - "default"
+          order: 2
         username:
           description: "The username which is used to access the database."
           title: "Username"
           type: "string"
+          order: 3
         password:
           description: "The password associated with this username."
           title: "Password"
           type: "string"
           airbyte_secret: true
+          order: 4
+        jdbc_url_params:
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (Eg. key1=value1&key2=value2&key3=value3). For more\
+            \ information read about <a href=\"https://jdbc.postgresql.org/documentation/head/connect.html\"\
+            >JDBC URL parameters</a>."
+          title: "JDBC URL Parameters (Advanced)"
+          type: "string"
+          order: 5
         ssl:
           title: "SSL Connection"
           description: "Encrypt data using SSL."
           type: "boolean"
           default: true
+          order: 6
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -3215,7 +3230,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshdesk:0.3.3"
+- dockerImage: "airbyte/source-freshdesk:0.3.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/freshdesk"
     connectionSpecification:
@@ -10226,7 +10241,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.23"
+- dockerImage: "airbyte/source-snowflake:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
