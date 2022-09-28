@@ -8,7 +8,7 @@ import com.google.common.base.Preconditions;
 import java.util.Objects;
 
 /**
- * The AirbyteVersion identifies the version of the database used internally by Airbyte services.
+ * A semVer Version class that allows "dev" as a version.
  */
 @SuppressWarnings({"PMD.AvoidFieldNameMatchingTypeName", "PMD.ConstructorCallsOverridableMethod"})
 public class Version {
@@ -61,7 +61,7 @@ public class Version {
   }
 
   /**
-   * Compares two Airbyte Version to check if they are equivalent.
+   * Compares two Version to check if they are equivalent.
    *
    * Only the major and minor part of the Version is taken into account.
    */
@@ -97,7 +97,7 @@ public class Version {
   }
 
   /**
-   * Compares two Airbyte Version to check if they are equivalent (including patch version).
+   * Compares two Version to check if they are equivalent (including patch version).
    */
   public int patchVersionCompareTo(final Version another) {
     if (isDev() || another.isDev()) {
@@ -115,7 +115,7 @@ public class Version {
   }
 
   /**
-   * Compares two Airbyte Version to check if only the patch version was updated.
+   * Compares two Version to check if only the patch version was updated.
    */
   public boolean checkOnlyPatchVersionIsUpdatedComparedTo(final Version another) {
     if (isDev() || another.isDev()) {
