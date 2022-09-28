@@ -11,16 +11,14 @@ jobs:
     outputs:
       pat: ${{ steps.variables.outputs.pat }}
     steps:
-      - name: UUID ${{ github.event.inputs.uuid }}
-        run: true
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Check PAT rate limits
         id: variables
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.OCTAVIA_PAT }} \
-            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
+            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
+            ${{ secrets.OCTAVIA_PAT }}
   shared-issues:
     name: "Add Labels to Issues.  Safe to Merge on fail"
     runs-on: ubuntu-latest
@@ -31,7 +29,7 @@ jobs:
         with:
           pal-repo-token: "${{ needs.find_valid_pat.outputs.pat }}"
           pal-repo-name: airbytehq/workflow-actions@production
-          # the following input gets passed to the private action
-          token: "${{ needs.find_valid_pat.outputs.pat }}"
+          # the following input gets passed to the private
+          token: "${{ env.PAT }}"
           # ref: https://github.com/airbytehq/workflow-actions/blob/main/src/bin_issue.ts
           command: "issue"
