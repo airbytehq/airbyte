@@ -2,8 +2,8 @@ import classNames from "classnames";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components/base/Button";
-import { Text } from "components/base/Text";
+import { Button } from "components/ui/Button";
+import { Text } from "components/ui/Text";
 
 import styles from "./EmptyResourceListView.module.scss";
 

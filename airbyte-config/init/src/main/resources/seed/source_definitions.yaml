@@ -464,7 +464,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -480,7 +480,7 @@
 - name: Instagram
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 0.1.11
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api

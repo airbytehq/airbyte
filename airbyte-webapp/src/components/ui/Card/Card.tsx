@@ -1,7 +1,8 @@
 import classNames from "classnames";
 import React from "react";
 
-import { H5 } from "../Titles";
+import { H5 } from "components/base/Titles";
+
 import styles from "./Card.module.scss";
 
 export interface CardProps {

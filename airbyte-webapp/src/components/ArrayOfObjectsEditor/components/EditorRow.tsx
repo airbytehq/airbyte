@@ -2,9 +2,9 @@ import React from "react";
 import { useIntl } from "react-intl";
 
 import { Button } from "components";
-import { Tooltip } from "components/base/Tooltip";
 import { CrossIcon } from "components/icons/CrossIcon";
 import { PencilIcon } from "components/icons/PencilIcon";
+import { Tooltip } from "components/ui/Tooltip";
 
 import styles from "./EditorRow.module.scss";
 

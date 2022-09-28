@@ -5,9 +5,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
-import { Button } from "components/base/Button";
 import { LabeledSwitch } from "components/LabeledSwitch";
 import LoadingSchema from "components/LoadingSchema";
+import { Button } from "components/ui/Button";
 import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
