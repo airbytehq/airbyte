@@ -70,7 +70,7 @@ const config = {
                         //     to: 'https://glossary.airbyte.com/term/etl-elt-airbyte/',
                         // },
                         // {
-                        //     from: '/understanding-airbyte/glossaryfull-refresh-sync',
+                        //     from: '/understanding-airbyte/glossary#full-refresh-sync',
                         //     to: 'https://glossary.airbyte.com/term/full-refresh-synchronization/',
                         // },
                         // {
