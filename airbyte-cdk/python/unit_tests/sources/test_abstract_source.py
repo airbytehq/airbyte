@@ -606,13 +606,7 @@ class TestIncrementalRead:
             pytest.param(False, id="test_source_emits_state_as_per_stream_format"),
         ],
     )
-    @pytest.mark.parametrize(
-        "slices",
-        [
-            pytest.param([], id="test_slices_as_list"),
-            pytest.param(iter([]), id="test_slices_as_iterator")
-        ]
-    )
+    @pytest.mark.parametrize("slices", [pytest.param([], id="test_slices_as_list"), pytest.param(iter([]), id="test_slices_as_iterator")])
     def test_no_slices(self, mocker, use_legacy, per_stream_enabled, slices):
         """
         Tests that an incremental read returns at least one state messages even if no records were read:
