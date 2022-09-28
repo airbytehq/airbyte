@@ -2,9 +2,9 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button, DropDownRow } from "components";
-import { Popout } from "components/base/Popout/Popout";
-import { Text } from "components/base/Text";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+import { Popout } from "components/ui/Popout";
+import { Text } from "components/ui/Text";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";

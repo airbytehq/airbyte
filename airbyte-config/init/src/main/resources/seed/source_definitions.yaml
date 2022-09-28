@@ -1,3 +1,11 @@
+- name: Adjust
+  sourceDefinitionId: d3b7fa46-111b-419a-998a-d7f046f6d66d
+  dockerRepository: airbyte/source-adjust
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/adjust
+  icon: adjust.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Airtable
   sourceDefinitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
   dockerRepository: airbyte/source-airtable
@@ -25,7 +33,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -96,7 +104,7 @@
 - name: BambooHR
   sourceDefinitionId: 90916976-a132-4ce9-8bce-82a03dd58788
   dockerRepository: airbyte/source-bamboo-hr
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/bamboo-hr
   icon: bamboohr.svg
   sourceType: api
@@ -168,7 +176,7 @@
 - name: ClickHouse
   sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   dockerRepository: airbyte/source-clickhouse
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/clickhouse
   icon: cliskhouse.svg
   sourceType: database
@@ -245,6 +253,13 @@
   icon: drift.svg
   sourceType: api
   releaseStage: alpha
+- name: DV 360
+  sourceDefinitionId: 1356e1d9-977f-4057-ad4b-65f25329cf61
+  dockerRepository: airbyte/source-dv-360
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/dv-360
+  sourceType: api
+  releaseStage: alpha
 - name: E2E Testing
   sourceDefinitionId: d53f9084-fa6b-4a5a-976c-5b8392f4ad8a
   dockerRepository: airbyte/source-e2e-test
@@ -307,7 +322,7 @@
 - name: Freshdesk
   sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.3.3
+  dockerImageTag: 0.3.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshdesk
   icon: freshdesk.svg
   sourceType: api
@@ -411,11 +426,11 @@
 - name: Greenhouse
   sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   dockerRepository: airbyte/source-greenhouse
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/greenhouse
   icon: greenhouse.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Harness
   sourceDefinitionId: 6fe89830-d04d-401b-aad6-6552ffa5c4af
   dockerRepository: farosai/airbyte-harness-source
@@ -449,7 +464,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -465,7 +480,7 @@
 - name: Instagram
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 0.1.11
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
@@ -623,11 +638,11 @@
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
-  dockerImageTag: 0.1.24
+  dockerImageTag: 0.1.25
   documentationUrl: https://docs.airbyte.io/integrations/sources/mixpanel
   icon: mixpanel.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Monday
   sourceDefinitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
   dockerRepository: airbyte/source-monday
@@ -655,7 +670,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.6.13
+  dockerImageTag: 0.6.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -671,7 +686,7 @@
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/notion
   icon: notion.svg
   sourceType: api
@@ -948,11 +963,11 @@
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.io/integrations/sources/slack
   icon: slack.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
@@ -968,11 +983,11 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/snapchat-marketing
   icon: snapchat.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.22
+  dockerImageTag: 0.1.24
   documentationUrl: https://docs.airbyte.io/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
@@ -1060,11 +1075,11 @@
 - name: Twilio
   sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/twilio
   icon: twilio.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Typeform
   sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   dockerRepository: airbyte/source-typeform

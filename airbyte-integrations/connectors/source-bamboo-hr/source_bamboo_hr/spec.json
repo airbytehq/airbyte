@@ -5,7 +5,7 @@
     "title": "Bamboo HR Spec",
     "type": "object",
     "required": ["subdomain", "api_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "subdomain": {
         "type": "string",
