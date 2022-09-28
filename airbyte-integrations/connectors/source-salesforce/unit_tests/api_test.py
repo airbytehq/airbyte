@@ -12,7 +12,7 @@ from unittest.mock import Mock
 import pytest
 import requests_mock
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
-from conftest import generate_stream
+from conftest import generate_stream, encoding_symbols_parameters
 from requests.exceptions import HTTPError
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
@@ -184,12 +184,27 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", f"{job_full_url}/results", content=b"\x00")
-        res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
+        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
         assert res == []
 
         m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
-        res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
+        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
         assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": False}]
+
+
+@pytest.mark.parametrize('chunk_size, content_type, content, expected_result',
+                         encoding_symbols_parameters(),
+                         ids=[f'charset: {x[1]}, chunk_size: {x[0]}' for x in encoding_symbols_parameters()]
+                         )
+def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type, content, expected_result):
+    job_full_url: str = "https://fase-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
+
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", f"{job_full_url}/results", headers={"Content-Type": f"text/html; charset={content_type}"},
+                       content=content)
+        res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url, chunk_size=chunk_size)))
+        assert res == expected_result
 
 
 @pytest.mark.parametrize(
@@ -415,7 +430,7 @@ def test_csv_reader_dialect_unix():
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", url + "/results", text=text)
-        result = [i for i in stream.read_with_chunks(stream.download_data(url))]
+        result = [i for i in stream.read_with_chunks(*stream.download_data(url))]
         assert result == data
 
 
@@ -513,10 +528,3 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
     assert isinstance(rest_stream, IncrementalSalesforceStream)
-
-
-def test_decoding(stream_config, stream_api):
-    stream_name = "AcceptedEventRelation"
-    stream = generate_stream(stream_name, stream_config, stream_api)
-    assert stream.decode(b"\xe9\x97\xb4\xe5\x8d\x95\xe7\x9a\x84\xe8\xaf\xb4 \xf0\x9f\xaa\x90") == "间单的说 🪐"
-    assert stream.decode(b"0\xe5") == "0å"
