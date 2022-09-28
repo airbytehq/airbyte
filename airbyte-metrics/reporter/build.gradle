@@ -2,31 +2,37 @@ plugins {
     id 'application'
 }
 
+configurations {
+    jdbc
+}
+
 dependencies {
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor
 
     implementation platform(libs.micronaut.bom)
     implementation libs.bundles.micronaut
-    implementation libs.flyway.core
 
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-metrics:metrics-lib')
 
+    implementation (libs.jooq) {
+        force = true
+    }
+
     testAnnotationProcessor platform(libs.micronaut.bom)
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
 
-    integrationTestJavaAnnotationProcessor platform(libs.micronaut.bom)
-    integrationTestJavaAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
-
-    testImplementation libs.bundles.micronaut.test
+//    integrationTestJavaAnnotationProcessor platform(libs.micronaut.bom)
+//    integrationTestJavaAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+//    testImplementation libs.bundles.micronaut.test
 }
 
 application {
     applicationName = "airbyte-metrics-reporter"
-    mainClass = 'io.airbyte.metrics.reporter.ReporterApp'
+    mainClass = 'io.airbyte.metrics.reporter.Application'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 

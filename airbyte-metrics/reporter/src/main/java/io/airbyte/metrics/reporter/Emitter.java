@@ -10,42 +10,8 @@ import jakarta.inject.Singleton;
 import java.lang.invoke.MethodHandles;
 import java.time.Duration;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import javax.xml.crypto.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-public abstract sealed class Emitter {
-  protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  protected static final long DEFAULT_PERIOD = 15;
-  protected static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.SECONDS;
-  protected final Callable<Void> callable;
-  Emitter(final Callable<Void> callable) {
-    this.callable = callable;
-  }
-
-  public void Emit() {
-    try {
-      callable.call();
-    } catch (final Exception e) {
-      log.error("Exception querying database for metric: ", e);
-    }
-  }
-
-  public Duration getDuration() {
-    return Duration.ofSeconds(15);
-  }
-
-  private Runnable countMetricEmission(final Callable<Void> metricQuery) {
-    return () -> {
-      try {
-        metricQuery.call();
-      } catch (final Exception e) {
-        log.error("Exception querying database for metric: ", e);
-      }
-    };
-  }
-}
 
 @Singleton
 final class NumPendingJobs extends Emitter {
@@ -70,8 +36,86 @@ final class NumRunningJobs extends Emitter {
 }
 
 @Singleton
-final class OverallJobRuntimeInLastHourByTerminalStateSeconds extends Emitter {
-  public OverallJobRuntimeInLastHourByTerminalStateSeconds(final MetricClient client, final Database db) {
+final class NumOrphanRunningJobs extends Emitter {
+  NumOrphanRunningJobs(final MetricClient client, final Database db) {
+    super(() -> {
+      final var orphaned = db.query(MetricQueries::numberOfOrphanRunningJobs);
+      client.gauge(OssMetricsRegistry.NUM_ORPHAN_RUNNING_JOBS, orphaned);
+      return null;
+    });
+  }
+}
+
+@Singleton
+final class OldestRunningJob extends Emitter {
+  OldestRunningJob(final MetricClient client, final Database db) {
+    super(() -> {
+      final var age = db.query(MetricQueries::oldestRunningJobAgeSecs);
+      client.gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
+      return null;
+    });
+  }
+}
+
+@Singleton
+final class OldestPendingJob extends Emitter {
+  OldestPendingJob(final MetricClient client, final Database db) {
+    super(() -> {
+      final var age = db.query(MetricQueries::oldestPendingJobAgeSecs);
+      client.gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
+      return null;
+    });
+  }
+}
+
+@Singleton
+final class NumActiveConnectionsPerWorkspace extends Emitter {
+  NumActiveConnectionsPerWorkspace(final MetricClient client, final Database db) {
+    super(()-> {
+      final var workspaceConns = db.query(MetricQueries::numberOfActiveConnPerWorkspace);
+      for (final long numCons : workspaceConns) {
+        client.distribution(OssMetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, numCons);
+      }
+      return null;
+    });
+  }
+}
+
+@Singleton
+final class NumAbnormalScheduledSyncs extends Emitter {
+  NumAbnormalScheduledSyncs(final MetricClient client, final Database db) {
+    super(() -> {
+      final var count = db.query(MetricQueries::numberOfJobsNotRunningOnScheduleInLastDay);
+      client.gauge(OssMetricsRegistry.NUM_ABNORMAL_SCHEDULED_SYNCS_IN_LAST_DAY, count);
+      return null;
+    });
+  }
+
+  @Override
+  public Duration getDuration() {
+    return Duration.ofHours(1);
+  }
+}
+
+@Singleton
+final class TotalScheduledSyncs extends Emitter {
+  TotalScheduledSyncs(final MetricClient client, final Database db) {
+    super(() -> {
+      final var count = db.query(MetricQueries::numScheduledActiveConnectionsInLastDay);
+      client.gauge(OssMetricsRegistry.NUM_TOTAL_SCHEDULED_SYNCS_IN_LAST_DAY, count);
+      return null;
+    });
+  }
+
+  @Override
+  public Duration getDuration() {
+    return Duration.ofHours(1);
+  }
+}
+
+@Singleton
+final class TotalJobRuntimeByTerminalState extends Emitter {
+  public TotalJobRuntimeByTerminalState(final MetricClient client, final Database db) {
     super(() -> {
       final var times = db.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
       times.forEach(pair -> client.distribution(
@@ -87,4 +131,42 @@ final class OverallJobRuntimeInLastHourByTerminalStateSeconds extends Emitter {
   public Duration getDuration() {
     return Duration.ofHours(1);
   }
+}
+
+/**
+ * Abstract base class for all emitted metrics.
+ *
+ * As this is a sealed class, all implementations of it are contained within this same file.
+ */
+public abstract sealed class Emitter {
+  protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  protected final Callable<Void> callable;
+  Emitter(final Callable<Void> callable) {
+    this.callable = callable;
+  }
+
+  /**
+   * Emit the metrics by calling the callable.
+   *
+   * Any exception thrown by the callable will be logged.
+   *
+   * @TODO: replace log message with a published error-event of some kind.
+   */
+  public void Emit() {
+    try {
+      callable.call();
+    } catch (final Exception e) {
+      log.error("Exception querying database for metric: ", e);
+    }
+  }
+
+  /**
+   * How often this metric should report, defaults to 15s if not overwritten.
+   *
+   * @return Duration of how often this metric should report.
+   */
+  public Duration getDuration() {
+    return Duration.ofSeconds(15);
+  }
+
 }
