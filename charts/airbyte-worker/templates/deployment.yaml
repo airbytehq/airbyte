@@ -198,7 +198,17 @@ spec:
             secretKeyRef:
               name: {{ .Release.Name }}-airbyte-secrets
               key: STATE_STORAGE_MINIO_ACCESS_KEY
+        - name: STATE_STORAGE_MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-airbyte-secrets
+              key: STATE_STORAGE_MINIO_ACCESS_KEY
         - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-airbyte-secrets
+              key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+        - name: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-airbyte-secrets
@@ -229,16 +239,6 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: STATE_STORAGE_MINIO_BUCKET_NAME
-        - name: STATE_STORAGE_MINIO_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-airbyte-secrets
-              key: STATE_STORAGE_MINIO_ACCESS_KEY
-        - name: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-airbyte-secrets
-              key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
         - name: STATE_STORAGE_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:
