@@ -43,9 +43,7 @@ jobs:
           sudo apt-get update && \
           sudo apt-get install -y musl-tools && \
           cd airbyte-to-flow && \
-          make && \
-          ls target/x86_64-unknown-linux-musl/release && \
-          target/x86_64-unknown-linux-musl/release/airbyte-to-flow --help
+          make
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
