@@ -36,6 +36,7 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
         """
         :return: URL base for the  API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "https://myapi.com/v1/"
         """
+        pass
 
     @abstractmethod
     def get_path(
@@ -48,12 +49,14 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
         """
         Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
         """
+        pass
 
     @abstractmethod
     def get_method(self) -> HttpMethod:
         """
         Specifies the HTTP method to use
         """
+        pass
 
     @abstractmethod
     def get_request_params(
@@ -68,6 +71,7 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
+        pass
 
     @abstractmethod
     def should_retry(self, response: requests.Response) -> ResponseStatus:
@@ -80,6 +84,7 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
 
         Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
         """
+        pass
 
     @abstractmethod
     def get_request_headers(
@@ -92,6 +97,7 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
         """
         Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
         """
+        pass
 
     @abstractmethod
     def get_request_body_data(
@@ -110,6 +116,7 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
+        pass
 
     @abstractmethod
     def get_request_body_json(
@@ -124,6 +131,7 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
+        pass
 
     @abstractmethod
     def request_kwargs(
@@ -138,6 +146,7 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
         Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
         """
+        pass
 
     @property
     @abstractmethod
@@ -145,6 +154,7 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
         """
         Return the name of cache file
         """
+        pass
 
     @property
     @abstractmethod
@@ -152,3 +162,4 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
         """
         If True, all records will be cached.
         """
+        pass

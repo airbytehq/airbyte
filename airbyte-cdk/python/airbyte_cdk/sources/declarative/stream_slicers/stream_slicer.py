@@ -32,6 +32,7 @@ class StreamSlicer(RequestOptionsProvider, JsonSchemaMixin):
         :param stream_state: The current stream state
         :return: List of stream slices
         """
+        pass
 
     @abstractmethod
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
@@ -41,7 +42,9 @@ class StreamSlicer(RequestOptionsProvider, JsonSchemaMixin):
         :param stream_slice: Current stream_slice
         :param last_record: Last record read from the source
         """
+        pass
 
     @abstractmethod
     def get_stream_state(self) -> StreamState:
         """Returns the current stream state"""
+        pass

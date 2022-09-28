@@ -24,3 +24,4 @@ class BackoffStrategy(JsonSchemaMixin):
         :param attempt_count: number of attempts to submit the request
         :return: time to wait in seconds
         """
+        pass

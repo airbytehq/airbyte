@@ -46,6 +46,7 @@ class RequestOptionsProvider(JsonSchemaMixin):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method."""
+        pass
 
     @abstractmethod
     def get_request_body_data(
@@ -64,6 +65,7 @@ class RequestOptionsProvider(JsonSchemaMixin):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
+        pass
 
     @abstractmethod
     def get_request_body_json(
@@ -78,3 +80,4 @@ class RequestOptionsProvider(JsonSchemaMixin):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
+        pass

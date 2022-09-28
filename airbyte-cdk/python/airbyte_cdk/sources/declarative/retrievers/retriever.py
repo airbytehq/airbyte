@@ -34,10 +34,12 @@ class Retriever(JsonSchemaMixin):
         :param stream_state: The initial stream state
         :return: The records read from the API source
         """
+        pass
 
     @abstractmethod
     def stream_slices(self, *, sync_mode: SyncMode, stream_state: Optional[StreamState] = None) -> Iterable[Optional[StreamSlice]]:
         """Returns the stream slices"""
+        pass
 
     @property
     @abstractmethod
@@ -53,8 +55,10 @@ class Retriever(JsonSchemaMixin):
          State should try to be as small as possible but at the same time descriptive enough to restore
          syncing process from the point where it stopped.
         """
+        pass
 
     @state.setter
     @abstractmethod
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
+        pass

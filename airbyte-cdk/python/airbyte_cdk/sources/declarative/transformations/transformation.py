@@ -33,6 +33,7 @@ class RecordTransformation(JsonSchemaMixin):
         :param stream_slice: The stream slice
         :return: The transformed record
         """
+        pass
 
     def __eq__(self, other):
         return other.__dict__ == self.__dict__

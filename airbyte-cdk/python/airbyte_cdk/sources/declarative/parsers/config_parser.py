@@ -15,3 +15,4 @@ class ConnectionDefinitionParser(ABC):
     @abstractmethod
     def parse(self, config_str: str) -> ConnectionDefinition:
         """Parses the config_str to a ConnectionDefinition"""
+        pass

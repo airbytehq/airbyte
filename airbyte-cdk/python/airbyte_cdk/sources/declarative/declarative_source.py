@@ -18,6 +18,7 @@ class DeclarativeSource(AbstractSource):
     @abstractmethod
     def connection_checker(self) -> ConnectionChecker:
         """Returns the ConnectioChecker to use for the `check` operation"""
+        pass
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """

@@ -30,3 +30,4 @@ class PaginationStrategy(JsonSchemaMixin):
         """
         Reset the pagination's inner state
         """
+        pass

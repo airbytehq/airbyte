@@ -25,6 +25,7 @@ class Paginator(RequestOptionsProvider, JsonSchemaMixin):
         """
         Reset the pagination's inner state
         """
+        pass
 
     @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
