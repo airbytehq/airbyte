@@ -76,17 +76,6 @@ export const useAnalyticsIdentifyUser = (userId?: string, traits?: Record<string
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 };
-export const useAnalyticsSetAnonymousIdFromLocalStorage = (): void => {
-  const analyticsService = useAnalyticsService();
-  const anonymousId = localStorage.getItem("ajs_anonymous_id");
-
-  useEffect(() => {
-    if (anonymousId) {
-      analyticsService.setAnonymousId(JSON.parse(anonymousId));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [anonymousId]);
-};
 
 export const useTrackPage = (page: string): void => {
   const analyticsService = useAnalyticsService();

@@ -5,11 +5,7 @@ import { useEffectOnce } from "react-use";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
-import {
-  useAnalyticsIdentifyUser,
-  useAnalyticsRegisterValues,
-  useAnalyticsSetAnonymousIdFromLocalStorage,
-} from "hooks/services/Analytics/useAnalyticsService";
+import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
@@ -25,7 +21,7 @@ import DestinationPage from "pages/DestinationPage";
 import OnboardingPage from "pages/OnboardingPage";
 import SourcesPage from "pages/SourcesPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
-import { setSegmentAnonymousId } from "utils/crossDomainUtils";
+import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
@@ -156,7 +152,7 @@ export const Routing: React.FC = () => {
         : null,
     [user]
   );
-  useAnalyticsSetAnonymousIdFromLocalStorage();
+  useGetSegmentAnonymousId();
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
 
