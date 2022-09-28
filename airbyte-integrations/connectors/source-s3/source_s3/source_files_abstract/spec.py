@@ -107,9 +107,7 @@ class SourceFilesAbstractSpec(BaseModel):
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema(*args, **kwargs)
-        print("\n\nPre-Schema: %s\n\n" % json.dumps(schema))
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)
-        print("\n\nPost-Schema: %s\n\n" % json.dumps(schema))
         schema = cls.resolve_refs(schema)
         return schema

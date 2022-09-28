@@ -19,110 +19,8 @@
           "**",
           "myFolder/myTableFiles/*.csv|myFolder/myOtherTableFiles/*.csv"
         ],
-        "order": 10,
+        "order": 1,
         "type": "string"
-      },
-      "provider": {
-        "title": "S3: Amazon Web Services",
-        "type": "object",
-        "properties": {
-          "bucket": {
-            "title": "Bucket",
-            "description": "Name of the S3 bucket where the file(s) exist.",
-            "order": 0,
-            "type": "string"
-          },
-          "aws_access_key_id": {
-            "title": "Aws Access Key Id",
-            "description": "When Authentication method is AWS Access Key ID and Access Key Secret the values must be set here. Leave empty for all other Authentication Methods.",
-            "airbyte_secret": true,
-            "order": 1,
-            "type": "string"
-          },
-          "aws_secret_access_key": {
-            "title": "Aws Secret Access Key",
-            "description": "When Authentication method is AWS Access Key ID and Access Key Secret the values must be set here. Leave empty for all other Authentication Methods.",
-            "airbyte_secret": true,
-            "order": 2,
-            "type": "string"
-          },
-          "path_prefix": {
-            "title": "Path Prefix",
-            "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimize finding these in S3. This is optional but recommended if your bucket contains many folders/files which you don't need to replicate.",
-            "default": "",
-            "order": 3,
-            "type": "string"
-          },
-          "endpoint": {
-            "title": "Endpoint",
-            "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
-            "default": "",
-            "order": 4,
-            "type": "string"
-          },
-          "use_ssl": {
-            "title": "Use TLS",
-            "description": "Whether the remote server is using a secure SSL/TLS connection. Only relevant if using an S3-compatible, non-AWS server",
-            "order": 5,
-            "type": "boolean"
-          },
-          "verify_ssl_cert": {
-            "title": "Verify TLS Certificates",
-            "description": "Set this to false to allow self signed certificates. Only relevant if using an S3-compatible, non-AWS server",
-            "order": 6,
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "bucket"
-        ],
-        "order": 11,
-        "description": "Use this to load files from S3 or S3-compatible services"
-      },
-      "authentication": {
-        "title": "Authentication Method",
-        "description": "The authentication method to use for accessing the source",
-        "default": "aws_provided_credentials",
-        "order": 12,
-        "type": "object",
-        "oneOf": [
-          {
-            "title": "AWS Access Key ID and Access Key Secret",
-            "description": "Use AWS Access Key ID and Access Key Secret as credentials. Needs proper permissions for accessing S3-Bucket.",
-            "type": "object",
-            "properties": {
-              "auth_method": {
-                "title": "Authentication Method",
-                "const": "aws_provided_credentials",
-                "type": "string"
-              }
-            }
-          },
-          {
-            "title": "AWS Default Credential Provider Chain",
-            "description": "Use default <a href=\"https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#configuring-credentials\" target=\"_blank\">AWS credential provider</html> chain (such as EC2 instance profile).",
-            "type": "object",
-            "properties": {
-              "auth_method": {
-                "title": "Authentication Method",
-                "const": "aws_default_credentials",
-                "type": "string"
-              }
-            }
-          },
-          {
-            "title": "No Credentials",
-            "description": "For access to public S3-Buckets or non AWS sources no credentials are required. Request will be unsigned.",
-            "type": "string",
-            "properties": {
-              "auth_method": {
-                "title": "Authentication Method",
-                "const": "no_credentials",
-                "type": "string"
-              }
-            }
-          }
-        ]
       },
       "format": {
         "title": "File Format",
@@ -325,6 +223,108 @@
         ],
         "order": 30,
         "type": "string"
+      },
+      "authentication": {
+        "title": "Authentication Method",
+        "description": "The authentication method to use for accessing the source.",
+        "default": "aws_provided_credentials",
+        "order": 3,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "AWS Access Key ID and Access Key Secret",
+            "description": "Use AWS Access Key ID and Access Key Secret as credentials. Needs proper permissions for accessing S3-Bucket.",
+            "type": "object",
+            "properties": {
+              "auth_method": {
+                "title": "Auth Method",
+                "const": "aws_provided_credentials",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "title": "AWS Default Credential Provider Chain",
+            "description": "Use default <a href=\"https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#configuring-credentials\" target=\"_blank\">AWS credential provider</html> chain (such as EC2 instance profile).",
+            "type": "object",
+            "properties": {
+              "auth_method": {
+                "title": "Auth Method",
+                "const": "aws_default_credentials",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "title": "No Credentials",
+            "description": "For access to public S3-Buckets or non AWS sources no credentials are required. Request will be unsigned.",
+            "type": "object",
+            "properties": {
+              "auth_method": {
+                "title": "Auth Method",
+                "const": "no_credentials",
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "provider": {
+        "title": "S3: Amazon Web Services",
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "title": "Bucket",
+            "description": "Name of the S3 bucket where the file(s) exist.",
+            "order": 0,
+            "type": "string"
+          },
+          "aws_access_key_id": {
+            "title": "Aws Access Key Id",
+            "description": "When Authentication Method is AWS Access Key ID and Access Key Secret the values must be set here.  Leave empty for all other Authentication Methods.",
+            "airbyte_secret": true,
+            "order": 1,
+            "type": "string"
+          },
+          "aws_secret_access_key": {
+            "title": "Aws Secret Access Key",
+            "description": "When Authentication method is AWS Access Key ID and Access Key Secret the values must be set here. Leave empty for all other Authentication Methods.",
+            "airbyte_secret": true,
+            "order": 2,
+            "type": "string"
+          },
+          "path_prefix": {
+            "title": "Path Prefix",
+            "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimize finding these in S3. This is optional but recommended if your bucket contains many folders/files which you don't need to replicate.",
+            "default": "",
+            "order": 3,
+            "type": "string"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
+            "default": "",
+            "order": 4,
+            "type": "string"
+          },
+          "use_ssl": {
+            "title": "Use TLS",
+            "description": "Whether the remote server is using a secure SSL/TLS connection. Only relevant if using an S3-compatible, non-AWS server",
+            "order": 5,
+            "type": "boolean"
+          },
+          "verify_ssl_cert": {
+            "title": "Verify TLS Certificates",
+            "description": "Set this to false to allow self signed certificates. Only relevant if using an S3-compatible, non-AWS server",
+            "order": 6,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "bucket"
+        ],
+        "order": 11,
+        "description": "Use this to load files from S3 or S3-compatible services"
       }
     },
     "required": [
