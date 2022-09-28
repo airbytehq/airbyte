@@ -1,8 +1,8 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Popout } from "components";
-import { Tooltip } from "components/base/Tooltip";
+import { Popout } from "components/ui/Popout";
+import { Tooltip } from "components/ui/Tooltip";
 
 import { Path } from "core/domain/catalog";
 
