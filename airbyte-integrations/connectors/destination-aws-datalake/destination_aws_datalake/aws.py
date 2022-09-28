@@ -10,7 +10,7 @@ import pyarrow as pa
 import awswrangler as wr
 
 from retrying import retry
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from botocore.exceptions import ClientError
 from airbyte_cdk.destinations import Destination
 
@@ -62,9 +62,97 @@ class AwsHandler:
         else:
             return None
 
+    def _pyarrow_types_from_pandas(  # pylint: disable=too-many-branches
+        self, df: pd.DataFrame, index: bool, ignore_cols: Optional[List[str]] = None, index_left: bool = False
+    ) -> Dict[str, pa.DataType]:
+        """
+        Extract the related Pyarrow data types from any Pandas DataFrame
+        and account for data types that can't be automatically casted.
+        """
+        # Handle exception data types (e.g. Int64, Int32, string)
+        ignore_cols = [] if ignore_cols is None else ignore_cols
+        cols: List[str] = []
+        cols_dtypes: Dict[str, Optional[pa.DataType]] = {}
+        for name, dtype in df.dtypes.to_dict().items():
+            dtype = str(dtype)
+            if name in ignore_cols:
+                cols_dtypes[name] = None
+            elif dtype == "Int8":
+                cols_dtypes[name] = pa.int8()
+            elif dtype == "Int16":
+                cols_dtypes[name] = pa.int16()
+            elif dtype == "Int32":
+                cols_dtypes[name] = pa.int32()
+            elif dtype == "Int64":
+                cols_dtypes[name] = pa.int64()
+            elif dtype == "string":
+                cols_dtypes[name] = pa.string()
+            else:
+                cols.append(name)
+
+        # Filling cols_dtypes
+        for col in cols:
+            logger.debug("Inferring PyArrow type from column: %s", col)
+            try:
+                schema: pa.Schema = pa.Schema.from_pandas(df=df[[col]], preserve_index=False)
+
+            except pa.ArrowInvalid as ex:
+                # Handle arrays with objects of mixed types
+                logger.warning(f"Invalid arrow type, unable able to infer data type for column {col}, casting DataFrame column to json string: {ex}")
+
+                cols_dtypes[col] = pa.string()
+                df[col].fillna("", inplace=True)
+                df[col] = df[col].apply(lambda x: json.dumps(x))
+
+            except TypeError as ex:
+                msg = str(ex)
+                if " is required (got type " in msg:
+                    raise TypeError(
+                        f"The {col} columns has a too generic data type ({df[col].dtype}) and seems "
+                        f"to have mixed data types ({msg}). "
+                        "Please, cast this columns with a more deterministic data type "
+                        f"(e.g. df['{col}'] = df['{col}'].astype('string')) or "
+                        "pass the column schema as argument"
+                        f"(e.g. dtype={{'{col}': 'string'}}"
+                    ) from ex
+                raise
+
+            else:
+                cols_dtypes[col] = schema.field(col).type
+
+        # Filling indexes
+        indexes: List[str] = []
+        if index is True:
+            # Get index columns
+            try:
+                fields = pa.Schema.from_pandas(df=df[[]], preserve_index=True)
+            except AttributeError as ae:
+                if "'Index' object has no attribute 'head'" not in str(ae):
+                    raise ae
+                # Get index fields from a new df with only index columns
+                # Adding indexes as columns via .reset_index() because
+                # pa.Schema.from_pandas(.., preserve_index=True) fails with
+                # "'Index' object has no attribute 'head'" if using extension
+                # dtypes on pandas 1.4.x
+                fields = pa.Schema.from_pandas(df=df.reset_index().drop(columns=cols), preserve_index=False)
+            for field in fields:
+                name = str(field.name)
+                logger.debug("Inferring PyArrow type from index: %s", name)
+                cols_dtypes[name] = field.type
+                indexes.append(name)
+
+        # Merging Index
+        sorted_cols: List[str] = indexes + list(df.columns) if index_left is True else list(df.columns) + indexes
+
+        # Filling schema
+        columns_types: Dict[str, pa.DataType]
+        columns_types = {n: cols_dtypes[n] for n in sorted_cols}
+        logger.debug("columns_types: %s", columns_types)
+        return columns_types
+
     def _validate_athena_types(self, df: pd.DataFrame):
         casts = {}
-        pa_columns_types: Dict[str, Optional[pa.DataType]] = wr._data_types.pyarrow_types_from_pandas(
+        pa_columns_types: Dict[str, Optional[pa.DataType]] = self._pyarrow_types_from_pandas(
             df=df, index=False, ignore_cols=list(casts.keys()), index_left=False
         )
 
@@ -75,7 +163,7 @@ class AwsHandler:
             try:
                 t = wr._data_types.pyarrow2athena(dtype=v)
                 if "struct<>" in t:
-                    logger.warning(f"Empty struct type for column {k} is not supported by Athena. Casting to string")
+                    logger.warning(f"Empty struct type for column {k} is not supported by Athena. Casting to json string")
 
                     df[k].fillna("", inplace=True)
                     df[k] = df[k].apply(lambda x: json.dumps(x))
@@ -101,7 +189,7 @@ class AwsHandler:
             table=table,
             table_type="GOVERNED",
             mode=mode,
-            use_threads=False, # True causes s3 NoCredentialsError error
+            use_threads=False,  # True causes s3 NoCredentialsError error
             catalog_versioning=True,
             boto3_session=self._session,
             concurrent_partitioning=True,
@@ -118,7 +206,7 @@ class AwsHandler:
             table=table,
             table_type="GOVERNED",
             mode=mode,
-            use_threads=False, # True causes s3 NoCredentialsError error
+            use_threads=False,  # True causes s3 NoCredentialsError error
             orient="records",
             lines=True,
             catalog_versioning=True,
