@@ -2,7 +2,7 @@ import React from "react";
 import { components, OptionProps } from "react-select";
 import styled from "styled-components";
 
-import CheckBox from "components/base/CheckBox";
+import { CheckBox } from "components/ui/CheckBox";
 
 import { OptionType } from "../DropDown";
 import Text from "./Text";

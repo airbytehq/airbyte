@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-import { Card } from "components/base/Card";
+import { Card } from "components/ui/Card";
 
 const PaddedCard = styled(Card)`
   width: 100%;
