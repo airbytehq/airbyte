@@ -43,7 +43,7 @@ export const tidyConnectionFormValues = (
 
 const useConnectionForm = ({ connection, mode, refreshSchema }: ConnectionServiceProps) => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
-  const initialValues = useInitialValues(connection, destDefinition);
+  const initialValues = useInitialValues(connection, destDefinition, mode === "edit");
   const { formatMessage } = useIntl();
   const [submitError, setSubmitError] = useState<FormError | null>(null);
 
