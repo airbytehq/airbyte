@@ -100,6 +100,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   @Override
   public OUTPUT get() {
     try {
+      LOGGER.info("METRIC_SYNC_START_TIME{\"workflowId\":" + workflowIdProvider.get() + ", \"startTime\":" + System.currentTimeMillis() + "}");
+
       mdcSetter.accept(jobRoot);
 
       if (MDC.get(LogClientSingleton.JOB_LOG_PATH_MDC_KEY) != null) {

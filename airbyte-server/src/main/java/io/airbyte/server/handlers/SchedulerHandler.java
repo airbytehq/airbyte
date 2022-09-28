@@ -372,11 +372,11 @@ public class SchedulerHandler {
   }
 
   private JobInfoRead submitManualSyncToWorker(final UUID connectionId) throws IOException {
-    log.info("METRIC_SYNC_START_TIME{\"connectionId\":" + connectionId + ", \"startTime\":" + System.currentTimeMillis() + "}");
+    //log.info("METRIC_SYNC_START_TIME{\"connectionId\":" + connectionId + ", \"startTime\":" + System.currentTimeMillis() + "}");
     final ManualOperationResult manualSyncResult = eventRunner.startNewManualSync(connectionId);
 
     JobInfoRead result = readJobFromResult(manualSyncResult);
-    log.info("METRIC_SYNC_END_TIME{\"connectionId\":" + connectionId + ", \"endTime\":" + System.currentTimeMillis() + "}");
+    //log.info("METRIC_SYNC_END_TIME{\"connectionId\":" + connectionId + ", \"endTime\":" + System.currentTimeMillis() + "}");
     return result;
   }
 
