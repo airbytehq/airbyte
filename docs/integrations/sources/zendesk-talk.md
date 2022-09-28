@@ -23,8 +23,8 @@ Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https:/
 3. On the Set up the source page, enter the name for the Zendesk Talk connector and select **Zendesk Talk** from the Source type dropdown.
 4. Fill in the rest of the fields:
    - *Subdomain*
-   - *Start Date*
    - *Authentication (API Token / OAuth2.0)*
+   - *Start Date*
 5. Click **Set up source**
 
 ## Supported sync modes
@@ -70,7 +70,8 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 ## Changelog
 
 
-| Version | Date | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
+| Version | Date       | Pull Request | Subject                           |
+|:--------|:-----------| :-----       |:----------------------------------|
+| `0.1.5` | 2022-09-29 | [15764](https://github.com/airbytehq/airbyte/pull/15764) | always use the latest CDK version |
 | `0.1.4` | 2022-08-19 | [15764](https://github.com/airbytehq/airbyte/pull/15764) | Support OAuth2.0                  |
 | `0.1.3` | 2021-11-11 | [7173](https://github.com/airbytehq/airbyte/pull/7173)   | Fix pagination and migrate to CDK |
