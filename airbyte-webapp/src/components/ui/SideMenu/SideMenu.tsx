@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import MenuItem from "./MenuItem";
+import { MenuItem } from "./MenuItem";
 
 export interface SideMenuItem {
   path: string;

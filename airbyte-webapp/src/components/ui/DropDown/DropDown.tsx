@@ -6,9 +6,9 @@ import Select from "react-select/dist/declarations/src/Select";
 import { equal, naturalComparatorBy } from "utils/objects";
 
 import { DropdownIndicator } from "./components/DropdownIndicator";
-import Menu from "./components/Menu";
+import { Menu } from "./components/Menu";
 import { DropDownOption, DropDownOptionDataItem } from "./components/Option";
-import SingleValue from "./components/SingleValue";
+import { SingleValue } from "./components/SingleValue";
 import { CustomSelect } from "./CustomSelect";
 import { SelectContainer } from "./SelectContainer";
 

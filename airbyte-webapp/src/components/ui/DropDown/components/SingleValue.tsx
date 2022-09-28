@@ -2,8 +2,8 @@ import React from "react";
 import { components, SingleValueProps as ReactSelectSingleValueProps } from "react-select";
 import styled from "styled-components";
 
+import { DropDownText } from "./DropDownText";
 import { DropDownOptionDataItem } from "./Option";
-import Text from "./Text";
 
 export type SingleValueProps<T> = {
   data?: DropDownOptionDataItem;
@@ -21,15 +21,15 @@ export const SingleValueIcon = styled.div`
   display: inline-block;
 `;
 
-const SingleValue = <T extends { data: { img: string } }>(props: React.PropsWithChildren<SingleValueProps<T>>) => {
-  return (
-    <SingleValueView>
-      {props.data.img ? <SingleValueIcon>{props.data.img}</SingleValueIcon> : null}
-      <Text>
-        <components.SingleValue {...props}>{props.children}</components.SingleValue>
-      </Text>
-    </SingleValueView>
-  );
-};
-
-export default React.memo(SingleValue);
+export const SingleValue = React.memo(
+  <T extends { data: { img: string } }>(props: React.PropsWithChildren<SingleValueProps<T>>) => {
+    return (
+      <SingleValueView>
+        {props.data.img ? <SingleValueIcon>{props.data.img}</SingleValueIcon> : null}
+        <DropDownText>
+          <components.SingleValue {...props}>{props.children}</components.SingleValue>
+        </DropDownText>
+      </SingleValueView>
+    );
+  }
+);
