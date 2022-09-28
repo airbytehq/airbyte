@@ -253,6 +253,13 @@
   icon: drift.svg
   sourceType: api
   releaseStage: alpha
+- name: DV 360
+  sourceDefinitionId: 1356e1d9-977f-4057-ad4b-65f25329cf61
+  dockerRepository: airbyte/source-dv-360
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/dv-360
+  sourceType: api
+  releaseStage: alpha
 - name: E2E Testing
   sourceDefinitionId: d53f9084-fa6b-4a5a-976c-5b8392f4ad8a
   dockerRepository: airbyte/source-e2e-test
@@ -419,11 +426,11 @@
 - name: Greenhouse
   sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   dockerRepository: airbyte/source-greenhouse
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/greenhouse
   icon: greenhouse.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Harness
   sourceDefinitionId: 6fe89830-d04d-401b-aad6-6552ffa5c4af
   dockerRepository: farosai/airbyte-harness-source
@@ -635,7 +642,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/mixpanel
   icon: mixpanel.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Monday
   sourceDefinitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
   dockerRepository: airbyte/source-monday
@@ -679,7 +686,7 @@
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/notion
   icon: notion.svg
   sourceType: api
@@ -956,11 +963,11 @@
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.io/integrations/sources/slack
   icon: slack.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
@@ -976,7 +983,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/snapchat-marketing
   icon: snapchat.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake

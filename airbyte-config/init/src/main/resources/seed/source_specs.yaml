@@ -2340,6 +2340,76 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
+- dockerImage: "airbyte/source-dv-360:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Display & Video 360 Spec"
+      type: "object"
+      required:
+      - "credentials"
+      - "partner_id"
+      - "start_date"
+      additionalProperties: true
+      properties:
+        credentials:
+          type: "object"
+          description: "Oauth2 credentials"
+          order: 0
+          required:
+          - "access_token"
+          - "refresh_token"
+          - "token_uri"
+          - "client_id"
+          - "client_secret"
+          properties:
+            access_token:
+              type: "string"
+              description: "Access token"
+              airbyte_secret: true
+            refresh_token:
+              type: "string"
+              description: "Refresh token"
+              airbyte_secret: true
+            token_uri:
+              type: "string"
+              description: "Token URI"
+              airbyte_secret: true
+            client_id:
+              type: "string"
+              description: "Client ID"
+              airbyte_secret: true
+            client_secret:
+              type: "string"
+              description: "Client secret"
+              airbyte_secret: true
+        partner_id:
+          type: "integer"
+          description: "Partner ID"
+          order: 1
+        start_date:
+          type: "string"
+          description: "UTC date and time in the format 2017-01-25. Any data before\
+            \ this date will not be replicated"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 2
+        end_date:
+          type: "string"
+          description: "UTC date and time in the format 2017-01-25. Any data after\
+            \ this date will not be replicated."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 3
+        filters:
+          type: "array"
+          description: "filters for the dimensions. each filter object had 2 keys:\
+            \ 'type' for the name of the dimension to be used as. and 'value' for\
+            \ the value of the filter"
+          default: []
+          order: 4
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-e2e-test:2.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/e2e-test"
@@ -4308,7 +4378,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-greenhouse:0.2.10"
+- dockerImage: "airbyte/source-greenhouse:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/greenhouse"
     connectionSpecification:
@@ -7201,7 +7271,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.9"
+- dockerImage: "airbyte/source-notion:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
     connectionSpecification:
@@ -9985,7 +10055,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.17"
+- dockerImage: "airbyte/source-slack:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/slack"
     connectionSpecification:
@@ -10055,6 +10125,7 @@
                 type: "string"
                 examples:
                 - "slack-client-id-example"
+                airbyte_secret: true
               client_secret:
                 title: "Client Secret"
                 description: "Slack client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\"\

@@ -56,7 +56,7 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
         </H5>
         <FormattedMessage id={`tables.${type}DataDelete`} />
       </Text>
-      <Button danger onClick={onDeleteButtonClick} data-id="open-delete-modal">
+      <Button variant="danger" onClick={onDeleteButtonClick} data-id="open-delete-modal">
         <FormattedMessage id={`tables.${type}Delete`} />
       </Button>
     </DeleteBlockComponent>
