@@ -30,8 +30,7 @@ public class JobErrorReportingBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
             pattern = "(?i)^sentry$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient sentryJobErrorReportingClient(
                                                                @Value("${airbyte.worker.job.error-reporting.sentry.dsn}") final String sentryDsn) {
@@ -41,16 +40,14 @@ public class JobErrorReportingBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
             pattern = "(?i)^logging$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient loggingJobErrorReportingClient() {
     return new LoggingJobErrorReportingClient();
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public JobErrorReporter jobErrorReporter(
                                            @Value("${airbyte.version}") final String airbyteVersion,
                                            final ConfigRepository configRepository,

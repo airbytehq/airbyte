@@ -43,8 +43,7 @@ import java.util.List;
 public class ActivityBeanFactory {
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("checkConnectionActivities")
   public List<Object> checkConnectionActivities(
                                                 final CheckConnectionActivity checkConnectionActivity) {
@@ -52,8 +51,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("connectionManagerActivities")
   public List<Object> connectionManagerActivities(
                                                   final GenerateInputActivity generateInputActivity,
@@ -79,8 +77,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("discoverActivities")
   public List<Object> discoverActivities(
                                          final DiscoverCatalogActivity discoverCatalogActivity) {
@@ -88,8 +85,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("specActivities")
   public List<Object> specActivities(
                                      final SpecActivity specActivity) {
@@ -154,8 +150,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("specActivityOptions")
   public ActivityOptions specActivityOptions() {
     return ActivityOptions.newBuilder()
