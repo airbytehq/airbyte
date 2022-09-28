@@ -16,17 +16,18 @@ connectionSpecification:
     query:
       order: 1
       type: string
-      description: A location to query such as city, IP, latitudeLongitude, or zipcode. 
+      description:
+        A location to query such as city, IP, latitudeLongitude, or zipcode.
         Multiple locations with semicolon seperated if using a professional plan or higher.
-        For more info- (https://weatherstack.com/documentation#query_parameter) 
+        For more info- (https://weatherstack.com/documentation#query_parameter)
       examples:
         - New York
         - London
-        - '98101'
+        - "98101"
     historical_date:
       order: 2
       type: string
       description: This is required for enabling the Historical date API with format- (YYYY-MM-DD).
       examples:
-        - '2015-01-21'
+        - "2015-01-21"
       pattern: "[0-9]{4}-[0-9]{2}-[0-9]{2}"

@@ -13,7 +13,8 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 from .constants import url_base
 
-class CurrentWeather(HttpStream):
+
+class CurrentWeatherStream(HttpStream):
     url_base = "http://api.weatherstack.com/"
 
     # Set this as a noop.
@@ -21,35 +22,32 @@ class CurrentWeather(HttpStream):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
-        self.query = config['query']
-        self.access_key = config['access_key']
+        self.query = config["query"]
+        self.access_key = config["access_key"]
 
     def path(
-        self, 
-        stream_state: Mapping[str, Any] = None, 
-        stream_slice: Mapping[str, Any] = None, 
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         # The "/current" path gives us the latest current city weather
-        return "current"  
+        return "current"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # The api requires that we include api_key as a query param so we do that in this method
-        return {'access_key': self.access_key , 'query' : self.query }
+        return {"access_key": self.access_key, "query": self.query}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        # The response is a simple JSON whose schema matches our stream's schema exactly, 
+        # The response is a simple JSON whose schema matches our stream's schema exactly,
         # so we just return a list containing the response
         return [response.json()]
 
@@ -158,35 +156,32 @@ class Forecast(HttpStream):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
-        self.query = config['query']
-        self.access_key = config['access_key']
+        self.query = config["query"]
+        self.access_key = config["access_key"]
 
     def path(
-        self, 
-        stream_state: Mapping[str, Any] = None, 
-        stream_slice: Mapping[str, Any] = None, 
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         # The "/current" path gives us the latest current city weather
-        return "forecast"  
+        return "forecast"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # The api requires that we include api_key as a query param so we do that in this method
-        return {'access_key': self.access_key , 'query' : self.query }
+        return {"access_key": self.access_key, "query": self.query}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        # The response is a simple JSON whose schema matches our stream's schema exactly, 
+        # The response is a simple JSON whose schema matches our stream's schema exactly,
         # so we just return a list containing the response
         return [response.json()]
 
@@ -196,8 +191,7 @@ class Forecast(HttpStream):
         return None
 
 
-
-class Historical(HttpStream):
+class HistoricalStream(HttpStream):
     url_base = "http://api.weatherstack.com/"
 
     # Set this as a noop.
@@ -205,35 +199,32 @@ class Historical(HttpStream):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
-        self.query = config['query']
-        self.access_key = config['access_key']
-        self.historical_date = config['historical_date']
+        self.query = config["query"]
+        self.access_key = config["access_key"]
+        self.historical_date = config["historical_date"]
 
     def path(
-        self, 
-        stream_state: Mapping[str, Any] = None, 
-        stream_slice: Mapping[str, Any] = None, 
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "historical"  
+        return "historical"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # The api requires that we include api_key as a query param so we do that in this method
-        return {'access_key': self.access_key , 'query' : self.query, 'historical_date' : self.historical_date }
+        return {"access_key": self.access_key, "query": self.query, "historical_date": self.historical_date}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        # The response is a simple JSON whose schema matches our stream's schema exactly, 
+        # The response is a simple JSON whose schema matches our stream's schema exactly,
         # so we just return a list containing the response
         return [response.json()]
 
@@ -242,7 +233,8 @@ class Historical(HttpStream):
         # so we return None to indicate there are no more pages in the response
         return None
 
-class LocationLookup(HttpStream):
+
+class LocationLookupStream(HttpStream):
     url_base = "http://api.weatherstack.com/"
 
     # Set this as a noop.
@@ -250,34 +242,31 @@ class LocationLookup(HttpStream):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
-        self.query = config['query']
-        self.access_key = config['access_key']
+        self.query = config["query"]
+        self.access_key = config["access_key"]
 
     def path(
-        self, 
-        stream_state: Mapping[str, Any] = None, 
-        stream_slice: Mapping[str, Any] = None, 
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "autocomplete"  
+        return "autocomplete"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # The api requires that we include api_key as a query param so we do that in this method
-        return {'access_key': self.access_key , 'query' : self.query }
+        return {"access_key": self.access_key, "query": self.query}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        # The response is a simple JSON whose schema matches our stream's schema exactly, 
+        # The response is a simple JSON whose schema matches our stream's schema exactly,
         # so we just return a list containing the response
         return [response.json()]
 
@@ -285,17 +274,17 @@ class LocationLookup(HttpStream):
         # The API does not offer pagination,
         # so we return None to indicate there are no more pages in the response
         return None
+
 
 # Source
 class SourceWeatherstack(AbstractSource):
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        
+
         try:
             query = config["query"]
             access_key = config["access_key"]
 
-            response = requests.get(f"{url_base}/current?access_key={access_key}&query={query}");
+            response = requests.get(f"{url_base}/current?access_key={access_key}&query={query}")
             response = response.text
 
             if response.find('"success": false') != -1:
@@ -304,12 +293,12 @@ class SourceWeatherstack(AbstractSource):
                 return True, None
         except requests.exceptions.RequestException as e:
             return False, repr(e)
-       
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = NoAuth()  
+        auth = NoAuth()
         return [
-            CurrentWeather(authenticator=auth, config=config), 
-            Forecast(authenticator=auth, config=config),
-            LocationLookup(authenticator=auth, config=config), 
-            Historical(authenticator=auth, config=config)
-            ]
+            CurrentWeatherStream(authenticator=auth, config=config),
+            ForecastStream(authenticator=auth, config=config),
+            LocationLookupStream(authenticator=auth, config=config),
+            HistoricalStream(authenticator=auth, config=config),
+        ]
