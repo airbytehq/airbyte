@@ -6,19 +6,6 @@ on:
     types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]
 
 jobs:
-  find_valid_pat:
-    name: "Find a PAT with room for actions"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Check PAT rate limits
-        id: variables
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
-            ${{ secrets.OCTAVIA_PAT }}
   shared-pr-labeller:
     name: "Add Labels to PRs.  Safe to Merge on fail"
     runs-on: ubuntu-latest
@@ -29,10 +16,8 @@ jobs:
         # Cannot share PAT outside of JOB context
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-           ${{ secrets.AIRBYTEIO_PAT }} \
-           ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-           ${{ secrets.SUPERTOPHER_PAT }} \
-           ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
+            ${{ secrets.OCTAVIA_PAT }}
       - name: Run Issue Command from workflow-actions
         uses: nick-fields/private-action-loader@v3
         with:
