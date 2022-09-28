@@ -1,22 +1,44 @@
-{
-  "funnels": {
-    "8901755": {
-      "date": "2030-01-01"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "8901755": { "date": "2030-01-01" } },
+      "stream_descriptor": { "name": "funnels" }
     }
   },
-  "revenue": {
-    "date": "2030-01-01"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date": "2030-01-01" },
+      "stream_descriptor": { "name": "revenue" }
+    }
   },
-  "cohorts": {
-    "created": "2030-01-01 00:00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": "2030-01-01 00:00:00" },
+      "stream_descriptor": { "name": "cohorts" }
+    }
   },
-  "export": {
-    "time": "2030-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "time": "2030-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "export" }
+    }
   },
-  "cohort_members": {
-    "last_seen": "2030-01-01T00:00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "last_seen": "2030-01-01T00:00:00" },
+      "stream_descriptor": { "name": "cohort_members" }
+    }
   },
-  "engage": {
-    "last_seen": "2030-01-01T00:00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "last_seen": "2030-01-01T00:00:00" },
+      "stream_descriptor": { "name": "engage" }
+    }
   }
-}
+]
