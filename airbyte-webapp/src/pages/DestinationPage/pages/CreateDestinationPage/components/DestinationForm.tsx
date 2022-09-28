@@ -69,7 +69,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   };
 
   const onSubmitForm = async (values: { name: string; serviceType: string }) => {
-    await onSubmit({
+    onSubmit({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
     });
