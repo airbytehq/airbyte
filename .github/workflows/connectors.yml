@@ -69,7 +69,7 @@ jobs:
         with:
           context: airbyte-to-flow
           push: true
-          tags: ghcr.io/estuary/airbyte-to-flow:${{ steps.prep.outputs.tag }}
+          tags: ghcr.io/estuary/airbyte-to-flow:${{ steps.prep.outputs.tag }},ghcr.io/estuary/airbyte-to-flow:dev
 
   build_cdk:
     runs-on: ubuntu-20.04
