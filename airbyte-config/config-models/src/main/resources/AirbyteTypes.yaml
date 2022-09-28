@@ -1,0 +1,13 @@
+definitions:
+  TimestampWithTimezone:
+    type: String
+    description: ISO8601 encoded
+  TimestampWithoutTimezone:
+    type: String
+    description: ISO8601 encoded
+  TimesWithTimezone:
+    type: String
+    description: ISO8601 encoded
+  TimeWithoutTimezone:
+    type: String
+    description: ISO8601 encoded
