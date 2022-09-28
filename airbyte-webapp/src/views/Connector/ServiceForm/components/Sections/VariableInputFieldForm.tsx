@@ -68,7 +68,7 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
       <ModalFooter>
         <Button
           data-testid="cancel-button"
-          secondary
+          variant="secondary"
           onClick={() => {
             onCancel();
             fieldHelper.setValue(undefined, false);
