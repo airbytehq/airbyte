@@ -42,7 +42,8 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
+| 0.1.14  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                   |
 | 0.1.13  | 2022-08-31 | [16185](https://github.com/airbytehq/airbyte/pull/16185) | Re-release on new `airbyte_cdk==0.1.81`                                                         |
 | 0.1.12  | 2022-08-11 | [15506](https://github.com/airbytehq/airbyte/pull/15506) | Changed slice day window to 1, instead of 3 for Events stream                                   |
 | 0.1.11  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from spec                                                   |
