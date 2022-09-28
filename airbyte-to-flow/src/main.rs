@@ -1,4 +1,4 @@
-use clap::{Parser, ValueEnum};
+use clap::Parser;
 use errors::Error;
 use flow_cli_common::{init_logging, LogArgs};
 

@@ -1,7 +1,7 @@
 use std::pin::Pin;
 
 use futures::{channel::oneshot, stream, StreamExt};
-use tokio::{net::{TcpStream, tcp::{OwnedWriteHalf, OwnedReadHalf}, TcpListener}, task::JoinHandle, io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}};
+use tokio::{net::{tcp::{OwnedWriteHalf, OwnedReadHalf}, TcpListener}, task::JoinHandle, io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}};
 use tokio_util::io::{ReaderStream, StreamReader};
 
 use proto_flow::capture::PullResponse;
@@ -23,7 +23,7 @@ async fn flow_socket(socket_path: &str, mode: &StreamMode) -> Result<(OwnedReadH
     match mode {
         StreamMode::TCP => {
             let listener = TcpListener::bind(socket_path).await?;
-            let (stream, addr) = listener.accept().await?;
+            let (stream, _) = listener.accept().await?;
             let (read_half, write_half) = stream.into_split();
             Ok((read_half, write_half))
         }
