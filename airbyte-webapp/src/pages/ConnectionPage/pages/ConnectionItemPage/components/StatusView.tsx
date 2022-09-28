@@ -4,12 +4,12 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { Link, useLocation } from "react-router-dom";
 
-import { Button, LoadingButton } from "components";
-import { Card } from "components/base/Card";
-import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
 import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
+import { Button } from "components/ui/Button";
+import { Card } from "components/ui/Card";
+import { Tooltip } from "components/ui/Tooltip";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
@@ -127,6 +127,12 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
     setActiveJob((state) => ({ ...state, isCanceling: true } as ActiveJob));
     return cancelJob(activeJob.id);
   };
+  let label = null;
+  if (activeJob?.action === ActionType.RESET) {
+    label = <FormattedMessage id="connection.cancelReset" />;
+  } else if (activeJob?.action === ActionType.SYNC) {
+    label = <FormattedMessage id="connection.cancelSync" />;
+  }
 
   const onLoadMoreJobs = () => {
     setJobPageSize((prevJobPageSize) => prevJobPageSize + JOB_PAGE_SIZE_INCREMENT);
@@ -144,10 +150,13 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   };
 
   const cancelJobBtn = (
-    <Button className={styles.cancelButton} disabled={!activeJob?.id || activeJob.isCanceling} onClick={onCancelJob}>
-      <FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />
-      {activeJob?.action === ActionType.RESET && <FormattedMessage id="connection.cancelReset" />}
-      {activeJob?.action === ActionType.SYNC && <FormattedMessage id="connection.cancelSync" />}
+    <Button
+      className={styles.cancelButton}
+      disabled={!activeJob?.id || activeJob.isCanceling}
+      onClick={onCancelJob}
+      icon={<FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />}
+    >
+      {label}
     </Button>
   );
 
@@ -162,13 +171,19 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
               <div className={styles.actions}>
                 {!activeJob?.action && (
                   <>
-                    <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
+                    <Button className={styles.resetButton} variant="secondary" onClick={onResetDataButtonClick}>
                       <FormattedMessage id="connection.resetData" />
                     </Button>
-                    <Button className={styles.syncButton} disabled={!allowSync} onClick={onSyncNowButtonClick}>
-                      <div className={styles.iconRotate}>
-                        <RotateIcon />
-                      </div>
+                    <Button
+                      className={styles.syncButton}
+                      disabled={!allowSync}
+                      onClick={onSyncNowButtonClick}
+                      icon={
+                        <div className={styles.iconRotate}>
+                          <RotateIcon />
+                        </div>
+                      }
+                    >
                       <FormattedMessage id="sources.syncNow" />
                     </Button>
                   </>
@@ -202,9 +217,9 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
 
       {(moreJobPagesAvailable || isJobPageLoading) && (
         <footer className={styles.footer}>
-          <LoadingButton isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
+          <Button isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
             <FormattedMessage id="connection.loadMoreJobs" />
-          </LoadingButton>
+          </Button>
         </footer>
       )}
     </div>

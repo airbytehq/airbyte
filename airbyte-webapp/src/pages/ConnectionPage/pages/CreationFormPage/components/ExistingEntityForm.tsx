@@ -5,14 +5,15 @@ import styled from "styled-components";
 import * as yup from "yup";
 
 import { Button, ControlLabels, DropDown } from "components";
-import { Card } from "components/base/Card";
 import { ConnectorIcon } from "components/ConnectorIcon";
+import { Card } from "components/ui/Card";
 
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
 import { useDestinationList } from "../../../../../hooks/services/useDestinationHook";
 import { useSourceList } from "../../../../../hooks/services/useSourceHook";
+import styles from "./ExistingEntityForm.module.scss";
 
 interface IProps {
   type: "source" | "destination";
@@ -110,7 +111,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
                 )}
               </Field>
               <BottomBlock>
-                <Button disabled={isSubmitting} type="submit">
+                <Button className={styles.submitButton} disabled={isSubmitting} type="submit">
                   <FormattedMessage id={`connectionForm.${type}Use`} />
                 </Button>
               </BottomBlock>
