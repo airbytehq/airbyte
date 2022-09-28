@@ -16,8 +16,8 @@ from source_salesforce.streams import BulkIncrementalSalesforceStream
     (
         (1000, 0.4, 1),
         (10000, 1, 2),
-        (100000, 4, 7),
-        (200000, 7, 12),
+        (100000, 4, 9),
+        (200000, 7, 19),
     ),
     ids=[
         "1k recods",
