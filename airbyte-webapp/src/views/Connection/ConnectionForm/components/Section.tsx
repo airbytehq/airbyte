@@ -10,7 +10,11 @@ interface SectionProps {
 export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({ title, children }) => (
   <Card>
     <div className={styles.section}>
-      {title && <Text as="h5">{title}</Text>}
+      {title && (
+        <Text as="h5" size="sm">
+          {title}
+        </Text>
+      )}
       {children}
     </div>
   </Card>

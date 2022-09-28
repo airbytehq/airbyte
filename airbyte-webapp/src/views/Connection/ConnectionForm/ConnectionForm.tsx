@@ -21,7 +21,7 @@ import { OperationsSection } from "./components/OperationsSection";
 import ScheduleField from "./components/ScheduleField";
 import { Section } from "./components/Section";
 import SchemaField from "./components/SyncCatalogField";
-import styles from "./ConnectionForm.module.css";
+import styles from "./ConnectionForm.module.scss";
 import { connectionValidationSchema } from "./formConfig";
 
 // This is removed in KC's main refactor PR.  Removing it would require major scope creep for this PR.
@@ -75,7 +75,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                         nextLine
                         error={!!meta.error && meta.touched}
                         label={
-                          <Text as="h5">
+                          <Text as="h5" size="sm">
                             <FormattedMessage id="form.connectionName" />
                           </Text>
                         }
@@ -104,7 +104,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
           </Section>
           <Card>
             <Section>
-              <Text as="h5">
+              <Text as="h5" size="sm">
                 <FormattedMessage id="connection.streams" />
               </Text>
               <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
