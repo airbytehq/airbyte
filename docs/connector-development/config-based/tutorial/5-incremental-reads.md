@@ -58,7 +58,7 @@ The file should look like
 
 where the start date should be 7 days in the past.
 
-And we'll update the `path` in the connector definition to point to `/{{ config['start_date'] }}`.
+And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`.
 Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/exchangerates_data/latest`:
 
 ```yaml
@@ -84,7 +84,6 @@ $ python main.py read --config secrets/config.json --catalog integration_tests/c
 
 By reading the output record, you should see that we read historical data instead of the latest exchange rate.
 For example:
-
 > "historical": true, "base": "USD", "date": "2022-07-18"
 
 The connector will now always read data for the start date, which is not exactly what we want.
@@ -98,7 +97,8 @@ Let's first define a stream slicer at the top level of the connector definition:
 
 ```yaml
 definitions:
-  requester: <...>
+  requester:
+    <...>
   stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:
@@ -110,7 +110,8 @@ definitions:
     step: "1d"
     datetime_format: "%Y-%m-%d"
     cursor_field: "{{ options['stream_cursor_field'] }}"
-  retriever: <...>
+  retriever:
+    <...>
 ```
 
 and refer to it in the stream's retriever.
@@ -167,7 +168,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: []
+      field_pointer: [ ]
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
@@ -218,7 +219,8 @@ streams:
         path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
 check:
   type: CheckStream
-  stream_names: ["rates"]
+  stream_names: [ "rates" ]
+
 ```
 
 Running the `read` operation will now read all data for all days between start_date and now:
@@ -245,7 +247,10 @@ This can be achieved by updating the catalog to run in incremental mode (`integr
       "stream": {
         "name": "rates",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"

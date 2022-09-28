@@ -14,9 +14,12 @@ The general structure of the YAML is as follows:
 
 ```yaml
 version: "0.1.0"
-definitions: <key-value pairs defining objects which will be reused in the YAML connector>
-streams: <list stream definitions>
-check: <definition of connection checker>
+definitions:
+  <key-value pairs defining objects which will be reused in the YAML connector>
+streams:
+  <list stream definitions>
+check:
+  <definition of connection checker>
 ```
 
 We recommend using the `Configuration Based Source` template from the template generator in `airbyte-integrations/connector-templates/generator` to generate the basic file structure.
@@ -134,7 +137,7 @@ In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
 Strings can contain references to previously defined values.
 The parser will dereference these values to produce a complete object definition.
 
-References can be defined using a "\*ref({arg})" string.
+References can be defined using a "*ref({arg})" string.
 
 ```yaml
 key: 1234

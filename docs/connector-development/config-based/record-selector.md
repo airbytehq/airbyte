@@ -15,7 +15,7 @@ If the root of the response is an array containing the records, the records can 
 ```yaml
 selector:
   extractor:
-    field_pointer: []
+    field_pointer: [ ]
 ```
 
 If the root of the response is a json object representing a single record, the record can be extracted and wrapped in an array.
@@ -33,7 +33,7 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_pointer: []
+    field_pointer: [ ]
 ```
 
 The selected records will be
@@ -62,7 +62,7 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_pointer: ["data"]
+    field_pointer: [ "data" ]
 ```
 
 The selected records will be
@@ -130,7 +130,7 @@ In this example, all records with a `created_at` field greater than the stream s
 ```yaml
 selector:
   extractor:
-    field_pointer: []
+    field_pointer: [ ]
   record_filter:
     condition: "{{ record['created_at'] < stream_slice['start_time'] }}"
 ```
@@ -213,7 +213,7 @@ Given a record of the following shape:
 
 ```
 {
-  "path":
+  "path": 
   {
     "to":
     {
@@ -242,7 +242,7 @@ resulting in the following record:
 
 ```
 {
-  "path":
+  "path": 
   {
     "to":
     {
