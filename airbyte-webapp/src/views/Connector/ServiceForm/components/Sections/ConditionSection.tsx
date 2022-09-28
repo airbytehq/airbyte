@@ -29,6 +29,10 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
+  // console.log("-------");
+  // console.log(formField);
+  // console.log(currentlySelectedCondition);
+
   const onOptionChange = useCallback(
     (selectedItem: IDataItem) => {
       const newSelectedPath = formField.conditions[selectedItem.value];

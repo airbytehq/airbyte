@@ -16,6 +16,7 @@ const formItems: FormBlock[] = [
         start_date: { type: "string" },
         credentials: {
           type: "object",
+          default: { redirect_uri: "default-value" },
           oneOf: [
             {
               title: "api key",
@@ -49,6 +50,7 @@ const formItems: FormBlock[] = [
         fieldKey: "credentials",
         path: "key.credentials",
         isRequired: true,
+        default: { redirect_uri: "default-value" },
         conditions: {
           "api key": {
             title: "api key",
@@ -104,24 +106,24 @@ const formItems: FormBlock[] = [
   },
 ];
 
-it("should select first key by default", () => {
+it("should select default value if none in formValues", () => {
   const uiWidgetState = buildPathInitialState(formItems, {});
   expect(uiWidgetState).toEqual({
     "key.credentials": {
-      selectedItem: "api key",
+      selectedItem: "oauth",
     },
-    "key.credentials.api_key": {},
+    "key.credentials.redirect_uri": {},
     "key.start_date": {},
   });
 });
 
-it("should select key selected in default values", () => {
+it("should select key selected in form values over default value", () => {
   const uiWidgetState = buildPathInitialState(
     formItems,
     {
       key: {
         credentials: {
-          redirect_uri: "value",
+          redirect_uri: "form-value",
         },
       },
     },

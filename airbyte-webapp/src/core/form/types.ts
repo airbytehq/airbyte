@@ -32,6 +32,7 @@ export interface FormGroupItem extends FormItem {
 export interface FormConditionItem extends FormItem {
   _type: "formCondition";
   conditions: Record<string, FormGroupItem | FormBaseItem>;
+  default?: JSONSchema7Type;
 }
 
 export interface FormObjectArrayItem extends FormItem {

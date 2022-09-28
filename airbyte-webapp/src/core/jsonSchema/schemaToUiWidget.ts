@@ -123,9 +123,11 @@ const defaultFields: Array<keyof AirbyteJSONSchema> = [
 ];
 
 const pickDefaultFields = (schema: AirbyteJSONSchema): Partial<AirbyteJSONSchema> => {
+  console.log(`schema: ${JSON.stringify(schema)}`);
   const partialSchema: Partial<AirbyteJSONSchema> = {
     ...Object.fromEntries(Object.entries(schema).filter(([k]) => defaultFields.includes(k as keyof AirbyteJSONSchema))),
   };
+  console.log(`partialSchema: ${JSON.stringify(partialSchema)}`);
 
   if (typeof schema.items === "object" && !Array.isArray(schema.items) && schema.items.enum) {
     partialSchema.enum = schema.items.enum;

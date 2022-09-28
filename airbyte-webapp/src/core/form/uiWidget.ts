@@ -32,7 +32,10 @@ export const buildPathInitialState = (
         const defaultCondition = Object.entries(formItem.conditions).find(([key, subConditionItems]) => {
           switch (subConditionItems._type) {
             case "formGroup": {
-              const selectedValues = get(formValues, subConditionItems.path);
+              const selectedValues = get(formValues, subConditionItems.path) ?? formItem.default;
+              if (!selectedValues) {
+                return null;
+              }
 
               const subPathSchema = buildYupFormForJsonSchema({
                 type: "object",

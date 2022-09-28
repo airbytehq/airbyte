@@ -176,6 +176,7 @@ it("should reformat jsonSchema to internal widget representation when has oneOf"
         title: "Credentials Condition",
         description: "Credentials Condition Description",
         order: 0,
+        default: { redirect_uri: "https://myuri.com/" },
         oneOf: [
           {
             title: "api key",
@@ -217,6 +218,7 @@ it("should reformat jsonSchema to internal widget representation when has oneOf"
           description: "Credentials Condition Description",
           title: "Credentials Condition",
           order: 0,
+          default: { redirect_uri: "https://myuri.com/" },
           oneOf: [
             {
               title: "api key",
@@ -255,6 +257,7 @@ it("should reformat jsonSchema to internal widget representation when has oneOf"
         description: "Credentials Condition Description",
         title: "Credentials Condition",
         order: 0,
+        default: { redirect_uri: "https://myuri.com/" },
         fieldKey: "credentials",
         conditions: {
           "api key": {
