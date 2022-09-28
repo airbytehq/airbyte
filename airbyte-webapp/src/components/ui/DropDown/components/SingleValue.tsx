@@ -1,34 +1,34 @@
 import React from "react";
-import { components, SingleValueProps } from "react-select";
+import { components, SingleValueProps as ReactSelectSingleValueProps } from "react-select";
 import styled from "styled-components";
 
 import { DropDownOptionDataItem } from "./Option";
 import Text from "./Text";
 
-export type IProps<T> = {
+export type SingleValueProps<T> = {
   data?: DropDownOptionDataItem;
-} & SingleValueProps<T>;
+} & ReactSelectSingleValueProps<T>;
 
-export const ItemView = styled.div`
+export const SingleValueView = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: left;
   align-items: center;
 `;
 
-export const Icon = styled.div`
+export const SingleValueIcon = styled.div`
   margin-right: 6px;
   display: inline-block;
 `;
 
-const SingleValue = <T extends { data: { img: string } }>(props: React.PropsWithChildren<IProps<T>>) => {
+const SingleValue = <T extends { data: { img: string } }>(props: React.PropsWithChildren<SingleValueProps<T>>) => {
   return (
-    <ItemView>
-      {props.data.img ? <Icon>{props.data.img}</Icon> : null}
+    <SingleValueView>
+      {props.data.img ? <SingleValueIcon>{props.data.img}</SingleValueIcon> : null}
       <Text>
         <components.SingleValue {...props}>{props.children}</components.SingleValue>
       </Text>
-    </ItemView>
+    </SingleValueView>
   );
 };
 

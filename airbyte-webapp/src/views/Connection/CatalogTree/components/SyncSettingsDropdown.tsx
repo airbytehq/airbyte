@@ -3,8 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { components, ControlProps } from "react-select";
 import styled from "styled-components";
 
-import { DropDown, DropdownProps, DropDownOptionDataItem, OptionView } from "components/ui/DropDown";
-import { IProps } from "components/ui/DropDown/components/SingleValue";
+import { DropDown, DropdownProps, DropDownOptionDataItem, OptionView, SingleValueProps } from "components/ui/DropDown";
 import Text from "components/ui/DropDown/components/Text";
 
 const ValueView = styled(components.SingleValue)`
@@ -23,7 +22,7 @@ const Separator = styled.div`
   padding: 0 5px;
 `;
 
-const SingleValue: React.FC<IProps<unknown>> = (props) => {
+const SingleValue: React.FC<SingleValueProps<unknown>> = (props) => {
   const { syncMode, destinationSyncMode } = props.data?.value;
   return (
     <Text>

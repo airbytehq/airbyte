@@ -8,12 +8,15 @@ import styled from "styled-components";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
 import { ControlLabels } from "components/LabeledControl";
-import { DropDown, DropDownOptionDataItem, DropDownOptionProps, OptionView } from "components/ui/DropDown";
 import {
-  Icon as SingleValueIcon,
-  IProps as SingleValueProps,
-  ItemView as SingleValueView,
-} from "components/ui/DropDown/components/SingleValue";
+  DropDown,
+  DropDownOptionDataItem,
+  DropDownOptionProps,
+  OptionView,
+  SingleValueIcon,
+  SingleValueProps,
+  SingleValueView,
+} from "components/ui/DropDown";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
