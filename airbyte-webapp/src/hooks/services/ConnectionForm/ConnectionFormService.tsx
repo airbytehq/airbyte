@@ -20,7 +20,7 @@ export type ConnectionOrPartialConnection =
   | WebBackendConnectionRead
   | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
 
-export interface ConnectionServiceProps {
+interface ConnectionServiceProps {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
   refreshSchema: () => Promise<void>;

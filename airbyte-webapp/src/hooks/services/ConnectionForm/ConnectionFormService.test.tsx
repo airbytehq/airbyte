@@ -13,7 +13,6 @@ import { ModalServiceProvider } from "../Modal";
 import {
   ConnectionFormServiceProvider,
   ConnectionOrPartialConnection,
-  ConnectionServiceProps,
   useConnectionFormService,
 } from "./ConnectionFormService";
 
@@ -22,7 +21,7 @@ jest.mock("services/connector/DestinationDefinitionSpecificationService", () => 
 }));
 
 describe("ConnectionFormService", () => {
-  const Wrapper: React.FC<ConnectionServiceProps> = ({ children, ...props }) => (
+  const Wrapper: React.FC<Parameters<typeof ConnectionFormServiceProvider>[0]> = ({ children, ...props }) => (
     <TestWrapper>
       <MemoryRouter>
         <ModalServiceProvider>
