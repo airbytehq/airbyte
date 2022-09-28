@@ -1,5 +1,14 @@
 documentationUrl: https://docsurl.com
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Commcare Spec
+  title: Commcare Source Spec
   type: object
+  required:
+    - api-key
+  properties:
+    api-key:
+      type: string
+      title: API Key
+      description: >-
+        Commcare API Key
+      order: 0
