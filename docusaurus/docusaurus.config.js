@@ -49,7 +49,54 @@ const config = {
                             from: '/operator-guides/securing-airbyte',
                             to: '/operator-guides/security',
                         },
-
+                        // {
+                        //     from: '/understanding-airbyte/glossary',
+                        //     to: 'https://glossary.airbyte.com/term/airbyte-glossary-of-terms/',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossary#advanced-terms',
+                        //     to: 'https://glossary.airbyte.com/term/airbyte-glossary-of-terms/#advanced-terms',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossary#airbyte-cdk',
+                        //     to: 'https://glossary.airbyte.com/term/airbyte-cdk/',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossary#dag',
+                        //     to: 'https://glossary.airbyte.com/term/dag-directed-acyclic-graph/',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossary#etlelt',
+                        //     to: 'https://glossary.airbyte.com/term/etl-elt-airbyte/',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossaryfull-refresh-sync',
+                        //     to: 'https://glossary.airbyte.com/term/full-refresh-synchronization/',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossary#incremental-sync',
+                        //     to: 'https://glossary.airbyte.com/term/incremental-synchronization/',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossary#partial-success',
+                        //     to: 'https://glossary.airbyte.com/term/partial-success',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossary#raw-tables',
+                        //     to: 'https://glossary.airbyte.com/term/raw-tables/',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossary#airbytecatalog',
+                        //     to: 'https://glossary.airbyte.com/term/airbyte-catalog/',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossary#airbyte-specification',
+                        //     to: 'https://glossary.airbyte.com/term/airbyte-specification/',
+                        // },
+                        // {
+                        //     from: '/understanding-airbyte/glossary#temporal',
+                        //     to: 'https://glossary.airbyte.com/term/temporal/',
+                        // },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',
