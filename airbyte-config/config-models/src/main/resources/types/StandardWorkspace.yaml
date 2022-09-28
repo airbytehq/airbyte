@@ -47,3 +47,6 @@ properties:
     type: boolean
   feedbackDone:
     type: boolean
+  webhookOperationConfigs:
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode

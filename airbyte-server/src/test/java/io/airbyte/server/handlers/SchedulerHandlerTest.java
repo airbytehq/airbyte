@@ -167,7 +167,8 @@ class SchedulerHandlerTest {
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withSourceDefinitionId(source.getSourceDefinitionId())
+            .withSpec(new ConnectorSpecification().withConnectionSpecification(Jsons.emptyObject())));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(synchronousSchedulerClient.createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
@@ -192,7 +193,8 @@ class SchedulerHandlerTest {
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withSourceDefinitionId(source.getSourceDefinitionId())
+            .withSpec(new ConnectorSpecification().withConnectionSpecification(Jsons.emptyObject())));
     when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(source.getConfiguration()),
         any())).thenReturn(source.getConfiguration());
@@ -308,7 +310,8 @@ class SchedulerHandlerTest {
         .thenReturn(new StandardDestinationDefinition()
             .withDockerRepository(DESTINATION_DOCKER_REPO)
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
-            .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
+            .withDestinationDefinitionId(destination.getDestinationDefinitionId())
+            .withSpec(new ConnectorSpecification().withConnectionSpecification(Jsons.emptyObject())));
 
     when(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, DESTINATION_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
@@ -510,7 +513,8 @@ class SchedulerHandlerTest {
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withSourceDefinitionId(source.getSourceDefinitionId())
+            .withSpec(new ConnectorSpecification().withConnectionSpecification(Jsons.emptyObject())));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn(discoverResponse);
     when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
@@ -539,7 +543,8 @@ class SchedulerHandlerTest {
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
-            .withSourceDefinitionId(source.getSourceDefinitionId()));
+            .withSourceDefinitionId(source.getSourceDefinitionId())
+            .withSpec(new ConnectorSpecification().withConnectionSpecification(Jsons.emptyObject())));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn((SynchronousResponse<AirbyteCatalog>) jobResponse);
     when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(

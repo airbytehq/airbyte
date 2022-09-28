@@ -155,7 +155,7 @@ public class ConfigRepository {
     return workspaces;
   }
 
-  public void writeStandardWorkspace(final StandardWorkspace workspace) throws JsonValidationException, IOException {
+  public void writeStandardWorkspaceNoSecrets(final StandardWorkspace workspace) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 

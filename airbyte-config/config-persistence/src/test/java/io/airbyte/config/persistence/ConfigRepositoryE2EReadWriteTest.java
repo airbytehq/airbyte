@@ -99,7 +99,7 @@ class ConfigRepositoryE2EReadWriteTest {
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
     for (final StandardWorkspace workspace : MockData.standardWorkspaces()) {
-      configRepository.writeStandardWorkspace(workspace);
+      configRepository.writeStandardWorkspaceNoSecrets(workspace);
     }
     for (final StandardSourceDefinition sourceDefinition : MockData.standardSourceDefinitions()) {
       configRepository.writeStandardSourceDefinition(sourceDefinition);

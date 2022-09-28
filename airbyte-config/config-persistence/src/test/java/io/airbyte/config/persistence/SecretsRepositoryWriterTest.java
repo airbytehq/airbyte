@@ -156,7 +156,7 @@ class SecretsRepositoryWriterTest {
   void testStatefulSplitEphemeralSecrets() throws JsonValidationException, IOException, ConfigNotFoundException {
     final JsonNode split = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         SOURCE_WITH_FULL_CONFIG.getConfiguration(),
-        SPEC);
+        SPEC.getConnectionSpecification());
     final SecretCoordinate coordinate = getCoordinateFromSecretsStore(ephemeralSecretPersistence);
 
     assertNotNull(coordinate);

@@ -2281,6 +2281,8 @@ components:
             $ref: "#/components/schemas/Notification"
         displaySetupWizard:
           type: boolean
+        webhookConfigs:
+          $ref: "#/components/schemas/WebhookConfig"
     Notification:
       type: object
       required:
@@ -2302,6 +2304,26 @@ components:
           $ref: "#/components/schemas/SlackNotificationConfiguration"
         customerioConfiguration:
           $ref: "#/components/schemas/CustomerioNotificationConfiguration"
+    WebhookConfig:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - domain
+        - authToken
+        - executionUrl
+        - validationUrl
+      properties:
+        name:
+          type: string
+        domain:
+          type: string
+        authToken:
+          type: string
+        executionUrl:
+          type: string
+        validationUrl:
+          type: string
     SlackNotificationConfiguration:
       type: object
       required:
@@ -2383,6 +2405,8 @@ components:
           type: boolean
         feedbackDone:
           type: boolean
+        webhookConfigs:
+          type: object
     WorkspaceUpdateName:
       type: object
       required:
@@ -2418,6 +2442,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+        webhookConfigs:
+          description: JSONSchema representation of the field
+          type: object
     WorkspaceGiveFeedback:
       type: object
       required:

@@ -1,0 +1,25 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/WebhookOperationConfig.yaml
+title: WebhookOperationConfig
+description: Configuration for a webhook operation
+type: object
+additionalProperties: false
+required:
+  - name
+  - domain
+  - authToken
+  - executionUrl
+  - validationUrl
+properties:
+  name:
+    type: string
+  domain:
+    type: string
+  authToken:
+    type: string
+    airbyte_secret: true
+  executionUrl:
+    type: string
+  validationUrl:
+    type: string

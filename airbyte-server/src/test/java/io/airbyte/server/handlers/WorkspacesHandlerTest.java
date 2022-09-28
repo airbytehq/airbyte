@@ -36,6 +36,8 @@ import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -63,17 +65,22 @@ class WorkspacesHandlerTest {
   private static final String TEST_EMAIL = "test@airbyte.io";
   private static final String TEST_WORKSPACE_NAME = "test workspace";
   private static final String TEST_WORKSPACE_SLUG = "test-workspace";
+  private SecretsRepositoryReader secretsRepositoryReader;
+  private SecretsRepositoryWriter secretsRepositoryWriter;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
+    secretsRepositoryReader = mock(SecretsRepositoryReader.class);
+    secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
     connectionsHandler = mock(ConnectionsHandler.class);
     destinationHandler = mock(DestinationHandler.class);
     sourceHandler = mock(SourceHandler.class);
     uuidSupplier = mock(Supplier.class);
     workspace = generateWorkspace();
-    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler, uuidSupplier);
+    workspacesHandler = new WorkspacesHandler(configRepository, secretsRepositoryReader, secretsRepositoryWriter, connectionsHandler,
+        destinationHandler, sourceHandler, uuidSupplier);
   }
 
   private StandardWorkspace generateWorkspace() {
@@ -113,7 +120,7 @@ class WorkspacesHandlerTest {
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
 
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name("new workspace")
@@ -150,7 +157,7 @@ class WorkspacesHandlerTest {
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
 
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name(workspace.getName())
@@ -345,7 +352,7 @@ class WorkspacesHandlerTest {
         .securityUpdates(false)
         .notifications(List.of(expectedNotificationRead));
 
-    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+    verify(secretsRepositoryWriter).writeWorkspace(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
@@ -390,7 +397,7 @@ class WorkspacesHandlerTest {
         .securityUpdates(workspace.getSecurityUpdates())
         .notifications(List.of(generateApiNotification()));
 
-    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+    verify(configRepository).writeStandardWorkspaceNoSecrets(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
@@ -423,7 +430,7 @@ class WorkspacesHandlerTest {
         .notifications(NotificationConverter.toApiList(workspace.getNotifications()));
 
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
-    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+    verify(secretsRepositoryWriter).writeWorkspace(expectedWorkspace);
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
 

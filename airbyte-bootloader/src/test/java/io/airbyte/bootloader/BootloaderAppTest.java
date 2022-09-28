@@ -133,7 +133,7 @@ class BootloaderAppTest {
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
       // this line should change with every new migration
       // to show that you meant to make a new migration to the prod database
-      assertEquals("0.40.3.002", configsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.40.9.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       assertEquals(VERSION_0330_ALPHA, jobsPersistence.getVersion().get());
@@ -208,7 +208,7 @@ class BootloaderAppTest {
       final ObjectMapper mapper = new ObjectMapper();
 
       final UUID workspaceId = UUID.randomUUID();
-      configRepository.writeStandardWorkspace(new StandardWorkspace()
+      configRepository.writeStandardWorkspaceNoSecrets(new StandardWorkspace()
           .withWorkspaceId(workspaceId)
           .withName("wName")
           .withSlug("wSlug")

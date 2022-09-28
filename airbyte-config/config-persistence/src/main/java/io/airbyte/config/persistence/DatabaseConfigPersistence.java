@@ -786,6 +786,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(WORKSPACE.FIRST_SYNC_COMPLETE, standardWorkspace.getFirstCompletedSync())
             .set(WORKSPACE.FEEDBACK_COMPLETE, standardWorkspace.getFeedbackDone())
             .set(WORKSPACE.UPDATED_AT, timestamp)
+            .set(WORKSPACE.WEBHOOK_OPERATION_CONFIGS, standardWorkspace.getWebhookOperationConfigs() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardWorkspace.getWebhookOperationConfigs())))
             .where(WORKSPACE.ID.eq(standardWorkspace.getWorkspaceId()))
             .execute();
       } else {
@@ -806,6 +808,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(WORKSPACE.FEEDBACK_COMPLETE, standardWorkspace.getFeedbackDone())
             .set(WORKSPACE.CREATED_AT, timestamp)
             .set(WORKSPACE.UPDATED_AT, timestamp)
+            .set(WORKSPACE.WEBHOOK_OPERATION_CONFIGS, standardWorkspace.getWebhookOperationConfigs() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardWorkspace.getWebhookOperationConfigs())))
             .execute();
       }
     });

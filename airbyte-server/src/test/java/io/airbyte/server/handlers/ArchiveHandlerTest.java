@@ -217,7 +217,8 @@ class ArchiveHandlerTest {
         .withTombstone(false)
         .withNotifications(Collections.singletonList(notification))
         .withFirstCompletedSync(true)
-        .withFeedbackDone(true);
+        .withFeedbackDone(true)
+        .withWebhookOperationConfigs(null);
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceS3DefinitionId)
         .withSourceId(UUID.randomUUID())

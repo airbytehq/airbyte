@@ -173,6 +173,7 @@ create table "public"."workspace"(
   "feedback_complete" bool null,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
+  "webhook_operation_configs" jsonb null,
   constraint "workspace_pkey"
     primary key ("id")
 );

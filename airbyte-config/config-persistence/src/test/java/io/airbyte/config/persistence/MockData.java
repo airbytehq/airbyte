@@ -149,7 +149,8 @@ public class MockData {
         .withTombstone(false)
         .withNotifications(Collections.singletonList(notification))
         .withFirstCompletedSync(true)
-        .withFeedbackDone(true);
+        .withFeedbackDone(true)
+        .withWebhookOperationConfigs(null);
 
     final StandardWorkspace workspace2 = new StandardWorkspace()
         .withWorkspaceId(WORKSPACE_ID_2)

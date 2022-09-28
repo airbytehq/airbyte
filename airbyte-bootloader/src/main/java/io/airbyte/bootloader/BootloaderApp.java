@@ -275,7 +275,7 @@ public class BootloaderApp {
         .withInitialSetupComplete(false)
         .withDisplaySetupWizard(true)
         .withTombstone(false);
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
   }
 
   private static void assertNonBreakingMigration(final JobPersistence jobPersistence, final AirbyteVersion airbyteVersion)

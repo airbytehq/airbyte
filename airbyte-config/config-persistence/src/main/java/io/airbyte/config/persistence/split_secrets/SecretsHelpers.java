@@ -62,14 +62,14 @@ public class SecretsHelpers {
    */
   public static SplitSecretConfig splitConfig(final UUID workspaceId,
                                               final JsonNode fullConfig,
-                                              final ConnectorSpecification spec) {
+                                              final JsonNode spec) {
     return internalSplitAndUpdateConfig(
         UUID::randomUUID,
         workspaceId,
         (coordinate) -> Optional.empty(),
         Jsons.emptyObject(),
         fullConfig,
-        spec.getConnectionSpecification());
+        spec);
   }
 
   /**
@@ -93,7 +93,7 @@ public class SecretsHelpers {
   public static SplitSecretConfig splitAndUpdateConfig(final UUID workspaceId,
                                                        final JsonNode oldPartialConfig,
                                                        final JsonNode newFullConfig,
-                                                       final ConnectorSpecification spec,
+                                                       final JsonNode spec,
                                                        final ReadOnlySecretPersistence secretReader) {
     return internalSplitAndUpdateConfig(
         UUID::randomUUID,
@@ -101,7 +101,7 @@ public class SecretsHelpers {
         secretReader,
         oldPartialConfig,
         newFullConfig,
-        spec.getConnectionSpecification());
+        spec);
   }
 
   /**

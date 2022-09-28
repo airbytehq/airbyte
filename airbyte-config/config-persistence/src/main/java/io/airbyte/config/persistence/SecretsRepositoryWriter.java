@@ -5,6 +5,8 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
@@ -13,6 +15,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinateToPayload;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -29,6 +32,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class takes secrets as arguments but never returns a secrets as return values (even the ones
@@ -39,6 +44,7 @@ import java.util.stream.Stream;
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "PMD.AvoidThrowingRawExceptionTypes"})
 public class SecretsRepositoryWriter {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(SecretsRepositoryWriter.class);
   private static final UUID NO_WORKSPACE = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
   private final ConfigRepository configRepository;
@@ -82,7 +88,7 @@ public class SecretsRepositoryWriter {
         source.getWorkspaceId(),
         previousSourceConnection,
         source.getConfiguration(),
-        connectorSpecification);
+        connectorSpecification.getConnectionSpecification());
     final SourceConnection partialSource = Jsons.clone(source).withConfiguration(partialConfig);
 
     configRepository.writeSourceConnectionNoSecrets(partialSource);
@@ -105,7 +111,7 @@ public class SecretsRepositoryWriter {
         destination.getWorkspaceId(),
         previousDestinationConnection,
         destination.getConfiguration(),
-        connectorSpecification);
+        connectorSpecification.getConnectionSpecification());
     final DestinationConnection partialDestination = Jsons.clone(destination).withConfiguration(partialConfig);
 
     configRepository.writeDestinationConnectionNoSecrets(partialDestination);
@@ -120,7 +126,7 @@ public class SecretsRepositoryWriter {
    * @param spec connector specification
    * @return partial config
    */
-  private JsonNode statefulSplitSecrets(final UUID workspaceId, final JsonNode fullConfig, final ConnectorSpecification spec) {
+  private JsonNode statefulSplitSecrets(final UUID workspaceId, final JsonNode fullConfig, final JsonNode spec) {
     return splitSecretConfig(workspaceId, fullConfig, spec, longLivedSecretPersistence);
   }
 
@@ -142,9 +148,9 @@ public class SecretsRepositoryWriter {
   private JsonNode statefulUpdateSecrets(final UUID workspaceId,
                                          final Optional<JsonNode> oldConfig,
                                          final JsonNode fullConfig,
-                                         final ConnectorSpecification spec)
+                                         final JsonNode spec)
       throws JsonValidationException {
-    validator.ensure(spec.getConnectionSpecification(), fullConfig);
+    validator.ensure(spec, fullConfig);
 
     if (longLivedSecretPersistence.isPresent()) {
       if (oldConfig.isPresent()) {
@@ -177,13 +183,13 @@ public class SecretsRepositoryWriter {
    * @param spec connector specification
    * @return partial config
    */
-  public JsonNode statefulSplitEphemeralSecrets(final JsonNode fullConfig, final ConnectorSpecification spec) {
+  public JsonNode statefulSplitEphemeralSecrets(final JsonNode fullConfig, final JsonNode spec) {
     return splitSecretConfig(NO_WORKSPACE, fullConfig, spec, ephemeralSecretPersistence);
   }
 
   private JsonNode splitSecretConfig(final UUID workspaceId,
                                      final JsonNode fullConfig,
-                                     final ConnectorSpecification spec,
+                                     final JsonNode spec,
                                      final Optional<SecretPersistence> secretPersistence) {
     if (secretPersistence.isPresent()) {
       final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(workspaceId, fullConfig, spec);
@@ -229,7 +235,7 @@ public class SecretsRepositoryWriter {
               final var partialConfig = statefulSplitSecrets(
                   source.getWorkspaceId(),
                   source.getConfiguration(),
-                  sourceDefIdToSpec.get(source.getSourceDefinitionId()));
+                  sourceDefIdToSpec.get(source.getSourceDefinitionId()).getConnectionSpecification());
 
               return source.withConfiguration(partialConfig);
             });
@@ -249,7 +255,7 @@ public class SecretsRepositoryWriter {
               final var partialConfig = statefulSplitSecrets(
                   destination.getWorkspaceId(),
                   destination.getConfiguration(),
-                  destinationDefIdToSpec.get(destination.getDestinationDefinitionId()));
+                  destinationDefIdToSpec.get(destination.getDestinationDefinitionId()).getConnectionSpecification());
 
               return destination.withConfiguration(partialConfig);
             });
@@ -266,6 +272,40 @@ public class SecretsRepositoryWriter {
       throws JsonValidationException, IOException {
     final WorkspaceServiceAccount workspaceServiceAccountForDB = getWorkspaceServiceAccountWithSecretCoordinate(workspaceServiceAccount);
     configRepository.writeWorkspaceServiceAccountNoSecrets(workspaceServiceAccountForDB);
+  }
+
+  public void writeWorkspace(final StandardWorkspace workspace)
+      throws JsonValidationException, IOException {
+    final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    final JsonNode webhookConfigSchema = mapper.readTree(ConfigSchema.WORKSPACE_WEBHOOK_OPERATION_CONFIG.getConfigSchemaFile());
+    LOGGER.info(webhookConfigSchema.toPrettyString());
+    final var previousWorkspace = getWorkspaceIfExists(workspace.getWorkspaceId());
+    Optional<JsonNode> previousWebhookConfig = Optional.empty();
+    if (previousWorkspace.isPresent() && previousWorkspace.get().getWebhookOperationConfigs() != null) {
+      LOGGER.info(previousWorkspace.get().toString());
+      previousWebhookConfig = Optional.of(previousWorkspace.get().getWebhookOperationConfigs());
+    }
+    LOGGER.info("updating secrets! {} \n {} \n {} \n {}", workspace.getWorkspaceId(),
+        previousWebhookConfig,
+        workspace.getWebhookOperationConfigs(),
+        webhookConfigSchema);
+    final JsonNode partialConfig = statefulUpdateSecrets(
+        workspace.getWorkspaceId(),
+        previousWebhookConfig,
+        workspace.getWebhookOperationConfigs(),
+        webhookConfigSchema);
+    LOGGER.info("partial config: {}", partialConfig);
+    final StandardWorkspace partialWorkspace = Jsons.clone(workspace).withWebhookOperationConfigs(partialConfig);
+    LOGGER.info("persisting: {}", partialWorkspace);
+    configRepository.writeStandardWorkspaceNoSecrets(partialWorkspace);
+  }
+
+  private Optional<StandardWorkspace> getWorkspaceIfExists(final UUID workspaceId) {
+    try {
+      return Optional.of(configRepository.getStandardWorkspace(workspaceId, true));
+    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+      return Optional.empty();
+    }
   }
 
   /**

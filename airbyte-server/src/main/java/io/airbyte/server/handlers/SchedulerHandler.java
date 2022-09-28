@@ -140,7 +140,7 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
     final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         sourceConfig.getConnectionConfiguration(),
-        sourceDef.getSpec());
+        sourceDef.getSpec().getConnectionSpecification());
 
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
@@ -180,7 +180,7 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
     final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         destinationConfig.getConnectionConfiguration(),
-        destDef.getSpec());
+        destDef.getSpec().getConnectionSpecification());
 
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
@@ -249,7 +249,7 @@ public class SchedulerHandler {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
     final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         sourceCreate.getConnectionConfiguration(),
-        sourceDef.getSpec());
+        sourceDef.getSpec().getConnectionSpecification());
 
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
