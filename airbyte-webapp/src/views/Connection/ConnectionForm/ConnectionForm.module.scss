@@ -1,0 +1,40 @@
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.readonly {
+  pointer-events: none;
+}
+
+.flexRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.leftFieldCol {
+  flex: 1;
+  max-width: 640px;
+  padding-right: 30px;
+}
+
+.rightFieldCol {
+  flex: 1;
+  max-width: 300px;
+}
+
+.namespaceFormatLabel {
+  flex: 5 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tryArrow {
+  margin: 0 10px -1px 0;
+  font-size: 14px;
+}
