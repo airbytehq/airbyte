@@ -4,8 +4,9 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { Button, LabeledInput, Label, LabeledSwitch } from "components";
-import { InfoTooltip } from "components/base/Tooltip";
+import { Label, LabeledInput, LabeledSwitch } from "components";
+import { Button } from "components/ui/Button";
+import { InfoTooltip } from "components/ui/Tooltip";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";

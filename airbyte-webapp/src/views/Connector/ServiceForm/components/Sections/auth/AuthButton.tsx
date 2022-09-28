@@ -3,7 +3,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
-import { Text } from "components/base/Text";
+import { Text } from "components/ui/Text";
 
 import { ConnectorSpecification } from "core/domain/connector";
 
