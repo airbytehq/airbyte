@@ -1,9 +1,11 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import { useToggle } from "react-use";
 
-import { Button, H5, LoadingButton } from "components";
+import { Button, H5 } from "components";
 import { Table } from "components/ui/Table";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -35,9 +37,9 @@ const RemoveUserSection: React.FC<{ workspaceId: string; email: string }> = ({ w
   };
 
   return (
-    <LoadingButton secondary onClick={onRemoveUserButtonClick} isLoading={isLoading}>
+    <Button variant="secondary" onClick={onRemoveUserButtonClick} isLoading={isLoading}>
       <FormattedMessage id="userSettings.user.remove" />
-    </LoadingButton>
+    </Button>
   );
 };
 
@@ -87,7 +89,6 @@ export const UsersSettingsView: React.FC = () => {
             user?.userId !== row.original.userId ? (
               <RemoveUserSection workspaceId={workspaceId} email={row.original.email} />
             ) : null,
-            // cell.value === "invited" && <Button secondary>send again</Button>,
           ].filter(Boolean),
       },
     ],
@@ -100,8 +101,12 @@ export const UsersSettingsView: React.FC = () => {
         <H5>
           <FormattedMessage id="userSettings.table.title" />
         </H5>
-        <Button onClick={toggleModal} data-testid="userSettings.button.addNewUser">
-          + <FormattedMessage id="userSettings.button.addNewUser" />
+        <Button
+          data-testid="userSettings.button.addNewUser"
+          icon={<FontAwesomeIcon icon={faPlus} />}
+          onClick={toggleModal}
+        >
+          <FormattedMessage id="userSettings.button.addNewUser" />
         </Button>
       </div>
       <Table data={users ?? []} columns={columns} />

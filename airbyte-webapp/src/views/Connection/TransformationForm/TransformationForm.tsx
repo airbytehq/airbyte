@@ -157,7 +157,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={onFormCancel} type="button" secondary>
+        <Button onClick={onFormCancel} type="button" variant="secondary">
           <FormattedMessage id="form.cancel" />
         </Button>
         <Button
