@@ -43,7 +43,9 @@ jobs:
           sudo apt-get update && \
           sudo apt-get install -y musl-tools && \
           cd airbyte-to-flow && \
-          make
+          make && \
+          ls target/x86_64-unknown-linux-musl/release && \
+          target/x86_64-unknown-linux-musl/release/airbyte-to-flow --help
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -60,6 +62,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/master' }}
         with:
           context: airbyte-to-flow
+          platforms: linux/amd64
           push: true
           tags: ghcr.io/estuary/airbyte-to-flow:dev,ghcr.io/estuary/airbyte-to-flow:${{ steps.prep.outputs.tag }}
 
@@ -68,6 +71,7 @@ jobs:
         if: ${{ github.ref != 'refs/heads/master' }}
         with:
           context: airbyte-to-flow
+          platforms: linux/amd64
           push: true
           tags: ghcr.io/estuary/airbyte-to-flow:${{ steps.prep.outputs.tag }}
 
