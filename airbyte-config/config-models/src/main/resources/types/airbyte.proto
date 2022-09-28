@@ -1,0 +1,71 @@
+import "google/protobuf/timestamp.proto";
+
+// types supported by airbyte.
+enum FieldType {
+  STRING = 0;
+  INT = 1;
+  LONG = 2;
+  BOOLEAN = 3;
+  OBJECT = 4;
+  LIST = 5;
+  DATE = 6;
+  TIMESTAMP_WITH_TIMEZONE = 7;
+  TIMESTAMP_WITHOUT_TIMEZONE = 8;
+  TIME_WITH_TIMEZONE = 9;
+  TIME_WITHOUT_TIMEZONE = 10;
+}
+
+// custom struct for each type
+message AirbyteStringField {
+  required string value = 1;
+}
+
+message AirbyteIntField {
+  required int32 value = 1;
+}
+
+message AirbyteTimestampWithTimezone {
+  required google.protobuf.Timestamp timestamp = 1;
+}
+
+message AirbyteTimestampWithoutTimezone {
+  required google.protobuf.Timestamp timestamp = 1;
+}
+
+message AirbyteTimeWithTimezone {
+  required google.protobuf.Timestamp timestamp = 1;
+}
+
+message AirbyteTimeWithoutTimezone {
+  required google.protobuf.Timestamp timestamp = 1;
+}
+
+// example schema we want to be able to model
+// users
+// id - int
+// name - string
+// created_at - timestamp with timezone
+// tags - list strings
+// friends - list object { id, name }
+// address - object { address_num, street, city, zip }
+
+message address {
+  optional AirbyteIntField address_num = 1;
+  optional AirbyteStringField street = 2;
+  optional AirbyteStringField city = 3;
+  optional AirbyteIntField zip = 4;
+}
+
+message friend {
+  optional AirbyteIntField id = 1;
+  optional AirbyteStringField name = 2;
+}
+
+message user {
+  optional AirbyteIntField id = 1;
+  optional AirbyteStringField name = 2;
+  optional AirbyteTimestampWithTimezone created_at = 3;
+  repeated AirbyteStringField tags = 4;
+  repeated friend friend = 5;
+  optional address address = 6;
+}
