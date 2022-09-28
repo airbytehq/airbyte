@@ -1,5 +1,5 @@
-import { Card } from "components/base";
-import { Text } from "components/base/Text";
+import { Card } from "components/ui";
+import { Text } from "components/ui/Text";
 
 import styles from "./Section.module.scss";
 

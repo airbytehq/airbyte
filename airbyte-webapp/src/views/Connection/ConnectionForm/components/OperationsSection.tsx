@@ -2,8 +2,8 @@ import { Field, FieldArray } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { Card } from "components";
-import { Text } from "components/base/Text";
+import { Card } from "components/ui/Card";
+import { Text } from "components/ui/Text";
 
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";

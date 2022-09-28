@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
-import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
+import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 const Content = styled.div`
   display: flex;
@@ -39,7 +39,7 @@ const EditorHeader: React.FC<EditorHeaderProps> = ({
     <Content>
       {mainTitle || <FormattedMessage id="form.items" values={{ count: itemsCount }} />}
       {mode !== "readonly" && (
-        <Button secondary type="button" onClick={onAddItem} data-testid="addItemButton" disabled={disabled}>
+        <Button variant="secondary" type="button" onClick={onAddItem} data-testid="addItemButton" disabled={disabled}>
           {addButtonText || <FormattedMessage id="form.addItems" />}
         </Button>
       )}

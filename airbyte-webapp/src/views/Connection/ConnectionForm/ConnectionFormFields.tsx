@@ -6,7 +6,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button, ControlLabels, Input } from "components";
-import { Text } from "components/base/Text";
+import { Text } from "components/ui/Text";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -109,7 +109,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
           component={SchemaField}
           isSubmitting={isSubmitting}
           additionalControl={
-            <Button onClick={doRefreshSchema} type="button" secondary>
+            <Button onClick={doRefreshSchema} type="button" variant="secondary">
               <FontAwesomeIcon icon={faSyncAlt} className={styles.tryArrow} />
               <FormattedMessage id="connection.updateSchema" />
             </Button>

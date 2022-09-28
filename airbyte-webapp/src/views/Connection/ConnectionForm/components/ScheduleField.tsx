@@ -3,7 +3,7 @@ import { ChangeEvent, useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import { ControlLabels, DropDown, DropDownRow, Input, Link } from "components";
-import { IDataItem } from "components/base/DropDown/components/Option";
+import { IDataItem } from "components/ui/DropDown/components/Option";
 
 import { Action, Namespace } from "core/analytics";
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";

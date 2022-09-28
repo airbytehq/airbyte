@@ -1,5 +1,5 @@
-import { Card } from "components/base";
 import { JobItem } from "components/JobItem/JobItem";
+import { Card } from "components/ui";
 
 import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";

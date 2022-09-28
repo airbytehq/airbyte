@@ -3,11 +3,11 @@ import { FormattedMessage } from "react-intl";
 import { useUnmount } from "react-use";
 
 import { Button } from "components";
+import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { AirbyteCatalog, CatalogDiff } from "core/request/AirbyteClient";
 import { useModalService } from "hooks/services/Modal";
 
-import { ModalBody, ModalFooter } from "../../../components/ui/Modal";
 import styles from "./CatalogDiffModal.module.scss";
 import { DiffSection } from "./components/DiffSection";
 import { FieldSection } from "./components/FieldSection";

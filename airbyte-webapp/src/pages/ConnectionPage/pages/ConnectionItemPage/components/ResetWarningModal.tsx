@@ -38,7 +38,7 @@ export const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, 
         </p>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={onCancel} secondary data-testid="resetModal-cancel">
+        <Button onClick={onCancel} variant="secondary" data-testid="resetModal-cancel">
           <FormattedMessage id="form.cancel" />
         </Button>
         <Button onClick={() => onClose(withReset)} data-testid="resetModal-save">

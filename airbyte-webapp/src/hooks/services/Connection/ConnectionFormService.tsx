@@ -6,7 +6,6 @@ import { ConnectionScheduleType, WebBackendConnectionRead } from "core/request/A
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { generateMessageFromError } from "utils/errorStatusMessage";
-import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
@@ -16,6 +15,7 @@ import {
   useInitialValues,
 } from "views/Connection/ConnectionForm/formConfig";
 
+import { ConnectionFormMode } from "../ConnectionForm/ConnectionFormService";
 import { useFormChangeTrackerService } from "../FormChangeTracker";
 import { ModalCancel } from "../Modal";
 import { ValuesProps } from "../useConnectionHook";

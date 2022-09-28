@@ -1,9 +1,9 @@
 import { Field, FieldProps } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Input } from "components/base";
-import { Text } from "components/base/Text";
 import { ControlLabels } from "components/LabeledControl";
+import { Input } from "components/ui";
+import { Text } from "components/ui/Text";
 
 import { Section } from "views/Connection/ConnectionForm/components/Section";
 
