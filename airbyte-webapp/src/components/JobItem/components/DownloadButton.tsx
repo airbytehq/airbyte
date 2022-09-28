@@ -28,13 +28,12 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ jobDebugInfo, fileName 
   return (
     <Button
       onClick={downloadFileWithLogs}
-      secondary
+      variant="secondary"
       title={formatMessage({
         id: "sources.downloadLogs",
       })}
-    >
-      <FontAwesomeIcon icon={faFileDownload} />
-    </Button>
+      icon={<FontAwesomeIcon icon={faFileDownload} />}
+    />
   );
 };
 
