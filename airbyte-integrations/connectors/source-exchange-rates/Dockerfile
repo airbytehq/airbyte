@@ -10,7 +10,7 @@ WORKDIR $WORKDIR
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
 COPY main.py ./
-COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
+COPY --from=ghcr.io/estuary/airbyte-to-flow:dev --platform=linux/amd64 /airbyte-to-flow ./
 
 RUN pip install .
 
