@@ -31,7 +31,7 @@ class NotionStream(HttpStream, ABC):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         retry_after = response.headers.get("retry-after")
         if retry_after:
-            return int(retry_after)
+            return float(retry_after)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)

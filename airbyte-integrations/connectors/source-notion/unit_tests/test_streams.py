@@ -76,7 +76,7 @@ def test_should_retry(patch_base_class, http_status, should_retry):
 def test_backoff_time(patch_base_class):
     response_mock = MagicMock(headers={"retry-after": "10"})
     stream = NotionStream(config=MagicMock())
-    assert stream.backoff_time(response_mock) == 10
+    assert stream.backoff_time(response_mock) == 10.0
 
 
 def test_users_request_params(patch_base_class):
