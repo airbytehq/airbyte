@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from base64 import b64encode
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -33,6 +34,15 @@ class SourceAmplitude(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+        today = pendulum.now()
+        start_date = pendulum.parse(config.get("start_date"))
+        start_date_in_future = start_date > today
+
+        if start_date_in_future:
+            logger = logging.getLogger("airbyte")
+            logger.info(f"Start date set to {today}.")
+
+            config["start_date"] = today.to_datetime_string()
 
         auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["secret_key"]), auth_method="Basic")
         return [
