@@ -18,7 +18,7 @@ const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClic
     <Text as="p" size="lg" centered className={styles.message}>
       {message || <FormattedMessage id="form.schemaFailed" />}
     </Text>
-    <Button className={styles.retryButton} onClick={onClick} danger>
+    <Button className={styles.retryButton} onClick={onClick} variant="danger">
       <FormattedMessage id="form.tryAgain" />
     </Button>
   </div>

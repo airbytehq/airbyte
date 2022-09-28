@@ -23,10 +23,10 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.helper.StateConverter;
+import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Singleton;
 
 @Singleton
 public class PersistStateActivityImpl implements PersistStateActivity {
@@ -49,7 +49,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
         if (maybeStateWrapper.isPresent()) {
           final ConnectionState previousState = airbyteApiClient.getConnectionApi()
               .getState(new ConnectionIdRequestBody().connectionId(connectionId));
-          if (previousState != null) {
+          if (featureFlags.needStateValidation() && previousState != null) {
             final StateType newStateType = maybeStateWrapper.get().getStateType();
             final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
 

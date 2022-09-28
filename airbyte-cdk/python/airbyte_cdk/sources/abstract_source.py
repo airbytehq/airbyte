@@ -229,12 +229,11 @@ class AbstractSource(Source, ABC):
             stream_state=stream_state,
         )
         logger.debug(f"Processing stream slices for {stream_name}", extra={"stream_slices": slices})
+
         total_records_counter = 0
-        if not slices:
-            # Safety net to ensure we always emit at least one state message even if there are no slices
-            checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
-            yield checkpoint
+        has_slices = False
         for _slice in slices:
+            has_slices = True
             logger.debug("Processing stream slice", extra={"slice": _slice})
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
@@ -260,6 +259,11 @@ class AbstractSource(Source, ABC):
             yield self._checkpoint_state(stream_instance, stream_state, state_manager)
             if self._limit_reached(internal_config, total_records_counter):
                 return
+
+        if not has_slices:
+            # Safety net to ensure we always emit at least one state message even if there are no slices
+            checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
+            yield checkpoint
 
     def _read_full_refresh(
         self,

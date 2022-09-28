@@ -4,16 +4,16 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricTags;
-import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**

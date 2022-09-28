@@ -6,6 +6,8 @@ package io.airbyte.workers;
 
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
@@ -22,8 +24,6 @@ import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.workers.process.KubePortManagerSingleton;
-import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
@@ -43,6 +43,9 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -54,9 +57,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**

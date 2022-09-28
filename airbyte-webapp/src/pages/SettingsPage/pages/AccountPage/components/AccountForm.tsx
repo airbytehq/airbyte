@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Label, LabeledInput, LabeledSwitch, LoadingButton } from "components";
+import { Label, LabeledInput, LabeledSwitch, Button } from "components";
 import { InfoTooltip } from "components/base/Tooltip";
 import { Row, Cell } from "components/SimpleTableComponents";
 
@@ -105,9 +105,9 @@ const AccountForm: React.FC<AccountFormProps> = ({ email, onSubmit, successMessa
             </Field>
           </div>
           <div className={styles.submit}>
-            <LoadingButton isLoading={isSubmitting} type="submit" disabled={!dirty || !values.email}>
+            <Button isLoading={isSubmitting} type="submit" disabled={!dirty || !values.email}>
               <FormattedMessage id="form.saveChanges" />
-            </LoadingButton>
+            </Button>
           </div>
           {!dirty &&
             (successMessage ? (
