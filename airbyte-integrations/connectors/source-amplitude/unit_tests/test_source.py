@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import pytest
 import requests
+import pendulum
 from airbyte_cdk import AirbyteLogger
 from source_amplitude import SourceAmplitude
 from source_amplitude.api import ActiveUsers, Annotations, AverageSessionLength, Cohorts, Events
@@ -53,7 +54,14 @@ def test_check(response, check_passed):
     ids=["Cohorts", "Annotations", "ActiveUsers", "AverageSessionLength", "Events"],
 )
 def test_streams(expected_stream_cls):
+    TEST_CONFIG["start_date"] = pendulum.tomorrow().to_datetime_string()
     streams = TEST_INSTANCE.streams(config=TEST_CONFIG)
     for stream in streams:
         if expected_stream_cls in streams:
             assert isinstance(stream, expected_stream_cls)
+
+
+def test_validate_start_date():
+    start_date = pendulum.tomorrow().to_datetime_string()
+    today = pendulum.now().to_datetime_string()
+    assert TEST_INSTANCE._validate_start_date(start_date) == today
