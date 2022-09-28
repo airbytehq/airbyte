@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link, LoadingButton } from "components";
+import { LabeledInput, Link, Button } from "components";
 
 import { useConfig } from "config";
 import { useExperiment } from "hooks/services/Experiment";
@@ -165,9 +165,9 @@ export const SignupButton: React.FC<SignupButtonProps> = ({
   disabled,
   buttonMessageId = "login.signup.submitButton",
 }) => (
-  <LoadingButton className={styles.signUpButton} type="submit" isLoading={isLoading} disabled={disabled}>
+  <Button full size="lg" type="submit" isLoading={isLoading} disabled={disabled}>
     <FormattedMessage id={buttonMessageId} />
-  </LoadingButton>
+  </Button>
 );
 
 export const SignupFormStatusMessage: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (

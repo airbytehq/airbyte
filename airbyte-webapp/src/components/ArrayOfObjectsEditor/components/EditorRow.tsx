@@ -25,23 +25,23 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
       <div className={styles.name}>{name || id}</div>
       <div className={styles.actions}>
         <Button
+          size="xs"
           type="button"
-          iconOnly
+          variant="clear"
           arial-label={formatMessage({ id: "form.edit" })}
           onClick={() => onEdit(id)}
           disabled={disabled}
-        >
-          <PencilIcon />
-        </Button>
+          icon={<PencilIcon />}
+        />
         <Button
+          size="xs"
           type="button"
-          iconOnly
+          variant="clear"
           aria-label={formatMessage({ id: "form.delete" })}
           onClick={() => onRemove(id)}
           disabled={disabled}
-        >
-          <CrossIcon />
-        </Button>
+          icon={<CrossIcon />}
+        />
       </div>
     </div>
   );
