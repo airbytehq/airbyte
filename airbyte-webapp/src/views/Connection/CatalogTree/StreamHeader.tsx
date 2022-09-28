@@ -7,7 +7,7 @@ import styled from "styled-components";
 
 import { Cell, Row } from "components";
 import { CheckBox } from "components/ui/CheckBox";
-import { DropDownRow } from "components/ui/DropDown";
+import { DropDownOptionDataItem } from "components/ui/DropDown";
 import { Switch } from "components/ui/Switch";
 
 import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
@@ -37,7 +37,7 @@ interface StreamHeaderProps {
   availableSyncModes: Array<{
     value: SyncSchema;
   }>;
-  onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
+  onSelectSyncMode: (selectedMode: DropDownOptionDataItem) => void;
   onSelectStream: () => void;
   primitiveFields: SyncSchemaField[];
   pkType: IndexerType;

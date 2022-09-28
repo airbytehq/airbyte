@@ -3,8 +3,7 @@ import { ChangeEvent, useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import { ControlLabels, Link } from "components";
-import { DropDownRow, DropDown } from "components/ui/DropDown";
-import { IDataItem } from "components/ui/DropDown/components/Option";
+import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 
 import { Action, Namespace } from "core/analytics";
@@ -31,7 +30,7 @@ const ScheduleField: React.FC = () => {
   const analyticsService = useAnalyticsService();
 
   const onDropDownSelect = useCallback(
-    (item: IDataItem | null) => {
+    (item: DropDownOptionDataItem | null) => {
       const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
       if (item) {
@@ -59,7 +58,7 @@ const ScheduleField: React.FC = () => {
     ]
   );
 
-  const onScheduleChange = (item: DropDownRow.IDataItem, form: FormikProps<FormikConnectionFormValues>) => {
+  const onScheduleChange = (item: DropDownOptionDataItem, form: FormikProps<FormikConnectionFormValues>) => {
     onDropDownSelect?.(item);
 
     let scheduleData: ConnectionScheduleData;
@@ -106,7 +105,7 @@ const ScheduleField: React.FC = () => {
   const getZoneValue = (currentSelectedZone = "UTC") => currentSelectedZone;
 
   const onCronChange = (
-    event: DropDownRow.IDataItem | ChangeEvent<HTMLInputElement>,
+    event: DropDownOptionDataItem | ChangeEvent<HTMLInputElement>,
     field: FieldInputProps<ConnectionScheduleData>,
     form: FormikProps<FormikConnectionFormValues>,
     key: string
@@ -114,8 +113,8 @@ const ScheduleField: React.FC = () => {
     form.setFieldValue(field.name, {
       cron: {
         ...field.value?.cron,
-        [key]: (event as DropDownRow.IDataItem).value
-          ? (event as DropDownRow.IDataItem).value
+        [key]: (event as DropDownOptionDataItem).value
+          ? (event as DropDownOptionDataItem).value
           : (event as ChangeEvent<HTMLInputElement>).currentTarget.value,
       },
     });
@@ -202,7 +201,7 @@ const ScheduleField: React.FC = () => {
                     className={styles.cronZonesDropdown}
                     options={cronTimeZones}
                     value={getZoneValue(field.value?.cron?.cronTimeZone)}
-                    onChange={(item: DropDownRow.IDataItem) => onCronChange(item, field, form, "cronTimeZone")}
+                    onChange={(item: DropDownOptionDataItem) => onCronChange(item, field, form, "cronTimeZone")}
                   />
                 </div>
               </div>

@@ -3,7 +3,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 import { Button } from "components/ui/Button";
-import { DropDownRow } from "components/ui/DropDown";
+import { DropDownOptionDataItem } from "components/ui/DropDown";
 import { Popout } from "components/ui/Popout";
 import { Text } from "components/ui/Text";
 
@@ -14,8 +14,8 @@ import styles from "./TableItemTitle.module.scss";
 
 interface TableItemTitleProps {
   type: "source" | "destination";
-  dropDownData: DropDownRow.IDataItem[];
-  onSelect: (item: DropDownRow.IDataItem) => void;
+  dropDownData: DropDownOptionDataItem[];
+  onSelect: (item: DropDownOptionDataItem) => void;
   entity: string;
   entityName: string;
   entityIcon?: React.ReactNode;

@@ -3,8 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { components, ControlProps } from "react-select";
 import styled from "styled-components";
 
-import { DropDown, DropdownProps } from "components/ui/DropDown";
-import { IDataItem, OptionView } from "components/ui/DropDown/components/Option";
+import { DropDown, DropdownProps, DropDownOptionDataItem, OptionView } from "components/ui/DropDown";
 import { IProps } from "components/ui/DropDown/components/SingleValue";
 import Text from "components/ui/DropDown/components/Text";
 
@@ -52,7 +51,7 @@ const OptionContent = styled(OptionView)`
   font-size: 12px;
 `;
 
-const DropdownControl = styled(components.Control)<ControlProps<IDataItem, false>>`
+const DropdownControl = styled(components.Control)<ControlProps<DropDownOptionDataItem, false>>`
   &.react-select__control {
     // background: ${({ theme }) => theme.greyColor20};
     // TODO: fix theme

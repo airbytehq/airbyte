@@ -8,8 +8,7 @@ import styled from "styled-components";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
 import { ControlLabels } from "components/LabeledControl";
-import { DropDown, DropDownRow } from "components/ui/DropDown";
-import { IDataItem, IProps as OptionProps, OptionView } from "components/ui/DropDown/components/Option";
+import { DropDown, DropDownOptionDataItem, DropDownOptionProps, OptionView } from "components/ui/DropDown";
 import {
   Icon as SingleValueIcon,
   IProps as SingleValueProps,
@@ -79,7 +78,7 @@ const SingleValueContent = styled(components.SingleValue)`
 `;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type MenuWithRequestButtonProps = MenuListProps<IDataItem, false> & { selectProps: any };
+type MenuWithRequestButtonProps = MenuListProps<DropDownOptionDataItem, false> & { selectProps: any };
 
 /**
  * Returns the order for a specific release stage label. This will define
@@ -125,7 +124,7 @@ const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage })
   );
 };
 
-const Option: React.FC<OptionProps> = (props) => {
+const Option: React.FC<DropDownOptionProps> = (props) => {
   return (
     <components.Option {...props}>
       <OptionView data-testid={props.data.label} isSelected={props.isSelected} isDisabled={props.isDisabled}>
@@ -225,7 +224,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
   );
 
   const handleSelect = useCallback(
-    (item: DropDownRow.IDataItem | null) => {
+    (item: DropDownOptionDataItem | null) => {
       if (item) {
         setValue(item.value);
         if (onChangeServiceType) {

@@ -7,11 +7,11 @@ import { CheckBox } from "components/ui/CheckBox";
 import { OptionType } from "../DropDown";
 import Text from "./Text";
 
-export type IProps = {
-  data: { disabled: boolean; index: number; fullText?: boolean } & IDataItem;
+export type DropDownOptionProps = {
+  data: { disabled: boolean; index: number; fullText?: boolean } & DropDownOptionDataItem;
 } & OptionProps<OptionType, boolean>;
 
-export interface IDataItem {
+export interface DropDownOptionDataItem {
   label?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value?: any;
@@ -45,7 +45,7 @@ export const OptionView = styled.div<{
   }
 `;
 
-const Option: React.FC<IProps> = (props) => {
+export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
   const dataTestId = props.data.testId
     ? props.data.testId
     : !["object", "array"].includes(typeof props.data.label)
@@ -72,5 +72,3 @@ const Option: React.FC<IProps> = (props) => {
     </components.Option>
   );
 };
-
-export default Option;

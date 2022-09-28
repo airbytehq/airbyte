@@ -2,11 +2,11 @@ import React from "react";
 import { components, SingleValueProps } from "react-select";
 import styled from "styled-components";
 
-import { IDataItem } from "./Option";
+import { DropDownOptionDataItem } from "./Option";
 import Text from "./Text";
 
 export type IProps<T> = {
-  data?: IDataItem;
+  data?: DropDownOptionDataItem;
 } & SingleValueProps<T>;
 
 export const ItemView = styled.div`
