@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";

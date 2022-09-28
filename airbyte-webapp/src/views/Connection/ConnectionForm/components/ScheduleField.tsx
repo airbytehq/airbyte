@@ -2,8 +2,10 @@ import { Field, FieldInputProps, FieldProps, FormikProps } from "formik";
 import { ChangeEvent, useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 
-import { ControlLabels, DropDown, DropDownRow, Input, Link } from "components";
+import { ControlLabels, Link } from "components";
+import { DropDownRow, DropDown } from "components/ui/DropDown";
 import { IDataItem } from "components/ui/DropDown/components/Option";
+import { Input } from "components/ui/Input";
 
 import { Action, Namespace } from "core/analytics";
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";

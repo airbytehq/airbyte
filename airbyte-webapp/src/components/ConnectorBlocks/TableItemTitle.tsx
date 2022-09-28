@@ -1,8 +1,9 @@
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Button, DropDownRow } from "components";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+import { Button } from "components/ui/Button";
+import { DropDownRow } from "components/ui/DropDown";
 import { Popout } from "components/ui/Popout";
 import { Text } from "components/ui/Text";
 

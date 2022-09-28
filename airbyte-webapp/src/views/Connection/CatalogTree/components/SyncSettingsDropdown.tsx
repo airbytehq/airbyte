@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { components, ControlProps } from "react-select";
 import styled from "styled-components";
 
-import { DropDown, DropdownProps } from "components";
+import { DropDown, DropdownProps } from "components/ui/DropDown";
 import { IDataItem, OptionView } from "components/ui/DropDown/components/Option";
 import { IProps } from "components/ui/DropDown/components/SingleValue";
 import Text from "components/ui/DropDown/components/Text";

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { DropDownRow } from "components";
+import { DropDownRow } from "components/ui/DropDown";
 
 import { frequencyConfig } from "config/frequencyConfig";
 import { SyncSchema } from "core/domain/catalog";

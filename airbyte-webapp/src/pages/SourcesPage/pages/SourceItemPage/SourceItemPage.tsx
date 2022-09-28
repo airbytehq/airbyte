@@ -2,7 +2,6 @@ import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
-import { DropDownRow } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/ConnectorIcon";
@@ -10,6 +9,7 @@ import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { Breadcrumbs } from "components/ui/Breadcrumbs";
+import { DropDownRow } from "components/ui/DropDown";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";

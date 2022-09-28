@@ -5,9 +5,10 @@ import { components } from "react-select";
 import { MenuListProps } from "react-select";
 import styled from "styled-components";
 
-import { ControlLabels, DropDown, DropDownRow } from "components";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
+import { ControlLabels } from "components/LabeledControl";
+import { DropDown, DropDownRow } from "components/ui/DropDown";
 import { IDataItem, IProps as OptionProps, OptionView } from "components/ui/DropDown/components/Option";
 import {
   Icon as SingleValueIcon,
