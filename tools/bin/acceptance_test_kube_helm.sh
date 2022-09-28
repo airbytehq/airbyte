@@ -16,8 +16,10 @@ if [ -n "$CI" ]; then
   kind load docker-image airbyte/db:dev --name helm-testing &
   kind load docker-image airbyte/container-orchestrator:dev --name helm-testing &
   kind load docker-image airbyte/bootloader:dev --name helm-testing &
+  kind load docker-image airbyte/cron:dev --name helm-testing &
   wait
 fi
+
 
 echo "Replacing default Chart.yaml and values.yaml with a test one"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old

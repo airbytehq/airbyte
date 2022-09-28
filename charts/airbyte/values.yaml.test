@@ -588,7 +588,7 @@ server:
 
   ##  server.log.level The log level to log at.
   log:
-    level: "TRACE"
+    level: "INFO"
 
 
 
