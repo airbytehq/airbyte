@@ -1,4 +1,4 @@
-name: Trigger action in cloud based on push
+name: Notify Cloud of OSS Push to Master
 on:
   push:
     branches:
@@ -6,29 +6,13 @@ on:
   workflow_dispatch:
       
 jobs:
-  find_valid_pat:
-    name: "Find a PAT with room for actions"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      pat: ${{ steps.variables.outputs.pat }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Check PAT rate limits
-        id: variables
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
-            ${{ secrets.OCTAVIA_PAT }}
   repo-sync:
-    name: "Fire a Repo Dispatch event to airbyte-cloud"
     runs-on: ubuntu-latest
     steps:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ env.pat }}
+          token: ${{ secrets.OCTAVIA_PAT }}
           repository: airbytehq/airbyte-cloud
           event-type: oss-push-to-master
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

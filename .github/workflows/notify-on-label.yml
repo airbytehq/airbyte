@@ -1,32 +1,18 @@
 # Notify users/teams when labels are added to an issue.
 
-name: Notify FE team for FE label on issues
+name: Notify when adding label to issue
 
 on:
   issues:
       types: [labeled]
 
 jobs:
-  find_valid_pat:
-    name: "Find a PAT with room for actions"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Check PAT rate limits
-        id: variables
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
-            ${{ secrets.OCTAVIA_PAT }}
   notify:
-    name: "Notify FE team on label creation"
     runs-on: ubuntu-latest
     steps:
         - uses: jenschelkopf/issue-label-notification-action@1.3
           with:
-            token: "${{ env.PAT }}"
+            token: ${{ secrets.OCTAVIA_PAT }}
             message: 'cc {recipients}'
             # Specify a map of label -> team/user to notify
             recipients: |
