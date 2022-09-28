@@ -84,7 +84,7 @@ public final class S3BaseChecks {
    */
   public static void testCustomEndpointSecured(final String endpoint) {
     if (!endpoint.contains("s3-accesspoint")) {
-      throw new RuntimeException("S3 custom endpoint does not ensure HTTPS only connection");
+      throw new RuntimeException("S3 custom endpoint does not ensure HTTPS only connection. Please use S3 Access Points endpoints for a secure connection");
     }
   }
 
