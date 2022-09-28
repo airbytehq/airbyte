@@ -2,12 +2,8 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "reportDate": "20210804"
-      },
-      "stream_descriptor": {
-        "name": "display_report_stream"
-      }
+      "stream_state": { "reportDate": "20210804" },
+      "stream_descriptor": { "name": "display_report_stream" }
     }
   }
 ]
