@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { H3 } from "components";
+import { H3 } from "components/base/Titles";
 
 interface PageTitleProps {
   withLine?: boolean;

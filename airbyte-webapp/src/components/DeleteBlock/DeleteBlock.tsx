@@ -3,11 +3,11 @@ import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-import { Button, H5 } from "components";
+import { H5 } from "components/base/Titles";
+import { Button } from "components/ui/Button";
+import { Card } from "components/ui/Card";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-
-import { Card } from "../base/Card";
 
 interface IProps {
   type: "source" | "destination" | "connection";
