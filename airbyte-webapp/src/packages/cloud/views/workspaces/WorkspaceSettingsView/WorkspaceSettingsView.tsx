@@ -4,7 +4,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { Button, Label, LabeledInput, LabeledSwitch, LoadingButton } from "components";
+import { Button, LabeledInput, Label, LabeledSwitch } from "components";
 import { InfoTooltip } from "components/base/Tooltip";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -102,12 +102,12 @@ export const WorkspaceSettingsView: React.FC = () => {
                 </Field>
 
                 <div className={classNames(styles.formItem, styles.buttonGroup)}>
-                  <Button type="button" secondary disabled={!dirty} onClick={() => resetForm()}>
+                  <Button type="button" variant="secondary" disabled={!dirty} onClick={() => resetForm()}>
                     <FormattedMessage id="form.cancel" />
                   </Button>
-                  <LoadingButton type="submit" disabled={!dirty || !isValid} isLoading={isSubmitting}>
+                  <Button type="submit" disabled={!dirty || !isValid} isLoading={isSubmitting}>
                     <FormattedMessage id="form.saveChanges" />
-                  </LoadingButton>
+                  </Button>
                 </div>
               </Content>
             </Form>
@@ -118,13 +118,13 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <div className={styles.header}>
             <FormattedMessage id="settings.generalSettings.deleteLabel" />
-            <LoadingButton
+            <Button
               isLoading={isRemovingCloudWorkspace}
-              danger
+              variant="danger"
               onClick={() => removeCloudWorkspace(workspace.workspaceId)}
             >
               <FormattedMessage id="settings.generalSettings.deleteText" />
-            </LoadingButton>
+            </Button>
           </div>
         }
       />

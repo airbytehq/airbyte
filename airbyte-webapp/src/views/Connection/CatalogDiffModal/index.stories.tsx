@@ -1,7 +1,7 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 import { FormattedMessage } from "react-intl";
 
-import Modal from "components/Modal";
+import { Modal } from "components/ui/Modal";
 
 import { CatalogDiffModal } from "./CatalogDiffModal";
 

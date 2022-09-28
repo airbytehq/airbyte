@@ -6,11 +6,14 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, DropDown, H5, Input, LoadingButton, Modal } from "components";
+import { Button, DropDown, H5, Input } from "components";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
+import { Modal } from "components/ui/Modal";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUserHook } from "packages/cloud/services/users/UseUserHook";
+
+import styles from "./InviteUsersModal.module.scss";
 
 const requestConnectorValidationSchema = yup.object({
   users: yup.array().of(
@@ -32,21 +35,12 @@ const Controls = styled.div`
   margin-top: 26px;
 `;
 
-const SendInvitationButton = styled(LoadingButton)`
-  margin-left: 10px;
-`;
-
 const FormHeader = styled(Header)`
   margin-bottom: 14px;
 `;
 
 const FormRow = styled(Row)`
   margin-bottom: 8px;
-`;
-
-const DeleteButton = styled(Button)`
-  width: 34px;
-  height: 34px;
 `;
 
 const ROLE_OPTIONS = [
@@ -136,9 +130,9 @@ export const InviteUsersModal: React.FC<{
                               </Field>
                             </Cell>
                           )}
-                          <DeleteButton
+                          <Button
+                            className={styles.deleteButton}
                             type="button"
-                            iconOnly
                             disabled={values.users.length < 2}
                             onClick={() => {
                               setFieldValue("users", [
@@ -146,10 +140,9 @@ export const InviteUsersModal: React.FC<{
                                 ...values.users.slice(index + 1),
                               ]);
                             }}
-                            secondary
-                          >
-                            <FontAwesomeIcon icon={faTimes} />
-                          </DeleteButton>
+                            variant="secondary"
+                            icon={<FontAwesomeIcon icon={faTimes} />}
+                          />
                         </FormRow>
                       ))}
                       <Button
@@ -161,7 +154,7 @@ export const InviteUsersModal: React.FC<{
                             role: ROLE_OPTIONS[0].value,
                           })
                         }
-                        secondary
+                        variant="secondary"
                       >
                         <FormattedMessage id="modals.addUser.button.addUser" />
                       </Button>
@@ -170,17 +163,18 @@ export const InviteUsersModal: React.FC<{
                 />
 
                 <Controls>
-                  <Button type="button" secondary onClick={() => props.onClose()}>
+                  <Button type="button" variant="secondary" onClick={props.onClose}>
                     <FormattedMessage id="modals.addUser.button.cancel" />
                   </Button>
-                  <SendInvitationButton
+                  <Button
+                    className={styles.sendInvitationButton}
                     data-testid="modals.addUser.button.submit"
                     type="submit"
                     disabled={!isValid || !dirty}
                     isLoading={isSubmitting}
                   >
                     <FormattedMessage id="modals.addUser.button.submit" />
-                  </SendInvitationButton>
+                  </Button>
                 </Controls>
               </Content>
             </Form>
