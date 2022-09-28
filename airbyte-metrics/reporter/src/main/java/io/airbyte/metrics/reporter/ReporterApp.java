@@ -18,6 +18,7 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
@@ -59,7 +60,7 @@ public class ReporterApp {
 
       log.info("Scheduling {} metrics for emission..", toEmits.length);
       for (final ToEmit toEmit : toEmits) {
-        pollers.scheduleAtFixedRate(toEmit.emitRunnable, 0, toEmit.period, toEmit.timeUnit);
+        pollers.scheduleAtFixedRate(toEmit.emit, 0, toEmit.duration.getSeconds(), TimeUnit.SECONDS);
       }
     }
   }
