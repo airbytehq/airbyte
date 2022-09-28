@@ -3,8 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled, { keyframes } from "styled-components";
 
-import { Button, H5 } from "components";
+import { H5 } from "components/base/Titles";
 
+import { Button } from "../Button";
 import ErrorSign from "./ErrorSign";
 import styles from "./SingletonCard.module.scss";
 

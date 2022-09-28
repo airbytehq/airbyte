@@ -4,9 +4,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
 
-import { Button } from "components/base";
-import { Text } from "components/base/Text";
 import Link from "components/Link";
+import { Button } from "components/ui";
+import { Text } from "components/ui/Text";
 
 import Status from "core/statuses";
 
