@@ -1,9 +1,9 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components/base/Button";
-import { Text } from "components/base/Text";
 import { StatusIcon } from "components/StatusIcon";
+import { Button } from "components/ui/Button";
+import { Text } from "components/ui/Text";
 
 import styles from "./TryAfterErrorBlock.module.scss";
 
@@ -18,7 +18,7 @@ const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClic
     <Text as="p" size="lg" centered className={styles.message}>
       {message || <FormattedMessage id="form.schemaFailed" />}
     </Text>
-    <Button className={styles.retryButton} onClick={onClick} danger>
+    <Button className={styles.retryButton} onClick={onClick} variant="danger">
       <FormattedMessage id="form.tryAgain" />
     </Button>
   </div>
