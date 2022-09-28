@@ -285,7 +285,8 @@ public class MetricsQueriesTest {
           ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
 
       final var res = configDb.query(MetricQueries::oldestPendingJobAgeSecs);
-      assertEquals(1000, res);
+      // expected age is 1000 seconds, but allow for +/- 1 second to account for timing/rounding errors
+      assertTrue(List.of(999L, 1000L, 1001L).contains(res));
     }
 
     @Test
@@ -332,7 +333,8 @@ public class MetricsQueriesTest {
           ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute());
 
       final var res = configDb.query(MetricQueries::oldestRunningJobAgeSecs);
-      assertEquals(10000, res);
+      // expected age is 10000 seconds, but allow for +/- 1 second to account for timing/rounding errors
+      assertTrue(List.of(9999L, 10000L, 10001L).contains(res));
     }
 
     @Test
