@@ -9,6 +9,7 @@ import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification
 from source_s3 import SourceS3
+from source_s3.source import SourceS3Spec
 from source_s3.source_files_abstract.spec import SourceFilesAbstractSpec
 
 logger = AirbyteLogger()
@@ -63,9 +64,9 @@ def test_check_provider_added():
         SourceFilesAbstractSpec.check_provider_added({"properties": []})
 
 
-def change_format_to_oneOf():
+def test_change_format_to_oneOf():
     assert SourceFilesAbstractSpec.change_format_to_oneOf({"properties": {"format": {"oneOf": ""}}})
 
 
-def change_authentication_to_oneOf():
-    assert SourceFilesAbstractSpec.change_format_to_oneOf({"properties": {"authentication": {"oneOf": ""}}})
+def test_change_authentication_to_oneOf():
+    assert SourceS3Spec.change_authentication_to_oneOf({"properties": {"authentication": {"oneOf": ""}}})
