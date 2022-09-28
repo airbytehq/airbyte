@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk~=0.1.89",
     # Install chargebee according to API doc.
     # https://apidocs.chargebee.com/docs/api?lang=python&prod_cat_ver=2#client_library
     "chargebee>=2,<3",
