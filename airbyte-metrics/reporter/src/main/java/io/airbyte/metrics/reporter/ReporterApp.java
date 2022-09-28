@@ -17,15 +17,17 @@ import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.Executors;
 import javax.sql.DataSource;
-import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-
-@Slf4j
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+∂
 public class ReporterApp {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static Database configDatabase;
 
