@@ -114,9 +114,9 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
             yield self._apply_transformations(record, self.config, stream_slice)
 
     def _apply_transformations(self, record: Mapping[str, Any], config: Config, stream_slice: StreamSlice):
-        output_record = deepcopy(record)
+        output_record = record
         for transformation in self.transformations:
-            output_record = transformation.transform(output_record, config=config, stream_state=self.state, stream_slice=stream_slice)
+            output_record = transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
 
         return output_record
 

@@ -60,3 +60,39 @@ def test_declarative_stream():
         assert len(transformation.transform.call_args_list) == len(records)
         expected_calls = [call(record, config=config, stream_slice=input_slice, stream_state=state) for record in records]
         transformation.transform.assert_has_calls(expected_calls, any_order=False)
+
+
+
+
+def test_record_transforms():
+
+    record = {"pk": 1234, "field": "text"}
+    expected_record = {"pk": 1234, "field": "text 1 1"}
+    config = {}
+    stream_slices = None
+
+    class AddStringToField(RecordTransformation):
+
+        def transform(self, record, config, stream_state, stream_slice):
+            record["field"] =  record["field"] + " 1"
+            return record
+    
+    first_transform = AddStringToField()
+    second_transform = AddStringToField()
+    transformations = [first_transform, second_transform]
+
+
+    stream = DeclarativeStream(
+        name="test",
+        primary_key="pk",
+        stream_cursor_field="cursor_field",
+        schema_loader=MagicMock(),
+        retriever=MagicMock(),
+        config=config,
+        transformations=transformations,
+        checkpoint_interval=1,
+        options={},
+    )
+
+    modified_record = stream._apply_transformations(record, config, stream_slices)
+    assert modified_record == expected_record
