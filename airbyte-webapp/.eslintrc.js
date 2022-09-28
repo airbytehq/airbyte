@@ -98,6 +98,8 @@ module.exports = {
       },
     },
     {
+      // Only applies to files in src. Rules should be in here that are requiring type information
+      // and thus require the below parserOptions.
       files: ["src/**/*"],
       parserOptions: {
         tsconfigRootDir: __dirname,
