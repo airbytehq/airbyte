@@ -7,7 +7,6 @@ package io.airbyte.commons.version;
 /**
  * The AirbyteVersion identifies the version of the database used internally by Airbyte services.
  */
-@SuppressWarnings("PMD.ConstructorCallsOverridableMethod")
 public class AirbyteVersion extends Version {
 
   public static final String AIRBYTE_VERSION_KEY_NAME = "airbyte_version";
