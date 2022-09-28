@@ -59,7 +59,9 @@ const Header: React.VFC = () => {
         }}
         icon={<FontAwesomeIcon icon={faPlus} />}
         data-testid="userSettings.button.addNewUser"
-      />
+      >
+        <FormattedMessage id="userSettings.button.addNewUser" />
+      </Button>
     </div>
   );
 };
