@@ -123,6 +123,7 @@ class WebBackendConnectionsHandlerTest {
   // needs to match name of file in src/test/resources/icons
   private static final String SOURCE_ICON = "test-source.svg";
   private static final String DESTINATION_ICON = "test-destination.svg";
+  private static final String SVG = "<svg>";
 
   @BeforeEach
   void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
@@ -310,8 +311,8 @@ class WebBackendConnectionsHandlerTest {
     assertEquals(expectedListItem, WebBackendConnectionReadList.getConnections().get(0));
 
     // make sure the icons were loaded into actual svg content
-    assertTrue(expectedListItem.getSource().getIcon().startsWith("<svg>"));
-    assertTrue(expectedListItem.getDestination().getIcon().startsWith("<svg>"));
+    assertTrue(expectedListItem.getSource().getIcon().startsWith(SVG));
+    assertTrue(expectedListItem.getDestination().getIcon().startsWith(SVG));
   }
 
   @Test
@@ -330,8 +331,8 @@ class WebBackendConnectionsHandlerTest {
     assertEquals(expected, WebBackendConnectionRead);
 
     // make sure the icons were loaded into actual svg content
-    assertTrue(expected.getSource().getIcon().startsWith("<svg>"));
-    assertTrue(expected.getDestination().getIcon().startsWith("<svg>"));
+    assertTrue(expected.getSource().getIcon().startsWith(SVG));
+    assertTrue(expected.getDestination().getIcon().startsWith(SVG));
   }
 
   WebBackendConnectionRead testWebBackendGetConnection(final boolean withCatalogRefresh)

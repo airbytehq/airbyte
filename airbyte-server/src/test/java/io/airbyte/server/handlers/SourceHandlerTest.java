@@ -67,7 +67,6 @@ class SourceHandlerTest {
 
   // needs to match name of file in src/test/resources/icons
   private static final String ICON = "test-source.svg";
-  private static final String LOADED_ICON = SourceDefinitionsHandler.loadIcon(ICON);
 
   @SuppressWarnings("unchecked")
   @BeforeEach
