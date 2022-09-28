@@ -23,9 +23,20 @@ jobs:
     name: "Add Labels to PRs.  Safe to Merge on fail"
     runs-on: ubuntu-latest
     steps:
-      - uses: nick-fields/private-action-loader@v3
+      - name: Checkout Airbyte Repo for PAT command
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        # Cannot share PAT outside of JOB context
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+           ${{ secrets.AIRBYTEIO_PAT }} \
+           ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+           ${{ secrets.SUPERTOPHER_PAT }} \
+           ${{ secrets.DAVINCHIA_PAT }}
+      - name: Run Issue Command from workflow-actions
+        uses: nick-fields/private-action-loader@v3
         with:
-          pal-repo-token: "${{ secrets.OCTAVIA_PAT }}"
+          pal-repo-token: "${{ env.PAT }}"
           pal-repo-name: airbytehq/workflow-actions@production
           # the following input gets passed to the private action
           token: "${{ env.PAT }}"
