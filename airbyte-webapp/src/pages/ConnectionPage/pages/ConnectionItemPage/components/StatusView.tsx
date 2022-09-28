@@ -4,12 +4,12 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { Link, useLocation } from "react-router-dom";
 
-import { Button } from "components";
-import { Card } from "components/base/Card";
-import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
 import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
+import { Button } from "components/ui/Button";
+import { Card } from "components/ui/Card";
+import { Tooltip } from "components/ui/Tooltip";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";

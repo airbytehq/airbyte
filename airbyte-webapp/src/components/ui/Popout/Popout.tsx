@@ -4,7 +4,7 @@ import { useToggle } from "react-use";
 import styled from "styled-components";
 
 import { DropDown } from "components";
-import { DropdownProps } from "components/base/DropDown";
+import { DropdownProps } from "components/ui/DropDown";
 
 const OutsideClickListener = styled.div`
   bottom: 0;
@@ -33,7 +33,7 @@ interface PopoutProps extends DropdownProps {
   title?: string;
 }
 
-const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) => {
+export const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) => {
   const [isOpen, toggleOpen] = useToggle(false);
 
   const onSelectChange = (value: Value, meta: ActionMeta<Value>) => {
@@ -88,5 +88,3 @@ const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) 
     </>
   );
 };
-
-export { Popout };

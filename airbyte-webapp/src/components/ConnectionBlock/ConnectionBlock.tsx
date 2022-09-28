@@ -3,7 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 
-import { Card } from "../base/Card";
+import { Card } from "components/ui/Card";
+
 import { ConnectionBlockItem, Content } from "./components/ConnectionBlockItem";
 import styles from "./ConnectionBlock.module.scss";
 

@@ -2,7 +2,7 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
-import { Button } from "components/base";
+import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
 
 import styles from "./ShowVideo.module.scss";
