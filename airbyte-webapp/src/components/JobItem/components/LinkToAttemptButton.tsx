@@ -37,13 +37,12 @@ export const LinkToAttemptButton: React.FC<Props> = ({ jobId, attemptId }) => {
       disabled={!showCopyTooltip}
       control={
         <Button
-          secondary
+          variant="secondary"
           onClick={onCopyLink}
           title={formatMessage({ id: "connection.copyLogLink" })}
           aria-label={formatMessage({ id: "connection.copyLogLink" })}
-        >
-          <FontAwesomeIcon icon={faLink} />
-        </Button>
+          icon={<FontAwesomeIcon icon={faLink} />}
+        />
       }
     >
       <FormattedMessage id="connection.linkCopied" />

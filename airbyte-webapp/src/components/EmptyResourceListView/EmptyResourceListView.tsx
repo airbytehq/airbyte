@@ -44,7 +44,7 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({ re
           resource={resourceType}
         />
       </div>
-      <Button onClick={onCreateClick} size="xl" data-id={`new-${singularResourceType}`}>
+      <Button onClick={onCreateClick} size="lg" data-id={`new-${singularResourceType}`}>
         <FormattedMessage id={buttonMessageId} />
       </Button>
     </div>
