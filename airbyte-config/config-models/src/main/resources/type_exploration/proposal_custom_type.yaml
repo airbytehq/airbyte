@@ -1,0 +1,45 @@
+# proposed reusing the jsonschema type field with custom type. use the JSONSchema type field, but provide custom Airbyte types.
+definitions:
+  description: user
+  type: object
+  properties:
+    id:
+      type: integer
+      airbyte_attributes:
+        bit_width: 8
+    name:
+      type: string
+    created_at:
+      "$ref": AirbyteTypes.yaml#definitions/TimestampWithTimezone
+    tags:
+      type: list
+      items:
+        type: string
+    friends:
+      type: list
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            airbyte_attributes:
+              bit_width: 8
+          name:
+            type: string
+    address:
+      type: object
+      properties:
+        address_num:
+          type: integer
+          airbyte_attributes:
+            bit_width: 8
+        street:
+          type: string
+          airbyte_type: string
+        city:
+          type: string
+        zip:
+          type: integer
+          airbyte_attributes:
+            bit_width: 8
+

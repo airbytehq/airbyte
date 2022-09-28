@@ -1,5 +1,6 @@
 import "google/protobuf/timestamp.proto";
 
+// =============================== DEFINITIONS ================================
 // types supported by airbyte.
 enum FieldType {
   STRING = 0;
@@ -40,6 +41,8 @@ message AirbyteTimeWithoutTimezone {
   required google.protobuf.Timestamp timestamp = 1;
 }
 
+// ====================== EXAMPLE SCHEMA IN PROTOBUF ===========================
+
 // example schema we want to be able to model
 // users
 // id - int
@@ -69,3 +72,5 @@ message user {
   repeated friend friend = 5;
   optional address address = 6;
 }
+// ======================EXAMPLE SCHEMA IN JSONSCHEMA =========================
+

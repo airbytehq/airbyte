@@ -1,0 +1,57 @@
+# proposed with airybte_type field. set type field to string for everything and then augment it with airbyte_type field
+definitions:
+  description: user
+  type: object
+  properties:
+    id:
+      type: string
+      airbyte_type: integer
+      airbyte_attributes:
+        bit_width: 8
+    name:
+      type: string
+      airbyte_type: string
+    created_at:
+      type: string
+      airbyte_type: timestamp_with_tomezone
+    tags:
+      type: string
+      airbyte_type: list
+      items:
+        type: string
+        airbyte_type: string
+    friends:
+      type: string
+      airbyte_type: list
+      items:
+        type: string
+        airbyte_type: object
+        properties:
+          id:
+            type: string
+            airbyte_type: integer
+            airbyte_attributes:
+              bit_width: 8
+          name:
+            type: string
+            airbyte_type: string
+    address:
+      type: string
+      airbyte_type: object
+      properties:
+        address_num:
+          type: string
+          airbyte_type: integer
+          airbyte_attributes:
+            bit_width: 8
+        street:
+          type: string
+          airbyte_type: string
+        city:
+          type: string
+          airbyte_type: string
+        zip:
+          type: string
+          airbyte_type: integer
+          airbyte_attributes:
+            bit_width: 8
