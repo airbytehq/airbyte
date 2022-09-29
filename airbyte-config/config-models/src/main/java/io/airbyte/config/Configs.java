@@ -568,15 +568,6 @@ public interface Configs {
    */
   boolean shouldRunConnectionManagerWorkflows();
 
-  /**
-   * Define if the worker is operating within Airbyte's Control Plane, or within an external Data
-   * Plane. - Workers in the Control Plane process tasks related to control-flow, like scheduling and
-   * routing, as well as data syncing tasks that are enqueued for the Control Plane's default task
-   * queue. - Workers in a Data Plane process only tasks related to data syncing that are specifically
-   * enqueued for that worker's particular Data Plane.
-   */
-  WorkerPlane getWorkerPlane();
-
   // Worker - Control Plane configs
 
   /**
@@ -715,11 +706,6 @@ public interface Configs {
     TESTING_CONFIG_DB_TABLE,
     GOOGLE_SECRET_MANAGER,
     VAULT
-  }
-
-  enum WorkerPlane {
-    CONTROL_PLANE,
-    DATA_PLANE
   }
 
 }

@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button } from "components/base/Button";
+import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
 
 import useLoadingState from "../../hooks/useLoadingState";
