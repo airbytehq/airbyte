@@ -7,6 +7,7 @@ package io.airbyte.cron.selfhealing;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.env.Environment;
 import io.micronaut.scheduling.annotation.Scheduled;
 import jakarta.inject.Singleton;
 import java.io.File;
@@ -23,8 +24,7 @@ import org.apache.commons.io.filefilter.AgeFileFilter;
 
 @Singleton
 @Slf4j
-@Requires(property = "airbyte.worker.env",
-          pattern = "(?i)^(?!kubernetes$).*")
+@Requires(notEnv = Environment.KUBERNETES)
 public class WorkspaceCleaner {
 
   private final Path workspaceRoot;
