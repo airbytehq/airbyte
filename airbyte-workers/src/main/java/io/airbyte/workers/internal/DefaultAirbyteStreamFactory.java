@@ -83,7 +83,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
           if (m.isEmpty()) {
             logger.error("Deserialization failed: {}", Jsons.serialize(jsonLine));
           } else if (serialized_message != null) {
-            m.get().withSerializedMessage(serialized_message.toString());
+            m.get().withSerializedMessage(serialized_message.asText());
           }
           return m.stream();
         })

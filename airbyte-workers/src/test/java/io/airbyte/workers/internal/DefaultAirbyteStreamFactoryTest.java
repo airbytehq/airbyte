@@ -80,19 +80,6 @@ class DefaultAirbyteStreamFactoryTest {
   }
 
   @Test
-  void testFailValidation() {
-    final String invalidRecord = "{ \"fish\": \"tuna\"}";
-
-    when(protocolPredicate.test(Jsons.deserialize(invalidRecord))).thenReturn(false);
-
-    final Stream<AirbyteMessage> messageStream = stringToMessageStream(invalidRecord);
-
-    assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
-    verify(logger).error(anyString(), anyString());
-    verifyNoMoreInteractions(logger);
-  }
-
-  @Test
   void testFailDeserialization() {
     final String invalidRecord = "{ \"type\": \"abc\"}";
 

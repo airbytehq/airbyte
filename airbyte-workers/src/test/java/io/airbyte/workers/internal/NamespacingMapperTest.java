@@ -30,7 +30,7 @@ class NamespacingMapperTest {
   private static final AirbyteMessage RECORD_MESSAGE = createRecordMessage();
 
   private static AirbyteMessage createRecordMessage() {
-    final AirbyteMessage message = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, BLUE);
+    final AirbyteMessage message = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, BLUE).withSerializedMessage(null);
     message.getRecord().withNamespace(INPUT_NAMESPACE);
     return message;
   }
@@ -50,7 +50,8 @@ class NamespacingMapperTest {
     assertEquals(expectedCatalog, actualCatalog);
 
     final AirbyteMessage originalMessage = Jsons.clone(RECORD_MESSAGE);
-    final AirbyteMessage expectedMessage = AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE);
+    final AirbyteMessage expectedMessage =
+        AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE).withSerializedMessage(null);
     expectedMessage.getRecord().withNamespace(INPUT_NAMESPACE);
     final AirbyteMessage actualMessage = mapper.mapMessage(RECORD_MESSAGE);
 
@@ -77,7 +78,8 @@ class NamespacingMapperTest {
     assertEquals(originalMessage, RECORD_MESSAGE);
     originalMessage.getRecord().withNamespace(null);
 
-    final AirbyteMessage expectedMessage = AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE);
+    final AirbyteMessage expectedMessage =
+        AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE).withSerializedMessage(null);
     expectedMessage.getRecord().withNamespace(null);
     final AirbyteMessage actualMessage = mapper.mapMessage(originalMessage);
 
@@ -99,7 +101,8 @@ class NamespacingMapperTest {
     assertEquals(expectedCatalog, actualCatalog);
 
     final AirbyteMessage originalMessage = Jsons.clone(RECORD_MESSAGE);
-    final AirbyteMessage expectedMessage = AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE);
+    final AirbyteMessage expectedMessage =
+        AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE).withSerializedMessage(null);
     final AirbyteMessage actualMessage = mapper.mapMessage(RECORD_MESSAGE);
 
     assertEquals(originalMessage, RECORD_MESSAGE);
@@ -121,7 +124,8 @@ class NamespacingMapperTest {
     assertEquals(expectedCatalog, actualCatalog);
 
     final AirbyteMessage originalMessage = Jsons.clone(RECORD_MESSAGE);
-    final AirbyteMessage expectedMessage = AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE);
+    final AirbyteMessage expectedMessage =
+        AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE).withSerializedMessage(null);
     expectedMessage.getRecord().withNamespace(expectedNamespace);
     final AirbyteMessage actualMessage = mapper.mapMessage(RECORD_MESSAGE);
 
@@ -144,7 +148,8 @@ class NamespacingMapperTest {
     assertEquals(expectedCatalog, actualCatalog);
 
     final AirbyteMessage originalMessage = Jsons.clone(RECORD_MESSAGE);
-    final AirbyteMessage expectedMessage = AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE);
+    final AirbyteMessage expectedMessage =
+        AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE).withSerializedMessage(null);
     expectedMessage.getRecord().withNamespace(expectedNamespace);
     final AirbyteMessage actualMessage = mapper.mapMessage(RECORD_MESSAGE);
 
@@ -171,7 +176,8 @@ class NamespacingMapperTest {
     assertEquals(originalMessage, RECORD_MESSAGE);
     originalMessage.getRecord().withNamespace(null);
 
-    final AirbyteMessage expectedMessage = AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE);
+    final AirbyteMessage expectedMessage =
+        AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, BLUE).withSerializedMessage(null);
     expectedMessage.getRecord().withNamespace(null);
     final AirbyteMessage actualMessage = mapper.mapMessage(originalMessage);
 
@@ -195,7 +201,7 @@ class NamespacingMapperTest {
     final AirbyteMessage originalMessage = Jsons.clone(RECORD_MESSAGE);
     final AirbyteMessage expectedMessage = AirbyteMessageUtils.createRecordMessage(
         STREAM_NAME,
-        FIELD_NAME, BLUE);
+        FIELD_NAME, BLUE).withSerializedMessage(null);
     expectedMessage.getRecord().withNamespace(INPUT_NAMESPACE);
     final AirbyteMessage actualMessage = mapper.mapMessage(RECORD_MESSAGE);
 
