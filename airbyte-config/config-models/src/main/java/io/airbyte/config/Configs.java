@@ -5,6 +5,7 @@
 package io.airbyte.config;
 
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import java.net.URI;
@@ -42,6 +43,16 @@ public interface Configs {
    * Defines the Airbyte deployment version.
    */
   AirbyteVersion getAirbyteVersion();
+
+  /**
+   * Defines the max supported Airbyte Protocol Version
+   */
+  Version getAirbyteProtocolVersionMax();
+
+  /**
+   * Defines the min supported Airbyte Protocol Version
+   */
+  Version getAirbyteProtocolVersionMin();
 
   String getAirbyteVersionOrWarning();
 
