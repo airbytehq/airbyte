@@ -27,7 +27,11 @@ mv charts/airbyte/Chart.yaml.test charts/airbyte/Chart.yaml
 
 echo "Starting app..."
 
+echo "Check if kind cluster is running..."
+sudo docker ps
+
 echo "Applying dev-integration-test manifests to kubernetes..."
+kubectl config use-context kind-helm-testing
 cd charts/airbyte && helm repo add bitnami https://charts.bitnami.com/bitnami && helm dep update && cd -
 helm upgrade --install --debug --values charts/airbyte/values.yaml.test airbyte charts/airbyte
 
