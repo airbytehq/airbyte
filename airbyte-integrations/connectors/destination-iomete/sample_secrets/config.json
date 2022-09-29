@@ -1,9 +1,6 @@
 {
-  "warehouse_hostname": "frankfurt.iomete.com",
-  "warehouse_name": "reporting",
-  "warehouse_port": "443",
+  "connection_url": "airbyte://iomete.com/12312421312/default",
   "ssl": true,
-  "iomete_account_number": "12312421312",
   "iomete_username": "username",
   "iomete_password": "test_pass",
   "database_schema": "airbyte_test",

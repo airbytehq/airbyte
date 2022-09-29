@@ -64,7 +64,7 @@ public class IometeDestinationAcceptanceTest extends DestinationAcceptanceTest {
   protected JsonNode getFailCheckConfig() {
     final JsonNode failCheckJson = Jsons.clone(configJson);
 
-    ((ObjectNode) failCheckJson.get("data_source"))
+    ((ObjectNode) failCheckJson.get("staging"))
             .put("s3_access_key_id", "fake_key")
             .put("s3_secret_access_key", "fake-secret");
     return failCheckJson;
@@ -103,8 +103,8 @@ public class IometeDestinationAcceptanceTest extends DestinationAcceptanceTest {
     final String randomString = RandomStringUtils.randomAlphanumeric(5);
     final JsonNode configJson = Jsons.clone(baseConfigJson);
     ((ObjectNode) configJson).put("database_schema", "integration_test_" + randomString);
-    final JsonNode dataSource = configJson.get("data_source");
-    ((ObjectNode) dataSource).put("s3_bucket_path", "test_" + randomString);
+    final JsonNode staging = configJson.get("staging");
+    ((ObjectNode) staging).put("s3_bucket_path", "test_" + randomString);
 
     this.configJson = configJson;
     this.iometeConfig = IometeDestinationConfig.get(configJson);

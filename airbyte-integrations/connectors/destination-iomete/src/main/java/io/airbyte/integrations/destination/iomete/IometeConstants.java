@@ -10,4 +10,9 @@ public class IometeConstants {
     public static final Set<String> DEFAULT_TBL_PROPERTIES = Set.of(
             "'write.format.default' = 'parquet'");
 
+    public static final String AIRBYTE_PROTOCOL = "airbyte://";
+    public static final String LAKEHOUSE_HOSTNAME_EXAMPLE = "iomete.com";
+    public static final String ACCOUNT_NUMBER_EXAMPLE = "000000000000";
+    public static final String DEFAULT_LAKEHOUSE_NAME = "default";
+
 }

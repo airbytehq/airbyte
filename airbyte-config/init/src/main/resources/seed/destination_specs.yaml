@@ -5808,60 +5808,36 @@
       title: "iomete Destination Spec"
       type: "object"
       required:
-        - "warehouse_hostname"
-        - "warehouse_name"
-        - "iomete_account_number"
+        - "connection_url"
         - "iomete_username"
         - "iomete_password"
       properties:
-        warehouse_hostname:
-          title: "Warehouse Hostname"
+        connection_url:
+          title: "Lakehouse connection url"
           type: "string"
-          description: "The host name of the connection. It starts with\
-            \ your region name like <region_name>.iomete.com."
+          description: "The connection url of the lakehouse.\
+            \ This is a combination of hostname, account number and lakehouse name."
           examples:
-            - "frankfurt.iomete.com"
+            - "airbyte://{hostname}/{account_number}/{lakehouse_name}"
           order: 1
-        warehouse_name:
-          title: "Warehouse Name"
-          type: "string"
-          description: "Warehouse Name."
-          examples:
-            - "reporting"
-          order: 2
-        warehouse_port:
-          title: "Port"
-          type: "string"
-          description: "iomete Warehouse Port."
-          default: "443"
-          examples:
-            - "443"
-          order: 3
         ssl:
           title: "TLS Connection"
           type: "boolean"
           description: "Default to 'true'. Switch it to 'false' for plain http\ 
             \ (not recommended) connection."
           default: true
-          order: 4
-        iomete_account_number:
-          title: "iomete Account Number"
-          type: "string"
-          description: "Account Number to use to access iomete."
-          examples:
-            - "123456789102"
-          order: 5
+          order: 2
         iomete_username:
-          title: "iomete Username"
+          title: "Username"
           type: "string"
           description: "Username to use to access iomete."
-          order: 6
+          order: 3
         iomete_password:
-          title: "iomete Password"
+          title: "Password"
           type: "string"
           description: "Password associated with username."
           airbyte_secret: true
-          order: 6
+          order: 4
         database_schema:
           title: "Database Schema"
           type: "string"
@@ -5871,22 +5847,24 @@
           default: "public"
           examples:
             - "default"
-          order: 7
-        data_source:
-          title: "Data Source"
+          order: 5
+        staging:
+          title: "Staging"
           type: "object"
-          description: "Storage on which the delta lake is built."
+          description: "Storage on which staging data will store.\
+            \It's being using by Airbyte for write and read. iomete only needs permission to read the bucket."
+          order: 6
           oneOf:
             - title: "Amazon S3"
               required:
-                - "data_source_type"
+                - "staging_type"
                 - "s3_bucket_name"
                 - "s3_bucket_path"
                 - "s3_bucket_region"
                 - "s3_access_key_id"
                 - "s3_secret_access_key"
               properties:
-                data_source_type:
+                staging_type:
                   type: "string"
                   enum:
                     - "S3"
@@ -5972,13 +5950,12 @@
                     - "{part_number}"
                     - "{sync_id}"
                   order: 7
-          order: 8
-        purge_staging_data:
-          title: "Purge Staging Files and Tables"
-          type: "boolean"
-          description: "Default to 'true'. Switch it to 'false' for debugging purpose."
-          default: true
-          order: 9
+                purge_staging_data:
+                  title: "Purge Staging Files and Tables"
+                  type: "boolean"
+                  description: "Default to 'true'. Switch it to 'false' for debugging purpose."
+                  default: true
+                  order: 8
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false

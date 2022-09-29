@@ -89,11 +89,11 @@ public class IometeDestination extends CopyDestination {
 
   static String getIometeConnectionString(final IometeDestinationConfig iometeConfig) {
     return String.format(IometeConstants.IOMETE_URL_FORMAT_STRING,
-            iometeConfig.getWarehouseHostname(),
-            iometeConfig.getWarehousePort(),
+            iometeConfig.getLakehouseHostname(),
+            iometeConfig.getLakehousePort(),
             Boolean.toString(iometeConfig.isSSL()).toLowerCase(Locale.ROOT),
-            iometeConfig.getIometeAccountNumber(),
-            iometeConfig.getWarehouseName());
+            iometeConfig.getAccountNumber(),
+            iometeConfig.getLakehouseName());
   }
 
 }
