@@ -6,9 +6,9 @@ import { useServiceForm } from "../../serviceFormContext";
 import { makeConnectionConfigurationPath, OrderComparator } from "../../utils";
 import { ArraySection } from "./ArraySection";
 import { AuthSection } from "./auth/AuthSection";
-import { SectionContainer } from "./common";
 import { ConditionSection } from "./ConditionSection";
 import { PropertySection } from "./PropertySection";
+import { SectionContainer } from "./SectionContainer";
 
 interface FormNodeProps {
   sectionPath: string;

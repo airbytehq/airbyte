@@ -23,14 +23,41 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
 public class SentryExceptionHelper {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SentryExceptionHelper.class);
+  public record SentryParsedException(SentryExceptionPlatform platform, List<SentryException> exceptions) {}
 
-  public static final String ERROR_MAP_MESSAGE_KEY = "errorMessage";
-  public static final String ERROR_MAP_TYPE_KEY = "errorType";
+  private static final Logger LOGGER = LoggerFactory.getLogger(SentryExceptionHelper.class);
 
   public enum ERROR_MAP_KEYS {
     ERROR_MAP_MESSAGE_KEY,
     ERROR_MAP_TYPE_KEY
+  }
+
+  /**
+   * Specifies the platform for a thrown exception. Values must be supported by Sentry as specified in
+   * https://develop.sentry.dev/sdk/event-payloads/#required-attributes. Currently, only java, python
+   * and dbt (other) exceptions are supported.
+   */
+  public enum SentryExceptionPlatform {
+
+    JAVA("java"),
+    PYTHON("python"),
+    OTHER("other");
+
+    private final String value;
+
+    SentryExceptionPlatform(final String value) {
+      this.value = value;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
+
   }
 
   /**
@@ -40,7 +67,7 @@ public class SentryExceptionHelper {
    * encountered, an empty optional will be returned, in which case we can fall back to alternate
    * grouping.
    */
-  public Optional<List<SentryException>> buildSentryExceptions(final String stacktrace) {
+  public Optional<SentryParsedException> buildSentryExceptions(final String stacktrace) {
     return Exceptions.swallowWithDefault(() -> {
       if (stacktrace.startsWith("Traceback (most recent call last):")) {
         return buildPythonSentryExceptions(stacktrace);
@@ -56,7 +83,7 @@ public class SentryExceptionHelper {
     }, Optional.empty());
   }
 
-  private static Optional<List<SentryException>> buildPythonSentryExceptions(final String stacktrace) {
+  private static Optional<SentryParsedException> buildPythonSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
 
     // separate chained exceptions
@@ -115,10 +142,10 @@ public class SentryExceptionHelper {
     if (sentryExceptions.isEmpty())
       return Optional.empty();
 
-    return Optional.of(sentryExceptions);
+    return Optional.of(new SentryParsedException(SentryExceptionPlatform.PYTHON, sentryExceptions));
   }
 
-  private static Optional<List<SentryException>> buildJavaSentryExceptions(final String stacktrace) {
+  private static Optional<SentryParsedException> buildJavaSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
 
     // separate chained exceptions
@@ -182,10 +209,10 @@ public class SentryExceptionHelper {
     if (sentryExceptions.isEmpty())
       return Optional.empty();
 
-    return Optional.of(sentryExceptions);
+    return Optional.of(new SentryParsedException(SentryExceptionPlatform.JAVA, sentryExceptions));
   }
 
-  private static Optional<List<SentryException>> buildNormalizationDbtSentryExceptions(final String stacktrace) {
+  private static Optional<SentryParsedException> buildNormalizationDbtSentryExceptions(final String stacktrace) {
     final List<SentryException> sentryExceptions = new ArrayList<>();
 
     final Map<ERROR_MAP_KEYS, String> usefulErrorMap = getUsefulErrorMessageAndTypeFromDbtError(stacktrace);
@@ -202,7 +229,7 @@ public class SentryExceptionHelper {
     if (sentryExceptions.isEmpty())
       return Optional.empty();
 
-    return Optional.of(sentryExceptions);
+    return Optional.of(new SentryParsedException(SentryExceptionPlatform.OTHER, sentryExceptions));
   }
 
   public static Map<ERROR_MAP_KEYS, String> getUsefulErrorMessageAndTypeFromDbtError(final String stacktrace) {

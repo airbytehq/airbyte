@@ -62,7 +62,9 @@ Please note, that incremental sync could return duplicated \(old records\) for t
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.1.26  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states.                                                                        |
+| 0.1.25  | 2022-09-27 | [17145](https://github.com/airbytehq/airbyte/pull/17145) | Disable streams "export", "engage" on discover if not access                                         |
 | 0.1.24  | 2022-09-26 | [16915](https://github.com/airbytehq/airbyte/pull/16915) | Added Service Accounts support                                                                       |
 | 0.1.23  | 2022-09-18 | [16843](https://github.com/airbytehq/airbyte/pull/16843) | Add stream=True for `export` stream                                                                  |
 | 0.1.22  | 2022-09-15 | [16770](https://github.com/airbytehq/airbyte/pull/16770) | Use "Retry-After" header for backoff                                                                 |
@@ -73,9 +75,9 @@ Please note, that incremental sync could return duplicated \(old records\) for t
 | 0.1.17  | 2022-06-01 | [12801](https://github.com/airbytehq/airbyte/pull/13372) | Acceptance tests fix, fixing some bugs for beta release                                              |
 | 0.1.16  | 2022-05-30 | [12801](https://github.com/airbytehq/airbyte/pull/12801) | Add end_date parameter                                                                               |
 | 0.1.15  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                      |
-| 0.1.14  | 2022-05-02 | [11501](https://github.com/airbytehq/airbyte/pull/11501) | Improve incremental sync method to streams                                                           |  
-| 0.1.13  | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep                              |  
-| 0.1.12  | 2022-03-31 | [11633](https://github.com/airbytehq/airbyte/pull/11633) | Increase unit test coverage                                                                          |  
+| 0.1.14  | 2022-05-02 | [11501](https://github.com/airbytehq/airbyte/pull/11501) | Improve incremental sync method to streams                                                           |
+| 0.1.13  | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep                              |
+| 0.1.12  | 2022-03-31 | [11633](https://github.com/airbytehq/airbyte/pull/11633) | Increase unit test coverage                                                                          |
 | 0.1.11  | 2022-04-04 | [11318](https://github.com/airbytehq/airbyte/pull/11318) | Change Response Reading                                                                              |
 | 0.1.10  | 2022-03-31 | [11227](https://github.com/airbytehq/airbyte/pull/11227) | Fix cohort id always null in the cohort_members stream                                               |
 | 0.1.9   | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8578)   | Updated titles and descriptions                                                                      |
