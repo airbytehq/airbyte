@@ -9,9 +9,7 @@ import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
-import javax.inject.Singleton;
 
-@Singleton
 public class DiscoverCatalogWorkflowImpl implements DiscoverCatalogWorkflow {
 
   @TemporalActivityStub(activityOptionsBeanName = "discoveryActivityOptions")

@@ -6,11 +6,12 @@ package io.airbyte.workers;
 
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.Configs.WorkerPlane;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
@@ -21,9 +22,8 @@ import io.airbyte.db.check.impl.JobsDatabaseAvailabilityCheck;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.process.KubePortManagerSingleton;
-import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
@@ -43,6 +43,9 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -54,9 +57,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -138,21 +138,21 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private WorkerEnvironment workerEnvironment;
   @Inject
   private WorkerFactory workerFactory;
-  @Inject
-  private WorkerPlane workerPlane;
   @Value("${airbyte.workspace.root}")
   private String workspaceRoot;
   @Value("${temporal.cloud.namespace}")
   private String temporalCloudNamespace;
   @Value("${airbyte.data.sync.task-queue}")
   private String syncTaskQueue;
+  @Inject
+  private Environment environment;
 
   @Override
   public void onApplicationEvent(final ServiceReadyEvent event) {
     try {
       initializeCommonDependencies();
 
-      if (WorkerPlane.CONTROL_PLANE.equals(workerPlane)) {
+      if (environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
         initializeControlPlaneDependencies();
       } else {
         log.info("Skipping Control Plane dependency initialization.");
@@ -163,7 +163,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
       log.info("Starting worker factory...");
       workerFactory.start();
 
-      log.info("Application initialized (mode = {}).", workerPlane);
+      log.info("Application initialized.");
     } catch (final DatabaseCheckException | ExecutionException | InterruptedException | IOException | TimeoutException e) {
       log.error("Unable to initialize application.", e);
       throw new IllegalStateException(e);

@@ -5,6 +5,13 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowInternalState;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
+import io.airbyte.commons.temporal.scheduling.state.listener.NoopStateListener;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
@@ -21,8 +28,6 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.temporal.TemporalJobType;
-import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
@@ -63,9 +68,6 @@ import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueAct
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity.DeleteStreamResetRecordsForJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.WorkflowConfigActivity;
-import io.airbyte.workers.temporal.scheduling.state.WorkflowInternalState;
-import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
-import io.airbyte.workers.temporal.scheduling.state.listener.NoopStateListener;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.failure.ActivityFailure;

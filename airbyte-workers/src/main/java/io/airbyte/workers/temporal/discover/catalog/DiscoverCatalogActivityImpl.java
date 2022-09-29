@@ -7,6 +7,7 @@ package io.airbyte.workers.temporal.discover.catalog;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
@@ -16,26 +17,25 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          pattern = "(?i)^(?!data_plane).*")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 @Slf4j
 public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
@@ -76,8 +76,6 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
         .withConnectionConfiguration(fullConfig);
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
-
-    log.info("Fetching catalog data {}", fullConfig);
 
     final TemporalAttemptExecution<StandardDiscoverCatalogInput, ConnectorJobOutput> temporalAttemptExecution =
         new TemporalAttemptExecution<>(
