@@ -29,6 +29,7 @@ plugins {
     id 'com.diffplug.spotless' version '6.7.1'
     id 'com.github.hierynomus.license' version '0.16.1'
     id 'com.github.spotbugs' version '5.0.6'
+    id 'distribution'
     id 'version-catalog'
     id 'maven-publish'
 }
