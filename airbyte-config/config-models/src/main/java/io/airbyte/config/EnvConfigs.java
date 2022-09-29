@@ -291,12 +291,12 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Version getAirbyteProtocolVersionMax() {
-    return new Version(getEnsureEnv(AIRBYTE_PROTOCOL_VERSION_MAX));
+    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MAX, "0.3.0"));
   }
 
   @Override
   public Version getAirbyteProtocolVersionMin() {
-    return new Version(getEnsureEnv(AIRBYTE_PROTOCOL_VERSION_MIN));
+    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MIN, "0.0.0"));
   }
 
   @Override
