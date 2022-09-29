@@ -60,5 +60,5 @@ class CursorPaginationStrategy(PaginationStrategy, JsonSchemaMixin):
         # No state to reset
         pass
 
-    def limit(self) -> Optional[int]:
+    def get_page_size(self) -> Optional[int]:
         return self.page_size

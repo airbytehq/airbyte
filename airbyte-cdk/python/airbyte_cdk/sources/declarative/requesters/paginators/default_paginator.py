@@ -93,9 +93,9 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
     def __post_init__(self, options: Mapping[str, Any]):
         if self.page_size_option and self.page_size_option.inject_into == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
-        if self.page_size_option and not self.pagination_strategy.limit():
+        if self.page_size_option and not self.pagination_strategy.get_page_size():
             raise ValueError("page_size_option cannot be set if the pagination strategy does not have a limit")
-        if self.pagination_strategy.limit() and not self.page_size_option:
+        if self.pagination_strategy.get_page_size() and not self.page_size_option:
             raise ValueError("page_size_option must be set if the pagination strategy has a limit")
         if isinstance(self.url_base, str):
             self.url_base = InterpolatedString(string=self.url_base, options=options)
@@ -158,7 +158,7 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
         if self.page_token_option.inject_into == option_type:
             if option_type != RequestOptionType.path and self._token:
                 options[self.page_token_option.field_name] = self._token
-        if self.page_size_option and self.pagination_strategy.limit() and self.page_size_option.inject_into == option_type:
+        if self.page_size_option and self.pagination_strategy.get_page_size() and self.page_size_option.inject_into == option_type:
             if option_type != RequestOptionType.path:
-                options[self.page_size_option.field_name] = self.pagination_strategy.limit()
+                options[self.page_size_option.field_name] = self.pagination_strategy.get_page_size()
         return options

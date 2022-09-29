@@ -32,7 +32,7 @@ class PaginationStrategy(JsonSchemaMixin):
         """
 
     @abstractmethod
-    def limit(self) -> Optional[int]:
+    def get_page_size(self) -> Optional[int]:
         """
         :return:
         """

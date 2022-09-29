@@ -518,7 +518,7 @@ def test_config_with_defaults():
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
 
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com"
-    assert stream.retriever.paginator.pagination_strategy.limit() == 10
+    assert stream.retriever.paginator.pagination_strategy.get_page_size() == 10
 
 
 def test_create_default_paginator():
