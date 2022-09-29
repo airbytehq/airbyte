@@ -96,7 +96,7 @@ livenessProbe:
   initialDelaySeconds: 30
   periodSeconds: 30
   timeoutSeconds: 30
-  failureThreshold: 3
+  failureThreshold: 10
   successThreshold: 1
 
 ##  readinessProbe.enabled Enable readinessProbe on the server
@@ -111,7 +111,7 @@ readinessProbe:
   initialDelaySeconds: 30
   periodSeconds: 30
   timeoutSeconds: 30
-  failureThreshold: 3
+  failureThreshold: 10
   successThreshold: 1
 
 ## Server app resource requests and limits

@@ -47,7 +47,7 @@ livenessProbe:
   initialDelaySeconds: 30
   periodSeconds: 30
   timeoutSeconds: 30
-  failureThreshold: 3
+  failureThreshold: 10
   successThreshold: 1
 
 ##  webapp.readinessProbe.enabled Enable readinessProbe on the webapp
@@ -62,7 +62,7 @@ readinessProbe:
   initialDelaySeconds: 30
   periodSeconds: 30
   timeoutSeconds: 30
-  failureThreshold: 3
+  failureThreshold: 10
   successThreshold: 1
 
 ##  webapp.service.type The service type to use for the webapp service

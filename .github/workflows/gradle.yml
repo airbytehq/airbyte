@@ -797,13 +797,22 @@ jobs:
           apiVersion: kind.x-k8s.io/v1alpha4
           nodes:
           - role: control-plane
+            extraPortMappings:
+            - containerPort: 30950
+              hostPort: 30950
+              listenAddress: "127.0.0.1"
+              protocol: TCP
+            - containerPort: 8001
+              hostPort: 8001
+              listenAddress: "127.0.0.1"
+              protocol: TCP
+            kubeadmConfigPatches:
+            - |
+              kind: ClusterConfiguration
+              apiServer:
+                extraArgs:
+                  "service-node-port-range": "80-32767"
           - role: worker
-          kubeadmConfigPatches:
-          - |
-            kind: ClusterConfiguration
-            apiServer:
-              extraArgs:
-                "service-node-port-range": "80-32767"
           EOF
 
       - name: KIND Kubernetes Cluster Setup

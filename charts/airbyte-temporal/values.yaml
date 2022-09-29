@@ -70,8 +70,8 @@ livenessProbe:
   enabled: true
   initialDelaySeconds: 5
   periodSeconds: 30
-  timeoutSeconds: 1
-  failureThreshold: 3
+  timeoutSeconds: 30
+  failureThreshold: 10
   successThreshold: 1
 
 ##  temporal.readinessProbe.enabled Enable readinessProbe on the temporal
@@ -85,8 +85,8 @@ readinessProbe:
   enabled: true
   initialDelaySeconds: 5
   periodSeconds: 30
-  timeoutSeconds: 1
-  failureThreshold: 3
+  timeoutSeconds: 30
+  failureThreshold: 10
   successThreshold: 1
 
 ##  temporal.nodeSelector [object] Node labels for temporal pod assignment
