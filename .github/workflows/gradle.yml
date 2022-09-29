@@ -832,8 +832,8 @@ jobs:
 
       - name: Run Helm End-to-End Acceptance Tests
         env:
-          USER: root
-          HOME: /home/runner
+          # USER: root
+          # HOME: /home/runner
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
