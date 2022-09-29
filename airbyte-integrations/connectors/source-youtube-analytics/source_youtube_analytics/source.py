@@ -183,8 +183,10 @@ class SourceYoutubeAnalytics(AbstractSource):
         if result:
             return True, None
         else:
-            return False, "The Youtube account is not valid. Please make sure you're trying to use the active Youtube Account connected to your Google Account."
-        
+            return (
+                False,
+                "The Youtube account is not valid. Please make sure you're trying to use the active Youtube Account connected to your Google Account.",
+            )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
