@@ -35,6 +35,13 @@ List of available streams:
 * Prospects
 * Sequences
 * SequenceStates
+* Calls
+* Mailings
+* Accounts
+* Opportunities
+* Personas
+* Mailboxes
+* Stages
 
 ## Changelog
 
