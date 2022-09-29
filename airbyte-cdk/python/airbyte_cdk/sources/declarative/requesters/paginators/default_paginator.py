@@ -19,7 +19,7 @@ from dataclasses_jsonschema import JsonSchemaMixin
 @dataclass
 class DefaultPaginator(Paginator, JsonSchemaMixin):
     """
-    Limit paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
+    Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
 
     Examples:
         1.
@@ -92,11 +92,11 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
 
     def __post_init__(self, options: Mapping[str, Any]):
         if self.page_size_option and self.page_size_option.inject_into == RequestOptionType.path:
-            raise ValueError("Limit parameter cannot be a path")
+            raise ValueError("page_size_option cannot be set in as path")
         if self.page_size_option and not self.pagination_strategy.get_page_size():
-            raise ValueError("page_size_option cannot be set if the pagination strategy does not have a limit")
+            raise ValueError("page_size_option cannot be set if the pagination strategy does not have a page_size")
         if self.pagination_strategy.get_page_size() and not self.page_size_option:
-            raise ValueError("page_size_option must be set if the pagination strategy has a limit")
+            raise ValueError("page_size_option must be set if the pagination strategy has a page_size")
         if isinstance(self.url_base, str):
             self.url_base = InterpolatedString(string=self.url_base, options=options)
 
