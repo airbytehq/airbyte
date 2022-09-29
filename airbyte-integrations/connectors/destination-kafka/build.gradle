@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.kafka.KafkaDestination'
+    mainClass = 'io.airbyte.integrations.destination.kafka.KafkaDestinationRunner'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
