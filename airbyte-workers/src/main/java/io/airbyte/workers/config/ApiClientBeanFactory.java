@@ -9,11 +9,11 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.config.Configs.WorkerPlane;
 import io.micronaut.context.BeanProvider;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Prototype;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.context.env.Environment;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.io.FileInputStream;
@@ -58,10 +58,10 @@ public class ApiClientBeanFactory {
 
   @Singleton
   @Named("internalApiScheme")
-  public String internalApiScheme(final WorkerPlane workerPlane) {
+  public String internalApiScheme(final Environment environment) {
     // control plane workers communicate with the Airbyte API within their internal network, so https
     // isn't needed
-    return WorkerPlane.CONTROL_PLANE.equals(workerPlane) ? "http" : "https";
+    return environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE) ? "http" : "https";
   }
 
   /**
@@ -81,12 +81,12 @@ public class ApiClientBeanFactory {
                                      @Value("${airbyte.control.plane.auth-endpoint}") final String controlPlaneAuthEndpoint,
                                      @Value("${airbyte.data.plane.service-account.email}") final String dataPlaneServiceAccountEmail,
                                      @Value("${airbyte.data.plane.service-account.credentials-path}") final String dataPlaneServiceAccountCredentialsPath,
-                                     final WorkerPlane workerPlane) {
-    if (WorkerPlane.CONTROL_PLANE.equals(workerPlane)) {
+                                     final Environment environment) {
+    if (environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
       // control plane workers communicate with the Airbyte API within their internal network, so a signed
       // JWT isn't needed
       return airbyteApiAuthHeaderValue;
-    } else if (WorkerPlane.DATA_PLANE.equals(workerPlane)) {
+    } else if (environment.getActiveNames().contains(WorkerMode.DATA_PLANE)) {
       try {
         final Date now = new Date();
         final Date expTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(JWT_TTL_MINUTES));

@@ -5,9 +5,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
-import { Button } from "components/base/Button";
 import { LabeledSwitch } from "components/LabeledSwitch";
 import LoadingSchema from "components/LoadingSchema";
+import { Button } from "components/ui/Button";
 import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
@@ -63,7 +63,7 @@ const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose
         </p>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={onCancel} secondary data-testid="resetModal-cancel">
+        <Button onClick={onCancel} variant="secondary" data-testid="resetModal-cancel">
           <FormattedMessage id="form.cancel" />
         </Button>
         <Button onClick={() => onClose(withReset)} data-testid="resetModal-save">
@@ -232,8 +232,12 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
             successMessage={saved && <FormattedMessage id="form.changesSaved" />}
             canSubmitUntouchedForm={activeUpdatingSchemaMode}
             additionalSchemaControl={
-              <Button onClick={onRefreshSourceSchema} type="button" secondary>
-                <TryArrow icon={faSyncAlt} />
+              <Button
+                onClick={onRefreshSourceSchema}
+                type="button"
+                variant="secondary"
+                icon={<TryArrow icon={faSyncAlt} />}
+              >
                 <FormattedMessage id="connection.updateSchema" />
               </Button>
             }
