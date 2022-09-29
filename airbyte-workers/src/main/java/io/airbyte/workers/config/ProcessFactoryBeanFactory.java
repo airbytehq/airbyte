@@ -11,6 +11,7 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
@@ -35,9 +36,9 @@ public class ProcessFactoryBeanFactory {
   public ProcessFactory checkDockerProcessFactory(
                                                   @Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
                                                   @Value("${docker.network}") final String dockerNetwork,
-                                                  @Value("${airbyte.local.docker-mount}") final String localDockerMount,
+                                                  @Property(name = "airbyte.local.docker-mount", defaultValue = "") final String localDockerMount,
                                                   @Value("${airbyte.local.root}") final String localRoot,
-                                                  @Value("${airbyte.workspace.docker-mount}") final String workspaceDockerMount,
+                                                  @Property(name = "airbyte.workspace.docker-mount", defaultValue = "") final String workspaceDockerMount,
                                                   @Value("${airbyte.workspace.root}") final String workspaceRoot) {
     return createDockerProcessFactory(
         workerConfigs,
@@ -68,9 +69,9 @@ public class ProcessFactoryBeanFactory {
   public ProcessFactory defaultDockerProcessFactory(
                                                     @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
                                                     @Value("${docker.network}") final String dockerNetwork,
-                                                    @Value("${airbyte.local.docker-mount}") final String localDockerMount,
+                                                    @Property(name = "airbyte.local.docker-mount", defaultValue = "") final String localDockerMount,
                                                     @Value("${airbyte.local.root}") final String localRoot,
-                                                    @Value("${airbyte.workspace.docker-mount}") final String workspaceDockerMount,
+                                                    @Property(name = "airbyte.workspace.docker-mount", defaultValue = "") final String workspaceDockerMount,
                                                     @Value("${airbyte.workspace.root}") final String workspaceRoot) {
     return createDockerProcessFactory(
         workerConfigs,
@@ -101,9 +102,9 @@ public class ProcessFactoryBeanFactory {
   public ProcessFactory discoverDockerProcessFactory(
                                                      @Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
                                                      @Value("${docker.network}") final String dockerNetwork,
-                                                     @Value("${airbyte.local.docker-mount}") final String localDockerMount,
+                                                     @Property(name = "airbyte.local.docker-mount", defaultValue = "") final String localDockerMount,
                                                      @Value("${airbyte.local.root}") final String localRoot,
-                                                     @Value("${airbyte.workspace.docker-mount}") final String workspaceDockerMount,
+                                                     @Property(name = "airbyte.workspace.docker-mount", defaultValue = "") final String workspaceDockerMount,
                                                      @Value("${airbyte.workspace.root}") final String workspaceRoot) {
     return createDockerProcessFactory(
         workerConfigs,
@@ -134,9 +135,9 @@ public class ProcessFactoryBeanFactory {
   public ProcessFactory replicationDockerProcessFactory(
                                                         @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
                                                         @Value("${docker.network}") final String dockerNetwork,
-                                                        @Value("${airbyte.local.docker-mount}") final String localDockerMount,
+                                                        @Property(name = "airbyte.local.docker-mount", defaultValue = "") final String localDockerMount,
                                                         @Value("${airbyte.local.root}") final String localRoot,
-                                                        @Value("${airbyte.workspace.docker-mount}") final String workspaceDockerMount,
+                                                        @Property(name = "airbyte.workspace.docker-mount", defaultValue = "") final String workspaceDockerMount,
                                                         @Value("${airbyte.workspace.root}") final String workspaceRoot) {
     return createDockerProcessFactory(
         workerConfigs,
@@ -167,9 +168,9 @@ public class ProcessFactoryBeanFactory {
   public ProcessFactory specDockerProcessFactory(
                                                  @Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
                                                  @Value("${docker.network}") final String dockerNetwork,
-                                                 @Value("${airbyte.local.docker-mount}") final String localDockerMount,
+                                                 @Property(name = "airbyte.local.docker-mount", defaultValue = "") final String localDockerMount,
                                                  @Value("${airbyte.local.root}") final String localRoot,
-                                                 @Value("${airbyte.workspace.docker-mount}") final String workspaceDockerMount,
+                                                 @Property(name = "airbyte.workspace.docker-mount", defaultValue = "") final String workspaceDockerMount,
                                                  @Value("${airbyte.workspace.root}") final String workspaceRoot) {
     return createDockerProcessFactory(
         workerConfigs,
