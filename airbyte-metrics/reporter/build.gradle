@@ -18,7 +18,7 @@ dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-metrics:metrics-lib')
 
-    implementation (libs.jooq) {
+    implementation(libs.jooq) {
         force = true
     }
 
@@ -27,7 +27,11 @@ dependencies {
 
 //    integrationTestJavaAnnotationProcessor platform(libs.micronaut.bom)
 //    integrationTestJavaAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
-//    testImplementation libs.bundles.micronaut.test
+
+    testImplementation project(':airbyte-test-utils')
+    testImplementation libs.bundles.micronaut.test
+    testImplementation libs.postgresql
+    testImplementation libs.platform.testcontainers.postgresql
 }
 
 application {
@@ -39,3 +43,5 @@ application {
 tasks.named("buildDockerImage") {
     dependsOn copyGeneratedTar
 }
+
+//test.dependsOn(project.tasks.copySeed)

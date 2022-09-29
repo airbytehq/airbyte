@@ -4,10 +4,8 @@
 
 package io.airbyte.metrics.reporter;
 
-import io.airbyte.db.Database;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
-import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import jakarta.inject.Singleton;
@@ -20,22 +18,22 @@ import org.slf4j.LoggerFactory;
 @Singleton
 final class NumPendingJobs extends Emitter {
 
-  public NumPendingJobs(final MetricClient client, final Database db) {
+  public NumPendingJobs(final MetricClient client, final MetricRepository db) {
     super(() -> {
-      final var pending = db.query(MetricQueries::numberOfPendingJobs);
+      final var pending = db.numberOfPendingJobs();
       client.gauge(OssMetricsRegistry.NUM_PENDING_JOBS, pending);
       return null;
     });
   }
-  
+
 }
 
 @Singleton
 final class NumRunningJobs extends Emitter {
 
-  public NumRunningJobs(final MetricClient client, final Database db) {
+  public NumRunningJobs(final MetricClient client, final MetricRepository db) {
     super(() -> {
-      final var running = db.query(MetricQueries::numberOfRunningJobs);
+      final var running = db.numberOfRunningJobs();
       client.gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, running);
       return null;
     });
@@ -46,9 +44,9 @@ final class NumRunningJobs extends Emitter {
 @Singleton
 final class NumOrphanRunningJobs extends Emitter {
 
-  NumOrphanRunningJobs(final MetricClient client, final Database db) {
+  NumOrphanRunningJobs(final MetricClient client, final MetricRepository db) {
     super(() -> {
-      final var orphaned = db.query(MetricQueries::numberOfOrphanRunningJobs);
+      final var orphaned = db.numberOfOrphanRunningJobs();
       client.gauge(OssMetricsRegistry.NUM_ORPHAN_RUNNING_JOBS, orphaned);
       return null;
     });
@@ -59,9 +57,9 @@ final class NumOrphanRunningJobs extends Emitter {
 @Singleton
 final class OldestRunningJob extends Emitter {
 
-  OldestRunningJob(final MetricClient client, final Database db) {
+  OldestRunningJob(final MetricClient client, final MetricRepository db) {
     super(() -> {
-      final var age = db.query(MetricQueries::oldestRunningJobAgeSecs);
+      final var age = db.oldestRunningJobAgeSecs();
       client.gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
       return null;
     });
@@ -72,9 +70,9 @@ final class OldestRunningJob extends Emitter {
 @Singleton
 final class OldestPendingJob extends Emitter {
 
-  OldestPendingJob(final MetricClient client, final Database db) {
+  OldestPendingJob(final MetricClient client, final MetricRepository db) {
     super(() -> {
-      final var age = db.query(MetricQueries::oldestPendingJobAgeSecs);
+      final var age = db.oldestPendingJobAgeSecs();
       client.gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
       return null;
     });
@@ -85,9 +83,9 @@ final class OldestPendingJob extends Emitter {
 @Singleton
 final class NumActiveConnectionsPerWorkspace extends Emitter {
 
-  NumActiveConnectionsPerWorkspace(final MetricClient client, final Database db) {
+  NumActiveConnectionsPerWorkspace(final MetricClient client, final MetricRepository db) {
     super(() -> {
-      final var workspaceConns = db.query(MetricQueries::numberOfActiveConnPerWorkspace);
+      final var workspaceConns = db.numberOfActiveConnPerWorkspace();
       for (final long numCons : workspaceConns) {
         client.distribution(OssMetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, numCons);
       }
@@ -100,9 +98,9 @@ final class NumActiveConnectionsPerWorkspace extends Emitter {
 @Singleton
 final class NumAbnormalScheduledSyncs extends Emitter {
 
-  NumAbnormalScheduledSyncs(final MetricClient client, final Database db) {
+  NumAbnormalScheduledSyncs(final MetricClient client, final MetricRepository db) {
     super(() -> {
-      final var count = db.query(MetricQueries::numberOfJobsNotRunningOnScheduleInLastDay);
+      final var count = db.numberOfJobsNotRunningOnScheduleInLastDay();
       client.gauge(OssMetricsRegistry.NUM_ABNORMAL_SCHEDULED_SYNCS_IN_LAST_DAY, count);
       return null;
     });
@@ -118,9 +116,9 @@ final class NumAbnormalScheduledSyncs extends Emitter {
 @Singleton
 final class TotalScheduledSyncs extends Emitter {
 
-  TotalScheduledSyncs(final MetricClient client, final Database db) {
+  TotalScheduledSyncs(final MetricClient client, final MetricRepository db) {
     super(() -> {
-      final var count = db.query(MetricQueries::numScheduledActiveConnectionsInLastDay);
+      final var count = db.numScheduledActiveConnectionsInLastDay();
       client.gauge(OssMetricsRegistry.NUM_TOTAL_SCHEDULED_SYNCS_IN_LAST_DAY, count);
       return null;
     });
@@ -136,13 +134,13 @@ final class TotalScheduledSyncs extends Emitter {
 @Singleton
 final class TotalJobRuntimeByTerminalState extends Emitter {
 
-  public TotalJobRuntimeByTerminalState(final MetricClient client, final Database db) {
+  public TotalJobRuntimeByTerminalState(final MetricClient client, final MetricRepository db) {
     super(() -> {
-      final var times = db.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+      final var times = db.overallJobRuntimeForTerminalJobsInLastHour();
       times.forEach(pair -> client.distribution(
           OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS,
           pair.getRight(),
-          new MetricAttribute(MetricTags.JOB_STATUS, MetricTags.getJobStatus(pair.getLeft()))
+          new MetricAttribute(MetricTags.JOB_STATUS, pair.getLeft().getLiteral())
       ));
       return null;
     });
@@ -160,7 +158,7 @@ final class TotalJobRuntimeByTerminalState extends Emitter {
  * <p>
  * As this is a sealed class, all implementations of it are contained within this same file.
  */
-public abstract sealed class Emitter {
+abstract sealed class Emitter {
 
   protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   protected final Callable<Void> callable;

@@ -16,7 +16,7 @@ import org.jooq.DSLContext;
  * Micronaut factory for creating the appropriate singletons utilized by the metric reporter service.
  */
 @Factory
-public class ReporterFactory {
+class ReporterFactory {
 
   @Singleton
   public MetricClient metricClient() {
@@ -27,5 +27,5 @@ public class ReporterFactory {
   public Database database(@Named("config") final DSLContext context) {
     return new Database(context);
   }
-  
+
 }

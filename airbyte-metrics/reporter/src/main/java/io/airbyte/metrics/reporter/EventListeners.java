@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * EventListeners registers event listeners for the startup and shutdown events from Micronaut.
  */
 @Singleton
-public class EventListeners {
+class EventListeners {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final Emitter[] emitters;

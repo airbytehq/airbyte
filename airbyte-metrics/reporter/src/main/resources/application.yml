@@ -16,10 +16,11 @@ datasources:
     connection-timeout: 30000
     idle-timeout: 600000
     maximum-pool-size: 10
-    url: ${DATABASE_URL}
+    #    url: ${DATABASE_URL}
+    url: "jdbc:postgresql://localhost:5432/airbyte"
     driverClassName: org.postgresql.Driver
-    username: ${DATABASE_USER}
-    password: ${DATABASE_PASSWORD}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
 
 jooq:
   datasources:
