@@ -822,10 +822,10 @@ jobs:
           config: /tmp/kind-config.yaml
           cluster_name: helm-testing
         # In case of self-hosted EC2 errors, remove this env block.
-        env:
-          USER: root
-          HOME: /home/runner
-          CHANGE_MINIKUBE_NONE_USER: true
+        # env:
+        #   USER: root
+        #   HOME: /home/runner
+        #   CHANGE_MINIKUBE_NONE_USER: true
 
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
