@@ -10,6 +10,7 @@ import com.google.common.base.Strings;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
@@ -41,6 +42,8 @@ public class EnvConfigs implements Configs {
   // env variable names
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
+  public static final String AIRBYTE_PROTOCOL_VERSION_MAX = "AIRBYTE_PROTOCOL_VERSION_MAX";
+  public static final String AIRBYTE_PROTOCOL_VERSION_MIN = "AIRBYTE_PROTOCOL_VERSION_MIN";
   public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String AIRBYTE_API_AUTH_HEADER_NAME = "AIRBYTE_API_AUTH_HEADER_NAME";
   public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
@@ -284,6 +287,16 @@ public class EnvConfigs implements Configs {
   @Override
   public AirbyteVersion getAirbyteVersion() {
     return new AirbyteVersion(getEnsureEnv(AIRBYTE_VERSION));
+  }
+
+  @Override
+  public Version getAirbyteProtocolVersionMax() {
+    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MAX, "0.3.0"));
+  }
+
+  @Override
+  public Version getAirbyteProtocolVersionMin() {
+    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MIN, "0.0.0"));
   }
 
   @Override
