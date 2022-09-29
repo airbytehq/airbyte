@@ -2,11 +2,11 @@ import React from "react";
 
 import DeleteBlock from "components/DeleteBlock";
 
+import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
-import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 import styles from "./ConnectionSettingsTab.module.scss";
 import { StateBlock } from "./StateBlock";
 

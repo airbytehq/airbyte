@@ -9,13 +9,13 @@ import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useGetConnection } from "hooks/services/useConnectionHook";
-import { ConnectionTransformationTab } from "pages/ConnectionPage/pages/ConnectionItemPage/components/ConnectionTransformationTab";
 
-import { ConnectionPageTitle } from "./components/ConnectionPageTitle";
-import { ConnectionReplicationTab } from "./components/ConnectionReplicationTab";
-import { ConnectionSettingsTab } from "./components/ConnectionSettingsTab";
-import { ConnectionStatusTab } from "./components/ConnectionStatusTab";
+import { ConnectionPageTitle } from "./ConnectionPageTitle";
+import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
+import { ConnectionSettingsTab } from "./ConnectionSettingsTab";
+import { ConnectionStatusTab } from "./ConnectionStatusTab";
+import { ConnectionTransformationTab } from "./ConnectionTransformationTab";
 
 export const ConnectionItemPage: React.FC = () => {
   const params = useParams<{

@@ -9,9 +9,9 @@ import { Text } from "components/ui/Text";
 
 import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 
-import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 import { ConnectionName } from "./ConnectionName";
 import styles from "./ConnectionPageTitle.module.scss";
+import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 import { StatusMainInfo } from "./StatusMainInfo";
 
 interface ConnectionPageTitleProps {
