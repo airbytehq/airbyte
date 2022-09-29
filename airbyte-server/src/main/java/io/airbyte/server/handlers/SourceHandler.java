@@ -56,7 +56,7 @@ public class SourceHandler {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.validator = integrationSchemaValidation;
+    validator = integrationSchemaValidation;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
@@ -76,7 +76,6 @@ public class SourceHandler {
         connectionsHandler,
         UUID::randomUUID,
         JsonSecretsProcessor.builder()
-            .maskSecrets(true)
             .copySecrets(true)
             .build(),
         new ConfigurationUpdate(configRepository, secretsRepositoryReader));
