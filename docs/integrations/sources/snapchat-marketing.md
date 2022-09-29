@@ -64,28 +64,28 @@ The useful link to Authentication process is [here](https://marketingapi.snapcha
 
 ## Supported streams and sync modes
 
-| Stream                       | Incremental | Key                                 |
-|:-----------------------------|:------------|-------------------------------------|
-| Adaccounts                   | Yes         | "id"                                |
-| Ads                          | Yes         | "id"                                |
-| Adsquads                     | Yes         | "id"                                |
-| Campaigns                    | Yes         | "id"                                |
-| Creatives                    | Yes         | "id"                                |
-| Media                        | Yes         | "id"                                |
-| Organizations                | No          | "id"                                |
-| Segments                     | Yes         | "id"                                |
-| AdaccountsStatsHourly        | Yes         | ["id", "granularity", "start_time"] |
-| AdaccountsStatsDaily         | Yes         | ["id", "granularity", "start_time"] |
-| AdaccountsStatsLifetime      | No          | ["id", "granularity"]               |
-| AdsStatsHourly               | Yes         | ["id", "granularity", "start_time"] |
-| AdsStatsDaily                | Yes         | ["id", "granularity", "start_time"] |
-| AdsStatsLifetime             | No          | ["id", "granularity"]               |
-| AdsquadsStatsHourly          | Yes         | ["id", "granularity", "start_time"] |
-| AdsquadsStatsDaily           | Yes         | ["id", "granularity", "start_time"] |
-| AdsquadsStatsLifetime        | No          | ["id", "granularity"]               |
-| CampaignsStatsHourly         | Yes         | ["id", "granularity", "start_time"] |
-| CampaignsStatsDaily          | Yes         | ["id", "granularity", "start_time"] |
-| CampaignsStatsLifetime       | No          | ["id", "granularity"]               |
+| Stream                  | Incremental | Key                                 |
+| :---------------------- | :---------- | ----------------------------------- |
+| Adaccounts              | Yes         | "id"                                |
+| Ads                     | Yes         | "id"                                |
+| Adsquads                | Yes         | "id"                                |
+| Campaigns               | Yes         | "id"                                |
+| Creatives               | Yes         | "id"                                |
+| Media                   | Yes         | "id"                                |
+| Organizations           | No          | "id"                                |
+| Segments                | Yes         | "id"                                |
+| AdaccountsStatsHourly   | Yes         | ["id", "granularity", "start_time"] |
+| AdaccountsStatsDaily    | Yes         | ["id", "granularity", "start_time"] |
+| AdaccountsStatsLifetime | No          | ["id", "granularity"]               |
+| AdsStatsHourly          | Yes         | ["id", "granularity", "start_time"] |
+| AdsStatsDaily           | Yes         | ["id", "granularity", "start_time"] |
+| AdsStatsLifetime        | No          | ["id", "granularity"]               |
+| AdsquadsStatsHourly     | Yes         | ["id", "granularity", "start_time"] |
+| AdsquadsStatsDaily      | Yes         | ["id", "granularity", "start_time"] |
+| AdsquadsStatsLifetime   | No          | ["id", "granularity"]               |
+| CampaignsStatsHourly    | Yes         | ["id", "granularity", "start_time"] |
+| CampaignsStatsDaily     | Yes         | ["id", "granularity", "start_time"] |
+| CampaignsStatsLifetime  | No          | ["id", "granularity"]               |
 
 
 ## Performance considerations
@@ -97,7 +97,8 @@ Snapchat Marketing API has limitations to 1000 items per page.
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                               |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------- |
+| 0.1.7   | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Migrate to per-stream states.                         |
 | 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from specs        |
 | 0.1.5   | 2022-07-13 | [14577](https://github.com/airbytehq/airbyte/pull/14577) | Added stats streams hourly, daily, lifetime           |
 | 0.1.4   | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions                        |
