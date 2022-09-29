@@ -126,7 +126,7 @@ public class WorkerUtils {
       final ConnectorCommand connectorCommand = switch (outputType) {
         case SPEC -> ConnectorCommand.SPEC;
         case CHECK_CONNECTION -> ConnectorCommand.CHECK;
-        case DISCOVER_CATALOG -> ConnectorCommand.DISCOVER;
+        case DISCOVER_CATALOG_ID -> ConnectorCommand.DISCOVER;
       };
 
       final FailureReason failureReason = FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand);

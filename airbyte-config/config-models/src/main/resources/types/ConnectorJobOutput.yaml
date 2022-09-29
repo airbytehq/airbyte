@@ -12,12 +12,12 @@ properties:
     type: string
     enum:
       - checkConnection
-      - discoverCatalog
+      - discoverCatalogId
       - spec
   checkConnection:
     "$ref": StandardCheckConnectionOutput.yaml
-  discoverCatalog:
-    existingJavaType: io.airbyte.protocol.models.AirbyteCatalog
+  discoverCatalogId:
+    type: string
   spec:
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
   failureReason:
