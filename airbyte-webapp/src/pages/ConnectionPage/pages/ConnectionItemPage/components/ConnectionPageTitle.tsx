@@ -3,9 +3,9 @@ import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { H6 } from "components";
-import { InfoBox } from "components/InfoBox";
-import StepsMenu from "components/StepsMenu";
+import { InfoBox } from "components/ui/InfoBox";
+import { StepsMenu } from "components/ui/StepsMenu";
+import { Text } from "components/ui/Text";
 
 import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 
@@ -74,9 +74,9 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
           <FormattedMessage id="connection.connectionDeletedView" />
         </InfoBox>
       )}
-      <H6 center bold highlighted>
+      <Text as="div" centered bold className={styles.connectionTitle}>
         <FormattedMessage id="connection.title" />
-      </H6>
+      </Text>
       <ConnectionName connection={connection} />
       <div className={styles.statusContainer}>
         <StatusMainInfo

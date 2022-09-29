@@ -1,3 +1,5 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
@@ -74,7 +76,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
   return (
     <>
       {type === "configuration" ? null : (
-        <Button onClick={onChangeModalState}>
+        <Button size="xs" icon={<FontAwesomeIcon icon={faPlus} />} onClick={onChangeModalState}>
           <FormattedMessage id="admin.newConnector" />
         </Button>
       )}

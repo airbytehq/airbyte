@@ -192,17 +192,33 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
         assert res == [{"Id": "0014W000027f6UwQAI", "IsDeleted": False}]
 
 
-def test_check_connection_rate_limit(stream_config):
+@pytest.mark.parametrize(
+    "login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg",
+    (
+        (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}], 200, {}, "API Call limit is exceeded"),
+        (
+            200,
+            {"access_token": "access_token", "instance_url": "https://instance_url"},
+            403,
+            [{"errorCode": "FORBIDDEN", "message": "You do not have enough permissions"}],
+            'An error occurred: [{"errorCode": "FORBIDDEN", "message": "You do not have enough permissions"}]',
+        ),
+    ),
+)
+def test_check_connection_rate_limit(
+    stream_config, login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg
+):
     source = SourceSalesforce()
     logger = logging.getLogger("airbyte")
 
-    json_response = [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}]
-    url = "https://login.salesforce.com/services/oauth2/token"
     with requests_mock.Mocker() as m:
-        m.register_uri("POST", url, json=json_response, status_code=403)
+        m.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code)
+        m.register_uri(
+            "GET", "https://instance_url/services/data/v52.0/sobjects", json=discovery_resp_json, status_code=discovery_status_code
+        )
         result, msg = source.check_connection(logger, stream_config)
         assert result is False
-        assert msg == "API Call limit is exceeded"
+        assert msg == expected_error_msg
 
 
 def configure_request_params_mock(stream_1, stream_2):

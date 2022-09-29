@@ -1,7 +1,8 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button, ProgressBar } from "components";
+import { Button } from "components";
+import { ProgressBar } from "components/ui/ProgressBar";
 
 import styles from "./TestingConnectionSpinner.module.scss";
 
@@ -20,7 +21,7 @@ export const TestingConnectionSpinner: React.FC<TestingConnectionSpinnerProps> =
   <div className={styles.container}>
     <ProgressBar runTime={PROGRESS_BAR_TIME} />
     {isCancellable && (
-      <Button className={styles.btn} secondary type="button" onClick={() => onCancelTesting?.()}>
+      <Button className={styles.btn} variant="secondary" type="button" onClick={() => onCancelTesting?.()}>
         <FormattedMessage id="form.cancel" />
       </Button>
     )}

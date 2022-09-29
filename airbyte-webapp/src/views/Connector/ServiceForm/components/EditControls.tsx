@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { Button } from "components";
 
 import { useServiceForm } from "../serviceFormContext";
+import styles from "./EditControls.module.scss";
 import { TestingConnectionError } from "./TestingConnectionError";
 import { TestingConnectionSpinner } from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
@@ -14,10 +15,6 @@ const Controls = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-`;
-
-const ButtonContainer = styled.span`
-  margin-left: 10px;
 `;
 
 interface IProps {
@@ -65,15 +62,19 @@ const EditControls: React.FC<IProps> = ({
     <>
       {renderStatusMessage()}
       <Controls>
-        <div>
+        <div className={styles.buttonsContainer}>
           <Button type="submit" disabled={isSubmitting || !dirty || Object.keys(unfinishedFlows).length > 0}>
             <FormattedMessage id="form.saveChangesAndTest" />
           </Button>
-          <ButtonContainer>
-            <Button type="button" secondary disabled={isSubmitting || !dirty} onClick={onCancelClick}>
-              <FormattedMessage id="form.cancel" />
-            </Button>
-          </ButtonContainer>
+          <Button
+            className={styles.cancelButton}
+            type="button"
+            variant="secondary"
+            disabled={isSubmitting || !dirty}
+            onClick={onCancelClick}
+          >
+            <FormattedMessage id="form.cancel" />
+          </Button>
         </div>
         {onRetestClick && (
           <Button type="button" onClick={onRetestClick} disabled={!isValid}>
