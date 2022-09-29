@@ -5,9 +5,9 @@
 package io.airbyte.config.helpers;
 
 import io.airbyte.config.storage.CloudStorageConfigs;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.util.Optional;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * Describes logging configuration. For now it just contains configuration around storage medium,
