@@ -4,49 +4,26 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.persistence.StreamResetPersistence;
-import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.temporal.exception.RetryableException;
-import java.io.IOException;
-import java.util.List;
-import lombok.AllArgsConstructor;
+import io.airbyte.workers.temporal.StreamResetRecordsHelper;
+import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor
 @Slf4j
+@Singleton
+@Requires(property = "airbyte.worker.plane",
+          pattern = "(?i)^(?!data_plane).*")
 public class StreamResetActivityImpl implements StreamResetActivity {
 
-  private StreamResetPersistence streamResetPersistence;
-  private JobPersistence jobPersistence;
+  private final StreamResetRecordsHelper streamResetRecordsHelper;
+
+  public StreamResetActivityImpl(final StreamResetRecordsHelper streamResetRecordsHelper) {
+    this.streamResetRecordsHelper = streamResetRecordsHelper;
+  }
 
   @Override
   public void deleteStreamResetRecordsForJob(final DeleteStreamResetRecordsForJobInput input) {
-    // if there is no job, there is nothing to delete
-    if (input.getJobId() == null) {
-      log.info("deleteStreamResetRecordsForJob was called with a null job id; returning.");
-      return;
-    }
-
-    try {
-      final Job job = jobPersistence.getJob(input.getJobId());
-      final ConfigType configType = job.getConfig().getConfigType();
-      if (!ConfigType.RESET_CONNECTION.equals(configType)) {
-        log.info("deleteStreamResetRecordsForJob was called for job {} with config type {}. Returning, as config type is not {}.",
-            input.getJobId(),
-            configType,
-            ConfigType.RESET_CONNECTION);
-        return;
-      }
-
-      final List<StreamDescriptor> resetStreams = job.getConfig().getResetConnection().getResetSourceConfiguration().getStreamsToReset();
-      log.info("Deleting the following streams for reset job {} from the stream_reset table: {}", input.getJobId(), resetStreams);
-      streamResetPersistence.deleteStreamResets(input.getConnectionId(), resetStreams);
-    } catch (final IOException e) {
-      throw new RetryableException(e);
-    }
+    streamResetRecordsHelper.deleteStreamResetRecordsForJob(input.getJobId(), input.getConnectionId());
   }
 
 }

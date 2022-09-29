@@ -36,7 +36,6 @@ export const getExcludedConnectorIds = (workspaceId: string) =>
         "af7c921e-5892-4ff2-b6c1-4a5ab258fb7e", // hide MeiliSearch Destination https://github.com/airbytehq/airbyte/issues/16313
         "e06ad785-ad6f-4647-b2e8-3027a5c59454", // hide RabbitMQ Destination https://github.com/airbytehq/airbyte/issues/16315
         "0eeee7fb-518f-4045-bacc-9619e31c43ea", // hide Amazon SQS Destination https://github.com/airbytehq/airbyte/issues/16316
-        "e2b40e36-aa0e-4bed-b41b-bcea6fa348b1", // hide Exchange rate Source https://github.com/airbytehq/airbyte/issues/16311
         ...(workspaceId !== "54135667-ce73-4820-a93c-29fe1510d348" // Shopify workspace for review
           ? ["9da77001-af33-4bcd-be46-6252bf9342b9"] // Shopify
           : []),

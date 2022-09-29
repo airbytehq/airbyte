@@ -1,13 +1,15 @@
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
-import Table from "components/Table";
+import { Table } from "components/ui/Table";
 
+import { ConnectionScheduleType } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
-import useRouter from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import ConnectorCell from "./components/ConnectorCell";
@@ -26,12 +28,12 @@ interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
-  onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
 }
 
-const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeStatus, onSync }) => {
-  const { query, push } = useRouter();
+const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync }) => {
+  const navigate = useNavigate();
+  const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const allowSync = useFeature(FeatureItem.AllowSync);
 
   const sortBy = query.sortBy || "entityName";
@@ -41,7 +43,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
     (field: string) => {
       const order =
         sortBy !== field ? SortOrderEnum.ASC : sortOrder === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
-      push({
+      navigate({
         search: queryString.stringify(
           {
             sortBy: field,
@@ -51,7 +53,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
         ),
       });
     },
-    [push, sortBy, sortOrder]
+    [navigate, sortBy, sortOrder]
   );
 
   const sortData = useCallback(
@@ -143,9 +145,9 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
 
       {
         Header: <FormattedMessage id="tables.frequency" />,
-        accessor: "schedule",
+        accessor: "scheduleData",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <FrequencyCell value={cell.value} enabled={row.original.enabled} />
+          <FrequencyCell value={cell.value} enabled={row.original.enabled} scheduleType={row.original.scheduleType} />
         ),
       },
       {
@@ -173,8 +175,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
             enabled={cell.value}
             id={row.original.connectionId}
             isSyncing={row.original.isSyncing}
-            isManual={!row.original.schedule}
-            onChangeStatus={onChangeStatus}
+            isManual={row.original.scheduleType === ConnectionScheduleType.manual}
             onSync={onSync}
             allowSync={allowSync}
           />
@@ -187,7 +188,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
         Cell: ({ cell }: CellProps<ITableDataItem>) => <ConnectionSettingsCell id={cell.value} />,
       },
     ],
-    [allowSync, entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
+    [allowSync, entity, onSync, onSortClick, sortBy, sortOrder]
   );
 
   return (

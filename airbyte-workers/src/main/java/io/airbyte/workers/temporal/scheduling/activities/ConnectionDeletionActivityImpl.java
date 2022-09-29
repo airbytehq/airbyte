@@ -8,13 +8,20 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.temporal.exception.RetryableException;
+import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.io.IOException;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
+@Singleton
+@Requires(property = "airbyte.worker.plane",
+          pattern = "(?i)^(?!data_plane).*")
 public class ConnectionDeletionActivityImpl implements ConnectionDeletionActivity {
 
   private final ConnectionHelper connectionHelper;
+
+  public ConnectionDeletionActivityImpl(final ConnectionHelper connectionHelper) {
+    this.connectionHelper = connectionHelper;
+  }
 
   @Override
   public void deleteConnection(final ConnectionDeletionInput input) {

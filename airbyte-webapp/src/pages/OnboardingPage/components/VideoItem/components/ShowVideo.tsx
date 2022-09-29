@@ -4,7 +4,7 @@ import React from "react";
 import styled from "styled-components";
 
 import { Button } from "components/base";
-import Modal from "components/Modal";
+import { Modal } from "components/ui/Modal";
 
 interface ShowVideoProps {
   videoId?: string;
@@ -25,7 +25,7 @@ const CloseButton = styled(Button)`
 
 const ShowVideo: React.FC<ShowVideoProps> = ({ videoId, onClose }) => {
   return (
-    <Modal onClose={onClose} clear closeOnBackground>
+    <Modal onClose={onClose} cardless>
       <CloseButton onClick={onClose} iconOnly>
         <FontAwesomeIcon icon={faTimes} />
       </CloseButton>

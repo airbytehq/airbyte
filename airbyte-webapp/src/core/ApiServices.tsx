@@ -9,7 +9,7 @@ import { HealthService } from "./health/HealthService";
 import { RequestMiddleware } from "./request/RequestMiddleware";
 import { useGetService, useInjectServices } from "./servicesProvider";
 
-export const ApiServices: React.FC = React.memo(({ children }) => {
+export const ApiServices: React.FC<React.PropsWithChildren<unknown>> = React.memo(({ children }) => {
   const config = useConfig();
   const middlewares = useGetService<RequestMiddleware[]>("DefaultRequestMiddlewares");
 
