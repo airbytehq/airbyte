@@ -34,5 +34,5 @@ class PaginationStrategy(JsonSchemaMixin):
     @abstractmethod
     def get_page_size(self) -> Optional[int]:
         """
-        :return:
+        :return: page size: The number of records to fetch in a page. Returns None if unspecified
         """
