@@ -25,53 +25,55 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
         1.
         * fetches up to 10 records at a time by setting the "limit" request param to 10
         * updates the request path with  "{{ response._metadata.next }}"
+        ```
           paginator:
             type: "DefaultPaginator"
-            limit_option:
+            page_size_option:
               inject_into: request_parameter
-              field_name: page_size
+              field_name: limit
             page_token_option:
               option_type: path
             pagination_strategy:
               type: "CursorPagination"
               cursor_value: "{{ response._metadata.next }}"
-        `
+              page_size: 10
+        ```
 
         2.
         * fetches up to 5 records at a time by setting the "page_size" header to 5
         * increments a record counter and set the request parameter "offset" to the value of the counter
-        `
+        ```
           paginator:
             type: "DefaultPaginator"
-            limit_option:
+            page_size_option:
               inject_into: header
               field_name: page_size
             pagination_strategy:
               type: "OffsetIncrement"
-              limit: 5
+              page_size: 5
             page_token:
               option_type: "request_parameter"
               field_name: "offset"
-        `
+        ```
 
         3.
         * fetches up to 5 records at a time by setting the "page_size" request param to 5
         * increments a page counter and set the request parameter "page" to the value of the counter
-        `
+        ```
           paginator:
             type: "DefaultPaginator"
-            limit_option:
+            page_size_option:
               inject_into: request_parameter
               field_name: page_size
             pagination_strategy:
               type: "PageIncrement"
-              limit: 5
-            page_token:
+              page_size: 5
+            page_token_option:
               option_type: "request_parameter"
               field_name: "page"
-
+        ```
     Attributes:
-        limit_option (Optional[RequestOption]): the request option to set the limit. Cannot be injected in the path.
+        page_size_option (Optional[RequestOption]): the request option to set the page size. Cannot be injected in the path.
         page_token_option (RequestOption): the request option to set the page token
         pagination_strategy (PaginationStrategy): Strategy defining how to get the next page token
         config (Config): connection config
@@ -79,7 +81,7 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
         decoder (Decoder): decoder to decode the response
     """
 
-    limit_option: Optional[RequestOption]
+    page_size_option: Optional[RequestOption]
     page_token_option: RequestOption
     pagination_strategy: PaginationStrategy
     config: Config
@@ -89,12 +91,12 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
     _token: Optional[Any] = field(init=False, repr=False, default=None)
 
     def __post_init__(self, options: Mapping[str, Any]):
-        if self.limit_option and self.limit_option.inject_into == RequestOptionType.path:
+        if self.page_size_option and self.page_size_option.inject_into == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
-        if self.limit_option and not self.pagination_strategy.limit():
-            raise ValueError("limit_option cannot be set if the pagination strategy does not have a limit")
-        if self.pagination_strategy.limit() and not self.limit_option:
-            raise ValueError("limit_option must be set if the pagination strategy has a limit")
+        if self.page_size_option and not self.pagination_strategy.limit():
+            raise ValueError("page_size_option cannot be set if the pagination strategy does not have a limit")
+        if self.pagination_strategy.limit() and not self.page_size_option:
+            raise ValueError("page_size_option must be set if the pagination strategy has a limit")
         if isinstance(self.url_base, str):
             self.url_base = InterpolatedString(string=self.url_base, options=options)
 
@@ -156,7 +158,7 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
         if self.page_token_option.inject_into == option_type:
             if option_type != RequestOptionType.path and self._token:
                 options[self.page_token_option.field_name] = self._token
-        if self.limit_option and self.pagination_strategy.limit() and self.limit_option.inject_into == option_type:
+        if self.page_size_option and self.pagination_strategy.limit() and self.page_size_option.inject_into == option_type:
             if option_type != RequestOptionType.path:
-                options[self.limit_option.field_name] = self.pagination_strategy.limit()
+                options[self.page_size_option.field_name] = self.pagination_strategy.limit()
         return options

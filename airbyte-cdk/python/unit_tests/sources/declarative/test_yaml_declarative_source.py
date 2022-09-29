@@ -30,7 +30,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 #             paginator:
 #               type: "DefaultPaginator"
 #               page_size: 10
-#               limit_option:
+#               page_size_option:
 #                 inject_into: request_parameter
 #                 field_name: page_size
 #               page_token_option:
@@ -74,7 +74,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 #             paginator:
 #               type: "DefaultPaginator"
 #               page_size: 10
-#               limit_option:
+#               page_size_option:
 #                 inject_into: request_parameter
 #                 field_name: page_size
 #               page_token_option:
@@ -120,7 +120,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 #             paginator:
 #               type: "DefaultPaginator"
 #               page_size: 10
-#               limit_option:
+#               page_size_option:
 #                 inject_into: request_parameter
 #                 field_name: page_size
 #               page_token_option:
@@ -175,7 +175,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 #             paginator:
 #               type: "DefaultPaginator"
 #               page_size: 10
-#               limit_option:
+#               page_size_option:
 #                 inject_into: request_parameter
 #                 field_name: page_size
 #               page_token_option:
@@ -332,7 +332,7 @@ def test_generate_schema():
 
     default_paginator = schema["definitions"]["DefaultPaginator"]["allOf"][1]
     assert {"page_token_option", "pagination_strategy", "config", "url_base"}.issubset(default_paginator["required"])
-    assert default_paginator["properties"]["limit_option"]["$ref"] == "#/definitions/RequestOption"
+    assert default_paginator["properties"]["page_size_option"]["$ref"] == "#/definitions/RequestOption"
     assert default_paginator["properties"]["page_token_option"]["$ref"] == "#/definitions/RequestOption"
     assert {"$ref": "#/definitions/CursorPaginationStrategy"} in default_paginator["properties"]["pagination_strategy"]["anyOf"]
     assert {"$ref": "#/definitions/OffsetIncrement"} in default_paginator["properties"]["pagination_strategy"]["anyOf"]

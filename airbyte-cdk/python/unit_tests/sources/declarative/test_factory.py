@@ -281,7 +281,7 @@ selector:
     condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
     type: "DefaultPaginator"
-    limit_option:
+    page_size_option:
       inject_into: request_parameter
       field_name: page_size
     page_token_option:
@@ -477,7 +477,7 @@ def test_config_with_defaults():
         retriever:
           paginator:
             type: "DefaultPaginator"
-            limit_option:
+            page_size_option:
               inject_into: request_parameter
               field_name: page_size
             page_token_option:
@@ -526,7 +526,7 @@ def test_create_default_paginator():
       paginator:
         type: "DefaultPaginator"
         url_base: "https://airbyte.io"
-        limit_option:
+        page_size_option:
           inject_into: request_parameter
           field_name: page_size
         page_token_option:
@@ -682,7 +682,7 @@ def test_validation_wrong_interface_type():
       type: "DefaultPaginator"
       page_size: 10
       url_base: "https://airbyte.io"
-      limit_option:
+      page_size_option:
         inject_into: request_parameter
         field_name: page_size
       page_token_option:
@@ -720,7 +720,7 @@ def test_validation_wrong_object_type():
         type: "DefaultPaginator"
         page_size: 10
         url_base: "https://airbyte.io"
-        limit_option:
+        page_size_option:
           inject_into: request_parameter
           field_name: page_size
         page_token_option:

@@ -8,8 +8,7 @@ Conversely, pages don't have semantic value. More pages simply means that more r
 
 The paginator is defined by
 
-- `page_size`: The number of records to fetch in a single request
-- `limit_option`: How to specify the page size in the outgoing HTTP request
+- `page_size_option`: How to specify the page size in the outgoing HTTP request
 - `pagination_strategy`: How to compute the next page to fetch
 - `page_token_option`: How to specify the next page to fetch in the outgoing HTTP request
 
@@ -30,12 +29,12 @@ The following paginator example will fetch 5 records per page, and specify the p
 ```yaml
 paginator:
   type: "DefaultPaginator"
-  page_size: 5
-  limit_option:
+  page_size_option:
     inject_into: "request_parameter"
     field_name: "page_size"
   pagination_strategy:
     type: "PageIncrement"
+    page_size: 5
   page_token:
     inject_into: "request_parameter"
     field_name: "page"
@@ -57,12 +56,12 @@ The following paginator example will fetch 5 records per page, and specify the o
 ```yaml
 paginator:
   type: "DefaultPaginator"
-  page_size: 5
-  limit_option:
+  page_size_option:
     inject_into: "request_parameter"
     field_name: "page_size"
   pagination_strategy:
     type: "OffsetIncrement"
+    page_size: 5
   page_token:
     field_name: "offset"
     inject_into: "request_parameter"

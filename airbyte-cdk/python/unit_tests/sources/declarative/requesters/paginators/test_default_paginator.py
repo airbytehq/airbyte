@@ -109,7 +109,7 @@ def test_default_paginator_with_cursor(
     expected_next_page_token,
     limit,
 ):
-    limit_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", options={})
+    page_size_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", options={})
     cursor_value = "{{ response.next }}"
     url_base = "https://airbyte.io"
     config = {}
@@ -123,7 +123,7 @@ def test_default_paginator_with_cursor(
         options=options,
     )
     paginator = DefaultPaginator(
-        limit_option=limit_request_option,
+        page_size_option=page_size_request_option,
         page_token_option=page_token_request_option,
         pagination_strategy=strategy,
         config=config,
@@ -151,7 +151,7 @@ def test_default_paginator_with_cursor(
 
 
 def test_limit_cannot_be_set_in_path():
-    limit_request_option = RequestOption(inject_into=RequestOptionType.path, options={})
+    page_size_request_option = RequestOption(inject_into=RequestOptionType.path, options={})
     page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", options={})
     cursor_value = "{{ response.next }}"
     url_base = "https://airbyte.io"
@@ -160,7 +160,7 @@ def test_limit_cannot_be_set_in_path():
     strategy = CursorPaginationStrategy(page_size=5, cursor_value=cursor_value, config=config, options=options)
     try:
         DefaultPaginator(
-            limit_option=limit_request_option,
+            page_size_option=page_size_request_option,
             page_token_option=page_token_request_option,
             pagination_strategy=strategy,
             config=config,
@@ -172,8 +172,8 @@ def test_limit_cannot_be_set_in_path():
         pass
 
 
-def test_limit_option_cannot_be_set_if_strategy_has_no_limit():
-    limit_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="page_size", options={})
+def test_page_size_option_cannot_be_set_if_strategy_has_no_limit():
+    page_size_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="page_size", options={})
     page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", options={})
     cursor_value = "{{ response.next }}"
     url_base = "https://airbyte.io"
@@ -182,7 +182,7 @@ def test_limit_option_cannot_be_set_if_strategy_has_no_limit():
     strategy = CursorPaginationStrategy(page_size=None, cursor_value=cursor_value, config=config, options=options)
     try:
         DefaultPaginator(
-            limit_option=limit_request_option,
+            page_size_option=page_size_request_option,
             page_token_option=page_token_request_option,
             pagination_strategy=strategy,
             config=config,
@@ -194,8 +194,8 @@ def test_limit_option_cannot_be_set_if_strategy_has_no_limit():
         pass
 
 
-def test_limit_option_must_be_set_if_strategy_has_limit():
-    limit_request_option = None
+def test_page_size_option_must_be_set_if_strategy_has_limit():
+    page_size_request_option = None
     page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", options={})
     cursor_value = "{{ response.next }}"
     url_base = "https://airbyte.io"
@@ -204,7 +204,7 @@ def test_limit_option_must_be_set_if_strategy_has_limit():
     strategy = CursorPaginationStrategy(page_size=5, cursor_value=cursor_value, config=config, options=options)
     try:
         DefaultPaginator(
-            limit_option=limit_request_option,
+            page_size_option=page_size_request_option,
             page_token_option=page_token_request_option,
             pagination_strategy=strategy,
             config=config,
@@ -217,10 +217,10 @@ def test_limit_option_must_be_set_if_strategy_has_limit():
 
 
 def test_reset():
-    limit_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", options={})
+    page_size_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", options={})
     page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", options={})
     url_base = "https://airbyte.io"
     config = {}
     strategy = MagicMock()
-    DefaultPaginator(limit_request_option, page_token_request_option, strategy, config, url_base, options={}).reset()
+    DefaultPaginator(page_size_request_option, page_token_request_option, strategy, config, url_base, options={}).reset()
     assert strategy.reset.called
