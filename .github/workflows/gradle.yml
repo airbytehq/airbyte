@@ -798,6 +798,12 @@ jobs:
           nodes:
           - role: control-plane
           - role: worker
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            apiServer:
+              extraArgs:
+                "service-node-port-range": "80-32767"
           EOF
 
       - name: KIND Kubernetes Cluster Setup
