@@ -36,11 +36,21 @@ class JobsResource(HttpStream):
     name = None
     primary_key = None
     http_method = None
+    raise_on_http_errors = True
     url_base = "https://youtubereporting.googleapis.com/v1/"
     JOB_NAME = "Airbyte reporting job"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+    def should_retry(self, response: requests.Response) -> bool:
+        # if the connected Google account is not bounded with target Youtube account,
+        # we receive `401: UNAUTHENTICATED`
+        if response.status_code == 401:
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        else:
+            return super().should_retry(response)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return [response.json()]
@@ -169,13 +179,12 @@ class SourceYoutubeAnalytics(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         authenticator = self.get_authenticator(config)
         jobs_resource = JobsResource(authenticator=authenticator)
-
-        try:
-            jobs_resource.list()
-        except Exception as e:
-            return False, str(e)
-
-        return True, None
+        result = jobs_resource.list()
+        if result:
+            return True, None
+        else:
+            return False, "The Youtube account is not valid. Please make sure you're trying to use the active Youtube Account connected to your Google Account."
+        
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
