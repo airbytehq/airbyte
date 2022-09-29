@@ -49,7 +49,7 @@ export async function render<
   };
 
   let renderResult: RenderResult<Q, Container>;
-  act(() => {
+  await act(async () => {
     renderResult = rtlRender<Q, Container>(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
   });
 
