@@ -1,6 +1,6 @@
 import { render, mockConnection } from "test-utils/testutils";
 
-import SettingsView from "./SettingsView";
+import { ConnectionSettingsTab } from "./ConnectionSettingsTab";
 
 let mockIsAdvancedMode = false;
 const setMockIsAdvancedMode = (newSetting: boolean) => {
@@ -40,11 +40,11 @@ describe("<SettingsView />", () => {
     let container: HTMLElement;
 
     setMockIsAdvancedMode(false);
-    ({ container } = await render(<SettingsView connection={mockConnection} />));
+    ({ container } = await render(<ConnectionSettingsTab connection={mockConnection} />));
     expect(container.textContent).not.toContain("Connection State");
 
     setMockIsAdvancedMode(true);
-    ({ container } = await render(<SettingsView connection={mockConnection} />));
+    ({ container } = await render(<ConnectionSettingsTab connection={mockConnection} />));
     expect(container.textContent).toContain("Connection State");
   });
 });

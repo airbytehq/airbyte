@@ -9,9 +9,9 @@ import { Text } from "components/ui/Text";
 
 import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 
-import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
-import ConnectionName from "./ConnectionName";
+import { ConnectionName } from "./ConnectionName";
 import styles from "./ConnectionPageTitle.module.scss";
+import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 import { StatusMainInfo } from "./StatusMainInfo";
 
 interface ConnectionPageTitleProps {
@@ -22,7 +22,7 @@ interface ConnectionPageTitleProps {
   onStatusUpdating?: (updating: boolean) => void;
 }
 
-const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
+export const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
   source,
   destination,
   connection,
@@ -90,5 +90,3 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
     </div>
   );
 };
-
-export default ConnectionPageTitle;

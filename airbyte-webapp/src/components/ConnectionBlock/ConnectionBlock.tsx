@@ -5,8 +5,8 @@ import React from "react";
 
 import { Card } from "components/ui/Card";
 
-import { ConnectionBlockItem, Content } from "./components/ConnectionBlockItem";
 import styles from "./ConnectionBlock.module.scss";
+import { ConnectionBlockItem, Content } from "./ConnectionBlockItem";
 
 interface IProps {
   itemFrom?: { name: string; icon?: string };
