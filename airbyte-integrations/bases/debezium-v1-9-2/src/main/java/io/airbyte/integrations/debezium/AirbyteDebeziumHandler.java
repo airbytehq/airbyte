@@ -58,32 +58,29 @@ public class AirbyteDebeziumHandler {
     this.firstRecordWaitTime = firstRecordWaitTime;
   }
 
-  public AutoCloseableIterator<AirbyteMessage> getSnapshotIterators(final ConfiguredAirbyteCatalog catalog,
+  public AutoCloseableIterator<AirbyteMessage> getSnapshotIterators(
+                                                                    final ConfiguredAirbyteCatalog catalogContainingStreamsToSnapshot,
                                                                     final CdcMetadataInjector cdcMetadataInjector,
-                                                                    final Properties connectorProperties,
+                                                                    final Properties snapshotProperties,
                                                                     final CdcStateHandler cdcStateHandler,
                                                                     final Instant emittedAt) {
-    LOGGER.info("Running snapshot for " + catalog.getStreams().size() + " new tables");
+
+    LOGGER.info("Running snapshot for " + catalogContainingStreamsToSnapshot.getStreams().size() + " new tables");
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
 
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
-    /*
-     * TODO(Subodh) : Since Postgres doesn't require schema history this is fine but we need to fix this
-     * for MySQL and MSSQL
-     */
-    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = Optional.empty();
-    final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties,
+    final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(snapshotProperties,
         config,
-        catalog,
+        catalogContainingStreamsToSnapshot,
         offsetManager,
-        schemaHistoryManager);
-    publisher.start(queue);
+        schemaHistoryManager(new EmptySavedInfo()));
+    tableSnapshotPublisher.start(queue);
 
     final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator(
         queue,
         targetPosition,
-        publisher::hasClosed,
-        publisher::close,
+        tableSnapshotPublisher::hasClosed,
+        tableSnapshotPublisher::close,
         firstRecordWaitTime);
 
     return AutoCloseableIterators.concatWithEagerClose(AutoCloseableIterators
@@ -153,6 +150,20 @@ public class AirbyteDebeziumHandler {
   public static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
         .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
+  }
+
+  private static class EmptySavedInfo implements CdcSavedInfoFetcher {
+
+    @Override
+    public JsonNode getSavedOffset() {
+      return null;
+    }
+
+    @Override
+    public Optional<JsonNode> getSavedSchemaHistory() {
+      return Optional.empty();
+    }
+
   }
 
 }

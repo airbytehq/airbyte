@@ -7,7 +7,9 @@ package io.airbyte.integrations.destination.bigquery;
 import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Clustering;
@@ -30,6 +32,7 @@ import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -42,10 +45,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.util.Strings;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +63,7 @@ public class BigQueryUtils {
   private static final DateTimeFormatter formatter =
       DateTimeFormatter.ofPattern("[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
           "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
+  private static final String USER_AGENT_FORMAT = "%s (GPN: Airbyte)";
 
   public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -231,18 +238,28 @@ public class BigQueryUtils {
    *      "https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported
    *      Google bigquery datatype</a> This method is responsible to adapt JSON DATETIME to Bigquery
    */
-  public static void transformJsonDateTimeToBigDataFormat(final List<String> dateTimeFields, final ObjectNode data) {
+  public static void transformJsonDateTimeToBigDataFormat(final List<String> dateTimeFields, final JsonNode data) {
     dateTimeFields.forEach(e -> {
-      if (data.findValue(e) != null && !data.get(e).isNull()) {
-        final String googleBigQueryDateFormat = QueryParameterValue
-            .dateTime(new DateTime(convertDateToInstantFormat(data
-                .findValue(e)
-                .asText()))
-                    .toString(BIG_QUERY_DATETIME_FORMAT))
-            .getValue();
-        data.put(e, googleBigQueryDateFormat);
+      if (data.isObject() && data.findValue(e) != null && !data.get(e).isNull()) {
+        ObjectNode dataObject = (ObjectNode) data;
+        JsonNode value = data.findValue(e);
+        if (value.isArray()) {
+          ArrayNode arrayNode = (ArrayNode) value;
+          ArrayNode newArrayNode = dataObject.putArray(e);
+          arrayNode.forEach(jsonNode -> newArrayNode.add(getFormattedBigQueryDateTime(jsonNode.asText())));
+        } else if (value.isTextual()) {
+          dataObject.put(e, getFormattedBigQueryDateTime(value.asText()));
+        } else {
+          throw new RuntimeException("Unexpected transformation case");
+        }
       }
     });
+  }
+
+  private static String getFormattedBigQueryDateTime(final String dateTimeValue) {
+    return (dateTimeValue != null ? QueryParameterValue
+        .dateTime(new DateTime(convertDateToInstantFormat(dateTimeValue)).withZone(DateTimeZone.UTC).toString(BIG_QUERY_DATETIME_FORMAT)).getValue()
+        : null);
   }
 
   /**
@@ -251,7 +268,11 @@ public class BigQueryUtils {
   public static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
     final String srcNamespace = stream.getStream().getNamespace();
     final String schemaName = srcNamespace == null ? getDatasetId(config) : srcNamespace;
-    return NAME_TRANSFORMER.getNamespace(schemaName);
+    return sanitizeDatasetId(schemaName);
+  }
+
+  public static String sanitizeDatasetId(String datasetId) {
+    return NAME_TRANSFORMER.getNamespace(datasetId);
   }
 
   public static JobInfo.WriteDisposition getWriteDisposition(final DestinationSyncMode syncMode) {
@@ -331,6 +352,17 @@ public class BigQueryUtils {
         throw new BigQueryException(e.getCode(), errorMessage, e);
       }
     }
+  }
+
+  public static HeaderProvider getHeaderProvider() {
+    String connectorName = getConnectorNameOrDefault();
+    return () -> ImmutableMap.of("user-agent", String.format(USER_AGENT_FORMAT, connectorName));
+  }
+
+  private static String getConnectorNameOrDefault() {
+    return Optional.ofNullable(System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE))
+        .map(name -> name.replace("airbyte/", Strings.EMPTY).replace(":", "/"))
+        .orElse("destination-bigquery");
   }
 
   private static String convertDateToInstantFormat(final String data) {

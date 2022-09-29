@@ -54,7 +54,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["dimensions", "stat_time_day"]
+        "default_cursor_field": ["stat_time_day"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -65,7 +65,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["dimensions", "stat_time_day"]
+        "default_cursor_field": ["stat_time_day"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -76,7 +76,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["dimensions", "stat_time_day"]
+        "default_cursor_field": ["stat_time_day"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -87,7 +87,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["dimensions", "stat_time_day"]
+        "default_cursor_field": ["stat_time_day"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -99,7 +99,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["dimensions", "stat_time_day"]
+        "default_cursor_field": ["stat_time_day"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -110,7 +110,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["dimensions", "stat_time_day"]
+        "default_cursor_field": ["stat_time_day"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -121,7 +121,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["dimensions", "stat_time_day"]
+        "default_cursor_field": ["stat_time_day"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -132,7 +132,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["dimensions", "stat_time_day"]
+        "default_cursor_field": ["stat_time_day"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"

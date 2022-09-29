@@ -3,9 +3,12 @@
 
 .mainView {
   cursor: pointer;
-  min-height: 75px;
+  height: unset !important;
+  min-height: 70px;
+  padding: variables.$spacing-lg 0;
 
   .titleCell {
+    width: 80%;
     display: flex;
     color: colors.$dark-blue;
     min-width: 0;
@@ -29,11 +32,25 @@
     }
 
     .justification {
+      width: 80%;
       display: flex;
       flex-grow: 1;
       flex-direction: column;
       justify-content: center;
       min-width: 0;
+    }
+  }
+
+  &.open {
+    .arrow {
+      transform: rotate(-0deg);
+    }
+  }
+
+  &.failed {
+    .arrow,
+    .lastAttempt {
+      color: colors.$red;
     }
   }
 
@@ -56,24 +73,11 @@
       font-size: 22px;
       margin: 0 30px 0 50px;
 
+      div:hover > &,
       div:hover > div > &,
-      div:hover > div > div > &,
-      div:hover > & {
+      div:hover > div > div > & {
         opacity: 1;
       }
-    }
-  }
-
-  &.open {
-    .arrow {
-      transform: rotate(-0deg);
-    }
-  }
-
-  &.failed {
-    .arrow,
-    .lastAttempt {
-      color: colors.$red;
     }
   }
 

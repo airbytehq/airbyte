@@ -7,12 +7,12 @@ import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
 import { useConfig } from "../../config";
-import { DestinationRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { DestinationRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 import { useAnalyticsService } from "./Analytics";
-import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useRemoveConnectionsFromList } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const destinationsKeys = {
@@ -94,9 +94,10 @@ const useDeleteDestination = () => {
   const service = useDestinationService();
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
+  const removeConnectionsFromList = useRemoveConnectionsFromList();
 
   return useMutation(
-    (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionRead[] }) =>
+    (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionListItem[] }) =>
       service.delete(payload.destination.destinationId),
     {
       onSuccess: (_data, ctx) => {
@@ -116,12 +117,8 @@ const useDeleteDestination = () => {
             } as DestinationList)
         );
 
-        // To delete connections with current destination from local store
         const connectionIds = ctx.connectionsWithDestination.map((item) => item.connectionId);
-
-        queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
-          connections: ls?.connections.filter((c) => connectionIds.includes(c.connectionId)) ?? [],
-        }));
+        removeConnectionsFromList(connectionIds);
       },
     }
   );

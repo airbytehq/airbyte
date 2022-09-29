@@ -80,6 +80,8 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date        | Pull Request                                             | Subject                                                                                                 |
 |:--------|:------------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.1.8   | 2022-08-29  | [16110](https://github.com/airbytehq/airbyte/pull/16110) | Add state checkpoint interval                                                                           |
+| 0.1.7   | 2022-08-26  | [15972](https://github.com/airbytehq/airbyte/pull/15972) | Shift start date for stream if it exceeds 400 days                                                      |
 | 0.1.6   | 2022-06-22  | [14000](https://github.com/airbytehq/airbyte/pull/14000) | Update Records stream schema and align tests with connectors' best practices                            |
 | 0.1.5   | 2022-06-22  | [13896](https://github.com/airbytehq/airbyte/pull/13896) | Add lookback window parameters to fetch messages with a rolling window and catch status updates         |
 | 0.1.4   | 2022-04-22  | [12157](https://github.com/airbytehq/airbyte/pull/12157) | Use Retry-After header for backoff                                                                      |

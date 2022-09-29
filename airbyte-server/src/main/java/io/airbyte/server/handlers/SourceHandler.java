@@ -220,18 +220,16 @@ public class SourceHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // "delete" all connections associated with source as well.
     // Delete connections first in case it fails in the middle, source will still be visible
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody()
+    final var workspaceIdRequestBody = new WorkspaceIdRequestBody()
         .workspaceId(source.getWorkspaceId());
-    for (final ConnectionRead connectionRead : connectionsHandler
-        .listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
-      if (!connectionRead.getSourceId().equals(source.getSourceId())) {
-        continue;
-      }
 
-      connectionsHandler.deleteConnection(connectionRead.getConnectionId());
-    }
+    connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)
+        .getConnections().stream()
+        .filter(con -> con.getSourceId().equals(source.getSourceId()))
+        .map(ConnectionRead::getConnectionId)
+        .forEach(connectionsHandler::deleteConnection);
 
-    final ConnectorSpecification spec = getSpecFromSourceId(source.getSourceId());
+    final var spec = getSpecFromSourceId(source.getSourceId());
     final var fullConfig = secretsRepositoryReader.getSourceConnectionWithSecrets(source.getSourceId()).getConfiguration();
 
     // persist
@@ -318,7 +316,8 @@ public class SourceHandler {
         .workspaceId(sourceConnection.getWorkspaceId())
         .sourceDefinitionId(sourceConnection.getSourceDefinitionId())
         .connectionConfiguration(sourceConnection.getConfiguration())
-        .name(sourceConnection.getName());
+        .name(sourceConnection.getName())
+        .icon(SourceDefinitionsHandler.loadIcon(standardSourceDefinition.getIcon()));
   }
 
 }

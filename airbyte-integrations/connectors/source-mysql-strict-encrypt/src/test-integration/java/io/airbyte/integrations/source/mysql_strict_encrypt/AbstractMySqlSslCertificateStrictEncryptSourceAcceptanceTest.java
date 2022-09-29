@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql_strict_encrypt;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -31,7 +32,9 @@ public abstract class AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTe
     certs = MySqlUtils.getCertificate(container, true);
 
     var sslMode = getSslConfig();
-
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+            .put("method", "STANDARD")
+            .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
@@ -40,7 +43,7 @@ public abstract class AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTe
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put(JdbcUtils.SSL_KEY, true)
         .put(JdbcUtils.SSL_MODE_KEY, sslMode)
-        .put("replication_method", ReplicationMethod.STANDARD)
+        .put("replication_method", replicationMethod)
         .build());
   }
 

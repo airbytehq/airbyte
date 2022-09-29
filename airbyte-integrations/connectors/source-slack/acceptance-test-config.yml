@@ -2,6 +2,8 @@ connector_image: airbyte/source-slack:dev
 tests:
   spec:
     - spec_path: "source_slack/spec.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.15"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -16,12 +18,12 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_catalog.json"
-      timeout_seconds: 7200
+      expect_records:
+        path: "integration_tests/expected_records.txt"
   incremental:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 7200
+      configured_catalog_path: "integration_tests/incremental_catalog.json"
+      future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_catalog.json"
-      timeout_seconds: 7200

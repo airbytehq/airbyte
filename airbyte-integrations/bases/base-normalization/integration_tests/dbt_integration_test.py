@@ -28,6 +28,7 @@ NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
 NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT"
+NORMALIZATION_TEST_TIDB_DB_PORT = "NORMALIZATION_TEST_TIDB_DB_PORT"
 
 
 class DbtIntegrationTest(object):
@@ -56,6 +57,8 @@ class DbtIntegrationTest(object):
             self.setup_mssql_db()
         if DestinationType.CLICKHOUSE.value in destinations_to_test:
             self.setup_clickhouse_db()
+        if DestinationType.TIDB.value in destinations_to_test:
+            self.setup_tidb_db()
 
     def setup_postgres_db(self):
         start_db = True
@@ -293,6 +296,59 @@ class DbtIntegrationTest(object):
         with open("../secrets/clickhouse.json", "w") as fh:
             fh.write(json.dumps(config))
 
+    def setup_tidb_db(self):
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_TIDB_DB_PORT):
+            port = int(os.getenv(NORMALIZATION_TEST_TIDB_DB_PORT))
+            start_db = False
+        else:
+            port = self.find_free_port()
+        config = {
+            "host": "127.0.0.1",
+            "port": port,
+            "database": self.target_schema,
+            "schema": self.target_schema,
+            "username": "root",
+            "password": "",
+            "ssl": False,
+        }
+        if start_db:
+            self.db_names.append("tidb")
+            print("Starting tidb container for tests")
+            commands = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_tidb",
+                "-p",
+                f"{config['port']}:4000",
+                "-d",
+                "pingcap/tidb:v5.4.0",
+            ]
+            print("Executing: ", " ".join(commands))
+            subprocess.call(commands)
+            print("....Waiting for TiDB to start...15 sec")
+            time.sleep(15)
+        command_create_db = [
+            "docker",
+            "run",
+            "--rm",
+            "--link",
+            f"{self.container_prefix}_tidb:tidb",
+            "arey/mysql-client",
+            "--host=tidb",
+            "--user=root",
+            "--port=4000",
+            f"--execute=CREATE DATABASE IF NOT EXISTS {self.target_schema}",
+        ]
+        print("Executing: ", " ".join(command_create_db))
+        subprocess.call(command_create_db)
+        if not os.path.exists("../secrets"):
+            os.makedirs("../secrets")
+        with open("../secrets/tidb.json", "w") as fh:
+            fh.write(json.dumps(config))
+
     @staticmethod
     def find_free_port():
         """
@@ -396,6 +452,8 @@ class DbtIntegrationTest(object):
             return "airbyte/normalization-snowflake:dev"
         elif DestinationType.REDSHIFT.value == destination_type.value:
             return "airbyte/normalization-redshift:dev"
+        elif DestinationType.TIDB.value == destination_type.value:
+            return "airbyte/normalization-tidb:dev"
         else:
             return "airbyte/normalization:dev"
 

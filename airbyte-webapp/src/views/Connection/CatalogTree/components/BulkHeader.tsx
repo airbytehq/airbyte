@@ -8,10 +8,12 @@ import { Button, Cell, Header, Switch } from "components";
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchemaToField } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
 import { flatten, getPathType } from "../utils";
+import styles from "./BulkHeader.module.scss";
 import { pathDisplayName, PathPopout } from "./PathPopout";
 import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
 
@@ -25,16 +27,6 @@ const SchemaHeader = styled(Header)`
   background: ${({ theme }) => theme.primaryColor};
   border-radius: 8px 8px 0 0;
 `;
-
-const ActionButton = styled(Button).attrs({
-  type: "button",
-})`
-  white-space: nowrap;
-`;
-
-interface BulkHeaderProps {
-  destinationSupportedSyncModes: DestinationSyncMode[];
-}
 
 function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   const primitiveFieldsByStream = selectedBatchNodes.map(({ stream }) => {
@@ -59,18 +51,21 @@ function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   return Array.from(pathMap.values());
 }
 
-export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSyncModes }) => {
+export const BulkHeader: React.FC = () => {
+  const {
+    destDefinition: { supportedDestinationSyncModes },
+  } = useConnectionFormService();
   const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEdit();
 
   const availableSyncModes = useMemo(
     () =>
       SUPPORTED_MODES.filter(([syncMode, destinationSyncMode]) => {
         const supportableModes = intersection(selectedBatchNodes.flatMap((n) => n.stream?.supportedSyncModes));
-        return supportableModes.includes(syncMode) && destinationSupportedSyncModes.includes(destinationSyncMode);
+        return supportableModes.includes(syncMode) && supportedDestinationSyncModes?.includes(destinationSyncMode);
       }).map(([syncMode, destinationSyncMode]) => ({
         value: { syncMode, destinationSyncMode },
       })),
-    [selectedBatchNodes, destinationSupportedSyncModes]
+    [selectedBatchNodes, supportedDestinationSyncModes]
   );
 
   const primitiveFields: SyncSchemaField[] = useMemo(
@@ -136,12 +131,12 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
       <HeaderCell />
       <HeaderCell>
         <ActionCell>
-          <ActionButton onClick={onCancel}>
+          <Button className={styles.actionButton} onClick={onCancel}>
             <FormattedMessage id="connectionForm.bulkEdit.cancel" />
-          </ActionButton>
-          <ActionButton onClick={onApply}>
+          </Button>
+          <Button className={styles.actionButton} onClick={onApply}>
             <FormattedMessage id="connectionForm.bulkEdit.apply" />
-          </ActionButton>
+          </Button>
         </ActionCell>
       </HeaderCell>
     </SchemaHeader>

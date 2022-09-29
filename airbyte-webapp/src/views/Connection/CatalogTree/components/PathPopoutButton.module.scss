@@ -1,15 +1,21 @@
 @use "../../../../scss/colors";
 @use "../../../../scss/variables";
 
+.arrow {
+  color: colors.$grey-300;
+  vertical-align: sub;
+  transition: color 0.3s;
+}
+
 .button {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   gap: variables.$spacing-sm;
-
   padding: 8px;
   border-radius: variables.$border-radius-xs;
   background-color: colors.$grey-100;
+  border: none;
   cursor: pointer;
 
   &:hover {
@@ -22,10 +28,4 @@
 .text {
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.arrow {
-  color: colors.$grey-300;
-  vertical-align: sub;
-  transition: color 0.3s;
 }

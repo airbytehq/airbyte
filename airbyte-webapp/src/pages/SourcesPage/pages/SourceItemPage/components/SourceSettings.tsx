@@ -4,7 +4,9 @@ import { FormattedMessage } from "react-intl";
 import DeleteBlock from "components/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
@@ -15,15 +17,17 @@ import styles from "./SourceSettings.module.scss";
 
 interface SourceSettingsProps {
   currentSource: SourceRead;
-  connectionsWithSource: WebBackendConnectionRead[];
+  connectionsWithSource: WebBackendConnectionListItem[];
 }
 
 const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connectionsWithSource }) => {
   const { mutateAsync: updateSource } = useUpdateSource();
   const { mutateAsync: deleteSource } = useDeleteSource();
-
   const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+  const formId = useUniqueFormId();
+  const { clearFormChange } = useFormChangeTrackerService();
 
+  useTrackPage(PageTrackingCodes.SOURCE_ITEM_SETTINGS);
   useEffect(() => {
     return () => {
       setDocumentationPanelOpen(false);
@@ -44,11 +48,15 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
       sourceId: currentSource.sourceId,
     });
 
-  const onDelete = () => deleteSource({ connectionsWithSource, source: currentSource });
+  const onDelete = async () => {
+    clearFormChange(formId);
+    await deleteSource({ connectionsWithSource, source: currentSource });
+  };
 
   return (
     <div className={styles.content}>
       <ConnectorCard
+        formId={formId}
         title={<FormattedMessage id="sources.sourceSettings" />}
         isEditMode
         onSubmit={onSubmit}

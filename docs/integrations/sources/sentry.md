@@ -58,7 +58,8 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                           |
-|:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------------|
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.1.6   | 2022-08-29 | [16112](https://github.com/airbytehq/airbyte/pull/16112) | Revert back to the Python CDK                     |
 | 0.1.5   | 2022-08-24 | [15911](https://github.com/airbytehq/airbyte/pull/15911) | Bugfix to allowing reading schemas at runtime     |
 | 0.1.4   | 2022-08-19 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml at runtime    |
 | 0.1.3   | 2022-08-17 | [15734](https://github.com/airbytehq/airbyte/pull/15734) | Fix yaml based on the new schema validator        |
