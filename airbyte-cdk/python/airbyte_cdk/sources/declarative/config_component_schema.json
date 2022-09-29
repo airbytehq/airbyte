@@ -46,7 +46,7 @@
         },
         "name": {
           "type": "string",
-          "default": "<property object at 0x1079b3c20>"
+          "default": "<property object at 0x1064298a0>"
         },
         "_name": {
           "type": "string",
@@ -73,7 +73,7 @@
               "type": "string"
             }
           ],
-          "default": "<property object at 0x1078f1590>"
+          "default": "<property object at 0x106429760>"
         },
         "_primary_key": {
           "type": "string",
@@ -173,7 +173,7 @@
             },
             "name": {
               "type": "string",
-              "default": "<property object at 0x1078f1630>"
+              "default": "<property object at 0x106406f20>"
             },
             "_name": {
               "type": "string",
@@ -200,7 +200,7 @@
                   "type": "string"
                 }
               ],
-              "default": "<property object at 0x10799fbd0>"
+              "default": "<property object at 0x1064073d0>"
             },
             "_primary_key": {
               "type": "string",
@@ -409,7 +409,7 @@
           "properties": {}
         }
       ],
-      "description": "NoAuth()"
+      "description": "NoAuth(options: dataclasses.InitVar[typing.Mapping[str, typing.Any]])"
     },
     "DeclarativeAuthenticator": {
       "type": "object",
@@ -648,7 +648,7 @@
           }
         }
       ],
-      "description": "\n    Error handler that sequentially iterates over a list of `ErrorHandler`s\n\n    Sample config chaining 2 different retriers:\n        error_handler:\n          type: \"CompositeErrorHandler\"\n          error_handlers:\n            - response_filters:\n                - predicate: \"{{ 'codase' in response }}\"\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoffStrategy\"\n                  backoff_time_in_seconds: 5\n            - response_filters:\n                - http_codes: [403]\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoffStrategy\"\n                  backoff_time_in_seconds: 10\n    Attributes:\n        error_handlers (List[ErrorHandler]): list of error handlers\n    "
+      "description": "\n    Error handler that sequentially iterates over a list of `ErrorHandler`s\n\n    Sample config chaining 2 different retriers:\n        error_handler:\n          type: \"CompositeErrorHandler\"\n          error_handlers:\n            - response_filters:\n                - predicate: \"{{ 'codase' in response }}\"\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoffStrategy\"\n                  backoff_time_in_seconds: 5\n            - response_filters:\n                - http_codes: [ 403 ]\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoffStrategy\"\n                  backoff_time_in_seconds: 10\n    Attributes:\n        error_handlers (List[ErrorHandler]): list of error handlers\n    "
     },
     "DefaultErrorHandler": {
       "allOf": [
@@ -666,7 +666,7 @@
             },
             "max_retries": {
               "type": "integer",
-              "default": "<property object at 0x107957540>"
+              "default": "<property object at 0x1063ca2f0>"
             },
             "_max_retries": {
               "type": "integer",
@@ -694,7 +694,7 @@
           }
         }
       ],
-      "description": "\n    Default error handler.\n\n    By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.\n\n    If the response is successful, then return SUCCESS\n    Otherwise, iterate over the response_filters.\n    If any of the filter match the response, then return the appropriate status.\n    If the match is RETRY, then iterate sequentially over the backoff_strategies and return the first non-None backoff time.\n\n    Sample configs:\n\n    1. retry 10 times\n    `\n        error_handler:\n          max_retries: 10\n    `\n    2. backoff for 5 seconds\n    `\n        error_handler:\n          backoff_strategies:\n            - type: \"ConstantBackoffStrategy\"\n              backoff_time_in_seconds: 5\n    `\n    3. retry on HTTP 404\n    `\n        error_handler:\n          response_filters:\n            - http_codes: [404]\n              action: RETRY\n    `\n    4. ignore HTTP 404\n    `\n      error_handler:\n        - http_codes: [404]\n          action: IGNORE\n    `\n    5. retry if error message contains `retrythisrequest!` substring\n    `\n        error_handler:\n          response_filters:\n            - error_message_contain: \"retrythisrequest!\"\n              action: IGNORE\n    `\n    6. retry if 'code' is a field present in the response body\n    `\n        error_handler:\n          response_filters:\n            - predicate: \"{{ 'code' in response }}\"\n              action: IGNORE\n    `\n\n    7. ignore 429 and retry on 404\n    `\n        error_handler:\n        - http_codes: [429]\n          action: IGNORE\n        - http_codes: [404]\n          action: RETRY\n    `\n\n    Attributes:\n        response_filters (Optional[List[HttpResponseFilter]]): response filters to iterate on\n        max_retries (Optional[int]): maximum retry attempts\n        backoff_strategies (Optional[List[BackoffStrategy]]): list of backoff strategies to use to determine how long\n        to wait before retrying\n    "
+      "description": "\n    Default error handler.\n\n    By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.\n\n    If the response is successful, then return SUCCESS\n    Otherwise, iterate over the response_filters.\n    If any of the filter match the response, then return the appropriate status.\n    If the match is RETRY, then iterate sequentially over the backoff_strategies and return the first non-None backoff time.\n\n    Sample configs:\n\n    1. retry 10 times\n    `\n        error_handler:\n          max_retries: 10\n    `\n    2. backoff for 5 seconds\n    `\n        error_handler:\n          backoff_strategies:\n            - type: \"ConstantBackoffStrategy\"\n              backoff_time_in_seconds: 5\n    `\n    3. retry on HTTP 404\n    `\n        error_handler:\n          response_filters:\n            - http_codes: [ 404 ]\n              action: RETRY\n    `\n    4. ignore HTTP 404\n    `\n      error_handler:\n        - http_codes: [ 404 ]\n          action: IGNORE\n    `\n    5. retry if error message contains `retrythisrequest!` substring\n    `\n        error_handler:\n          response_filters:\n            - error_message_contain: \"retrythisrequest!\"\n              action: IGNORE\n    `\n    6. retry if 'code' is a field present in the response body\n    `\n        error_handler:\n          response_filters:\n            - predicate: \"{{ 'code' in response }}\"\n              action: IGNORE\n    `\n\n    7. ignore 429 and retry on 404\n    `\n        error_handler:\n        - http_codes: [ 429 ]\n          action: IGNORE\n        - http_codes: [ 404 ]\n          action: RETRY\n    `\n\n    Attributes:\n        response_filters (Optional[List[HttpResponseFilter]]): response filters to iterate on\n        max_retries (Optional[int]): maximum retry attempts\n        backoff_strategies (Optional[List[BackoffStrategy]]): list of backoff strategies to use to determine how long\n        to wait before retrying\n    "
     },
     "HttpResponseFilter": {
       "type": "object",
@@ -946,16 +946,12 @@
         {
           "type": "object",
           "required": [
-            "page_size",
             "page_token_option",
             "pagination_strategy",
             "config",
             "url_base"
           ],
           "properties": {
-            "page_size": {
-              "type": "integer"
-            },
             "page_size_option": {
               "$ref": "#/definitions/RequestOption"
             },
@@ -996,7 +992,7 @@
           }
         }
       ],
-      "description": "\n    Limit paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token\n\n    Examples:\n        1.\n        * fetches up to 10 records at a time by setting the \"limit\" request param to 10\n        * updates the request path with  \"{{ response._metadata.next }}\"\n          paginator:\n            type: \"DefaultPaginator\"\n            page_size_option:\n              inject_into: request_parameter\n              field_name: page_size\n            page_token_option:\n              option_type: path\n            pagination_strategy:\n              type: \"CursorPagination\"\n              cursor_value: \"{{ response._metadata.next }}\"\n        `\n\n        2.\n        * fetches up to 5 records at a time by setting the \"page_size\" header to 5\n        * increments a record counter and set the request parameter \"offset\" to the value of the counter\n        `\n          paginator:\n            type: \"DefaultPaginator\"\n            page_size_option:\n              inject_into: header\n              field_name: page_size\n            pagination_strategy:\n              type: \"OffsetIncrement\"\n            page_token:\n              option_type: \"request_parameter\"\n              field_name: \"offset\"\n        `\n\n        3.\n        * fetches up to 5 records at a time by setting the \"page_size\" request param to 5\n        * increments a page counter and set the request parameter \"page\" to the value of the counter\n        `\n          paginator:\n            type: \"DefaultPaginator\"\n            page_size_option:\n              inject_into: request_parameter\n              field_name: page_size\n            pagination_strategy:\n              type: \"PageIncrement\"\n            page_token:\n              option_type: \"request_parameter\"\n              field_name: \"page\"\n\n    Attributes:\n        page_size (int): the number of records to request\n        limit_option (RequestOption): the request option to set the limit. Cannot be injected in the path.\n        page_token_option (RequestOption): the request option to set the page token\n        pagination_strategy (PaginationStrategy): Strategy defining how to get the next page token\n        config (Config): connection config\n        url_base (Union[InterpolatedString, str]): endpoint's base url\n        decoder (Decoder): decoder to decode the response\n    "
+      "description": "\n    Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token\n\n    Examples:\n        1.\n        * fetches up to 10 records at a time by setting the \"limit\" request param to 10\n        * updates the request path with  \"{{ response._metadata.next }}\"\n        ```\n          paginator:\n            type: \"DefaultPaginator\"\n            page_size_option:\n              inject_into: request_parameter\n              field_name: limit\n            page_token_option:\n              option_type: path\n            pagination_strategy:\n              type: \"CursorPagination\"\n              cursor_value: \"{{ response._metadata.next }}\"\n              page_size: 10\n        ```\n\n        2.\n        * fetches up to 5 records at a time by setting the \"page_size\" header to 5\n        * increments a record counter and set the request parameter \"offset\" to the value of the counter\n        ```\n          paginator:\n            type: \"DefaultPaginator\"\n            page_size_option:\n              inject_into: header\n              field_name: page_size\n            pagination_strategy:\n              type: \"OffsetIncrement\"\n              page_size: 5\n            page_token:\n              option_type: \"request_parameter\"\n              field_name: \"offset\"\n        ```\n\n        3.\n        * fetches up to 5 records at a time by setting the \"page_size\" request param to 5\n        * increments a page counter and set the request parameter \"page\" to the value of the counter\n        ```\n          paginator:\n            type: \"DefaultPaginator\"\n            page_size_option:\n              inject_into: request_parameter\n              field_name: page_size\n            pagination_strategy:\n              type: \"PageIncrement\"\n              page_size: 5\n            page_token_option:\n              option_type: \"request_parameter\"\n              field_name: \"page\"\n        ```\n    Attributes:\n        page_size_option (Optional[RequestOption]): the request option to set the page size. Cannot be injected in the path.\n        page_token_option (RequestOption): the request option to set the page token\n        pagination_strategy (PaginationStrategy): Strategy defining how to get the next page token\n        config (Config): connection config\n        url_base (Union[InterpolatedString, str]): endpoint's base url\n        decoder (Decoder): decoder to decode the response\n    "
     },
     "RequestOption": {
       "type": "object",
@@ -1040,6 +1036,9 @@
             "config": {
               "type": "object"
             },
+            "page_size": {
+              "type": "integer"
+            },
             "stop_condition": {
               "anyOf": [
                 {
@@ -1057,7 +1056,7 @@
           }
         }
       ],
-      "description": "\n    Pagination strategy that evaluates an interpolated string to define the next page token\n\n    Attributes:\n        cursor_value (Union[InterpolatedString, str]): template string evaluating to the cursor value\n        config (Config): connection config\n        stop_condition (Optional[InterpolatedBoolean]): template string evaluating when to stop paginating\n        decoder (Decoder): decoder to decode the response\n    "
+      "description": "\n    Pagination strategy that evaluates an interpolated string to define the next page token\n\n    Attributes:\n        page_size (Optional[int]): the number of records to request\n        cursor_value (Union[InterpolatedString, str]): template string evaluating to the cursor value\n        config (Config): connection config\n        stop_condition (Optional[InterpolatedBoolean]): template string evaluating when to stop paginating\n        decoder (Decoder): decoder to decode the response\n    "
     },
     "PaginationStrategy": {
       "type": "object",
@@ -1262,7 +1261,7 @@
         },
         "datetime_format": {
           "type": "string",
-          "default": "<property object at 0x10798fea0>"
+          "default": "<property object at 0x106404ef0>"
         },
         "_datetime_format": {
           "type": "string",
