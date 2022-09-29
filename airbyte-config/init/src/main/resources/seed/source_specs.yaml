@@ -1105,7 +1105,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.13"
+- dockerImage: "airbyte/source-amplitude:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amplitude"
     connectionSpecification:
@@ -3769,7 +3769,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.25"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
@@ -4257,12 +4257,12 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.17"
+- dockerImage: "airbyte/source-google-sheets:0.2.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Stripe Source Spec"
+      title: "Google Sheets Source Spec"
       type: "object"
       required:
       - "spreadsheet_id"
@@ -4443,7 +4443,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-harvest:0.1.10"
+- dockerImage: "airbyte/source-harvest:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/harvest"
     connectionSpecification:
@@ -4868,7 +4868,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.26"
+- dockerImage: "airbyte/source-intercom:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -5577,7 +5577,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-linkedin-ads:0.1.9"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/linkedin-ads"
     connectionSpecification:
@@ -5819,7 +5819,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailchimp:0.2.14"
+- dockerImage: "airbyte/source-mailchimp:0.2.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mailchimp"
     connectionSpecification:
@@ -10792,7 +10792,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.1.10"
+- dockerImage: "airbyte/source-surveymonkey:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/surveymonkey"
     connectionSpecification:
@@ -11070,7 +11070,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:0.1.15"
+- dockerImage: "airbyte/source-tiktok-marketing:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -11625,7 +11625,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-chat:0.1.9"
+- dockerImage: "airbyte/source-zendesk-chat:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-chat"
     connectionSpecification:
@@ -11880,7 +11880,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.15"
+- dockerImage: "airbyte/source-zendesk-support:0.2.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
