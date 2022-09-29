@@ -29,13 +29,8 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 public class TeradataDestination extends AbstractJdbcDestination  implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestination.class);
-  public static final String DRIVER_CLASS = "com.teradata.jdbc.TeraDriver";
-  public static final String DATABASE_KEY = "database";
-  public static final String JDBC_URL_KEY = "jdbc_url";
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-  public static final String PASSWORD_KEY = "password";
-  public static final String USERNAME_KEY = "username";
-  public static final String SCHEMA_KEY = "schema";
+  public static final String DRIVER_CLASS = DatabaseDriver.TERADATA.getDriverClassName();
+  public static final String PUBLIC_KEY = "public";
 
 
   public static void main(String[] args) throws Exception {
@@ -52,24 +47,26 @@ public class TeradataDestination extends AbstractJdbcDestination  implements Des
   }
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
+    final String schema = Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse(PUBLIC_KEY);
 
     final String jdbcUrl = String.format("jdbc:teradata://%s?",
-        config.get("host").asText());
+        config.get(JdbcUtils.HOST_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
-        .put(JDBC_URL_KEY, jdbcUrl)
-        .put(SCHEMA_KEY, schema);
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl)
+        .put(JdbcUtils.SCHEMA_KEY, schema);
 
-    if (config.has(PASSWORD_KEY)) {
-      configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
-    if (config.has(JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY).asText());
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
   }
+  
+
 }

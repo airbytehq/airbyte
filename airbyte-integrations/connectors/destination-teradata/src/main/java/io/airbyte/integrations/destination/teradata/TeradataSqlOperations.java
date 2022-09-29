@@ -37,22 +37,14 @@ private static final Logger LOGGER = LoggerFactory.getLogger(TeradataSqlOperatio
     }
 
     database.execute(connection -> {
-      File tmpFile = null;
       try {
-        tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
-        writeBatchToFile(tmpFile, records);
         System.out.println("tmpTableName : " + tmpTableName);
+        System.out.println("schemaName : " + schemaName);
         
       } catch (final Exception e) {
         throw new RuntimeException(e);
       } finally {
-        try {
-          if (tmpFile != null) {
-            Files.delete(tmpFile.toPath());
-          }
-        } catch (final IOException e) {
-          throw new RuntimeException(e);
-        }
+        
       }
     });
   }
