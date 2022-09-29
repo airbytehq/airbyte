@@ -33,15 +33,17 @@ public class TemporalInitializationUtils {
     final String temporalNamespace = getTemporalNamespace();
     while (!namespaceExists) {
       try {
-        temporalService.blockingStub().describeNamespace(DescribeNamespaceRequest.newBuilder().setNamespace(temporalNamespace).build());
-        namespaceExists = true;
         // This is to allow the configured namespace to be available in the Temporal
         // cache before continuing on with any additional configuration/bean creation.
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+        temporalService.blockingStub().describeNamespace(DescribeNamespaceRequest.newBuilder().setNamespace(temporalNamespace).build());
+        namespaceExists = true;
       } catch (final StatusRuntimeException e) {
         log.debug("Namespace '{}' does not exist yet.  Re-checking...", temporalNamespace);
-      } catch (final InterruptedException e) {
-        log.debug("Sleep interrupted.  Exiting loop...");
+        try {
+          Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+        } catch (final InterruptedException ie) {
+          log.debug("Sleep interrupted.  Exiting loop...");
+        }
       }
     }
   }
