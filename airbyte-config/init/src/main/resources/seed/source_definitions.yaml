@@ -299,6 +299,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   sourceType: api
   releaseStage: alpha
+- name: Fauna
+  sourceDefinitionId: 3825db3e-c94b-42ac-bd53-b5a9507ace2b
+  dockerRepository: airbyte/source-fauna
+  dockerImageTag: dev
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fauna
+  icon: fauna.svg
+  sourceType: database
+  releaseStage: alpha
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
