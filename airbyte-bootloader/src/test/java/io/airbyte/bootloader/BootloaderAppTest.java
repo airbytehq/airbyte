@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
@@ -60,6 +61,8 @@ class BootloaderAppTest {
   private DataSource configsDataSource;
   private DataSource jobsDataSource;
   private static final String DOCKER = "docker";
+  private static final String PROTOCOL_VERSION_123 = "1.2.3";
+  private static final String PROTOCOL_VERSION_124 = "1.2.4";
   private static final String VERSION_0330_ALPHA = "0.33.0-alpha";
   private static final String VERSION_0320_ALPHA = "0.32.0-alpha";
   private static final String VERSION_0321_ALPHA = "0.32.1-alpha";
@@ -99,6 +102,8 @@ class BootloaderAppTest {
     when(mockedConfigs.getDatabaseUser()).thenReturn(container.getUsername());
     when(mockedConfigs.getDatabasePassword()).thenReturn(container.getPassword());
     when(mockedConfigs.getAirbyteVersion()).thenReturn(new AirbyteVersion(VERSION_0330_ALPHA));
+    when(mockedConfigs.getAirbyteProtocolVersionMin()).thenReturn(new Version(PROTOCOL_VERSION_123));
+    when(mockedConfigs.getAirbyteProtocolVersionMax()).thenReturn(new Version(PROTOCOL_VERSION_124));
     when(mockedConfigs.runDatabaseMigrationOnStartup()).thenReturn(true);
     when(mockedConfigs.getConfigsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
     when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
@@ -137,6 +142,8 @@ class BootloaderAppTest {
 
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       assertEquals(VERSION_0330_ALPHA, jobsPersistence.getVersion().get());
+      assertEquals(new Version(PROTOCOL_VERSION_123), jobsPersistence.getAirbyteProtocolVersionMin().get());
+      assertEquals(new Version(PROTOCOL_VERSION_124), jobsPersistence.getAirbyteProtocolVersionMax().get());
 
       assertNotEquals(Optional.empty(), jobsPersistence.getDeployment().get());
     }
@@ -152,6 +159,8 @@ class BootloaderAppTest {
     when(mockedConfigs.getDatabaseUser()).thenReturn(container.getUsername());
     when(mockedConfigs.getDatabasePassword()).thenReturn(container.getPassword());
     when(mockedConfigs.getAirbyteVersion()).thenReturn(new AirbyteVersion(VERSION_0330_ALPHA));
+    when(mockedConfigs.getAirbyteProtocolVersionMin()).thenReturn(new Version(PROTOCOL_VERSION_123));
+    when(mockedConfigs.getAirbyteProtocolVersionMax()).thenReturn(new Version(PROTOCOL_VERSION_123));
     when(mockedConfigs.runDatabaseMigrationOnStartup()).thenReturn(true);
     when(mockedConfigs.getSecretPersistenceType()).thenReturn(TESTING_CONFIG_DB_TABLE);
     when(mockedConfigs.getConfigsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
@@ -295,6 +304,8 @@ class BootloaderAppTest {
     when(mockedConfigs.getDatabaseUser()).thenReturn(container.getUsername());
     when(mockedConfigs.getDatabasePassword()).thenReturn(container.getPassword());
     when(mockedConfigs.getAirbyteVersion()).thenReturn(new AirbyteVersion(VERSION_0330_ALPHA));
+    when(mockedConfigs.getAirbyteProtocolVersionMin()).thenReturn(new Version(PROTOCOL_VERSION_123));
+    when(mockedConfigs.getAirbyteProtocolVersionMax()).thenReturn(new Version(PROTOCOL_VERSION_123));
     when(mockedConfigs.runDatabaseMigrationOnStartup()).thenReturn(true);
     when(mockedConfigs.getConfigsDatabaseInitializationTimeoutMs()).thenReturn(60000L);
     when(mockedConfigs.getJobsDatabaseInitializationTimeoutMs()).thenReturn(60000L);

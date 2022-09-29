@@ -1,4 +1,4 @@
-export * from "./base";
+export * from "./ui";
 
 export * from "./ArrayOfObjectsEditor";
 export * from "./DefaultLogoCatalog";
@@ -10,7 +10,6 @@ export * from "./LabeledSwitch";
 export * from "./Link";
 export * from "./LoadingPage";
 export * from "./MainPageWithScroll";
-export * from "./Modal";
 export * from "./SimpleTableComponents";
 export * from "./StatusIcon";
 export * from "./ConnectorCard";

@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { LoadingPage } from "components";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
-import CreateConnectionContent from "components/CreateConnectionContent";
+import { CreateConnection } from "components/CreateConnection/CreateConnection";
 import HeadTitle from "components/HeadTitle";
 import { PageHeader } from "components/ui/PageHeader";
 import { StepsMenu } from "components/ui/StepsMenu";
@@ -24,9 +24,9 @@ import {
   SourceDefinitionRead,
   SourceRead,
 } from "../../../../core/request/AirbyteClient";
-import { ConnectionCreateDestinationForm } from "./components/DestinationForm";
-import ExistingEntityForm from "./components/ExistingEntityForm";
-import { ConnectionCreateSourceForm } from "./components/SourceForm";
+import { ConnectionCreateDestinationForm } from "./DestinationForm";
+import ExistingEntityForm from "./ExistingEntityForm";
+import { ConnectionCreateSourceForm } from "./SourceForm";
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -168,7 +168,7 @@ export const CreationFormPage: React.FC = () => {
       return <LoadingPage />;
     }
 
-    return <CreateConnectionContent source={source} destination={destination} />;
+    return <CreateConnection source={source} destination={destination} />;
   };
 
   const steps =

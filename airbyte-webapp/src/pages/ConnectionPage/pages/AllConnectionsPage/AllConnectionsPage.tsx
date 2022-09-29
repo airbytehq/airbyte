@@ -1,3 +1,5 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +32,7 @@ const AllConnectionsPage: React.FC = () => {
             <PageHeader
               title={<FormattedMessage id="sidebar.connections" />}
               endComponent={
-                <Button onClick={onCreateClick}>
+                <Button icon={<FontAwesomeIcon icon={faPlus} />} variant="primary" size="sm" onClick={onCreateClick}>
                   <FormattedMessage id="connection.newConnection" />
                 </Button>
               }
