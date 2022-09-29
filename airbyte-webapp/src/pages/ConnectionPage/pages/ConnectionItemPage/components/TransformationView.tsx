@@ -4,8 +4,8 @@ import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { Card } from "components/base/Card";
-import { Text } from "components/base/Text";
+import { Card } from "components/ui/Card";
+import { Text } from "components/ui/Text";
 
 import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
 import {

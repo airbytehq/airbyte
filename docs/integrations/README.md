@@ -70,12 +70,12 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Analytics (v4)](sources/google-analytics-v4.md)                                     | Generally Available  | Yes                 |
 | [Google Analytics (Universal Analytics)](sources/google-analytics-universal-analytics.md)   | Generally Available  | Yes                 |
 | [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
-| [Google Search Console](sources/google-search-console.md)                                   | Beta                 | Yes                 |
+| [Google Search Console](sources/google-search-console.md)                                   | Generally Available  | Yes                 |
 | [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
 | [Greenhouse](sources/greenhouse.md)                                                         | Beta                 | Yes                 |
 | [Harness](sources/harness.md)                                                               | Alpha                | No                  |
-| [Harvest](sources/harvest.md)                                                               | Beta                 | No                  |
+| [Harvest](sources/harvest.md)                                                               | Generally Available  | No                  |
 | [http-request](sources/http-request.md)                                                     | Alpha                | No                  |
 | [HubSpot](sources/hubspot.md)                                                               | Generally Available  | Yes                 |
 | [Instagram](sources/instagram.md)                                                           | Generally Available  | Yes                 |
@@ -84,7 +84,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Jenkins](sources/jenkins.md)                                                               | Alpha                | No                  |
 | [Jira](sources/jira.md)                                                                     | Alpha                | No                  |
 | [Kafka](sources/kafka.md)                                                                   | Alpha                | No                  |
-| [Klaviyo](sources/klaviyo.md)                                                               | Beta                 | Yes                 |
+| [Klaviyo](sources/klaviyo.md)                                                               | Generally Available  | Yes                 |
 | [Kustomer](sources/kustomer.md)                                                             | Alpha                | Yes                 |
 | [Kyriba](sources/kyriba.md)                                                                 | Alpha                | No                  |
 | [Lemlist](sources/lemlist.md)                                                               | Alpha                | Yes                 |
@@ -108,11 +108,12 @@ For more information about the grading system, see [Product Release Stages](http
 | [Mongo DB](sources/mongodb-v2.md)                                                           | Alpha                | Yes                 |
 | [My Hours](sources/my-hours.md)                                                             | Alpha                | Yes                 |
 | [MySQL](sources/mysql.md)                                                                   | Alpha                | Yes                 |
-| [Notion](sources/notion.md)                                                                 | Beta                 | No                  |
+| [Notion](sources/notion.md)                                                                 | Generally Available  | No                  |
 | [Okta](sources/okta.md)                                                                     | Alpha                | Yes                 |
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
 | [Oracle DB](sources/oracle.md)                                                              | Alpha                | Yes                 |
+| [Oracle Netsuite](sources/netsuite.md)                                                      | Alpha                | Yes                 |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md)                                           | Alpha                | No                  |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md)                                           | Alpha                | No                  |
 | [Orb](sources/orb.md)                                                                       | Alpha                | Yes                 |
@@ -155,7 +156,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Strava](sources/strava.md)                                                                 | Alpha                | No                  |
 | [Stripe](sources/stripe.md)                                                                 | Generally Available  | Yes                 |
 | [Sugar CRM](sources/sugar-crm.md)                                                           | Alpha                | No                  |
-| [SurveyMonkey](sources/surveymonkey.md)                                                     | Beta                 | Yes                 |
+| [SurveyMonkey](sources/surveymonkey.md)                                                     | Generally Available  | Yes                 |
 | [Tempo](sources/tempo.md)                                                                   | Alpha                | Yes                 |
 | [TiDB](sources/tidb.md)                                                                     | Alpha                | No                  |
 | [TikTok Marketing](./sources/tiktok-marketing.md)                                           | Generally Available  | Yes                 |
@@ -170,7 +171,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Wrike](sources/wrike.md)                                                                   | Alpha                | No                  |
 | [YouTube Analytics](sources/youtube-analytics.md)                                           | Beta                 | Yes                 |
 | [Zencart](sources/zencart.md)                                                               | Alpha                | No                  |
-| [Zendesk Chat](sources/zendesk-chat.md)                                                     | Beta                 | Yes                 |
+| [Zendesk Chat](sources/zendesk-chat.md)                                                     | Generally Available  | Yes                 |
 | [Zendesk Sunshine](sources/zendesk-sunshine.md)                                             | Alpha                | Yes                 |
 | [Zendesk Support](sources/zendesk-support.md)                                               | Generally Available  | Yes                 |
 | [Zendesk Talk](sources/zendesk-talk.md)                                                     | Beta                 | Yes                 |

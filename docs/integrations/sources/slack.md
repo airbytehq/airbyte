@@ -131,6 +131,7 @@ It is recommended to sync required channels only, this can be done by specifying
 
 | Version | Date       | Pull Request                                             | Subject                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 0.1.18  | 2022-09-28 | [17315](https://github.com/airbytehq/airbyte/pull/17315) | Always install latest version of Airbyte CDK        |
 | 0.1.17  | 2022-08-28 | [16085](https://github.com/airbytehq/airbyte/pull/16085) | Increase unit test coverage                         |
 | 0.1.16  | 2022-08-28 | [16050](https://github.com/airbytehq/airbyte/pull/16050) | Fix SATs                                            |
 | 0.1.15  | 2022-03-31 | [11613](https://github.com/airbytehq/airbyte/pull/11613) | Add 'channel_filter' config and improve performance |
