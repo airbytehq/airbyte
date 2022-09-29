@@ -1,8 +1,10 @@
+@use "../../../../scss/variables";
+
 .section {
-  padding: 20px;
+  padding: variables.$spacing-xl;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: variables.$spacing-lg;
 
   // TODO: We may be able to get rid of this.
   &:not(:last-child) {

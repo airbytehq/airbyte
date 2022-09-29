@@ -1,7 +1,9 @@
+@use "../../../scss/variables";
+
 .formContainer {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: variables.$spacing-md;
 }
 
 .readonly {
@@ -13,13 +15,13 @@
   flex-direction: row;
   justify-content: flex-start;
   align-items: flex-start;
-  gap: 10px;
+  gap: variables.$spacing-md;
 }
 
 .leftFieldCol {
   flex: 1;
   max-width: 640px;
-  padding-right: 30px;
+  padding-right: variables.$spacing-xl;
 }
 
 .rightFieldCol {
