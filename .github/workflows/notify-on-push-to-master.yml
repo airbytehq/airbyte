@@ -21,7 +21,7 @@ jobs:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ env.pat }}
+          token: ${{ env.PAT }}
           repository: airbytehq/airbyte-cloud
           event-type: oss-push-to-master
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
