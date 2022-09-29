@@ -3,11 +3,12 @@
 #
 
 
+from unittest.mock import patch
+
 import pytest
 import requests
-from unittest.mock import patch
 from airbyte_cdk import AirbyteLogger
-from source_zendesk_chat.source import ZendeskAuthentication, SourceZendeskChat
+from source_zendesk_chat.source import SourceZendeskChat, ZendeskAuthentication
 from source_zendesk_chat.streams import (
     Accounts,
     Agents,
@@ -31,10 +32,11 @@ TEST_INSTANCE: SourceZendeskChat = SourceZendeskChat()
 
 
 def test_get_auth():
-    expected = {'Authorization': 'Bearer access_token'}
+    expected = {"Authorization": "Bearer access_token"}
     result = ZendeskAuthentication(TEST_CONFIG).get_auth().get_auth_header()
     assert expected == result
-    
+
+
 @pytest.mark.parametrize(
     "response, check_passed",
     [
@@ -48,7 +50,8 @@ def test_check(response, check_passed):
         result = TEST_INSTANCE.check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
         mock_method.assert_called()
         assert check_passed == result[0]
-        
+
+
 @pytest.mark.parametrize(
     "stream_cls",
     [
@@ -71,5 +74,3 @@ def test_streams(stream_cls):
     for stream in streams:
         if stream_cls in streams:
             assert isinstance(stream, stream_cls)
-
-
