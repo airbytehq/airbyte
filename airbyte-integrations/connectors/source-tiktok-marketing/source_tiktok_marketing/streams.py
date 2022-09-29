@@ -50,6 +50,21 @@ NOT_AUDIENCE_METRICS = [
     "real_time_app_install",
     "real_time_app_install_cost",
     "app_install",
+    "profile_visits_rate",
+    "purchase",
+    "purchase_rate",
+    "registration",
+    "registration_rate",
+    "sales_lead",
+    "sales_lead_rate",
+    "cost_per_app_install",
+    "cost_per_purchase",
+    "cost_per_registration",
+    "total_purchase_value",
+    "cost_per_sales_lead",
+    "cost_per_total_sales_lead",
+    "cost_per_total_app_event_add_to_cart",
+    "total_app_event_add_to_cart",
 ]
 
 T = TypeVar("T")
@@ -73,7 +88,9 @@ T = TypeVar("T")
 #         ├─AdGroupAudienceReports            (9 ad_group_audience_reports)
 #         ├─AdsAudienceReports                (10 ads_audience_reports)
 #         ├─AdvertisersAudienceReports        (11 advertisers_audience_reports)
-#         └─CampaignsAudienceReportsByCountry (12 campaigns_audience_reports_by_country)
+#         ├─CampaignsAudienceReportsByCountry (12 campaigns_audience_reports_by_country)
+#         ├─AdsAudienceReportsByCountry (13 ads_audience_reports_by_country)
+#         └─AdsAudienceReportsByProvince (14 ads_audience_reports_by_province)
 
 
 @total_ordering
@@ -577,6 +594,21 @@ class BasicReports(IncrementalTiktokStream, ABC):
             "real_time_app_install",
             "real_time_app_install_cost",
             "app_install",
+            "profile_visits_rate",
+            "purchase",
+            "purchase_rate",
+            "registration",
+            "registration_rate",
+            "sales_lead",
+            "sales_lead_rate",
+            "cost_per_app_install",
+            "cost_per_purchase",
+            "cost_per_registration",
+            "total_purchase_value",
+            "cost_per_sales_lead",
+            "cost_per_total_sales_lead",
+            "cost_per_total_app_event_add_to_cart",
+            "total_app_event_add_to_cart",
         ]
 
         if self.report_level == ReportLevel.ADVERTISER and self.report_granularity == ReportGranularity.DAY:
@@ -721,6 +753,9 @@ class AudienceReport(BasicReports):
 
         dimensions = self._get_reporting_dimensions()
         dimensions += self.audience_dimensions
+        # In the case of province breakdowyn, the time is not supported
+        if self.audience_dimensions == ["province_id"] and "stat_time_day" in dimensions:
+            dimensions.remove("stat_time_day")
         params["dimensions"] = json.dumps(dimensions)
         params["report_type"] = "AUDIENCE"
 
@@ -753,3 +788,19 @@ class CampaignsAudienceReportsByCountry(AudienceReport):
 
     report_level = ReportLevel.CAMPAIGN
     audience_dimensions = ["country_code"]
+
+class AdsAudienceReportsByCountry(AudienceReport):
+    """Custom reports for ads by country"""
+
+    primary_key = "ad_id"
+
+    report_level = ReportLevel.AD
+    audience_dimensions = ["country_code"]
+
+class AdsAudienceReportsByProvince(AudienceReport):
+    """Custom reports for ads by province"""
+
+    primary_key = "ad_id"
+
+    report_level = ReportLevel.AD
+    audience_dimensions = ["province_id"]
