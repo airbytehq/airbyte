@@ -1,4 +1,4 @@
-export * from "./base";
+export * from "./ui";
 
 export * from "./ArrayOfObjectsEditor";
 export * from "./DefaultLogoCatalog";

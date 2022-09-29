@@ -4,7 +4,7 @@
 
 ## Summary
 
-Throughout this tutorial, we'll walk you through the creation an Airbyte source to read and extract data from an HTTP API.
+Throughout this tutorial, we'll walk you through the creation of an Airbyte source to read and extract data from an HTTP API.
 
 We'll build a connector reading data from the Exchange Rates API, but the steps apply to other HTTP APIs you might be interested in integrating with.
 

@@ -13,7 +13,6 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.Configs.WorkerPlane;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
@@ -24,6 +23,7 @@ import io.airbyte.db.check.impl.JobsDatabaseAvailabilityCheck;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
@@ -139,19 +139,19 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private WorkerEnvironment workerEnvironment;
   @Inject
   private WorkerFactory workerFactory;
-  @Inject
-  private WorkerPlane workerPlane;
   @Value("${airbyte.workspace.root}")
   private String workspaceRoot;
   @Value("${airbyte.data.sync.task-queue}")
   private String syncTaskQueue;
+  @Inject
+  private Environment environment;
 
   @Override
   public void onApplicationEvent(final ServiceReadyEvent event) {
     try {
       initializeCommonDependencies();
 
-      if (WorkerPlane.CONTROL_PLANE.equals(workerPlane)) {
+      if (environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
         initializeControlPlaneDependencies();
       } else {
         log.info("Skipping Control Plane dependency initialization.");
@@ -162,7 +162,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
       log.info("Starting worker factory...");
       workerFactory.start();
 
-      log.info("Application initialized (mode = {}).", workerPlane);
+      log.info("Application initialized.");
     } catch (final DatabaseCheckException | ExecutionException | InterruptedException | IOException | TimeoutException e) {
       log.error("Unable to initialize application.", e);
       throw new IllegalStateException(e);
