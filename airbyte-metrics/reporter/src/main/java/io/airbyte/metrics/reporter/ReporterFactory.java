@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.metrics.reporter;
 
 import io.airbyte.db.Database;
@@ -13,6 +17,7 @@ import org.jooq.DSLContext;
  */
 @Factory
 public class ReporterFactory {
+
   @Singleton
   public MetricClient metricClient() {
     return MetricClientFactory.getMetricClient();

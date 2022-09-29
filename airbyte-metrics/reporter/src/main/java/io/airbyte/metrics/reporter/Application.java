@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.metrics.reporter;
 
 import io.micronaut.context.event.ApplicationEventListener;
@@ -12,11 +16,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Metric Reporter application.
- *
+ * <p>
  * Responsible for emitting metric information on a periodic basis.
  */
 @Singleton
 public class Application implements ApplicationEventListener<ServerStartupEvent> {
+
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final Emitter[] emitters;
 
@@ -32,8 +37,8 @@ public class Application implements ApplicationEventListener<ServerStartupEvent>
    * Manually registers all the emitters to run.
    *
    * @param event the event to respond to, not utilized but required per the method signature
-   *
-   * See https://guides.micronaut.io/latest/micronaut-scheduled-gradle-java.html for documentation.
+   *              <p>
+   *              See https://guides.micronaut.io/latest/micronaut-scheduled-gradle-java.html for documentation.
    */
   @Override
   public void onApplicationEvent(final ServerStartupEvent event) {

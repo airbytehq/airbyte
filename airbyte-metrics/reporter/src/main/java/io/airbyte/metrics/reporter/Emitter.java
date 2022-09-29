@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.metrics.reporter;
 
 import io.airbyte.db.Database;
@@ -15,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 final class NumPendingJobs extends Emitter {
+
   public NumPendingJobs(final MetricClient client, final Database db) {
     super(() -> {
       final var pending = db.query(MetricQueries::numberOfPendingJobs);
@@ -26,6 +31,7 @@ final class NumPendingJobs extends Emitter {
 
 @Singleton
 final class NumRunningJobs extends Emitter {
+
   public NumRunningJobs(final MetricClient client, final Database db) {
     super(() -> {
       final var running = db.query(MetricQueries::numberOfRunningJobs);
@@ -37,6 +43,7 @@ final class NumRunningJobs extends Emitter {
 
 @Singleton
 final class NumOrphanRunningJobs extends Emitter {
+
   NumOrphanRunningJobs(final MetricClient client, final Database db) {
     super(() -> {
       final var orphaned = db.query(MetricQueries::numberOfOrphanRunningJobs);
@@ -48,6 +55,7 @@ final class NumOrphanRunningJobs extends Emitter {
 
 @Singleton
 final class OldestRunningJob extends Emitter {
+
   OldestRunningJob(final MetricClient client, final Database db) {
     super(() -> {
       final var age = db.query(MetricQueries::oldestRunningJobAgeSecs);
@@ -59,6 +67,7 @@ final class OldestRunningJob extends Emitter {
 
 @Singleton
 final class OldestPendingJob extends Emitter {
+
   OldestPendingJob(final MetricClient client, final Database db) {
     super(() -> {
       final var age = db.query(MetricQueries::oldestPendingJobAgeSecs);
@@ -70,8 +79,9 @@ final class OldestPendingJob extends Emitter {
 
 @Singleton
 final class NumActiveConnectionsPerWorkspace extends Emitter {
+
   NumActiveConnectionsPerWorkspace(final MetricClient client, final Database db) {
-    super(()-> {
+    super(() -> {
       final var workspaceConns = db.query(MetricQueries::numberOfActiveConnPerWorkspace);
       for (final long numCons : workspaceConns) {
         client.distribution(OssMetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, numCons);
@@ -83,6 +93,7 @@ final class NumActiveConnectionsPerWorkspace extends Emitter {
 
 @Singleton
 final class NumAbnormalScheduledSyncs extends Emitter {
+
   NumAbnormalScheduledSyncs(final MetricClient client, final Database db) {
     super(() -> {
       final var count = db.query(MetricQueries::numberOfJobsNotRunningOnScheduleInLastDay);
@@ -99,6 +110,7 @@ final class NumAbnormalScheduledSyncs extends Emitter {
 
 @Singleton
 final class TotalScheduledSyncs extends Emitter {
+
   TotalScheduledSyncs(final MetricClient client, final Database db) {
     super(() -> {
       final var count = db.query(MetricQueries::numScheduledActiveConnectionsInLastDay);
@@ -115,6 +127,7 @@ final class TotalScheduledSyncs extends Emitter {
 
 @Singleton
 final class TotalJobRuntimeByTerminalState extends Emitter {
+
   public TotalJobRuntimeByTerminalState(final MetricClient client, final Database db) {
     super(() -> {
       final var times = db.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
@@ -135,19 +148,21 @@ final class TotalJobRuntimeByTerminalState extends Emitter {
 
 /**
  * Abstract base class for all emitted metrics.
- *
+ * <p>
  * As this is a sealed class, all implementations of it are contained within this same file.
  */
 public abstract sealed class Emitter {
+
   protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   protected final Callable<Void> callable;
+
   Emitter(final Callable<Void> callable) {
     this.callable = callable;
   }
 
   /**
    * Emit the metrics by calling the callable.
-   *
+   * <p>
    * Any exception thrown by the callable will be logged.
    *
    * @TODO: replace log message with a published error-event of some kind.
