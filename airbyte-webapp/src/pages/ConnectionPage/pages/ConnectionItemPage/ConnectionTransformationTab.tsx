@@ -31,7 +31,7 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
-interface TransformationViewProps {
+interface ConnectionTransformationTabProps {
   connection: WebBackendConnectionRead;
 }
 
@@ -118,7 +118,7 @@ const NormalizationCard: React.FC<{
   );
 };
 
-const TransformationView: React.FC<TransformationViewProps> = ({ connection }) => {
+export const ConnectionTransformationTab: React.FC<ConnectionTransformationTabProps> = ({ connection }) => {
   const definition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const workspace = useCurrentWorkspace();
@@ -181,5 +181,3 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
     </Content>
   );
 };
-
-export default TransformationView;
