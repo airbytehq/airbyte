@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
-import { LoadingButton, Switch } from "components";
+import { Button, Switch } from "components";
 
 import { useEnableConnection } from "hooks/services/useConnectionHook";
 
@@ -15,10 +15,6 @@ interface IProps {
   id: string;
   onSync: (id: string) => void;
 }
-
-const SmallButton = styled(LoadingButton)`
-  padding: 6px 8px 7px;
-`;
 
 const ProgressMessage = styled.div`
   padding: 7px 0;
@@ -62,9 +58,9 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing, onSync
   }
 
   return (
-    <SmallButton onClick={OnLaunch} isLoading={loading} disabled={!allowSync}>
+    <Button size="xs" onClick={OnLaunch} isLoading={loading} disabled={!allowSync || !enabled}>
       <FormattedMessage id="tables.launch" />
-    </SmallButton>
+    </Button>
   );
 };
 

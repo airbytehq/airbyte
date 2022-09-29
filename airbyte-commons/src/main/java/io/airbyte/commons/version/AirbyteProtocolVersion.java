@@ -6,13 +6,13 @@ package io.airbyte.commons.version;
 
 public class AirbyteProtocolVersion {
 
-  public final static AirbyteVersion DEFAULT_AIRBYTE_PROTOCOL_VERSION = new AirbyteVersion("0.2.0");
+  public final static Version DEFAULT_AIRBYTE_PROTOCOL_VERSION = new Version("0.2.0");
 
-  public static AirbyteVersion getWithDefault(final String version) {
+  public static Version getWithDefault(final String version) {
     if (version == null || version.isEmpty() || version.isBlank()) {
       return DEFAULT_AIRBYTE_PROTOCOL_VERSION;
     } else {
-      return new AirbyteVersion(version);
+      return new Version(version);
     }
   }
 
