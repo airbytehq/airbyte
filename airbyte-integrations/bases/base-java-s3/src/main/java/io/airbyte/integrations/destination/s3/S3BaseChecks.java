@@ -79,12 +79,13 @@ public final class S3BaseChecks {
 
   /**
    * Checks that S3 custom endpoint uses a variant that only uses HTTPS
-   * <p>https://docs.aws.amazon.com/general/latest/gr/s3.html</p>
+   *
    * @param endpoint URL string representing an accessible S3 bucket
    */
   public static void testCustomEndpointSecured(final String endpoint) {
-    if (!endpoint.contains("s3-accesspoint")) {
-      throw new RuntimeException("S3 custom endpoint does not ensure HTTPS only connection. Please use S3 Access Points endpoints for a secure connection");
+    if (!endpoint.contains("https://")) {
+      throw new RuntimeException(
+          "S3 custom endpoint does not ensure HTTPS only connection. Please use S3 Access Points endpoints for a secure connection");
     }
   }
 

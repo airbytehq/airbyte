@@ -51,16 +51,13 @@ public class S3DestinationTest {
         .get();
 
     factoryConfig = new S3DestinationConfigFactory() {
-
-      // endpoint defaults to "s3-accesspoint" to allow tests to pass with secured custom S3 endpoint
       public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
-            .withEndpoint("s3-accesspoint.us-west-1.amazonaws.com")
+            .withEndpoint("https://s3.example.com")
             .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
             .withS3Client(s3)
             .get();
       }
-
     };
   }
 
@@ -122,7 +119,7 @@ public class S3DestinationTest {
   @Test
   public void checksCustomEndpointIsNotHttpsOnly() {
     final S3Destination destinationWithStandardUnsecuredEndpoint = new S3Destination(new S3DestinationConfigFactory() {
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
+      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
             .withEndpoint("s3.us-west-1.amazonaws.com")
             .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")

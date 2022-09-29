@@ -38,7 +38,7 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       final S3DestinationConfig destinationConfig = configFactory.getS3DestinationConfig(config, storageProvider());
       final AmazonS3 s3Client = destinationConfig.getS3Client();
@@ -47,6 +47,7 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
       S3BaseChecks.attemptS3WriteAndDelete(storageOperations, destinationConfig, destinationConfig.getBucketName());
       S3BaseChecks.testSingleUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
       S3BaseChecks.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
+      S3BaseChecks.testCustomEndpointSecured(destinationConfig.getEndpoint());
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
@@ -59,9 +60,9 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());
     return new S3ConsumerFactory().create(
         outputRecordCollector,

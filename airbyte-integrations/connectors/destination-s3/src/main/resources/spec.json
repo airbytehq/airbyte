@@ -360,7 +360,7 @@
         "type": "string",
         "default": "",
         "description": "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
-        "examples": ["s3-accesspoint.us-east-2.amazonaws.com"],
+        "examples": ["http://localhost:9000"],
         "order": 6
       },
       "s3_path_format": {
