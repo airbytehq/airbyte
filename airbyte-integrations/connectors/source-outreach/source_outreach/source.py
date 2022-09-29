@@ -50,7 +50,7 @@ class OutreachStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"page[size]": 100, "count": "false"}
+        params = {"page[size]": 1000, "count": "false"}
         if next_page_token and "after" in next_page_token:
             params["page[after]"] = next_page_token["after"]
         return params
