@@ -5,6 +5,7 @@
 |name |status |
 | :--- | :--- |
 | 3PL Central  | [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-tplcentral%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-tplcentral) |
+| Adjust  | [![source-adjust](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-adjust%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-adjust) |
 | Airtable  | [![source-airtable](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-airtable%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-airtable) |
 | AlloyDB   | [![source-alloydb](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-alloydb%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-alloydb) |
 | Amazon Seller Partner  | [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amazon-seller-partner) |
@@ -32,6 +33,7 @@
 | End-to-End Testing   | [![source-e2e-test](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-e2e-test%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-e2e-test) |
 | Exchange Rates API   | [![source-exchange-rates](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-exchange-rates%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-exchange-rates) |
 | Facebook Marketing   | [![source-facebook-marketing](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-facebook-marketing%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-facebook-marketing) |
+| Fauna   | [![source-fauna](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-fauna%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-fauna) |
 | Files   | [![source-file](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-file%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-file) |
 | Flexport   | [![source-file](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-flexport%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-flexport) |
 | Freshdesk   | [![source-freshdesk](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-freshdesk%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-freshdesk) |

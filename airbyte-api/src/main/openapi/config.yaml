@@ -1991,27 +1991,6 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/connections/search:
-    post:
-      tags:
-        - web_backend
-      summary: Search connections
-      operationId: webBackendSearchConnections
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WebBackendConnectionSearch"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WebBackendConnectionReadList"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/state/get_type:
     post:
       tags:
@@ -2777,6 +2756,8 @@ components:
           type: string
         sourceName:
           type: string
+        icon:
+          type: string
     SourceReadList:
       type: object
       required:
@@ -3073,6 +3054,8 @@ components:
         name:
           type: string
         destinationName:
+          type: string
+        icon:
           type: string
     DestinationReadList:
       type: object
@@ -3395,39 +3378,6 @@ components:
           $ref: "#/components/schemas/SourceSearch"
         destination:
           $ref: "#/components/schemas/DestinationSearch"
-    WebBackendConnectionSearch:
-      type: object
-      properties:
-        connectionId:
-          $ref: "#/components/schemas/ConnectionId"
-        name:
-          type: string
-        namespaceDefinition:
-          $ref: "#/components/schemas/NamespaceDefinitionType"
-        namespaceFormat:
-          type: string
-          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
-          default: null
-          example: "${SOURCE_NAMESPACE}"
-        prefix:
-          type: string
-          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
-        sourceId:
-          $ref: "#/components/schemas/SourceId"
-        destinationId:
-          $ref: "#/components/schemas/DestinationId"
-        schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
-        scheduleType:
-          $ref: "#/components/schemas/ConnectionScheduleType"
-        scheduleData:
-          $ref: "#/components/schemas/ConnectionScheduleData"
-        status:
-          $ref: "#/components/schemas/ConnectionStatus"
-        source:
-          $ref: "#/components/schemas/SourceSearch"
-        destination:
-          $ref: "#/components/schemas/DestinationSearch"
     ConnectionReadList:
       type: object
       required:
@@ -3507,7 +3457,6 @@ components:
     NamespaceDefinitionType:
       type: string
       description: Method used for computing final namespace in destination
-      default: source
       enum:
         - source
         - destination
@@ -3868,6 +3817,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptRead"
+    JobCreatedAt:
+      description: epoch time of the latest sync job. null if no sync job has taken place.
+      type: integer
+      format: int64
     JobStatus:
       type: string
       enum:
@@ -4563,6 +4516,43 @@ components:
           type: object
           additionalProperties: true
     # Web Backend
+    WebBackendConnectionListItem:
+      type: object
+      description: Information about a connection that shows up in the connection list view.
+      required:
+        - connectionId
+        - name
+        - sourceId
+        - destinationId
+        - source
+        - destination
+        - status
+        - isSyncing
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        name:
+          type: string
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        source:
+          $ref: "#/components/schemas/SourceRead"
+        destination:
+          $ref: "#/components/schemas/DestinationRead"
+        latestSyncJobCreatedAt:
+          $ref: "#/components/schemas/JobCreatedAt"
+        latestSyncJobStatus:
+          $ref: "#/components/schemas/JobStatus"
+        isSyncing:
+          type: boolean
     WebBackendConnectionRead:
       type: object
       required:
@@ -4617,9 +4607,7 @@ components:
           items:
             $ref: "#/components/schemas/OperationRead"
         latestSyncJobCreatedAt:
-          description: epoch time of the latest sync job. null if no sync job has taken place.
-          type: integer
-          format: int64
+          $ref: "#/components/schemas/JobCreatedAt"
         latestSyncJobStatus:
           $ref: "#/components/schemas/JobStatus"
         isSyncing:
@@ -4639,7 +4627,7 @@ components:
         connections:
           type: array
           items:
-            $ref: "#/components/schemas/WebBackendConnectionRead"
+            $ref: "#/components/schemas/WebBackendConnectionListItem"
     SyncMode:
       type: string
       enum:
