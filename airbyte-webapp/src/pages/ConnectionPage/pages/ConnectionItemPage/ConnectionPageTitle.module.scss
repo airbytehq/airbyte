@@ -1,9 +1,9 @@
-@use "../../../../../scss/variables" as vars;
-@use "../../../../../scss/colors";
+@use "../../../../scss/colors";
+@use "../../../../scss/variables";
 
 .container {
   text-align: center;
-  padding: vars.$spacing-lg vars.$spacing-xl;
+  padding: variables.$spacing-lg variables.$spacing-xl;
 }
 
 .connectionTitle {
@@ -11,8 +11,8 @@
 }
 
 .connectionDeleted {
-  max-width: vars.$width-modal-md;
-  margin: vars.$spacing-lg auto;
+  max-width: variables.$width-modal-md;
+  margin: variables.$spacing-lg auto;
 }
 
 .statusContainer {

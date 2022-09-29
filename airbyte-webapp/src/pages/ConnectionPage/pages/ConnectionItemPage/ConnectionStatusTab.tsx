@@ -21,8 +21,8 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import { useCancelJob, useListJobs } from "services/job/JobService";
 
+import styles from "./ConnectionStatusTab.module.scss";
 import JobsList from "./JobsList";
-import styles from "./StatusView.module.scss";
 
 const JOB_PAGE_SIZE_INCREMENT = 25;
 
@@ -37,7 +37,7 @@ interface ActiveJob {
   isCanceling: boolean;
 }
 
-interface StatusViewProps {
+interface ConnectionStatusTabProps {
   connection: WebBackendConnectionRead;
   isStatusUpdating?: boolean;
 }
@@ -49,7 +49,7 @@ const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
   });
 };
 
-const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
+export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connection }) => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_STATUS);
   const [activeJob, setActiveJob] = useState<ActiveJob>();
   const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
@@ -225,5 +225,3 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
     </div>
   );
 };
-
-export default StatusView;

@@ -11,7 +11,7 @@ import { Card } from "components/ui/Card";
 import { Input } from "components/ui/Input";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";

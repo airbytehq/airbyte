@@ -8,7 +8,7 @@ import { IDataItem } from "components/ui/DropDown/components/Option";
 import { Action, Namespace } from "core/analytics";
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import availableCronTimeZones from "../../../../config/availableCronTimeZones.json";
 import { FormikConnectionFormValues, useFrequencyDropdownData } from "../formConfig";

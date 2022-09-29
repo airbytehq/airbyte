@@ -9,27 +9,23 @@ import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
 
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
+import { ConnectionFormServiceProvider } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useChangedFormsById, useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
 
 import { DestinationRead, SourceRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
-import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
-import styles from "./CreateConnectionContent.module.scss";
+import styles from "./CreateConnection.module.scss";
+import TryAfterErrorBlock from "./TryAfterErrorBlock";
 
-interface CreateConnectionContentProps {
+interface CreateConnectionProps {
   source: SourceRead;
   destination: DestinationRead;
   afterSubmitConnection?: () => void;
 }
 
-const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
-  source,
-  destination,
-  afterSubmitConnection,
-}) => {
+export const CreateConnection: React.FC<CreateConnectionProps> = ({ source, destination, afterSubmitConnection }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
   const navigate = useNavigate();
 
@@ -113,5 +109,3 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     </Suspense>
   );
 };
-
-export default CreateConnectionContent;
