@@ -43,6 +43,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: WORKSPACE_ROOT
+            - name: WORKER_ENVIRONMENT
+                valueFrom:
+                  configMapKeyRef:
+                    name: airbyte-env
+                    key: WORKER_ENVIRONMENT
           volumeMounts:
             - name: airbyte-volume-configs
               mountPath: /configs
