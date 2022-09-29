@@ -3,7 +3,6 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from copy import deepcopy
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
