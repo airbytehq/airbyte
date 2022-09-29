@@ -23,7 +23,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobConfig;
@@ -746,6 +748,27 @@ public class DefaultJobPersistence implements JobPersistence {
         METADATA_KEY_COL,
         METADATA_VAL_COL,
         airbyteVersion)));
+
+  }
+
+  @Override
+  public Optional<Version> getAirbyteProtocolVersionMax() throws IOException {
+    return getMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MAX_KEY_NAME).findFirst().map(Version::new);
+  }
+
+  @Override
+  public void setAirbyteProtocolVersionMax(final Version version) throws IOException {
+    setMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MAX_KEY_NAME, version.serialize());
+  }
+
+  @Override
+  public Optional<Version> getAirbyteProtocolVersionMin() throws IOException {
+    return getMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MIN_KEY_NAME).findFirst().map(Version::new);
+  }
+
+  @Override
+  public void setAirbyteProtocolVersionMin(final Version version) throws IOException {
+    setMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MIN_KEY_NAME, version.serialize());
   }
 
   private Stream<String> getMetadata(final String keyName) throws IOException {
@@ -762,7 +785,7 @@ public class DefaultJobPersistence implements JobPersistence {
         .values(keyName, value)
         .onConflict(DSL.field(METADATA_KEY_COL))
         .doUpdate()
-        .set(DSL.field(METADATA_KEY_COL), value)
+        .set(DSL.field(METADATA_VAL_COL), value)
         .execute());
   }
 
