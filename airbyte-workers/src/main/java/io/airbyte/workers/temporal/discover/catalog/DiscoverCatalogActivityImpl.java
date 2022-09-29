@@ -77,8 +77,6 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
-    log.info("Fetching catalog data {}", fullConfig);
-
     final TemporalAttemptExecution<StandardDiscoverCatalogInput, ConnectorJobOutput> temporalAttemptExecution =
         new TemporalAttemptExecution<>(
             workspaceRoot,
