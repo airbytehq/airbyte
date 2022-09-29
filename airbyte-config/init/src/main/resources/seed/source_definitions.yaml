@@ -156,7 +156,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/chargebee
   icon: chargebee.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Chargify
   sourceDefinitionId: 9b2d3607-7222-4709-9fa2-c2abdebbdd88
   dockerRepository: airbyte/source-chargify
@@ -298,6 +298,14 @@
   dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   sourceType: api
+  releaseStage: alpha
+- name: Fauna
+  sourceDefinitionId: 3825db3e-c94b-42ac-bd53-b5a9507ace2b
+  dockerRepository: airbyte/source-fauna
+  dockerImageTag: dev
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fauna
+  icon: fauna.svg
+  sourceType: database
   releaseStage: alpha
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
