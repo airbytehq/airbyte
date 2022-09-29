@@ -7,10 +7,9 @@ import { Switch } from "components";
 
 import { Action, Namespace } from "core/analytics";
 import { buildConnectionUpdate } from "core/domain/connection";
+import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
-
-import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
