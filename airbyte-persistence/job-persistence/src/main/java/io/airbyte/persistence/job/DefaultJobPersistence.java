@@ -55,6 +55,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -110,7 +111,13 @@ public class DefaultJobPersistence implements JobPersistence {
   private static final String AIRBYTE_METADATA_TABLE = "airbyte_metadata";
   public static final String ORDER_BY_JOB_TIME_ATTEMPT_TIME =
       "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC ";
-  public static final String ORDER_BY_JOB_CREATED_AT_DESC_LIMIT_1 = "ORDER BY jobs.created_at DESC LIMIT 1";
+  public static final String ORDER_BY_JOB_CREATED_AT_DESC = "ORDER BY jobs.created_at DESC ";
+  public static final String LIMIT_1 = "LIMIT 1 ";
+  private static final String JOB_STATUS_IS_NON_TERMINAL = String.format("status IN (%s) ",
+      JobStatus.NON_TERMINAL_STATUSES.stream()
+          .map(Sqls::toSqlName)
+          .map(Names::singleQuote)
+          .collect(Collectors.joining(",")));
 
   private final ExceptionWrappingDatabase jobDatabase;
   private final Supplier<Instant> timeSupplier;
@@ -557,7 +564,7 @@ public class DefaultJobPersistence implements JobPersistence {
             "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + AND +
             SCOPE_CLAUSE +
             "CAST(jobs.status AS VARCHAR) <> ? " +
-            ORDER_BY_JOB_CREATED_AT_DESC_LIMIT_1,
+            ORDER_BY_JOB_CREATED_AT_DESC + LIMIT_1,
             connectionId.toString(),
             Sqls.toSqlName(JobStatus.CANCELLED))
         .stream()
@@ -571,7 +578,7 @@ public class DefaultJobPersistence implements JobPersistence {
         .fetch(BASE_JOB_SELECT_AND_JOIN + WHERE +
             "CAST(jobs.config_type AS VARCHAR) = ? " + AND +
             "scope = ? " +
-            ORDER_BY_JOB_CREATED_AT_DESC_LIMIT_1,
+            ORDER_BY_JOB_CREATED_AT_DESC + LIMIT_1,
             Sqls.toSqlName(ConfigType.SYNC),
             connectionId.toString())
         .stream()
@@ -586,15 +593,14 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public List<Optional<Job>> getLastSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
     return jobDatabase.query(ctx -> ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + WHERE +
-            "CAST(jobs.config_type AS VARCHAR) = ? " + AND +
-            "scope IN (?) " +
-            "GROUP BY jobs.scope " +
-            ORDER_BY_JOB_CREATED_AT_DESC_LIMIT_1,
+        .fetch("SELECT DISTINCT ON (scope) * FROM jobs "
+            + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
+            + AND + scopeInList(connectionIds)
+            + "ORDER BY scope, created_at DESC",
             Sqls.toSqlName(ConfigType.SYNC),
             connectionIds.stream().map(UUID::toString).map(Names::singleQuote).collect(Collectors.joining(",")))
         .stream()
-        .map(r -> getJobOptional(ctx, r.get(JOB_ID, Long.class)))
+        .map(r -> getJobOptional(ctx, r.get("id", Long.class)))
         .collect(Collectors.toList()));
   }
 
@@ -605,18 +611,25 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public List<Optional<Job>> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
     return jobDatabase.query(ctx -> ctx
-        .fetch(BASE_JOB_SELECT_AND_JOIN + WHERE +
-            "CAST(jobs.config_type AS VARCHAR) = ? " + AND +
-            "scope IN (?) " + AND +
-            "status IN (?) " +
-            "GROUP BY jobs.scope " +
-            ORDER_BY_JOB_CREATED_AT_DESC_LIMIT_1,
+        .fetch("SELECT DISTINCT ON (scope) * FROM jobs "
+            + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
+            + AND + scopeInList(connectionIds)
+            + AND + JOB_STATUS_IS_NON_TERMINAL
+            + "ORDER BY scope, created_at DESC",
             Sqls.toSqlName(ConfigType.SYNC),
             connectionIds.stream().map(UUID::toString).map(Names::singleQuote).collect(Collectors.joining(",")),
             JobStatus.NON_TERMINAL_STATUSES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")))
         .stream()
-        .map(r -> getJobOptional(ctx, r.get(JOB_ID, Long.class)))
+        .map(r -> getJobOptional(ctx, r.get("id", Long.class)))
         .collect(Collectors.toList()));
+  }
+
+  private String scopeInList(final Collection<UUID> connectionIds) {
+    return String.format("scope IN (%s) ",
+        connectionIds.stream()
+            .map(UUID::toString)
+            .map(Names::singleQuote)
+            .collect(Collectors.joining(",")));
   }
 
   @Override

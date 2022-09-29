@@ -803,11 +803,13 @@ public class ConfigRepository {
   }
 
   public List<SourceConnection> getSourceConnections(final List<UUID> sourceIds, final DSLContext ctx) {
-    return ctx
+    final Result<Record> records = ctx
         .select(asterisk())
         .from(ACTOR)
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.source), ACTOR.ID.in(sourceIds))
-        .fetchInto(SourceConnection.class);
+        .fetch();
+
+    return records.stream().map(DbConverter::buildSourceConnection).toList();
   }
 
   public List<DestinationConnection> getDestinationConnections(final List<UUID> destinationIds) throws IOException {
@@ -815,11 +817,13 @@ public class ConfigRepository {
   }
 
   public List<DestinationConnection> getDestinationConnections(final List<UUID> destinationIds, final DSLContext ctx) {
-    return ctx
+    final Result<Record> records = ctx
         .select(asterisk())
         .from(ACTOR)
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination), ACTOR.ID.in(destinationIds))
-        .fetchInto(DestinationConnection.class);
+        .fetch();
+
+    return records.stream().map(DbConverter::buildDestinationConnection).toList();
   }
 
   public List<StandardSourceDefinition> getSourceDefinitionsFromSourceIds(final List<UUID> sourceIds)
@@ -828,13 +832,15 @@ public class ConfigRepository {
   }
 
   public List<StandardSourceDefinition> getSourceDefinitionsFromSourceIds(final List<UUID> sourceIds, final DSLContext ctx) {
-    return ctx
-        .select(ACTOR_DEFINITION.fields())
+    final Result<Record> records = ctx
+        .select(asterisk())
         .from(ACTOR_DEFINITION)
         .join(ACTOR)
         .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
         .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source), ACTOR.ID.in(sourceIds))
-        .fetchInto(StandardSourceDefinition.class);
+        .fetch();
+
+    return records.stream().map(DbConverter::buildStandardSourceDefinition).toList();
   }
 
   public List<StandardDestinationDefinition> getDestinationDefinitionsFromDestinationIds(final List<UUID> destinationIds)
@@ -843,13 +849,15 @@ public class ConfigRepository {
   }
 
   public List<StandardDestinationDefinition> getDestinationDefinitionsFromDestinationIds(final List<UUID> destinationIds, final DSLContext ctx) {
-    return ctx
-        .select(ACTOR_DEFINITION.fields())
+    final Result<Record> records = ctx
+        .select(asterisk())
         .from(ACTOR_DEFINITION)
         .join(ACTOR)
         .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
         .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination), ACTOR.ID.in(destinationIds))
-        .fetchInto(StandardDestinationDefinition.class);
+        .fetch();
+
+    return records.stream().map(DbConverter::buildStandardDestinationDefinition).toList();
   }
 
   public ActorCatalog getActorCatalogById(final UUID actorCatalogId)
