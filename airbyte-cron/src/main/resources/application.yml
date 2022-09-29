@@ -1,6 +1,6 @@
 micronaut:
   application:
-    name: airbyte-workers
+    name: airbyte-cron
   security:
     intercept-url-map:
       - pattern: /**
