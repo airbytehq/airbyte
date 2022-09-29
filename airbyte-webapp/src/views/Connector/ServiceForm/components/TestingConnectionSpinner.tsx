@@ -21,7 +21,7 @@ export const TestingConnectionSpinner: React.FC<TestingConnectionSpinnerProps> =
   <div className={styles.container}>
     <ProgressBar runTime={PROGRESS_BAR_TIME} />
     {isCancellable && (
-      <Button className={styles.btn} variant="secondary" type="button" onClick={() => onCancelTesting?.()}>
+      <Button className={styles.button} variant="secondary" type="button" onClick={() => onCancelTesting?.()}>
         <FormattedMessage id="form.cancel" />
       </Button>
     )}
