@@ -64,7 +64,7 @@ if [ -n "$CI" ]; then
 #  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
 fi
 
-kubectl port-forward svc/airbyte-airbyte-server-svc 8001:8001 &
+kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 
 echo "Running worker integration tests..."
 SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
@@ -92,7 +92,7 @@ if curl -sSf -o /dev/null http://localhost:8001/api/v1/health; then
 else
   echo "Connection is not alive..."
   echo "Port forwarding pod..."
-  kubectl port-forward svc/airbyte-airbyte-server-svc 8001:8001 &
+  kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 fi
 
 echo "Running e2e tests via gradle..."
