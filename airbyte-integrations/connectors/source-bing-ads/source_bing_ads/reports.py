@@ -233,7 +233,7 @@ class ReportsMixin(ABC):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        account_id = latest_record["AccountId"]
+        account_id = str(latest_record["AccountId"])
         current_stream_state[account_id] = current_stream_state.get(account_id, {})
         current_stream_state[account_id][self.cursor_field] = max(
             self.get_report_record_timestamp(latest_record[self.cursor_field]),
