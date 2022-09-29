@@ -87,10 +87,14 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.METRICS_REPORTER,
       "num_active_conn_per_workspace",
       "number of active connections per workspace"),
-  NUM_ABNORMAL_SCHEDULED_SYNCS(
+  NUM_ABNORMAL_SCHEDULED_SYNCS_IN_LAST_DAY(
       MetricEmittingApps.METRICS_REPORTER,
-      "num_abnormal_scheduled_syncs",
-      "number of abnormal syncs that have skipped at least 1 scheduled run recently."),
+      "num_abnormal_scheduled_syncs_last_day",
+      "number of abnormal syncs that have skipped at least 1 scheduled run in last day."),
+  NUM_TOTAL_SCHEDULED_SYNCS_IN_LAST_DAY(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_total_scheduled_syncs_last_day",
+      "number of total syncs runs in last day."),
   OLDEST_PENDING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "oldest_pending_job_age_secs",
       "oldest pending job in seconds"),
@@ -111,7 +115,10 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "count of the number of workflow failures"),
   NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS(MetricEmittingApps.WORKER,
       "record_schema_validation_error",
-      "number of record schema validation errors");
+      "number of record schema validation errors"),
+  STATE_METRIC_TRACKER_ERROR(MetricEmittingApps.WORKER,
+      "state_timestamp_metric_tracker_error",
+      "number of syncs where the state timestamp metric tracker ran out of memory or was unable to match destination state message to source state message");
 
   private final MetricEmittingApp application;
   private final String metricName;

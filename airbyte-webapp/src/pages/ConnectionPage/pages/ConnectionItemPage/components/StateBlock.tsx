@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { H5, Card } from "components";
+import { H5 } from "components/base/Titles";
+import { Card } from "components/ui/Card";
 
 import { ConnectionState } from "core/request/AirbyteClient";
 import { useGetConnectionState } from "hooks/services/useConnectionHook";
@@ -33,7 +34,7 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   );
 
   return (
-    <Card $withPadding>
+    <Card withPadding>
       <H5 bold>
         <FormattedMessage id="tables.connectionState.title" />
       </H5>

@@ -31,8 +31,3 @@ export const BottomBlock = styled.div`
   margin-top: 40px;
   font-size: 11px;
 `;
-
-export const BottomBlockStatusMessage = styled.div`
-  max-width: calc(100% - 100px);
-  color: ${(props) => props.theme.dangerColor};
-`;

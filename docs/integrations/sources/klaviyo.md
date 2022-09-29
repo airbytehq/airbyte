@@ -22,7 +22,7 @@ Please follow these [steps](https://help.klaviyo.com/hc/en-us/articles/115005062
 5. Enter the date you want your sync to start from
 6. Submit the form
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source
 4. Enter you private API key from Prerequisites
@@ -66,6 +66,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version | Date       | Pull Request                                               | Subject                                                                                   |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------|
+| `0.1.9` | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/issues/17304) | Migrate to per-stream state.
 | `0.1.6` | 2022-07-20 | [14872](https://github.com/airbytehq/airbyte/issues/14872) | Increase test coverage                                                                    |
 | `0.1.5` | 2022-07-12 | [14617](https://github.com/airbytehq/airbyte/issues/14617) | Set max\_retries = 10 for `lists` stream.                                                 |
 | `0.1.4` | 2022-04-15 | [11723](https://github.com/airbytehq/airbyte/issues/11723) | Enhance klaviyo source for flows stream and update to events stream.                      |

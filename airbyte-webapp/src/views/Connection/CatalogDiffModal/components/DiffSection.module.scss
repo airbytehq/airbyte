@@ -7,16 +7,18 @@
   flex-direction: column;
 }
 
-.sectionSubHeader {
+.sectionSubHeader,
+%sectionSubHeader {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 0px variables.$spacing-md 0px variables.$spacing-2xl;
+  padding: 0 variables.$spacing-md 0 variables.$spacing-2xl;
   width: 100%;
   height: 22px;
 
   & th {
-    @extend .nameCell;
+    @extend %nameCell;
+
     text-align: left;
     font-weight: 400;
     font-size: 10px;
@@ -29,7 +31,8 @@
   }
 }
 
-.sectionHeader {
+.sectionHeader,
+%sectionHeader {
   font-size: 14px;
   font-weight: 500;
   line-height: 17px;

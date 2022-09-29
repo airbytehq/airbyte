@@ -1,4 +1,7 @@
-name: Build Report
+name: Generate Build Report
+
+# Uses Python to Generate a build report
+# and send it to Slack
 
 on:
   workflow_dispatch:

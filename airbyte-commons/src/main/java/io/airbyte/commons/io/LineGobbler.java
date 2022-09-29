@@ -7,8 +7,10 @@ package io.airbyte.commons.io;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.logging.MdcScope;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +26,35 @@ public class LineGobbler implements VoidCallable {
 
   public static void gobble(final InputStream is, final Consumer<String> consumer) {
     gobble(is, consumer, GENERIC, MdcScope.DEFAULT_BUILDER);
+  }
+
+  public static void gobble(final String message, final Consumer<String> consumer) {
+    final InputStream stringAsSteam = new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+    gobble(stringAsSteam, consumer);
+  }
+
+  public static void gobble(final String message) {
+    gobble(message, LOGGER::info);
+  }
+
+  /**
+   * Used to emit a visual separator in the user-facing logs indicating a start of a meaningful
+   * temporal activity
+   *
+   * @param message
+   */
+  public static void startSection(final String message) {
+    gobble("\r\n----- START " + message + " -----\r\n\r\n");
+  }
+
+  /**
+   * Used to emit a visual separator in the user-facing logs indicating a end of a meaningful temporal
+   * activity
+   *
+   * @param message
+   */
+  public static void endSection(final String message) {
+    gobble("\r\n----- END " + message + " -----\r\n\r\n");
   }
 
   public static void gobble(final InputStream is, final Consumer<String> consumer, final MdcScope.Builder mdcScopeBuilder) {

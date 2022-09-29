@@ -4,13 +4,13 @@ This page guides you through the process of setting up the Intercom source conne
 
 ## Set up the Intercom connector 
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Intercom** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 6. For Airbyte Cloud, click **Authenticate your Intercom account** to sign in with Intercom and authorize your account. 
-   For Airbyte OSS, enter your [Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token) to authenticate your account.
+   For Airbyte Open Source, enter your [Access Token](https://developers.intercom.com/building-apps/docs/authentication-types#section-how-to-get-your-access-token) to authenticate your account.
 7. Click **Set up source**.
 
 ## Supported sync modes
@@ -49,6 +49,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :--- | :--- |
+| 0.1.26  | 2022-08-18 | [16540](https://github.com/airbytehq/airbyte/pull/16540)  | Fix JSON schema    |
 | 0.1.25  | 2022-08-18 | [15681](https://github.com/airbytehq/airbyte/pull/15681)  | Update Intercom API to v 2.5    |
 | 0.1.24  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924)  | Remove `additionalProperties` field from schemas    |
 | 0.1.23  | 2022-07-19 | [14830](https://github.com/airbytehq/airbyte/pull/14830)  | Added `checkpoint_interval` for Incremental streams |

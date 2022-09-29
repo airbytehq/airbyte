@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Google Analytics V4 Spec",
+    "title": "Google Analytics (Universal Analytics) Spec",
     "type": "object",
     "required": ["view_id", "start_date"],
     "additionalProperties": true,

@@ -25,3 +25,7 @@ properties:
     type: integer
   maxSecondsBeforeSourceStateMessageEmitted:
     type: integer
+  maxSecondsBetweenStateMessageEmittedandCommitted:
+    type: integer
+  meanSecondsBetweenStateMessageEmittedandCommitted:
+    type: integer

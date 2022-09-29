@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 import { Button } from "components";
 import { CrossIcon } from "components/icons/CrossIcon";
 import { PencilIcon } from "components/icons/PencilIcon";
-import ToolTip from "components/ToolTip";
+import { Tooltip } from "components/ui/Tooltip";
 
 import styles from "./EditorRow.module.scss";
 
@@ -25,26 +25,36 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
       <div className={styles.name}>{name || id}</div>
       <div className={styles.actions}>
         <Button
+          size="xs"
           type="button"
-          iconOnly
+          variant="clear"
           arial-label={formatMessage({ id: "form.edit" })}
           onClick={() => onEdit(id)}
           disabled={disabled}
-        >
-          <PencilIcon />
-        </Button>
+          icon={<PencilIcon />}
+        />
         <Button
+          size="xs"
           type="button"
-          iconOnly
+          variant="clear"
           aria-label={formatMessage({ id: "form.delete" })}
           onClick={() => onRemove(id)}
           disabled={disabled}
-        >
-          <CrossIcon />
-        </Button>
+          icon={<CrossIcon />}
+        />
       </div>
     </div>
   );
 
-  return <div className={styles.container}>{description ? <ToolTip control={body}>{description}</ToolTip> : body}</div>;
+  return (
+    <div className={styles.container}>
+      {description ? (
+        <Tooltip control={body} placement="top">
+          {description}
+        </Tooltip>
+      ) : (
+        body
+      )}
+    </div>
+  );
 };
