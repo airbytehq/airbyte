@@ -27,4 +27,5 @@ public class ReporterFactory {
   public Database database(@Named("config") final DSLContext context) {
     return new Database(context);
   }
+  
 }

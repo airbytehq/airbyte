@@ -27,6 +27,7 @@ final class NumPendingJobs extends Emitter {
       return null;
     });
   }
+  
 }
 
 @Singleton
@@ -39,6 +40,7 @@ final class NumRunningJobs extends Emitter {
       return null;
     });
   }
+
 }
 
 @Singleton
@@ -51,6 +53,7 @@ final class NumOrphanRunningJobs extends Emitter {
       return null;
     });
   }
+
 }
 
 @Singleton
@@ -63,6 +66,7 @@ final class OldestRunningJob extends Emitter {
       return null;
     });
   }
+
 }
 
 @Singleton
@@ -75,6 +79,7 @@ final class OldestPendingJob extends Emitter {
       return null;
     });
   }
+
 }
 
 @Singleton
@@ -89,6 +94,7 @@ final class NumActiveConnectionsPerWorkspace extends Emitter {
       return null;
     });
   }
+
 }
 
 @Singleton
@@ -106,6 +112,7 @@ final class NumAbnormalScheduledSyncs extends Emitter {
   public Duration getDuration() {
     return Duration.ofHours(1);
   }
+
 }
 
 @Singleton
@@ -123,6 +130,7 @@ final class TotalScheduledSyncs extends Emitter {
   public Duration getDuration() {
     return Duration.ofHours(1);
   }
+
 }
 
 @Singleton
@@ -144,6 +152,7 @@ final class TotalJobRuntimeByTerminalState extends Emitter {
   public Duration getDuration() {
     return Duration.ofHours(1);
   }
+
 }
 
 /**
