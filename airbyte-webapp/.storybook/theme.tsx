@@ -3,6 +3,6 @@ import Image from "./logo.png";
 
 export default create({
   brandTitle: "Airbyte",
-  brandUrl: "https://airbyte.com",
+  brandUrl: "https://daspire.com",
   brandImage: Image,
 });
