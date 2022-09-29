@@ -52,7 +52,7 @@ public class TemporalUtils {
 
   private static final Duration WAIT_INTERVAL = Duration.ofSeconds(2);
   private static final Duration MAX_TIME_TO_CONNECT = Duration.ofMinutes(2);
-  private static final Duration WAIT_TIME_AFTER_CONNECT = Duration.ofSeconds(5);
+  private static final Duration WAIT_TIME_AFTER_CONNECT = Duration.ofSeconds(15);
   public static final String DEFAULT_NAMESPACE = "default";
   public static final Duration SEND_HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
   public static final Duration HEARTBEAT_TIMEOUT = Duration.ofSeconds(30);
