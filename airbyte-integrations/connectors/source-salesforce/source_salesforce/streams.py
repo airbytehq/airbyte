@@ -190,8 +190,10 @@ class BulkSalesforceStream(SalesforceStream):
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
                 elif error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                    self.logger.error(f"Cannot receive data for stream '{self.name}' ,"
-                                      f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'")
+                    self.logger.error(
+                        f"Cannot receive data for stream '{self.name}' ,"
+                        f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'"
+                    )
                 elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
                     self.logger.error(
                         f"The stream '{self.name}' is not queryable, "
@@ -276,8 +278,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
-        with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response,\
-                open(tmp_file, "wb") as data_file:
+        with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
             response_encoding = response.encoding or response.apparent_encoding or self.encoding
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
