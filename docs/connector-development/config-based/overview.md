@@ -131,6 +131,30 @@ The developer can choose and configure the implementation they need depending on
 
 Since the `Retriever` is defined as part of the Stream configuration, different Streams for a given Source can use different `Retriever` definitions if needed.
 
+Schema:
+
+```yaml
+SimpleRetriever:
+  type: object
+  additionalProperties: false
+  required:
+    - requester
+    - record_selector
+    - paginator
+    - stream_slicer
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    requester:
+      "$ref": "#/definitions/Requester"
+    record_selector:
+      "$ref": "#/definitions/HttpSelector"
+    paginator:
+      "$ref": "#/definitions/Paginator"
+    stream_slicer:
+      "$ref": "#/definitions/StreamSlicer"
+```
+
 ### Data flow
 
 The retriever acts as a coordinator, moving the data between its components before emitting `AirbyteMessage`s that can be read by the platform.
@@ -160,6 +184,43 @@ There is currently only one implementation, the `HttpRequester`, which is define
 4. A request options provider: Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
 5. An authenticator: Defines how to authenticate to the source
 6. An error handler: Defines how to handle errors
+
+Schema:
+
+```yaml
+HttpRequester:
+  type: object
+  additionalProperties: false
+  required:
+    - url_base
+    - path
+    - http_method
+    - request_options_provider
+    - authenticator
+    - error_handler
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    url_base:
+      type: string
+      description: "base url"
+    path:
+      type: string
+      description: "path"
+    http_method:
+      "$ref": "#/definitions/HttpMethod"
+    request_options_provider:
+      "$ref": "#/definitions/RequestOptionsProvider"
+    authenticator:
+      "$ref": "#/definitions/Authenticator"
+    error_handler:
+      "$ref": "#/definitions/ErrorHandler"
+HttpMethod:
+  type: string
+  enum:
+    - GET
+    - POST
+```
 
 More details on authentication can be found in the [authentication section](authentication.md).
 
@@ -211,3 +272,10 @@ The following connectors can serve as example of what production-ready config-ba
 - [Greenhouse](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse)
 - [Sendgrid](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-sendgrid)
 - [Sentry](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-sentry)
+
+## More readings
+
+- [$options](./yaml-structure.md#options)
+- [RequestOptionsProvider](./request-options.md#request-options-provider)
+- [Pagination](./pagination.md)
+- [Stream slicers](./stream-slicers.md)

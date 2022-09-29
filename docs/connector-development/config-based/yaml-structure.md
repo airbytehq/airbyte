@@ -96,6 +96,16 @@ More details on object instantiation can be found [here](https://airbyte-cdk.rea
 Parameters can be passed down from a parent component to its subcomponents using the $options key.
 This can be used to avoid repetitions.
 
+Schema:
+
+```yaml
+  "$options":
+    type: object
+    additionalProperties: true
+```
+
+Example:
+
 ```yaml
 outer:
   $options:

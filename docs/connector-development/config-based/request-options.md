@@ -7,6 +7,30 @@ There are a few ways to set request parameters, headers, and body on ongoing HTT
 The primary way to set request options is through the `Requester`'s `RequestOptionsProvider`.
 The options can be configured as key value pairs:
 
+Schema:
+
+```yaml
+InterpolatedRequestOptionsProvider:
+  type: object
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    request_parameters:
+      "$ref": "#/definitions/RequestInput"
+    request_headers:
+      "$ref": "#/definitions/RequestInput"
+    request_body_data:
+      "$ref": "#/definitions/RequestInput"
+    request_body_json:
+      "$ref": "#/definitions/RequestInput"
+RequestInput:
+  type: object
+  additionalProperties: true
+```
+
+Example:
+
 ```yaml
 requester:
   type: HttpRequester
@@ -85,4 +109,8 @@ stream_slicer:
     inject_into: "request_parameter"
 ```
 
-More details on the stream slicers can be found in the [stream-slicers section](stream-slicers.md).
+## More readings
+
+- [$options](./yaml-structure.md#options)
+- [Requester](##FIXME)
+- [Stream-slicers](stream-slicers.md).

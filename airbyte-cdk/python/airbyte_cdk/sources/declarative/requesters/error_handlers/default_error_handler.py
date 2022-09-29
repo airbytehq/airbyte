@@ -75,10 +75,11 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
     7. ignore 429 and retry on 404
     `
         error_handler:
-        - http_codes: [ 429 ]
-          action: IGNORE
-        - http_codes: [ 404 ]
-          action: RETRY
+          response_filters:
+            - http_codes: [ 429 ]
+              action: IGNORE
+            - http_codes: [ 404 ]
+              action: RETRY
     `
 
     Attributes:

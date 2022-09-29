@@ -13,6 +13,28 @@ The paginator is defined by
 - `pagination_strategy`: How to compute the next page to fetch
 - `page_token_option`: How to specify the next page to fetch in the outgoing HTTP request
 
+Schema:
+
+```yaml
+LimitPaginator:
+  type: object
+  additionalProperties: false
+  required:
+    - page_token_option
+    - pagination_strategy
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    page_size:
+      type: integer
+    limit_option:
+      "$ref": "#/definitions/RequestOption"
+    page_token_option:
+      "$ref": "#/definitions/RequestOption"
+    pagination_strategy:
+      "$ref": "#/definitions/PaginationStrategy"
+```
+
 3 pagination strategies are supported
 
 1. Page increment
@@ -25,7 +47,24 @@ The paginator is defined by
 
 When using the `PageIncrement` strategy, the page number will be set as part of the `page_token_option`.
 
+Schema:
+
+```yaml
+PageIncrement:
+  type: object
+  additionalProperties: false
+  required:
+    - page_size
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    page_size:
+      type: integer
+```
+
 The following paginator example will fetch 5 records per page, and specify the page number as a request_parameter:
+
+Example:
 
 ```yaml
 paginator:
@@ -52,7 +91,24 @@ and the second request as `https://cloud.airbyte.com/api/get_data?page_size=5&pa
 
 When using the `OffsetIncrement` strategy, the number of records read will be set as part of the `page_token_option`.
 
+Schema:
+
+```yaml
+OffsetIncrement:
+  type: object
+  additionalProperties: false
+  required:
+    - page_size
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    page_size:
+      type: integer
+```
+
 The following paginator example will fetch 5 records per page, and specify the offset as a request_parameter:
+
+Example:
 
 ```yaml
 paginator:
@@ -82,6 +138,26 @@ The `CursorPaginationStrategy` outputs a token by evaluating its `cursor_value` 
 - `last_records`: List of records selected from the last response
 
 This cursor value can be used to request the next page of record.
+
+Schema:
+
+```yaml
+Schema:
+
+  ```yaml
+CursorPagination:
+  type: object
+  additionalProperties: false
+  required:
+    - cursor_value
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    cursor_value:
+      type: string
+    stop_condition:
+      type: string
+```
 
 #### Cursor paginator in request parameters
 
@@ -125,3 +201,8 @@ the first request will be sent as `https://cloud.airbyte.com/api/get_data`
 
 Assuming the response's next url is `https://cloud.airbyte.com/api/get_data?page=1&page_size=100`,
 the next request will be sent as `https://cloud.airbyte.com/api/get_data?page=1&page_size=100`
+
+## More readings
+
+- [$options](./yaml-structure.md#options)
+- [Request options](./request-options.md)

@@ -86,7 +86,7 @@ definitions:
       additionalProperties: false
       simple_retriever:
         "$ref": "#/definitions/SimpleRetriever"
-    SimpleRetriver:
+    SimpleRetriever:
       type: object
       additionalProperties: false
       required:
