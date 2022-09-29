@@ -180,7 +180,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     LogClientSingleton.getInstance().setWorkspaceMdc(workerEnvironment, logConfigs.orElseThrow(),
         LogClientSingleton.getInstance().getSchedulerLogsRoot(Path.of(workspaceRoot)));
 
-    if (WorkerEnvironment.KUBERNETES.equals(workerEnvironment)) {
+    if (environment.getActiveNames().contains(Environment.KUBERNETES)) {
       KubePortManagerSingleton.init(temporalWorkerPorts);
     }
 

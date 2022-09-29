@@ -85,7 +85,6 @@ airbyte:
     docker-mount: ${LOCAL_DOCKER_MOUNT}
     root: ${LOCAL_ROOT}
   worker:
-    env: ${WORKER_ENVIRONMENT:DOCKER}
     check:
       enabled: ${SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS:true}
       kube:
