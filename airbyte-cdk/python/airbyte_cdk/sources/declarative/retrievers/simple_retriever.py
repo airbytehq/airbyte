@@ -300,8 +300,9 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # if ignore -> ignore response and return no records
         # else -> delegate to record selector
         response_status = self.requester.should_retry(response)
+        self.logger.info(response.text)
         if response_status.action == ResponseAction.FAIL:
-            raise ReadException(f"Request {response.request} failed with response {response}")
+            raise ReadException(f"Request {response.request} failed with response {response.text}, {response.url}, {response.request.headers}, {response.request.path_url}, {response.request.url}")
         elif response_status.action == ResponseAction.IGNORE:
             self.logger.info(f"Ignoring response for failed request with error message {HttpStream.parse_response_error_message(response)}")
             return []
@@ -344,6 +345,8 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
+        req_param = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=None)
+        self.logger.info(req_param)
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
         for r in records_generator:
             self.stream_slicer.update_cursor(stream_slice, last_record=r)

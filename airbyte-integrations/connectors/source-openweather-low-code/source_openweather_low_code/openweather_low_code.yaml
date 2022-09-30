@@ -1,0 +1,46 @@
+version: "0.1.0"
+
+definitions:
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_openweather_low_code/schemas/{{ options['name'] }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: []
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    http_method: "GET"
+    url_base: "https://api.openweathermap.org/data/3.0/"
+    request_options_provider:
+      request_parameters:
+        appid: "{{ config['appid'] }}"
+        lat: "{{ config['lat'] }}"
+        lon: "{{ config['lon'] }}"
+  retriever:
+    type: SimpleRetriever
+    $options:
+      url_base: "https://api.openweathermap.org/data/3.0/"
+    name: "{{ options['name'] }}"
+    # primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+
+streams:
+  - type: DeclarativeStream
+    $options:
+      name: "onecall"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: onecall
+check:
+  type: CheckStream
+  stream_names: ["onecall"]
