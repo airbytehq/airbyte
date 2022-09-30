@@ -60,6 +60,8 @@ Schema:
 BearerAuthenticator:
   type: object
   additionalProperties: false
+  required:
+    - api_token
   properties:
     "$options":
       "$ref": "#/definitions/$options"
@@ -161,6 +163,7 @@ OAuth:
       type: array
       items:
         type: string
+      default: [ ]
     token_expiry_date:
       type: string
     access_token_name:

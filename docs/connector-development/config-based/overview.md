@@ -134,25 +134,10 @@ Since the `Retriever` is defined as part of the Stream configuration, different 
 Schema:
 
 ```yaml
-SimpleRetriever:
-  type: object
-  additionalProperties: false
-  required:
-    - requester
-    - record_selector
-    - paginator
-    - stream_slicer
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    requester:
-      "$ref": "#/definitions/Requester"
-    record_selector:
-      "$ref": "#/definitions/HttpSelector"
-    paginator:
-      "$ref": "#/definitions/Paginator"
-    stream_slicer:
-      "$ref": "#/definitions/StreamSlicer"
+Retriever:
+  type:
+  oneOf:
+    - "$ref": "#/definitions/SimpleRetriever"
 ```
 
 ### Data flow
@@ -166,6 +151,35 @@ The `SimpleRetriever`'s data flow can be described as follows:
     1. Submit a request as defined by the requester
     2. Select the records from the response
     3. Repeat for as long as the paginator points to a next page
+
+Schema:
+
+```yaml
+SimpleRetriever:
+  type: object
+  additionalProperties: false
+  required:
+    - name
+    - primary_key
+    - requester
+    - record_selector
+    - stream_slicer
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    name:
+      type: string
+    primary_key:
+      "$ref": "#/definitions/PrimaryKey"
+    requester:
+      "$ref": "#/definitions/Requester"
+    record_selector:
+      "$ref": "#/definitions/HttpSelector"
+    paginator:
+      "$ref": "#/definitions/Paginator"
+    stream_slicer:
+      "$ref": "#/definitions/StreamSlicer"
+```
 
 More details on the record selector can be found in the [record selector section](record-selector.md).
 
@@ -181,18 +195,22 @@ There is currently only one implementation, the `HttpRequester`, which is define
 1. A base url: The root of the API source
 2. A path: The specific endpoint to fetch data from for a resource
 3. The HTTP method: the HTTP method to use (GET or POST)
-   <<<<<<< HEAD
-4. A request options provider: Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
-5. An authenticator: Defines how to authenticate to the source
-6. An error handler: Defines how to handle errors
+4. [A request options provider](./request-options.md): Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
+5. [An authenticator](./authentication.md): Defines how to authenticate to the source
+6. [An error handler](./error-handling.md): Defines how to handle errors
 
 Schema:
 
 ```yaml
+Requester:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/HttpRequester"
 HttpRequester:
   type: object
   additionalProperties: false
   required:
+    - name
     - url_base
     - path
     - http_method
@@ -202,6 +220,8 @@ HttpRequester:
   properties:
     "$options":
       "$ref": "#/definitions/$options"
+    name:
+      type: string
     url_base:
       type: string
       description: "base url"
@@ -216,23 +236,9 @@ HttpRequester:
       "$ref": "#/definitions/Authenticator"
     error_handler:
       "$ref": "#/definitions/ErrorHandler"
-HttpMethod:
-  type: string
-  enum:
-    - GET
-    - POST
 ```
 
 More details on authentication can be found in the [authentication section](authentication.md).
-
-More details on error handling can be found in the [error handling section](error-handling.md).
-=======
-
-4. [A request options provider](./request-options.md): Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
-5. [An authenticator](./authentication.md): Defines how to authenticate to the source
-6. [An error handler](./error-handling.md): Defines how to handle errors
-
-> > > > > > > master
 
 ## Connection Checker
 

@@ -32,15 +32,20 @@ DefaultPaginator:
   required:
     - page_token_option
     - pagination_strategy
+    - url_base
   properties:
     "$options":
       "$ref": "#/definitions/$options"
+    page_size:
+      type: integer
     page_size_option:
       "$ref": "#/definitions/RequestOption"
     page_token_option:
       "$ref": "#/definitions/RequestOption"
     pagination_strategy:
       "$ref": "#/definitions/PaginationStrategy"
+    url_base:
+      type: string
 ```
 
 3 pagination strategies are supported

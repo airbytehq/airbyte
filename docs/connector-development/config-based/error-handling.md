@@ -20,7 +20,7 @@ BackoffStrategy:
     - "$ref": "#/definitions/ExponentialBackoff"
     - "$ref": "#/definitions/ConstantBackoff"
     - "$ref": "#/definitions/WaitTimeFromHeader"
-    - "$ref": "#/definitions/WaitTimeUntilFromHeader"
+    - "$ref": "#/definitions/WaitUntilTimeFromHeader"
 ```
 
 ## Default error handler
@@ -28,26 +28,26 @@ BackoffStrategy:
 Schema:
 
 ```yaml
-  DefaultErrorHandler:
-    type: object
-    required:
-      - max_retries
-    additionalProperties: false
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      response_filters:
-        type: array
-        items:
-          "$ref": "#/definitions/HttpResponseFilter"
-      max_retries:
-        type: integer
-        default: 5
-      backoff_strategies:
-        type: array
-        items:
-          "$ref": "#/definitions/BackoffStrategy"
-        default: [ ]
+DefaultErrorHandler:
+  type: object
+  required:
+    - max_retries
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    response_filters:
+      type: array
+      items:
+        "$ref": "#/definitions/HttpResponseFilter"
+    max_retries:
+      type: integer
+      default: 5
+    backoff_strategies:
+      type: array
+      items:
+        "$ref": "#/definitions/BackoffStrategy"
+      default: [ ]
 ```
 
 ## Defining errors
@@ -60,32 +60,32 @@ For instance, this example will configure the handler to also retry responses wi
 Schema:
 
 ```yaml
-  HttpResponseFilter:
-    type: object
-    required:
-      - action
-    additionalProperties: false
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      action:
-        "$ref": "#/definitions/ResponseAction"
-      http_codes:
-        type: array
-        items:
-          type: integer
-        default: [ ]
-      error_message_contains:
-        type: string
-      predicate:
-        type: string
-  ResponseAction:
-    type: string
-    enum:
-      - SUCCESS
-      - FAIL
-      - IGNORE
-      - RETRY
+HttpResponseFilter:
+  type: object
+  required:
+    - action
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    action:
+      "$ref": "#/definitions/ResponseAction"
+    http_codes:
+      type: array
+      items:
+        type: integer
+      default: [ ]
+    error_message_contains:
+      type: string
+    predicate:
+      type: string
+ResponseAction:
+  type: string
+  enum:
+    - SUCCESS
+    - FAIL
+    - IGNORE
+    - RETRY
 ```
 
 Example:
@@ -192,7 +192,7 @@ Schema:
       "$options":
         "$ref": "#/definitions/$options"
       backoff_time_in_seconds:
-        type: integer
+        type: number
 ```
 
 ### Wait time defined in header
@@ -252,7 +252,7 @@ In this example, the requester will wait until the time specified in the "wait_u
 Schema:
 
 ```yaml
-  WaitTimeUntilFromHeader:
+  WaitUntilTimeFromHeader:
     type: object
     additionalProperties: false
     required:

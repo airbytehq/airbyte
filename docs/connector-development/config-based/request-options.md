@@ -10,6 +10,10 @@ The options can be configured as key value pairs:
 Schema:
 
 ```yaml
+RequestOptionsProvider:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
 InterpolatedRequestOptionsProvider:
   type: object
   additionalProperties: false

@@ -20,6 +20,10 @@ RecordSelector:
       "$ref": "#/definitions/RecordExtractor"
     record_filter:
       "$ref": "#/definitions/RecordFilter"
+RecordExtractor:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/DpathExtractor"
 ```
 
 The current record extraction implementation uses [dpath](https://pypi.org/project/dpath/) to select records from the json-decoded HTTP response.
@@ -200,35 +204,35 @@ This example adds a top-level field "field1" with a value "static_value"
 Schema:
 
 ```yaml
-  AddFields:
-    type: object
-    required:
-      - fields
-    additionalProperties: false
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      fields:
-        type: array
-        items:
-          "$ref": "#/definitions/AddedFieldDefinition"
-  AddedFieldDefinition:
-    type: object
-    required:
-      - path
-      - value
-    additionalProperties: false
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      path:
-        "$ref": "#/definitions/FieldPointer"
-      value:
-        type: string
-  FieldPointer:
-    type: array
-    items:
+AddFields:
+  type: object
+  required:
+    - fields
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    fields:
+      type: array
+      items:
+        "$ref": "#/definitions/AddedFieldDefinition"
+AddedFieldDefinition:
+  type: object
+  required:
+    - path
+    - value
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    path:
+      "$ref": "#/definitions/FieldPointer"
+    value:
       type: string
+FieldPointer:
+  type: array
+  items:
+    type: string
 ```
 
 Example:
@@ -301,18 +305,18 @@ Fields can be removed from records with the `RemoveFields` transformation.
 Schema:
 
 ```yaml
-  RemoveFields:
-    type: object
-    required:
-      - field_pointers
-    additionalProperties: false
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      field_pointers:
-        type: array
-        items:
-          "$ref": "#/definitions/FieldPointer"
+RemoveFields:
+  type: object
+  required:
+    - field_pointers
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    field_pointers:
+      type: array
+      items:
+        "$ref": "#/definitions/FieldPointer"
 ```
 
 Given a record of the following shape:

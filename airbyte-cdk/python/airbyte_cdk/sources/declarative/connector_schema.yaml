@@ -80,23 +80,24 @@ definitions:
       type: string #Fixme: should be Union[str, List[str], List[List[str]]]
     Retriever:
       type:
-        description: "Retriever type"
-        enum:
-          - SIMPLE_RETRIEVER
-      additionalProperties: false
-      simple_retriever:
-        "$ref": "#/definitions/SimpleRetriever"
+      oneOf:
+        - "$ref": "#/definitions/SimpleRetriever"
     SimpleRetriever:
       type: object
       additionalProperties: false
       required:
+        - name
+        - primary_key
         - requester
         - record_selector
-        - paginator
         - stream_slicer
       properties:
         "$options":
           "$ref": "#/definitions/$options"
+        name:
+          type: string
+        primary_key:
+          "$ref": "#/definitions/PrimaryKey"
         requester:
           "$ref": "#/definitions/Requester"
         record_selector:
@@ -106,17 +107,14 @@ definitions:
         stream_slicer:
           "$ref": "#/definitions/StreamSlicer"
     Requester:
-      type:
-        description: "Requester type"
-        enum:
-          - HTTP_REQUESTER
-        additionalProperties: false
-        http_requester:
-          "$ref": "#/definitions/HttpRequester"
+      type: object
+      oneOf:
+        - "$ref": "#/definitions/HttpRequester"
     HttpRequester:
       type: object
       additionalProperties: false
       required:
+        - name
         - url_base
         - path
         - http_method
@@ -126,6 +124,8 @@ definitions:
       properties:
         "$options":
           "$ref": "#/definitions/$options"
+        name:
+          type: string
         url_base:
           type: string
           description: "base url"
@@ -146,17 +146,9 @@ definitions:
         - GET
         - POST
     RequestOptionsProvider:
-      type:
-        description: "Request Options provider type"
-        type: string
-        enum:
-          - InterpolatedRequestOptionsProvider
-      additionalProperties: false
-      required:
-        - type
-      description: "A request option provider"
-      interpolated_request_options_provider:
-        "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+      type: object
+      oneOf:
+        - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
     InterpolatedRequestOptionsProvider:
       type: object
       additionalProperties: false
@@ -169,7 +161,7 @@ definitions:
           "$ref": "#/definitions/RequestInput"
         request_body_data:
           "$ref": "#/definitions/RequestInput"
-        request_body_json: #TODO: can we delete this in favor of request_body_data?
+        request_body_json:
           "$ref": "#/definitions/RequestInput"
     RequestInput:
       type: object
@@ -198,6 +190,8 @@ definitions:
     BearerAuthenticator:
       type: object
       additionalProperties: false
+      required:
+        - api_token
       properties:
         "$options":
           "$ref": "#/definitions/$options"
@@ -212,9 +206,9 @@ definitions:
       properties:
         "$options":
           "$ref": "#/definitions/$options"
-        header:
+        username:
           type: string
-        api_token:
+        password:
           type: string
     OAuth:
       type: object
@@ -241,6 +235,7 @@ definitions:
           type: array
           items:
             type: string
+          default: []
         token_expiry_date:
           type: string
         access_token_name:
@@ -261,6 +256,7 @@ definitions:
       required:
         - page_token_option
         - pagination_strategy
+        - url_base
       properties:
         "$options":
           "$ref": "#/definitions/$options"
@@ -272,6 +268,8 @@ definitions:
           "$ref": "#/definitions/RequestOption"
         pagination_strategy:
           "$ref": "#/definitions/PaginationStrategy"
+        url_base:
+          type: string
     RequestOption:
       type: object
       additionalProperties: false
@@ -347,17 +345,8 @@ definitions:
           "$ref": "#/definitions/RecordFilter"
     RecordExtractor:
       type: object
-      required:
-        - type
-      additionalProperties: false
-      properties:
-        type:
-          description: "Record extractor type"
-          type: string
-          enum:
-            - dpath
-        record_selector:
-          "$ref": "#/definitions/DpathExtractor"
+      oneOf:
+        - "$ref": "#/definitions/DpathExtractor"
     DpathExtractor:
       type: object
       additionalProperties: false
@@ -380,28 +369,12 @@ definitions:
             type: string
       StreamSlicer:
         type: object
-        required:
-          - type
-        properties:
-          type:
-            description: "Stream slicer type"
-            type: string
-            enum:
-              - datetime
-              - list
-              - cartesian
-              - substream
-              - single_slice
-          datetime:
-            "$ref": "#/definitions/DatetimeStreamSlicer"
-          list:
-            "$ref": "#/definitions/ListStreamSlicer"
-          cartesian_product:
-            "$ref": "#/definitions/CartesianProductStreamSlicer"
-          substream:
-            "$ref": "#/definitions/SubstreamSlicer"
-          single_slice:
-            "$ref": "#/definitions/SingleSlice"
+        oneOf:
+          - "$ref": "#/definitions/DatetimeStreamSlicer"
+          - "$ref": "#/definitions/ListStreamSlicer"
+          - "$ref": "#/definitions/CartesianProductStreamSlicer"
+          - "$ref": "#/definitions/SubstreamSlicer"
+          - "$ref": "#/definitions/SingleSlice"
       SingleSlice:
         type: object
         additionalProperties: false
@@ -581,7 +554,7 @@ definitions:
           - "$ref": "#/definitions/ExponentialBackoff"
           - "$ref": "#/definitions/ConstantBackoff"
           - "$ref": "#/definitions/WaitTimeFromHeader"
-          - "$ref": "#/definitions/WaitTimeUntilFromHeader"
+          - "$ref": "#/definitions/WaitUntilTimeFromHeader"
       ExponentialBackoff:
         type: object
         additionalProperties: false
@@ -600,7 +573,7 @@ definitions:
           "$options":
             "$ref": "#/definitions/$options"
           backoff_time_in_seconds:
-            type: integer
+            type: number
       WaitTimeFromHeader:
         type: object
         additionalProperties: false
@@ -613,7 +586,7 @@ definitions:
             type: string
           regex:
             type: string
-      WaitTimeUntilFromHeader:
+      WaitUntilTimeFromHeader:
         type: object
         additionalProperties: false
         required:

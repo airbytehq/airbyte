@@ -1,7 +1,5 @@
 # Substreams
 
-#### FIXME: Conceptually, this is about nested lists. TODO: Move lists stream slicers to this section
-
 Substreams are streams that depend on the records on another stream
 
 We might for instance want to read all the commits for a given repository (parent stream).
@@ -21,41 +19,39 @@ We might for instance want to read all the commits for a given repository (paren
 Schema:
 
 ```yaml
-  SubstreamSlicer:
-    type: object
-    required:
-      - parent_stream_configs
-    additionalProperties: false
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      parent_stream_configs:
-        type: array
-        items:
-          "$ref": "#/definitions/ParentStreamConfig"
-  ParentStreamConfig:
-    type: object
-    required:
-      - stream
-      - parent_key
-      - stream_slice_field
-    additionalProperties: false
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      stream:
-        "$ref": "#/definitions/Stream"
-      parent_key:
-        type: string
-      stream_slice_field:
-        type: string
-      request_option:
-        "$ref": "#/definitions/RequestOption"
+SubstreamSlicer:
+  type: object
+  required:
+    - parent_stream_configs
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    parent_stream_configs:
+      type: array
+      items:
+        "$ref": "#/definitions/ParentStreamConfig"
+ParentStreamConfig:
+  type: object
+  required:
+    - stream
+    - parent_key
+    - stream_slice_field
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    stream:
+      "$ref": "#/definitions/Stream"
+    parent_key:
+      type: string
+    stream_slice_field:
+      type: string
+    request_option:
+      "$ref": "#/definitions/RequestOption"
 ```
 
-=======
-> > > > > > > master
-> > > > > > > Assuming the commits for a given repository can be read by specifying the repository as a request_parameter, this could be defined as
+Example:
 
 ```yaml
 stream_slicer:
@@ -71,6 +67,8 @@ stream_slicer:
 
 REST APIs often nest sub-resources in the URL path.
 If the URL to fetch commits was "/repositories/:id/commits", then the `Requester`'s path would need to refer to the stream slice's value and no `request_option` would be set:
+
+Example:
 
 ```yaml
 retriever:
