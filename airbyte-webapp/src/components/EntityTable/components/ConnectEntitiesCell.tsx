@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { ImageBlock } from "components/ui/ImageBlock";
+import { NumberBadge } from "components/ui/NumberBadge";
 
 interface IProps {
   values: Array<{
@@ -19,7 +19,7 @@ const Content = styled.div<{ enabled?: boolean }>`
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
 `;
 
-const Image = styled(ImageBlock)`
+const Image = styled(NumberBadge)`
   margin-right: 6px;
 `;
 
@@ -31,6 +31,7 @@ const Connector = styled.div`
 `;
 
 const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
+  console.log(values.length);
   if (values.length === 1) {
     return (
       <Content enabled={enabled}>
@@ -44,7 +45,15 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
   }
 
   if (!values.length) {
-    return null;
+    console.log(`No values:`, values.length);
+    return (
+      <Content enabled={enabled}>
+        <Image num={Number(0)} />
+        <div>
+          <p>No connections.</p>
+        </div>
+      </Content>
+    );
   }
 
   return (
