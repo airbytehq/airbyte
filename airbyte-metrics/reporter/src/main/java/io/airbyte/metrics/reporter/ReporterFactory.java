@@ -10,7 +10,8 @@ import io.micronaut.context.annotation.Factory;
 import jakarta.inject.Singleton;
 
 /**
- * Micronaut factory for creating the appropriate singletons utilized by the metric reporter service.
+ * Micronaut factory for creating the appropriate singletons utilized by the metric reporter
+ * service.
  */
 @Factory
 class ReporterFactory {
