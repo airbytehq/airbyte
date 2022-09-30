@@ -12,8 +12,6 @@ public interface FeatureFlags {
 
   boolean autoDisablesFailingConnections();
 
-  boolean exposeSecretsInExport();
-
   boolean forceSecretMigration();
 
   boolean useStreamCapableState();

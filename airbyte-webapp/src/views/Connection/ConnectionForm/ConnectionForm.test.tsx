@@ -10,7 +10,7 @@ import {
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
-import { ConnectionFormServiceProvider } from "hooks/services/Connection/ConnectionFormService";
+import { ConnectionFormServiceProvider } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import { ConnectionForm, ConnectionFormMode } from "./ConnectionForm";
 

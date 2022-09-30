@@ -2,7 +2,7 @@ import { Dialog } from "@headlessui/react";
 import classNames from "classnames";
 import React, { useState } from "react";
 
-import { Card } from "../../base/Card";
+import { Card } from "../Card";
 import styles from "./Modal.module.scss";
 
 export interface ModalProps {

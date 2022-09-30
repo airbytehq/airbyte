@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Card } from "components/base/Card";
+import { Card } from "components/ui/Card";
 
 interface UseCaseBlockProps {
   count: number;
