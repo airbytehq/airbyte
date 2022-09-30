@@ -24,7 +24,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -43,7 +42,6 @@ public class SourceHandler {
   private final JsonSchemaValidator validator;
   private final ConnectionsHandler connectionsHandler;
   private final ConfigurationUpdate configurationUpdate;
-  private final JsonSecretsProcessor secretsProcessor;
 
   SourceHandler(final ConfigRepository configRepository,
                 final SecretsRepositoryReader secretsRepositoryReader,
@@ -51,7 +49,6 @@ public class SourceHandler {
                 final JsonSchemaValidator integrationSchemaValidation,
                 final ConnectionsHandler connectionsHandler,
                 final Supplier<UUID> uuidGenerator,
-                final JsonSecretsProcessor secretsProcessor,
                 final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
@@ -60,7 +57,6 @@ public class SourceHandler {
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
-    this.secretsProcessor = secretsProcessor;
   }
 
   public SourceHandler(final ConfigRepository configRepository,
@@ -75,9 +71,6 @@ public class SourceHandler {
         integrationSchemaValidation,
         connectionsHandler,
         UUID::randomUUID,
-        JsonSecretsProcessor.builder()
-            .copySecrets(true)
-            .build(),
         new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 
@@ -100,7 +93,7 @@ public class SourceHandler {
         spec);
 
     // read configuration from db
-    return buildSourceRead(sourceId, spec);
+    return buildSourceRead(sourceId);
   }
 
   public SourceRead updateSource(final SourceUpdate sourceUpdate)
@@ -123,7 +116,7 @@ public class SourceHandler {
         spec);
 
     // read configuration from db
-    return buildSourceRead(sourceUpdate.getSourceId(), spec);
+    return buildSourceRead(sourceUpdate.getSourceId());
   }
 
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody)
@@ -245,19 +238,9 @@ public class SourceHandler {
   private SourceRead buildSourceRead(final UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
-    final ConnectorSpecification spec = sourceDef.getSpec();
-    return buildSourceRead(sourceId, spec);
-  }
-
-  private SourceRead buildSourceRead(final UUID sourceId, final ConnectorSpecification spec)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    // read configuration from db
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-    final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
-    sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }
 
