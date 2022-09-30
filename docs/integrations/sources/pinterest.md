@@ -14,7 +14,7 @@ Please read [How to get your credentials](https://developers.pinterest.com/docs/
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Pinterest connector and select **Pinterest** from the Source type dropdown. 
-4. Enter the `start_date` you want your sync to start from
+4. Enter the `start_date` you want your sync to start from. `start_date` should be no older than 914 days from today, that's the restriction of the Pinterest API for some of the streams.
 5. Choose `OAuth2.0` in `Authorization Method` list
 6. Click on `Authenticate your Pinterest account` button
 7. Proceed with OAuth authentication of your account in the pop-up window that appears after previous step
@@ -27,7 +27,9 @@ Please read [How to get your credentials](https://developers.pinterest.com/docs/
 3. Enter your `client_id`
 4. Enter your `client_secret`
 5. Enter your `refresh_token`
-6. Enter the `start_date` you want your sync to start from
+6. Enter the `start_date` you want your sync to start from.`start_date` should be no older than 914 days from today, that's the restriction of the Pinterest API for some of the streams.
+5. Choose `OAuth2.0` in `Authorization Method` list
+
 7. Click **Set up source**
 
 ## Supported sync modes
@@ -71,6 +73,7 @@ Boards streams - 10 calls per sec / per user / per app
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.1.7   | 2022-09-29 | [17387](https://github.com/airbytehq/airbyte/pull/17387) | Set `start_date` dynamically based on API restrictions.
 | 0.1.6   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Use CDK 0.1.89                                                                                          |
 | 0.1.5   | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                                                             |
 | 0.1.4   | 2022-09-06 | [16161](https://github.com/airbytehq/airbyte/pull/16161) | Added ability to handle `429 - Too Many Requests` error with respect to `Max Rate Limit Exceeded Error` |
