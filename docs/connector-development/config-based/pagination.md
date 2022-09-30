@@ -6,7 +6,18 @@ Iterating over pages of result is different from iterating over stream slices.
 Stream slices have semantic value, for instance, a Datetime stream slice defines data for a specific date range. Two stream slices will have data for different date ranges.
 Conversely, pages don't have semantic value. More pages simply means that more records are to be read, without specifying any meaningful difference between the records of the first and later pages.
 
-The paginator is defined by
+Schema:
+
+```yaml
+Paginator:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/DefaultPaginator"
+```
+
+## Default paginator
+
+The default paginator is defined by
 
 - `page_size_option`: How to specify the page size in the outgoing HTTP request
 - `pagination_strategy`: How to compute the next page to fetch
@@ -15,7 +26,7 @@ The paginator is defined by
 Schema:
 
 ```yaml
-LimitPaginator:
+DefaultPaginator:
   type: object
   additionalProperties: false
   required:
@@ -24,9 +35,7 @@ LimitPaginator:
   properties:
     "$options":
       "$ref": "#/definitions/$options"
-    page_size:
-      type: integer
-    limit_option:
+    page_size_option:
       "$ref": "#/definitions/RequestOption"
     page_token_option:
       "$ref": "#/definitions/RequestOption"
@@ -41,6 +50,17 @@ LimitPaginator:
 3. Cursor-based
 
 ## Pagination Strategies
+
+Schema:
+
+```yaml
+PaginationStrategy:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/CursorPagination"
+    - "$ref": "#/definitions/OffsetIncrement"
+    - "$ref": "#/definitions/PageIncrement"
+```
 
 ### Page increment
 
@@ -143,7 +163,7 @@ Schema:
 Schema:
 
   ```yaml
-CursorPagination:
+CursorPaginationStrategy:
   type: object
   additionalProperties: false
   required:
@@ -155,6 +175,8 @@ CursorPagination:
       type: string
     stop_condition:
       type: string
+    page_size:
+      type: integer
 ```
 
 #### Cursor paginator in request parameters

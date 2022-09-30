@@ -253,18 +253,9 @@ definitions:
           type: object
     Paginator:
       type: object
-      additionalProperties: false
-      required:
-        - type
-      properties:
-        type:
-          description: "Paginator type"
-          type: string
-          enum:
-            - LimitPaginator
-        limit_paginator:
-          "$ref": "#/definitions/LimitPaginator"
-    LimitPaginator:
+      oneOf:
+        - "$ref": "#/definitions/DefaultPaginator"
+    DefaultPaginator:
       type: object
       additionalProperties: false
       required:
@@ -275,7 +266,7 @@ definitions:
           "$ref": "#/definitions/$options"
         page_size:
           type: integer
-        limit_option:
+        page_size_option:
           "$ref": "#/definitions/RequestOption"
         page_token_option:
           "$ref": "#/definitions/RequestOption"
@@ -301,24 +292,11 @@ definitions:
         - body_json
     PaginationStrategy:
       type: object
-      required:
-        - type
-      additionalProperties: false
-      properties:
-        type:
-          description: "Pagination strategy type"
-          type: string
-          enum:
-            - cursor
-            - offset
-            - page
-        cursor_pagination:
-          "$ref": "#/definitions/CursorPagination"
-        offset_pagination:
-          "$ref": "#/definitions/OffsetIncrement"
-        page_pagination:
-          "$ref": "#/definitions/PageIncrement"
-    CursorPagination:
+      oneOf:
+        - "$ref": "#/definitions/CursorPagination"
+        - "$ref": "#/definitions/OffsetIncrement"
+        - "$ref": "#/definitions/PageIncrement"
+    CursorPaginationStrategy:
       type: object
       additionalProperties: false
       required:
@@ -330,6 +308,8 @@ definitions:
           type: string
         stop_condition:
           type: string
+        page_size:
+          type: integer
     OffsetIncrement:
       type: object
       additionalProperties: false
