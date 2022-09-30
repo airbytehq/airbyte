@@ -2,11 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import contextlib
 import csv
 import datetime
 import json
-import os
 from abc import ABC
 from time import sleep
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -216,16 +214,6 @@ class MarketoExportBase(IncrementalMarketoStream):
 
             sleep(self.poll_interval)
 
-    @contextlib.contextmanager
-    def _csv_response_reader(self, response: requests.Response) -> csv.DictReader:
-        tmp_file = os.path.realpath(os.path.basename(response.request.url))
-        with open(tmp_file, "wb") as data_file:
-            for chunk in response.iter_content(chunk_size=1024):
-                data_file.write(chunk)
-        with open(tmp_file, "r") as data:
-            yield csv.DictReader(data)
-        os.remove(tmp_file)
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         response.text example:
@@ -239,21 +227,21 @@ class MarketoExportBase(IncrementalMarketoStream):
         default_prop = {"type": ["null", "string"]}
         schema = self.get_json_schema()["properties"]
 
-        with self._csv_response_reader(response) as reader:
-            for record in reader:
-                new_record = {**record}
-                attributes = json.loads(new_record.pop("attributes", "{}"))
-                for key, value in attributes.items():
-                    key = clean_string(key)
-                    new_record[key] = value
+        reader = csv.DictReader(response.iter_lines(chunk_size=1024, decode_unicode=True))
+        for record in reader:
+            new_record = {**record}
+            attributes = json.loads(new_record.pop("attributes", "{}"))
+            for key, value in attributes.items():
+                key = clean_string(key)
+                new_record[key] = value
 
-                for key, value in new_record.items():
-                    if key not in schema:
-                        self.logger.warning("Field '%s' not found in stream '%s' spec", key, self.name)
-                    prop = schema.get(key, default_prop)
-                    value = format_value(value, prop)
-                    new_record[key] = value
-                yield new_record
+            for key, value in new_record.items():
+                if key not in schema:
+                    self.logger.warning("Field '%s' not found in stream '%s' spec", key, self.name)
+                prop = schema.get(key, default_prop)
+                value = format_value(value, prop)
+                new_record[key] = value
+            yield new_record
 
     def read_records(
         self,

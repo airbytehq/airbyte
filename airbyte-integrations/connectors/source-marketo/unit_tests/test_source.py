@@ -100,7 +100,7 @@ def test_activities_schema(activity, expected_schema, config):
     "response_text, expected_records",
     (
         (
-            b"""Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant,attributes
+            """Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant,attributes
 1,3,true,10,15,{"spam": "true"}
 2,3,false,11,16,{"spam": "false"}""",
             [
@@ -125,9 +125,9 @@ def test_activities_schema(activity, expected_schema, config):
     ),
 )
 def test_export_parse_response(send_email_stream, response_text, expected_records):
-    def iter_content(*args, **kwargs):
-        yield response_text
-    assert list(send_email_stream.parse_response(Mock(iter_content=iter_content, request=Mock(url="/send_email/1")))) == expected_records
+    def iter_lines(*args, **kwargs):
+        yield from response_text.splitlines()
+    assert list(send_email_stream.parse_response(Mock(iter_lines=iter_lines, request=Mock(url="/send_email/1")))) == expected_records
 
 
 def test_memory_usage(send_email_stream, file_generator):
@@ -135,19 +135,16 @@ def test_memory_usage(send_email_stream, file_generator):
     big_file_path, records_generated = file_generator(min_size=min_file_size)
     small_file_path, _ = file_generator(min_size=1)
 
-    def iter_content(chunk_size=1024, file_path=""):
-        with open(file_path, "rb") as file:
-            while True:
-                chunk = file.read(chunk_size)
-                if not chunk:
-                    break
-                yield chunk
+    def iter_lines(file_path="", **kwargs):
+        with open(file_path, "r") as file:
+            for line in file:
+                yield line
 
     tracemalloc.start()
     records = 0
 
     for _ in send_email_stream.parse_response(
-        Mock(iter_content=partial(iter_content, file_path=big_file_path), request=Mock(url="/send_email/1"))
+        Mock(iter_lines=partial(iter_lines, file_path=big_file_path), request=Mock(url="/send_email/1"))
     ):
         records += 1
     _, big_file_peak = tracemalloc.get_traced_memory()
@@ -157,7 +154,7 @@ def test_memory_usage(send_email_stream, file_generator):
     tracemalloc.clear_traces()
 
     for _ in send_email_stream.parse_response(
-        Mock(iter_content=partial(iter_content, file_path=small_file_path), request=Mock(url="/send_email/1"))
+        Mock(iter_lines=partial(iter_lines, file_path=small_file_path), request=Mock(url="/send_email/1"))
     ):
         pass
     _, small_file_peak = tracemalloc.get_traced_memory()
