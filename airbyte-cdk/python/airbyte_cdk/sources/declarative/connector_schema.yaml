@@ -175,22 +175,13 @@ definitions:
       type: object
       additionalProperties: true
     Authenticator:
-      type:
-        description: "Authenticator type"
-        type: string
-        enum:
-          - OAuth
-          - ApiKeyAuthenticator
-          - BearerAuthenticator
-          - BasicHttpAuthenticator
-      oauth:
-        "$ref": "#/definitions/OAuth"
-      api_key:
-        "$ref": "#/definitions/ApiKeyAuthenticator"
-      bearer:
-        "$ref": "#/definitions/BearerAuthenticator"
-      basic:
-        "$ref": "#/definitions/BasicHttpAuthenticator"
+      type: object
+      description: "Authenticator type"
+      oneOf:
+        - "$ref": "#/definitions/OAuth"
+        - "$ref": "#/definitions/ApiKeyAuthenticator"
+        - "$ref": "#/definitions/BearerAuthenticator"
+        - "$ref": "#/definitions/BasicHttpAuthenticator"
     ApiKeyAuthenticator:
       type: object
       additionalProperties: false

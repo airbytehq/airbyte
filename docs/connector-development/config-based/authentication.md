@@ -2,6 +2,19 @@
 
 The `Authenticator` defines how to configure outgoing HTTP requests to authenticate on the API source.
 
+Schema:
+
+```yaml
+Authenticator:
+  type: object
+  description: "Authenticator type"
+  oneOf:
+    - "$ref": "#/definitions/OAuth"
+    - "$ref": "#/definitions/ApiKeyAuthenticator"
+    - "$ref": "#/definitions/BearerAuthenticator"
+    - "$ref": "#/definitions/BasicHttpAuthenticator"
+```
+
 ## Authenticators
 
 ### ApiKeyAuthenticator
@@ -81,9 +94,9 @@ BasicHttpAuthenticator:
   properties:
     "$options":
       "$ref": "#/definitions/$options"
-    header:
+    username:
       type: string
-    api_token:
+    password:
       type: string
 ```
 
