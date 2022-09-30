@@ -8,7 +8,7 @@ import { StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
 import { getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
