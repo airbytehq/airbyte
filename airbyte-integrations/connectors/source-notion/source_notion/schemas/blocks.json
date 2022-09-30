@@ -44,7 +44,8 @@
         "bookmark",
         "equation",
         "unsupported",
-        "synced_block"
+        "synced_block",
+        "divider"
       ]
     },
     "paragraph": { "$ref": "text_element.json" },
