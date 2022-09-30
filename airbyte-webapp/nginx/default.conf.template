@@ -35,6 +35,7 @@ server {
     }
 
     location /api/ {
+        resolver 127.0.0.1 valid=30s;
         fastcgi_read_timeout 1h;
         proxy_read_timeout 1h;
         client_max_body_size 200M;
