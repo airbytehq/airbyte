@@ -44,22 +44,22 @@ More details on the various authenticators can be found in the [authentication s
 
 ## Paginators
 
-The `LimitPaginator` can optionally set request options through the `limit_option` and the `page_token_option`.
+The `DefaultPaginator` can optionally set request options through the `page_size_option` and the `page_token_option`.
 The respective values can be set on the outgoing HTTP requests by specifying where it should be injected.
 
 The following example will set the "page" request parameter value to the page to fetch, and the "page_size" request parameter to 5:
 
 ```yaml
 paginator:
-  type: "LimitPaginator"
-  page_size: 5
-  limit_option:
-    option_type: request_parameter
+  type: "DefaultPaginator"
+  page_size_option:
+    inject_into: request_parameter
     field_name: page_size
   pagination_strategy:
     type: "PageIncrement"
+    page_size: 5
   page_token:
-    option_type: "request_parameter"
+    inject_into: "request_parameter"
     field_name: "page"
 ```
 

@@ -50,6 +50,47 @@ app.kubernetes.io/name: {{ include "airbyte.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
+
+{{/*
+Common DB labels
+*/}}
+{{- define "airbyte.databaseLabels" -}}
+helm.sh/chart: {{ include "airbyte.chart" . }}
+{{ include "airbyte.databaseSelectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector DB labels
+*/}}
+{{- define "airbyte.databaseSelectorLabels" -}}
+app.kubernetes.io/name: {{ printf "%s-db" .Release.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Common DB labels
+*/}}
+{{- define "airbyte.minioLabels" -}}
+helm.sh/chart: {{ include "airbyte.chart" . }}
+{{ include "airbyte.minioSelectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector DB labels
+*/}}
+{{- define "airbyte.minioSelectorLabels" -}}
+app.kubernetes.io/name: {{ printf "%s-minio" .Release.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
 {{/*
 Create the name of the service account to use
 */}}
@@ -89,7 +130,7 @@ Get the Postgresql credentials secret name.
 Add environment variables to configure database values
 */}}
 {{- define "airbyte.database.host" -}}
-{{- ternary (include "airbyte.postgresql.fullname" .) .Values.externalDatabase.host .Values.postgresql.enabled -}}
+{{- ternary "airbyte-db-svc" .Values.externalDatabase.host .Values.postgresql.enabled -}}
 {{- end -}}
 
 {{/*
@@ -156,7 +197,9 @@ Add environment variables to configure minio
 */}}
 {{- define "airbyte.minio.endpoint" -}}
 {{- if .Values.global.logs.minio.enabled -}}
-    {{- printf "http://%s:%d" (include "airbyte.minio.fullname" .) 9000 -}}
+    {{- printf "http://%s:%d" "airbyte-minio-svc" 9000 -}}
+{{- else if .Values.global.logs.externalMinio.endpoint -}}
+    {{- .Values.global.logs.externalMinio.endpoint -}}
 {{- else if .Values.global.logs.externalMinio.enabled -}}
     {{- printf "http://%s:%g" .Values.global.logs.externalMinio.host .Values.global.logs.externalMinio.port -}}
 {{- else -}}

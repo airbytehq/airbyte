@@ -10,21 +10,21 @@ global:
     port: "5432"
 
 enabled: true
-## @param metrics.replicaCount Number of metrics-reporter replicas
+##  metrics.replicaCount Number of metrics-reporter replicas
 replicaCount: 1
 
-## @param metrics.image.repository The repository to use for the airbyte metrics-reporter image.
-## @param metrics.image.pullPolicy the pull policy to use for the airbyte metrics-reporter image
-## @param metrics.image.tag The airbyte metrics-reporter image tag. Defaults to the chart's AppVersion
+##  metrics.image.repository The repository to use for the airbyte metrics-reporter image.
+##  metrics.image.pullPolicy the pull policy to use for the airbyte metrics-reporter image
+##  metrics.image.tag The airbyte metrics-reporter image tag. Defaults to the chart's AppVersion
 image:
   repository: airbyte/metrics-reporter
   pullPolicy: IfNotPresent
 
-## @param metrics.podAnnotations [object] Add extra annotations to the metrics-reporter pod
+##  metrics.podAnnotations [object] Add extra annotations to the metrics-reporter pod
 ##
 podAnnotations: {}
 
-## @param metrics.containerSecurityContext Security context for the container
+##  metrics.containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:
 ##    runAsNonRoot: true
@@ -38,8 +38,8 @@ containerSecurityContext: {}
 ## choice for the user. This also increases chances charts run on environments with little
 ## resources, such as Minikube. If you do want to specify resources, uncomment the following
 ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-## @param metrics.resources.limits [object] The resources limits for the metrics-reporter container
-## @param metrics.resources.requests [object] The requested resources for the metrics-reporter container
+##  metrics.resources.limits [object] The resources limits for the metrics-reporter container
+##  metrics.resources.requests [object] The requested resources for the metrics-reporter container
 resources:
   ## Example:
   ## limits:
@@ -52,22 +52,22 @@ resources:
   ##    cpu: 250m
   requests: {}
 
-## @param metrics.nodeSelector [object] Node labels for pod assignment
+##  metrics.nodeSelector [object] Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
 ##
 nodeSelector: {}
 
-## @param metrics.tolerations [array] Tolerations for metrics-reporter pod assignment.
+##  metrics.tolerations [array] Tolerations for metrics-reporter pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 ##
 tolerations: []
 
-## @param metrics.affinity [object] Affinity and anti-affinity for metrics-reporter pod assignment.
+##  metrics.affinity [object] Affinity and anti-affinity for metrics-reporter pod assignment.
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 ##
 affinity: {}
 
-## @param metrics.extraEnv [array] Additional env vars for metrics-reporter pod(s).
+##  metrics.extraEnv [array] Additional env vars for metrics-reporter pod(s).
 ## Example:
 ##
 ## extraEnv:
@@ -75,7 +75,7 @@ affinity: {}
 ##   value: "key=sample-value"
 extraEnv: []
 
-## @param metrics.extraVolumeMounts [array] Additional volumeMounts for metrics-reporter container(s).
+##  metrics.extraVolumeMounts [array] Additional volumeMounts for metrics-reporter container(s).
 ## Examples (when using `metrics.containerSecurityContext.readOnlyRootFilesystem=true`):
 ## extraVolumeMounts:
 ##   - name: tmpdir
@@ -83,7 +83,7 @@ extraEnv: []
 ##
 extraVolumeMounts: []
 
-## @param metrics.extraVolumes [array] Additional volumes for metrics-reporter pod(s).
+##  metrics.extraVolumes [array] Additional volumes for metrics-reporter pod(s).
 ## Examples (when using `metrics.containerSecurityContext.readOnlyRootFilesystem=true`):
 ## extraVolumes:
 ##   - name: tmpdir

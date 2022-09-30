@@ -41,7 +41,7 @@ public class MySqlSourceOperationsTest {
   private Database database;
 
   @BeforeEach
-  private void init() {
+  public void init() {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     database = new Database(DSLContextFactory.create(

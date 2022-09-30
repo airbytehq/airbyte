@@ -29,7 +29,7 @@ TEST_CONFIG.update(**{"authenticator": ZendeskAuthentication(TEST_CONFIG).get_au
 
 class TestFullRefreshStreams:
     """
-    STREAMS: 
+    STREAMS:
         Accounts, Shortcuts, Triggers, Departments, Goals, Skills, Roles, RoutingSettings
     """
 
@@ -50,7 +50,7 @@ class TestFullRefreshStreams:
         stream = stream_cls(TEST_CONFIG)
         expected = {"timeout": 60}
         assert expected == stream.request_kwargs(stream_state=None)
-    
+
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
@@ -66,7 +66,7 @@ class TestFullRefreshStreams:
     )
     def test_backoff_time(self, requests_mock, stream_cls, expected):
         stream = stream_cls(TEST_CONFIG)
-        url =f"{stream.url_base}{stream.path()}"
+        url = f"{stream.url_base}{stream.path()}"
         test_headers = {"Retry-After": expected}
         requests_mock.get(url, headers=test_headers)
         response = requests.get(url)
@@ -90,7 +90,7 @@ class TestFullRefreshStreams:
         stream = stream_cls(TEST_CONFIG)
         result = stream.path()
         assert result == expected
-    
+
     @pytest.mark.parametrize(
         "stream_cls, expected_cursor",
         [
@@ -113,25 +113,25 @@ class TestFullRefreshStreams:
         response = requests.get(url)
         result = stream.next_page_token(response)
         assert result == {"cursor": [expected_cursor]}
-        
+
     @pytest.mark.parametrize(
         "stream_cls, next_page_token, expected",
         [
-            (Accounts, {"cursor": "MTU4MD"}, {'limit': 100, 'cursor': 'MTU4MD'}),
-            (Departments, {"cursor": "c1Mzc"}, {'limit': 100, 'cursor': 'c1Mzc'}),
-            (Goals, {"cursor": "wfHw0MzJ8"}, {'limit': 100, 'cursor': 'wfHw0MzJ8'}),
-            (Roles, {"cursor": "0MzJ8"}, {'limit': 100, 'cursor': '0MzJ8'}),
-            (RoutingSettings, {"cursor": "MTUC4wJ8"}, {'limit': 100, 'cursor': 'MTUC4wJ8'}),
-            (Shortcuts, {"cursor": "MTU4MD"}, {'limit': 100, 'cursor': 'MTU4MD'}),
-            (Skills, {"cursor": "c1Mzc"}, {'limit': 100, 'cursor': 'c1Mzc'}),
-            (Triggers, {"cursor": "0MzJ8"}, {'limit': 100, 'cursor': '0MzJ8'}),
+            (Accounts, {"cursor": "MTU4MD"}, {"limit": 100, "cursor": "MTU4MD"}),
+            (Departments, {"cursor": "c1Mzc"}, {"limit": 100, "cursor": "c1Mzc"}),
+            (Goals, {"cursor": "wfHw0MzJ8"}, {"limit": 100, "cursor": "wfHw0MzJ8"}),
+            (Roles, {"cursor": "0MzJ8"}, {"limit": 100, "cursor": "0MzJ8"}),
+            (RoutingSettings, {"cursor": "MTUC4wJ8"}, {"limit": 100, "cursor": "MTUC4wJ8"}),
+            (Shortcuts, {"cursor": "MTU4MD"}, {"limit": 100, "cursor": "MTU4MD"}),
+            (Skills, {"cursor": "c1Mzc"}, {"limit": 100, "cursor": "c1Mzc"}),
+            (Triggers, {"cursor": "0MzJ8"}, {"limit": 100, "cursor": "0MzJ8"}),
         ],
     )
     def test_request_params(self, stream_cls, next_page_token, expected):
         stream = stream_cls(TEST_CONFIG)
         result = stream.request_params(stream_state=None, next_page_token=next_page_token)
         assert result == expected
-    
+
     @pytest.mark.parametrize(
         "stream_cls, test_response, expected",
         [
@@ -152,11 +152,11 @@ class TestFullRefreshStreams:
         response = requests.get(url)
         result = stream.parse_response(response)
         assert list(result) == expected
-    
+
 
 class TestTimeIncrementalStreams:
     """
-    STREAMS: 
+    STREAMS:
         AgentTimelines, Chats
     """
 
@@ -171,7 +171,7 @@ class TestTimeIncrementalStreams:
         stream = stream_cls(start_date=TEST_CONFIG["start_date"])
         result = stream.state_checkpoint_interval
         assert result == expected
-        
+
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
@@ -183,14 +183,14 @@ class TestTimeIncrementalStreams:
         stream = stream_cls(start_date=TEST_CONFIG["start_date"])
         result = stream.cursor_field
         assert result == expected
-    
+
     @pytest.mark.parametrize(
         "stream_cls, test_response, expected",
         [
-            (AgentTimelines, {"end_time": "123"}, {'start_time': '123'}),
-            (Chats, {"end_time": "123"}, {'start_time': '123'}),
+            (AgentTimelines, {"end_time": "123"}, {"start_time": "123"}),
+            (Chats, {"end_time": "123"}, {"start_time": "123"}),
         ],
-    )    
+    )
     def test_next_page_token(self, requests_mock, stream_cls, test_response, expected):
         stream = stream_cls(start_date=TEST_CONFIG["start_date"])
         test_response.update(**{"count": stream.limit})
@@ -199,46 +199,46 @@ class TestTimeIncrementalStreams:
         response = requests.get(url)
         result = stream.next_page_token(response)
         assert result == expected
-    
+
     @pytest.mark.parametrize(
         "stream_cls, current_state, last_record, expected",
         [
-            (AgentTimelines, {}, {'start_time': '2021-01-01'}, {'start_time': '2021-01-01T00:00:00Z'}),
-            (Chats, {"update_timestamp": "2022-02-02"}, {'update_timestamp': '2022-03-03'}, {'update_timestamp': '2022-03-03T00:00:00Z'}),
+            (AgentTimelines, {}, {"start_time": "2021-01-01"}, {"start_time": "2021-01-01T00:00:00Z"}),
+            (Chats, {"update_timestamp": "2022-02-02"}, {"update_timestamp": "2022-03-03"}, {"update_timestamp": "2022-03-03T00:00:00Z"}),
         ],
-    )      
+    )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
         stream = stream_cls(start_date=TEST_CONFIG["start_date"])
         result = stream.get_updated_state(current_state, last_record)
         assert result == expected
-        
+
     @pytest.mark.parametrize(
         "stream_cls, stream_state, next_page_token, expected",
         [
-            (AgentTimelines, {}, {'start_time': '123'}, {'limit': 1000, 'start_time': '123', 'fields': 'agent_timeline(*)'}),
-            (Chats, {"update_timestamp": "2022-02-02"}, {'start_time': '234'}, {'limit': 1000, 'start_time': '234', 'fields': 'chats(*)'}),
+            (AgentTimelines, {}, {"start_time": "123"}, {"limit": 1000, "start_time": "123", "fields": "agent_timeline(*)"}),
+            (Chats, {"update_timestamp": "2022-02-02"}, {"start_time": "234"}, {"limit": 1000, "start_time": "234", "fields": "chats(*)"}),
         ],
     )
     def test_request_params(self, stream_cls, stream_state, next_page_token, expected):
         stream = stream_cls(start_date=TEST_CONFIG["start_date"])
         result = stream.request_params(stream_state=stream_state, next_page_token=next_page_token)
         assert result == expected
-        
+
     @pytest.mark.parametrize(
         "stream_cls, test_response, expected",
         [
             (
                 AgentTimelines,
-                {"agent_timeline" : {"id": "123", "agent_id": "test_id", "start_time": "2021-01-01"}},
-                [{'id': 'test_id|2021-01-01T00:00:00Z', 'agent_id': 'test_id', 'start_time': '2021-01-01T00:00:00Z'}],
+                {"agent_timeline": {"id": "123", "agent_id": "test_id", "start_time": "2021-01-01"}},
+                [{"id": "test_id|2021-01-01T00:00:00Z", "agent_id": "test_id", "start_time": "2021-01-01T00:00:00Z"}],
             ),
             (
                 Chats,
-                {"chats" : {"id": "234", "agent_id": "test_id", "update_timestamp": "2022-01-01"}},
-                [{'id': '234', 'agent_id': 'test_id', 'update_timestamp': '2022-01-01T00:00:00Z'}],
+                {"chats": {"id": "234", "agent_id": "test_id", "update_timestamp": "2022-01-01"}},
+                [{"id": "234", "agent_id": "test_id", "update_timestamp": "2022-01-01T00:00:00Z"}],
             ),
         ],
-    )    
+    )
     def test_parse_response(self, requests_mock, stream_cls, test_response, expected):
         stream = stream_cls(start_date=TEST_CONFIG["start_date"])
         url = f"{stream.url_base}{stream.path()}"
@@ -246,7 +246,6 @@ class TestTimeIncrementalStreams:
         response = requests.get(url)
         result = stream.parse_response(response)
         assert list(result) == expected
-        
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -259,11 +258,11 @@ class TestTimeIncrementalStreams:
         stream = stream_cls(start_date=TEST_CONFIG["start_date"])
         result = stream.path()
         assert result == expected
-        
+
 
 class TestIdIncrementalStreams:
     """
-    STREAMS: 
+    STREAMS:
         Agents, Bans
     """
 
@@ -278,7 +277,7 @@ class TestIdIncrementalStreams:
         stream = stream_cls(TEST_CONFIG)
         result = stream.path()
         assert result == expected
-        
+
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
@@ -290,25 +289,25 @@ class TestIdIncrementalStreams:
         stream = stream_cls(TEST_CONFIG)
         result = stream.cursor_field
         assert result == expected
-        
+
     @pytest.mark.parametrize(
         "stream_cls, current_state, last_record, expected",
         [
-            (Agents, {}, {'id': '1'}, {'id': '1'}),
-            (Bans, {"id": "1"}, {'id': '2'}, {'id': '2'}),
+            (Agents, {}, {"id": "1"}, {"id": "1"}),
+            (Bans, {"id": "1"}, {"id": "2"}, {"id": "2"}),
         ],
-    )    
+    )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
         stream = stream_cls(TEST_CONFIG)
         result = stream.get_updated_state(current_state, last_record)
         assert result == expected
-        
+
     @pytest.mark.parametrize(
         "stream_cls, test_response, expected",
         [
-            (Agents, [{"id": "2"}], {'since_id': '2'}),
+            (Agents, [{"id": "2"}], {"since_id": "2"}),
         ],
-    )    
+    )
     def test_next_page_token(self, requests_mock, stream_cls, test_response, expected):
         stream = stream_cls(TEST_CONFIG)
         stream.limit = 1
@@ -317,13 +316,13 @@ class TestIdIncrementalStreams:
         response = requests.get(url)
         result = stream.next_page_token(response)
         assert result == expected
-        
+
     @pytest.mark.parametrize(
         "stream_cls, test_response, expected",
         [
             (Agents, {"id": "2"}, [{"id": "2"}]),
         ],
-    )    
+    )
     def test_parse_response(self, requests_mock, stream_cls, test_response, expected):
         stream = stream_cls(TEST_CONFIG)
         url = f"{stream.url_base}{stream.path()}"
@@ -331,16 +330,15 @@ class TestIdIncrementalStreams:
         response = requests.get(url)
         result = stream.parse_response(response)
         assert list(result) == expected
-        
+
     @pytest.mark.parametrize(
         "stream_cls, stream_state, next_page_token, expected",
         [
-            (Agents, {}, {'since_id': '1'}, {'limit': 100, 'since_id': '1'}),
-            (Bans, {"id": "1"}, {'since_id': '2'}, {'limit': 100, 'since_id': '2'}),
+            (Agents, {}, {"since_id": "1"}, {"limit": 100, "since_id": "1"}),
+            (Bans, {"id": "1"}, {"since_id": "2"}, {"limit": 100, "since_id": "2"}),
         ],
     )
     def test_request_params(self, stream_cls, stream_state, next_page_token, expected):
         stream = stream_cls(TEST_CONFIG)
         result = stream.request_params(stream_state=stream_state, next_page_token=next_page_token)
         assert result == expected
-

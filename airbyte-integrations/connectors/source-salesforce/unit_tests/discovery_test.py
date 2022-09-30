@@ -9,12 +9,6 @@ from source_salesforce.api import DATE_TYPES, LOOSE_TYPES, NUMBER_TYPES, STRING_
 from source_salesforce.exceptions import TypeSalesforceException
 
 
-@pytest.fixture(autouse=True)
-def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
-
-
 @pytest.mark.parametrize(
     "streams_criteria,predicted_filtered_streams",
     [

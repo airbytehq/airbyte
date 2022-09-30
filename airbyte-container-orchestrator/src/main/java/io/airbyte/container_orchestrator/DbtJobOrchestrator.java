@@ -6,8 +6,8 @@ package io.airbyte.container_orchestrator;
 
 import io.airbyte.config.Configs;
 import io.airbyte.config.OperatorDbtInput;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DbtTransformationRunner;
