@@ -128,6 +128,7 @@ def test_activities_schema(activity, expected_schema, config):
 def test_export_parse_response(send_email_stream, response_text, expected_records):
     def iter_lines(*args, **kwargs):
         yield from response_text.splitlines()
+
     assert list(send_email_stream.parse_response(Mock(iter_lines=iter_lines, request=Mock(url="/send_email/1")))) == expected_records
 
 
