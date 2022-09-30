@@ -7,101 +7,54 @@ package io.airbyte.workers.internal;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
-import io.airbyte.protocol.models.AirbyteLogMessage;
+import io.airbyte.commons.protocol.AirbyteMessageVersionedMigrator;
+import io.airbyte.commons.protocol.serde.AirbyteMessageDeserializer;
 import io.airbyte.protocol.models.AirbyteMessage;
-import java.io.BufferedReader;
-import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Creates a stream from an input stream. The produced stream attempts to parse each line of the
- * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
- * dropped. Each record MUST be new line separated.
+ * Extends DefaultAirbyteStreamFactory to handle version specific conversions.
  *
- * <p>
- * If a line starts with a AirbyteMessage and then has other characters after it, that
- * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
- * line, only the first will be parsed.
+ * A VersionedAirbyteStreamFactory handles parsing and validation from a specific version of the
+ * Airbyte Protocol as well as upgrading messages to the current version.
  */
-@SuppressWarnings("PMD.MoreThanOneLogger")
-public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
+public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(VersionedAirbyteStreamFactory.class);
 
-  private final MdcScope.Builder containerLogMdcBuilder;
-  private final AirbyteProtocolPredicate protocolValidator;
-  private final Logger logger;
+  private final AirbyteMessageDeserializer<T> deserializer;
+  private final AirbyteMessageVersionedMigrator<T> migrator;
 
-  public DefaultAirbyteStreamFactory() {
-    this(MdcScope.DEFAULT_BUILDER);
+  public VersionedAirbyteStreamFactory(final AirbyteMessageDeserializer<T> deserializer,
+                                       final AirbyteMessageVersionedMigrator<T> migrator) {
+    this(deserializer, migrator, MdcScope.DEFAULT_BUILDER);
   }
 
-  public DefaultAirbyteStreamFactory(final MdcScope.Builder containerLogMdcBuilder) {
-    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder);
-  }
-
-  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger, final MdcScope.Builder containerLogMdcBuilder) {
-    protocolValidator = protocolPredicate;
-    this.logger = logger;
-    this.containerLogMdcBuilder = containerLogMdcBuilder;
+  public VersionedAirbyteStreamFactory(final AirbyteMessageDeserializer<T> deserializer,
+                                       final AirbyteMessageVersionedMigrator<T> migrator,
+                                       final MdcScope.Builder containerLogMdcBuilder) {
+    // TODO AirbyteProtocolPredicate needs to be updated to be protocol version aware
+    super(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder);
+    this.deserializer = deserializer;
+    this.migrator = migrator;
   }
 
   @Override
-  public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
-    return bufferedReader
-        .lines()
-        .flatMap(line -> {
-          final Optional<JsonNode> jsonLine = Jsons.tryDeserialize(line);
-          if (jsonLine.isEmpty()) {
-            // we log as info all the lines that are not valid json
-            // some sources actually log their process on stdout, we
-            // want to make sure this info is available in the logs.
-            try (final var mdcScope = containerLogMdcBuilder.build()) {
-              logger.info(line);
-            }
-          }
-          return jsonLine.stream();
-        })
-        // filter invalid messages
-        .filter(jsonLine -> {
-          final boolean res = protocolValidator.test(jsonLine);
-          if (!res) {
-            logger.error("Validation failed: {}", Jsons.serialize(jsonLine));
-          }
-          return res;
-        })
-        .flatMap(jsonLine -> {
-          final Optional<AirbyteMessage> m = Jsons.tryObject(jsonLine, AirbyteMessage.class);
-          if (m.isEmpty()) {
-            logger.error("Deserialization failed: {}", Jsons.serialize(jsonLine));
-          }
-          return m.stream();
-        })
-        // filter logs
-        .filter(airbyteMessage -> {
-          final boolean isLog = airbyteMessage.getType() == AirbyteMessage.Type.LOG;
-          if (isLog) {
-            try (final var mdcScope = containerLogMdcBuilder.build()) {
-              internalLog(airbyteMessage.getLog());
-            }
-          }
-          return !isLog;
-        });
+  protected Stream<AirbyteMessage> toAirbyteMessage(final JsonNode json) {
+    try {
+      final io.airbyte.protocol.models.v0.AirbyteMessage message = migrator.upgrade(deserializer.deserialize(json));
+      return Stream.of(convert(message));
+    } catch (RuntimeException e) {
+      return Stream.empty();
+    }
   }
 
-  private void internalLog(final AirbyteLogMessage logMessage) {
-    final String combinedMessage =
-        logMessage.getMessage() + (logMessage.getStackTrace() != null ? (System.lineSeparator() + "Stack Trace: " + logMessage.getStackTrace()) : "");
-
-    switch (logMessage.getLevel()) {
-      case FATAL, ERROR -> logger.error(combinedMessage);
-      case WARN -> logger.warn(combinedMessage);
-      case DEBUG -> logger.debug(combinedMessage);
-      case TRACE -> logger.trace(combinedMessage);
-      default -> logger.info(combinedMessage);
-    }
+  // TODO remove this conversion once we migrated default AirbyteMessage to be from a versioned
+  // namespace
+  private AirbyteMessage convert(final io.airbyte.protocol.models.v0.AirbyteMessage message) {
+    return Jsons.object(Jsons.jsonNode(message), AirbyteMessage.class);
   }
 
 }
