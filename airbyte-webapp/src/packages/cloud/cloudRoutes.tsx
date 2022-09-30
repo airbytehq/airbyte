@@ -9,6 +9,7 @@ import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/serv
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
+import { PostHogProvider } from "hooks/services/PostHogExperiment/PostHogExperimentService";
 import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
@@ -163,16 +164,18 @@ export const Routing: React.FC = () => {
   return (
     <WorkspaceServiceProvider>
       <LDExperimentServiceProvider>
-        <Suspense fallback={<LoadingPage />}>
-          {/* Allow email verification no matter whether the user is logged in or not */}
-          <Routes>
-            <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
-          </Routes>
-          {/* Show the login screen if the user is not logged in */}
-          {!user && <Auth />}
-          {/* Allow all regular routes if the user is logged in */}
-          {user && <MainViewRoutes />}
-        </Suspense>
+        <PostHogProvider>
+          <Suspense fallback={<LoadingPage />}>
+            {/* Allow email verification no matter whether the user is logged in or not */}
+            <Routes>
+              <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
+            </Routes>
+            {/* Show the login screen if the user is not logged in */}
+            {!user && <Auth />}
+            {/* Allow all regular routes if the user is logged in */}
+            {user && <MainViewRoutes />}
+          </Suspense>
+        </PostHogProvider>
       </LDExperimentServiceProvider>
     </WorkspaceServiceProvider>
   );

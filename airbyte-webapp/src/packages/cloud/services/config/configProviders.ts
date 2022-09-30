@@ -48,6 +48,7 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
       appId: process.env.REACT_APP_INTERCOM_APP_ID,
     },
     launchDarkly: process.env.REACT_APP_LAUNCHDARKLY_KEY,
+    postHog: process.env.REACT_APP_POSTHOG,
   };
 };
 
