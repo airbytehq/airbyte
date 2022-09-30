@@ -1,12 +1,13 @@
 {
-  "type": ["null", "object"],
+  "type": ["object"],
+  "required": ["adgroup_id"],
   "additionalProperties": true,
   "properties": {
     "advertiser_id": {
       "type": ["null", "integer"]
     },
     "adgroup_id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "campaign_id": {
       "type": ["null", "integer"]
