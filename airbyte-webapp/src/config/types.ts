@@ -25,6 +25,7 @@ export interface Config {
   version?: string;
   integrationUrl: string;
   launchDarkly?: string;
+  postHog?: string;
 }
 
 export type DeepPartial<T> = {
