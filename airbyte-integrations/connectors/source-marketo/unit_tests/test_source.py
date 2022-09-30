@@ -2,11 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import os
 import logging
+import os
 import tracemalloc
-from unittest.mock import ANY, Mock, patch
 from functools import partial
+from unittest.mock import ANY, Mock, patch
+
 import pytest
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from source_marketo.source import Activities, Campaigns, MarketoStream, Programs, SourceMarketo
@@ -127,11 +128,12 @@ def test_activities_schema(activity, expected_schema, config):
 def test_export_parse_response(send_email_stream, response_text, expected_records):
     def iter_content(*args, **kwargs):
         yield response_text
+
     assert list(send_email_stream.parse_response(Mock(iter_content=iter_content, request=Mock(url="/send_email/1")))) == expected_records
 
 
 def test_memory_usage(send_email_stream, file_generator):
-    min_file_size = 5 * (1024 ** 2)  # 5 MB
+    min_file_size = 5 * (1024**2)  # 5 MB
     big_file_path, records_generated = file_generator(min_size=min_file_size)
     small_file_path, _ = file_generator(min_size=1)
 
