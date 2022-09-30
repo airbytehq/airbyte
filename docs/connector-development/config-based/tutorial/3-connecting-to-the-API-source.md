@@ -63,7 +63,15 @@ More details on the connector definition file can be found in the [overview](../
 
 Let's fill this out these TODOs with the information found in the [Exchange Rates API docs](https://apilayer.com/marketplace/exchangerates_data-api).
 
-1. First, let's rename the stream from `customers` to `rates`, and update the primary key to `date`.
+1. We'll first set the API's base url.
+   According to the API documentation, the base url is `"https://api.apilayer.com"`.
+
+```yaml
+  requester:
+    url_base: "https://api.apilayer.com"
+```
+
+2. Then, let's rename the stream from `customers` to `rates`, update the primary key to `date`, and set the path to "/exchangerates_data/latest" as per the API's documentation. This path is specific to the stream, so we'll set it within the `rates_stream` definition
 
 ```yaml
   customers_stream:
@@ -74,7 +82,7 @@ Let's fill this out these TODOs with the information found in the [Exchange Rate
       path: "/exchangerates_data/latest"
 ```
 
-and update the references in the `check` block
+3. Update the references in the `check` block
 
 ```yaml
 check:
@@ -83,21 +91,6 @@ check:
 ```
 
 Adding the reference in the `check` tells the `check` operation to use that stream to test the connection.
-
-2. Next we'll set the base url.
-   According to the API documentation, the base url is `"https://api.apilayer.com"`.
-
-```yaml
-  requester:
-    url_base: "https://api.apilayer.com"
-```
-
-3. We can fetch the latest data by submitting a request to the `/latest` API endpoint. This path is specific to the stream, so we'll set it within the `rates_stream` definition, at the `retriever` level.
-   #FIXME do this as part of step 1
-
-```yaml
-
-```
 
 4. Next, we'll set up the authentication.
    The Exchange Rates API requires an access key to be passed as header named "apikey".
