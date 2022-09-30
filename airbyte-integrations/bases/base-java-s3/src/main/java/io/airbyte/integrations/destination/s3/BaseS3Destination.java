@@ -47,7 +47,6 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
       S3BaseChecks.attemptS3WriteAndDelete(storageOperations, destinationConfig, destinationConfig.getBucketName());
       S3BaseChecks.testSingleUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
       S3BaseChecks.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
-      S3BaseChecks.testCustomEndpointSecured(destinationConfig.getEndpoint());
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {

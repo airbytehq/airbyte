@@ -83,7 +83,12 @@ public final class S3BaseChecks {
    * @param endpoint URL string representing an accessible S3 bucket
    */
   public static boolean testCustomEndpointSecured(final String endpoint) {
-    return endpoint.contains("https://");
+    // if user does not use a custom endpoint, do not fail
+    if (endpoint == null || endpoint.length() == 0) {
+      return true;
+    } else {
+      return endpoint.contains("https://");
+    }
   }
 
   @VisibleForTesting
