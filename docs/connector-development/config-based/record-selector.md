@@ -2,11 +2,13 @@
 
 The record selector is responsible for translating an HTTP response into a list of Airbyte records by extracting records from the response and optionally filtering and shaping records based on a heuristic.
 
-The current record extraction implementation uses [dpath](https://pypi.org/project/dpath/) to select records from the json-decoded HTTP response.
-
 Schema:
 
 ```yaml
+HttpSelector:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/RecordSelector"
 RecordSelector:
   type: object
   required:
@@ -18,6 +20,13 @@ RecordSelector:
       "$ref": "#/definitions/RecordExtractor"
     record_filter:
       "$ref": "#/definitions/RecordFilter"
+```
+
+The current record extraction implementation uses [dpath](https://pypi.org/project/dpath/) to select records from the json-decoded HTTP response.
+
+Schema:
+
+```yaml
 DpathExtractor:
   type: object
   additionalProperties: false
@@ -172,6 +181,16 @@ selector:
 ## Transformations
 
 Fields can be added or removed from records by adding `Transformation`s to a stream's definition.
+
+Schema:
+
+```yaml
+RecordTransformation:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/AddFields"
+    - "$ref": "#/definitions/RemoveFields"
+```
 
 ### Adding fields
 

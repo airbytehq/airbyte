@@ -332,17 +332,8 @@ definitions:
           type: integer
     HttpSelector:
       type: object
-      required:
-        - type
-      additionalProperties: false
-      properties:
-        type:
-          description: "Http Selector type"
-          type: string
-          enum:
-            - record_selector
-        record_selector:
-          "$ref": "#/definitions/RecordSelector"
+      oneOf:
+        - "$ref": "#/definitions/RecordSelector"
     RecordSelector:
       type: object
       required:
@@ -638,19 +629,9 @@ definitions:
             type: float
       RecordTransformation:
         type: object
-        required:
-          - type
-        additionalProperties: false
-        properties:
-          type:
-            description: "Record transformation type"
-            enum:
-              - add_fields
-              - remove_fields
-          add:
-            "$ref": "#/definitions/AddFields"
-          remove:
-            "$ref": "#/definitions/RemoveFields"
+        oneOf:
+          - "$ref": "#/definitions/AddFields"
+          - "$ref": "#/definitions/RemoveFields"
       AddFields:
         type: object
         required:
