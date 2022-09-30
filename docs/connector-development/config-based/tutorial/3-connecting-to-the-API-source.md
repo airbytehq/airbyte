@@ -66,19 +66,20 @@ Let's fill this out these TODOs with the information found in the [Exchange Rate
 1. First, let's rename the stream from `customers` to `rates`, and update the primary key to `date`.
 
 ```yaml
-streams:
-  - type: DeclarativeStream
+  customers_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "rates"
-    primary_key: "date"
+      primary_key: "date"
+      path: "/exchangerates_data/latest"
 ```
 
 and update the references in the `check` block
 
 ```yaml
 check:
-  type: CheckStream
-  stream_names: [ "rates" ]
+  stream_names:
+    - "rates"
 ```
 
 Adding the reference in the `check` tells the `check` operation to use that stream to test the connection.
@@ -87,29 +88,15 @@ Adding the reference in the `check` tells the `check` operation to use that stre
    According to the API documentation, the base url is `"https://api.apilayer.com"`.
 
 ```yaml
-definitions:
-  <...>
-  retriever:
-    type: SimpleRetriever
-    $options:
-      url_base: "https://api.apilayer.com"
+  requester:
+    url_base: "https://api.apilayer.com"
 ```
 
 3. We can fetch the latest data by submitting a request to the `/latest` API endpoint. This path is specific to the stream, so we'll set it within the `rates_stream` definition, at the `retriever` level.
+   #FIXME do this as part of step 1
 
 ```yaml
-streams:
-  - type: DeclarativeStream
-    $options:
-      name: "rates"
-    primary_key: "date"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        path: "/exchangerates_data/latest"
+
 ```
 
 4. Next, we'll set up the authentication.
@@ -120,8 +107,7 @@ streams:
 definitions:
   <...>
   requester:
-    type: HttpRequester
-    name: "{{ options['name'] }}"
+    url_base: "https://api.apilayer.com"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
