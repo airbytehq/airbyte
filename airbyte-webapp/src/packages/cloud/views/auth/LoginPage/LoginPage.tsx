@@ -1,13 +1,14 @@
 import { Field, FieldProps, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { NavigateOptions, To, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { LabeledInput, Link, LoadingButton } from "components";
+import { LabeledInput, Link, Button } from "components";
 import HeadTitle from "components/HeadTitle";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
-import useRouter from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -26,7 +27,9 @@ const LoginPageValidationSchema = yup.object().shape({
 const LoginPage: React.FC = () => {
   const { formatMessage } = useIntl();
   const { login } = useAuthService();
-  const { query, replace } = useRouter();
+  const query = useQuery<{ from?: string }>();
+  const navigate = useNavigate();
+  const replace = (path: To, state?: NavigateOptions) => navigate(path, { ...state, replace: true });
   useTrackPage(PageTrackingCodes.LOGIN);
 
   return (
@@ -100,9 +103,9 @@ const LoginPage: React.FC = () => {
                 >
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
-                <LoadingButton className={styles.logInBtn} type="submit" isLoading={isSubmitting}>
+                <Button size="lg" type="submit" isLoading={isSubmitting}>
                   <FormattedMessage id="login.login" />
-                </LoadingButton>
+                </Button>
               </>
             </BottomBlock>
           </Form>

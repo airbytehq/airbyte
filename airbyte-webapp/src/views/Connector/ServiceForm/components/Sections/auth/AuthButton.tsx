@@ -3,7 +3,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
-import { Text } from "components/base/Text";
+import { Text } from "components/ui/Text";
 
 import { ConnectorSpecification } from "core/domain/connector";
 
@@ -57,14 +57,15 @@ export const AuthButton: React.FC = () => {
     [styles.error]: hasAuthError,
     [styles.success]: !hasAuthError,
   });
+  const buttonLabel = done ? (
+    <FormattedMessage id="connectorForm.reauthenticate" />
+  ) : (
+    <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
+  );
   return (
     <div className={styles.authSectionRow}>
-      <Component isLoading={loading} type="button" onClick={() => run()}>
-        {done ? (
-          <FormattedMessage id="connectorForm.reauthenticate" />
-        ) : (
-          <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
-        )}
+      <Component isLoading={loading} type="button" onClick={run}>
+        {buttonLabel}
       </Component>
       {done && hasRun && (
         <Text as="div" size="lg" className={messageStyle}>

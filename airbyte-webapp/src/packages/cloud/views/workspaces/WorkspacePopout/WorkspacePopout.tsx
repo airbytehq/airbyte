@@ -4,15 +4,15 @@ import { components, MenuListProps } from "react-select";
 import styled from "styled-components";
 
 import { Popout } from "components";
-import { IDataItem } from "components/base/DropDown/components/Option";
+import { IDataItem } from "components/ui/DropDown/components/Option";
 
-import { useWorkspaceService, useListCloudWorkspacesAsync } from "packages/cloud/services/workspaces/WorkspacesService";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { useListCloudWorkspacesAsync } from "packages/cloud/services/workspaces/CloudWorkspacesService";
+import { useCurrentWorkspace, useWorkspaceService } from "services/workspaces/WorkspacesService";
 
 import ExitIcon from "./components/ExitIcon";
 
 const BottomElement = styled.div`
-  background: ${(props) => props.theme.greyColro0};
+  background: ${(props) => props.theme.greyColor0};
   padding: 12px 16px 12px;
   width: 100%;
   min-height: 34px;
@@ -70,7 +70,11 @@ type MenuWithRequestButtonProps = MenuListProps<IDataItem, boolean> & {
   selectedWorkspace: string;
 };
 
-const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({ children, selectedWorkspace, ...props }) => {
+const WorkspacesList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({
+  children,
+  selectedWorkspace,
+  ...props
+}) => {
   const { exitWorkspace } = useWorkspaceService();
 
   return (

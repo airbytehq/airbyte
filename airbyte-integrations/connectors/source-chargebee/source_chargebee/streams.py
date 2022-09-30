@@ -25,6 +25,7 @@ from chargebee.models import Subscription as SubscriptionModel
 from chargebee.models import Transaction as TransactionModel
 
 from .rate_limiting import default_backoff_handler
+from .utils import transform_custom_fields
 
 # Backoff params below according to Chargebee's guidance on rate limit.
 # https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits
@@ -59,7 +60,7 @@ class ChargebeeStream(Stream):
 
     def parse_response(self, list_result: ListResult, **kwargs) -> Iterable[Mapping]:
         for message in list_result:
-            yield message._response[self.name]
+            yield from transform_custom_fields(message._response[self.name])
 
     @default_backoff_handler(max_tries=MAX_TRIES, factor=MAX_TIME)
     def _send_request(self, **kwargs) -> ListResult:
@@ -133,7 +134,7 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
         for message in list_result:
             record = message._response[self.name]
             if record[self.cursor_field] > starting_point:
-                yield record
+                yield from transform_custom_fields(record)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
@@ -179,7 +180,7 @@ class IncrementalChargebeeStream(SemiIncrementalChargebeeStream):
 
     def parse_response(self, list_result: ListResult, **kwargs) -> Iterable[Mapping]:
         for message in list_result:
-            yield message._response[self.name]
+            yield from transform_custom_fields(message._response[self.name])
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """

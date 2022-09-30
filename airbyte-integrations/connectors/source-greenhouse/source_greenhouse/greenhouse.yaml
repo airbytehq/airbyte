@@ -13,6 +13,15 @@ definitions:
     name: "{{ options['name'] }}"
     url_base: "https://harvest.greenhouse.io/v1/"
     http_method: "GET"
+    error_handler:
+      type: CompositeErrorHandler
+      # ignore 403 error but retry default retriable http errors (429, 500 - 600)
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [ 403 ]
+              action: IGNORE
+        - type: DefaultErrorHandler
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
