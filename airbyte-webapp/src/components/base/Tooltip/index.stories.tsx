@@ -25,7 +25,7 @@ Primary.args = {
   children: (
     <>
       Looking for a job?{" "}
-      <a href="https://www.airbyte.com/careers" target="_blank" rel="noreferrer">
+      <a href="https://www.daspire.com/careers" target="_blank" rel="noreferrer">
         Apply at Airbyte!
       </a>
     </>
@@ -37,7 +37,7 @@ WithLearnMoreUrl.args = {
   control: "Hover to see Tooltip with Body",
   children: (
     <>
-      Airbyte is hiring! <TooltipLearnMoreLink url="https://www.airbyte.com/careers" />
+      Airbyte is hiring! <TooltipLearnMoreLink url="https://www.daspire.com/careers" />
     </>
   ),
 };
