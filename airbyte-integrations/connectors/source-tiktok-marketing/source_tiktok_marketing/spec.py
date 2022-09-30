@@ -72,7 +72,6 @@ class SourceTiktokMarketingSpec(BaseModel):
         'href="https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation">the docs</a>.',
         enum=[g.value for g in ReportGranularity],
         order=3,
-        airbyte_hidden=True,
     )
 
     @classmethod
