@@ -1,0 +1,155 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "sponsored_brands_campaigns",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": ["null", "object"],
+          "properties": {
+            "oneOf": [
+              {
+                "title": "SBCampaignResponseCommon",
+                "campaignId": "integer",
+                "name": "string",
+                "tags": "string",
+                "budget": "number",
+                "budgetType": {
+                  "type": "string",
+                  "enum": ["lifetime", "daily"]
+                },
+                "startDate": "string",
+                "endDate": "string",
+                "state": {
+                  "type": "string",
+                  "enum": ["enabled", "paused", "archived"]
+                },
+                "servingStatus": {
+                  "type": "string",
+                  "enum": [
+                    "ASIN_NOT_BUYABLE",
+                    "BILLING_ERROR",
+                    "ENDED",
+                    "LANDING_PAGE_NOT_AVAILABLE",
+                    "OUT_OF_BUDGET",
+                    "PAUSED",
+                    "PENDING_REVIEW",
+                    "READY",
+                    "REJECTED",
+                    "RUNNING",
+                    "SCHEDULED",
+                    "TERMINATED"
+                  ]
+                },
+                "brandEntityId": "string",
+                "portfolioId": "integer",
+                "adFormat": {
+                  "type": "string",
+                  "enum": ["productCollection", "video"]
+                },
+                "bidOptimization": "boolean",
+                "budMultiplier": "number",
+                "bidAdjustments": {
+                  "bidAdjustmentPredicate": {
+                    "type": "string",
+                    "enum": [
+                      "placementGroupDetailPage",
+                      "placementGroupHome",
+                      "placementGroupOther"
+                    ]
+                  },
+                  "bidAdjustmentPercent": "number"
+                },
+                "creative": {
+                  "brandName": "string",
+                  "brandLogoAssetID": "string",
+                  "brandLogoUrl": "string",
+                  "headline": "string",
+                  "asins": "string",
+                  "shouldOptimizeAsins": "boolean",
+                  "brandLogoAssetId": "string"
+                },
+                "landingPage": {
+                  "oneOf": [
+                    {
+                      "title": "SBProductListLandingPage",
+                      "pageType": "string",
+                      "url": "string"
+                    },
+                    {
+                      "title": "SBStoreLandingPage",
+                      "pageType": "string",
+                      "url": "string"
+                    },
+                    {
+                      "title": "SBCustomLandingPage",
+                      "pageType": "string",
+                      "url": "string"
+                    }
+                  ]
+                }
+              },
+              {
+                "title": "SBVideoCampaignResponseCommon",
+                "campaignId": "integer",
+                "name": "string",
+                "tag": "string",
+                "budget": "number",
+                "budgetType": {
+                  "type": "string",
+                  "enum": ["lifetime", "daily"]
+                },
+                "startDate": "string",
+                "endDate": "string",
+                "state": {
+                  "type": "string",
+                  "enum": ["enabled", "paused", "archived"]
+                },
+                "servingStatus": {
+                  "type": "string",
+                  "enum": [
+                    "ASIN_NOT_BUYABLE",
+                    "BILLING_ERROR",
+                    "ENDED",
+                    "LANDING_PAGE_NOT_AVAILABLE",
+                    "OUT_OF_BUDGET",
+                    "PAUSED",
+                    "PENDING_REVIEW",
+                    "READY",
+                    "REJECTED",
+                    "RUNNING",
+                    "SCHEDULED",
+                    "TERMINATED"
+                  ]
+                },
+                "brandEntity": "string",
+                "portfolioId": "string",
+                "adFormat": {
+                  "type": "string",
+                  "enum": ["productCollection", "video"]
+                },
+                "creative": {
+                  "title": "SBVideoCreative",
+                  "asins": "string",
+                  "videoMediaIds": "string",
+                  "type": {
+                    "type": "string",
+                    "enum": ["video"]
+                  }
+                },
+                "landingPage": {
+                  "pageType": "string",
+                  "url": "string"
+                }
+              }
+            ]
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["campaignId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
