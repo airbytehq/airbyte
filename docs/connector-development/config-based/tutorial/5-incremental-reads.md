@@ -62,18 +62,14 @@ And we'll update the `path` in the connector definition to point to `/{{ config.
 Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/exchangerates_data/latest`:
 
 ```yaml
-streams:
-  - type: DeclarativeStream
+definitions:
+  <...>
+  customers_stream:
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "rates"
-    primary_key: "rates"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
+      primary_key: "date"
+      path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
 ```
 
 You can test these changes by executing the `read` operation:
@@ -161,17 +157,11 @@ The full connector definition should now look like `./source_exchange_rates_tuto
 version: "0.1.0"
 
 definitions:
-  schema_loader:
-    type: JsonSchema
-    file_path: "./source_exchange_rates_tutorial/schemas/{{ options['name'] }}.json"
   selector:
-    type: RecordSelector
     extractor:
-      type: DpathExtractor
       field_pointer: [ ]
   requester:
-    type: HttpRequester
-    name: "{{ options['name'] }}"
+    url_base: "https://api.apilayer.com"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
@@ -192,35 +182,30 @@ definitions:
     datetime_format: "%Y-%m-%d"
     cursor_field: "{{ options['stream_cursor_field'] }}"
   retriever:
-    type: SimpleRetriever
-    $options:
-      url_base: "https://api.apilayer.com"
-    name: "{{ options['name'] }}"
-    primary_key: "{{ options['primary_key'] }}"
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
       type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
     stream_slicer:
       $ref: "*ref(definitions.stream_slicer)"
-
-streams:
-  - type: DeclarativeStream
-    $options:
-      name: "rates"
-      stream_cursor_field: "date"
-    primary_key: "rates"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+  base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
-check:
-  type: CheckStream
-  stream_names: [ "rates" ]
+  customers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "rates"
+      primary_key: "date"
+      path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
+      stream_cursor_field: "date"
 
+streams:
+  - "*ref(definitions.customers_stream)"
+check:
+  stream_names:
+    - "rates"
 ```
 
 Running the `read` operation will now read all data for all days between start_date and now:
