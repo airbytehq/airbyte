@@ -2,78 +2,122 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "agents" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "agents"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "companies" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "companies"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "contacts" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "contacts"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "conversations" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "conversations"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "groups" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "groups"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "roles" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "roles"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "satisfaction_ratings" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "satisfaction_ratings"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "skills" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "skills"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "surveys" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "surveys"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "tickets" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "tickets"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2121-11-01T00:00:00Z" },
-      "stream_descriptor": { "name": "time_entries" }
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "time_entries"
+      }
     }
   }
 ]
