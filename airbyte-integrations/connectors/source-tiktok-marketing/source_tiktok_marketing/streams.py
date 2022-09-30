@@ -667,7 +667,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
         """All reports have same schema"""
         schema = ResourceSchemaLoader(package_name_from_class(AdvertiserIds)).get_schema(self.schema_name)
         schema["required"].append(self.primary_key)
-        schema["properties"][self.primary_key]["type"].remove("null")
+        if "null" in schema["properties"][self.primary_key]["type"]:
+            schema["properties"][self.primary_key]["type"].remove("null")
 
         return schema
 
