@@ -9,6 +9,7 @@ import io.micronaut.runtime.event.ApplicationStartupEvent;
 import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.inject.Singleton;
 import java.lang.invoke.MethodHandles;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -18,17 +19,16 @@ import org.slf4j.LoggerFactory;
 /**
  * EventListeners registers event listeners for the startup and shutdown events from Micronaut.
  */
-@SuppressWarnings({"PMD.UseVarargs", "PMD.ArrayIsStoredDirectly"})
 @Singleton
 class EventListeners {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private final Emitter[] emitters;
+  private final List<Emitter> emitters;
   private final ScheduledExecutorService executor;
 
-  EventListeners(final Emitter[] emitters) {
+  EventListeners(final List<Emitter> emitters) {
     this.emitters = emitters;
-    this.executor = Executors.newScheduledThreadPool(emitters.length);
+    this.executor = Executors.newScheduledThreadPool(emitters.size());
   }
 
   /**
@@ -38,10 +38,8 @@ class EventListeners {
    */
   @EventListener
   public void startEmitters(final ApplicationStartupEvent event) {
-    for (final var emitter : emitters) {
-      executor.scheduleAtFixedRate(emitter::Emit, 0, emitter.getDuration().getSeconds(), TimeUnit.SECONDS);
-    }
-    log.info("registered {} emitters", emitters.length);
+    emitters.forEach(emitter -> executor.scheduleAtFixedRate(emitter::Emit, 0, emitter.getDuration().getSeconds(), TimeUnit.SECONDS));
+    log.info("registered {} emitters", emitters.size());
   }
 
   /**
