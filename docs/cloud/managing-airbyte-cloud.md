@@ -190,9 +190,11 @@ If you need to use [cron scheduling](http://www.quartz-scheduler.org/documentati
 1. In the **Replication Frequency** dropdown, click **Cron**. 
 2. Enter a cron expression and choose a time zone to create a sync schedule.
 
-:::info
+:::note
 
-Only one sync per connection can run at a time. If cron schedules a sync to run before the last sync finishes, the sync will start after the last one completes. 
+* Only one sync per connection can run at a time. 
+* If cron schedules a sync to run before the last one finishes, the scheduled sync will start after the last sync completes.
+* Cloud does not allow schedules that sync more than once per hour. 
 
 :::
 
