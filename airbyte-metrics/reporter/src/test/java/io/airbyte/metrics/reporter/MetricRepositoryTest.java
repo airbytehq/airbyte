@@ -15,6 +15,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
@@ -22,17 +23,25 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.JobConfigType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -80,40 +89,413 @@ class MetricRepositoryTest {
 
   @BeforeEach
   void setUp() {
-  }
-
-  @Test
-  void shouldReturnReleaseStages() {
-    final var srcId = UUID.randomUUID();
-    final var dstId = UUID.randomUUID();
-
-    ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE)
-        .values(srcId, UUID.randomUUID(), SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source)
-        .values(dstId, UUID.randomUUID(), DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination)
-        .execute();
-
-    final var activeConnectionId = UUID.randomUUID();
-    final var inactiveConnectionId = UUID.randomUUID();
-    ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.STATUS, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID,
-            CONNECTION.DESTINATION_ID, CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL)
-        .values(activeConnectionId, StatusType.active, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true)
-        .values(inactiveConnectionId, StatusType.inactive, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true)
-        .execute();
-
-    // non-pending jobs
-    ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, activeConnectionId.toString(), JobStatus.pending).execute();
-    ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, activeConnectionId.toString(), JobStatus.failed).execute();
-    ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, activeConnectionId.toString(), JobStatus.running).execute();
-    ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, activeConnectionId.toString(), JobStatus.running).execute();
-    ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(5L, inactiveConnectionId.toString(), JobStatus.running).execute();
-
-    assertEquals(2, db.numberOfRunningJobs());
-    assertEquals(1, db.numberOfOrphanRunningJobs());
+    ctx.truncate(ACTOR).execute();
+    ctx.truncate(CONNECTION).cascade().execute();
+    ctx.truncate(JOBS).cascade().execute();
+    ctx.truncate(WORKSPACE).cascade().execute();
   }
 
   @AfterEach
   void tearDown() {
-    ctx.truncate(ACTOR).execute();
-    ctx.truncate(JOBS).execute();
+
+  }
+
+  @Nested
+  class NumJobs {
+
+    @Test
+    void shouldReturnReleaseStages() {
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+
+      ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE)
+          .values(srcId, UUID.randomUUID(), SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source)
+          .values(dstId, UUID.randomUUID(), DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination)
+          .execute();
+
+      final var activeConnectionId = UUID.randomUUID();
+      final var inactiveConnectionId = UUID.randomUUID();
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.STATUS, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID,
+              CONNECTION.DESTINATION_ID, CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL)
+          .values(activeConnectionId, StatusType.active, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true)
+          .values(inactiveConnectionId, StatusType.inactive, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true)
+          .execute();
+
+      // non-pending jobs
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, activeConnectionId.toString(), JobStatus.pending).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, activeConnectionId.toString(), JobStatus.failed).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, activeConnectionId.toString(), JobStatus.running).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, activeConnectionId.toString(), JobStatus.running).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(5L, inactiveConnectionId.toString(), JobStatus.running).execute();
+
+      assertEquals(2, db.numberOfRunningJobs());
+      assertEquals(1, db.numberOfOrphanRunningJobs());
+    }
+
+    @Test
+    void runningJobsShouldReturnZero() throws SQLException {
+      // non-pending jobs
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute();
+
+      final var res = db.numberOfRunningJobs();
+      assertEquals(0, res);
+    }
+
+    @Test
+    void pendingJobsShouldReturnCorrectCount() throws SQLException {
+      // non-pending jobs
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.running).execute();
+
+      final var res = db.numberOfPendingJobs();
+      assertEquals(2, res);
+    }
+
+    @Test
+    void pendingJobsShouldReturnZero() throws SQLException {
+      // non-pending jobs
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.running).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute();
+
+      final var res = db.numberOfPendingJobs();
+      assertEquals(0, res);
+    }
+
+  }
+
+  @Nested
+  class OldestPendingJob {
+
+    @Test
+    void shouldReturnOnlyPendingSeconds() throws SQLException {
+      final var expAgeSecs = 1000;
+      final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
+      // oldest pending job
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(1L, "", JobStatus.pending, oldestCreateAt)
+          .execute();
+      // second oldest pending job
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(2L, "", JobStatus.pending, OffsetDateTime.now())
+          .execute();
+      // non-pending jobs
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.running).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute();
+
+      final var res = db.oldestPendingJobAgeSecs();
+      // expected age is 1000 seconds, but allow for +/- 1 second to account for timing/rounding errors
+      assertTrue(List.of(999L, 1000L, 1001L).contains(res));
+    }
+
+    @Test
+    void shouldReturnNothingIfNotApplicable() {
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.running).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute();
+
+      final var res = db.oldestPendingJobAgeSecs();
+      assertEquals(0L, res);
+    }
+
+  }
+
+  @Nested
+  class OldestRunningJob {
+
+    @Test
+    void shouldReturnOnlyRunningSeconds() {
+      final var expAgeSecs = 10000;
+      final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
+      // oldest pending job
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT)
+          .values(1L, "", JobStatus.running, oldestCreateAt)
+          .execute();
+      // second oldest pending job
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT)
+          .values(2L, "", JobStatus.running, OffsetDateTime.now())
+          .execute();
+      // non-pending jobs
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute();
+
+      final var res = db.oldestRunningJobAgeSecs();
+      // expected age is 10000 seconds, but allow for +/- 1 second to account for timing/rounding errors
+      assertTrue(List.of(9999L, 10000L, 10001L).contains(res));
+    }
+
+    @Test
+    void shouldReturnNothingIfNotApplicable() {
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.pending).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute();
+
+      final var res = db.oldestRunningJobAgeSecs();
+      assertEquals(0L, res);
+    }
+
+  }
+
+  @Nested
+  class NumActiveConnsPerWorkspace {
+
+    @Test
+    void shouldReturnNumConnectionsBasic() {
+      final var workspaceId = UUID.randomUUID();
+      ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME, WORKSPACE.TOMBSTONE)
+          .values(workspaceId, "test-0", false)
+          .execute();
+
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE,
+              ACTOR.TOMBSTONE)
+          .values(srcId, workspaceId, SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source, false)
+          .values(dstId, workspaceId, DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination, false)
+          .execute();
+
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+              CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS)
+          .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
+          .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
+          .execute();
+
+      final var res = db.numberOfActiveConnPerWorkspace();
+      assertEquals(1, res.size());
+      assertEquals(2, res.get(0));
+    }
+
+    @Test
+    @DisplayName("should ignore deleted connections")
+    void shouldIgnoreNonRunningConnections() {
+      final var workspaceId = UUID.randomUUID();
+      ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME, WORKSPACE.TOMBSTONE)
+          .values(workspaceId, "test-0", false)
+          .execute();
+
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE,
+              ACTOR.TOMBSTONE)
+          .values(srcId, workspaceId, SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source, false)
+          .values(dstId, workspaceId, DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination, false)
+          .execute();
+
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+              CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS)
+          .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
+          .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
+          .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.deprecated)
+          .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.inactive)
+          .execute();
+
+      final var res = db.numberOfActiveConnPerWorkspace();
+      assertEquals(1, res.size());
+      assertEquals(2, res.get(0));
+    }
+
+    @Test
+    @DisplayName("should ignore deleted connections")
+    void shouldIgnoreDeletedWorkspaces() {
+      final var workspaceId = UUID.randomUUID();
+      ctx.insertInto(WORKSPACE, WORKSPACE.ID, WORKSPACE.NAME, WORKSPACE.TOMBSTONE)
+          .values(workspaceId, "test-0", true)
+          .execute();
+
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE,
+              ACTOR.TOMBSTONE)
+          .values(srcId, workspaceId, SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source, false)
+          .values(dstId, workspaceId, DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination, false)
+          .execute();
+
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+              CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS)
+          .values(UUID.randomUUID(), NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active)
+          .execute();
+
+      final var res = db.numberOfActiveConnPerWorkspace();
+      assertEquals(0, res.size());
+    }
+
+    @Test
+    void shouldReturnNothingIfNotApplicable() {
+      final var res = db.numberOfActiveConnPerWorkspace();
+      assertEquals(0, res.size());
+    }
+
+  }
+
+  @Nested
+  class OverallJobRuntimeForTerminalJobsInLastHour {
+
+    @Test
+    void shouldIgnoreNonTerminalJobs() throws SQLException {
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.running).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.incomplete).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute();
+
+      final var res = db.overallJobRuntimeForTerminalJobsInLastHour();
+      assertEquals(0, res.size());
+    }
+
+    @Test
+    void shouldIgnoreJobsOlderThan1Hour() {
+      final var updateAt = OffsetDateTime.now().minus(2, ChronoUnit.HOURS);
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.UPDATED_AT).values(1L, "", JobStatus.succeeded, updateAt).execute();
+
+      final var res = db.overallJobRuntimeForTerminalJobsInLastHour();
+      assertEquals(0, res.size());
+    }
+
+    @Test
+    @DisplayName("should return correct duration for terminal jobs")
+    void shouldReturnTerminalJobs() {
+      final var updateAt = OffsetDateTime.now();
+      final var expAgeSecs = 10000;
+      final var createAt = updateAt.minus(expAgeSecs, ChronoUnit.SECONDS);
+
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+          .values(1L, "", JobStatus.succeeded, createAt, updateAt)
+          .execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+          .values(2L, "", JobStatus.failed, createAt, updateAt)
+          .execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+          .values(3L, "", JobStatus.cancelled, createAt, updateAt)
+          .execute();
+
+      final var res = db.overallJobRuntimeForTerminalJobsInLastHour();
+      assertEquals(3, res.size());
+
+      final var exp = List.of(
+          new ImmutablePair<>(JobStatus.succeeded, expAgeSecs * 1.0),
+          new ImmutablePair<>(JobStatus.cancelled, expAgeSecs * 1.0),
+          new ImmutablePair<>(JobStatus.failed, expAgeSecs * 1.0));
+      assertTrue(res.containsAll(exp) && exp.containsAll(res));
+    }
+
+    @Test
+    void shouldReturnTerminalJobsComplex() {
+      final var updateAtNow = OffsetDateTime.now();
+      final var expAgeSecs = 10000;
+      final var createAt = updateAtNow.minus(expAgeSecs, ChronoUnit.SECONDS);
+
+      // terminal jobs in last hour
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+          .values(1L, "", JobStatus.succeeded, createAt, updateAtNow)
+          .execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+          .values(2L, "", JobStatus.failed, createAt, updateAtNow)
+          .execute();
+
+      // old terminal jobs
+      final var updateAtOld = OffsetDateTime.now().minus(2, ChronoUnit.HOURS);
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT)
+          .values(3L, "", JobStatus.cancelled, createAt, updateAtOld)
+          .execute();
+
+      // non-terminal jobs
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT)
+          .values(4L, "", JobStatus.running, createAt)
+          .execute();
+
+      final var res = db.overallJobRuntimeForTerminalJobsInLastHour();
+      assertEquals(2, res.size());
+
+      final var exp = List.of(
+          new ImmutablePair<>(JobStatus.succeeded, expAgeSecs * 1.0),
+          new ImmutablePair<>(JobStatus.failed, expAgeSecs * 1.0));
+      assertTrue(res.containsAll(exp) && exp.containsAll(res));
+    }
+
+    @Test
+    void shouldReturnNothingIfNotApplicable() {
+      final var res = db.overallJobRuntimeForTerminalJobsInLastHour();
+      assertEquals(0, res.size());
+    }
+
+  }
+
+  @Nested
+  class AbnormalJobsInLastDay {
+
+    @Test
+    void shouldCountInJobsWithMissingRun() throws SQLException {
+      final var updateAt = OffsetDateTime.now().minus(300, ChronoUnit.HOURS);
+      final var connectionId = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      final var syncConfigType = JobConfigType.sync;
+
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+              CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.SCHEDULE, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.CREATED_AT,
+              CONNECTION.UPDATED_AT)
+          .values(connectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
+              JSONB.valueOf("{\"units\": 6, \"timeUnit\": \"hours\"}"), false, StatusType.active, updateAt, updateAt)
+          .execute();
+
+      // Jobs running in prior day will not be counted
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+          .values(100L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS), updateAt, syncConfigType)
+          .execute();
+
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+          .values(1L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS), updateAt, syncConfigType)
+          .execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+          .values(2L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(10, ChronoUnit.HOURS), updateAt, syncConfigType)
+          .execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+          .values(3L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(5, ChronoUnit.HOURS), updateAt, syncConfigType)
+          .execute();
+
+      final var totalConnectionResult = db.numScheduledActiveConnectionsInLastDay();
+      assertEquals(1, totalConnectionResult);
+
+      final var abnormalConnectionResult = db.numberOfJobsNotRunningOnScheduleInLastDay();
+      assertEquals(1, abnormalConnectionResult);
+    }
+
+    @Test
+    void shouldNotCountNormalJobsInAbnormalMetric() {
+      final var updateAt = OffsetDateTime.now().minus(300, ChronoUnit.HOURS);
+      final var inactiveConnectionId = UUID.randomUUID();
+      final var activeConnectionId = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      final var syncConfigType = JobConfigType.sync;
+
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+              CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.SCHEDULE, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.CREATED_AT,
+              CONNECTION.UPDATED_AT)
+          .values(inactiveConnectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
+              JSONB.valueOf("{\"units\": 12, \"timeUnit\": \"hours\"}"), false, StatusType.inactive, updateAt, updateAt)
+          .execute();
+
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+              CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.SCHEDULE, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.CREATED_AT,
+              CONNECTION.UPDATED_AT)
+          .values(activeConnectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
+              JSONB.valueOf("{\"units\": 12, \"timeUnit\": \"hours\"}"), false, StatusType.active, updateAt, updateAt)
+          .execute();
+
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+          .values(1L, activeConnectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS), updateAt,
+              syncConfigType)
+          .execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+          .values(2L, activeConnectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(10, ChronoUnit.HOURS), updateAt,
+              syncConfigType)
+          .execute();
+
+      final var totalConnectionResult = db.numScheduledActiveConnectionsInLastDay();
+      assertEquals(1, totalConnectionResult);
+
+      final var abnormalConnectionResult = db.numberOfJobsNotRunningOnScheduleInLastDay();
+      assertEquals(0, abnormalConnectionResult);
+    }
+
   }
 }
