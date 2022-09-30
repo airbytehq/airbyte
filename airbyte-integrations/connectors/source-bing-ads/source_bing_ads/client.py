@@ -161,7 +161,7 @@ class Client:
             environment=self.environment,
         )
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=16)
     def _get_reporting_service(
         self,
         customer_id: Optional[str] = None,
