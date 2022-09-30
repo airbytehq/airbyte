@@ -199,6 +199,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Cloud Storage (GCS)](destinations/gcs.md)          | Beta                 | No                  |
 | [Google Pubsub](destinations/pubsub.md)                    | Alpha                | Yes                 |
 | [Google Sheets](destinations/google-sheets.md)             | Alpha                | Yes                 |
+| [iomete](destinations/iomete.md)                           | Alpha                | Yes                 |
 | [Kafka](destinations/kafka.md)                             | Alpha                | No                  |
 | [Keen](destinations/keen.md)                               | Alpha                | No                  |
 | [Kinesis](destinations/kinesis.md)                         | Alpha                | No                  |
