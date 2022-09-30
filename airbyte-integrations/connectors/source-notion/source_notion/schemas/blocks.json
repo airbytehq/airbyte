@@ -45,7 +45,10 @@
         "equation",
         "unsupported",
         "synced_block",
-        "divider"
+        "divider",
+        "template",
+        "column",
+        "column_list"
       ]
     },
     "paragraph": { "$ref": "text_element.json" },
