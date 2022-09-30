@@ -10,7 +10,6 @@ export * from "./LabeledSwitch";
 export * from "./Link";
 export * from "./LoadingPage";
 export * from "./MainPageWithScroll";
-export * from "./PageTitle";
 export * from "./SimpleTableComponents";
 export * from "./StatusIcon";
 export * from "./ConnectorCard";
