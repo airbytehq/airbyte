@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.92
+- Low-code: Log requests and responses when running check in debug mode
+- Low-code: Set default schema loader
+
+
 ## 0.1.91
 - Low-code: Rename LimitPaginator to DefaultPaginator and move page_size field to PaginationStrategy
 
