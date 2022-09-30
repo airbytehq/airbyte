@@ -16,8 +16,8 @@ import { ConnectionForm } from "views/Connection/ConnectionForm";
 
 import { DestinationRead, SourceRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
-import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import styles from "./CreateConnection.module.scss";
+import TryAfterErrorBlock from "./TryAfterErrorBlock";
 
 interface CreateConnectionProps {
   source: SourceRead;
