@@ -39,7 +39,7 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 The Twilio source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
-|:------------------------------|:-----------|
+| :---------------------------- | :--------- |
 | Full Refresh Sync             | Yes        |
 | Incremental Sync              | Yes        |
 | Replicate Incremental Deletes | No         |
@@ -78,16 +78,15 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 ## Changelog
 
-| Version | Date        | Pull Request                                             | Subject                                                                                                 |
-|:--------|:------------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.1.10  | 2022-09-30  | [17465](https://github.com/airbytehq/airbyte/pull/17465) | Add lookback_window parameters                                                                          |
-| 0.1.9   | 2022-09-26  | [17134](https://github.com/airbytehq/airbyte/pull/17134) | Add test data for Message Media and Conferences                                                         |
-| 0.1.8   | 2022-08-29  | [16110](https://github.com/airbytehq/airbyte/pull/16110) | Add state checkpoint interval                                                                           |
-| 0.1.7   | 2022-08-26  | [15972](https://github.com/airbytehq/airbyte/pull/15972) | Shift start date for stream if it exceeds 400 days                                                      |
-| 0.1.6   | 2022-06-22  | [14000](https://github.com/airbytehq/airbyte/pull/14000) | Update Records stream schema and align tests with connectors' best practices                            |
-| 0.1.5   | 2022-06-22  | [13896](https://github.com/airbytehq/airbyte/pull/13896) | Add lookback window parameters to fetch messages with a rolling window and catch status updates         |
-| 0.1.4   | 2022-04-22  | [12157](https://github.com/airbytehq/airbyte/pull/12157) | Use Retry-After header for backoff                                                                      |
-| 0.1.3   | 2022-04-20  | [12183](https://github.com/airbytehq/airbyte/pull/12183) | Add new subresource on the call stream + declare a valid primary key for conference_participants stream |
-| 0.1.2   | 2021-12-23  | [9092](https://github.com/airbytehq/airbyte/pull/9092)   | Correct specification doc URL                                                                           |
-| 0.1.1   | 2021-10-18  | [7034](https://github.com/airbytehq/airbyte/pull/7034)   | Update schemas and transform data types according to the API schema                                     |
-| 0.1.0   | 2021-07-02  | [4070](https://github.com/airbytehq/airbyte/pull/4070)   | Native Twilio connector implemented                                                                     |
+| Version | Date       | Pull Request                                             | Subject                                                                                                 |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.1.10  | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Migrate to per-stream states                                                                            |
+| 0.1.8   | 2022-08-29 | [16110](https://github.com/airbytehq/airbyte/pull/16110) | Add state checkpoint interval                                                                           |
+| 0.1.7   | 2022-08-26 | [15972](https://github.com/airbytehq/airbyte/pull/15972) | Shift start date for stream if it exceeds 400 days                                                      |
+| 0.1.6   | 2022-06-22 | [14000](https://github.com/airbytehq/airbyte/pull/14000) | Update Records stream schema and align tests with connectors' best practices                            |
+| 0.1.5   | 2022-06-22 | [13896](https://github.com/airbytehq/airbyte/pull/13896) | Add lookback window parameters to fetch messages with a rolling window and catch status updates         |
+| 0.1.4   | 2022-04-22 | [12157](https://github.com/airbytehq/airbyte/pull/12157) | Use Retry-After header for backoff                                                                      |
+| 0.1.3   | 2022-04-20 | [12183](https://github.com/airbytehq/airbyte/pull/12183) | Add new subresource on the call stream + declare a valid primary key for conference_participants stream |
+| 0.1.2   | 2021-12-23 | [9092](https://github.com/airbytehq/airbyte/pull/9092)   | Correct specification doc URL                                                                           |
+| 0.1.1   | 2021-10-18 | [7034](https://github.com/airbytehq/airbyte/pull/7034)   | Update schemas and transform data types according to the API schema                                     |
+| 0.1.0   | 2021-07-02 | [4070](https://github.com/airbytehq/airbyte/pull/4070)   | Native Twilio connector implemented                                                                     |
