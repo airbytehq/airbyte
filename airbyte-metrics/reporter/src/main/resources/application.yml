@@ -16,8 +16,7 @@ datasources:
     connection-timeout: 30000
     idle-timeout: 600000
     maximum-pool-size: 10
-    #    url: ${DATABASE_URL}
-    url: "jdbc:postgresql://localhost:5432/airbyte"
+    url: ${DATABASE_URL}
     driverClassName: org.postgresql.Driver
     username: ${DATABASE_USER:postgres}
     password: ${DATABASE_PASSWORD:postgres}
@@ -27,9 +26,6 @@ jooq:
     config:
       jackson-converter-enabled: true
       sql-dialect: POSTGRES
-
-docker:
-  network: ${DOCKER_NETWORK:host}
 
 endpoints:
   all:
