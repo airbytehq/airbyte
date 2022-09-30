@@ -18,7 +18,7 @@
       "type": ["null", "integer"]
     },
     "ad_id": {
-      "type": ["null"]
+      "type": ["null", "integer"]
     },
     "advertiser_id": {
       "type": ["null", "integer"]
