@@ -4,7 +4,7 @@
 
 import json
 import pkgutil
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -25,9 +25,9 @@ class JsonSchema(SchemaLoader, JsonSchemaMixin):
         options (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed
     """
 
-    file_path: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
+    file_path: Union[InterpolatedString, str] = field(default="./source_alex_test/schemas/{{ options['name'] }}.json")
 
     def __post_init__(self, options: Mapping[str, Any]):
         self.file_path = InterpolatedString.create(self.file_path, options=options)
