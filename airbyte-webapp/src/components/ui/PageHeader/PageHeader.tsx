@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import React from "react";
 
-import { Text } from "components/base/Text";
+import { Text } from "components/ui/Text";
 
 import styles from "./PageHeader.module.scss";
 
@@ -13,7 +13,7 @@ interface PageHeaderProps {
   title: React.ReactNode;
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({
+export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   withLine,
   middleComponent,
@@ -46,5 +46,3 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     <div className={classNames(styles.end)}>{endComponent}</div>
   </div>
 );
-
-export default PageHeader;
