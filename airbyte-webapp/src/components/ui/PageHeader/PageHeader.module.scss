@@ -16,30 +16,28 @@
   }
 }
 
-.middleBlock {
-  flex: 1 0 0;
-  display: flex;
-  justify-content: center;
-}
-
-.middleTitleBlock {
-  flex: 1 0 0;
-  display: flex;
-  justify-content: center;
+.heading {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &.middle {
+    justify-content: center;
+  }
 }
 
-.endBlock {
+.start {
+  flex: 1 0 0;
+}
+
+.middle {
+  flex: 1 0 0;
+  display: flex;
+  justify-content: center;
+}
+
+.end {
   flex: 1 0 0;
   display: flex;
   justify-content: flex-end;
-}
-
-.titleBlock {
-  flex: 1 0 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
