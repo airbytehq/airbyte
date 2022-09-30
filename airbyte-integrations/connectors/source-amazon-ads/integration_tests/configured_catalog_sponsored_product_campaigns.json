@@ -1,0 +1,69 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "sponsored_product_campaigns",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": ["null", "object"],
+          "properties": {
+            "campaignId": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "portfolioId": {
+              "type": "number"
+            },
+            "tags": {
+              "type": "string"
+            },
+            "campaignType": {
+              "type": "string",
+              "enum": ["sponsoredProducts"]
+            },
+            "targetingType": {
+              "type": "string",
+              "enum": ["manual", "auto"]
+            },
+            "state": {
+              "type": "string",
+              "enum": ["enabled", "paused", "archived"]
+            },
+            "dailyBudget": {
+              "type": "number"
+            },
+            "startDate": {
+              "type": "string"
+            },
+            "endDate": {
+              "type": "string"
+            },
+            "premiumBidAdjustment": {
+              "type": "boolean"
+            },
+            "bidding": {
+              "title": "Bidding",
+              "strategy": {
+                "type": "string",
+                "enum": ["legacyForSales", "autoForSales", "manual"]
+              }
+            },
+            "adjustments": {
+              "predicate": {
+                "type": "string",
+                "enum": ["placementTop", "placementProductPage"]
+              },
+              "percentage": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["campaignId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
