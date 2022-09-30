@@ -1,6 +1,6 @@
 {
   "type": ["object"],
-  "required": ["ad_id"],
+  "required": [],
   "additionalProperties": true,
   "properties": {
     "stat_time_day": {

@@ -666,8 +666,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def get_json_schema(self) -> Mapping[str, Any]:
         """All reports have same schema"""
         schema = ResourceSchemaLoader(package_name_from_class(AdvertiserIds)).get_schema(self.schema_name)
-        if self.primary_key != "ad_id":
-            schema["required"].append(self.primary_key)
+        schema["required"].append(self.primary_key)
+        schema["properties"][self.primary_key]["type"].remove("null")
 
         return schema
 
