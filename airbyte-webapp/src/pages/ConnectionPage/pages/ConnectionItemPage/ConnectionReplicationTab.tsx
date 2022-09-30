@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn, useUnmount } from "react-use";
-import styled from "styled-components";
 
 import { LabeledSwitch } from "components/LabeledSwitch";
 import LoadingSchema from "components/LoadingSchema";
@@ -26,6 +25,8 @@ import {
 import { equal, naturalComparatorBy } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
 import { ConnectionForm } from "views/Connection/ConnectionForm";
+
+import styles from "./ConnectionReplicationTab.module.scss";
 
 interface ConnectionReplicationTabProps {
   onAfterSaveSchema: () => void;
@@ -73,17 +74,6 @@ const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose
     </>
   );
 };
-
-const Content = styled.div`
-  max-width: 1279px;
-  margin: 0 auto;
-  padding-bottom: 10px;
-`;
-
-const TryArrow = styled(FontAwesomeIcon)`
-  margin: 0 10px -1px 0;
-  font-size: 14px;
-`;
 
 export const ConnectionReplicationTab: React.FC<ConnectionReplicationTabProps> = ({
   onAfterSaveSchema,
@@ -221,7 +211,7 @@ export const ConnectionReplicationTab: React.FC<ConnectionReplicationTabProps> =
   };
 
   return (
-    <Content>
+    <div className={styles.content}>
       {!isRefreshingCatalog && connection ? (
         <ConnectionFormServiceProvider
           connection={connection}
@@ -239,7 +229,7 @@ export const ConnectionReplicationTab: React.FC<ConnectionReplicationTabProps> =
                 onClick={onRefreshSourceSchema}
                 type="button"
                 variant="secondary"
-                icon={<TryArrow icon={faSyncAlt} />}
+                icon={<FontAwesomeIcon className={styles.tryArrow} icon={faSyncAlt} />}
               >
                 <FormattedMessage id="connection.updateSchema" />
               </Button>
@@ -249,6 +239,6 @@ export const ConnectionReplicationTab: React.FC<ConnectionReplicationTabProps> =
       ) : (
         <LoadingSchema />
       )}
-    </Content>
+    </div>
   );
 };
