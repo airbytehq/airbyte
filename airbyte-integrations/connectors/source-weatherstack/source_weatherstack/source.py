@@ -40,6 +40,11 @@ class CurrentWeatherStream(HttpStream):
         # The api requires that we include api_key as a query param so we do that in this method
         return {"access_key": self.access_key, "query": self.query}
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        delay_time = response.headers.get("Retry-After")
+        if delay_time:
+            return int(delay_time)
+
     def parse_response(
         self,
         response: requests.Response,
@@ -85,6 +90,11 @@ class WeatherstackStream(HttpStream):
     ) -> MutableMapping[str, Any]:
         # The api requires that we include api_key as a query param so we do that in this method
         return {'access_key': self.access_key , 'query' : self.query }
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        delay_time = response.headers.get("Retry-After")
+        if delay_time:
+            return int(delay_time)
 
     def parse_response(
             self,
@@ -132,6 +142,11 @@ class IncrementalWeatherstackStream(HttpStream):
         # The api requires that we include api_key as a query param so we do that in this method
         return {'access_key': self.access_key , 'query' : self.query }
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        delay_time = response.headers.get("Retry-After")
+        if delay_time:
+            return int(delay_time)
+
     def parse_response(
             self,
             response: requests.Response,
@@ -148,7 +163,7 @@ class IncrementalWeatherstackStream(HttpStream):
         # so we return None to indicate there are no more pages in the response
         return None
 
-class Forecast(HttpStream):
+class ForecastStream(HttpStream):
     url_base = "http://api.weatherstack.com/"
 
     # Set this as a noop.
@@ -173,6 +188,11 @@ class Forecast(HttpStream):
     ) -> MutableMapping[str, Any]:
         # The api requires that we include api_key as a query param so we do that in this method
         return {"access_key": self.access_key, "query": self.query}
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        delay_time = response.headers.get("Retry-After")
+        if delay_time:
+            return int(delay_time)
 
     def parse_response(
         self,
@@ -217,6 +237,11 @@ class HistoricalStream(HttpStream):
         # The api requires that we include api_key as a query param so we do that in this method
         return {"access_key": self.access_key, "query": self.query, "historical_date": self.historical_date}
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        delay_time = response.headers.get("Retry-After")
+        if delay_time:
+            return int(delay_time)
+
     def parse_response(
         self,
         response: requests.Response,
@@ -259,6 +284,11 @@ class LocationLookupStream(HttpStream):
         # The api requires that we include api_key as a query param so we do that in this method
         return {"access_key": self.access_key, "query": self.query}
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        delay_time = response.headers.get("Retry-After")
+        if delay_time:
+            return int(delay_time)
+            
     def parse_response(
         self,
         response: requests.Response,
