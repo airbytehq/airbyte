@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { LoadingPage, PageTitle } from "components";
+import { LoadingPage } from "components";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { CreateConnection } from "components/CreateConnection/CreateConnection";
 import HeadTitle from "components/HeadTitle";
+import { PageHeader } from "components/ui/PageHeader";
 import { StepsMenu } from "components/ui/StepsMenu";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -214,7 +215,7 @@ export const CreationFormPage: React.FC = () => {
     <>
       <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />
       <ConnectorDocumentationWrapper>
-        <PageTitle
+        <PageHeader
           title={<FormattedMessage id={titleId} />}
           middleComponent={<StepsMenu lightMode data={steps} activeStep={currentStep} />}
         />
