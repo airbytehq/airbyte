@@ -17,6 +17,9 @@
     "method": {
       "type": ["null", "string"]
     },
+    "aware": {
+      "type": ["null", "boolean"]
+    },
     "createdAt": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -24,9 +27,6 @@
     "updatedAt": {
       "type": ["null", "string"],
       "format": "date-time"
-    },
-    "aware": {
-      "type": ["null", "boolean"]
     }
   }
 }

@@ -43,13 +43,13 @@ class SourceOpsgenie(AbstractSource):
         users = Users(**args)
         alerts = Alerts(**incremental_args)
         return [
-            Teams(**args),
-            Services(**args),
-            Incidents(**incremental_args),
-            users,
-            UserTeams(parent_stream=users, **args),
             alerts,
-            Integrations(**args),
             AlertRecipients(parent_stream=alerts, **args),
             AlertLogs(parent_stream=alerts, **args),
+            Incidents(**incremental_args),
+            Integrations(**args),
+            Services(**args),
+            Teams(**args),
+            users,
+            UserTeams(parent_stream=users, **args),
         ]
