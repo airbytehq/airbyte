@@ -328,11 +328,11 @@ class SourcePinterest(AbstractSource):
         start_date = config.get("start_date")
         if not start_date:
             config["start_date"] = latest_date_allowed_by_api
-
-        start_date_formatted = pendulum.from_format(start_date, "YYYY-MM-DD")
-        delta_today_start_date = today - start_date_formatted
-        if delta_today_start_date.days > AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP:
-            config["start_date"] = latest_date_allowed_by_api
+        else:
+            start_date_formatted = pendulum.from_format(config["start_date"], "YYYY-MM-DD")
+            delta_today_start_date = today - start_date_formatted
+            if delta_today_start_date.days > AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP:
+                config["start_date"] = latest_date_allowed_by_api
 
         config["authenticator"] = self.get_authenticator(config)
         return [
