@@ -16,5 +16,5 @@ ENV APPLICATION source-postgres
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.0.10
+LABEL io.airbyte.version=1.0.12
 LABEL io.airbyte.name=airbyte/source-postgres

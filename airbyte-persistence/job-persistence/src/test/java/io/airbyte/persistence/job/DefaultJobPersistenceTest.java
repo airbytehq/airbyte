@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Sqls;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
@@ -551,7 +552,7 @@ class DefaultJobPersistenceTest {
       final String tableName = tableSchema.name();
       final JsonNode schema = tableSchema.getTableDefinition();
       assertNotNull(schema,
-          "Json schema files should be created in airbyte-scheduler/src/main/resources/tables for every table in the Database to validate its content");
+          "Json schema files should be created in airbyte-persistence/job-persistence/src/main/resources/tables for every table in the Database to validate its content");
       tableStream.forEach(row -> {
         try {
           jsonSchemaValidator.ensure(schema, row);
@@ -578,6 +579,36 @@ class DefaultJobPersistenceTest {
     jobPersistence.setSchedulerMigrationDone();
     isMigrated = jobPersistence.isSchedulerMigrated();
     assertTrue(isMigrated);
+  }
+
+  @Test
+  void testAirbyteProtocolVersionMaxMetadata() throws IOException {
+    assertTrue(jobPersistence.getAirbyteProtocolVersionMax().isEmpty());
+
+    final Version maxVersion1 = new Version("0.1.0");
+    jobPersistence.setAirbyteProtocolVersionMax(maxVersion1);
+    final Optional<Version> maxVersion1read = jobPersistence.getAirbyteProtocolVersionMax();
+    assertEquals(maxVersion1, maxVersion1read.orElseThrow());
+
+    final Version maxVersion2 = new Version("1.2.1");
+    jobPersistence.setAirbyteProtocolVersionMax(maxVersion2);
+    final Optional<Version> maxVersion2read = jobPersistence.getAirbyteProtocolVersionMax();
+    assertEquals(maxVersion2, maxVersion2read.orElseThrow());
+  }
+
+  @Test
+  void testAirbyteProtocolVersionMinMetadata() throws IOException {
+    assertTrue(jobPersistence.getAirbyteProtocolVersionMin().isEmpty());
+
+    final Version minVersion1 = new Version("1.1.0");
+    jobPersistence.setAirbyteProtocolVersionMin(minVersion1);
+    final Optional<Version> minVersion1read = jobPersistence.getAirbyteProtocolVersionMin();
+    assertEquals(minVersion1, minVersion1read.orElseThrow());
+
+    final Version minVersion2 = new Version("3.0.1");
+    jobPersistence.setAirbyteProtocolVersionMin(minVersion2);
+    final Optional<Version> minVersion2read = jobPersistence.getAirbyteProtocolVersionMin();
+    assertEquals(minVersion2, minVersion2read.orElseThrow());
   }
 
   private long createJobAt(final Instant created_at) throws IOException {

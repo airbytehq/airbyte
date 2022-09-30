@@ -42,6 +42,7 @@ dependencies {
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-docker')
+    implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-db:jooq')
@@ -57,7 +58,6 @@ dependencies {
         exclude group: 'io.micronaut.security'
         exclude group: 'io.micronaut.sql'
     }
-    implementation project(':airbyte-scheduler:scheduler-models')
     implementation project(':airbyte-api')
 
     testAnnotationProcessor platform(libs.micronaut.bom)
@@ -114,7 +114,7 @@ run {
 
     environment 'AIRBYTE_ROLE', System.getenv('AIRBYTE_ROLE')
     environment 'AIRBYTE_VERSION', env.VERSION
-    environment 'MICRONAUT_ENVIRONMENTS', 'local,control'
+    environment 'MICRONAUT_ENVIRONMENTS', 'control-plane'
 }
 
 task cloudStorageIntegrationTest(type: Test) {

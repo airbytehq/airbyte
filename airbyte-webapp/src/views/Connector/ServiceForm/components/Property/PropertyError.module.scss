@@ -1,0 +1,7 @@
+@use "../../../../../scss/colors";
+@use "../../../../../scss/variables";
+
+.errorMessage {
+  color: colors.$red;
+  margin-top: variables.$spacing-sm;
+}

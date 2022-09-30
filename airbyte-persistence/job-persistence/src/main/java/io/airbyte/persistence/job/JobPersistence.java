@@ -5,12 +5,14 @@
 package io.airbyte.persistence.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
 import io.airbyte.persistence.job.models.AttemptWithJobInfo;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
@@ -235,6 +237,26 @@ public interface JobPersistence {
   void setVersion(String airbyteVersion) throws IOException;
 
   /**
+   * Get the max supported Airbyte Protocol Version
+   */
+  Optional<Version> getAirbyteProtocolVersionMax() throws IOException;
+
+  /**
+   * Set the max supported Airbyte Protocol Version
+   */
+  void setAirbyteProtocolVersionMax(Version version) throws IOException;
+
+  /**
+   * Get the min supported Airbyte Protocol Version
+   */
+  Optional<Version> getAirbyteProtocolVersionMin() throws IOException;
+
+  /**
+   * Set the min supported Airbyte Protocol Version
+   */
+  void setAirbyteProtocolVersionMin(Version version) throws IOException;
+
+  /**
    * Returns a deployment UUID.
    */
   Optional<UUID> getDeployment() throws IOException;
@@ -293,5 +315,7 @@ public interface JobPersistence {
    * "major" version bump as it will no longer be needed.
    */
   void setSchedulerMigrationDone() throws IOException;
+
+  List<AttemptNormalizationStatus> getAttemptNormalizationStatusesForJob(final Long jobId) throws IOException;
 
 }
