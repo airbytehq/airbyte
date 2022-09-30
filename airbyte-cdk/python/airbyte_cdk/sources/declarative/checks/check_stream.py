@@ -30,14 +30,12 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         streams = source.streams(config)
         stream_name_to_stream = {s.name: s for s in streams}
-        logger.info("I was here.")
         if len(streams) == 0:
             return False, f"No streams to connect to from source {source}"
         for stream_name in self.stream_names:
             if stream_name in stream_name_to_stream.keys():
                 stream = stream_name_to_stream[stream_name]
                 try:
-                    logger.info("Wooogo")
                     records = stream.read_records(sync_mode=SyncMode.full_refresh)
                     next(records)
                 except Exception as error:
