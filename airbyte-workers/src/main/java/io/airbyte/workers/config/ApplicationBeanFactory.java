@@ -13,30 +13,29 @@ import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.SecretPersistenceType;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.Configs.WorkerPlane;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
-import io.airbyte.scheduler.persistence.DefaultJobCreator;
-import io.airbyte.scheduler.persistence.JobNotifier;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.WebUrlHelper;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.persistence.job.DefaultJobCreator;
+import io.airbyte.persistence.job.JobNotifier;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WebUrlHelper;
+import io.airbyte.persistence.job.WorkspaceHelper;
+import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.workers.WorkerConfigs;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -74,11 +73,6 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  public WorkerPlane workerPlane(@Value("${airbyte.worker.plane}") final String workerPlane) {
-    return convertToEnum(workerPlane, WorkerPlane::valueOf, WorkerPlane.CONTROL_PLANE);
-  }
-
-  @Singleton
   @Named("workspaceRoot")
   public Path workspaceRoot(@Value("${airbyte.workspace.root}") final String workspaceRoot) {
     return Path.of(workspaceRoot);
@@ -106,8 +100,7 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public JobNotifier jobNotifier(
                                  final ConfigRepository configRepository,
                                  final TrackingClient trackingClient,
@@ -121,8 +114,7 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public JobTracker jobTracker(
                                final ConfigRepository configRepository,
                                final JobPersistence jobPersistence,
@@ -131,25 +123,21 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
     return JsonSecretsProcessor.builder()
-        .maskSecrets(!featureFlags.exposeSecretsInExport())
         .copySecrets(false)
         .build();
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public WebUrlHelper webUrlHelper(@Value("${airbyte.web-app.url}") final String webAppUrl) {
     return new WebUrlHelper(webAppUrl);
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public WorkspaceHelper workspaceHelper(
                                          final ConfigRepository configRepository,
                                          final JobPersistence jobPersistence) {

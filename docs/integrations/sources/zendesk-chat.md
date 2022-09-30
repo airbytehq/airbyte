@@ -78,7 +78,8 @@ The connector is restricted by normal Zendesk [requests limitation](https://deve
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
-| 0.1.9   | 2022-08-23 | [15879](https://github.com/airbytehq/airbyte/pull/15879) | Corrected specification and stream schemas to support backward capability                                                                          |
+| 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                    |
+| 0.1.9   | 2022-08-23 | [15879](https://github.com/airbytehq/airbyte/pull/15879) | Corrected specification and stream schemas to support backward capability                                        |
 | 0.1.8   | 2022-06-28 | [13387](https://github.com/airbytehq/airbyte/pull/13387) | Add state checkpoint to allow long runs                                                                          |
 | 0.1.7   | 2022-05-25 | [12883](https://github.com/airbytehq/airbyte/pull/12883) | Pass timeout in request to prevent a stuck connection                                                            |
 | 0.1.6   | 2021-12-15 | [7313](https://github.com/airbytehq/airbyte/pull/7313)   | Add support of `OAuth 2.0` authentication. Fixed the issue with `created_at` can now be `null` for `bans` stream |

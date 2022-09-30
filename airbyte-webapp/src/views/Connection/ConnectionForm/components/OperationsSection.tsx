@@ -2,9 +2,10 @@ import { Field, FieldArray } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { Card, H5 } from "components";
+import { H5 } from "components/base/Titles";
+import { Card } from "components/ui/Card";
 
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { StyledSection } from "../ConnectionForm";
