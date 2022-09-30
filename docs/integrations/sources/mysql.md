@@ -241,7 +241,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.1  | 2022-09-29 | [17170](https://github.com/airbytehq/airbyte/pull/17170)   | Make Debezium timeout configurable                                                                                                            |
+| 1.0.1  | 2022-09-29 | [17170](https://github.com/airbytehq/airbyte/pull/17170)   | Make initial CDC waiting time configurable                                                                                                            |
 | 1.0.0   | 2022-09-27 | [17164](https://github.com/airbytehq/airbyte/pull/17164)   | Certify MySQL Source as Beta                                                                                                                  |
 | 0.6.15  | 2022-09-27 | [17299](https://github.com/airbytehq/airbyte/pull/17299)   | Improve error handling for strict-encrypt mysql source                                                                                        |
 | 0.6.14  | 2022-09-26 | [16954](https://github.com/airbytehq/airbyte/pull/16954)   | Implement support for snapshot of new tables in CDC mode                                                                                      |
