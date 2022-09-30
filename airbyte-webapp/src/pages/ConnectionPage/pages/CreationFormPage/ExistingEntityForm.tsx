@@ -8,11 +8,11 @@ import { Button, ControlLabels, DropDown } from "components";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { Card } from "components/ui/Card";
 
+import { useDestinationList } from "hooks/services/useDestinationHook";
+import { useSourceList } from "hooks/services/useSourceHook";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
-import { useDestinationList } from "../../../../../hooks/services/useDestinationHook";
-import { useSourceList } from "../../../../../hooks/services/useSourceHook";
 import styles from "./ExistingEntityForm.module.scss";
 
 interface IProps {

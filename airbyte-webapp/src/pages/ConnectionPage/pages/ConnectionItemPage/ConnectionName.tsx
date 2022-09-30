@@ -17,7 +17,7 @@ interface ConnectionNameProps {
 
 const InputWithKeystroke = withKeystrokeHandler(Input);
 
-const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
+export const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
   const { name } = connection;
   const [editingState, setEditingState] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -93,5 +93,3 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
     </div>
   );
 };
-
-export default ConnectionName;
