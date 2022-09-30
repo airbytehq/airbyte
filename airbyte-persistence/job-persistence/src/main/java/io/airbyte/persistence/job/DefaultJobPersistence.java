@@ -56,6 +56,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -592,6 +593,10 @@ public class DefaultJobPersistence implements JobPersistence {
    */
   @Override
   public List<Optional<Job>> getLastSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
+    if (connectionIds.isEmpty()) {
+      return Collections.emptyList();
+    }
+
     return jobDatabase.query(ctx -> ctx
         .fetch("SELECT DISTINCT ON (scope) * FROM jobs "
             + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
@@ -610,6 +615,10 @@ public class DefaultJobPersistence implements JobPersistence {
    */
   @Override
   public List<Optional<Job>> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
+    if (connectionIds.isEmpty()) {
+      return Collections.emptyList();
+    }
+
     return jobDatabase.query(ctx -> ctx
         .fetch("SELECT DISTINCT ON (scope) * FROM jobs "
             + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
