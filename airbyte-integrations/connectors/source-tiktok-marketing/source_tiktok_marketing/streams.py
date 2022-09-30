@@ -665,7 +665,11 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """All reports have same schema"""
-        return ResourceSchemaLoader(package_name_from_class(AdvertiserIds)).get_schema(self.schema_name)
+        schema = ResourceSchemaLoader(package_name_from_class(AdvertiserIds)).get_schema(self.schema_name)
+        if self.primary_key != "ad_id":
+            schema["required"].append(self.primary_key)
+
+        return schema
 
     def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
         if stream_slice:
