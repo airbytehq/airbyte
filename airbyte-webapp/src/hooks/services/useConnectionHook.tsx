@@ -57,10 +57,6 @@ interface CreateConnectionProps {
   sourceCatalogId: string | undefined;
 }
 
-export interface ListConnection {
-  connections: WebBackendConnectionRead[];
-}
-
 export const useWebConnectionService = () => {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
