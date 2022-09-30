@@ -5813,31 +5813,24 @@
         - "iomete_password"
       properties:
         connection_url:
-          title: "Lakehouse connection url"
+          title: "Lakehouse connection URL"
           type: "string"
           description: "The connection url of the lakehouse.\
             \ This is a combination of hostname, account number and lakehouse name."
           examples:
             - "airbyte://{hostname}/{account_number}/{lakehouse_name}"
           order: 1
-        ssl:
-          title: "TLS Connection"
-          type: "boolean"
-          description: "Default to 'true'. Switch it to 'false' for plain http\ 
-            \ (not recommended) connection."
-          default: true
-          order: 2
         iomete_username:
           title: "Username"
           type: "string"
           description: "Username to use to access iomete."
-          order: 3
+          order: 2
         iomete_password:
           title: "Password"
           type: "string"
           description: "Password associated with username."
           airbyte_secret: true
-          order: 4
+          order: 3
         database_schema:
           title: "Database Schema"
           type: "string"
@@ -5847,13 +5840,13 @@
           default: "public"
           examples:
             - "default"
-          order: 5
+          order: 4
         staging:
           title: "Staging"
           type: "object"
-          description: "Storage on which staging data will store.\
-            \It's being using by Airbyte for write and read. iomete only needs permission to read the bucket."
-          order: 6
+          description: "The storage that Airbyte uses as a staging area. 
+            \ Airbyte will read/write to this staging area. Lakehouse only needs a read access"
+          order: 5
           oneOf:
             - title: "Amazon S3"
               required:
