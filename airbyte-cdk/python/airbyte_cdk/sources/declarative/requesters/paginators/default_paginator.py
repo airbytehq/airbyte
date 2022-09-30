@@ -51,7 +51,7 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
             pagination_strategy:
               type: "OffsetIncrement"
               page_size: 5
-            page_token:
+            page_token_option:
               option_type: "request_parameter"
               field_name: "offset"
         ```
