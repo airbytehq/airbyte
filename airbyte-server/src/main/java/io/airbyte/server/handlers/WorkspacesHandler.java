@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.github.slugify.Slugify;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.generated.ConnectionRead;
@@ -36,9 +37,12 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WorkspacesHandler {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkspacesHandler.class);
   private final ConfigRepository configRepository;
   private final ConnectionsHandler connectionsHandler;
   private final DestinationHandler destinationHandler;
@@ -143,29 +147,28 @@ public class WorkspacesHandler {
     return buildWorkspaceRead(workspace);
   }
 
-  public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final UUID workspaceId = workspaceUpdate.getWorkspaceId();
+  public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspacePatch) throws ConfigNotFoundException, IOException, JsonValidationException {
+    final UUID workspaceId = workspacePatch.getWorkspaceId();
 
-    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId, false);
+    LOGGER.debug("Starting updateWorkspace for workspaceId {}...", workspaceId);
+    LOGGER.debug("Incoming workspacePatch: {}", workspacePatch);
 
-    if (!Strings.isNullOrEmpty(workspaceUpdate.getEmail())) {
-      persistedWorkspace.withEmail(workspaceUpdate.getEmail());
-    }
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
+    LOGGER.debug("Initial workspace: {}", workspace);
 
-    persistedWorkspace
-        .withInitialSetupComplete(workspaceUpdate.getInitialSetupComplete())
-        .withDisplaySetupWizard(workspaceUpdate.getDisplaySetupWizard())
-        .withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection())
-        .withNews(workspaceUpdate.getNews())
-        .withSecurityUpdates(workspaceUpdate.getSecurityUpdates())
-        .withNotifications(NotificationConverter.toConfigList(workspaceUpdate.getNotifications()));
+    validateWorkspacePatch(workspace, workspacePatch);
 
-    configRepository.writeStandardWorkspace(persistedWorkspace);
+    LOGGER.debug("Initial WorkspaceRead: {}", buildWorkspaceRead(workspace));
+
+    applyPatchToStandardWorkspace(workspace, workspacePatch);
+
+    LOGGER.debug("Patched Workspace before persisting: {}", workspace);
+    configRepository.writeStandardWorkspace(workspace);
 
     // after updating email or tracking info, we need to re-identify the instance.
     TrackingClientSingleton.get().identify(workspaceId);
 
-    return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
+    return buildWorkspaceReadFromId(workspaceId);
   }
 
   public WorkspaceRead updateWorkspaceName(final WorkspaceUpdateName workspaceUpdateName)
@@ -247,6 +250,34 @@ public class WorkspacesHandler {
         .news(workspace.getNews())
         .securityUpdates(workspace.getSecurityUpdates())
         .notifications(NotificationConverter.toApiList(workspace.getNotifications()));
+  }
+
+  private void validateWorkspacePatch(final StandardWorkspace persistedWorkspace, final WorkspaceUpdate workspacePatch) {
+    Preconditions.checkArgument(persistedWorkspace.getWorkspaceId().equals(workspacePatch.getWorkspaceId()));
+  }
+
+  private void applyPatchToStandardWorkspace(final StandardWorkspace workspace, final WorkspaceUpdate workspacePatch) {
+    if (workspacePatch.getAnonymousDataCollection() != null) {
+      workspace.setAnonymousDataCollection(workspacePatch.getAnonymousDataCollection());
+    }
+    if (workspacePatch.getNews() != null) {
+      workspace.setNews(workspacePatch.getNews());
+    }
+    if (workspacePatch.getDisplaySetupWizard() != null) {
+      workspace.setDisplaySetupWizard(workspacePatch.getDisplaySetupWizard());
+    }
+    if (workspacePatch.getSecurityUpdates() != null) {
+      workspace.setSecurityUpdates(workspacePatch.getSecurityUpdates());
+    }
+    if (!Strings.isNullOrEmpty(workspacePatch.getEmail())) {
+      workspace.setEmail(workspacePatch.getEmail());
+    }
+    if (workspacePatch.getInitialSetupComplete() != null) {
+      workspace.setInitialSetupComplete(workspacePatch.getInitialSetupComplete());
+    }
+    if (workspacePatch.getNotifications() != null) {
+      workspace.setNotifications(NotificationConverter.toConfigList(workspacePatch.getNotifications()));
+    }
   }
 
 }

@@ -6,14 +6,14 @@ import { MenuListProps } from "react-select";
 import styled from "styled-components";
 
 import { ControlLabels, DropDown, DropDownRow } from "components";
-import { IDataItem, IProps as OptionProps, OptionView } from "components/base/DropDown/components/Option";
+import { ConnectorIcon } from "components/ConnectorIcon";
+import { GAIcon } from "components/icons/GAIcon";
+import { IDataItem, IProps as OptionProps, OptionView } from "components/ui/DropDown/components/Option";
 import {
   Icon as SingleValueIcon,
   IProps as SingleValueProps,
   ItemView as SingleValueView,
-} from "components/base/DropDown/components/SingleValue";
-import { ConnectorIcon } from "components/ConnectorIcon";
-import { GAIcon } from "components/icons/GAIcon";
+} from "components/ui/DropDown/components/SingleValue";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";

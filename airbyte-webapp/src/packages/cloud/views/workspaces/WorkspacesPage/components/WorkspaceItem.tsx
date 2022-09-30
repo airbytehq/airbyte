@@ -2,7 +2,7 @@ import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
-import { H5 } from "components";
+import { H5 } from "components/base/Titles";
 
 import styles from "./WorkspaceItem.module.scss";
 

@@ -4,11 +4,14 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { Card, ControlLabels, H5, Input } from "components";
+import { H5 } from "components/base/Titles";
 import { FormChangeTracker } from "components/FormChangeTracker";
+import { ControlLabels } from "components/LabeledControl";
+import { Card } from "components/ui/Card";
+import { Input } from "components/ui/Input";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";

@@ -29,7 +29,7 @@ import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
 import io.airbyte.integrations.destination.s3.EncryptionConfig;
 import io.airbyte.integrations.destination.s3.NoEncryption;
-import io.airbyte.integrations.destination.s3.S3Destination;
+import io.airbyte.integrations.destination.s3.S3BaseChecks;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
@@ -67,7 +67,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
           .withMessage(
               "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt.");
     }
-    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config,
+    S3BaseChecks.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config,
         s3Config.getBucketPath());
 
     final NamingConventionTransformer nameTransformer = getNamingResolver();
