@@ -122,11 +122,15 @@ class MetricRepositoryTest {
           .execute();
 
       // non-pending jobs
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, activeConnectionId.toString(), JobStatus.pending).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, activeConnectionId.toString(), JobStatus.failed).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, activeConnectionId.toString(), JobStatus.running).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, activeConnectionId.toString(), JobStatus.running).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(5L, inactiveConnectionId.toString(), JobStatus.running).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(1L, activeConnectionId.toString(), JobStatus.pending)
+          .execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(2L, activeConnectionId.toString(), JobStatus.failed)
+          .values(3L, activeConnectionId.toString(), JobStatus.running)
+          .values(4L, activeConnectionId.toString(), JobStatus.running)
+          .values(5L, inactiveConnectionId.toString(), JobStatus.running)
+          .execute();
 
       assertEquals(2, db.numberOfRunningJobs());
       assertEquals(1, db.numberOfOrphanRunningJobs());
@@ -145,10 +149,12 @@ class MetricRepositoryTest {
     @Test
     void pendingJobsShouldReturnCorrectCount() throws SQLException {
       // non-pending jobs
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.running).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(1L, "", JobStatus.pending)
+          .values(2L, "", JobStatus.failed)
+          .values(3L, "", JobStatus.pending)
+          .values(4L, "", JobStatus.running)
+          .execute();
 
       final var res = db.numberOfPendingJobs();
       assertEquals(2, res);
@@ -157,8 +163,10 @@ class MetricRepositoryTest {
     @Test
     void pendingJobsShouldReturnZero() throws SQLException {
       // non-pending jobs
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.running).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(1L, "", JobStatus.running)
+          .values(2L, "", JobStatus.failed)
+          .execute();
 
       final var res = db.numberOfPendingJobs();
       assertEquals(0, res);
@@ -173,15 +181,18 @@ class MetricRepositoryTest {
     void shouldReturnOnlyPendingSeconds() throws SQLException {
       final var expAgeSecs = 1000;
       final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
-      // oldest pending job
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(1L, "", JobStatus.pending, oldestCreateAt)
-          .execute();
-      // second oldest pending job
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT).values(2L, "", JobStatus.pending, OffsetDateTime.now())
+
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT)
+          // oldest pending job
+          .values(1L, "", JobStatus.pending, oldestCreateAt)
+          // second-oldest pending job
+          .values(2L, "", JobStatus.pending, OffsetDateTime.now())
           .execute();
       // non-pending jobs
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.running).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(3L, "", JobStatus.running)
+          .values(4L, "", JobStatus.failed)
+          .execute();
 
       final var res = db.oldestPendingJobAgeSecs();
       // expected age is 1000 seconds, but allow for +/- 1 second to account for timing/rounding errors
@@ -190,9 +201,10 @@ class MetricRepositoryTest {
 
     @Test
     void shouldReturnNothingIfNotApplicable() {
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.running).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(1L, "", JobStatus.succeeded)
+          .values(2L, "", JobStatus.running)
+          .values(3L, "", JobStatus.failed).execute();
 
       final var res = db.oldestPendingJobAgeSecs();
       assertEquals(0L, res);
@@ -207,17 +219,19 @@ class MetricRepositoryTest {
     void shouldReturnOnlyRunningSeconds() {
       final var expAgeSecs = 10000;
       final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
-      // oldest pending job
+
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT)
+          // oldest pending job
           .values(1L, "", JobStatus.running, oldestCreateAt)
-          .execute();
-      // second oldest pending job
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT)
+          // second-oldest pending job
           .values(2L, "", JobStatus.running, OffsetDateTime.now())
           .execute();
+
       // non-pending jobs
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(4L, "", JobStatus.failed).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(3L, "", JobStatus.pending)
+          .values(4L, "", JobStatus.failed)
+          .execute();
 
       final var res = db.oldestRunningJobAgeSecs();
       // expected age is 10000 seconds, but allow for +/- 1 second to account for timing/rounding errors
@@ -226,9 +240,11 @@ class MetricRepositoryTest {
 
     @Test
     void shouldReturnNothingIfNotApplicable() {
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.succeeded).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.pending).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.failed).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(1L, "", JobStatus.succeeded)
+          .values(2L, "", JobStatus.pending)
+          .values(3L, "", JobStatus.failed)
+          .execute();
 
       final var res = db.oldestRunningJobAgeSecs();
       assertEquals(0L, res);
@@ -332,9 +348,11 @@ class MetricRepositoryTest {
 
     @Test
     void shouldIgnoreNonTerminalJobs() throws SQLException {
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.running).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.incomplete).execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(3L, "", JobStatus.pending).execute();
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(1L, "", JobStatus.running)
+          .values(2L, "", JobStatus.incomplete)
+          .values(3L, "", JobStatus.pending)
+          .execute();
 
       final var res = db.overallJobRuntimeForTerminalJobsInLastHour();
       assertEquals(0, res.size());
@@ -439,15 +457,8 @@ class MetricRepositoryTest {
       // Jobs running in prior day will not be counted
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
           .values(100L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS), updateAt, syncConfigType)
-          .execute();
-
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
           .values(1L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS), updateAt, syncConfigType)
-          .execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
           .values(2L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(10, ChronoUnit.HOURS), updateAt, syncConfigType)
-          .execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
           .values(3L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(5, ChronoUnit.HOURS), updateAt, syncConfigType)
           .execute();
 
@@ -472,11 +483,6 @@ class MetricRepositoryTest {
               CONNECTION.UPDATED_AT)
           .values(inactiveConnectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
               JSONB.valueOf("{\"units\": 12, \"timeUnit\": \"hours\"}"), false, StatusType.inactive, updateAt, updateAt)
-          .execute();
-
-      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
-              CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.SCHEDULE, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.CREATED_AT,
-              CONNECTION.UPDATED_AT)
           .values(activeConnectionId, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"),
               JSONB.valueOf("{\"units\": 12, \"timeUnit\": \"hours\"}"), false, StatusType.active, updateAt, updateAt)
           .execute();
@@ -484,8 +490,6 @@ class MetricRepositoryTest {
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
           .values(1L, activeConnectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS), updateAt,
               syncConfigType)
-          .execute();
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
           .values(2L, activeConnectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(10, ChronoUnit.HOURS), updateAt,
               syncConfigType)
           .execute();
