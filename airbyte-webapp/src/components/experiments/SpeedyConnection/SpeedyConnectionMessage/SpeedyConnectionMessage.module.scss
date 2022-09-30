@@ -1,0 +1,11 @@
+@use "../../../../scss/colors";
+@use "../../../../scss/variables";
+
+.message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom: 32px;
+  gap: 8px;
+}

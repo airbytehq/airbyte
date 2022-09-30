@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
 import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { useExperimentSpeedyConnection } from "components/experiments/SpeedyConnection/hooks/use-experiment-speedy-connection-experiment";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
@@ -83,6 +84,8 @@ const MainRoutes: React.FC = () => {
 
   const mainNavigate = workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections;
 
+  // exp-speedy-connection
+  const { isExperimentVariant } = useExperimentSpeedyConnection();
   return (
     <ApiErrorBoundary>
       <Routes>
@@ -92,7 +95,7 @@ const MainRoutes: React.FC = () => {
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
 
-        {workspace.displaySetupWizard && (
+        {(workspace.displaySetupWizard || isExperimentVariant) && (
           <Route
             path={RoutePaths.Onboarding}
             element={

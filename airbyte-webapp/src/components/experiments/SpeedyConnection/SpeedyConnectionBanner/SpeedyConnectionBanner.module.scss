@@ -1,0 +1,46 @@
+@use "../../../../scss/colors";
+@use "../../../../scss/variables";
+
+.container {
+  height: 100px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  z-index: 3;
+  font-size: 12px;
+  line-height: 30px;
+  color: colors.$black;
+  padding: variables.$spacing-md;
+  display: flex;
+  align-items: center;
+  background-color: colors.$dark-blue-50;
+
+  @media (min-width: 1280px) {
+    height: 50px;
+  }
+}
+
+.innerContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  @media (min-width: 1280px) {
+    width: 80%;
+    flex-direction: row;
+    gap: 0;
+  }
+
+  margin: auto;
+}
+
+.firstColumn {
+  display: flex;
+  align-items: center;
+  justify-self: flex-start;
+  gap: variables.$spacing-xl;
+  margin-left: 40px;
+  margin-right: 40px;
+}
