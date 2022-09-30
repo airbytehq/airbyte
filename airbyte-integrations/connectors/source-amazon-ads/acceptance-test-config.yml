@@ -6,6 +6,7 @@ tests:
     - spec_path: "integration_tests/spec.json"
   connection:
     - config_path: "secrets/config.json"
+    - config_path: "secrets/config_report.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
@@ -27,6 +28,11 @@ tests:
           "attribution_report_products",
           "attribution_report_performance_campaign",
         ]
+      expect_records:
+        path: "integration_tests/expected_records.txt"
+        extra_fields: no
+        exact_order: no
+        extra_records: no
     - config_path: "secrets/config_report.json"
       configured_catalog_path: "integration_tests/configured_catalog_report.json"
       timeout_seconds: 2400
@@ -38,10 +44,36 @@ tests:
         sponsored_products_report_stream: ["1861552880916640", "reportDate"]
       timeout_seconds: 2400
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
     - config_path: "secrets/config_report.json"
       configured_catalog_path: "integration_tests/configured_catalog_report.json"
       ignored_fields:
         "sponsored_products_report_stream": ["updatedAt"]
       timeout_seconds: 3600
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_profiles.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_brands_ad_groups.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_brands_campaign.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_brands_keywords.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_display_ad_groups.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_display_campaigns.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_display_product_ads.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_display_targetings.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_product_ad_groups.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_product_ads.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_product_campaigns.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_product_keywords.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_product_negative_keywords.json"
+    - config_path: "secrets/config_report.json"
+      configured_catalog_path: "integration_tests/configured_catalog_sponsored_product_targetings.json"

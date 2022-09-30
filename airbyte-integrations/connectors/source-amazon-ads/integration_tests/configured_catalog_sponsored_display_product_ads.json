@@ -1,0 +1,38 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "sponsored_display_product_ads",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": ["null", "object"],
+          "properties": {
+            "campaignId": {
+              "type": "integer"
+            },
+            "adId": {
+              "type": "number"
+            },
+            "adGroupId": {
+              "type": "integer"
+            },
+            "state": {
+              "type": "string",
+              "enum": ["enabled", "paused", "archived"]
+            },
+            "asin": {
+              "type": "string"
+            },
+            "sku": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["adId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

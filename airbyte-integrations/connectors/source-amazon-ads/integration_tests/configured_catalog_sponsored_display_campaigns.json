@@ -1,0 +1,57 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "sponsored_display_campaigns",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": ["null", "object"],
+          "properties": {
+            "campaignId": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "budgetType": {
+              "type": "string",
+              "enum": ["daily"]
+            },
+            "budget": {
+              "type": "number"
+            },
+            "startDate": {
+              "type": "string"
+            },
+            "endDate": {
+              "type": ["null", "string"]
+            },
+            "costType": {
+              "type": "string",
+              "enum": ["cpc", "vcpm"]
+            },
+            "state": {
+              "type": "string",
+              "enum": ["enabled", "paused", "archived"]
+            },
+            "portfolioId": {
+              "type": ["null", "integer"]
+            },
+            "tactic": {
+              "type": "string",
+              "enum": ["t00020", "t00030"]
+            },
+            "deliveryProfile": {
+              "type": "string",
+              "enum": ["as_soon_as_possible"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["campaignId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
