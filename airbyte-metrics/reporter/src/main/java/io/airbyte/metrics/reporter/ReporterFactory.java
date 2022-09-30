@@ -13,7 +13,8 @@ import jakarta.inject.Singleton;
 import org.jooq.DSLContext;
 
 /**
- * Micronaut factory for creating the appropriate singletons utilized by the metric reporter service.
+ * Micronaut factory for creating the appropriate singletons utilized by the metric reporter
+ * service.
  */
 @Factory
 class ReporterFactory {

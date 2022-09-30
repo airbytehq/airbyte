@@ -140,7 +140,6 @@ class EmitterTest {
   @Test
   void TestTotalJobRuntimeByTerminalState() {
     final var values = Map.of(JobStatus.cancelled, 101.0, JobStatus.succeeded, 202.0, JobStatus.failed, 303.0);
-    final var value = 101;
     when(repo.overallJobRuntimeForTerminalJobsInLastHour()).thenReturn(values);
 
     final var emitter = new TotalJobRuntimeByTerminalState(client, repo);
@@ -153,5 +152,5 @@ class EmitterTest {
           new MetricAttribute(MetricTags.JOB_STATUS, jobStatus.getLiteral()));
     });
   }
-  
+
 }

@@ -22,7 +22,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.DSLContext;
 
 /**
- * This class centralises metrics queries. These queries power metrics that require some sort of data access or calculation.
+ * This class centralises metrics queries. These queries power metrics that require some sort of
+ * data access or calculation.
  * <p>
  * Simple metrics that require no calculation need not be tracked here.
  */
@@ -34,15 +35,15 @@ public class MetricQueries {
     final var dstRelStageCol = "dst_release_stage";
 
     final var query = String.format("""
-        SELECT src_def_data.release_stage AS %s,
-               dest_def_data.release_stage AS %s
-        FROM connection
-        INNER JOIN jobs ON connection.id=CAST(jobs.scope AS uuid)
-        INNER JOIN actor AS dest_data ON connection.destination_id = dest_data.id
-        INNER JOIN actor_definition AS dest_def_data ON dest_data.actor_definition_id = dest_def_data.id
-        INNER JOIN actor AS src_data ON connection.source_id = src_data.id
-        INNER JOIN actor_definition AS src_def_data ON src_data.actor_definition_id = src_def_data.id
-            WHERE jobs.id = '%d';""", srcRelStageCol, dstRelStageCol, jobId);
+                                    SELECT src_def_data.release_stage AS %s,
+                                           dest_def_data.release_stage AS %s
+                                    FROM connection
+                                    INNER JOIN jobs ON connection.id=CAST(jobs.scope AS uuid)
+                                    INNER JOIN actor AS dest_data ON connection.destination_id = dest_data.id
+                                    INNER JOIN actor_definition AS dest_def_data ON dest_data.actor_definition_id = dest_def_data.id
+                                    INNER JOIN actor AS src_data ON connection.source_id = src_data.id
+                                    INNER JOIN actor_definition AS src_def_data ON src_data.actor_definition_id = src_def_data.id
+                                        WHERE jobs.id = '%d';""", srcRelStageCol, dstRelStageCol, jobId);
 
     final var res = ctx.fetch(query);
     final var stages = res.getValues(srcRelStageCol, ReleaseStage.class);
@@ -89,18 +90,18 @@ public class MetricQueries {
     final var readableTimeField = "run_duration";
     final var durationSecField = "run_duration_secs";
     final var query = String.format("""
-        WITH
-        oldest_job AS (
-        SELECT id,
-               age(current_timestamp, created_at) AS %s
-        FROM jobs
-        WHERE status = '%s'
-        ORDER BY run_duration DESC
-        LIMIT 1)
-        SELECT id,
-               run_duration,
-               extract(epoch from run_duration) as %s
-        FROM oldest_job""", readableTimeField, status.getLiteral(), durationSecField);
+                                    WITH
+                                    oldest_job AS (
+                                    SELECT id,
+                                           age(current_timestamp, created_at) AS %s
+                                    FROM jobs
+                                    WHERE status = '%s'
+                                    ORDER BY run_duration DESC
+                                    LIMIT 1)
+                                    SELECT id,
+                                           run_duration,
+                                           extract(epoch from run_duration) as %s
+                                    FROM oldest_job""", readableTimeField, status.getLiteral(), durationSecField);
     final var res = ctx.fetch(query);
     // unfortunately there are no good Jooq methods for retrieving a single record of a single column
     // forcing the List cast.
@@ -122,14 +123,14 @@ public class MetricQueries {
   public static List<Long> numberOfActiveConnPerWorkspace(final DSLContext ctx) {
     final var countField = "num_conn";
     final var query = String.format("""
-        SELECT workspace_id, count(c.id) as %s
-            FROM actor
-                INNER JOIN workspace ws ON actor.workspace_id = ws.id
-                INNER JOIN connection c ON actor.id = c.source_id
-            WHERE ws.tombstone = false
-              AND actor.tombstone = false AND actor.actor_type = 'source'
-                AND c.status = 'active'
-            GROUP BY workspace_id;""", countField);
+                                    SELECT workspace_id, count(c.id) as %s
+                                        FROM actor
+                                            INNER JOIN workspace ws ON actor.workspace_id = ws.id
+                                            INNER JOIN connection c ON actor.id = c.source_id
+                                        WHERE ws.tombstone = false
+                                          AND actor.tombstone = false AND actor.actor_type = 'source'
+                                            AND c.status = 'active'
+                                        GROUP BY workspace_id;""", countField);
     return ctx.fetch(query).getValues(countField, long.class);
   }
 
@@ -139,9 +140,9 @@ public class MetricQueries {
     final var timeField = "sec";
     final var query =
         String.format("""
-            SELECT %s, extract(epoch from age(updated_at, created_at)) AS %s FROM jobs
-            WHERE updated_at >= NOW() - INTERVAL '1 HOUR'
-              AND (jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled');""", statusField, timeField);
+                      SELECT %s, extract(epoch from age(updated_at, created_at)) AS %s FROM jobs
+                      WHERE updated_at >= NOW() - INTERVAL '1 HOUR'
+                        AND (jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled');""", statusField, timeField);
     final var statuses = ctx.fetch(query).getValues(statusField, JobStatus.class);
     final var times = ctx.fetch(query).getValues(timeField, double.class);
 
@@ -170,51 +171,51 @@ public class MetricQueries {
     // it will be considered as 1 abnormal instance.
     final var queryForAbnormalSyncInHoursInLastDay =
         String.format("""
-            select count(1) as %s
-              from
-                (
-                select
-                  c.id,
-                  count(*) as cnt
-                from
-                  connection c
-                left join Jobs j on
-                  j.scope::uuid = c.id
-                where
-                  c.schedule is not null
-                  and c.schedule != 'null'
-                  and j.created_at > now() - interval '24 hours 1 minutes'
-                  and c.status = 'active'
-                  and j.config_type = 'sync'
-                  and c.updated_at < now() - interval '24 hours 1 minutes'
-                  and cast(c.schedule::jsonb->'timeUnit' as text) = '"hours"'
-                group by 1
-                having count(*) < 24 / cast(c.schedule::jsonb->'units' as integer)) as abnormal_jobs
-            """, countField);
+                      select count(1) as %s
+                        from
+                          (
+                          select
+                            c.id,
+                            count(*) as cnt
+                          from
+                            connection c
+                          left join Jobs j on
+                            j.scope::uuid = c.id
+                          where
+                            c.schedule is not null
+                            and c.schedule != 'null'
+                            and j.created_at > now() - interval '24 hours 1 minutes'
+                            and c.status = 'active'
+                            and j.config_type = 'sync'
+                            and c.updated_at < now() - interval '24 hours 1 minutes'
+                            and cast(c.schedule::jsonb->'timeUnit' as text) = '"hours"'
+                          group by 1
+                          having count(*) < 24 / cast(c.schedule::jsonb->'units' as integer)) as abnormal_jobs
+                      """, countField);
 
     // Similar to the query above, this finds if the connection cadence's timeUnit is minutes.
     // thus we use 1440 (=24 hours x 60 minutes) to divide the configured cadence.
     final var queryForAbnormalSyncInMinutesInLastDay =
         String.format("""
-            select count(1) as %s from (
-              select
-                c.id,
-                count(*) as cnt
-              from
-                connection c
-              left join Jobs j on
-                j.scope::uuid = c.id
-              where
-                c.schedule is not null
-                and c.schedule != 'null'
-                and j.created_at > now() - interval '24 hours 1 minutes'
-                and c.status = 'active'
-                and j.config_type = 'sync'
-                and c.updated_at < now() - interval '24 hours 1 minutes'
-                and cast(c.schedule::jsonb->'timeUnit' as text) = '"minutes"'
-              group by 1
-              having count(*) < 1440 / cast(c.schedule::jsonb->'units' as integer)) as abnormal_jobs
-            """, countField);
+                      select count(1) as %s from (
+                        select
+                          c.id,
+                          count(*) as cnt
+                        from
+                          connection c
+                        left join Jobs j on
+                          j.scope::uuid = c.id
+                        where
+                          c.schedule is not null
+                          and c.schedule != 'null'
+                          and j.created_at > now() - interval '24 hours 1 minutes'
+                          and c.status = 'active'
+                          and j.config_type = 'sync'
+                          and c.updated_at < now() - interval '24 hours 1 minutes'
+                          and cast(c.schedule::jsonb->'timeUnit' as text) = '"minutes"'
+                        group by 1
+                        having count(*) < 1440 / cast(c.schedule::jsonb->'units' as integer)) as abnormal_jobs
+                      """, countField);
     return ctx.fetch(queryForAbnormalSyncInHoursInLastDay).getValues(countField, long.class).get(0)
         + ctx.fetch(queryForAbnormalSyncInMinutesInLastDay).getValues(countField, long.class).get(0);
   }
@@ -223,13 +224,13 @@ public class MetricQueries {
   public static Long numScheduledActiveConnectionsInLastDay(final DSLContext ctx) {
     final var countField = "cnt";
     final var queryForTotalConnections = String.format("""
-        select count(1) as %s
-          from connection c
-          where
-            c.updated_at < now() - interval '24 hours 1 minutes'
-              and cast(c.schedule::jsonb->'timeUnit' as text) IN ('"hours"', '"minutes"')
-              and c.status = 'active'
-        """, countField);
+                                                       select count(1) as %s
+                                                         from connection c
+                                                         where
+                                                           c.updated_at < now() - interval '24 hours 1 minutes'
+                                                             and cast(c.schedule::jsonb->'timeUnit' as text) IN ('"hours"', '"minutes"')
+                                                             and c.status = 'active'
+                                                       """, countField);
 
     return ctx.fetch(queryForTotalConnections).getValues(countField, long.class).get(0);
   }

@@ -140,8 +140,7 @@ final class TotalJobRuntimeByTerminalState extends Emitter {
           .forEach((jobStatus, time) -> client.distribution(
               OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS,
               time,
-              new MetricAttribute(MetricTags.JOB_STATUS, jobStatus.getLiteral())
-          ));
+              new MetricAttribute(MetricTags.JOB_STATUS, jobStatus.getLiteral())));
       return null;
     });
   }
@@ -158,7 +157,7 @@ final class TotalJobRuntimeByTerminalState extends Emitter {
  * <p>
  * As this is a sealed class, all implementations of it are contained within this same file.
  */
-abstract sealed class Emitter {
+sealed class Emitter {
 
   protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   protected final Callable<Void> callable;

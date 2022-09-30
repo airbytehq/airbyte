@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 /**
  * EventListeners registers event listeners for the startup and shutdown events from Micronaut.
  */
+@SuppressWarnings({"PMD.UseVarargs", "PMD.ArrayIsStoredDirectly"})
 @Singleton
 class EventListeners {
 
