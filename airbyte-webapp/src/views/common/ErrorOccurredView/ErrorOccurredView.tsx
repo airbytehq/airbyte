@@ -1,8 +1,8 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components/base/Button";
-import { Text } from "components/base/Text";
+import { Button } from "components/ui/Button";
+import { Text } from "components/ui/Text";
 
 import styles from "./ErrorOccurredView.module.scss";
 
@@ -22,7 +22,7 @@ export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, o
         </Text>
         <p className={styles.message}>{message}</p>
         {onCtaButtonClick && ctaButtonText && (
-          <Button size="xl" onClick={onCtaButtonClick}>
+          <Button size="lg" onClick={onCtaButtonClick}>
             {ctaButtonText}
           </Button>
         )}

@@ -1,6 +1,6 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { Button } from "components/base/Button";
+import { Button } from "components/ui/Button";
 
 import { Modal, ModalBody, ModalFooter } from ".";
 
