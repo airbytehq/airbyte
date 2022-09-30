@@ -59,7 +59,7 @@ public class IometeDestinationConfig {
                 connectionUrl.lakehouseHostname,
                 connectionUrl.lakehouseName,
                 DEFAULT_LAKEHOUSE_PORT,
-                config.has("ssl") ? config.get("ssl").asBoolean() : DEFAULT_SSL_CONNECTION,
+                DEFAULT_SSL_CONNECTION,
                 connectionUrl.accountNumber,
                 config.get("iomete_username").asText(),
                 config.get("iomete_password").asText(),

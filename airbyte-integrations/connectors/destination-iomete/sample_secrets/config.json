@@ -1,6 +1,5 @@
 {
   "connection_url": "airbyte://iomete.com/12312421312/default",
-  "ssl": true,
   "iomete_username": "username",
   "iomete_password": "test_pass",
   "database_schema": "airbyte_test",
