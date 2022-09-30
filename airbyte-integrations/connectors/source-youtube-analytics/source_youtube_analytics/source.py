@@ -18,7 +18,82 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
-class JobsResource(HttpStream):
+class CustomBackoffMixin:
+
+    def daily_quota_exceeded(self, response: requests.Response) -> bool:
+        """Response example:
+            {
+              "error": {
+                "code": 429,
+                "message": "Quota exceeded for quota metric 'Free requests' and limit 'Free requests per minute' of service 'youtubereporting.googleapis.com' for consumer 'project_number:863188056127'.",
+                "status": "RESOURCE_EXHAUSTED",
+                "details": [
+                  {
+                    "reason": "RATE_LIMIT_EXCEEDED",
+                    "metadata": {
+                      "consumer": "projects/863188056127",
+                      "quota_limit": "FreeQuotaRequestsPerMinutePerProject",
+                      "quota_limit_value": "60",
+                      "quota_metric": "youtubereporting.googleapis.com/free_quota_requests",
+                      "service": "youtubereporting.googleapis.com",
+                    }
+                  },
+                ]
+              }
+            }
+
+        :param response:
+        :return:
+        """
+        details = response.json().get('error', {}).get('details', [])
+        for detail in details:
+            if detail.get('reason') == 'RATE_LIMIT_EXCEEDED':
+                if detail.get('metadata', {}).get('quota_limit') == "FreeQuotaRequestsPerDayPerProject":
+                    self.logger.error(f"Exceeded daily quota: {detail.get('metadata', {}).get('quota_limit_value')} reqs/day")
+                    return True
+                break
+        return False
+
+    def should_retry(self, response: requests.Response) -> bool:
+        """
+        Override to set different conditions for backoff based on the response from the server.
+
+        By default, back off on the following HTTP response statuses:
+         - 500s to handle transient server errors
+         - 429 (Too Many Requests) indicating rate limiting:
+            Different behavior in case of 'RATE_LIMIT_EXCEEDED':
+
+            Requests Per Minute:
+            "message": "Quota exceeded for quota metric 'Free requests' and limit 'Free requests per minute' of service 'youtubereporting.googleapis.com' for consumer 'project_number:863188056127'."
+            "quota_limit": "FreeQuotaRequestsPerMinutePerProject",
+            "quota_limit_value": "60",
+
+            --> use increased retry_factor (30 seconds)
+
+            Requests Per Day:
+            "message": "Quota exceeded for quota metric 'Free requests' and limit 'Free requests per day' of service 'youtubereporting.googleapis.com' for consumer 'project_number:863188056127"
+            "quota_limit": "FreeQuotaRequestsPerDayPerProject
+            "quota_limit_value": "20000",
+
+            --> just throw an error, next scan is reasonable to start only in 1 day.
+        """
+        if 500 <= response.status_code < 600:
+            return True
+
+        if response.status_code == 429 and not self.daily_quota_exceeded(response):
+            return True
+
+        return False
+
+    @property
+    def retry_factor(self) -> float:
+        """
+        Default FreeQuotaRequestsPerMinutePerProject is 60 reqs/min, so reasonable delay is 30 seconds
+        """
+        return 30
+
+
+class JobsResource(CustomBackoffMixin, HttpStream):
     """
     https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs
 
@@ -69,7 +144,7 @@ class JobsResource(HttpStream):
         return result["id"]
 
 
-class ReportResources(HttpStream):
+class ReportResources(CustomBackoffMixin, HttpStream):
     "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs.reports/list"
 
     name = None
@@ -109,7 +184,7 @@ class ReportResources(HttpStream):
         return "jobs/{}/reports".format(self.job_id)
 
 
-class ChannelReports(HttpSubStream):
+class ChannelReports(CustomBackoffMixin, HttpSubStream):
     "https://developers.google.com/youtube/reporting/v1/reports/channel_reports"
 
     name = None
