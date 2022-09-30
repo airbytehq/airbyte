@@ -19,5 +19,5 @@ class ReporterFactory {
   public MetricClient metricClient() {
     return MetricClientFactory.getMetricClient();
   }
-  
+
 }
