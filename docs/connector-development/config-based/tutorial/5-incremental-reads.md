@@ -64,7 +64,7 @@ Note that we are setting a default value because the `check` operation does not 
 ```yaml
 definitions:
   <...>
-  customers_stream:
+  rates_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "rates"
@@ -106,49 +106,48 @@ definitions:
     step: "1d"
     datetime_format: "%Y-%m-%d"
     cursor_field: "{{ options['stream_cursor_field'] }}"
-  retriever:
-    <...>
 ```
 
-and refer to it in the stream's retriever.
+and refer to it in the retriever.
+
+```yaml
+definitions:
+  <...>
+  retriever:
+    <...>
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
+```
+
 This will generate slices from the start time until the end time, where each slice is exactly one day.
 The start time is defined in the config file, while the end time is defined by the `now_local()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../yaml-structure.md#string-interpolation) for more details.
 
 Note that we're also setting the `stream_cursor_field` in the stream's `$options` so it can be accessed by the `StreamSlicer`:
 
 ```yaml
-streams:
-  - type: DeclarativeStream
-    $options:
-      name: "rates"
-      stream_cursor_field: "date"
-    primary_key: "rates"
-    <...>
-```
-
-We'll also update the retriever to user the stream slicer:
-
-```yaml
 definitions:
   <...>
-  retriever:
-    type: SimpleRetriever
-    <...>
-    stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+  rates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "rates"
+      primary_key: "date"
+      path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
+      stream_cursor_field: "date"
 ```
 
 Finally, we'll update the path to point to the `stream_slice`'s start_time
 
 ```yaml
-streams:
-  - type: DeclarativeStream
-    <...>
-    retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
+definitions:
+  <...>
+  rates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "rates"
+      primary_key: "date"
+      path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
+      stream_cursor_field: "date"
 ```
 
 The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
@@ -193,19 +192,19 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  customers_stream:
+  rates_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
       stream_cursor_field: "date"
-
 streams:
-  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.rates_stream)"
 check:
   stream_names:
     - "rates"
+
 ```
 
 Running the `read` operation will now read all data for all days between start_date and now:
