@@ -543,20 +543,10 @@ definitions:
             type: string
       ErrorHandler:
         type: object
-        required:
-          - type
-        additionalProperties: false
-        properties:
-          type:
-            description: "Error handler type"
-            type: string
-            enum:
-              - default
-              - composite
-          default:
-            "$ref": "#/definitions/DefaultErrorHandler"
-          composite:
-            "$ref": "#/definitions/CompositeErrorHandler"
+        description: "Error handler"
+        oneOf:
+          - "$ref": "#/definitions/DefaultErrorHandler"
+          - "$ref": "#/definitions/CompositeErrorHandler"
       DefaultErrorHandler:
         type: object
         required:
@@ -616,25 +606,11 @@ definitions:
           - RETRY
       BackoffStrategy:
         type: object
-        required:
-          - type
-        additionalProperties: false
-        properties:
-          type:
-            type: string
-            enum:
-              - exponential
-              - constant
-              - wait_time_from_header
-              - wait_time_until_from_header
-          exponential:
-            "$ref": "#/definitions/ExponentialBackoff"
-          constant:
-            "$ref": "#/definitions/ConstantBackoff"
-          wait_time_from_header:
-            "$ref": "#/definitions/WaitTimeFromHeader"
-          wait_time_until_from_header:
-            "$ref": "#/definitions/WaitTimeUntilFromHeader"
+        oneOf:
+          - "$ref": "#/definitions/ExponentialBackoff"
+          - "$ref": "#/definitions/ConstantBackoff"
+          - "$ref": "#/definitions/WaitTimeFromHeader"
+          - "$ref": "#/definitions/WaitTimeUntilFromHeader"
       ExponentialBackoff:
         type: object
         additionalProperties: false

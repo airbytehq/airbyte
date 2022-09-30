@@ -8,6 +8,26 @@ Other behaviors can be configured through the `Requester`'s `error_handler` fiel
 Schema:
 
 ```yaml
+ErrorHandler:
+  type: object
+  description: "Error handler"
+  oneOf:
+    - "$ref": "#/definitions/DefaultErrorHandler"
+    - "$ref": "#/definitions/CompositeErrorHandler"
+BackoffStrategy:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/ExponentialBackoff"
+    - "$ref": "#/definitions/ConstantBackoff"
+    - "$ref": "#/definitions/WaitTimeFromHeader"
+    - "$ref": "#/definitions/WaitTimeUntilFromHeader"
+```
+
+## Default error handler
+
+Schema:
+
+```yaml
   DefaultErrorHandler:
     type: object
     required:
