@@ -10,13 +10,13 @@ import {
   ConnectionEditServiceProvider,
   useConnectionEditService,
 } from "hooks/services/ConnectionEdit/ConnectionEditService";
-import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
 
-import { ConnectionPageTitle } from "./components/ConnectionPageTitle";
-import { ConnectionReplication } from "./components/ConnectionReplication";
-import SettingsView from "./components/SettingsView";
-import StatusView from "./components/StatusView";
+import { ConnectionPageTitle } from "./ConnectionPageTitle";
+import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
+import { ConnectionSettingsTab } from "./ConnectionSettingsTab";
+import { ConnectionStatusTab } from "./ConnectionStatusTab";
+import { ConnectionTransformationTab } from "./ConnectionTransformationTab";
 
 export const ConnectionItemPageInner: React.FC = () => {
   const { connection } = useConnectionEditService();
@@ -45,15 +45,17 @@ export const ConnectionItemPageInner: React.FC = () => {
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
-          <Route path={ConnectionSettingsRoutes.STATUS} element={<StatusView connection={connection} />} />
-          <Route path={ConnectionSettingsRoutes.REPLICATION} element={<ConnectionReplication />} />
+          <Route path={ConnectionSettingsRoutes.STATUS} element={<ConnectionStatusTab connection={connection} />} />
+          <Route path={ConnectionSettingsRoutes.REPLICATION} element={<ConnectionReplicationTab />} />
           <Route
             path={ConnectionSettingsRoutes.TRANSFORMATION}
-            element={<TransformationView connection={connection} />}
+            element={<ConnectionTransformationTab connection={connection} />}
           />
           <Route
             path={ConnectionSettingsRoutes.SETTINGS}
-            element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connection={connection} />}
+            element={
+              isConnectionDeleted ? <Navigate replace to=".." /> : <ConnectionSettingsTab connection={connection} />
+            }
           />
           <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
         </Routes>

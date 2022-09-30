@@ -1,15 +1,15 @@
 import React from "react";
 
-import { CreateConnection } from "components/CreateConnection";
+import { CreateConnection } from "components/CreateConnection/CreateConnection";
 
 import { useDestinationList } from "hooks/services/useDestinationHook";
 import { useSourceList } from "hooks/services/useSourceHook";
 
-interface IProps {
+interface ConnectionStepProps {
   onNextStep: () => void;
 }
 
-const ConnectionStep: React.FC<IProps> = ({ onNextStep: afterSubmitConnection }) => {
+const ConnectionStep: React.FC<ConnectionStepProps> = ({ onNextStep: afterSubmitConnection }) => {
   const { sources } = useSourceList();
   const { destinations } = useDestinationList();
 

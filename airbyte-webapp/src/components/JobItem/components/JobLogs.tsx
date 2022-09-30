@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation } from "react-router-dom";
 
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 import { useGetDebugInfoJob } from "services/job/JobService";
 
 import { AttemptRead, AttemptStatus, SynchronousJobRead } from "../../../core/request/AirbyteClient";

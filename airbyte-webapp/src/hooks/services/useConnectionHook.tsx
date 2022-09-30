@@ -18,7 +18,9 @@ import {
   OperationCreate,
   SourceDefinitionRead,
   SourceRead,
+  WebBackendConnectionListItem,
   WebBackendConnectionRead,
+  WebBackendConnectionReadList,
   WebBackendConnectionUpdate,
 } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
@@ -78,7 +80,7 @@ export const useSyncConnection = () => {
   const service = useConnectionService();
   const analyticsService = useAnalyticsService();
 
-  return useMutation((connection: WebBackendConnectionRead) => {
+  return useMutation((connection: WebBackendConnectionRead | WebBackendConnectionListItem) => {
     analyticsService.track(Namespace.CONNECTION, Action.SYNC, {
       actionDescription: "Manual triggered sync",
       connector_source: connection.source?.sourceName,
@@ -143,7 +145,7 @@ const useCreateConnection = () => {
     },
     {
       onSuccess: (data) => {
-        queryClient.setQueryData(connectionsKeys.lists(), (lst: ListConnection | undefined) => ({
+        queryClient.setQueryData<WebBackendConnectionReadList>(connectionsKeys.lists(), (lst) => ({
           connections: [data, ...(lst?.connections ?? [])],
         }));
       },
@@ -167,13 +169,9 @@ const useDeleteConnection = () => {
       });
 
       queryClient.removeQueries(connectionsKeys.detail(connection.connectionId));
-      queryClient.setQueryData(
-        connectionsKeys.lists(),
-        (lst: ListConnection | undefined) =>
-          ({
-            connections: lst?.connections.filter((conn) => conn.connectionId !== connection.connectionId) ?? [],
-          } as ListConnection)
-      );
+      queryClient.setQueryData<WebBackendConnectionReadList>(connectionsKeys.lists(), (lst) => ({
+        connections: lst?.connections.filter((conn) => conn.connectionId !== connection.connectionId) ?? [],
+      }));
     },
   });
 };
@@ -186,7 +184,7 @@ const useUpdateConnection = () => {
     onSuccess: (updatedConnection) => {
       queryClient.setQueryData(connectionsKeys.detail(updatedConnection.connectionId), updatedConnection);
       // Update the connection inside the connections list response
-      queryClient.setQueryData<ListConnection>(connectionsKeys.lists(), (ls) => ({
+      queryClient.setQueryData<WebBackendConnectionReadList>(connectionsKeys.lists(), (ls) => ({
         ...ls,
         connections:
           ls?.connections.map((conn) => {
@@ -233,7 +231,7 @@ export const useRemoveConnectionsFromList = (): ((connectionIds: string[]) => vo
 
   return useCallback(
     (connectionIds: string[]) => {
-      queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
+      queryClient.setQueryData<WebBackendConnectionReadList>(connectionsKeys.lists(), (ls) => ({
         ...ls,
         connections: ls?.connections.filter((c) => !connectionIds.includes(c.connectionId)) ?? [],
       }));
@@ -242,7 +240,7 @@ export const useRemoveConnectionsFromList = (): ((connectionIds: string[]) => vo
   );
 };
 
-const useConnectionList = (): ListConnection => {
+const useConnectionList = () => {
   const workspace = useCurrentWorkspace();
   const service = useWebConnectionService();
 

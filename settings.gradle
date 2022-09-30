@@ -86,6 +86,7 @@ include ':airbyte-notification' // transitively used by airbyte-workers.
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-bootloader'
     include ':airbyte-cli'
+    include ':airbyte-commons-protocol'
     include ':airbyte-config:init'
     include ':airbyte-config:specs'
     include ':airbyte-container-orchestrator'

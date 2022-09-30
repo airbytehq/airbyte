@@ -66,6 +66,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version | Date       | Pull Request                                               | Subject                                                                                   |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------|
+| `0.1.9` | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/issues/17304) | Migrate to per-stream state.
 | `0.1.6` | 2022-07-20 | [14872](https://github.com/airbytehq/airbyte/issues/14872) | Increase test coverage                                                                    |
 | `0.1.5` | 2022-07-12 | [14617](https://github.com/airbytehq/airbyte/issues/14617) | Set max\_retries = 10 for `lists` stream.                                                 |
 | `0.1.4` | 2022-04-15 | [11723](https://github.com/airbytehq/airbyte/issues/11723) | Enhance klaviyo source for flows stream and update to events stream.                      |

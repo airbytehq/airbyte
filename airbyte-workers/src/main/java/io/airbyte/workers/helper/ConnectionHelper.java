@@ -17,6 +17,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.config.WorkerMode;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.io.IOException;
@@ -27,8 +28,7 @@ import javax.annotation.Nullable;
 // todo (cgardens) - we are not getting any value out of instantiating this class. we should just
 // use it as statics. not doing it now, because already in the middle of another refactor.
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          pattern = "(?i)^(?!data_plane).*")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConnectionHelper {
 
   private final ConfigRepository configRepository;
