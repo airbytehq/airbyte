@@ -63,7 +63,11 @@ class YamlDeclarativeSource(DeclarativeSource):
             "parsed YAML into declarative source",
             extra={"path_to_yaml_file": self._path_to_yaml, "source_name": self.name, "parsed_config": json.dumps(self._source_config)},
         )
-        return [self._factory.create_component(stream_config, config, True)() for stream_config in self._stream_configs()]
+        source_streams = [self._factory.create_component(stream_config, config, True)() for stream_config in self._stream_configs()]
+        for stream in source_streams:
+            # make sure the log level is always appied to the stream's logger
+            self._apply_log_level_to_stream_logger(self.logger, stream)
+        return source_streams
 
     def _read_and_parse_yaml_file(self, path_to_yaml_file):
         package = self.__class__.__module__.split(".")[0]
