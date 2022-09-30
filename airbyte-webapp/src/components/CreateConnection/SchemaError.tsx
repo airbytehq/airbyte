@@ -5,7 +5,7 @@ import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
-import TryAfterErrorBlock from "./TryAfterErrorBlock";
+import { TryAfterErrorBlock } from "./TryAfterErrorBlock";
 
 export const SchemaError = ({
   schemaError,
