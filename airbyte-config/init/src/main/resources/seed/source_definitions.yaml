@@ -1175,7 +1175,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-talk
   icon: zendesk.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Zenefits
   sourceDefinitionId: 8baba53d-2fe3-4e33-bc85-210d0eb62884
   dockerRepository: airbyte/source-zenefits
