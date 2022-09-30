@@ -9,7 +9,7 @@ import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/serv
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
-import useRouter from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
@@ -21,13 +21,14 @@ import DestinationPage from "pages/DestinationPage";
 import OnboardingPage from "pages/OnboardingPage";
 import SourcesPage from "pages/SourcesPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
+import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
 import { RoutePaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
-import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
+import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
 import { DefaultView } from "./views/DefaultView";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
@@ -110,7 +111,7 @@ const MainRoutes: React.FC = () => {
 const MainViewRoutes = () => {
   useApiHealthPoll();
   useIntercom();
-  const { query } = useRouter();
+  const query = useQuery<{ from: string }>();
 
   return (
     <Routes>
@@ -139,6 +140,7 @@ export const Routing: React.FC = () => {
 
   useEffectOnce(() => {
     storeUtmFromQuery(search);
+    setSegmentAnonymousId(search);
   });
 
   const analyticsContext = useMemo(
@@ -150,6 +152,7 @@ export const Routing: React.FC = () => {
         : null,
     [user]
   );
+  useGetSegmentAnonymousId();
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
 

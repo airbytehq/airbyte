@@ -9,10 +9,12 @@
     "selector-class-pattern": "^[a-z][a-zA-Z0-9]+$",
     "color-function-notation": null,
     "font-family-name-quotes": null,
+    "no-unknown-animations": true,
     "scss/dollar-variable-empty-line-before": null,
     "scss/dollar-variable-pattern": null,
     "scss/percent-placeholder-pattern": null,
-    "value-keyword-case": null
+    "value-keyword-case": null,
+    "color-no-hex": true
   },
   "ignoreFiles": ["**/build/**", "**/dist/**"]
 }

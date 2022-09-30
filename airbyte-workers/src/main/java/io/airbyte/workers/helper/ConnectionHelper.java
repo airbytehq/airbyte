@@ -15,21 +15,29 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.config.WorkerMode;
+import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
+import javax.annotation.Nullable;
 
 // todo (cgardens) - we are not getting any value out of instantiating this class. we should just
 // use it as statics. not doing it now, because already in the middle of another refactor.
-@AllArgsConstructor
+@Singleton
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConnectionHelper {
 
   private final ConfigRepository configRepository;
   private final WorkspaceHelper workspaceHelper;
+
+  public ConnectionHelper(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper) {
+    this.configRepository = configRepository;
+    this.workspaceHelper = workspaceHelper;
+  }
 
   public void deleteConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync update = Jsons.clone(configRepository.getStandardSync(connectionId).withStatus(StandardSync.Status.DEPRECATED));
@@ -63,7 +71,7 @@ public class ConnectionHelper {
    * @return new sync object
    */
   public static StandardSync updateConnectionObject(final WorkspaceHelper workspaceHelper, final StandardSync original, final StandardSync update) {
-    validateWorkspace(workspaceHelper, original.getSourceId(), original.getDestinationId(), new HashSet<>(update.getOperationIds()));
+    validateWorkspace(workspaceHelper, original.getSourceId(), original.getDestinationId(), update.getOperationIds());
 
     final StandardSync newConnection = Jsons.clone(original)
         .withNamespaceDefinition(Enums.convertTo(update.getNamespaceDefinition(), NamespaceDefinitionType.class))
@@ -114,7 +122,7 @@ public class ConnectionHelper {
   public static void validateWorkspace(final WorkspaceHelper workspaceHelper,
                                        final UUID sourceId,
                                        final UUID destinationId,
-                                       final Set<UUID> operationIds) {
+                                       final @Nullable List<UUID> operationIds) {
     final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId);
     final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId);
 
@@ -127,20 +135,22 @@ public class ConnectionHelper {
             destinationId,
             destinationWorkspace));
 
-    for (final UUID operationId : operationIds) {
-      final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId);
-      Preconditions.checkArgument(
-          sourceWorkspace.equals(operationWorkspace),
-          String.format(
-              "Operation and connection do not belong to the same workspace. Workspace id: %s, Operation id: %s, Operation workspace id: %s",
-              sourceWorkspace,
-              operationId,
-              operationWorkspace));
+    if (operationIds != null) {
+      for (final UUID operationId : operationIds) {
+        final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId);
+        Preconditions.checkArgument(
+            sourceWorkspace.equals(operationWorkspace),
+            String.format(
+                "Operation and connection do not belong to the same workspace. Workspace id: %s, Operation id: %s, Operation workspace id: %s",
+                sourceWorkspace,
+                operationId,
+                operationWorkspace));
+      }
     }
   }
 
   // Helper method to convert between TimeUnit enums for old and new schedule schemas.
-  private static BasicSchedule.TimeUnit convertTimeUnitSchema(Schedule.TimeUnit timeUnit) {
+  private static BasicSchedule.TimeUnit convertTimeUnitSchema(final Schedule.TimeUnit timeUnit) {
     switch (timeUnit) {
       case MINUTES:
         return BasicSchedule.TimeUnit.MINUTES;

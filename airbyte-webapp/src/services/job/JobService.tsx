@@ -9,7 +9,7 @@ import {
   JobDebugInfoRead,
   JobInfoRead,
   JobListRequestBody,
-  JobWithAttemptsRead,
+  JobReadList,
   Pagination,
 } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
@@ -17,7 +17,8 @@ import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 export const jobsKeys = {
   all: ["jobs"] as const,
   lists: () => [...jobsKeys.all, "list"] as const,
-  list: (filters: string, pagination?: Pagination) => [...jobsKeys.lists(), { filters, pagination }] as const,
+  list: (filters: string, includingJobId?: number, pagination?: Pagination) =>
+    [...jobsKeys.lists(), { filters, includingJobId, pagination }] as const,
   detail: (jobId: number) => [...jobsKeys.all, "details", jobId] as const,
   getDebugInfo: (jobId: number) => [...jobsKeys.all, "getDebugInfo", jobId] as const,
   cancel: (jobId: string) => [...jobsKeys.all, "cancel", jobId] as const,
@@ -31,13 +32,18 @@ function useGetJobService() {
 
 export const useListJobs = (listParams: JobListRequestBody) => {
   const service = useGetJobService();
-  const result = useQuery(jobsKeys.list(listParams.configId, listParams.pagination), () => service.list(listParams), {
-    refetchInterval: 2500, // every 2,5 seconds,
-    keepPreviousData: true,
-    suspense: true,
-  });
-  // cast to JobWithAttemptsRead[] because (suspense: true) means we will never get undefined
-  return { jobs: result.data?.jobs as JobWithAttemptsRead[], isPreviousData: result.isPreviousData };
+  const result = useQuery(
+    jobsKeys.list(listParams.configId, listParams.includingJobId, listParams.pagination),
+    () => service.list(listParams),
+    {
+      refetchInterval: 2500, // every 2,5 seconds,
+      keepPreviousData: true,
+      suspense: true,
+    }
+  );
+  // cast to JobReadList because (suspense: true) means we will never get undefined
+  const jobReadList = result.data as JobReadList;
+  return { jobs: jobReadList.jobs, totalJobCount: jobReadList.totalJobCount, isPreviousData: result.isPreviousData };
 };
 
 export const useGetJob = (id: number, enabled = true) => {

@@ -4,12 +4,14 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.CancellationHandler;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -23,12 +25,11 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
+import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerApp;
-import io.airbyte.workers.WorkerApp.ContainerOrchestratorConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
@@ -43,11 +44,12 @@ import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
-import io.airbyte.workers.temporal.TemporalUtils;
+import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,60 +57,51 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
-  private final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig;
+  private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
   private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
-  private final AirbyteConfigValidator validator;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-
-  private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
-  private final boolean useStreamCapableState;
+  private final FeatureFlags featureFlags;
+  private final Integer serverPort;
+  private final AirbyteConfigValidator airbyteConfigValidator;
+  private final TemporalUtils temporalUtils;
+  private final AirbyteApiClient airbyteApiClient;
 
-  public ReplicationActivityImpl(final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig,
-                                 final WorkerConfigs workerConfigs,
-                                 final ProcessFactory processFactory,
+  public ReplicationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
+                                 @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
+                                 @Named("replicationProcessFactory") final ProcessFactory processFactory,
                                  final SecretsHydrator secretsHydrator,
-                                 final Path workspaceRoot,
+                                 @Named("workspaceRoot") final Path workspaceRoot,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
-                                 final AirbyteApiClient airbyteApiClient,
-                                 final String airbyteVersion,
-                                 final boolean useStreamCapableState) {
-    this(containerOrchestratorConfig, workerConfigs, processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-        new AirbyteConfigValidator(), airbyteApiClient, airbyteVersion, useStreamCapableState);
-  }
-
-  @VisibleForTesting
-  ReplicationActivityImpl(final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig,
-                          final WorkerConfigs workerConfigs,
-                          final ProcessFactory processFactory,
-                          final SecretsHydrator secretsHydrator,
-                          final Path workspaceRoot,
-                          final WorkerEnvironment workerEnvironment,
-                          final LogConfigs logConfigs,
-                          final AirbyteConfigValidator validator,
-                          final AirbyteApiClient airbyteApiClient,
-                          final String airbyteVersion,
-                          final boolean useStreamCapableState) {
+                                 @Value("${airbyte.version}") final String airbyteVersion,
+                                 final FeatureFlags featureFlags,
+                                 @Value("${micronaut.server.port}") final Integer serverPort,
+                                 final AirbyteConfigValidator airbyteConfigValidator,
+                                 final TemporalUtils temporalUtils,
+                                 final AirbyteApiClient airbyteApiClient) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
-    this.validator = validator;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
-    this.useStreamCapableState = useStreamCapableState;
+    this.featureFlags = featureFlags;
+    this.serverPort = serverPort;
+    this.airbyteConfigValidator = airbyteConfigValidator;
+    this.temporalUtils = temporalUtils;
+    this.airbyteApiClient = airbyteApiClient;
   }
 
   @Override
@@ -117,7 +110,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                       final IntegrationLauncherConfig destinationLauncherConfig,
                                       final StandardSyncInput syncInput) {
     final ActivityExecutionContext context = Activity.getExecutionContext();
-    return TemporalUtils.withBackgroundHeartbeat(
+    return temporalUtils.withBackgroundHeartbeat(
         () -> {
 
           final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
@@ -128,7 +121,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               .withDestinationConfiguration(fullDestinationConfig);
 
           final Supplier<StandardSyncInput> inputSupplier = () -> {
-            validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));
+            airbyteConfigValidator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));
             return fullSyncInput;
           };
 
@@ -213,7 +206,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       // reset jobs use an empty source to induce resetting all data in destination.
       final AirbyteSource airbyteSource =
           WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage())
-              ? new EmptyAirbyteSource(useStreamCapableState)
+              ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
               : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
@@ -252,7 +245,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         destinationLauncherConfig,
         jobRunConfig,
         resourceRequirements,
-        activityContext);
+        activityContext,
+        serverPort,
+        temporalUtils);
   }
 
 }

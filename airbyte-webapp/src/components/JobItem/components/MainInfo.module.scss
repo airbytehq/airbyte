@@ -3,9 +3,12 @@
 
 .mainView {
   cursor: pointer;
-  min-height: 75px;
+  height: unset !important;
+  min-height: 70px;
+  padding: variables.$spacing-lg 0;
 
   .titleCell {
+    width: 80%;
     display: flex;
     color: colors.$dark-blue;
     min-width: 0;
@@ -29,6 +32,7 @@
     }
 
     .justification {
+      width: 80%;
       display: flex;
       flex-grow: 1;
       flex-direction: column;

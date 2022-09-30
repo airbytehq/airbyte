@@ -23,16 +23,21 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.helper.StateConverter;
+import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
+@Singleton
 public class PersistStateActivityImpl implements PersistStateActivity {
 
   private final AirbyteApiClient airbyteApiClient;
   private final FeatureFlags featureFlags;
+
+  public PersistStateActivityImpl(final AirbyteApiClient airbyteApiClient, final FeatureFlags featureFlags) {
+    this.airbyteApiClient = airbyteApiClient;
+    this.featureFlags = featureFlags;
+  }
 
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput, final ConfiguredAirbyteCatalog configuredCatalog) {
@@ -44,7 +49,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
         if (maybeStateWrapper.isPresent()) {
           final ConnectionState previousState = airbyteApiClient.getConnectionApi()
               .getState(new ConnectionIdRequestBody().connectionId(connectionId));
-          if (previousState != null) {
+          if (featureFlags.needStateValidation() && previousState != null) {
             final StateType newStateType = maybeStateWrapper.get().getStateType();
             final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
 

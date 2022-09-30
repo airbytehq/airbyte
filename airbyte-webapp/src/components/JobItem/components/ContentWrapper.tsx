@@ -9,7 +9,7 @@ interface IProps {
   onToggled?: () => void;
 }
 
-const ContentWrapper: React.FC<IProps> = ({ children, isOpen, onToggled }) => {
+const ContentWrapper: React.FC<React.PropsWithChildren<IProps>> = ({ children, isOpen, onToggled }) => {
   return (
     <motion.div
       className={styles.container}
@@ -22,7 +22,7 @@ const ContentWrapper: React.FC<IProps> = ({ children, isOpen, onToggled }) => {
           transition: { type: "tween" },
         },
         closed: {
-          height: "1px",
+          height: "0",
           opacity: 0,
           transition: { type: "tween" },
         },

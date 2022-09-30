@@ -101,10 +101,13 @@ services:
       - ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS=${ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS}
       - WORKFLOW_FAILURE_RESTART_DELAY_SECONDS=${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS}
       - USE_STREAM_CAPABLE_STATE=${USE_STREAM_CAPABLE_STATE}
+      - MICRONAUT_ENVIRONMENTS=${WORKERS_MICRONAUT_ENVIRONMENTS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
+    ports:
+      - 9000:9000
   server:
     image: airbyte/server:${VERSION}
     logging: *default-logging
@@ -180,12 +183,7 @@ services:
     container_name: airbyte-cron
     restart: unless-stopped
     environment:
-      - DB=postgresql
-      - DB_PORT=${DATABASE_PORT}
-      - LOG_LEVEL=${LOG_LEVEL}
-      - POSTGRES_PWD=${DATABASE_PASSWORD}
-      - POSTGRES_SEEDS=${DATABASE_HOST}
-      - POSTGRES_USER=${DATABASE_USER}
+      - AIRBYTE_VERSION=${VERSION}
       - TEMPORAL_HISTORY_RETENTION_IN_DAYS=${TEMPORAL_HISTORY_RETENTION_IN_DAYS}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
     volumes:
