@@ -5,6 +5,7 @@
 import os.path
 import sys
 import time
+
 import pendulum
 import pytest
 from source_marketo.source import Activities, MarketoAuthenticator
@@ -73,12 +74,11 @@ def file_generator(faker):
         def fake_records_gen():
             new_line = "\n"
             for i in range(1000):
-                yield f"{str(faker.random_int())},{faker.random_int()},{faker.date_of_birth()},{faker.random_int()}," \
-                      f"{faker.random_int()},{faker.email()},{faker.postcode()}{new_line}"
+                yield f"{str(faker.random_int())},{faker.random_int()},{faker.date_of_birth()},{faker.random_int()}," f"{faker.random_int()},{faker.email()},{faker.postcode()}{new_line}"
 
         size, records = 0, 0
         path = os.path.realpath(str(time.time()))
-        with open(path, 'w') as output:
+        with open(path, "w") as output:
             output.write("marketoGUID,leadId,activityDate,activityTypeId,campaignId,primaryAttributeValueId,primaryAttributeValue\n")
             while size < min_size:
                 frg = fake_records_gen()
