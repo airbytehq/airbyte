@@ -11,10 +11,9 @@ import static org.jooq.impl.SQLDataType.VARCHAR;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import jakarta.inject.Singleton;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import java.util.Map;
 import org.jooq.DSLContext;
 
 @Singleton
@@ -142,9 +141,7 @@ class MetricRepository {
         + ctx.fetchOne(queryForAbnormalSyncInMinutesInLastDay).get("cnt", long.class);
   }
 
-  List<Pair<JobStatus, Double>> overallJobRuntimeForTerminalJobsInLastHour() {
-    final var statusField = "status";
-    final var timeField = "sec";
+  Map<JobStatus, Double> overallJobRuntimeForTerminalJobsInLastHour() {
     final var query = """
         SELECT status, extract(epoch from age(updated_at, created_at)) AS sec FROM jobs
         WHERE updated_at >= NOW() - INTERVAL '1 HOUR'
@@ -153,13 +150,12 @@ class MetricRepository {
     final var statuses = ctx.fetch(query).getValues("status", JobStatus.class);
     final var times = ctx.fetch(query).getValues("sec", double.class);
 
-    final var pairedRes = new ArrayList<Pair<JobStatus, Double>>();
+    final var results = new HashMap<JobStatus, Double>();
     for (int i = 0; i < statuses.size(); i++) {
-      final var pair = new ImmutablePair<>(statuses.get(i), times.get(i));
-      pairedRes.add(pair);
+      results.put(statuses.get(i), times.get(i));
     }
 
-    return pairedRes;
+    return results;
   }
 
   private long oldestJobAgeSecs(final JobStatus status) {

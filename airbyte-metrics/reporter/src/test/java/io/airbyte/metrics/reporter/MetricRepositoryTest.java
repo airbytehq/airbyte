@@ -32,8 +32,8 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.SQLDialect;
@@ -387,11 +387,11 @@ class MetricRepositoryTest {
       final var res = db.overallJobRuntimeForTerminalJobsInLastHour();
       assertEquals(3, res.size());
 
-      final var exp = List.of(
-          new ImmutablePair<>(JobStatus.succeeded, expAgeSecs * 1.0),
-          new ImmutablePair<>(JobStatus.cancelled, expAgeSecs * 1.0),
-          new ImmutablePair<>(JobStatus.failed, expAgeSecs * 1.0));
-      assertTrue(res.containsAll(exp) && exp.containsAll(res));
+      final var exp = Map.of(
+          JobStatus.succeeded, expAgeSecs * 1.0,
+          JobStatus.cancelled, expAgeSecs * 1.0,
+          JobStatus.failed, expAgeSecs * 1.0);
+      assertEquals(exp, res);
     }
 
     @Test
@@ -422,10 +422,10 @@ class MetricRepositoryTest {
       final var res = db.overallJobRuntimeForTerminalJobsInLastHour();
       assertEquals(2, res.size());
 
-      final var exp = List.of(
-          new ImmutablePair<>(JobStatus.succeeded, expAgeSecs * 1.0),
-          new ImmutablePair<>(JobStatus.failed, expAgeSecs * 1.0));
-      assertTrue(res.containsAll(exp) && exp.containsAll(res));
+      final var exp = Map.of(
+          JobStatus.succeeded, expAgeSecs * 1.0,
+          JobStatus.failed, expAgeSecs * 1.0);
+      assertEquals(exp, res);
     }
 
     @Test

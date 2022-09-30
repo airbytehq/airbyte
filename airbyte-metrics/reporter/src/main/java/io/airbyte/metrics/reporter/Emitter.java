@@ -136,12 +136,12 @@ final class TotalJobRuntimeByTerminalState extends Emitter {
 
   public TotalJobRuntimeByTerminalState(final MetricClient client, final MetricRepository db) {
     super(() -> {
-      final var times = db.overallJobRuntimeForTerminalJobsInLastHour();
-      times.forEach(pair -> client.distribution(
-          OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS,
-          pair.getRight(),
-          new MetricAttribute(MetricTags.JOB_STATUS, pair.getLeft().getLiteral())
-      ));
+      db.overallJobRuntimeForTerminalJobsInLastHour()
+          .forEach((jobStatus, time) -> client.distribution(
+              OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS,
+              time,
+              new MetricAttribute(MetricTags.JOB_STATUS, jobStatus.getLiteral())
+          ));
       return null;
     });
   }
