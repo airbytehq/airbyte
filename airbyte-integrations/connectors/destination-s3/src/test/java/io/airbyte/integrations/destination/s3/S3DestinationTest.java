@@ -102,33 +102,4 @@ public class S3DestinationTest {
     verifyNoMoreInteractions(s3);
   }
 
-  /**
-   * Test that checks if user is using a connection that is HTTPS only
-   */
-  @Test
-  public void checksCustomEndpointIsHttpsOnly() {
-    final S3Destination destinationWithHttpsOnlyEndpoint = new S3Destination(factoryConfig);
-    final AirbyteConnectionStatus status = destinationWithHttpsOnlyEndpoint.check(null);
-    assertEquals(Status.SUCCEEDED, status.getStatus(), "custom endpoint did not contain `s3-accesspoint`");
-  }
-
-  /**
-   * Test that checks if user is using a connection that is deemed insecure since it does not always enforce HTTPS only
-   * <p>https://docs.aws.amazon.com/general/latest/gr/s3.html</p>
-   */
-  @Test
-  public void checksCustomEndpointIsNotHttpsOnly() {
-    final S3Destination destinationWithStandardUnsecuredEndpoint = new S3Destination(new S3DestinationConfigFactory() {
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
-        return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
-            .withEndpoint("s3.us-west-1.amazonaws.com")
-            .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
-            .withS3Client(s3)
-            .get();
-      }
-    });
-    final AirbyteConnectionStatus status = destinationWithStandardUnsecuredEndpoint.check(null);
-    assertEquals(Status.FAILED, status.getStatus());
-  }
-
 }

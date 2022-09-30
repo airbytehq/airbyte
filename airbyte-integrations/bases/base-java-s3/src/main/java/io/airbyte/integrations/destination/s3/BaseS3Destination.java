@@ -24,7 +24,7 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseS3Destination.class);
 
-  private final S3DestinationConfigFactory configFactory;
+  protected final S3DestinationConfigFactory configFactory;
 
   private final NamingConventionTransformer nameTransformer;
 

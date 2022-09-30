@@ -82,11 +82,8 @@ public final class S3BaseChecks {
    *
    * @param endpoint URL string representing an accessible S3 bucket
    */
-  public static void testCustomEndpointSecured(final String endpoint) {
-    if (!endpoint.contains("https://")) {
-      throw new RuntimeException(
-          "S3 custom endpoint does not ensure HTTPS only connection. Please use S3 Access Points endpoints for a secure connection");
-    }
+  public static boolean testCustomEndpointSecured(final String endpoint) {
+    return endpoint.contains("https://");
   }
 
   @VisibleForTesting
