@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { Field, FieldProps, Formik } from "formik";
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
@@ -62,7 +62,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
       onSubmit={onFormSubmit}
     >
       {({ isSubmitting, isValid, dirty, resetForm, values }) => (
-        <div className={styles.formContainer}>
+        <Form className={styles.formContainer}>
           <FormChangeTracker changed={dirty} formId={formId} />
           {mode === "create" && (
             <Section>
@@ -197,7 +197,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
               />
             </>
           )}
-        </div>
+        </Form>
       )}
     </Formik>
   );
