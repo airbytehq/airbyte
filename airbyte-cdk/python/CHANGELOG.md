@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.1.90
+## 0.1.91
 - Low-code: Rename LimitPaginator to DefaultPaginator and move page_size field to PaginationStrategy
+
+## 0.1.90
+- Fix error when TypeTransformer tries to warn about invalid transformations in arrays
 
 ## 0.1.89
 - Fix: properly emit state when a stream has empty slices, provided by an iterator
