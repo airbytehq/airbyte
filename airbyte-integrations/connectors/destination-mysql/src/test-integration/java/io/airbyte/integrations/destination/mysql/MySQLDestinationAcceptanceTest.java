@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -20,27 +17,30 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
+import java.io.File;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
+
+  private TestDestinationEnv testEnv;
 
   private MySQLContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
@@ -159,6 +159,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
+    this.testEnv = testEnv;
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
     setLocalInFileToTrue();
@@ -180,17 +181,17 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   private void executeQuery(final String query) {
     try (final DSLContext dslContext = DSLContextFactory.create(
-        "root",
-        "test",
-        db.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()),
-        SQLDialect.MYSQL)) {
+            "root",
+            "test",
+            db.getDriverClassName(),
+            String.format(DatabaseDriver.MYSQL.getUrlFormatString()+"?allowLoadLocalInfile=true",
+                    db.getHost(),
+                    db.getFirstMappedPort(),
+                    db.getDatabaseName()),
+            SQLDialect.MYSQL)) {
       new Database(dslContext).query(
-          ctx -> ctx
-              .execute(query));
+              ctx -> ctx
+                      .execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
@@ -278,24 +279,41 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
         }
     }
 
+
     @Test
     public void testUTF8() throws Exception {
-        // create table
-        String testCreateTableName = "mysql_utf8_test_table";
+      // create table
+      String streamName = "mysql_utf8_test_table";
+      String testCreateTableName = namingResolver.getRawTableName(streamName);
 
-        String createSQL = String.format(
-                "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-                        + "%s VARCHAR(256) PRIMARY KEY,\n"
-                        + "%s JSON,\n"
-                        + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
-                        + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; \n",
-                db.getDatabaseName(), testCreateTableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+      String createSQL = String.format(
+              "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+                      + "%s VARCHAR(256) PRIMARY KEY,\n"
+                      + "%s JSON,\n"
+                      + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
+                      + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; \n",
+              db.getDatabaseName(), testCreateTableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
 
-        executeQuery(createSQL);
+      executeQuery(createSQL);
 
-        // check charset
-        String utf8mb4Charset = "utf8mb4";
-        assertEquals(utf8mb4Charset, retrieveTableCharset(db.getDatabaseName(), testCreateTableName));
+      // check charset
+      String utf8mb4Charset = "utf8mb4";
+      assertEquals(utf8mb4Charset, retrieveTableCharset(db.getDatabaseName(), testCreateTableName));
+
+      // load data
+      String data = "{\"content\":\"你好\uD83E\uDD73\"}"; // 你好🥳
+      String resourceFile = "load_data_test.csv";
+      URL resource = getClass().getClassLoader().getResource(resourceFile);
+      File file = Paths.get(resource.toURI()).toFile();
+
+      String absoluteFile = "'" + file.getAbsolutePath() + "'";
+      String loadDataSQL = String.format("LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s CHARACTER SET utf8mb4 FIELDS " +
+              "TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
+              absoluteFile, db.getDatabaseName(), testCreateTableName);
+      executeQuery(loadDataSQL);
+
+      List<JsonNode> records = retrieveRecords(this.testEnv,streamName,db.getDatabaseName(),null);
+      assertEquals(data, records.get(0).toString());
     }
 
   protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
