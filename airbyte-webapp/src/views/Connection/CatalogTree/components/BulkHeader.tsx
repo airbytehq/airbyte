@@ -8,11 +8,12 @@ import { Button, Cell, Header, Switch } from "components";
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchemaToField } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
 import { flatten, getPathType } from "../utils";
+import styles from "./BulkHeader.module.scss";
 import { pathDisplayName, PathPopout } from "./PathPopout";
 import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
 
@@ -25,12 +26,6 @@ const SchemaHeader = styled(Header)`
   height: 41px;
   background: ${({ theme }) => theme.primaryColor};
   border-radius: 8px 8px 0 0;
-`;
-
-const ActionButton = styled(Button).attrs({
-  type: "button",
-})`
-  white-space: nowrap;
 `;
 
 function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
@@ -136,12 +131,12 @@ export const BulkHeader: React.FC = () => {
       <HeaderCell />
       <HeaderCell>
         <ActionCell>
-          <ActionButton onClick={onCancel}>
+          <Button className={styles.actionButton} onClick={onCancel}>
             <FormattedMessage id="connectionForm.bulkEdit.cancel" />
-          </ActionButton>
-          <ActionButton onClick={onApply}>
+          </Button>
+          <Button className={styles.actionButton} onClick={onApply}>
             <FormattedMessage id="connectionForm.bulkEdit.apply" />
-          </ActionButton>
+          </Button>
         </ActionCell>
       </HeaderCell>
     </SchemaHeader>

@@ -5,11 +5,9 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
@@ -30,11 +28,9 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
 
   private static ConfigRepository configRepository;
   private static JobPersistence jobPersistence;
-  private static ConfigPersistence seed;
   private static SecretsRepositoryReader secretsRepositoryReader;
   private static SecretsRepositoryWriter secretsRepositoryWriter;
   private static SynchronousSchedulerClient synchronousSchedulerClient;
-  private static FileTtlManager archiveTtlManager;
   private static StatePersistence statePersistence;
   private static Map<String, String> mdc;
   private static Database configsDatabase;
@@ -54,9 +50,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final SecretsRepositoryReader secretsRepositoryReader,
                                final SecretsRepositoryWriter secretsRepositoryWriter,
                                final JobPersistence jobPersistence,
-                               final ConfigPersistence seed,
                                final SynchronousSchedulerClient synchronousSchedulerClient,
-                               final FileTtlManager archiveTtlManager,
                                final StatePersistence statePersistence,
                                final Map<String, String> mdc,
                                final Database configsDatabase,
@@ -72,11 +66,9 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final Flyway jobsFlyway) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
-    ConfigurationApiFactory.seed = seed;
     ConfigurationApiFactory.secretsRepositoryReader = secretsRepositoryReader;
     ConfigurationApiFactory.secretsRepositoryWriter = secretsRepositoryWriter;
     ConfigurationApiFactory.synchronousSchedulerClient = synchronousSchedulerClient;
-    ConfigurationApiFactory.archiveTtlManager = archiveTtlManager;
     ConfigurationApiFactory.mdc = mdc;
     ConfigurationApiFactory.configsDatabase = configsDatabase;
     ConfigurationApiFactory.jobsDatabase = jobsDatabase;
@@ -99,11 +91,9 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     return new ConfigurationApi(
         ConfigurationApiFactory.configRepository,
         ConfigurationApiFactory.jobPersistence,
-        ConfigurationApiFactory.seed,
         ConfigurationApiFactory.secretsRepositoryReader,
         ConfigurationApiFactory.secretsRepositoryWriter,
         ConfigurationApiFactory.synchronousSchedulerClient,
-        ConfigurationApiFactory.archiveTtlManager,
         ConfigurationApiFactory.configsDatabase,
         ConfigurationApiFactory.jobsDatabase,
         ConfigurationApiFactory.statePersistence,

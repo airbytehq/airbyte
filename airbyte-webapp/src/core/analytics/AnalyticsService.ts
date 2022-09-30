@@ -26,4 +26,5 @@ export class AnalyticsService {
 
   group = (organisationId: string, traits: Record<string, unknown> = {}): void =>
     this.getSegmentAnalytics()?.group?.(organisationId, traits);
+  setAnonymousId = (anonymousId: string) => this.getSegmentAnalytics()?.setAnonymousId(anonymousId);
 }
