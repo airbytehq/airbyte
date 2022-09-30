@@ -5,12 +5,18 @@
 package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 
 public class S3DestinationStrictEncrypt extends S3Destination {
 
-  public S3DestinationStrictEncrypt(final S3DestinationConfigFactory configFactory) {
+  public S3DestinationStrictEncrypt() {
+    super();
+  }
+
+  @VisibleForTesting
+  protected S3DestinationStrictEncrypt(final S3DestinationConfigFactory configFactory) {
     super(configFactory);
   }
 
