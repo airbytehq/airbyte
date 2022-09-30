@@ -1,79 +1,23 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "adaccounts"
-      }
-    }
+{
+  "adaccounts": {
+    "updated_at": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "creatives"
-      }
-    }
+  "creatives": {
+    "updated_at": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "media"
-      }
-    }
+  "media": {
+    "updated_at": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "campaigns"
-      }
-    }
+  "campaigns": {
+    "updated_at": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "ads"
-      }
-    }
+  "ads": {
+    "updated_at": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "adsquads"
-      }
-    }
+  "adsquads": {
+    "updated_at": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "segments"
-      }
-    }
+  "segments": {
+    "updated_at": "2020-01-01T00:00:00Z"
   }
-]
+}
