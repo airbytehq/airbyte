@@ -3,6 +3,9 @@
 #
 
 import logging
+import os
+import tracemalloc
+from functools import partial
 from unittest.mock import ANY, Mock, patch
 
 import pytest
@@ -123,7 +126,47 @@ def test_activities_schema(activity, expected_schema, config):
     ),
 )
 def test_export_parse_response(send_email_stream, response_text, expected_records):
-    assert list(send_email_stream.parse_response(Mock(text=response_text))) == expected_records
+    def iter_lines(*args, **kwargs):
+        yield from response_text.splitlines()
+
+    assert list(send_email_stream.parse_response(Mock(iter_lines=iter_lines, request=Mock(url="/send_email/1")))) == expected_records
+
+
+def test_memory_usage(send_email_stream, file_generator):
+    min_file_size = 5 * (1024**2)  # 5 MB
+    big_file_path, records_generated = file_generator(min_size=min_file_size)
+    small_file_path, _ = file_generator(min_size=1)
+
+    def iter_lines(file_path="", **kwargs):
+        with open(file_path, "r") as file:
+            for line in file:
+                yield line
+
+    tracemalloc.start()
+    records = 0
+
+    for _ in send_email_stream.parse_response(
+        Mock(iter_lines=partial(iter_lines, file_path=big_file_path), request=Mock(url="/send_email/1"))
+    ):
+        records += 1
+    _, big_file_peak = tracemalloc.get_traced_memory()
+    assert records == records_generated
+
+    tracemalloc.reset_peak()
+    tracemalloc.clear_traces()
+
+    for _ in send_email_stream.parse_response(
+        Mock(iter_lines=partial(iter_lines, file_path=small_file_path), request=Mock(url="/send_email/1"))
+    ):
+        pass
+    _, small_file_peak = tracemalloc.get_traced_memory()
+
+    os.remove(big_file_path)
+    os.remove(small_file_path)
+    # First we run parse_response() on a large file and track how much memory was consumed.
+    # Then we do the same with a tiny file. The goal is not to load the whole file into memory when parsing the response,
+    # so we assert the memory consumed was almost the same for two runs. Allowed delta is 50 KB which is 1% of a big file size.
+    assert abs(big_file_peak - small_file_peak) < 50 * 1024
 
 
 @pytest.mark.parametrize(
