@@ -67,6 +67,8 @@ Let's fill this out these TODOs with the information found in the [Exchange Rate
    According to the API documentation, the base url is `"https://api.apilayer.com"`.
 
 ```yaml
+definitions:
+  <...>
   requester:
     url_base: "https://api.apilayer.com"
 ```
@@ -74,12 +76,19 @@ Let's fill this out these TODOs with the information found in the [Exchange Rate
 2. Then, let's rename the stream from `customers` to `rates`, update the primary key to `date`, and set the path to "/exchangerates_data/latest" as per the API's documentation. This path is specific to the stream, so we'll set it within the `rates_stream` definition
 
 ```yaml
-  customers_stream:
+  rates_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/latest"
+```
+
+We'll also update the reference in the `streams` block
+
+```yaml
+streams:
+  - "*ref(definitions.rates_stream)"
 ```
 
 3. Update the references in the `check` block
@@ -130,7 +139,6 @@ definitions:
     extractor:
       field_pointer: [ ]
   requester:
-    name: "{{ options['name'] }}"
     url_base: "https://api.apilayer.com"
     http_method: "GET"
     authenticator:
@@ -141,8 +149,6 @@ definitions:
       request_parameters:
         base: "{{ config['base'] }}"
   retriever:
-    name: "{{ options['name'] }}"
-    primary_key: "{{ options['primary_key'] }}"
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
@@ -152,7 +158,7 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  customers_stream:
+  rates_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "rates"
@@ -160,7 +166,7 @@ definitions:
       path: "/exchangerates_data/latest"
 
 streams:
-  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.rates_stream)"
 check:
   stream_names:
     - "rates"
