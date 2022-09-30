@@ -147,17 +147,12 @@ The full connector definition should now look like
 version: "0.1.0"
 
 definitions:
-  schema_loader:
-    type: JsonSchema
-    file_path: "./source_exchange_rates_tutorial/schemas/{{ options['name'] }}.json"
   selector:
-    type: RecordSelector
     extractor:
-      type: DpathExtractor
       field_pointer: [ ]
   requester:
-    type: HttpRequester
     name: "{{ options['name'] }}"
+    url_base: "https://api.apilayer.com"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
@@ -167,31 +162,29 @@ definitions:
       request_parameters:
         base: "{{ config['base'] }}"
   retriever:
-    type: SimpleRetriever
-    $options:
-      url_base: "https://api.apilayer.com"
     name: "{{ options['name'] }}"
     primary_key: "{{ options['primary_key'] }}"
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
       type: NoPagination
-
-streams:
-  - type: DeclarativeStream
-    $options:
-      name: "rates"
-    primary_key: "date"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        path: "/exchangerates_data/latest"
+  customers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "rates"
+      primary_key: "date"
+      path: "/exchangerates_data/latest"
+
+streams:
+  - "*ref(definitions.customers_stream)"
 check:
-  type: CheckStream
-  stream_names: [ "rates" ]
+  stream_names:
+    - "rates"
 ```
 
 We can now run the `check` operation, which verifies the connector can connect to the API source.

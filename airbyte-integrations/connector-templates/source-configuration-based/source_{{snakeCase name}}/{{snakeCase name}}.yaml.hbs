@@ -6,19 +6,20 @@ definitions:
       field_pointer: []
   requester:
     name: "\{{ options['name'] }}"
+    url_base: "https://example.com"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
       api_token: "\{{ config['api_key'] }}"
   retriever:
-    $options:
-      url_base: "https://example.com/"
     name: "\{{ options['name'] }}"
     primary_key: "\{{ options['primary_key'] }}"
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
       type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -30,6 +31,6 @@ definitions:
       path: "/example"
 
 streams:
-  - "*ref(definitions.customers_stream)
+  - "*ref(definitions.customers_stream)"
 check:
   stream_names: ["customers"]
