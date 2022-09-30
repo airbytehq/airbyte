@@ -18,8 +18,8 @@ datasources:
     maximum-pool-size: 10
     url: ${DATABASE_URL}
     driverClassName: org.postgresql.Driver
-    username: ${DATABASE_USER:postgres}
-    password: ${DATABASE_PASSWORD:postgres}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
 
 jooq:
   datasources:
