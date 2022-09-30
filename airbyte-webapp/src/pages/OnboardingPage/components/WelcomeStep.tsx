@@ -3,6 +3,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { BigButton } from "components/CenteredPageComponents";
+import { useExperimentSpeedyConnection } from "components/experiments/SpeedyConnection/hooks/use-experiment-speedy-connection-experiment";
+import { SpeedyConnectionMessage } from "components/experiments/SpeedyConnection/SpeedyConnectionMessage";
 
 import { useConfig } from "config";
 
@@ -27,6 +29,7 @@ const Videos = styled.div`
 
 const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
   const config = useConfig();
+  const { isExperimentVariant } = useExperimentSpeedyConnection();
 
   return (
     <>
@@ -68,9 +71,13 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
           link={config.links.demoLink}
         />
       </Videos>
-      <BigButton onClick={onNextStep} shadow>
-        <FormattedMessage id="onboarding.firstConnection" />
-      </BigButton>
+      {isExperimentVariant ? (
+        <SpeedyConnectionMessage onClick={onNextStep} />
+      ) : (
+        <BigButton onClick={onNextStep} shadow>
+          <FormattedMessage id="onboarding.firstConnection" />
+        </BigButton>
+      )}
     </>
   );
 };

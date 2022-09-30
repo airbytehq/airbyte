@@ -1,0 +1,10 @@
+@use "../../../../scss/variables";
+
+.flex {
+  display: flex;
+  gap: variables.$spacing-xl;
+}
+
+.countdownItem {
+  text-align: center;
+}

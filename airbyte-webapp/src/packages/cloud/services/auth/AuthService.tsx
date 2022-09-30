@@ -258,7 +258,10 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
       }): Promise<void> {
         // Create a user account in firebase
         const { user: firebaseUser } = await authService.signUp(form.email, form.password);
-
+        localStorage.setItem(
+          "exp-speedy-connection-timestamp",
+          JSON.stringify(new Date(new Date().getTime() + 2 * 60 * 60 * 1000))
+        );
         // Create a user in our database for that firebase user
         await createAirbyteUser(firebaseUser, { name: form.name, companyName: form.companyName, news: form.news });
 

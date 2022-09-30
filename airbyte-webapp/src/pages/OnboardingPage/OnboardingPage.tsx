@@ -1,7 +1,6 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
-import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
 import { Button } from "components";
@@ -9,7 +8,7 @@ import ApiErrorBoundary from "components/ApiErrorBoundary";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 
-import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace from "hooks/services/useWorkspace";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
@@ -60,14 +59,9 @@ const TITLE_BY_STEP: Partial<Record<StepType, string>> = {
 };
 
 const OnboardingPage: React.FC = () => {
-  const analyticsService = useAnalyticsService();
   useTrackPage(PageTrackingCodes.ONBOARDING);
 
   const navigate = useNavigate();
-
-  useEffectOnce(() => {
-    analyticsService.page("Onboarding Page");
-  });
 
   const { finishOnboarding } = useWorkspace();
   const { hasConnections, hasDestinations, hasSources } = useCurrentWorkspaceState();
