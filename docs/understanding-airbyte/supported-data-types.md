@@ -12,6 +12,7 @@ This table summarizes the available types. See the [Specific Types](#specific-ty
 
 | Airbyte type                                                   | JSON Schema                                                                              | Examples                                                                        |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Boolean                                                         | `{"type": "boolean"}`                                                                     | `true` or `false`                                                               |
 | String                                                         | `{"type": "string"}`                                                                     | `"foo bar"`                                                                     |
 | Date                                                           | `{"type": "string", "format": "date"}`                                                   | `"2021-01-23"`                                                                  |
 | Datetime with timezone                                         | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}`    | `"2022-11-22T01:23:45+05:00"`                                                   |
@@ -127,6 +128,8 @@ And emitted this record:
 ```
 
 ### Specific types
+#### Boolean
+Airbyte boolean type represents one of the two values `true` or `false` and they are are lower case. Note that values that evaluates to true or false such as data type String `"true"` or `"false"` or Integer like `1` or `0` are not accepted by the Schema.
 
 #### Dates and timestamps
 Airbyte has three temporal types: `date`, `timestamp_with_timezone`, and `timestamp_without_timezone`. These are represented as strings with specific `format` (either `date` or `date-time`).

@@ -32,15 +32,13 @@ import java.nio.file.Path;
 public class TemporalBeanFactory {
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public TrackingClient trackingClient() {
     return TrackingClientSingleton.get();
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public SyncJobFactory jobFactory(
                                    final ConfigRepository configRepository,
                                    @Property(name = "airbyte.connector.specific-resource-defaults-enabled",
@@ -55,8 +53,7 @@ public class TemporalBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public TemporalWorkerRunFactory temporalWorkerRunFactory(
                                                            @Value("${airbyte.version}") final String airbyteVersion,
                                                            final FeatureFlags featureFlags,

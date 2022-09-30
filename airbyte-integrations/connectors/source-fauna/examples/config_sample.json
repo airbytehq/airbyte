@@ -1,0 +1,13 @@
+{
+  "secret": "SECRET",
+  "domain": "db.fauna.com",
+  "port": 443,
+  "scheme": "https",
+  "collection": {
+    "page_size": 64,
+    "deletions": {
+      "deletion_mode": "deleted_field",
+      "column": "deleted_at"
+    }
+  }
+}

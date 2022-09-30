@@ -157,7 +157,7 @@ The selected records will be
 ## Filtering records
 
 Records can be filtered by adding a record_filter to the selector.
-The expression in the filter will be evaluated to a boolean returning true the record should be included.
+The expression in the filter will be evaluated to a boolean returning true if the record should be included.
 
 In this example, all records with a `created_at` field greater than the stream slice's `start_time` will be filtered out:
 
