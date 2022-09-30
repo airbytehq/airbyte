@@ -1,12 +1,44 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.airbyte.io/integrations/sources/google_ad_manager
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Google Ad Manager Spec
+  title: Google Ad Manager Source Spec
   type: object
   required:
-    - TODO
+    - ClientId
+    - ClientSecret
+    - DeveloperKey
+    - ServiceAccountName
+    - ServiceKey
+    - ProfileId
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    ClientId:
       type: string
-      description: describe me
+      description: In the form .apps.googleusercontent.com (give more info on how to find)
+      examples:
+        - "000000000000-xxxxxxxxxx.apps.googleusercontent.com"
+    ClientSecret:
+      type: string
+      description: Give more info on how to aquire
+      airbyte_secret: true
+    DeveloperKey:
+      type: string
+      description: Give more info on how to aquire
+    ServiceAccountName:
+      type: string
+      description: Of the form .iam.gserviceaccount.com (Give more info)
+      examples:
+        - "xxxx@xxxx.iam.gserviceaccount.com"
+    ServiceKey:
+      type: string
+      description: Private key for service account (give more info)
+      airbyte_secret: true
+      examples:
+        - "-----BEGIN PRIVATE KEY----- xxxxxxxx -----END PRIVATE KEY----- " 
+    ProfileId:
+      type: string
+      description: Numbers associated with your google ad manager account found in the google ad manager console on the left divider
+    CustomUnitIds:
+      type: object
+      description: Support for accessing custom ad units, passed as a json object
+      examples:
+        - { "Custom_Unit_Id": "0000000000" }
