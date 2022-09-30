@@ -10,7 +10,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -77,13 +76,6 @@ public class KafkaDestination extends BaseConnector implements Destination {
         catalog,
         outputRecordCollector,
         namingResolver);
-  }
-
-  public static void main(final String[] args) throws Exception {
-    final Destination destination = new KafkaDestination();
-    LOGGER.info("Starting destination: {}", KafkaDestination.class);
-    new IntegrationRunner(destination).run(args);
-    LOGGER.info("Completed destination: {}", KafkaDestination.class);
   }
 
 }
