@@ -21,9 +21,9 @@ import { OperationsSection } from "views/Connection/ConnectionForm/components/Op
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
 import { connectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
-import { CreateConnectionNameField } from "./components/CreateConnectionNameField";
-import { SchemaError } from "./components/SchemaError";
 import styles from "./CreateConnection.module.scss";
+import { CreateConnectionNameField } from "./CreateConnectionNameField";
+import { SchemaError } from "./SchemaError";
 
 interface CreateConnectionProps {
   source: SourceRead;
