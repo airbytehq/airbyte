@@ -168,7 +168,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       if (handleTermination(connectionUpdaterInput)) {
         prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-        return;
       }
 
     } catch (final Exception e) {
