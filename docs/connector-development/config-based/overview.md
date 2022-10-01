@@ -135,10 +135,13 @@ Stream:
       "$ref": "#/definitions/SchemaLoader"
     retriever:
       "$ref": "#/definitions/Retriever"
-    cursor_field:
-      type: array
-      items:
-        type: string
+    stream_cursor_field:
+      type: object
+      oneOf:
+        - type: string
+        - type: array
+          items:
+            type: string
     transformations:
       type: array
       items:
