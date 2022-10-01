@@ -99,9 +99,9 @@ This can be used to avoid repetitions.
 Schema:
 
 ```yaml
-  "$options":
-    type: object
-    additionalProperties: true
+"$options":
+  type: object
+  additionalProperties: true
 ```
 
 Example:
