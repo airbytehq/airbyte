@@ -98,4 +98,26 @@ For each stream, configure the following components:
 | Transformations        |                       | A set of transformations to be applied on the records read from the source before emitting them to the destination                                                                                                                   |
 | Checkpoint interval    |                       | Defines the interval, in number of records, at which incremental syncs should be checkpointed|
 
+More details on the streams's definition can be found [here](./understanding-the-yaml-file.md#defining-the-stream)
+
 The complete schema of the file can be found [here](./source_schema.yaml)
+
+## Tutorial
+
+This section a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
+
+0. [Getting started](tutorial/0-getting-started.md)
+1. [Creating a source](tutorial/1-create-source.md)
+2. [Installing dependencies](tutorial/2-install-dependencies.md)
+3. [Connecting to the API](tutorial/3-connecting-to-the-API-source.md)
+4. [Reading data](tutorial/4-reading-data.md)
+5. [Incremental reads](tutorial/5-incremental-reads.md)
+6. [Testing](tutorial/6-testing.md)
+
+## Sample connectors
+
+The following connectors can serve as example of what production-ready config-based connectors look like
+
+- [Greenhouse](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse)
+- [Sendgrid](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sendgrid/source_sendgrid/sendgrid.yaml)
+- [Sentry](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sentry/source_sentry/sentry.yaml)

@@ -828,3 +828,38 @@ MinMaxDatetime:
 ```
 
 More information on the `DatetimeStreamSlicer` can be found in the [advanced topics sections](./notareallink).
+
+## Configuring the check method
+
+The `ConnectionChecker` defines how to test the connection to the integration.
+
+The only implementation as of now is `CheckStream`, which tries to read a record from a specified list of streams and fails if no records could be read.
+
+Schema:
+
+```yaml
+ConnectionChecker:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/CheckStream"
+CheckStream:
+  type: object
+  additionalProperties: false
+  required:
+    - stream_names
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    stream_names:
+      type: array
+      items:
+        type: string
+```
+
+Example:
+
+```yaml
+check:
+  type: CheckStream
+  stream_names: [ "applications" ]
+```
