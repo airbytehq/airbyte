@@ -1,20 +1,68 @@
-{
-  "calls": {
-    "end_time": "2030-10-01T00:00:00Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "end_time": "2030-10-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "calls"
+      }
+    }
   },
-  "conferences": {
-    "date_created": "2030-10-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_created": "2030-10-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "conferences"
+      }
+    }
   },
-  "recordings": {
-    "date_created": "2030-10-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_created": "2030-10-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "recordings"
+      }
+    }
   },
-  "messages": {
-    "date_sent": "2030-10-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_sent": "2030-10-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "messages"
+      }
+    }
   },
-  "message_media": {
-    "date_created": "2030-10-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_created": "2030-10-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "message_media"
+      }
+    }
   },
-  "alerts": {
-    "date_generated": "2030-10-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_generated": "2030-10-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "alerts"
+      }
+    }
   }
-}
+]

@@ -12,7 +12,7 @@ MAIN_REQUIREMENTS = [
     "google-auth-httplib2",
     "google-api-python-client",
     "PyYAML==5.4",
-    "pydantic==1.6.2",
+    "pydantic~=1.9.2",
 ]
 
 TEST_REQUIREMENTS = [
