@@ -241,7 +241,6 @@ the resulting stream slices are
 
 ## More readings
 
-- [$options](./yaml-structure.md#options)
 - [Incremental streams](../cdk-python/incremental-stream.md)
 - [Stream slices](../cdk-python/stream-slices.md)
 - [Request options](./request-options.md)

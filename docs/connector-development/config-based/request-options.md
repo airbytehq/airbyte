@@ -142,6 +142,5 @@ stream_slicer:
 
 ## More readings
 
-- [$options](./yaml-structure.md#options)
-- [Requester](##FIXME)
+- [Requester](./overview.md#requester)
 - [Stream-slicers](stream-slicers.md).

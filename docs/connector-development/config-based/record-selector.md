@@ -362,7 +362,3 @@ resulting in the following record:
   "path3": "data_to_keep"
 }
 ```
-
-## More readings:
-
-- [$options](./yaml-structure.md#options)

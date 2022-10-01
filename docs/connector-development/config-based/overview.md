@@ -71,25 +71,6 @@ Dynamically deriving the schema from querying an endpoint is not supported.
 
 Throttling is not supported, but the connector can use exponential backoff to avoid API bans in case it gets rate limited. This can work for APIs with high rate limits, but not for those that have strict limits on a small time-window, such as the [Reddit Ads API](https://ads-api.reddit.com/docs/#section/Rate-Limits), which limits to 1 request per second.
 
-## Supported features
-
-| Feature                                                      | Support                                                                                                                                                                                                                                       |
-|--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Transport protocol                                           | HTTP                                                                                                                                                                                                                                          |
-| HTTP methods                                                 | GET, POST                                                                                                                                                                                                                                     |
-| Data format                                                  | JSON                                                                                                                                                                                                                                          |
-| Resource type                                                | Collections<br/>[Sub-collection](./substreams.md)                                                                                                                                                                                             |
-| [Pagination](./pagination.md)                                | [Page limit](./pagination.md#page-increment)<br/>[Offset](./pagination.md#offset-increment)<br/>[Cursor](./pagination.md#cursor)                                                                                                              |
-| [Authentication](./authentication.md)                        | [Header based](./authentication.md#ApiKeyAuthenticator)<br/>[Bearer](./authentication.md#BearerAuthenticator)<br/>[Basic](./authentication.md#BasicHttpAuthenticator)<br/>[OAuth](./authentication.md#OAuth)                                  |
-| Sync mode                                                    | Full refresh<br/>Incremental                                                                                                                                                                                                                  |
-| Schema discovery                                             | Static schemas                                                                                                                                                                                                                                |
-| [Stream slicing](./stream-slicers.md)                        | [Datetime](./stream-slicers.md#Datetime), [lists](./stream-slicers.md#list-stream-slicer), [parent-resource id](./stream-slicers.md#Substream-slicer)                                                                                         |
-| [Record transformation](./record-selector.md)                | [Field selection](./record-selector.md#selecting-a-field)<br/>[Adding fields](./record-selector.md#adding-fields)<br/>[Removing fields](./record-selector.md#removing-fields)<br/>[Filtering records](./record-selector.md#filtering-records) |
-| [Error detection](./error-handling.md)                       | [From HTTP status  code](./error-handling.md#from-status-code)<br/>[From error message](./error-handling.md#from-error-message)                                                                                                               |
-| [Backoff strategies](./error-handling.md#Backoff-Strategies) | [Exponential](./error-handling.md#Exponential-backoff)<br/>[Constant](./error-handling.md#Constant-Backoff)<br/>[Derived from headers](./error-handling.md#Wait-time-defined-in-header)                                                       |
-
-If a feature you require is not supported, you can [request the feature](../../contributing-to-airbyte/README.md#requesting-new-features) and use the [Python CDK](../cdk-python/README.md).
-
 ## Source
 
 Config-based connectors are a declarative way to define HTTP API sources.
@@ -363,7 +344,6 @@ The following connectors can serve as example of what production-ready config-ba
 
 ## More readings
 
-- [$options](./yaml-structure.md#options)
 - [RequestOptionsProvider](./request-options.md#request-options-provider)
 - [Pagination](./pagination.md)
 - [Stream slicers](./stream-slicers.md)

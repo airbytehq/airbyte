@@ -226,8 +226,3 @@ the first request will be sent as `https://cloud.airbyte.com/api/get_data`
 
 Assuming the response's next url is `https://cloud.airbyte.com/api/get_data?page=1&page_size=100`,
 the next request will be sent as `https://cloud.airbyte.com/api/get_data?page=1&page_size=100`
-
-## More readings
-
-- [$options](./yaml-structure.md#options)
-- [Request options](./request-options.md)

@@ -86,5 +86,4 @@ parent_streams_configs:
 
 ## More readings
 
-- [$options](./yaml-structure.md#options)
 - [Stream slicers](./stream-slicers.md)

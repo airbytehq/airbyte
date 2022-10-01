@@ -347,5 +347,4 @@ requester:
 
 ## More readings
 
-- [Requester](#FIXME)
-- [$options](./yaml-structure.md#options)
+- [Requester](./overview.md#requester)

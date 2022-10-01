@@ -186,7 +186,3 @@ authenticator:
   client_secret: "{{ config['client_secret'] }}"
   refresh_token: ""
 ```
-
-## More readings
-
-- [$options](./yaml-structure.md#options)
