@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { ChangeEvent, useState } from "react";
 
 import { Input } from "components";
+import { Text } from "components/ui/Text";
 
 import { buildConnectionUpdate } from "core/domain/connection";
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
@@ -85,7 +86,9 @@ export const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) =>
       ) : (
         <button className={styles.nameContainer} onClick={() => setEditingState(true)}>
           <div>
-            <h2>{name}</h2>
+            <Text as="h2" size="lg">
+              {name}
+            </Text>
           </div>
           <FontAwesomeIcon className={styles.icon} icon={faPenToSquare} />
         </button>
