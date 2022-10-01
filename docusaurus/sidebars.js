@@ -164,10 +164,10 @@ module.exports = {
       },      
       items: [
         {
-          type: 'category'
-          label: 'Creating your first HTTP API Source'
+          type: 'category',
+          label: 'Creating your first HTTP API Source',
           items: [
-            'connector-development/config-based'
+            'connector-development/config-based/index',
             'connector-development/config-based/tutorial/getting-started'
           ]
         },
