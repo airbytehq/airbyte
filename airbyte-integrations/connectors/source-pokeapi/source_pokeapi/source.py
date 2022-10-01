@@ -9,6 +9,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from . import pokemon_list
 
@@ -49,6 +50,8 @@ class PokeapiStream(HttpStream):
 class Pokemon(PokeapiStream):
     # Set this as a noop.
     primary_key = None
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def path(self, **kwargs) -> str:
         pokemon_name = self.pokemon_name
