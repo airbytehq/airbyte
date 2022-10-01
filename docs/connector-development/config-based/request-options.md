@@ -63,6 +63,33 @@ requester:
       key: value
 ```
 
+## Request Option
+
+Some components can add request options to the requests sent to the API endpoint.
+
+Schema:
+
+```yaml
+RequestOption:
+  type: object
+  additionalProperties: false
+  required:
+    - inject_into
+  properties:
+    inject_into:
+      "$ref": "#/definitions/RequestOptionType"
+    field_name:
+      type: string
+RequestOptionType:
+  type: string
+  enum:
+    - request_parameter
+    - header
+    - path
+    - body_data
+    - body_json
+```
+
 ## Authenticators
 
 It is also possible for authenticators to set request parameters or headers as needed.

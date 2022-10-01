@@ -17,14 +17,20 @@ definitions:
     additionalProperties: true
   ConnectionChecker:
     type: object
-    required: type
+    oneOf:
+      - "$ref": "#/definitions/CheckStream"
+  CheckStream:
+    type: object
     additionalProperties: false
+    required:
+      - stream_names
     properties:
-      type:
-        description: "Check type"
-        type: string
-        enum:
-          - CheckStream
+      "$options":
+        "$ref": "#/definitions/$options"
+      stream_names:
+        type: array
+        items:
+          type: string
   Version:
     type: string
     description: "connector definition version"
@@ -37,7 +43,6 @@ definitions:
     additionalProperties: false
     required:
       - name
-      - schema_loader
       - retriever
     properties:
       "$options":
@@ -46,8 +51,6 @@ definitions:
         type: string
       primary_key:
         "$ref": "#/definitions/PrimaryKey"
-      schema_loader:
-        "$ref": "#/definitions/SchemaLoader"
       retriever:
         "$ref": "#/definitions/Retriever"
       cursor_field:
@@ -60,24 +63,18 @@ definitions:
           "$ref": "#/definitions/RecordTransformation"
       checkpoint_interval:
         type: integer
-    SchemaLoader:
-      type:
-        description: "Schema Loader type"
-        type: string
-        enum:
-          - JSON_SCHEMA
-        json_schema:
-          "$ref": "#/definitions/JsonSchema"
-    JsonSchema:
-      type: object
-      additionalProperties: false
-      required:
-        - file_path
-      properties:
-        file_path: string
-        options: object
     PrimaryKey:
-      type: string #Fixme: should be Union[str, List[str], List[List[str]]]
+      type: object
+      oneOf:
+        - string
+        - type: array
+          items:
+            type: string
+        - type: array
+          items:
+            type: array
+            items:
+              type: string
     Retriever:
       type:
       oneOf:

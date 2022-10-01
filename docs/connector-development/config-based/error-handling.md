@@ -311,17 +311,17 @@ In this example, a constant backoff of 5 seconds, will be applied if the respons
 Schema:
 
 ```yaml
-  CompositeErrorHandler:
-    type: object
-    required:
-      - error_handlers
-    additionalProperties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      error_handlers:
-        type: array
-        items:
-          "$ref": "#/definitions/ErrorHandler"
+CompositeErrorHandler:
+  type: object
+  required:
+    - error_handlers
+  additionalProperties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    error_handlers:
+      type: array
+      items:
+        "$ref": "#/definitions/ErrorHandler"
 ```
 
 Example:

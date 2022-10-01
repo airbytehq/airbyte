@@ -114,6 +114,39 @@ A stream is defined by:
 6. [Transformations](./record-selector.md#transformations) (Optional): A set of transformations to be applied on the records read from the source before emitting them to the destination
 7. [Checkpoint interval](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) (Optional): Defines the interval, in number of records, at which incremental syncs should be checkpointed
 
+Schema:
+
+```yaml
+Stream:
+  type: object
+  additionalProperties: false
+  required:
+    - name
+    - schema_loader
+    - retriever
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    name:
+      type: string
+    primary_key:
+      "$ref": "#/definitions/PrimaryKey"
+    schema_loader:
+      "$ref": "#/definitions/SchemaLoader"
+    retriever:
+      "$ref": "#/definitions/Retriever"
+    cursor_field:
+      type: array
+      items:
+        type: string
+    transformations:
+      type: array
+      items:
+        "$ref": "#/definitions/RecordTransformation"
+    checkpoint_interval:
+      type: integer
+```
+
 More details on streams and sources can be found in the [basic concepts section](../cdk-python/basic-concepts.md).
 
 ## Data retriever
@@ -179,6 +212,18 @@ SimpleRetriever:
       "$ref": "#/definitions/Paginator"
     stream_slicer:
       "$ref": "#/definitions/StreamSlicer"
+PrimaryKey:
+  type: object
+  oneOf:
+    - string
+    - type: array
+      items:
+        type: string
+    - type: array
+      items:
+        type: array
+        items:
+          type: string
 ```
 
 More details on the record selector can be found in the [record selector section](record-selector.md).
@@ -236,6 +281,11 @@ HttpRequester:
       "$ref": "#/definitions/Authenticator"
     error_handler:
       "$ref": "#/definitions/ErrorHandler"
+HttpMethod:
+  type: string
+  enum:
+    - GET
+    - POST
 ```
 
 More details on authentication can be found in the [authentication section](authentication.md).
@@ -245,6 +295,27 @@ More details on authentication can be found in the [authentication section](auth
 The `ConnectionChecker` defines how to test the connection to the integration.
 
 The only implementation as of now is `CheckStream`, which tries to read a record from a specified list of streams and fails if no records could be read.
+
+Schema:
+
+```yaml
+ConnectionChecker:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/CheckStream"
+CheckStream:
+  type: object
+  additionalProperties: false
+  required:
+    - stream_names
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    stream_names:
+      type: array
+      items:
+        type: string
+```
 
 ## Custom components
 
