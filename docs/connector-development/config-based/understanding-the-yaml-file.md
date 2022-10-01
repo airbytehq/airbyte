@@ -2,6 +2,8 @@
 
 This section deep dives into the components of the [YAML file](./index.md#configuring-the-yaml-file)
 
+The complete schema of the file can be found [here](./source_schema.yaml)
+
 ## Defining the stream
 
 Streams define the schema of the data to sync, as well as how to read it from the underlying API source.
@@ -260,7 +262,7 @@ RequestOptionType:
     - body_json
 ```
 
-## Configuring authentication
+## Configuring the authentication
 
 The `Authenticator` defines how to configure outgoing HTTP requests to authenticate on the API source.
 

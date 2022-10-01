@@ -672,6 +672,124 @@ requester:
           - type: "ExponentialBackoffStrategy"
 ```
 
+## Transformations
+
+Fields can be added or removed from records by adding `Transformation`s to a stream's definition.
+
+### Adding fields
+
+Fields can be added with the `AddFields` transformation.
+This example adds a top-level field "field1" with a value "static_value"
+
+```yaml
+stream:
+  <...>
+  transformations:
+      - type: AddFields
+        fields:
+          - path: [ "field1" ]
+            value: "static_value"
+```
+
+This example adds a top-level field "start_date", whose value is evaluated from the stream slice:
+
+```yaml
+stream:
+  <...>
+  transformations:
+      - type: AddFields
+        fields:
+          - path: [ "start_date" ]
+            value: { { stream_slice[ 'start_date' ] } }
+```
+
+Fields can also be added in a nested object by writing the fields' path as a list.
+
+Given a record of the following shape:
+
+```
+{
+  "id": 0,
+  "data":
+  {
+    "field0": "some_data"
+  }
+}
+```
+
+this definition will add a field in the "data" nested object:
+
+```yaml
+stream:
+  <...>
+  transformations:
+      - type: AddFields
+        fields:
+          - path: [ "data", "field1" ]
+            value: "static_value"
+```
+
+resulting in the following record:
+
+```
+{
+  "id": 0,
+  "data":
+  {
+    "field0": "some_data",
+    "field1": "static_value"
+  }
+}
+```
+
+### Removing fields
+
+Fields can be removed from records with the `RemoveFields` transformation.
+
+Given a record of the following shape:
+
+```
+{
+  "path": 
+  {
+    "to":
+    {
+      "field1": "data_to_remove",
+      "field2": "data_to_keep"
+    }
+  },
+  "path2": "data_to_remove",
+  "path3": "data_to_keep"
+}
+```
+
+this definition will remove the 2 instances of "data_to_remove" which are found in "path2" and "path.to.field1":
+
+```yaml
+the_stream:
+  <...>
+  transformations:
+      - type: RemoveFields
+        field_pointers:
+          - [ "path", "to", "field1" ]
+          - [ "path2" ]
+```
+
+resulting in the following record:
+
+```
+{
+  "path": 
+  {
+    "to":
+    {
+      "field2": "data_to_keep"
+    }
+  },
+  "path3": "data_to_keep"
+}
+```
+
 ## Custom components
 
 Any builtin components can be overloaded by a custom Python class.
