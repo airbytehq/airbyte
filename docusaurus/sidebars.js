@@ -163,6 +163,14 @@ module.exports = {
         id: 'connector-development/README',
       },      
       items: [
+        {
+          type: 'category'
+          label: 'Creating your first HTTP API Source'
+          items: [
+            'connector-development/config-based'
+            'connector-development/config-based/tutorial/getting-started'
+          ]
+        },
         'connector-development/tutorials/cdk-speedrun',
         {
           type: 'category',
