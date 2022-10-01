@@ -922,7 +922,7 @@ MinMaxDatetime:
       type: string
 ```
 
-More information on the `DatetimeStreamSlicer` can be found in the [advanced topics sections](./notareallink).
+More information on the `DatetimeStreamSlicer` can be found in the [advanced topics sections](./advanced-topics.md#datetimestreamslicer).
 
 ## Configuring the check method
 
