@@ -220,7 +220,7 @@ class Channels(IncrementalBigcommerceStream):
 
 class Store(BigcommerceStream):
     data_field = "store"
-    cursor_field = "id"
+    cursor_field = "store_id"
     api_version = "v2"
     data = None
 
@@ -230,6 +230,7 @@ class Store(BigcommerceStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         yield from [json_response]
+
 
 class BigcommerceAuthenticator(HttpAuthenticator):
     def __init__(self, token: str):
