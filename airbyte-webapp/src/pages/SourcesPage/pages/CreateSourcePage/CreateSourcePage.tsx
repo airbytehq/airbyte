@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { FormPageContent } from "components/ConnectorBlocks";
 import HeadTitle from "components/HeadTitle";
-import PageTitle from "components/PageTitle";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -44,7 +44,7 @@ const CreateSourcePage: React.FC = () => {
     <>
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />{" "}
       <ConnectorDocumentationWrapper>
-        <PageTitle title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
+        <PageHeader title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
         <FormPageContent>
           <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />
         </FormPageContent>

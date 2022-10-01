@@ -2,13 +2,14 @@ import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
-import { DropDownRow, LoadingPage, PageTitle } from "components";
+import { DropDownRow, LoadingPage } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { Breadcrumbs } from "components/ui/Breadcrumbs";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
@@ -88,7 +89,7 @@ const DestinationItemPage: React.FC = () => {
     <ConnectorDocumentationWrapper>
       <HeadTitle titles={[{ id: "admin.destinations" }, { title: destination.name }]} />
 
-      <PageTitle
+      <PageHeader
         title={<Breadcrumbs data={breadcrumbsData} />}
         middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
       />
