@@ -5,7 +5,7 @@ import DeleteBlock from "components/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector } from "core/domain/connector";
-import { DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { DestinationRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
@@ -17,7 +17,7 @@ import styles from "./DestinationSettings.module.scss";
 
 interface DestinationsSettingsProps {
   currentDestination: DestinationRead;
-  connectionsWithDestination: WebBackendConnectionRead[];
+  connectionsWithDestination: WebBackendConnectionListItem[];
 }
 
 const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({

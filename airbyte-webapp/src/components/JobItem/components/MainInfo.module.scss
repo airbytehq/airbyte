@@ -3,7 +3,8 @@
 
 .mainView {
   cursor: pointer;
-  height: auto;
+  height: unset !important;
+  min-height: 70px;
   padding: variables.$spacing-lg 0;
 
   .titleCell {

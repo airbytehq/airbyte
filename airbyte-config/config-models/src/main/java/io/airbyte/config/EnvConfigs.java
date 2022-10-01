@@ -10,6 +10,7 @@ import com.google.common.base.Strings;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
@@ -41,6 +42,8 @@ public class EnvConfigs implements Configs {
   // env variable names
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
+  public static final String AIRBYTE_PROTOCOL_VERSION_MAX = "AIRBYTE_PROTOCOL_VERSION_MAX";
+  public static final String AIRBYTE_PROTOCOL_VERSION_MIN = "AIRBYTE_PROTOCOL_VERSION_MIN";
   public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String AIRBYTE_API_AUTH_HEADER_NAME = "AIRBYTE_API_AUTH_HEADER_NAME";
   public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
@@ -131,7 +134,6 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
-  private static final String WORKER_PLANE = "WORKER_PLANE";
 
   // Worker - Control plane configs
   private static final String DEFAULT_DATA_SYNC_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
@@ -229,8 +231,6 @@ public class EnvConfigs implements Configs {
     this.getAllEnvKeys = envMap::keySet;
     this.logConfigs = new LogConfigs(getLogConfiguration());
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
-
-    validateSyncWorkflowConfigs();
   }
 
   private Optional<CloudStorageConfigs> getLogConfiguration() {
@@ -287,6 +287,16 @@ public class EnvConfigs implements Configs {
   @Override
   public AirbyteVersion getAirbyteVersion() {
     return new AirbyteVersion(getEnsureEnv(AIRBYTE_VERSION));
+  }
+
+  @Override
+  public Version getAirbyteProtocolVersionMax() {
+    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MAX, "0.3.0"));
+  }
+
+  @Override
+  public Version getAirbyteProtocolVersionMin() {
+    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MIN, "0.0.0"));
   }
 
   @Override
@@ -931,11 +941,6 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS, true);
   }
 
-  @Override
-  public WorkerPlane getWorkerPlane() {
-    return getEnvOrDefault(WORKER_PLANE, WorkerPlane.CONTROL_PLANE, s -> WorkerPlane.valueOf(s.toUpperCase()));
-  }
-
   // Worker - Control plane
 
   @Override
@@ -971,22 +976,6 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDataPlaneServiceAccountEmail() {
     return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_EMAIL, "");
-  }
-
-  /**
-   * Ensures the user hasn't configured themselves into a corner by making sure that the worker is set
-   * up to properly process sync workflows. With sensible defaults, it should be hard to fail this
-   * validation, but this provides a safety net regardless.
-   */
-  private void validateSyncWorkflowConfigs() {
-    if (shouldRunSyncWorkflows()) {
-      if (getWorkerPlane().equals(WorkerPlane.DATA_PLANE) && getDataSyncTaskQueues().isEmpty()) {
-        throw new IllegalArgumentException(String.format(
-            "When %s is true, the worker must either be configured as a Control Plane worker, or %s must be non-empty.",
-            SHOULD_RUN_SYNC_WORKFLOWS,
-            DATA_SYNC_TASK_QUEUES));
-      }
-    }
   }
 
   @Override

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -17,19 +18,25 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.sql.JDBCType;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import java.math.BigDecimal;
-import java.nio.file.Path;
-import java.sql.JDBCType;
-import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -157,6 +164,62 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
+  }
+
+  protected List<AirbyteMessage> getTestMessages() {
+    return List.of(
+        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_1,
+                        COL_NAME, "picard",
+                        COL_UPDATED_AT, "2004-10-19")))),
+        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_2,
+                        COL_NAME, "crusher",
+                        COL_UPDATED_AT,
+                        "2005-10-19")))),
+        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_3,
+                        COL_NAME, "vash",
+                        COL_UPDATED_AT, "2006-10-19")))));
+  }
+
+  @Override
+  protected void incrementalDateCheck() throws Exception {
+    super.incrementalCursorCheck(COL_UPDATED_AT,
+        "2005-10-18",
+        "2006-10-19",
+        Lists.newArrayList(getTestMessages().get(1),
+            getTestMessages().get(2)));
+  }
+
+  @Override
+  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>();
+    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+            .withData(Jsons.jsonNode(Map
+                .of(COL_ID, ID_VALUE_4,
+                    COL_NAME, "riker",
+                    COL_UPDATED_AT, "2006-10-19")))));
+    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+            .withData(Jsons.jsonNode(Map
+                .of(COL_ID, ID_VALUE_5,
+                    COL_NAME, "data",
+                    COL_UPDATED_AT, "2006-10-19")))));
+    final DbStreamState state = new DbStreamState()
+        .withStreamName(streamName)
+        .withStreamNamespace(namespace)
+        .withCursorField(List.of(COL_ID))
+        .withCursor("5");
+    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
+    return expectedMessages;
   }
 
 }
