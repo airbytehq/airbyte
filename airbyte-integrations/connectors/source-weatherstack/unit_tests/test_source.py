@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 from source_weatherstack.source import SourceWeatherstack
 
+
 def test_streams(mocker):
     source = SourceWeatherstack()
     config_mock = MagicMock()
