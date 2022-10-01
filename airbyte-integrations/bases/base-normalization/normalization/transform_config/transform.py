@@ -319,6 +319,7 @@ class TransformConfig:
         dbt_config = {
             "type": "clickhouse",
             "driver": "http",
+            "verify": False,
             "host": config["host"],
             "port": config["port"],
             "schema": config["database"],

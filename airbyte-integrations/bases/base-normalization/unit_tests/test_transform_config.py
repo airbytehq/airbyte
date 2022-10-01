@@ -441,6 +441,7 @@ class TestTransformConfig:
         expected = {
             "type": "clickhouse",
             "driver": "http",
+            "verify": False,
             "host": "airbyte.io",
             "port": 9440,
             "schema": "default",
