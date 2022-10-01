@@ -82,71 +82,9 @@ A source is defined by 2 components:
 
 ## Stream
 
-Streams define the schema of the data to sync, as well as how to read it from the underlying API source.
-A stream generally corresponds to a resource within the API. They are analogous to tables for a relational database source.
-
-A stream is defined by:
-
-1. A name
-2. Primary key (Optional): Used to uniquely identify records, enabling deduplication. Can be a string for single primary keys, a list of strings for composite primary keys, or a list of list of strings for composite primary keys consisting of nested fields
-3. [Schema](../cdk-python/schemas.md): Describes the data to sync
-4. [Data retriever](overview.md#data-retriever): Describes how to retrieve the data from the API
-5. [Cursor field](../cdk-python/incremental-stream.md) (Optional): Field to use as stream cursor. Can either be a string, or a list of strings if the cursor is a nested field.
-6. [Transformations](./record-selector.md#transformations) (Optional): A set of transformations to be applied on the records read from the source before emitting them to the destination
-7. [Checkpoint interval](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) (Optional): Defines the interval, in number of records, at which incremental syncs should be checkpointed
-
-Schema:
-
-```yaml
-Stream:
-  type: object
-  additionalProperties: false
-  required:
-    - name
-    - schema_loader
-    - retriever
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    name:
-      type: string
-    primary_key:
-      "$ref": "#/definitions/PrimaryKey"
-    schema_loader:
-      "$ref": "#/definitions/SchemaLoader"
-    retriever:
-      "$ref": "#/definitions/Retriever"
-    stream_cursor_field:
-      type: object
-      oneOf:
-        - type: string
-        - type: array
-          items:
-            type: string
-    transformations:
-      type: array
-      items:
-        "$ref": "#/definitions/RecordTransformation"
-    checkpoint_interval:
-      type: integer
-```
-
-More details on streams and sources can be found in the [basic concepts section](../cdk-python/basic-concepts.md).
-
 ## Data retriever
 
 The data retriever defines how to read the data for a Stream, and acts as an orchestrator for the data retrieval flow.
-There is currently only one implementation, the `SimpleRetriever`, which is defined by
-
-1. Requester: Describes how to submit requests to the API source
-2. [Paginator](./pagination.md): Describes how to navigate through the API's pages
-3. [Record selector](./record-selector.md): Describes how to extract records from a HTTP response
-4. [Stream Slicer](./stream-slicers.md): Describes how to partition the stream, enabling incremental syncs and checkpointing
-
-Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
-The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
-
-Since the `Retriever` is defined as part of the Stream configuration, different Streams for a given Source can use different `Retriever` definitions if needed.
 
 Schema:
 
@@ -161,13 +99,6 @@ Retriever:
 
 The retriever acts as a coordinator, moving the data between its components before emitting `AirbyteMessage`s that can be read by the platform.
 The `SimpleRetriever`'s data flow can be described as follows:
-
-1. Given the connection config and the current stream state, the `StreamSlicer` computes the stream slices to read.
-2. Iterate over all the stream slices defined by the stream slicer.
-3. For each stream slice,
-    1. Submit a request as defined by the requester
-    2. Select the records from the response
-    3. Repeat for as long as the paginator points to a next page
 
 Schema:
 
@@ -218,59 +149,7 @@ More details on the paginator can be found in the [pagination section](paginatio
 
 ## Requester
 
-The `Requester` defines how to prepare HTTP requests to send to the source API.
-There is currently only one implementation, the `HttpRequester`, which is defined by
-
-1. A base url: The root of the API source
-2. A path: The specific endpoint to fetch data from for a resource
-3. The HTTP method: the HTTP method to use (GET or POST)
-4. [A request options provider](./request-options.md): Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
-5. [An authenticator](./authentication.md): Defines how to authenticate to the source
-6. [An error handler](./error-handling.md): Defines how to handle errors
-
 Schema:
-
-```yaml
-Requester:
-  type: object
-  oneOf:
-    - "$ref": "#/definitions/HttpRequester"
-HttpRequester:
-  type: object
-  additionalProperties: false
-  required:
-    - name
-    - url_base
-    - path
-    - http_method
-    - request_options_provider
-    - authenticator
-    - error_handler
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    name:
-      type: string
-    url_base:
-      type: string
-      description: "base url"
-    path:
-      type: string
-      description: "path"
-    http_method:
-      "$ref": "#/definitions/HttpMethod"
-    request_options_provider:
-      "$ref": "#/definitions/RequestOptionsProvider"
-    authenticator:
-      "$ref": "#/definitions/Authenticator"
-    error_handler:
-      "$ref": "#/definitions/ErrorHandler"
-HttpMethod:
-  type: string
-  enum:
-    - GET
-    - POST
-```
 
 More details on authentication can be found in the [authentication section](authentication.md).
 
@@ -302,45 +181,6 @@ CheckStream:
 ```
 
 ## Custom components
-
-Any builtin components can be overloaded by a custom Python class.
-To create a custom component, define a new class in a new file in the connector's module.
-The class must implement the interface of the component it is replacing. For instance, a pagination strategy must implement `airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy.PaginationStrategy`.
-The class must also be a dataclass where each field represents an argument to configure from the yaml file, and an `InitVar` named options.
-
-For example:
-
-```
-@dataclass
-class MyPaginationStrategy(PaginationStrategy):
-  my_field: Union[InterpolatedString, str]
-  options: InitVar[Mapping[str, Any]]
-
-  def __post_init__(self, options: Mapping[str, Any]):
-    pass
-
-  def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
-    pass
-
-  def reset(self):
-    pass
-```
-
-This class can then be referred from the yaml file using its fully qualified class name:
-
-```yaml
-pagination_strategy:
-  class_name: "my_connector_module.MyPaginationStrategy"
-  my_field: "hello world"
-```
-
-## Sample connectors
-
-The following connectors can serve as example of what production-ready config-based connectors look like
-
-- [Greenhouse](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse)
-- [Sendgrid](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sendgrid/source_sendgrid/sendgrid.yaml)
-- [Sentry](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sentry/source_sentry/sentry.yaml)
 
 ## More readings
 
