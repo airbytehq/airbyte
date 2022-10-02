@@ -899,7 +899,7 @@ TopLevel(param=ParamType(k="v"))
 
 More details on object instantiation can be found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=factory#airbyte_cdk.sources.declarative.parsers.factory.DeclarativeComponentFactory).
 
-### $options
+## $options
 
 Parameters can be passed down from a parent component to its subcomponents using the $options key.
 This can be used to avoid repetitions.

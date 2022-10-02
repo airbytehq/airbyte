@@ -39,7 +39,7 @@ Refer to the REST API documentation for the source you want to build the connect
 | [Backoff strategies](./advanced-topics.md#backoff-strategies)                             | [Exponential](./advanced-topics.md#Exponential-backoff)<br/>[Constant](./advanced-topics.md#Constant-Backoff)<br/>[Derived from headers](./advanced-topics.md#Wait-time-defined-in-header)                                                                       |
 
 If the answer to all questions is yes, you can use the low-code framework to build a connector for the source.
-If not, you can use the CDK, and [request the feature](../../contributing-to-airbyte/README.md#requesting-new-features) and use the [Python CDK](../cdk-python/README.md).
+Otherwise, you can use the [Python CDK](../cdk-python/README.md), and [request the feature](../../contributing-to-airbyte/README.md#requesting-new-features).
 
 ## Prerequisites
 
@@ -53,7 +53,7 @@ If not, you can use the CDK, and [request the feature](../../contributing-to-air
 1. Generate the API key for the source you want to build a connector for
 2. Set up the project on your local machine
 3. Set up your local development environment
-4. Update the connector spec and config​uration
+4. Update the connector spec and configuration
 5. Update the connector definition
 6. Test the connector
 7. Add the connector to the Airbyte platform
@@ -85,22 +85,22 @@ check:
 
 For each stream, configure the following components:
 
-| Component              | Sub-component         | Description                                                                                                                                                                                                                          |
-|------------------------|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Name                   |                       | Name of the stream                                                                                                                                                                                                                   |
+| Component              | Sub-component         | Description                                                                                                                                                                                                                         |
+|------------------------|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Name                   |                       | Name of the stream                                                                                                                                                                                                                  |
 | Primary Key (Optional) |                       | Used to uniquely identify records, enabling deduplication. Can be a string for single primary keys, a list of strings for composite primary keys, or a list of list of strings for composite primary keys consisting of nested fields |
-| Data retriever         |                       | Describes how to retrieve data from the API                                                                                                                                                                                          |
-|                        | Requester             | Describes how to prepare HTTP requests to send to the source API and defines the base URL and path, the request options provider, the HTTP method, authenticator, error handler components                                           |
-|                        | Pagination (Optional) | Describes how to navigate through the API's pages                                                                                                                                                                                    |
-|                        | Record selector       | Describes how to extract records from a HTTP response                                                                                                                                                                                |
-|                        | Stream slicer         | Describes how to partition the stream, enabling incremental syncs and checkpointing                                                                                                                                                  |
-| Cursor field           |                       | Field to use as stream cursor. Can either be a string, or a list of strings if the cursor is a nested field.                                                                                                                         |
-| Transformations        |                       | A set of transformations to be applied on the records read from the source before emitting them to the destination                                                                                                                   |
+| Data retriever         |                       | Describes how to retrieve data from the API                                                                                                                                                                                         |
+|                        | Requester             | Describes how to prepare HTTP requests to send to the source API and defines the base URL and path, the request options provider, the HTTP method, authenticator, error handler components                                          |
+|                        | Pagination (Optional) | Describes how to navigate through the API's pages                                                                                                                                                                                   |
+|                        | Record selector       | Describes how to extract records from a HTTP response                                                                                                                                                                               |
+|                        | Stream slicer         | Describes how to partition the stream, enabling incremental syncs and checkpointing                                                                                                                                                 |
+| Cursor field           |                       | Field to use as stream cursor. Can either be a string, or a list of strings if the cursor is a nested field                                                                                                                         |
+| Transformations        |                       | A set of transformations to be applied on the records read from the source before emitting them to the destination                                                                                                                  |
 | Checkpoint interval    |                       | Defines the interval, in number of records, at which incremental syncs should be checkpointed|
 
-More details on the streams's definition can be found [here](./understanding-the-yaml-file.md#defining-the-stream)
+More details on the streams's definition can be found [here](./understanding-the-yaml-file.md#defining-the-stream).
 
-The complete schema of the file can be found [here](./source_schema.yaml)
+The complete schema of the file can be found [here](./source_schema.yaml).
 
 ## Tutorial
 

@@ -56,7 +56,7 @@ The data retriever defines how to read the data for a Stream and acts as an orch
 
 It is described by:
 
-1. Requester: Describes how to submit requests to the API source
+1. [Requester](#configuring-the-requester): Describes how to submit requests to the API source
 2. [Paginator](#configuring-the-paginator): Describes how to navigate through the API's pages
 3. [Record selector](#configuring-the-paginator): Describes how to extract records from a HTTP response
 4. [Stream Slicer](./advanced-topics.md#stream-slicers): Describes how to partition the stream, enabling incremental syncs and checkpointing
