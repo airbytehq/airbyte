@@ -9,12 +9,16 @@ import uuid
 import json
 from collections import defaultdict
 from asyncio.log import logger
+from logging import getLogger
 
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+
+
+logger = getLogger("airbyte")
 
 
 class DestinationDuckdb(Destination):
@@ -40,7 +44,6 @@ class DestinationDuckdb(Destination):
     ) -> Iterable[AirbyteMessage]:
 
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -54,85 +57,92 @@ class DestinationDuckdb(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         streams = {s.stream.name for s in configured_catalog.streams}
+        logger.info(f"Starting write to DuckDB with {len(streams)} streams")
+
         path = config.get("destination_path")
         path = self._get_destination_path(path)
         # check if file exists
 
         if os.path.isfile(path):
-            con = duckdb.connect(database=path, read_only=True)
+            con = duckdb.connect(database=path, read_only=False)
             logger.info(f"Existing DuckDB file opened at {path}")
 
         else:
             con = duckdb.connect(database=path, read_only=False)
             logger.info(f"Empty DuckDB file created at {path}")
 
-        with con:
-            # create the tables if needed
-            for configured_stream in configured_catalog.streams:
-                name = configured_stream.stream.name
-                table_name = f"_airbyte_raw_{name}"
-                if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                    # delete the tables
-                    query = """
-                    DROP TABLE IF EXISTS {}
-                    """.format(
-                        table_name
-                    )
-                    con.execute(query)
-                # create the table if needed
+        # create the tables if needed
+        # con.execute("BEGIN TRANSACTION")
+        for configured_stream in configured_catalog.streams:
+
+            name = configured_stream.stream.name
+            table_name = f"_airbyte_raw_{name}"
+            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                # delete the tables
+                logger.info(f"--- {streams}")
                 query = """
-                CREATE TABLE IF NOT EXISTS {table_name} (
-                    _airbyte_ab_id TEXT PRIMARY KEY,
-                    _airbyte_emitted_at TEXT,
-                    _airbyte_data TEXT
-                )
+                DROP TABLE IF EXISTS {}
                 """.format(
-                    table_name=table_name
+                    table_name
                 )
                 con.execute(query)
+            # create the table if needed
+            query = f"""
+            CREATE TABLE IF NOT EXISTS {table_name} (
+                _airbyte_ab_id TEXT PRIMARY KEY,
+                _airbyte_emitted_at TEXT,
+                _airbyte_data TEXT
+            )
+            """
 
-            buffer = defaultdict(list)
+            con.execute(query)
 
-            for message in input_messages:
-                if message.type == Type.STATE:
-                    # flush the buffer
-                    for stream_name in buffer.keys():
+        buffer = defaultdict(list)
 
-                        query = """
-                        INSERT INTO {table_name}
-                        VALUES (?,?,?)
-                        """.format(
-                            table_name=f"_airbyte_raw_{stream_name}"
-                        )
+        for message in input_messages:
 
-                        con.executemany(query, buffer[stream_name])
+            if message.type == Type.STATE:
+                # flush the buffer
+                for stream_name in buffer.keys():
 
-                    con.commit()
-                    buffer = defaultdict(list)
+                    logger.info(f"4---mesage: {message}")
+                    query = """
+                    INSERT INTO {table_name}
+                    VALUES (?,?,?)
+                    """.format(
+                        table_name=f"_airbyte_raw_{stream_name}"
+                    )
+                    logger.info(f"query: {query}")
 
-                    yield message
-                elif message.type == Type.RECORD:
-                    data = message.record.data
-                    stream = message.record.stream
-                    if stream not in streams:
-                        logger.debug(f"Stream {stream} was not present in configured streams, skipping")
-                        continue
+                    con.executemany(query, buffer[stream_name])
 
-                    # add to buffer
-                    buffer[stream].append((str(uuid.uuid4()), datetime.datetime.now().isoformat(), json.dumps(data)))
+                con.commit()
+                buffer = defaultdict(list)
 
-            # flush any remaining messages
-            for stream_name in buffer.keys():
+                yield message
+            elif message.type == Type.RECORD:
+                data = message.record.data
+                stream = message.record.stream
+                if stream not in streams:
+                    logger.debug(f"Stream {stream} was not present in configured streams, skipping")
+                    continue
 
-                query = """
-                INSERT INTO {table_name}
-                VALUES (?,?,?)
-                """.format(
-                    table_name=f"_airbyte_raw_{stream_name}"
-                )
+                # add to buffer
+                buffer[stream].append((str(uuid.uuid4()), datetime.datetime.now().isoformat(), json.dumps(data)))
+            else:
+                logger.info(f"Message type {message.type} not supported, skipping")
 
-                con.executemany(query, buffer[stream_name])
+        # flush any remaining messages
+        for stream_name in buffer.keys():
 
+            query = """
+            INSERT INTO {table_name}
+            VALUES (?,?,?)
+            """.format(
+                table_name=f"_airbyte_raw_{stream_name}"
+            )
+
+            con.executemany(query, buffer[stream_name])
             con.commit()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
