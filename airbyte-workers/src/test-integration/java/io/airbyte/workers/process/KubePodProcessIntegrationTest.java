@@ -109,10 +109,10 @@ public class KubePodProcessIntegrationTest {
   @RetryingTest(3)
   public void testInitKubePortManagerSingletonTwice() throws Exception {
     /**
-     * Test init KubePortManagerSingleton twice: 1. with same ports shoule succeed 2. with different
+     * Test init KubePortManagerSingleton twice: 1. with same ports should succeed 2. with different
      * port should fail
      *
-     * Every test has been init firt times in BeforeAll with getOpenPorts(30)
+     * Every test has been init once in BeforeAll with getOpenPorts(30)
      */
 
     KubePortManagerSingleton originalKubePortManager = KubePortManagerSingleton.getInstance();
