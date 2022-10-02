@@ -1,9 +1,10 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useField } from "formik";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
 import { MenuListProps } from "react-select";
-import styled from "styled-components";
 
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
@@ -17,6 +18,7 @@ import {
   SingleValueProps,
   SingleValueView,
 } from "components/ui/DropDown";
+import { Text } from "components/ui/Text";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
@@ -29,56 +31,7 @@ import { naturalComparator } from "utils/objects";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 import { WarningMessage } from "../WarningMessage";
-
-const BottomElement = styled.div`
-  background: ${({ theme }) => theme.greyColor0};
-  padding: 6px 16px 8px;
-  width: 100%;
-  min-height: 34px;
-  border-top: 1px solid ${({ theme }) => theme.greyColor20};
-  position: relative;
-
-  cursor: pointer;
-
-  color: ${({ theme }) => theme.textColor};
-  &:hover {
-    color: ${({ theme }) => theme.primaryColor};
-  }
-`;
-
-const Text = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
-
-const Label = styled.div`
-  margin-left: 13px;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 17px;
-`;
-
-const Stage = styled.div`
-  padding: 2px 6px;
-  height: 14px;
-  background: ${({ theme }) => theme.greyColor20};
-  border-radius: 25px;
-  text-transform: uppercase;
-  font-weight: 500;
-  font-size: 8px;
-  line-height: 10px;
-  color: ${({ theme }) => theme.textColor};
-`;
-
-const SingleValueContent = styled(components.SingleValue)`
-  width: 100%;
-  padding-right: 38px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-`;
+import styles from "./ConnectorServiceTypeControl.module.scss";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MenuWithRequestButtonProps = MenuListProps<DropDownOptionDataItem, false> & { selectProps: any };
@@ -103,11 +56,15 @@ function getOrderForReleaseStage(stage?: ReleaseStage): number {
 const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => (
   <>
     <components.MenuList {...props}>{children}</components.MenuList>
-    <BottomElement
-      onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}
-    >
-      <FormattedMessage id="connector.requestConnectorBlock" />
-    </BottomElement>
+    <div className={styles.connectorListFooter}>
+      <button
+        className={styles.requestNewConnectorBtn}
+        onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}
+      >
+        <FontAwesomeIcon icon={faPlus} />
+        <FormattedMessage id="connector.requestConnectorBlock" />
+      </button>
+    </div>
   </>
 );
 
@@ -121,9 +78,9 @@ const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage })
   }
 
   return (
-    <Stage>
+    <div className={styles.stageLabel}>
       <FormattedMessage id={`connector.releaseStage.${releaseStage}`} defaultMessage={releaseStage} />
-    </Stage>
+    </div>
   );
 };
 
@@ -131,10 +88,10 @@ const Option: React.FC<DropDownOptionProps> = (props) => {
   return (
     <components.Option {...props}>
       <OptionView data-testid={props.data.label} isSelected={props.isSelected} isDisabled={props.isDisabled}>
-        <Text>
+        <div className={styles.connectorName}>
           {props.data.img || null}
-          <Label>{props.label}</Label>
-        </Text>
+          <Text size="lg">{props.label}</Text>
+        </div>
         <StageLabel releaseStage={props.data.releaseStage} />
       </OptionView>
     </components.Option>
@@ -147,10 +104,10 @@ const SingleValue: React.FC<SingleValueProps<any>> = (props) => {
     <SingleValueView>
       {props.data.img && <SingleValueIcon>{props.data.img}</SingleValueIcon>}
       <div>
-        <SingleValueContent {...props}>
+        <components.SingleValue className={styles.singleValueContent} {...props}>
           {props.data.label}
           <StageLabel releaseStage={props.data.releaseStage} />
-        </SingleValueContent>
+        </components.SingleValue>
       </div>
     </SingleValueView>
   );
