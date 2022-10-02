@@ -115,7 +115,6 @@ class GithubStream(HttpStream, ABC):
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
-            error_msg = str(e.response.json().get("message"))
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
@@ -128,6 +127,7 @@ class GithubStream(HttpStream, ABC):
                 else:
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
             elif e.response.status_code == requests.codes.FORBIDDEN:
+                error_msg = str(e.response.json().get("message"))
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
@@ -153,7 +153,8 @@ class GithubStream(HttpStream, ABC):
                     f"`{stream_slice['repository']}`, it seems like this repository is empty."
                 )
             else:
-                self.logger.error(f"Undefined error while reading records: {error_msg}")
+                # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
+                self.logger.error(f"Undefined error while reading records: {e.response.text}")
                 raise e
 
             self.logger.warn(error_msg)
@@ -1335,6 +1336,61 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
                 yield record
             if created_at < break_point:
                 break
+
+
+class WorkflowJobs(SemiIncrementalMixin, GithubStream):
+    """
+    Get all workflow jobs for a workflow run
+    API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
+    """
+
+    cursor_field = "completed_at"
+
+    def __init__(self, parent: WorkflowRuns, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/runs/{stream_slice['run_id']}/jobs"
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        parent_stream_state = None
+        if stream_state is not None:
+            parent_stream_state = {repository: {self.parent.cursor_field: v[self.cursor_field]} for repository, v in stream_state.items()}
+        parent_stream_slices = self.parent.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_stream_state)
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=parent_stream_state
+            )
+            for record in parent_records:
+                stream_slice["run_id"] = record["id"]
+                yield from super().read_records(
+                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                )
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        for record in response.json()["jobs"]:
+            if record.get(self.cursor_field):
+                yield self.transform(record=record, stream_slice=stream_slice)
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params["filter"] = "all"
+        return params
 
 
 class TeamMembers(GithubStream):
