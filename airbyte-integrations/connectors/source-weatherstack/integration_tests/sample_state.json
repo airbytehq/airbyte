@@ -1,0 +1,14 @@
+{
+  "current_weather": {
+    "historical_date": "2022-07-20"
+  },
+  "forecast": {
+    "historical_date": "2022-07-20"
+  },
+  "historical": {
+    "historical_date": "2022-07-20"
+  },
+  "location_lookup": {
+    "historical_date": "2022-07-20"
+  }
+}
