@@ -57,9 +57,9 @@ The data retriever defines how to read the data for a Stream and acts as an orch
 It is described by:
 
 1. Requester: Describes how to submit requests to the API source
-2. [Paginator](./pagination.md): Describes how to navigate through the API's pages
-3. [Record selector](./record-selector.md): Describes how to extract records from a HTTP response
-4. [Stream Slicer](./stream-slicers.md): Describes how to partition the stream, enabling incremental syncs and checkpointing
+2. [Paginator](#configuring-the-paginator): Describes how to navigate through the API's pages
+3. [Record selector](#configuring-the-paginator): Describes how to extract records from a HTTP response
+4. [Stream Slicer](./advanced-topics.md#stream-slicers): Describes how to partition the stream, enabling incremental syncs and checkpointing
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
@@ -119,9 +119,9 @@ There is currently only one implementation, the `HttpRequester`, which is define
 1. A base url: The root of the API source
 2. A path: The specific endpoint to fetch data from for a resource
 3. The HTTP method: the HTTP method to use (GET or POST)
-4. [A request options provider](./request-options.md): Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
-5. [An authenticator](./authentication.md): Defines how to authenticate to the source
-6. [An error handler](./error-handling.md): Defines how to handle errors
+4. [A request options provider](#request-options-provider): Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
+5. [An authenticator](#configuring-the-authentication): Defines how to authenticate to the source
+6. [An error handler](./advanced-topics.md#error-handling): Defines how to handle errors
 
 The schema of a request object is:
 
@@ -923,8 +923,6 @@ MinMaxDatetime:
     max_datetime:
       type: string
 ```
-
-More information on the `DatetimeStreamSlicer` can be found in the [advanced topics sections](./advanced-topics.md#datetimestreamslicer).
 
 ## Configuring the check method
 

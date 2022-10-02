@@ -237,7 +237,7 @@ the resulting stream slices are
 
 [^1] This is a slight oversimplification. See [update cursor section](#cursor-update) for more details on how the cursor is updated.
 
-### SubstreamSlicers
+### SubstreamSlicer
 
 Substreams are streams that depend on the records on another stream
 
@@ -323,7 +323,7 @@ parent_streams_configs:
 
 ## Nested streams
 
-Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamSlicer`](#substreamslicers)
+Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamSlicer`](#SubstreamSlicer)
 
 ## Error handling
 
@@ -1061,7 +1061,7 @@ If the input string is a raw string, the interpolated string will be the same.
 `"hello world" -> "hello world"`
 
 The engine will evaluate the content passed within `{{...}}`, interpolating the keys from context-specific arguments.
-The "options" keyword [see ($options)](yaml-structure.md#object-instantiation) can be referenced.
+The "options" keyword [see ($options)](#object-instantiation) can be referenced.
 
 For example, some_object.inner_object.key will evaluate to "Hello airbyte" at runtime.
 
@@ -1074,7 +1074,7 @@ some_object:
 ```
 
 Some components also pass in additional arguments to the context.
-This is the case for the [record selector](record-selector.md), which passes in an additional `response` argument.
+This is the case for the [record selector](./understanding-the-yaml-file.md#configuring-the-record-selector), which passes in an additional `response` argument.
 
 Both dot notation and bracket notations (with single quotes ( `'`)) are interchangeable.
 This means that both these string templates will evaluate to the same string:

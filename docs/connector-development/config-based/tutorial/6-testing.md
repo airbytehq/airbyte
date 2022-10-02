@@ -41,8 +41,8 @@ Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com
 
 ## Read more:
 
-- [Error handling](../error-handling.md)
-- [Pagination](../pagination.md)
+- [Error handling](../advanced-topics.md#error-handling)
+- [Pagination](../understanding-the-yaml-file.md#configuring-the-paginator)
 - [Testing connectors](../../testing-connectors/README.md)
 - [Contribution guide](../../../contributing-to-airbyte/README.md)
 - [Greenhouse source](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse)
