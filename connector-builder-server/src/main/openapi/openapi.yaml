@@ -15,14 +15,14 @@ externalDocs:
   url: "https://docs.airbyte.com/connector-development/config-based/overview/"
 
 paths:
-  /v1/stream/test:
+  /v1/stream/read:
     post:
-      summary: Tests the read of a specific stream in the source
+      summary: Reads a specific stream in the source
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StreamTestRequestBody"
+              $ref: "#/components/schemas/StreamReadRequestBody"
         required: true
       responses:
         "200":
@@ -30,7 +30,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StreamTestRead"
+                $ref: "#/components/schemas/StreamRead"
         "400":
           $ref: "#/components/responses/ExceptionResponse"
         "422":
@@ -58,7 +58,7 @@ paths:
 
 components:
   schemas:
-    StreamTestRead:
+    StreamRead:
       type: object
       required:
         - results
@@ -109,7 +109,12 @@ components:
                   headers:
                     type: object
                     description: The headers of the HTTP response
-    StreamTestRequestBody:
+        logs:
+          type: array
+          description: The log messages coming from the read operation
+          items:
+            type: string
+    StreamReadRequestBody:
       type: object
       required:
         - definition
@@ -120,7 +125,7 @@ components:
           description: The config-based connector definition contents
         stream:
           type: string
-          description: Name of the stream to test
+          description: Name of the stream to read
     ConnectorDefinitionBody:
       $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
     StreamsListRequestBody:
