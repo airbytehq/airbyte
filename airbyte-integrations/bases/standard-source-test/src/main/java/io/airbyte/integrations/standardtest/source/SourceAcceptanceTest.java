@@ -153,9 +153,10 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    */
   @Test
   public void testDiscover() throws Exception {
-    final AirbyteCatalog discoverOutput = runDiscover();
-    assertNotNull(discoverOutput, "Expected discover to produce a catalog");
-    verifyCatalog(discoverOutput);
+    final String discoverOutput = runDiscover();
+    final AirbyteCatalog discoveredCatalog = getLastPersistedCatalog();
+    assertNotNull(discoveredCatalog, "Expected discover to produce a catalog");
+    verifyCatalog(discoveredCatalog);
   }
 
   /**

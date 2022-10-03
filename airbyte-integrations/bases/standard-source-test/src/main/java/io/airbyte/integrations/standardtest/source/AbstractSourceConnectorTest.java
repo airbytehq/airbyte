@@ -6,6 +6,9 @@ package io.airbyte.integrations.standardtest.source;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.EnvConfigs;
@@ -16,6 +19,7 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -42,6 +46,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,6 +106,14 @@ public abstract class AbstractSourceConnectorTest {
 
   private WorkerConfigs workerConfigs;
 
+  private ConfigRepository mConfigRepository;
+
+  private final ArgumentCaptor<AirbyteCatalog> lastPersistedCatalog = ArgumentCaptor.forClass(AirbyteCatalog.class);
+
+  protected AirbyteCatalog getLastPersistedCatalog() {
+    return lastPersistedCatalog.getValue();
+  }
+
   @BeforeEach
   public void setUpInternal() throws Exception {
     final Path testDir = Path.of("/tmp/airbyte_tests/");
@@ -110,6 +123,7 @@ public abstract class AbstractSourceConnectorTest {
     localRoot = Files.createTempDirectory(testDir, "output");
     environment = new TestDestinationEnv(localRoot);
     workerConfigs = new WorkerConfigs(new EnvConfigs());
+    mConfigRepository = mock(ConfigRepository.class);
     processFactory = new DockerProcessFactory(
         workerConfigs,
         workspaceRoot,
@@ -146,11 +160,14 @@ public abstract class AbstractSourceConnectorTest {
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection().getStatus().toString();
   }
 
-  protected AirbyteCatalog runDiscover() throws Exception {
-    return new DefaultDiscoverCatalogWorker(
+  protected String runDiscover() throws Exception {
+    final String toReturn = new DefaultDiscoverCatalogWorker(
+        mConfigRepository,
         workerConfigs,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
-            .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot).getDiscoverCatalog();
+            .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot).getDiscoverCatalogId();
+    verify(mConfigRepository).writeActorCatalogFetchEvent(lastPersistedCatalog.capture(), any(), any(), any());
+    return toReturn;
   }
 
   protected void checkEntrypointEnvVariable() throws Exception {
