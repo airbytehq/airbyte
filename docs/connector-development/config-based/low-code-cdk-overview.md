@@ -3,7 +3,7 @@
 Airbyte’s low-code framework enables you to build source connectors for REST APIs by modifying boilerplate YAML files.
 
 :::warning 
-The low-code framework is in [alpha](https://docs.airbyte.com/project-overview/product-release-stages/#alpha), which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests directly with us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
+The low-code framework is in [alpha](https://docs.airbyte.com/project-overview/product-release-stages/#alpha), which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our [Slack channel](https://airbytehq.slack.com/join/shared_invite/zt-1bx4v2t4m-vhZaQu1OdJTyk1M1nSxjBA#/shared-invite/email) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
 :::
 
 ## What connectors can I build using the low-code framework?
