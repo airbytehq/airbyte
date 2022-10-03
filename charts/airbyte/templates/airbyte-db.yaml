@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
         - name: airbyte-db-container
-          image: airbyte/db:{{ .Values.global.image.tag | default "a03509b" }}
+          image: airbyte/db:{{ ((.Values.global.image).tag) | default "a03509b" }}
           env:
             - name: POSTGRES_DB
               value: {{ .Values.postgresql.postgresqlDatabase }}
