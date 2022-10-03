@@ -3,7 +3,7 @@
 .formContainer {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: variables.$spacing-md;
 }
 
 .readonly {
@@ -15,7 +15,7 @@
   flex-direction: row;
   justify-content: flex-start;
   align-items: flex-start;
-  gap: 10px;
+  gap: variables.$spacing-md;
 }
 
 .leftFieldCol {

@@ -2,7 +2,7 @@ import { Field, FieldProps } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { ControlLabels } from "components/LabeledControl";
-import { Input } from "components/ui";
+import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 
 import { Section } from "views/Connection/ConnectionForm/components/Section";
