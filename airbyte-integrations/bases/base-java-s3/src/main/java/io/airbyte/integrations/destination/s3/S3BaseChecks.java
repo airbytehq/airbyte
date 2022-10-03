@@ -87,7 +87,7 @@ public final class S3BaseChecks {
     if (endpoint == null || endpoint.length() == 0) {
       return true;
     } else {
-      return endpoint.contains("https://");
+      return endpoint.startsWith("https://");
     }
   }
 

@@ -24,6 +24,7 @@ public class S3DestinationStrictEncrypt extends S3Destination {
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig destinationConfig = this.configFactory.getS3DestinationConfig(config, super.storageProvider());
 
+    // Fails early to avoid extraneous validations checks if custom endpoint is not secure
     if (!S3BaseChecks.testCustomEndpointSecured(destinationConfig.getEndpoint())) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
