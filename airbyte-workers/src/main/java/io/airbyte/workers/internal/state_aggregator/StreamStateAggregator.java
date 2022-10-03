@@ -17,6 +17,7 @@ class StreamStateAggregator implements StateAggregator {
 
   @Override
   public void ingest(final AirbyteStateMessage stateMessage) {
+    stateMessage.setData(null);
     aggregatedState.put(stateMessage.getStream().getStreamDescriptor(), stateMessage);
   }
 

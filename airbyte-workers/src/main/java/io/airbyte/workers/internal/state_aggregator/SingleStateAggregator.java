@@ -24,6 +24,7 @@ class SingleStateAggregator implements StateAggregator {
     if (state.getType() == null || state.getType() == AirbyteStateType.LEGACY) {
       return new State().withState(state.getData());
     } else {
+      state.setData(null);
       return new State()
           .withState(Jsons.jsonNode(List.of(state)));
     }
