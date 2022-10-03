@@ -6,14 +6,14 @@ import { MenuListProps } from "react-select";
 import styled from "styled-components";
 
 import { ControlLabels, DropDown, DropDownRow } from "components";
-import { IDataItem, IProps as OptionProps, OptionView } from "components/base/DropDown/components/Option";
+import { ConnectorIcon } from "components/ConnectorIcon";
+import { GAIcon } from "components/icons/GAIcon";
+import { IDataItem, IProps as OptionProps, OptionView } from "components/ui/DropDown/components/Option";
 import {
   Icon as SingleValueIcon,
   IProps as SingleValueProps,
   ItemView as SingleValueView,
-} from "components/base/DropDown/components/SingleValue";
-import { ConnectorIcon } from "components/ConnectorIcon";
-import { GAIcon } from "components/icons/GAIcon";
+} from "components/ui/DropDown/components/SingleValue";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
@@ -28,17 +28,16 @@ import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumenta
 import { WarningMessage } from "../WarningMessage";
 
 const BottomElement = styled.div`
-  background: ${(props) => props.theme.greyColro0};
+  background: ${({ theme }) => theme.greyColor0};
   padding: 6px 16px 8px;
   width: 100%;
   min-height: 34px;
-  border-top: 1px solid ${(props) => props.theme.greyColor20};
-`;
+  border-top: 1px solid ${({ theme }) => theme.greyColor20};
+  position: relative;
 
-const Block = styled.div`
   cursor: pointer;
-  color: ${({ theme }) => theme.textColor};
 
+  color: ${({ theme }) => theme.textColor};
   &:hover {
     color: ${({ theme }) => theme.primaryColor};
   }
@@ -101,10 +100,10 @@ function getOrderForReleaseStage(stage?: ReleaseStage): number {
 const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => (
   <>
     <components.MenuList {...props}>{children}</components.MenuList>
-    <BottomElement>
-      <Block onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}>
-        <FormattedMessage id="connector.requestConnectorBlock" />
-      </Block>
+    <BottomElement
+      onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}
+    >
+      <FormattedMessage id="connector.requestConnectorBlock" />
     </BottomElement>
   </>
 );
@@ -201,8 +200,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
           }
           return naturalComparator(a.label, b.label);
         }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [availableServices, orderOverwrite]
+    [availableConnectorDefinitions, orderOverwrite]
   );
 
   const { setDocumentationUrl } = useDocumentationPanelContext();

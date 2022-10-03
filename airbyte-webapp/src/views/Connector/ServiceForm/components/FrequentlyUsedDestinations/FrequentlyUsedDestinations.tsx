@@ -2,7 +2,9 @@ import { useField } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { SlickSlider, ConnectorCard, Spinner } from "components";
+import { ConnectorCard } from "components";
+import { SlickSlider } from "components/ui/SlickSlider";
+import { Spinner } from "components/ui/Spinner";
 
 import { DestinationConnectorCard } from "../../types";
 import styles from "./FrequentlyUsedDestinations.module.scss";

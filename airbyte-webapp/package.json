@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.7",
+  "version": "0.40.10",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -144,7 +144,7 @@
     "src/**/*.{css,scss,md,json}": [
       "prettier --write"
     ],
-    "src/**/*.{css,scss}": [
+    "{public,src}/**/*.{css,scss}": [
       "stylelint --fix"
     ]
   },

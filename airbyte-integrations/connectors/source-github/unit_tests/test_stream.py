@@ -41,6 +41,7 @@ from source_github.streams import (
     TeamMemberships,
     Teams,
     Users,
+    WorkflowJobs,
     WorkflowRuns,
 )
 from source_github.utils import read_full_refresh
@@ -58,12 +59,7 @@ def test_internal_server_error_retry(time_mock):
     stream_slice = {"repository": "airbytehq/airbyte", "comment_id": "id"}
 
     time_mock.reset_mock()
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions",
-        status=HTTPStatus.INTERNAL_SERVER_ERROR,
-        json={"message": "Server Error"},
-    )
+    responses.add("GET", "https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions", status=HTTPStatus.INTERNAL_SERVER_ERROR)
     with pytest.raises(BaseBackoffException):
         list(stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
 
@@ -1078,6 +1074,107 @@ def test_stream_workflow_runs_read_incremental(monkeypatch):
     ]
 
     assert len(responses.calls) == 4
+
+
+@responses.activate
+def test_stream_workflow_jobs_read():
+
+    repository_args = {
+        "repositories": ["org/repo"],
+        "page_size_for_large_streams": 100,
+    }
+    repository_args_with_start_date = {**repository_args, "start_date": "2022-09-02T09:05:00Z"}
+
+    workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
+    stream = WorkflowJobs(workflow_runs_stream, **repository_args_with_start_date)
+
+    workflow_runs = [
+        {
+            "id": 1,
+            "created_at": "2022-09-02T09:00:00Z",
+            "updated_at": "2022-09-02T09:10:02Z",
+            "repository": {"full_name": "org/repo"},
+        },
+        {
+            "id": 2,
+            "created_at": "2022-09-02T09:06:00Z",
+            "updated_at": "2022-09-02T09:08:00Z",
+            "repository": {"full_name": "org/repo"},
+        },
+    ]
+
+    workflow_jobs_1 = [
+        {"id": 1, "completed_at": "2022-09-02T09:02:00Z", "run_id": 1},
+        {"id": 4, "completed_at": "2022-09-02T09:10:00Z", "run_id": 1},
+        {"id": 5, "completed_at": None, "run_id": 1},
+    ]
+
+    workflow_jobs_2 = [
+        {"id": 2, "completed_at": "2022-09-02T09:07:00Z", "run_id": 2},
+        {"id": 3, "completed_at": "2022-09-02T09:08:00Z", "run_id": 2},
+    ]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repo/actions/runs",
+        json={"total_count": len(workflow_runs), "workflow_runs": workflow_runs},
+    )
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/1/jobs", json={"jobs": workflow_jobs_1})
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/2/jobs", json={"jobs": workflow_jobs_2})
+
+    state = {}
+    records = read_incremental(stream, state)
+    assert state == {"org/repo": {"completed_at": "2022-09-02T09:10:00Z"}}
+
+    assert records == [
+        {"completed_at": "2022-09-02T09:10:00Z", "id": 4, "repository": "org/repo", "run_id": 1},
+        {"completed_at": "2022-09-02T09:07:00Z", "id": 2, "repository": "org/repo", "run_id": 2},
+        {"completed_at": "2022-09-02T09:08:00Z", "id": 3, "repository": "org/repo", "run_id": 2},
+    ]
+
+    assert len(responses.calls) == 3
+
+    workflow_jobs_1[2]["completed_at"] = "2022-09-02T09:12:00Z"
+    workflow_runs[0]["updated_at"] = "2022-09-02T09:12:01Z"
+    workflow_runs.append(
+        {
+            "id": 3,
+            "created_at": "2022-09-02T09:14:00Z",
+            "updated_at": "2022-09-02T09:15:00Z",
+            "repository": {"full_name": "org/repo"},
+        }
+    )
+    workflow_jobs_3 = [
+        {"id": 6, "completed_at": "2022-09-02T09:15:00Z", "run_id": 3},
+        {"id": 7, "completed_at": None, "run_id": 3},
+    ]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repo/actions/runs",
+        json={"total_count": len(workflow_runs), "workflow_runs": workflow_runs},
+    )
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/1/jobs", json={"jobs": workflow_jobs_1})
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/2/jobs", json={"jobs": workflow_jobs_2})
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/3/jobs", json={"jobs": workflow_jobs_3})
+
+    responses.calls.reset()
+    records = read_incremental(stream, state)
+
+    assert state == {"org/repo": {"completed_at": "2022-09-02T09:15:00Z"}}
+    assert records == [
+        {"completed_at": "2022-09-02T09:12:00Z", "id": 5, "repository": "org/repo", "run_id": 1},
+        {"completed_at": "2022-09-02T09:15:00Z", "id": 6, "repository": "org/repo", "run_id": 3},
+    ]
+
+    records = list(read_full_refresh(stream))
+    assert records == [
+        {"id": 4, "completed_at": "2022-09-02T09:10:00Z", "run_id": 1, "repository": "org/repo"},
+        {"id": 5, "completed_at": "2022-09-02T09:12:00Z", "run_id": 1, "repository": "org/repo"},
+        {"id": 2, "completed_at": "2022-09-02T09:07:00Z", "run_id": 2, "repository": "org/repo"},
+        {"id": 3, "completed_at": "2022-09-02T09:08:00Z", "run_id": 2, "repository": "org/repo"},
+        {"id": 6, "completed_at": "2022-09-02T09:15:00Z", "run_id": 3, "repository": "org/repo"},
+    ]
 
 
 @responses.activate

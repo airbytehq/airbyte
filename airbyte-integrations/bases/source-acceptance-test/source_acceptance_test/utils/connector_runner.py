@@ -45,7 +45,10 @@ class ConnectorRunner:
 
         if state:
             with open(str(self.input_folder / "state.json"), "w") as outfile:
-                json.dump(dict(state), outfile)
+                if isinstance(state, List):
+                    json.dump(state, outfile)
+                else:
+                    json.dump(dict(state), outfile)
 
         if catalog:
             with open(str(self.input_folder / "catalog.json"), "w") as outfile:

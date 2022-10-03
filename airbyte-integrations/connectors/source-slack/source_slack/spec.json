@@ -60,7 +60,8 @@
                 "title": "Client ID",
                 "description": "Slack client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help finding this id.",
                 "type": "string",
-                "examples": ["slack-client-id-example"]
+                "examples": ["slack-client-id-example"],
+                "airbyte_secret": true
               },
               "client_secret": {
                 "title": "Client Secret",
