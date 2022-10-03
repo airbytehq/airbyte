@@ -3,7 +3,13 @@
   "type": "object",
   "properties": {
     "id": {
-      "$ref": "WellKnownTypes.json#definitions/Integer"
+      "$ref": "WellKnownTypes.json#definitions/Integer",
+      "airbyte_attributes": {
+        "precision": {
+          "type": "bit_width",
+          "bit_width": 32
+        }
+      }
     },
     "name": {
       "$ref": "WellKnownTypes.json#definitions/String"
