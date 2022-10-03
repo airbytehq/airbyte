@@ -14,34 +14,11 @@ import { ServicesProvider } from "core/servicesProvider";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { ConnectionEditServiceProvider } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { ModalServiceProvider } from "hooks/services/Modal";
+import * as connectionHook from "hooks/services/useConnectionHook";
 import { ConfigProvider } from "packages/cloud/services/ConfigProvider";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 
 import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
-
-jest.mock("hooks/services/useConnectionHook", () => {
-  const useConnHook = jest.requireActual("hooks/services/useConnectionHook");
-  let count = 0;
-  return {
-    ...useConnHook,
-    useGetConnection: () => mockConnection,
-    useWebConnectionService: () => ({
-      getConnection: (() => {
-        return () => {
-          if (count === 0) {
-            count++;
-            return Promise.reject("Test Error");
-          }
-          return new Promise(() => null);
-        };
-      })(),
-    }),
-    useUpdateConnection: () => ({
-      mutateAsync: jest.fn(async (connection: WebBackendConnectionUpdate) => connection),
-      isLoading: false,
-    }),
-  };
-});
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
   useGetDestinationDefinitionSpecification: () => mockDest,
@@ -70,7 +47,24 @@ describe("ConnectionReplicationTab", () => {
       </TestWrapper>
     </Suspense>
   );
+
+  const setupSpies = (getConnection?: () => Promise<void>) => {
+    const getConnectionImpl: any = {
+      getConnection: getConnection ?? (() => new Promise(() => null) as any),
+    };
+    jest.spyOn(connectionHook, "useGetConnection").mockImplementation(() => mockConnection as any);
+    jest.spyOn(connectionHook, "useWebConnectionService").mockImplementation(() => getConnectionImpl);
+    jest.spyOn(connectionHook, "useUpdateConnection").mockImplementation(
+      () =>
+        ({
+          mutateAsync: async (connection: WebBackendConnectionUpdate) => connection,
+          isLoading: false,
+        } as any)
+    );
+  };
   it("should render", async () => {
+    setupSpies();
+
     let renderResult: RenderResult;
     await act(async () => {
       renderResult = render(
@@ -83,6 +77,8 @@ describe("ConnectionReplicationTab", () => {
   });
 
   it("should show an error if there is a schemaError", async () => {
+    setupSpies(() => Promise.reject("Test Error"));
+
     let renderResult: RenderResult;
     await act(async () => {
       renderResult = render(
@@ -99,6 +95,8 @@ describe("ConnectionReplicationTab", () => {
   });
 
   it("should show loading if the schema is refreshing", async () => {
+    setupSpies();
+
     let renderResult: RenderResult;
     await act(async () => {
       renderResult = render(
