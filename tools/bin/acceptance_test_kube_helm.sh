@@ -69,7 +69,8 @@ fi
 
 # kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --port 8001 --target-port 8001 --name np-service --type NodePort --overrides '{ "apiVersion": "v1","spec":{"ports": [{"port":8001,"protocol":"TCP","targetPort":8001,"nodePort":8001}]}}'
 
-kubectl port-forward svc/airbyte-server-svc 8001:8001 &
+# kubectl port-forward svc/airbyte-server-svc 8001:8001 &
+./tools/bin/health_check.sh &
 
 echo "Running worker integration tests..."
 SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
@@ -89,15 +90,6 @@ if [ -n "$CI" ]; then
 
   echo "Printing docker disk usage after pruning..."
   docker system df
-fi
-echo "Check if server connection still alive..."
-
-if curl -sSf -o /dev/null http://localhost:8001/api/v1/health; then
-  echo "Connection is alive..."
-else
-  echo "Connection is not alive..."
-  # echo "Port forwarding pod..."
-  # kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 fi
 
 echo "Running e2e tests via gradle..."
