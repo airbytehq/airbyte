@@ -2,8 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Card } from "components/base/Card";
 import HeadTitle from "components/HeadTitle";
+import { Card } from "components/ui/Card";
 
 import LogsContent from "./components/LogsContent";
 
