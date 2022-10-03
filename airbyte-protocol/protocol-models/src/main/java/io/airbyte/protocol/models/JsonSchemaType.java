@@ -128,6 +128,10 @@ public class JsonSchemaType {
       return new JsonSchemaType(typeMapBuilder.build());
     }
 
+    public Builder withItems(JsonSchemaType items) {
+      typeMapBuilder.put(ITEMS,  items.getJsonSchemaTypeMap());
+      return this;
+    }
   }
 
   @Override

@@ -325,8 +325,13 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
       case ARRAY -> JsonSchemaType.ARRAY;
+//      case BIT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.BOOLEAN.name().toLowerCase())
+//              .withAirbyteType("bit_array")
+//              .build();
       case BIT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.BOOLEAN.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
+                      .withFormat("some").build())
               .withAirbyteType("bit_array")
               .build();
       case BOOL_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
@@ -337,8 +342,15 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
               .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
               .withAirbyteType("name_array")
               .build();
+//      case VARCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withAirbyteType("varchar_array")
+//              .build();
       case VARCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .withFormat("some_v_array1")
+                      .withAirbyteType("iti")
+                      .build())
               .withAirbyteType("varchar_array")
               .build();
       case CHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
