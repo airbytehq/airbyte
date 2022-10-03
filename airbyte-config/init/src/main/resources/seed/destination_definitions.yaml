@@ -67,7 +67,7 @@
 - name: Clickhouse
   destinationDefinitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
   dockerRepository: airbyte/destination-clickhouse
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
   releaseStage: alpha
 - name: Cloudflare R2
@@ -210,7 +210,7 @@
 - name: Postgres
   destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerRepository: airbyte/destination-postgres
-  dockerImageTag: 0.3.24
+  dockerImageTag: 0.3.26
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
   releaseStage: alpha
@@ -257,7 +257,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.15
+  dockerImageTag: 0.3.16
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:

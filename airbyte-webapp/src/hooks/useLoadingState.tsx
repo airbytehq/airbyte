@@ -26,7 +26,7 @@ const useLoadingState = (): {
       setIsLoading(true);
       setShowFeedback(false);
 
-      await action();
+      action();
 
       setIsLoading(false);
       setShowFeedback(true);

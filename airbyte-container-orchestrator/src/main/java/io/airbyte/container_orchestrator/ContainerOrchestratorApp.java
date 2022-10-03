@@ -131,6 +131,7 @@ public class ContainerOrchestratorApp {
       // required to kill clients with thread pools
       System.exit(0);
     } catch (final Throwable t) {
+      log.error("Killing orchestrator because of an Exception", t);
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
       System.exit(1);
     }

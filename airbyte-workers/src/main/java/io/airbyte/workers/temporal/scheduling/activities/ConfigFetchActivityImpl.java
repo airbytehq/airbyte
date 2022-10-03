@@ -14,9 +14,12 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.DateTimeException;
@@ -26,16 +29,13 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTimeZone;
 import org.quartz.CronExpression;
 
 @Slf4j
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          pattern = "(?i)^(?!data_plane).*")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   private final static long MS_PER_SECOND = 1000L;
