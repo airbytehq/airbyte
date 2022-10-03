@@ -49,7 +49,6 @@ const config = {
                             from: '/operator-guides/securing-airbyte',
                             to: '/operator-guides/security',
                         },
-
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',

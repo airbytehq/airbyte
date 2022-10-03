@@ -19,7 +19,7 @@ definitions:
       error_handlers:
         - type: DefaultErrorHandler
           response_filters:
-            - http_codes: [ 403 ]
+            - http_codes: [403]
               action: IGNORE
         - type: DefaultErrorHandler
     authenticator:
@@ -32,13 +32,13 @@ definitions:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      type: LimitPaginator
-      page_size: 100
+      type: DefaultPaginator
       pagination_strategy:
         type: "CursorPagination"
         cursor_value: "{{ headers['link']['next']['url'] }}"
         stop_condition: "{{ 'next' not in headers['link'] }}"
-      limit_option:
+        page_size: 100
+      page_size_option:
         field_name: "per_page"
         inject_into: "request_parameter"
       page_token_option:
