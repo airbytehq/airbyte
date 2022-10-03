@@ -40,3 +40,5 @@ jsonSchema2Pojo {
     includeConstructors = false
     includeSetters = true
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

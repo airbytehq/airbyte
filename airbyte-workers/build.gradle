@@ -42,6 +42,7 @@ dependencies {
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-docker')
+    implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
@@ -114,7 +115,7 @@ run {
 
     environment 'AIRBYTE_ROLE', System.getenv('AIRBYTE_ROLE')
     environment 'AIRBYTE_VERSION', env.VERSION
-    environment 'MICRONAUT_ENVIRONMENTS', 'local,control'
+    environment 'MICRONAUT_ENVIRONMENTS', 'control-plane'
 }
 
 task cloudStorageIntegrationTest(type: Test) {

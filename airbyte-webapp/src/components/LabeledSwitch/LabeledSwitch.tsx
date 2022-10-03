@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import React from "react";
 
-import { CheckBox, Switch } from "components/base";
+import { CheckBox, Switch } from "components/ui";
 
 import styles from "./LabeledSwitch.module.scss";
 

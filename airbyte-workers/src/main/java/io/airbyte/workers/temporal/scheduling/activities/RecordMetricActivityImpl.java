@@ -8,31 +8,29 @@ import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricTags;
+import io.airbyte.workers.config.WorkerMode;
 import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of the {@link RecordMetricActivity} that is managed by the application framework
  * and therefore has access to other singletons managed by the framework.
  */
-@AllArgsConstructor
-@NoArgsConstructor
 @Slf4j
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          pattern = "(?i)^(?!data_plane).*")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class RecordMetricActivityImpl implements RecordMetricActivity {
 
-  @Inject
-  private MetricClient metricClient;
+  private final MetricClient metricClient;
+
+  public RecordMetricActivityImpl(final MetricClient metricClient) {
+    this.metricClient = metricClient;
+  }
 
   /**
    * Records a workflow counter for the specified metric.
