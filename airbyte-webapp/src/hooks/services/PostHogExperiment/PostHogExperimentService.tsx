@@ -18,7 +18,7 @@ export const PostHogProvider = ({ children }: { children: React.ReactNode }) => 
     if (posthogKey) {
       posthog.init(posthogKey, { api_host: "https://app.posthog.com" });
     }
-  }, []);
+  }, [posthogKey]);
 
   if (posthogKey) {
     return <PostHogServiceProvider value={{ posthog }}>{children}</PostHogServiceProvider>;
