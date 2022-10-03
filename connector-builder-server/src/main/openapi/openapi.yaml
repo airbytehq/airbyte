@@ -68,6 +68,11 @@ components:
           description: The RECORD and STATE AirbyteMessages coming from the read operation
           items:
             type: string
+        logs:
+          type: array
+          description: The LOG AirbyteMessages coming from the read operation
+          items:
+            type: string
         httpRequests:
           type: array
           description: HTTP requests sent to the source API, and their responses
@@ -109,11 +114,6 @@ components:
                   headers:
                     type: object
                     description: The headers of the HTTP response
-        logs:
-          type: array
-          description: The log messages coming from the read operation
-          items:
-            type: string
     StreamReadRequestBody:
       type: object
       required:
