@@ -1,5 +1,5 @@
 import { KeyboardEventHandler, useState } from "react";
-import { ActionMeta, OnChangeValue } from "react-select";
+import { MultiValue, OnChangeValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
 const components = {
@@ -16,7 +16,8 @@ interface NewTagInputProps {
 }
 
 export const NewTagInput: React.FC<NewTagInputProps> = ({ inputProps }) => {
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<MultiValue<Tag>>([]);
+  // input value is a tag draft
   const [inputValue, setInputValue] = useState("");
 
   const createTag = (id: string) => ({
@@ -25,9 +26,8 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ inputProps }) => {
   });
 
   // handle when an item is created
-  const handleChange = (value: OnChangeValue<Tag, true>, actionMeta: ActionMeta<Tag>) => {
+  const handleChange = (value: OnChangeValue<Tag, true>) => {
     setTags(value);
-
     // todo: should also handle splitting up pasted strings by delimiters
   };
 
@@ -36,7 +36,7 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ inputProps }) => {
     setInputValue(inputValue);
   };
 
-  // handles when a user types
+  // handle when user types in the input
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     if (!inputValue) {
       return;
@@ -46,6 +46,7 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ inputProps }) => {
       case "Enter":
       case "Tab":
         setTags([...tags, createTag(inputValue)]);
+        // todo: do i need to manually clear the input
         event.preventDefault();
     }
   };
