@@ -192,12 +192,7 @@ webapp:
   ##  webapp.livenessProbe.successThreshold Success threshold for livenessProbe
   ##
   livenessProbe:
-    enabled: true
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+    enabled: false
 
   ##  webapp.readinessProbe.enabled Enable readinessProbe on the webapp
   ##  webapp.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
@@ -207,12 +202,7 @@ webapp:
   ##  webapp.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
   readinessProbe:
-    enabled: true
-    initialDelaySeconds: 10
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+    enabled: false
 
   ##  webapp.service.type The service type to use for the webapp service
   ##  webapp.service.port The service port to expose the webapp on
@@ -529,12 +519,7 @@ server:
   ##  server.livenessProbe.successThreshold Success threshold for livenessProbe
   ##
   livenessProbe:
-    enabled: true
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+    enabled: false
 
   ##  server.readinessProbe.enabled Enable readinessProbe on the server
   ##  server.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
@@ -544,13 +529,7 @@ server:
   ##  server.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
   readinessProbe:
-    enabled: true
-    initialDelaySeconds: 10
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
+    enabled: false
   ## server resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ## We usually recommend not to specify default resources and to leave this as a conscious
