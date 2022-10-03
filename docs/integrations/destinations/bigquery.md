@@ -107,7 +107,9 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 | STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP     | DATETIME                   |
 | STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP     | DATETIME                   |
 
-## Troubleshooting permission issues
+## Troubleshooting 
+
+**Permission Issues:**
 
 The service account does not have the proper permissions.
 
@@ -117,6 +119,10 @@ The service account does not have the proper permissions.
 The HMAC key is wrong.
 
 - Make sure the HMAC key is created for the BigQuery service account, and the service account has permission to access the GCS bucket and path.
+
+**Connection Failure Errors:**
+
+Pickling client object errors are related to not having staging enabled. When the error `Pickling client objects is explicitly not supported` appears in a failed log connection, enable GCS staging in your BigQuery destination connector and re-run your sync. 
 
 ## Tutorials
 
