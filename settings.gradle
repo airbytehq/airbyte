@@ -86,6 +86,7 @@ include ':airbyte-notification' // transitively used by airbyte-workers.
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-bootloader'
     include ':airbyte-cli'
+    include ':airbyte-commons-protocol'
     include ':airbyte-config:init'
     include ':airbyte-config:specs'
     include ':airbyte-container-orchestrator'
@@ -112,7 +113,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:bases:standard-source-test'
     include ':airbyte-integrations:connector-templates:generator'
     include ':airbyte-integrations:bases:debezium-v1-4-2'
-    include ':airbyte-integrations:bases:debezium-v1-9-2'
+    include ':airbyte-integrations:bases:debezium-v1-9-6'
 
     // Needed by normalization integration tests
     include ':airbyte-integrations:connectors:destination-bigquery'
