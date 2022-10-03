@@ -1,13 +1,11 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useField } from "formik";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
 import { MenuListProps } from "react-select";
 
 import { ControlLabels, DropDown, DropDownRow } from "components";
-import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
 import { IDataItem, IProps as OptionProps, OptionView } from "components/ui/DropDown/components/Option";
 import {
@@ -17,38 +15,22 @@ import {
 } from "components/ui/DropDown/components/SingleValue";
 import { Text } from "components/ui/Text";
 
-import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { useExperiment } from "hooks/services/Experiment";
+import { useModalService } from "hooks/services/Modal";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { naturalComparator } from "utils/objects";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
-import { WarningMessage } from "../WarningMessage";
+import { WarningMessage } from "../../WarningMessage";
 import styles from "./ConnectorServiceTypeControl.module.scss";
+import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
+import { getSortedDropdownDataUsingExperiment } from "./utilityFunctions";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MenuWithRequestButtonProps = MenuListProps<IDataItem, false> & { selectProps: any };
-
-/**
- * Returns the order for a specific release stage label. This will define
- * in what order the different release stages are shown inside the select.
- * They will be shown in an increasing order (i.e. 0 on top), unless not overwritten
- * by ORDER_OVERWRITE above.
- */
-function getOrderForReleaseStage(stage?: ReleaseStage): number {
-  switch (stage) {
-    case ReleaseStage.beta:
-      return 1;
-    case ReleaseStage.alpha:
-      return 2;
-    default:
-      return 0;
-  }
-}
 
 const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => (
   <>
@@ -111,92 +93,73 @@ const SingleValue: React.FC<SingleValueProps<any>> = (props) => {
 };
 
 interface ConnectorServiceTypeControlProps {
-  propertyPath: string;
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
   documentationUrl?: string;
   onChangeServiceType?: (id: string) => void;
-  onOpenRequestConnectorModal: (initialName: string) => void;
   disabled?: boolean;
+  selectedServiceId?: string;
 }
 
 const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
-  propertyPath,
   formType,
   isEditMode,
   onChangeServiceType,
   availableServices,
   documentationUrl,
-  onOpenRequestConnectorModal,
   disabled,
+  selectedServiceId,
 }) => {
   const { formatMessage } = useIntl();
-  const orderOverwrite = useExperiment("connector.orderOverwrite", {});
-  const [field, fieldMeta, { setValue }] = useField(propertyPath);
-  const analytics = useAnalyticsService();
+  const { openModal, closeModal } = useModalService();
+  const { trackMenuOpen, trackNoOptionMessage } = useAnalyticsTrackFunctions(formType);
+
   const workspace = useCurrentWorkspace();
+  const orderOverwrite = useExperiment("connector.orderOverwrite", {});
   const availableConnectorDefinitions = useAvailableConnectorDefinitions(availableServices, workspace);
   const sortedDropDownData = useMemo(
-    () =>
-      availableConnectorDefinitions
-        .map((item) => ({
-          label: item.name,
-          value: Connector.id(item),
-          img: <ConnectorIcon icon={item.icon} />,
-          releaseStage: item.releaseStage,
-        }))
-        .sort((a, b) => {
-          const priorityA = orderOverwrite[a.value] ?? 0;
-          const priorityB = orderOverwrite[b.value] ?? 0;
-          // If they have different priority use the higher priority first, otherwise use the label
-          if (priorityA !== priorityB) {
-            return priorityB - priorityA;
-          } else if (a.releaseStage !== b.releaseStage) {
-            return getOrderForReleaseStage(a.releaseStage) - getOrderForReleaseStage(b.releaseStage);
-          }
-          return naturalComparator(a.label, b.label);
-        }),
+    () => getSortedDropdownDataUsingExperiment(availableConnectorDefinitions, orderOverwrite),
     [availableConnectorDefinitions, orderOverwrite]
   );
 
   const { setDocumentationUrl } = useDocumentationPanelContext();
-
   useEffect(() => setDocumentationUrl(documentationUrl ?? ""), [documentationUrl, setDocumentationUrl]);
 
   const getNoOptionsMessage = useCallback(
     ({ inputValue }: { inputValue: string }) => {
-      analytics.track(formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION, Action.NO_MATCHING_CONNECTOR, {
-        actionDescription: "Connector query without results",
-        query: inputValue,
-      });
+      trackNoOptionMessage(inputValue);
       return formatMessage({ id: "form.noConnectorFound" });
     },
-    [analytics, formType, formatMessage]
+    [formatMessage, trackNoOptionMessage]
   );
 
   const selectedService = React.useMemo(
-    () => availableServices.find((s) => Connector.id(s) === field.value),
-    [field.value, availableServices]
+    () => availableServices.find((s) => Connector.id(s) === selectedServiceId),
+    [selectedServiceId, availableServices]
   );
 
   const handleSelect = useCallback(
     (item: DropDownRow.IDataItem | null) => {
-      if (item) {
-        setValue(item.value);
-        if (onChangeServiceType) {
-          onChangeServiceType(item.value);
-        }
+      if (item && onChangeServiceType) {
+        onChangeServiceType(item.value);
       }
     },
-    [setValue, onChangeServiceType]
+    [onChangeServiceType]
   );
 
-  const onMenuOpen = () => {
-    analytics.track(formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION, Action.SELECTION_OPENED, {
-      actionDescription: "Opened connector type selection",
+  const onOpenRequestConnectorModal = (input: string) =>
+    openModal({
+      title: formatMessage({ id: "connector.requestConnector" }),
+      content: () => (
+        <RequestConnectorModal
+          connectorType={formType}
+          workspaceEmail={workspace.email}
+          searchedConnectorName={input}
+          onClose={closeModal}
+        />
+      ),
     });
-  };
 
   return (
     <>
@@ -206,14 +169,13 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
         })}
       >
         <DropDown
-          {...field}
+          value={selectedServiceId}
           components={{
             MenuList: ConnectorList,
             Option,
             SingleValue,
           }}
           selectProps={{ onOpenRequestConnectorModal }}
-          error={!!fieldMeta.error && fieldMeta.touched}
           isDisabled={isEditMode || disabled}
           isSearchable
           placeholder={formatMessage({
@@ -221,7 +183,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
           })}
           options={sortedDropDownData}
           onChange={handleSelect}
-          onMenuOpen={onMenuOpen}
+          onMenuOpen={() => trackMenuOpen()}
           noOptionsMessage={getNoOptionsMessage}
         />
       </ControlLabels>
