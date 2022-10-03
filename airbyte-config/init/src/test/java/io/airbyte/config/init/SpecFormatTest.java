@@ -10,6 +10,7 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,6 +47,9 @@ class SpecFormatTest {
     Assertions.assertThat(allSpecs)
         .flatMap(spec -> {
           try {
+            if (!JsonSecretsProcessor.isValidJsonSchema(spec)) {
+              throw new RuntimeException("Fail JsonSecretsProcessor validation");
+            }
             JsonSchemas.traverseJsonSchema(spec, (node, path) -> {});
             return Collections.emptyList();
           } catch (final Exception e) {
