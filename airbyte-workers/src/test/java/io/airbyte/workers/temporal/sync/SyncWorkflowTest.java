@@ -24,6 +24,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
@@ -89,7 +90,9 @@ class SyncWorkflowTest {
   private NormalizationInput normalizationInput;
   private OperatorDbtInput operatorDbtInput;
   private StandardSyncOutput replicationSuccessOutput;
+  private StandardSyncOutput replicationFailOutput;
   private StandardSyncSummary standardSyncSummary;
+  private StandardSyncSummary failedSyncSummary;
   private SyncStats syncStats;
   private NormalizationSummary normalizationSummary;
   private ActivityOptions longActivityOptions;
@@ -108,7 +111,10 @@ class SyncWorkflowTest {
 
     syncStats = new SyncStats().withRecordsCommitted(10L);
     standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
+    failedSyncSummary = new StandardSyncSummary().withStatus(ReplicationStatus.FAILED).withTotalStats(new SyncStats().withRecordsEmitted(0L));
     replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog()).withStandardSyncSummary(standardSyncSummary);
+    replicationFailOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog()).withStandardSyncSummary(failedSyncSummary);
+
     normalizationSummary = new NormalizationSummary();
 
     normalizationInput = new NormalizationInput()
@@ -215,6 +221,30 @@ class SyncWorkflowTest {
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
     verifyNoInteractions(dbtTransformationActivity);
+  }
+
+  @Test
+  void testReplicationFailedGracefully() {
+    doReturn(replicationFailOutput).when(replicationActivity).replicate(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        syncInput);
+
+    doReturn(normalizationSummary).when(normalizationActivity).normalize(
+        JOB_RUN_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        normalizationInput);
+
+    final StandardSyncOutput actualOutput = execute();
+
+    verifyReplication(replicationActivity, syncInput);
+    verifyPersistState(persistStateActivity, sync, replicationFailOutput, syncInput.getCatalog());
+    verifyNormalize(normalizationActivity, normalizationInput);
+    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
+        operatorDbtInput);
+    assertEquals(replicationFailOutput.withNormalizationSummary(normalizationSummary),
+        actualOutput);
   }
 
   @Test
