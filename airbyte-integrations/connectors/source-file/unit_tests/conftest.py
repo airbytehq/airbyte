@@ -35,6 +35,19 @@ def invalid_config(read_file):
 
 
 @pytest.fixture
+def non_direct_url_provided_config():
+    return {
+        "dataset_name": "test",
+        "format": "csv",
+        "url": "https://www.dropbox.com/s/tcxj6fzwuwyfusq/CSV_Test.csv?dl=0",
+        "provider": {
+            "storage": "HTTPS",
+            "user_agent": False,
+        },
+    }
+
+
+@pytest.fixture
 def client():
     return Client(
         dataset_name="test_dataset",
