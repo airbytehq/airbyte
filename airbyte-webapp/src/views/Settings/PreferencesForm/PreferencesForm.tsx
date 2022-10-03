@@ -83,8 +83,8 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
       validateOnBlur
       validateOnChange={false}
       validationSchema={preferencesValidationSchema}
-      onSubmit={async (values) => {
-        await onSubmit(values);
+      onSubmit={(values) => {
+        onSubmit(values);
       }}
     >
       {({ isSubmitting, values, handleChange, setFieldValue, resetForm, isValid, dirty }) => (
