@@ -112,7 +112,7 @@
 - name: BigCommerce
   sourceDefinitionId: 59c5501b-9f95-411e-9269-7143c939adbd
   dockerRepository: airbyte/source-bigcommerce
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/bigcommerce
   icon: bigcommerce.svg
   sourceType: api
@@ -128,7 +128,7 @@
 - name: Bing Ads
   sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   dockerRepository: airbyte/source-bing-ads
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/bing-ads
   icon: bingads.svg
   sourceType: api
@@ -310,7 +310,7 @@
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.23
+  dockerImageTag: 0.2.24
   documentationUrl: https://docs.airbyte.io/integrations/sources/file
   icon: file.svg
   sourceType: file
