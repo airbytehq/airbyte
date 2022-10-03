@@ -6,14 +6,6 @@ set -e
 
 assert_root
 
-sudo apt-get -y install tmate
-
-tmate -S /tmp/tmate.sock new-session -d               # Launch tmate in a headless mode
-tmate -S /tmp/tmate.sock wait tmate-ready             # Blocks until the SSH connection is established
-tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'    # Prints the SSH connection string
-tmate -S /tmp/tmate.sock display -p '#{tmate_ssh_ro}' # Prints the read-only SSH connection string
-tmate -S /tmp/tmate.sock display -p '#{tmate_web}'    # Prints the web connection string
-tmate -S /tmp/tmate.sock display -p '#{tmate_web_ro}' # Prints the read-only web connection string
 
 # Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
 # See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
