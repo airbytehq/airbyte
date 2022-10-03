@@ -82,7 +82,7 @@ airbyte:
         value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
       host: ${INTERNAL_API_HOST}
   local:
-    docker-mount: ${LOCAL_DOCKER_MOUNT}
+    docker-mount: ${LOCAL_DOCKER_MOUNT:}
     root: ${LOCAL_ROOT}
   worker:
     check:
