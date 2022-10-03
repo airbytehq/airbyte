@@ -139,7 +139,12 @@ export const CreateConnection: React.FC<CreateConnectionProps> = ({ source, dest
   };
 
   return (
-    <ConnectionFormServiceProvider connection={partialConnection} mode="create" refreshSchema={onDiscoverSchema}>
+    <ConnectionFormServiceProvider
+      connection={partialConnection}
+      mode="create"
+      refreshSchema={onDiscoverSchema}
+      schemaError={schemaErrorStatus}
+    >
       {isLoading ? (
         <LoadingSchema />
       ) : (

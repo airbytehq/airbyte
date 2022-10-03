@@ -5,6 +5,7 @@ import { ConnectionStatus, WebBackendConnectionUpdate } from "core/request/Airby
 
 import { ConnectionFormServiceProvider } from "../ConnectionForm/ConnectionFormService";
 import { useGetConnection, useUpdateConnection, useWebConnectionService } from "../useConnectionHook";
+import { SchemaError } from "../useSourceHook";
 
 interface ConnectionEditProps {
   connectionId: string;
@@ -15,8 +16,7 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
   const connectionService = useWebConnectionService();
   const [schemaHasBeenRefreshed, setSchemaHasBeenRefreshed] = useState(false);
 
-  // TODO: Pull error out here, utilize down-line. Maybe use schema error component like on the create page?
-  const [{ loading: schemaRefreshing }, refreshSchema] = useAsyncFn(async () => {
+  const [{ loading: schemaRefreshing, error: schemaError }, refreshSchema] = useAsyncFn(async () => {
     const refreshedConnection = await connectionService.getConnection(connectionId, true);
     setConnection(refreshedConnection);
     setSchemaHasBeenRefreshed(true);
@@ -34,6 +34,7 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
   return {
     connection,
     connectionUpdating,
+    schemaError,
     schemaRefreshing,
     schemaHasBeenRefreshed,
     updateConnection,
@@ -42,15 +43,19 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
   };
 };
 
-const ConnectionEditContext = createContext<Omit<ReturnType<typeof useConnectionEdit>, "refreshSchema"> | null>(null);
+const ConnectionEditContext = createContext<Omit<
+  ReturnType<typeof useConnectionEdit>,
+  "refreshSchema" | "schemaError"
+> | null>(null);
 
 export const ConnectionEditServiceProvider: React.FC<ConnectionEditProps> = ({ children, ...props }) => {
-  const { refreshSchema, ...data } = useConnectionEdit(props);
+  const { refreshSchema, schemaError, ...data } = useConnectionEdit(props);
   return (
     <ConnectionEditContext.Provider value={data}>
       <ConnectionFormServiceProvider
         mode={data.connection.status === ConnectionStatus.deprecated ? "readonly" : "edit"}
         connection={data.connection}
+        schemaError={schemaError as SchemaError}
         refreshSchema={refreshSchema}
       >
         {children}

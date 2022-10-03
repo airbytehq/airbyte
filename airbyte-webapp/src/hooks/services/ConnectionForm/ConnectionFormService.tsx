@@ -13,6 +13,7 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 
 import { ValuesProps } from "../useConnectionHook";
+import { SchemaError } from "../useSourceHook";
 
 export type ConnectionFormMode = "create" | "edit" | "readonly";
 
@@ -23,6 +24,7 @@ export type ConnectionOrPartialConnection =
 interface ConnectionServiceProps {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
+  schemaError?: SchemaError | null;
   refreshSchema: () => Promise<void>;
 }
 
@@ -42,7 +44,7 @@ export const tidyConnectionFormValues = (
   return formValues;
 };
 
-const useConnectionForm = ({ connection, mode, refreshSchema }: ConnectionServiceProps) => {
+const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: ConnectionServiceProps) => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
   const { formatMessage } = useIntl();
@@ -63,6 +65,7 @@ const useConnectionForm = ({ connection, mode, refreshSchema }: ConnectionServic
     mode,
     destDefinition,
     initialValues,
+    schemaError,
     setSubmitError,
     getErrorMessage,
     refreshSchema,

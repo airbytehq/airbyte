@@ -2,6 +2,7 @@ import { Form, Formik, FormikHelpers } from "formik";
 import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { SchemaError } from "components/CreateConnection/SchemaError";
 import { FormChangeTracker } from "components/FormChangeTracker";
 import LoadingSchema from "components/LoadingSchema";
 
@@ -40,12 +41,12 @@ export const ConnectionReplicationTab: React.FC = () => {
   const formId = useUniqueFormId();
   const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, setSchemaHasBeenRefreshed } =
     useConnectionEditService();
-  const { initialValues, mode, getErrorMessage, setSubmitError } = useConnectionFormService();
+  const { initialValues, mode, schemaError, getErrorMessage, setSubmitError } = useConnectionFormService();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
 
   const saveConnection = useCallback(
-    async (values: ValuesProps, skipReset: boolean) => {
+    async (values: ValuesProps, skipReset: boolean, catalogHasChanged: boolean) => {
       if (schemaRefreshing) {
         return;
       }
@@ -58,7 +59,7 @@ export const ConnectionReplicationTab: React.FC = () => {
         skipReset,
       });
 
-      if (!equal(values.syncCatalog, connection.syncCatalog)) {
+      if (catalogHasChanged) {
         analyticsService.track(Namespace.CONNECTION, Action.EDIT_SCHEMA, {
           actionDescription: "Connection saved with catalog changes",
           connector_source: connection.source.sourceName,
@@ -80,7 +81,7 @@ export const ConnectionReplicationTab: React.FC = () => {
       // This could be due to user changes (e.g. in the sync mode) or due to new/removed
       // streams due to a "refreshed source schema".
       // TODO: Can pass this value into the saveConnection function for the analytics call so we don't compare twice
-      const hasCatalogChanged = !equal(
+      const catalogHasChanged = !equal(
         formValues.syncCatalog.streams
           .filter((s) => s.config?.selected)
           .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
@@ -95,7 +96,7 @@ export const ConnectionReplicationTab: React.FC = () => {
       // Given them a choice to opt-out in which case we'll be sending skipRe: true to the update
       // endpoint.
       try {
-        if (hasCatalogChanged) {
+        if (catalogHasChanged) {
           const stateType = await connectionService.getStateType(connection.connectionId);
           const result = await openModal<boolean>({
             title: formatMessage({ id: "connection.resetModalTitle" }),
@@ -105,14 +106,14 @@ export const ConnectionReplicationTab: React.FC = () => {
           if (result.type !== "canceled") {
             // Save the connection taking into account the correct skipReset value from the dialog choice.
             // We also want to skip the reset sync if the connection is not in an "active" status
-            await saveConnection(formValues, !result.reason || connection.status !== "active");
+            await saveConnection(formValues, !result.reason || connection.status !== "active", catalogHasChanged);
           } else {
             // We don't want to set saved to true or schema has been refreshed to false.
             return;
           }
         } else {
           // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save.
-          await saveConnection(formValues, true);
+          await saveConnection(formValues, true, catalogHasChanged);
         }
 
         setSaved(true);
@@ -150,6 +151,10 @@ export const ConnectionReplicationTab: React.FC = () => {
       });
     }
   }, [connection, formatMessage, openModal]);
+
+  if (schemaError) {
+    return <SchemaError schemaError={schemaError} />;
+  }
 
   return (
     <div className={styles.content}>

@@ -6,7 +6,6 @@ import { Action, Namespace } from "core/analytics";
 import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceService } from "core/domain/connector/SourceService";
-import { JobInfo } from "core/domain/job";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
@@ -149,7 +148,7 @@ const useUpdateSource = () => {
   );
 };
 
-export type SchemaError = { status: number; response: SynchronousJobRead } | null;
+export type SchemaError = (Error & { status: number; response: SynchronousJobRead }) | null;
 
 const useDiscoverSchema = (
   sourceId: string,
@@ -165,10 +164,7 @@ const useDiscoverSchema = (
   const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
   const [catalogId, setCatalogId] = useState<string | undefined>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
-    status: number;
-    response: JobInfo;
-  } | null>(null);
+  const [schemaErrorStatus, setSchemaErrorStatus] = useState<SchemaError>(null);
 
   const onDiscoverSchema = useCallback(async () => {
     setIsLoading(true);
