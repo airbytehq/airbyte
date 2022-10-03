@@ -28,4 +28,8 @@ public class AirbyteMessageVersionedMigrator<OriginalMessageType> {
     return migrator.upgrade(message, version);
   }
 
+  public Version getVersion() {
+    return version;
+  }
+
 }
