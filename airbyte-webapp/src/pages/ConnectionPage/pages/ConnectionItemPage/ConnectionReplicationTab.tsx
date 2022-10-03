@@ -1,7 +1,6 @@
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import styled from "styled-components";
 
 import { FormChangeTracker } from "components/FormChangeTracker";
 import LoadingSchema from "components/LoadingSchema";
@@ -25,13 +24,8 @@ import EditControls from "views/Connection/ConnectionForm/components/EditControl
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
 import { connectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
+import styles from "./ConnectionReplicationTab.module.scss";
 import { ResetWarningModal } from "./ResetWarningModal";
-
-const Content = styled.div`
-  max-width: 1279px;
-  margin: 0 auto;
-  padding-bottom: 10px;
-`;
 
 export const ConnectionReplicationTab: React.FC = () => {
   const analyticsService = useAnalyticsService();
@@ -157,7 +151,7 @@ export const ConnectionReplicationTab: React.FC = () => {
   }, [connection, formatMessage, openModal]);
 
   return (
-    <Content>
+    <div className={styles.content}>
       {!schemaRefreshing && connection ? (
         <Formik
           initialValues={initialValues}
@@ -186,6 +180,6 @@ export const ConnectionReplicationTab: React.FC = () => {
       ) : (
         <LoadingSchema />
       )}
-    </Content>
+    </div>
   );
 };
