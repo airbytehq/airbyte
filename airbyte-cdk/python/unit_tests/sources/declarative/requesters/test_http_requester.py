@@ -84,4 +84,28 @@ def base_url_has_a_trailing_slash(test_name, base_url, expected_base_url):
         config={},
         options={},
     )
-    requester.get_url_base() == expected_base_url
+    assert requester.get_url_base() == expected_base_url
+
+
+@pytest.mark.parametrize(
+    "test_name, base_url, expected_base_url",
+    [
+        ("test_no_leading_slash", "deals", "deals"),
+        ("test_with_leading_slash", "/deals", "deals"),
+        ("test_with_v1_no_leading_slash", "v1/deals", "v1/deals"),
+        ("test_with_v1_with_trailing_slash", "/v1/deals", "v1/deals"),
+    ],
+)
+def path_has_no_leading_slash(test_name, path, expected_path):
+    requester = HttpRequester(
+        name="name",
+        url_base="https://example.com",
+        path=path,
+        http_method=HttpMethod.GET,
+        request_options_provider=MagicMock(),
+        authenticator=MagicMock(),
+        error_handler=MagicMock(),
+        config={},
+        options={},
+    )
+    assert requester.get_path(stream_state={}, stream_slice={}, next_page_token={}) == expected_path
