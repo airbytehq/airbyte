@@ -793,11 +793,20 @@ jobs:
       - name: Create cluster config file
         run: |
           cat > /tmp/kind-config.yaml <<EOF
-          kind: Cluster
           apiVersion: kind.x-k8s.io/v1alpha4
+          kind: Cluster
+          kubeadmConfigPatches:
+            - |
+              kind: ClusterConfiguration
+              apiServer:
+                extraArgs:
+                  "service-node-port-range": "8000-32767"
           nodes:
-          - role: control-plane
-          - role: worker
+            - role: control-plane
+              extraPortMappings:
+                - containerPort: 8001
+                  hostPort: 8001
+                  protocol: TCP
           EOF
 
       - name: KIND Kubernetes Cluster Setup
@@ -808,17 +817,17 @@ jobs:
           cluster_name: helm-testing
         # In case of self-hosted EC2 errors, remove this env block.
         # env:
-        #   USER: root
-        #   HOME: /home/runner
-        #   CHANGE_MINIKUBE_NONE_USER: true
+          USER: root
+          HOME: /home/runner
+          CHANGE_MINIKUBE_NONE_USER: true
 
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
 
       - name: Run Helm End-to-End Acceptance Tests
         env:
-          # USER: root
-          # HOME: /home/runner
+          USER: root
+          HOME: /home/runner
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
