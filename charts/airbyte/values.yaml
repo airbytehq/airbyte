@@ -1099,12 +1099,7 @@ temporal:
   ##  temporal.livenessProbe.successThreshold Success threshold for livenessProbe
   ##
   livenessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+    enabled: false
 
   ##  temporal.readinessProbe.enabled Enable readinessProbe on the temporal
   ##  temporal.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
@@ -1114,12 +1109,7 @@ temporal:
   ##  temporal.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
   readinessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+    enabled: false
 
   ##  temporal.nodeSelector [object] Node labels for temporal pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
