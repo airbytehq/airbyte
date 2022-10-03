@@ -1,5 +1,5 @@
 import { Form, Formik, FormikHelpers } from "formik";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { SchemaError } from "components/CreateConnection/SchemaError";
@@ -20,7 +20,7 @@ import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { equal, naturalComparatorBy } from "utils/objects";
-import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
+import { useConfirmCatalogDiff } from "views/Connection/CatalogDiffModal/useConfirmCatalogDiff";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
 import { connectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
@@ -47,9 +47,6 @@ export const ConnectionReplicationTab: React.FC = () => {
 
   const saveConnection = useCallback(
     async (values: ValuesProps, skipReset: boolean, catalogHasChanged: boolean) => {
-      if (schemaRefreshing) {
-        return;
-      }
       const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
       await updateConnection({
@@ -60,6 +57,7 @@ export const ConnectionReplicationTab: React.FC = () => {
       });
 
       if (catalogHasChanged) {
+        // TODO: Move this into a useTrackChangedCatalog method (name pending) post Vlad's analytics hook work
         analyticsService.track(Namespace.CONNECTION, Action.EDIT_SCHEMA, {
           actionDescription: "Connection saved with catalog changes",
           connector_source: connection.source.sourceName,
@@ -70,7 +68,7 @@ export const ConnectionReplicationTab: React.FC = () => {
         });
       }
     },
-    [analyticsService, connection, schemaRefreshing, updateConnection]
+    [analyticsService, connection, updateConnection]
   );
 
   const onFormSubmit = useCallback(
@@ -80,7 +78,6 @@ export const ConnectionReplicationTab: React.FC = () => {
       // Detect whether the catalog has any differences in its enabled streams compared to the original one.
       // This could be due to user changes (e.g. in the sync mode) or due to new/removed
       // streams due to a "refreshed source schema".
-      // TODO: Can pass this value into the saveConnection function for the analytics call so we don't compare twice
       const catalogHasChanged = !equal(
         formValues.syncCatalog.streams
           .filter((s) => s.config?.selected)
@@ -138,27 +135,13 @@ export const ConnectionReplicationTab: React.FC = () => {
     ]
   );
 
-  useEffect(() => {
-    // If we have a catalogDiff we always want to show the modal
-    const { catalogDiff, syncCatalog } = connection;
-    if (catalogDiff?.transforms && catalogDiff.transforms?.length > 0) {
-      openModal<void>({
-        title: formatMessage({ id: "connection.updateSchema.completed" }),
-        preventCancel: true,
-        content: ({ onClose }) => (
-          <CatalogDiffModal catalogDiff={catalogDiff} catalog={syncCatalog} onClose={onClose} />
-        ),
-      });
-    }
-  }, [connection, formatMessage, openModal]);
-
-  if (schemaError) {
-    return <SchemaError schemaError={schemaError} />;
-  }
+  useConfirmCatalogDiff(connection);
 
   return (
     <div className={styles.content}>
-      {!schemaRefreshing && connection ? (
+      {schemaError && !schemaRefreshing ? (
+        <SchemaError schemaError={schemaError} />
+      ) : !schemaRefreshing && connection ? (
         <Formik
           initialValues={initialValues}
           validationSchema={connectionValidationSchema(mode)}
