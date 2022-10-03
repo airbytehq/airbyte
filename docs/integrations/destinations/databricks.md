@@ -101,6 +101,9 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 2. Credentials for an S3 bucket. See [documentation](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
 3. Grant the Databricks cluster full access to the S3 bucket. Or mount it as Databricks File System \(DBFS\). See [documentation](https://docs.databricks.com/data/data-sources/aws/amazon-s3.html).
 
+## Related tutorial
+Suppose you are interested in learning more about the Databricks connector or details on how the Delta Lake tables are created. You may want to consult the tutorial on [How to Load Data into Delta Lake on Databricks Lakehouse](https://airbyte.com/tutorials/load-data-into-delta-lake-on-databricks-lakehouse).
+
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                               |

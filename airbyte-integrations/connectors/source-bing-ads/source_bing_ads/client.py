@@ -71,7 +71,7 @@ class Client:
             auth_creds["client_secret"] = client_secret
         return OAuthWebAuthCodeGrant(**auth_creds)
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=4)
     def _get_auth_data(self, customer_id: str = None, account_id: Optional[str] = None) -> AuthorizationData:
         return AuthorizationData(
             account_id=account_id,
@@ -147,7 +147,7 @@ class Client:
 
         return getattr(service, operation_name)(**params)
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=4)
     def get_service(
         self,
         service_name: str,
@@ -161,7 +161,7 @@ class Client:
             environment=self.environment,
         )
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=4)
     def _get_reporting_service(
         self,
         customer_id: Optional[str] = None,

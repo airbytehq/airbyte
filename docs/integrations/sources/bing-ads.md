@@ -53,6 +53,8 @@ The Bing Ads source connector supports the following [sync modes](https://docs.a
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
+The Bing Ads source connector supports the following streams. For more information, see the [Bing Ads API](https://docs.microsoft.com/en-us/advertising/guides/?view=bingads-13).
+
 ### Basic streams
 - [accounts](https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13)
 - [ad_groups](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13)
@@ -60,7 +62,6 @@ The Bing Ads source connector supports the following [sync modes](https://docs.a
 - [campaigns](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13)
 
 ### Report Streams
-The Bing Ads source connector supports the following streams. For more information, see the [Bing Ads API](https://docs.microsoft.com/en-us/advertising/guides/?view=bingads-13).
 - [account_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
 - [account_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
 - [account_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
@@ -96,6 +97,9 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 ## Changelog
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                    |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.15  | 2022-10-03 | [17505](https://github.com/airbytehq/airbyte/pull/17505)                                                                         | Fix: limit cache size for ServiceClient instances                                                                          |
+| 0.1.14  | 2022-09-29 | [17403](https://github.com/airbytehq/airbyte/pull/17403)                                                                         | Fix: limit cache size for ReportingServiceManager instances                                                                |
+| 0.1.13  | 2022-09-29 | [17386](https://github.com/airbytehq/airbyte/pull/17386)                                                                         | Migrate to per-stream states.                                                                                              |
 | 0.1.12  | 2022-09-05 | [16335](https://github.com/airbytehq/airbyte/pull/16335)                                                                         | Added backoff for socket.timeout                                                                                           |
 | 0.1.11  | 2022-08-25 | [15684](https://github.com/airbytehq/airbyte/pull/15684) (published in [15987](https://github.com/airbytehq/airbyte/pull/15987)) | Fixed log messages being unreadable                                                                                        |
 | 0.1.10  | 2022-08-12 | [15602](https://github.com/airbytehq/airbyte/pull/15602)                                                                         | Fixed bug caused Hourly Reports to crash due to invalid fields set                                                         |
