@@ -168,7 +168,9 @@ module.exports = {
           label: 'Creating your first HTTP API Source',
           items: [
             'connector-development/config-based/index',
-            'connector-development/config-based/tutorial/getting-started'
+            'connector-development/config-based/tutorial/getting-started',
+             'connector-development/config-based/understanding-the-yaml-file',
+             'connector-development/config-based/advanced-topics',
           ]
         },
         'connector-development/tutorials/cdk-speedrun',
