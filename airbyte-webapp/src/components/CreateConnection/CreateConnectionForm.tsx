@@ -21,7 +21,7 @@ import { OperationsSection } from "views/Connection/ConnectionForm/components/Op
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
 import { connectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
-import styles from "./CreateConnection.module.scss";
+import styles from "./CreateConnectionForm.module.scss";
 import { CreateConnectionNameField } from "./CreateConnectionNameField";
 import { SchemaError } from "./SchemaError";
 
@@ -35,7 +35,7 @@ interface CreateConnectionPropsInner extends Pick<CreateConnectionProps, "afterS
   schemaError: SchemaErrorType;
 }
 
-const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({ schemaError, afterSubmitConnection }) => {
+const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schemaError, afterSubmitConnection }) => {
   const navigate = useNavigate();
 
   const { mutateAsync: createConnection } = useCreateConnection();
@@ -125,7 +125,11 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({ schemaErr
   );
 };
 
-export const CreateConnection: React.FC<CreateConnectionProps> = ({ source, destination, afterSubmitConnection }) => {
+export const CreateConnectionForm: React.FC<CreateConnectionProps> = ({
+  source,
+  destination,
+  afterSubmitConnection,
+}) => {
   const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(
     source.sourceId,
     true
@@ -148,7 +152,7 @@ export const CreateConnection: React.FC<CreateConnectionProps> = ({ source, dest
       {isLoading ? (
         <LoadingSchema />
       ) : (
-        <CreateConnectionInner afterSubmitConnection={afterSubmitConnection} schemaError={schemaErrorStatus} />
+        <CreateConnectionFormInner afterSubmitConnection={afterSubmitConnection} schemaError={schemaErrorStatus} />
       )}
     </ConnectionFormServiceProvider>
   );
