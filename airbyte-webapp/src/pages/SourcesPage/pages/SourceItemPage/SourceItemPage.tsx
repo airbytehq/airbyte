@@ -4,13 +4,13 @@ import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { DropDownRow } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
-import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
-import PageTitle from "components/PageTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
+import { Breadcrumbs } from "components/ui/Breadcrumbs";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
@@ -89,7 +89,7 @@ const SourceItemPage: React.FC = () => {
   return (
     <ConnectorDocumentationWrapper>
       <HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />
-      <PageTitle
+      <PageHeader
         title={<Breadcrumbs data={breadcrumbsData} />}
         middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
       />

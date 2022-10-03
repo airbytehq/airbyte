@@ -17,8 +17,12 @@ import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ConnectionStatus;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SyncMode;
+import io.airbyte.api.model.generated.WebBackendConnectionListItem;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -201,21 +205,58 @@ public class ConnectionHelpers {
     return connectionRead;
   }
 
+  public static WebBackendConnectionListItem generateExpectedWebBackendConnectionListItem(
+                                                                                          final StandardSync standardSync,
+                                                                                          final SourceRead source,
+                                                                                          final DestinationRead destination,
+                                                                                          final boolean isSyncing,
+                                                                                          final Long latestSyncJobCreatedAt,
+                                                                                          final JobStatus latestSynJobStatus) {
+
+    final WebBackendConnectionListItem connectionListItem = new WebBackendConnectionListItem()
+        .connectionId(standardSync.getConnectionId())
+        .name(standardSync.getName())
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .source(source)
+        .destination(destination)
+        .status(ApiPojoConverters.toApiStatus(standardSync.getStatus()))
+        .isSyncing(isSyncing)
+        .latestSyncJobCreatedAt(latestSyncJobCreatedAt)
+        .latestSyncJobStatus(latestSynJobStatus)
+        .scheduleType(ApiPojoConverters.toApiConnectionScheduleType(standardSync))
+        .scheduleData(ApiPojoConverters.toApiConnectionScheduleData(standardSync));
+
+    return connectionListItem;
+  }
+
   public static JsonNode generateBasicJsonSchema() {
     return CatalogHelpers.fieldsToJsonSchema(Field.of(FIELD_NAME, JsonSchemaType.STRING));
   }
 
   public static ConfiguredAirbyteCatalog generateBasicConfiguredAirbyteCatalog() {
-    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-        .withStream(generateBasicAirbyteStream())
+    return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(generateBasicConfiguredStream(null)));
+  }
+
+  public static ConfiguredAirbyteCatalog generateMultipleStreamsConfiguredAirbyteCatalog(final int streamsCount) {
+    final List<ConfiguredAirbyteStream> configuredStreams = new ArrayList<>();
+    for (int i = 0; i < streamsCount; i++) {
+      configuredStreams.add(generateBasicConfiguredStream(String.valueOf(i)));
+    }
+    return new ConfiguredAirbyteCatalog().withStreams(configuredStreams);
+  }
+
+  public static ConfiguredAirbyteStream generateBasicConfiguredStream(final String nameSuffix) {
+    return new ConfiguredAirbyteStream()
+        .withStream(generateBasicAirbyteStream(nameSuffix))
         .withCursorField(Lists.newArrayList(FIELD_NAME))
         .withSyncMode(io.airbyte.protocol.models.SyncMode.INCREMENTAL)
         .withDestinationSyncMode(DestinationSyncMode.APPEND);
-    return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
   }
 
-  private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream() {
-    return CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING))
+  private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream(final String nameSuffix) {
+    return CatalogHelpers.createAirbyteStream(
+        nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix, Field.of(FIELD_NAME, JsonSchemaType.STRING))
         .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
         .withSourceDefinedCursor(false)
         .withSupportedSyncModes(List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL));
@@ -224,7 +265,7 @@ public class ConnectionHelpers {
   public static AirbyteCatalog generateBasicApiCatalog() {
     return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
         .stream(generateBasicApiStream(null))
-        .config(generateBasicApiStreamConfig())));
+        .config(generateBasicApiStreamConfig(null))));
   }
 
   public static AirbyteCatalog generateMultipleStreamsApiCatalog(final int streamsCount) {
@@ -232,18 +273,18 @@ public class ConnectionHelpers {
     for (int i = 0; i < streamsCount; i++) {
       streamAndConfigurations.add(new AirbyteStreamAndConfiguration()
           .stream(generateBasicApiStream(String.valueOf(i)))
-          .config(generateBasicApiStreamConfig()));
+          .config(generateBasicApiStreamConfig(String.valueOf(i))));
     }
     return new AirbyteCatalog().streams(streamAndConfigurations);
   }
 
-  private static AirbyteStreamConfiguration generateBasicApiStreamConfig() {
+  private static AirbyteStreamConfiguration generateBasicApiStreamConfig(final String nameSuffix) {
     return new AirbyteStreamConfiguration()
         .syncMode(SyncMode.INCREMENTAL)
         .cursorField(Lists.newArrayList(FIELD_NAME))
         .destinationSyncMode(io.airbyte.api.model.generated.DestinationSyncMode.APPEND)
         .primaryKey(Collections.emptyList())
-        .aliasName(Names.toAlphanumericAndUnderscore(STREAM_NAME))
+        .aliasName(Names.toAlphanumericAndUnderscore(nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix))
         .selected(true);
   }
 

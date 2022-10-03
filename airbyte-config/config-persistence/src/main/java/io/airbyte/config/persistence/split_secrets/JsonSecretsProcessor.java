@@ -27,10 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JsonSecretsProcessor {
 
   @Builder.Default
-  final private boolean maskSecrets = true;
-
-  @Builder.Default
-  final private boolean copySecrets = true;
+  final private Boolean copySecrets = false;
 
   protected static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 
@@ -42,6 +39,7 @@ public class JsonSecretsProcessor {
   static final String TYPE_FIELD = "type";
   static final String ARRAY_TYPE_FIELD = "array";
   static final String ITEMS_FIELD = "items";
+  static final String ONE_OF_FIELD = "oneOf";
 
   /**
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
@@ -54,18 +52,14 @@ public class JsonSecretsProcessor {
    * @param obj Object containing potentially secret fields
    */
   public JsonNode prepareSecretsForOutput(final JsonNode obj, final JsonNode schema) {
-    if (maskSecrets) {
-      // todo (cgardens) this is not safe. should throw.
-      // if schema is an object and has a properties field
-      if (!isValidJsonSchema(schema)) {
-        log.error("The schema is not valid, the secret can't be hidden");
-        return obj;
-      }
-
-      return maskAllSecrets(obj, schema);
+    // todo (cgardens) this is not safe. should throw.
+    // if schema is an object and has a properties field
+    if (!isValidJsonSchema(schema)) {
+      log.error("The schema is not valid, the secret can't be hidden");
+      return obj;
     }
 
-    return obj;
+    return maskAllSecrets(obj, schema);
   }
 
   /**
@@ -182,8 +176,10 @@ public class JsonSecretsProcessor {
   }
 
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-  private static boolean isValidJsonSchema(final JsonNode schema) {
-    return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
+  @VisibleForTesting
+  public static boolean isValidJsonSchema(final JsonNode schema) {
+    return schema.isObject() && ((schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject())
+        || (schema.has(ONE_OF_FIELD) && schema.get(ONE_OF_FIELD).isArray()));
   }
 
 }

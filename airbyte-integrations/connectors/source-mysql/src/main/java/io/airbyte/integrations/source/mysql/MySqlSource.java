@@ -19,6 +19,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -42,15 +43,18 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,6 +126,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
     if (isCdc(config)) {
       checkOperations.addAll(CdcConfigurationHelper.getCheckOperations());
+
+      checkOperations.add(database -> {
+        CdcConfigurationHelper.checkFirstRecordWaitTime(config);
+      });
     }
     return checkOperations;
   }
@@ -230,17 +238,37 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+      final Duration firstRecordWaitTime = CdcConfigurationHelper.getFirstRecordWaitTime(sourceConfig);
+      LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
       final AirbyteDebeziumHandler handler =
-          new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, Duration.ofMinutes(5));
+          new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime);
 
+      final MySqlCdcStateHandler mySqlCdcStateHandler = new MySqlCdcStateHandler(stateManager);
+      final MySqlCdcConnectorMetadataInjector mySqlCdcConnectorMetadataInjector = new MySqlCdcConnectorMetadataInjector();
+
+      final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
       final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
-      final MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState.orElse(null));
-      return Collections.singletonList(handler.getIncrementalIterators(catalog,
-          fetcher,
+
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
+          new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
           new MySqlCdcStateHandler(stateManager),
           new MySqlCdcConnectorMetadataInjector(),
           MySqlCdcProperties.getDebeziumProperties(database),
-          emittedAt));
+          emittedAt);
+
+      if (streamsToSnapshot.isEmpty()) {
+        return Collections.singletonList(incrementalIteratorSupplier.get());
+      }
+
+      final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
+          new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot),
+          mySqlCdcConnectorMetadataInjector,
+          MySqlCdcProperties.getSnapshotProperties(database),
+          mySqlCdcStateHandler,
+          emittedAt);
+
+      return Collections.singletonList(
+          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,

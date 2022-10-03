@@ -4,7 +4,9 @@ This page contains the setup guide and reference information for the Mixpanel so
 
 ## Prerequisites
 
-* Mixpanel API Secret
+* Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts)
+* Mixpanel [Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id)
+* Mixpanel [Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel)
 * Project region `US` or `EU`
 
 ## Setup guide
@@ -12,7 +14,7 @@ This page contains the setup guide and reference information for the Mixpanel so
 ### Step 1: Set up
 
 <!-- markdown-link-check-disable-next-line -->
-Please read [Find Project Secret](https://developer.mixpanel.com/reference/project-secret#managing-a-projects-secret), and get your Project Secret.
+Please read [Find Service Account](https://developer.mixpanel.com/reference/service-accounts), and create your Service Account.
 
 <!-- markdown-link-check-disable-next-line -->
 Select the correct region \(EU or US\) for your Mixpanel project. See detail [here](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU)
@@ -43,12 +45,12 @@ Please note, that incremental sync could return duplicated \(old records\) for t
 ### Supported Streams
 
 * [Export](https://developer.mixpanel.com/reference/raw-event-export) \(Incremental\)
-* [Engage](https://developer.mixpanel.com/reference/engage-query) \(Full table\)
+* [Engage](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 * [Funnels](https://developer.mixpanel.com/reference/funnels-query) \(Incremental\)
 * [Revenue](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 * [Annotations](https://developer.mixpanel.com/reference/overview-1) \(Full table\)
-* [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Full table\)
-* [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Full table\)
+* [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Incremental\)
+* [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 
 
 ## Performance considerations
@@ -60,7 +62,12 @@ Please note, that incremental sync could return duplicated \(old records\) for t
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.1.27  | 2022-09-29 | [17415](https://github.com/airbytehq/airbyte/pull/17415) | Disable stream "cohort_members" on discover if not access                                            |
+| 0.1.26  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states.                                                                        |
+| 0.1.25  | 2022-09-27 | [17145](https://github.com/airbytehq/airbyte/pull/17145) | Disable streams "export", "engage" on discover if not access                                         |
+| 0.1.24  | 2022-09-26 | [16915](https://github.com/airbytehq/airbyte/pull/16915) | Added Service Accounts support                                                                       |
+| 0.1.23  | 2022-09-18 | [16843](https://github.com/airbytehq/airbyte/pull/16843) | Add stream=True for `export` stream                                                                  |
 | 0.1.22  | 2022-09-15 | [16770](https://github.com/airbytehq/airbyte/pull/16770) | Use "Retry-After" header for backoff                                                                 |
 | 0.1.21  | 2022-09-11 | [16191](https://github.com/airbytehq/airbyte/pull/16191) | Improved connector's input configuration validation                                                  |
 | 0.1.20  | 2022-08-22 | [15091](https://github.com/airbytehq/airbyte/pull/15091) | Improve `export` stream cursor support                                                               |
@@ -69,9 +76,9 @@ Please note, that incremental sync could return duplicated \(old records\) for t
 | 0.1.17  | 2022-06-01 | [12801](https://github.com/airbytehq/airbyte/pull/13372) | Acceptance tests fix, fixing some bugs for beta release                                              |
 | 0.1.16  | 2022-05-30 | [12801](https://github.com/airbytehq/airbyte/pull/12801) | Add end_date parameter                                                                               |
 | 0.1.15  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                      |
-| 0.1.14  | 2022-05-02 | [11501](https://github.com/airbytehq/airbyte/pull/11501) | Improve incremental sync method to streams                                                           |  
-| 0.1.13  | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep                              |  
-| 0.1.12  | 2022-03-31 | [11633](https://github.com/airbytehq/airbyte/pull/11633) | Increase unit test coverage                                                                          |  
+| 0.1.14  | 2022-05-02 | [11501](https://github.com/airbytehq/airbyte/pull/11501) | Improve incremental sync method to streams                                                           |
+| 0.1.13  | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep                              |
+| 0.1.12  | 2022-03-31 | [11633](https://github.com/airbytehq/airbyte/pull/11633) | Increase unit test coverage                                                                          |
 | 0.1.11  | 2022-04-04 | [11318](https://github.com/airbytehq/airbyte/pull/11318) | Change Response Reading                                                                              |
 | 0.1.10  | 2022-03-31 | [11227](https://github.com/airbytehq/airbyte/pull/11227) | Fix cohort id always null in the cohort_members stream                                               |
 | 0.1.9   | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8578)   | Updated titles and descriptions                                                                      |

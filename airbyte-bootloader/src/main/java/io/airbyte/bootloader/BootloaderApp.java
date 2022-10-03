@@ -9,6 +9,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
@@ -31,8 +32,8 @@ import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.DefaultJobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Optional;
@@ -160,6 +161,11 @@ public class BootloaderApp {
     final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
     assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
 
+    final Version airbyteProtocolVersionMax = configs.getAirbyteProtocolVersionMax();
+    final Version airbyteProtocolVersionMin = configs.getAirbyteProtocolVersionMin();
+    // TODO ProtocolVersion validation should happen here
+    trackProtocolVersion(airbyteProtocolVersionMin, airbyteProtocolVersionMax);
+
     // TODO Will be converted to an injected singleton during DI migration
     final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
     final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
@@ -192,7 +198,6 @@ public class BootloaderApp {
 
   private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .maskSecrets(true)
         .copySecrets(true)
         .build();
 
@@ -304,6 +309,12 @@ public class BootloaderApp {
       LOGGER.error(message);
       throw new RuntimeException(message);
     }
+  }
+
+  private void trackProtocolVersion(final Version airbyteProtocolVersionMin, final Version airbyteProtocolVersionMax) throws IOException {
+    jobPersistence.setAirbyteProtocolVersionMin(airbyteProtocolVersionMin);
+    jobPersistence.setAirbyteProtocolVersionMax(airbyteProtocolVersionMax);
+    LOGGER.info("AirbyteProtocol version support range [{}:{}]", airbyteProtocolVersionMin.serialize(), airbyteProtocolVersionMax.serialize());
   }
 
   static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {

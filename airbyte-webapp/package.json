@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.6",
+  "version": "0.40.10",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -55,6 +55,7 @@
     "react-reflex": "^4.0.9",
     "react-router-dom": "^6.3.0",
     "react-select": "^5.4.0",
+    "react-slick": "^0.29.0",
     "react-table": "^7.8.0",
     "react-use": "^17.4.0",
     "react-use-intercom": "^1.5.2",
@@ -95,6 +96,7 @@
     "@types/react-dom": "^17.0.11",
     "@types/react-helmet": "^6.1.5",
     "@types/react-lazylog": "^4.5.1",
+    "@types/react-slick": "^0.23.10",
     "@types/react-table": "^7.7.12",
     "@types/react-widgets": "^4.4.7",
     "@types/sanitize-html": "^2.6.2",
@@ -142,7 +144,7 @@
     "src/**/*.{css,scss,md,json}": [
       "prettier --write"
     ],
-    "src/**/*.{css,scss}": [
+    "{public,src}/**/*.{css,scss}": [
       "stylelint --fix"
     ]
   },

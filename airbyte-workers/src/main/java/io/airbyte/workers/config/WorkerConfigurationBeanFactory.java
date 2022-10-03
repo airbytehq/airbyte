@@ -15,14 +15,14 @@ import io.airbyte.workers.WorkerConfigs;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -195,8 +195,7 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("checkWorkerConfigs")
   public WorkerConfigs checkWorkerConfigs(
                                           final WorkerEnvironment workerEnvironment,
@@ -257,8 +256,7 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("discoverWorkerConfigs")
   public WorkerConfigs discoverWorkerConfigs(
                                              final WorkerEnvironment workerEnvironment,
@@ -319,8 +317,7 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("specWorkerConfigs")
   public WorkerConfigs specWorkerConfigs(
                                          final WorkerEnvironment workerEnvironment,

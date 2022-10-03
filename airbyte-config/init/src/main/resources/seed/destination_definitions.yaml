@@ -27,7 +27,7 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.2.1
+  dockerImageTag: 1.2.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -40,7 +40,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 1.2.2
+  dockerImageTag: 1.2.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -67,8 +67,15 @@
 - name: Clickhouse
   destinationDefinitionId: ce0d828e-1dc4-496c-b122-2da42e637e48
   dockerRepository: airbyte/destination-clickhouse
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/clickhouse
+  releaseStage: alpha
+- name: Cloudflare R2
+  destinationDefinitionId: 0fb07be9-7c3b-4336-850d-5efc006152ee
+  dockerRepository: airbyte/destination-r2
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/r2
+  icon: cloudflare-r2.svg
   releaseStage: alpha
 - name: Databricks Lakehouse
   destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
@@ -140,7 +147,7 @@
 - name: Kinesis
   destinationDefinitionId: 6d1d66d4-26ab-4602-8d32-f85894b04955
   dockerRepository: airbyte/destination-kinesis
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kinesis
   icon: kinesis.svg
   releaseStage: alpha
@@ -203,7 +210,7 @@
 - name: Postgres
   destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerRepository: airbyte/destination-postgres
-  dockerImageTag: 0.3.24
+  dockerImageTag: 0.3.26
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
   releaseStage: alpha
@@ -250,7 +257,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.15
+  dockerImageTag: 0.3.16
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:
@@ -270,7 +277,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.36
+  dockerImageTag: 0.4.38
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
   resourceRequirements:

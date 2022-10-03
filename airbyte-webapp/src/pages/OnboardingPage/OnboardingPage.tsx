@@ -46,7 +46,6 @@ const Footer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px 0;
 `;
 
 const ScreenContent = styled.div`
@@ -152,12 +151,10 @@ const OnboardingPage: React.FC = () => {
             </ApiErrorBoundary>
           </Suspense>
           <Footer>
-            <Button secondary onClick={() => handleFinishOnboarding()}>
-              {currentStep === StepType.FINAL ? (
-                <FormattedMessage id="onboarding.closeOnboarding" />
-              ) : (
-                <FormattedMessage id="onboarding.skipOnboarding" />
-              )}
+            <Button variant="secondary" onClick={handleFinishOnboarding}>
+              <FormattedMessage
+                id={currentStep === StepType.FINAL ? "onboarding.closeOnboarding" : "onboarding.skipOnboarding"}
+              />
             </Button>
           </Footer>
         </Content>

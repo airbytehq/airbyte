@@ -16,6 +16,7 @@ import {
 import { ServicesProvider } from "core/servicesProvider";
 import { defaultFeatures, FeatureService } from "hooks/services/Feature";
 import en from "locales/en.json";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 
 interface WrapperProps {
   children?: React.ReactElement;
@@ -31,15 +32,17 @@ export async function render<
     return (
       <TestWrapper>
         <ConfigContext.Provider value={{ config: defaultConfig }}>
-          <FeatureService features={defaultFeatures}>
-            <ServicesProvider>
-              <QueryClientProvider client={queryClient}>
-                <MemoryRouter>
-                  <Suspense fallback={<div>'fallback content'</div>}>{children}</Suspense>
-                </MemoryRouter>
-              </QueryClientProvider>
-            </ServicesProvider>
-          </FeatureService>
+          <AnalyticsProvider>
+            <FeatureService features={defaultFeatures}>
+              <ServicesProvider>
+                <QueryClientProvider client={queryClient}>
+                  <MemoryRouter>
+                    <Suspense fallback={<div>'fallback content'</div>}>{children}</Suspense>
+                  </MemoryRouter>
+                </QueryClientProvider>
+              </ServicesProvider>
+            </FeatureService>
+          </AnalyticsProvider>
         </ConfigContext.Provider>
       </TestWrapper>
     );
@@ -47,7 +50,7 @@ export async function render<
 
   let renderResult: RenderResult<Q, Container>;
   await act(async () => {
-    renderResult = await rtlRender<Q, Container>(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
+    renderResult = rtlRender<Q, Container>(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
   });
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
