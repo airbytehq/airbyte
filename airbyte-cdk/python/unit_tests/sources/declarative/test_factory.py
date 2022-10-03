@@ -383,7 +383,7 @@ check:
     [("test_static_record_selector", "result", "result"), ("test_static_record_selector", "{{ options['name'] }}", "lists")],
 )
 def test_create_record_selector(test_name, record_selector, expected_runtime_selector):
-    content = """
+    content = f"""
     extractor:
       type: DpathExtractor
     selector:
@@ -395,9 +395,8 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
         $ref: "*ref(extractor)"
-        field_pointer: ["replace_me"]
+        field_pointer: ["{record_selector}"]
     """
-    content = content.replace("replace_me", record_selector)
     config = parser.parse(content)
 
     factory.create_component(config["selector"], input_config, False)
