@@ -838,6 +838,10 @@ jobs:
         with:
           name: Kubernetes Logs
           path: /tmp/kubernetes_logs/*
+      
+      - name: Setup tmate session
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
 
   # In case of self-hosted EC2 errors, remove this block.
   # Todo: Kyryl turn this on.
