@@ -1,19 +1,16 @@
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { Formik } from "formik";
 import { IntlProvider } from "react-intl";
 
 import en from "locales/en.json";
 
 import { mockData } from "../../../../../test-utils/mock-data/mockFrequentlyUsedDestinations";
-import { FrequentlyUsedDestinations, FrequentlyUsedDestinationsProps } from "./FrequentlyUsedDestinations";
+import { FrequentlyUsedDestinationsCard, FrequentlyUsedDestinationsCardProps } from "./FrequentlyUsedDestinationsCard";
 
-const renderFrequentlyUsedDestinationsComponent = (props: FrequentlyUsedDestinationsProps) =>
+const renderFrequentlyUsedDestinationsComponent = (props: FrequentlyUsedDestinationsCardProps) =>
   render(
-    <Formik initialValues={{}} onSubmit={jest.fn()}>
-      <IntlProvider locale="en" messages={en}>
-        <FrequentlyUsedDestinations {...props} />
-      </IntlProvider>
-    </Formik>
+    <IntlProvider locale="en" messages={en}>
+      <FrequentlyUsedDestinationsCard {...props} />
+    </IntlProvider>
   );
 
 describe("<FrequentlyUsedDestinations />", () => {
@@ -21,7 +18,6 @@ describe("<FrequentlyUsedDestinations />", () => {
     const { asFragment } = renderFrequentlyUsedDestinationsComponent({
       destinations: mockData,
       onDestinationSelect: jest.fn(),
-      propertyPath: "serviceType",
     });
 
     expect(asFragment()).toMatchSnapshot();
@@ -32,7 +28,6 @@ describe("<FrequentlyUsedDestinations />", () => {
     const { getByText } = renderFrequentlyUsedDestinationsComponent({
       destinations: mockData,
       onDestinationSelect: handler,
-      propertyPath: "serviceType",
     });
     fireEvent.click(getByText("BigQuery"));
 
