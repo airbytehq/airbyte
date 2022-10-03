@@ -32,15 +32,15 @@ class SourceAmplitude(AbstractSource):
 
     @staticmethod
     def _validate_start_date(start_date):
-        today = pendulum.now()
+        now = pendulum.now()
         start_date = pendulum.parse(start_date)
-        start_date_in_future = start_date > today
+        start_date_in_future = start_date > now
 
         if start_date_in_future:
             logger = logging.getLogger("airbyte")
-            logger.info(f"Start date set to {today}.")
+            logger.info(f"Start date set to {now}.")
 
-            return today.to_datetime_string()
+            return now.to_datetime_string()
         return start_date
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
