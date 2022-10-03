@@ -1,0 +1,14 @@
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+kubeadmConfigPatches:
+  - |
+    kind: ClusterConfiguration
+    apiServer:
+      extraArgs:
+        "service-node-port-range": "8000-32767"
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 8001
+        hostPort: 8001
+        protocol: TCP
