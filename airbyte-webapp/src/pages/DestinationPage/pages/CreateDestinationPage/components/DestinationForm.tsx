@@ -68,7 +68,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
       actionDescription: "Destination connector type selected",
       connector_destination: connector?.name,
       connector_destination_definition_id: destinationDefinitionId,
-      ...(trackParams && { ...trackParams }),
+      ...trackParams,
     });
   };
 
