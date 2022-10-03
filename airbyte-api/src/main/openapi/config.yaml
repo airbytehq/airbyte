@@ -2036,6 +2036,19 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/geographies/list:
+    post:
+      tags:
+        - web_backend
+      summary: Returns two-letter country codes that can be selected for running data syncs in a particular geography.
+      operationId: webBackendListGeographies
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendGeographiesListResult"
   /v1/jobs/list:
     post:
       tags:
@@ -2260,6 +2273,8 @@ components:
             $ref: "#/components/schemas/Notification"
         displaySetupWizard:
           type: boolean
+        defaultGeography:
+          $ref: "#/components/schemas/Geography"
     Notification:
       type: object
       required:
@@ -2362,6 +2377,8 @@ components:
           type: boolean
         feedbackDone:
           type: boolean
+        defaultGeography:
+          $ref: "#/components/schemas/Geography"
     WorkspaceUpdateName:
       type: object
       required:
@@ -2397,6 +2414,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+        defaultGeography:
+          $ref: "#/components/schemas/Geography"
     WorkspaceGiveFeedback:
       type: object
       required:
@@ -2424,6 +2443,15 @@ components:
           type: boolean
         hasDestinations:
           type: boolean
+    WebBackendGeographiesListResult:
+      type: object
+      required:
+        - geographies
+      properties:
+        geographies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Geography"
     # SLUG
     SlugRequestBody:
       type: object
@@ -2432,6 +2460,13 @@ components:
       properties:
         slug:
           type: string
+    # Geography
+    Geography:
+      type: string
+      enum:
+        - auto
+        - us
+        - eu
     # SourceDefinition
     SourceDefinitionId:
       type: string
@@ -3206,6 +3241,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     ConnectionStateCreateOrUpdate:
       type: object
       required:
@@ -3298,6 +3335,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     ConnectionRead:
       type: object
       required:
@@ -3345,6 +3384,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     ConnectionSearch:
       type: object
       properties:
@@ -4619,6 +4660,8 @@ components:
           format: uuid
         catalogDiff:
           $ref: "#/components/schemas/CatalogDiff"
+        geography:
+          $ref: "#/components/schemas/Geography"
     WebBackendConnectionReadList:
       type: object
       required:

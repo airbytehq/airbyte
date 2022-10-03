@@ -47,3 +47,5 @@ properties:
     type: boolean
   feedbackDone:
     type: boolean
+  defaultGeography:
+    "$ref": Geography.yaml

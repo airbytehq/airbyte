@@ -195,7 +195,8 @@ public class WebBackendConnectionsHandler {
         .source(source)
         .destination(destination)
         .operations(operations.getOperations())
-        .resourceRequirements(connectionRead.getResourceRequirements());
+        .resourceRequirements(connectionRead.getResourceRequirements())
+        .geography(connectionRead.getGeography());
   }
 
   // todo (cgardens) - This logic is a headache to follow it stems from the internal data model not
