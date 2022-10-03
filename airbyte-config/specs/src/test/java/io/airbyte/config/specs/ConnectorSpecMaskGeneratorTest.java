@@ -20,6 +20,9 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Test suite for the {@link ConnectorSpecMaskGenerator} class.
+ */
 class ConnectorSpecMaskGeneratorTest {
 
   @Test
