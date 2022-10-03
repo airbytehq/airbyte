@@ -408,6 +408,48 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
     assert isinstance(selector.record_filter, RecordFilter)
 
 
+@pytest.mark.parametrize(
+    "test_name, content, expected_field_pointer_value",
+    [
+        (
+            "test_option_in_selector",
+            """
+      extractor:
+        type: DpathExtractor
+        field_pointer: ["{{ options['name'] }}"]
+      selector:
+        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+        $options:
+          name: "selector"
+        extractor: "*ref(extractor)"
+    """,
+            "selector",
+        ),
+        (
+            "test_option_in_extractor",
+            """
+      extractor:
+        type: DpathExtractor
+        $options:
+          name: "extractor"
+        field_pointer: ["{{ options['name'] }}"]
+      selector:
+        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+        $options:
+          name: "selector"
+        extractor: "*ref(extractor)"
+    """,
+            "extractor",
+        ),
+    ],
+)
+def test_options_propagation(test_name, content, expected_field_pointer_value):
+    config = parser.parse(content)
+
+    selector = factory.create_component(config["selector"], input_config, True)()
+    assert selector.extractor.field_pointer[0].eval(input_config) == expected_field_pointer_value
+
+
 def test_create_requester():
     content = """
   requester:
