@@ -40,7 +40,7 @@ class SourceAmplitude(AbstractSource):
             logger = logging.getLogger("airbyte")
             logger.info(f"Start date set to {now}.")
 
-            return now.to_datetime_string()
+            return now
         return start_date
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
