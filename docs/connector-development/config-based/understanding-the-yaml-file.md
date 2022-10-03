@@ -451,6 +451,68 @@ authenticator:
   refresh_token: ""
 ```
 
+## Configuring the cursor field for incremental syncs
+
+Incremental syncs are supported by using a `DatetimeStreamSlicer` to iterate over a datetime range.
+
+Given a start time, an end time, and a step function, it will partition the interval [start, end] into small windows of the size described by the step.
+Note that the `StreamSlicer`'s `cursor_field` must match the `Stream`'s `stream_cursor_field`.
+
+Schema:
+
+```yaml
+DatetimeStreamSlicer:
+  type: object
+  required:
+    - start_datetime
+    - end_datetime
+    - step
+    - cursor_field
+    - datetime_format
+  additional_properties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    start_datetime:
+      "$ref": "#/definitions/MinMaxDatetime"
+    end_datetime:
+      "$ref": "#/definitions/MinMaxDatetime"
+    step:
+      type: string
+    cursor_field:
+      type: string
+    datetime_format:
+      type: string
+    start_time_option:
+      "$ref": "#/definitions/RequestOption"
+    end_time_option:
+      "$ref": "#/definitions/RequestOption"
+    stream_state_field_start:
+      type: string
+    stream_state_field_end:
+      type: string
+    lookback_window:
+      type: string
+MinMaxDatetime:
+  type: object
+  required:
+    - datetime
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    datetime:
+      type: string
+    datetime_format:
+      type: string
+    min_datetime:
+      type: string
+    max_datetime:
+      type: string
+```
+
+More information on `DatetimeStreamSlicer` can be found in the [advanced topics](./advanced-topics.md#datetimestreamslicer) section.
+
 ## Configuring the Paginator
 
 Given a page size and a pagination strategy, the `DefaultPaginator` will point to pages of results for as long as its strategy returns a `next_page_token`.
@@ -862,66 +924,6 @@ selector:
     field_pointer: [ ]
   record_filter:
     condition: "{{ record['created_at'] < stream_slice['start_time'] }}"
-```
-
-## Configuring the cursor field for incremental syncs
-
-Incremental syncs are supported by using a `DatetimeStreamSlicer` to iterate over a datetime range.
-
-Given a start time, an end time, and a step function, it will partition the interval [start, end] into small windows of the size described by the step.
-Note that the `StreamSlicer`'s `cursor_field` must match the `Stream`'s `stream_cursor_field`.
-
-Schema:
-
-```yaml
-DatetimeStreamSlicer:
-  type: object
-  required:
-    - start_datetime
-    - end_datetime
-    - step
-    - cursor_field
-    - datetime_format
-  additional_properties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    start_datetime:
-      "$ref": "#/definitions/MinMaxDatetime"
-    end_datetime:
-      "$ref": "#/definitions/MinMaxDatetime"
-    step:
-      type: string
-    cursor_field:
-      type: string
-    datetime_format:
-      type: string
-    start_time_option:
-      "$ref": "#/definitions/RequestOption"
-    end_time_option:
-      "$ref": "#/definitions/RequestOption"
-    stream_state_field_start:
-      type: string
-    stream_state_field_end:
-      type: string
-    lookback_window:
-      type: string
-MinMaxDatetime:
-  type: object
-  required:
-    - datetime
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    datetime:
-      type: string
-    datetime_format:
-      type: string
-    min_datetime:
-      type: string
-    max_datetime:
-      type: string
 ```
 
 ## Configuring the check method
