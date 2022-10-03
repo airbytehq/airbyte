@@ -9,7 +9,7 @@ import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.micronaut.context.annotation.Factory;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Micronaut bean factory for Temporal-related singletons.

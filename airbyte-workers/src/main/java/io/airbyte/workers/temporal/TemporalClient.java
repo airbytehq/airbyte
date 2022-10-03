@@ -25,6 +25,7 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.exception.DeletedWorkflowException;
@@ -40,6 +41,8 @@ import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -55,23 +58,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Slf4j
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          pattern = "(?i)^(?!data_plane).*")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class TemporalClient {
 
   /**
@@ -81,19 +76,26 @@ public class TemporalClient {
    */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
 
-  @Inject
-  @Named("workspaceRoot")
-  private Path workspaceRoot;
-  @Inject
-  private WorkflowClient client;
-  @Inject
-  private WorkflowServiceStubs service;
-  @Inject
-  private StreamResetPersistence streamResetPersistence;
-  @Inject
-  private ConnectionManagerUtils connectionManagerUtils;
-  @Inject
-  private StreamResetRecordsHelper streamResetRecordsHelper;
+  private final Path workspaceRoot;
+  private final WorkflowClient client;
+  private final WorkflowServiceStubs service;
+  private final StreamResetPersistence streamResetPersistence;
+  private final ConnectionManagerUtils connectionManagerUtils;
+  private final StreamResetRecordsHelper streamResetRecordsHelper;
+
+  public TemporalClient(@Named("workspaceRoot") final Path workspaceRoot,
+                        final WorkflowClient client,
+                        final WorkflowServiceStubs service,
+                        final StreamResetPersistence streamResetPersistence,
+                        final ConnectionManagerUtils connectionManagerUtils,
+                        final StreamResetRecordsHelper streamResetRecordsHelper) {
+    this.workspaceRoot = workspaceRoot;
+    this.client = client;
+    this.service = service;
+    this.streamResetPersistence = streamResetPersistence;
+    this.connectionManagerUtils = connectionManagerUtils;
+    this.streamResetRecordsHelper = streamResetRecordsHelper;
+  }
 
   /**
    * Direct termination of Temporal Workflows should generally be avoided. This method exists for some

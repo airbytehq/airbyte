@@ -27,6 +27,7 @@ import io.temporal.serviceclient.SimpleSslContextBuilder;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.workflow.Functions;
+import jakarta.inject.Singleton;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -40,7 +41,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import javax.inject.Singleton;
 import javax.net.ssl.SSLException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -74,7 +74,8 @@ public class TemporalUtils {
                        @Value("${temporal.cloud.host}") final String temporalCloudHost,
                        @Value("${temporal.cloud.namespace}") final String temporalCloudNamespace,
                        @Value("${temporal.host}") final String temporalHost,
-                       @Value("${temporal.retention}") final Integer temporalRetentionInDays) {
+                       @Property(name = "${temporal.retention}",
+                                 defaultValue = "30") final Integer temporalRetentionInDays) {
     this.temporalCloudClientCert = temporalCloudClientCert;
     this.temporalCloudClientKey = temporalCloudClientKey;
     this.temporalCloudEnabled = temporalCloudEnabled;
