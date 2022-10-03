@@ -177,11 +177,9 @@ describe("Service Form", () => {
 
     it("should display general components: submit button, name and serviceType fields", () => {
       const name = container.querySelector("input[name='name']");
-      const serviceType = container.querySelector("div[data-testid='serviceType']");
       const submit = container.querySelector("button[type='submit']");
 
       expect(name).toBeInTheDocument();
-      expect(serviceType).toBeInTheDocument();
       expect(submit).toBeInTheDocument();
     });
 
