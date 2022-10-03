@@ -1,48 +1,34 @@
-import { useField } from "formik";
-import React from "react";
-import { useIntl } from "react-intl";
+import React, { useMemo } from "react";
 
-import { ConnectorCard } from "components/ConnectorCard";
-import { Card } from "components/ui/Card";
+import { ConnectorDefinition } from "core/domain/connector";
+import { isDestinationDefinition } from "core/domain/connector/destination";
+import { useExperiment } from "hooks/services/Experiment";
+import { DestinationDefinitionReadWithLatestTag } from "services/connector/DestinationDefinitionService";
 
 import { DestinationConnectorCard } from "../../types";
-import styles from "./StartWithDestination.module.scss";
+import { StartWithDestinationCard } from "./StartWithDestinationCard";
 
-export interface StartWithDestinationProps {
-  destination: DestinationConnectorCard | undefined;
-  onDestinationSelect?: (id: string) => void;
+interface StartWithDestinationProps {
+  onServiceSelect: ((id: string) => void) | undefined;
+  availableServices: ConnectorDefinition[];
 }
 
-export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ destination, onDestinationSelect }) => {
-  // since we will use the component just in one place we can hardcode the useField()
-  const [, , { setValue }] = useField("serviceType");
-  const { formatMessage } = useIntl();
+export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ onServiceSelect, availableServices }) => {
+  const startWithDestinationId = useExperiment("connector.startWithDestinationId", "");
 
-  if (!destination) {
-    return null;
-  }
-  const { icon, releaseStage, name, destinationDefinitionId } = destination;
+  const startWithDestination = useMemo<DestinationConnectorCard | undefined>(() => {
+    const destination = availableServices.find(
+      (service): service is DestinationDefinitionReadWithLatestTag =>
+        isDestinationDefinition(service) && service.destinationDefinitionId === startWithDestinationId
+    );
+    if (!destination) {
+      console.error("No destination provided");
+      return undefined;
+    }
+    const { destinationDefinitionId, name, icon, releaseStage } = destination;
 
-  const connectorCardClickHandler = () => {
-    setValue(destinationDefinitionId);
-    onDestinationSelect?.(destinationDefinitionId);
-  };
+    return { destinationDefinitionId, name, icon, releaseStage };
+  }, [availableServices, startWithDestinationId]);
 
-  return (
-    <div className={styles.container}>
-      <button className={styles.button} onClick={connectorCardClickHandler}>
-        <Card className={styles.connectorCard}>
-          <div className={styles.connectorCardWrapper}>
-            <ConnectorCard
-              icon={icon}
-              releaseStage={releaseStage}
-              connectionName={formatMessage({ id: "destinations.dontHaveYourOwnDestination" })}
-              connectorName={formatMessage({ id: "destinations.startWith" }, { name })}
-              fullWidth
-            />
-          </div>
-        </Card>
-      </button>
-    </div>
-  );
+  return <StartWithDestinationCard onDestinationSelect={onServiceSelect} destination={startWithDestination} />;
 };

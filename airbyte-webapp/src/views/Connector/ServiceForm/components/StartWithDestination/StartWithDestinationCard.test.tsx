@@ -1,22 +1,19 @@
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { Formik } from "formik";
 import { IntlProvider } from "react-intl";
 
 import en from "locales/en.json";
 
 import { mockData } from "../../../../../test-utils/mock-data/mockStartWithDestination";
-import { StartWithDestination, StartWithDestinationProps } from "./StartWithDestination";
+import { StartWithDestinationCard, StartWithDestinationProps } from "./StartWithDestinationCard";
 
 const renderStartWithDestination = (props: StartWithDestinationProps) =>
   render(
-    <Formik initialValues={{}} onSubmit={jest.fn()}>
-      <IntlProvider locale="en" messages={en}>
-        <StartWithDestination {...props} />
-      </IntlProvider>
-    </Formik>
+    <IntlProvider locale="en" messages={en}>
+      <StartWithDestinationCard {...props} />
+    </IntlProvider>
   );
 
-describe("<StartWithDestinations />", () => {
+describe("<StartWithDestinationCard />", () => {
   it("should renders without crash with provided props", () => {
     const { asFragment } = renderStartWithDestination({ destination: mockData, onDestinationSelect: jest.fn() });
 
