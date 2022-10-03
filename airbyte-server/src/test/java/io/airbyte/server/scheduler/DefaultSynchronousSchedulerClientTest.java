@@ -230,12 +230,12 @@ class DefaultSynchronousSchedulerClientTest {
 
     @Test
     void testCreateDiscoverSchemaJob() throws IOException {
-
-      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withDiscoverCatalogId("foo");
+      final UUID expectedCatalogId = UUID.randomUUID();
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withDiscoverCatalogId(expectedCatalogId);
       when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), any(JobDiscoverCatalogConfig.class)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
-      final SynchronousResponse<String> response = schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE, DOCKER_IMAGE_TAG);
-      assertEquals("foo", response.getOutput());
+      final SynchronousResponse<UUID> response = schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE, DOCKER_IMAGE_TAG);
+      assertEquals(expectedCatalogId, response.getOutput());
     }
 
     @Test

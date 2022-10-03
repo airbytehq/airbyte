@@ -106,7 +106,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<String> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage, final String connectorVersion)
+  public SynchronousResponse<UUID> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage, final String connectorVersion)
       throws IOException {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),

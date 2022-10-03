@@ -93,7 +93,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
             configRepository.writeActorCatalogFetchEvent(catalog.get(), UUID.fromString(discoverSchemaInput.getSourceId()),
                 discoverSchemaInput.getConnectorVersion(),
                 discoverSchemaInput.getConfigHash());
-        return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID).withDiscoverCatalogId(catalogId.toString());
+        return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID).withDiscoverCatalogId(catalogId);
       } else {
         return WorkerUtils.getJobFailureOutputOrThrow(
             OutputType.DISCOVER_CATALOG_ID,

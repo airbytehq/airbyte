@@ -113,7 +113,7 @@ class DefaultDiscoverCatalogWorkerTest {
 
     assertNull(output.getFailureReason());
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
-    assertEquals(CATALOG_ID.toString(), output.getDiscoverCatalogId());
+    assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
     verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
