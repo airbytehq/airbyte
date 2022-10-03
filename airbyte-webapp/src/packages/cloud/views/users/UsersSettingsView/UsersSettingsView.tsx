@@ -5,7 +5,8 @@ import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import { useToggle } from "react-use";
 
-import { Button, H5 } from "components";
+import { H5 } from "components/base/Titles";
+import { Button } from "components/ui/Button";
 import { Table } from "components/ui/Table";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";

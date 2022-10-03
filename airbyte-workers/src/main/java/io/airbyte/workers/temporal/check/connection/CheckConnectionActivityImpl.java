@@ -18,6 +18,7 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -32,8 +33,7 @@ import jakarta.inject.Singleton;
 import java.nio.file.Path;
 
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          pattern = "(?i)^(?!data_plane).*")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
   private final WorkerConfigs workerConfigs;

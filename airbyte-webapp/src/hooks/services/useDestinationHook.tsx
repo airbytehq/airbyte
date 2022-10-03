@@ -7,7 +7,7 @@ import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
 import { useConfig } from "../../config";
-import { DestinationRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { DestinationRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
@@ -97,7 +97,7 @@ const useDeleteDestination = () => {
   const removeConnectionsFromList = useRemoveConnectionsFromList();
 
   return useMutation(
-    (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionRead[] }) =>
+    (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionListItem[] }) =>
       service.delete(payload.destination.destinationId),
     {
       onSuccess: (_data, ctx) => {
