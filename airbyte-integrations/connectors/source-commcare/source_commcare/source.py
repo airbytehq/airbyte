@@ -69,7 +69,7 @@ class CommcareStream(HttpStream, IncrementalMixin, ABC):
 
 
 
-class Case(CommcareStream):
+class FormCase(CommcareStream):
     cursor_field = 'indexed_on'
     primary_key = "case_id"
 
@@ -151,6 +151,6 @@ class SourceCommcare(AbstractSource):
 
         return [
             Form(**with_appid),       
-            Case(**args)
+            FormCase(**args)
         ]
 

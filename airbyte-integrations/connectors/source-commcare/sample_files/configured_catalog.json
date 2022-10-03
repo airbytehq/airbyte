@@ -36,7 +36,7 @@
     },
     {
       "stream": {
-        "name": "case",
+        "name": "form_case",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
