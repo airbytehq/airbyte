@@ -131,7 +131,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
                     "end": self._get_end_date(start_datetime).strftime(self.date_template),
                 }
             )
-        print(params)
+
         return params
 
 
@@ -178,7 +178,7 @@ class Events(IncrementalAmplitudeStream):
                 }
             )
             start = start.add(**self.time_interval)
-        print(slices)
+
         return slices
 
     def read_records(
