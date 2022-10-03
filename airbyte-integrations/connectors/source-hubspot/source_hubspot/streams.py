@@ -263,8 +263,7 @@ class Stream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == HTTPStatus.FORBIDDEN:
             setattr(self, "raise_on_http_errors", False)
-            logger.warning("You have not permission to API for this stream. "
-                           "Please check your scopes for Hubspot account.")
+            logger.warning("You have not permission to API for this stream. " "Please check your scopes for Hubspot account.")
         return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
