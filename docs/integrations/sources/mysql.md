@@ -109,6 +109,21 @@ Global transaction identifiers \(GTIDs\) uniquely identify transactions that occ
 * Enable gtid\_mode : Boolean that specifies whether GTID mode of the MySQL server is enabled or not. Enable it via `mysql> gtid_mode=ON`
 * Enable enforce\_gtid\_consistency : Boolean that specifies whether the server enforces GTID consistency by allowing the execution of statements that can be logged in a transactionally safe manner. Required when using GTIDs. Enable it via `mysql> enforce_gtid_consistency=ON`
 
+**3. Set up initial waiting time\(Optional\)**
+
+:::warning
+This is an advanced feature. Use it if absolutely necessary.
+:::
+
+The MySQl connector may need some time to start processing the data in the CDC mode in the following scenarios:
+
+- When the connection is set up for the first time and a snapshot is needed
+- When the connector has a lot of change logs to process
+
+The connector waits for the default initial wait time of 5 minutes (300 seconds). Setting the parameter to a longer duration will result in slower syncs, while setting it to a shorter duration may cause the connector to not have enough time to create the initial snapshot or read through the change logs. The valid range is 300 seconds to 1200 seconds.
+
+If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
+
 **Note**
 
 When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. Airbyte doesn't acquire any table locks \(for tables defined with MyISAM engine, the tables would still be locked\) while creating the snapshot to allow writes by other database clients. But in order for the sync to work without any error/unexpected behaviour, it is assumed that no schema changes are happening while the snapshot is running.
@@ -223,9 +238,9 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 ```
 
 ## Changelog
-
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2   | 2022-10-03 | [17170](https://github.com/airbytehq/airbyte/pull/17170)   | Make initial CDC waiting time configurable                                                                                                                              |
 | 1.0.1   | 2022-10-01 | [17459](https://github.com/airbytehq/airbyte/pull/17459)   | Upgrade debezium version to 1.9.6 from 1.9.2                                                                                                                            |
 | 1.0.0   | 2022-09-27 | [17164](https://github.com/airbytehq/airbyte/pull/17164)   | Certify MySQL Source as Beta                                                                                                                                            |
 | 0.6.15  | 2022-09-27 | [17299](https://github.com/airbytehq/airbyte/pull/17299)   | Improve error handling for strict-encrypt mysql source                                                                                                                  |
