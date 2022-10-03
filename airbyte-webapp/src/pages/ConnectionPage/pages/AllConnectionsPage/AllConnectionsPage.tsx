@@ -1,10 +1,13 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
+import { Button, LoadingPage, MainPageWithScroll } from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
@@ -26,10 +29,10 @@ const AllConnectionsPage: React.FC = () => {
         <MainPageWithScroll
           headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
           pageTitle={
-            <PageTitle
+            <PageHeader
               title={<FormattedMessage id="sidebar.connections" />}
               endComponent={
-                <Button onClick={onCreateClick}>
+                <Button icon={<FontAwesomeIcon icon={faPlus} />} variant="primary" size="sm" onClick={onCreateClick}>
                   <FormattedMessage id="connection.newConnection" />
                 </Button>
               }

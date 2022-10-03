@@ -4,16 +4,17 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { CheckBox, H5 } from "components";
-import { InfoTooltip, TooltipLearnMoreLink } from "components/base/Tooltip";
+import { H5 } from "components/base/Titles";
 import { Cell, Header } from "components/SimpleTableComponents";
+import { CheckBox } from "components/ui/CheckBox";
 import { LoadingBackdrop } from "components/ui/LoadingBackdrop";
+import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { useConfig } from "config";
 import { SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode } from "core/request/AirbyteClient";
 import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
 import CatalogTree from "views/Connection/CatalogTree";
 

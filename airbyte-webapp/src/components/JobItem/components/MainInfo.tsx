@@ -8,7 +8,7 @@ import { StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
 import { getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
@@ -68,12 +68,12 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
     } else if (isPartialSuccess) {
       status = "partialSuccess";
     } else {
-      return <FormattedMessage id="sources.jobStatus.unknown" />;
+      return <FormattedMessage id="jobs.jobStatus.unknown" />;
     }
     return (
       <FormattedMessage
         values={{ count: streamsToReset?.length || 0 }}
-        id={`sources.jobStatus.${jobConfigType}.${status}`}
+        id={`jobs.jobStatus.${jobConfigType}.${status}`}
       />
     );
   }, [isPartialSuccess, jobConfigType, jobStatus, streamsToReset?.length]);

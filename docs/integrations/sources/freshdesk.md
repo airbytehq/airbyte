@@ -43,12 +43,12 @@ Follow the link to read more about [how to find your API key](https://support.fr
 
 ## Supported sync modes & Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| SSL connection | Yes |
-| Namespaces | No |
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | Yes        |
+| SSL connection    | Yes        |
+| Namespaces        | No         |
 
 The Freshdesk supports full refresh and incremental sync. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run. There are two types of incremental sync:
 
@@ -80,14 +80,17 @@ The Freshdesk connector should not run into Freshdesk API limitations under norm
 
 ## Changelog
 
-| Version | Date       | Pull Request                                                | Subject                                                                        |
-|:--------|:-----------|:------------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.3.3   | 2022-08-06 | [15378](https://github.com/airbytehq/airbyte/pull/15378)    | Allow backward campatibility for input configuration
-| 0.3.2   | 2022-06-23 | [14049](https://github.com/airbytehq/airbyte/pull/14049)    | Update parsing of start_date                                                   |
-| 0.3.1   | 2022-06-03 | [13332](https://github.com/airbytehq/airbyte/pull/13332)    | Add new streams                                                                |
-| 0.3.0   | 2022-05-30 | [12334](https://github.com/airbytehq/airbyte/pull/12334)    | Implement with latest CDK                                                      |      
-| 0.2.11  | 2021-12-14 | [8682](https://github.com/airbytehq/airbyte/pull/8682)      | Migrate to the CDK                                                             |
-| 0.2.10  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)      | Update connector fields title/description                                      |
-| 0.2.9   | 2021-11-16 | [8017](https://github.com/airbytehq/airbyte/pull/8017)      | Bugfix an issue that caused the connector not to sync more than 50000 contacts |
-| 0.2.8   | 2021-10-28 | [7486](https://github.com/airbytehq/airbyte/pull/7486)      | Include "requester" and "stats" fields in "tickets" stream                     |
-| 0.2.7   | 2021-10-13 | [6442](https://github.com/airbytehq/airbyte/pull/6442)      | Add start_date parameter to specification from which to start pulling data.    |
+| Version | Date       | Pull Request                                             | Subject                                                                               |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 0.3.6   | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Migrate to per-stream states.                                                         |
+| 0.3.5   | 2022-09-27 | [17249](https://github.com/airbytehq/airbyte/pull/17249) | Added nullable to all stream schemas, added transformation into declared schema types |
+| 0.3.4   | 2022-09-27 | [17243](https://github.com/airbytehq/airbyte/pull/17243) | Fixed the issue, when selected stream is not available due to Subscription Plan       |
+| 0.3.3   | 2022-08-06 | [15378](https://github.com/airbytehq/airbyte/pull/15378) | Allow backward campatibility for input configuration                                  |
+| 0.3.2   | 2022-06-23 | [14049](https://github.com/airbytehq/airbyte/pull/14049) | Update parsing of start_date                                                          |
+| 0.3.1   | 2022-06-03 | [13332](https://github.com/airbytehq/airbyte/pull/13332) | Add new streams                                                                       |
+| 0.3.0   | 2022-05-30 | [12334](https://github.com/airbytehq/airbyte/pull/12334) | Implement with latest CDK                                                             |
+| 0.2.11  | 2021-12-14 | [8682](https://github.com/airbytehq/airbyte/pull/8682)   | Migrate to the CDK                                                                    |
+| 0.2.10  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description                                             |
+| 0.2.9   | 2021-11-16 | [8017](https://github.com/airbytehq/airbyte/pull/8017)   | Bugfix an issue that caused the connector not to sync more than 50000 contacts        |
+| 0.2.8   | 2021-10-28 | [7486](https://github.com/airbytehq/airbyte/pull/7486)   | Include "requester" and "stats" fields in "tickets" stream                            |
+| 0.2.7   | 2021-10-13 | [6442](https://github.com/airbytehq/airbyte/pull/6442)   | Add start_date parameter to specification from which to start pulling data.           |
