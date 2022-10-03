@@ -5,9 +5,9 @@
 
 from unittest.mock import patch
 
+import pendulum
 import pytest
 import requests
-import pendulum
 from airbyte_cdk import AirbyteLogger
 from source_amplitude import SourceAmplitude
 from source_amplitude.api import ActiveUsers, Annotations, AverageSessionLength, Cohorts, Events

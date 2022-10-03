@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from base64 import b64encode
 from typing import Any, List, Mapping, Tuple
