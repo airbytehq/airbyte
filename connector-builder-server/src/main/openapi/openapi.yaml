@@ -17,7 +17,7 @@ externalDocs:
 paths:
   /v1/stream/test:
     post:
-      summary: Tests the read of specific stream in the source
+      summary: Tests the read of a specific stream in the source
       requestBody:
         content:
           application/json:
