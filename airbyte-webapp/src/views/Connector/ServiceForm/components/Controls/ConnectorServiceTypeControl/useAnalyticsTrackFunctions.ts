@@ -4,17 +4,16 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 export const useAnalyticsTrackFunctions = (formType: "source" | "destination") => {
   const analytics = useAnalyticsService();
 
-  const getNamespace = (formType: "source" | "destination") =>
-    formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION;
+  const namespaceType = formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION;
 
   const trackMenuOpen = () => {
-    analytics.track(getNamespace(formType), Action.SELECTION_OPENED, {
+    analytics.track(namespaceType, Action.SELECTION_OPENED, {
       actionDescription: "Opened connector type selection",
     });
   };
 
   const trackNoOptionMessage = (inputValue: string) => {
-    analytics.track(getNamespace(formType), Action.NO_MATCHING_CONNECTOR, {
+    analytics.track(namespaceType, Action.NO_MATCHING_CONNECTOR, {
       actionDescription: "Connector query without results",
       query: inputValue,
     });
