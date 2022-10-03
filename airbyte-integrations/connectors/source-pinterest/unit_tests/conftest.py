@@ -14,7 +14,7 @@ def test_config():
         "client_secret": "test_client_secret",
         "refresh_token": "test_refresh_token",
         "window_in_days": "Sandbox",
-        "start_date": "2021-05-07T00:00:00Z",
+        "start_date": "2021-05-07",
     }
 
 
@@ -23,7 +23,7 @@ def test_incremental_config():
     return {
         "authenticator": MagicMock(),
         "window_in_days": 185,
-        "start_date": "2021-05-07T00:00:00Z",
+        "start_date": "2021-05-07",
     }
 
 
