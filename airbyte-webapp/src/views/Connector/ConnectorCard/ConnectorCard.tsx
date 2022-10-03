@@ -89,7 +89,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
 
     try {
       await testConnectorWithTracking();
-      await onSubmit(values);
+      onSubmit(values);
       setSaved(true);
     } catch (e) {
       setErrorStatusRequest(e);

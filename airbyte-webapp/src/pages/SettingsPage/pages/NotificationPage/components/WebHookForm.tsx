@@ -97,11 +97,11 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
       validateOnBlur
       validateOnChange={false}
       validationSchema={webhookValidationSchema}
-      onSubmit={async (values: WebhookPayload) => {
+      onSubmit={(values: WebhookPayload) => {
         if (equal(webhook, values)) {
-          await onTest(values);
+          onTest(values);
         } else {
-          await onSubmit(values);
+          onSubmit(values);
         }
       }}
     >
