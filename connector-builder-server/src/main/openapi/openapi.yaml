@@ -1,0 +1,212 @@
+openapi: 3.0.0
+info:
+  description: |
+    Connector Builder Server API
+
+  version: "1.0.0"
+  title: Connector Builder Server API
+  contact:
+    email: contact@airbyte.io
+  license:
+    name: MIT
+    url: "https://opensource.org/licenses/MIT"
+externalDocs:
+  description: Find out more about Connector Builder
+  url: "https://docs.airbyte.com/connector-development/config-based/overview/"
+
+paths:
+  /v1/stream/test:
+    post:
+      summary: Tests the read of specific stream in the source
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StreamTestRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamTestRead"
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/streams/list:
+    post:
+      summary: List all streams present in the connector definition, along with their specific request URLs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StreamsListRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamsListRead"
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+
+components:
+  schemas:
+    StreamTestRead:
+      type: object
+      required:
+        - results
+      properties:
+        results:
+          type: array
+          description: The RECORD and STATE AirbyteMessages coming from the read operation
+          items:
+            type: string
+        httpRequests:
+          type: array
+          description: HTTP requests sent to the source API, and their responses
+          items:
+            type: object
+            required:
+              - request
+              - response
+            properties:
+              request:
+                type: object
+                description: The HTTP request sent to the source API
+                required:
+                  - url
+                  - headers
+                properties:
+                  url:
+                    type: string
+                    description: URL that the request was sent to
+                  body:
+                    type: object
+                    description: The body of the HTTP request, if present
+                  headers:
+                    type: object
+                    description: The headers of the HTTP request
+              response:
+                type: object
+                description: The response from the source API
+                required:
+                  - status
+                  - headers
+                properties:
+                  status:
+                    type: integer
+                    description: The status of the response
+                  body:
+                    type: object
+                    description: The body of the HTTP response, if present
+                  headers:
+                    type: object
+                    description: The headers of the HTTP response
+    StreamTestRequestBody:
+      type: object
+      required:
+        - definition
+        - stream
+      properties:
+        definition:
+          $ref: "#/components/schemas/ConnectorDefinitionBody"
+          description: The config-based connector definition contents
+        stream:
+          type: string
+          description: Name of the stream to test
+    ConnectorDefinitionBody:
+      $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
+    StreamsListRequestBody:
+      type: object
+      required:
+        - definition
+      properties:
+        definition:
+          $ref: "#/components/schemas/ConnectorDefinitionBody"
+          description: The config-based connector definition contents
+    StreamsListRead:
+      type: object
+      required:
+        - streams
+      properties:
+        streams:
+          type: array
+          items:
+            type: object
+            description: The stream names present in the connector definition
+            required:
+              - name
+              - url
+            properties:
+              name:
+                type: string
+                description: The name of the stream
+              url:
+                type: string
+                format: uri
+                description: The URL to which read requests will be made for this stream
+
+    # The following exception structs were copied from airbyte-api/src/main/openapi/config.yaml
+    InvalidInputProperty:
+      type: object
+      required:
+        - propertyPath
+      properties:
+        propertyPath:
+          type: string
+        invalidValue:
+          type: string
+        message:
+          type: string
+    KnownExceptionInfo:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          type: array
+          items:
+            type: string
+    InvalidInputExceptionInfo:
+      type: object
+      required:
+        - message
+        - validationErrors
+      properties:
+        message:
+          type: string
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          type: array
+          items:
+            type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvalidInputProperty"
+
+  responses:
+    InvalidInputResponse:
+      description: Input failed validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InvalidInputExceptionInfo"
+    ExceptionResponse:
+      description: Exception occurred; see message for details.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/KnownExceptionInfo"
