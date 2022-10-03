@@ -148,18 +148,23 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
     [onChangeServiceType]
   );
 
-  const onOpenRequestConnectorModal = (input: string) =>
-    openModal({
-      title: formatMessage({ id: "connector.requestConnector" }),
-      content: () => (
-        <RequestConnectorModal
-          connectorType={formType}
-          workspaceEmail={workspace.email}
-          searchedConnectorName={input}
-          onClose={closeModal}
-        />
-      ),
-    });
+  const selectProps = useMemo(
+    () => ({
+      onOpenRequestConnectorModal: (input: string) =>
+        openModal({
+          title: formatMessage({ id: "connector.requestConnector" }),
+          content: () => (
+            <RequestConnectorModal
+              connectorType={formType}
+              workspaceEmail={workspace.email}
+              searchedConnectorName={input}
+              onClose={closeModal}
+            />
+          ),
+        }),
+    }),
+    [closeModal, formType, formatMessage, openModal, workspace.email]
+  );
 
   return (
     <>
@@ -175,7 +180,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
             Option,
             SingleValue,
           }}
-          selectProps={{ onOpenRequestConnectorModal }}
+          selectProps={selectProps}
           isDisabled={isEditMode || disabled}
           isSearchable
           placeholder={formatMessage({
