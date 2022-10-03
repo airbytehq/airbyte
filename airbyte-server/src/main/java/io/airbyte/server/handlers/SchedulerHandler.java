@@ -252,7 +252,7 @@ public class SchedulerHandler {
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
         .withConfiguration(partialConfig);
     final SynchronousResponse<UUID> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, sourceDef.getDockerImageTag());
-    return discoverJobToOutput(response);
+    return retrieveDiscoveredSchema(response);
   }
 
   private SourceDiscoverSchemaRead retrieveDiscoveredSchema(final SynchronousResponse<UUID> response) throws ConfigNotFoundException, IOException {
