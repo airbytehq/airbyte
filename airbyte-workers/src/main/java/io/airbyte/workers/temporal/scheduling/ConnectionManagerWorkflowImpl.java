@@ -204,13 +204,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       try {
         final SyncCheckConnectionFailure syncCheckConnectionFailure = checkConnections(jobInputs);
         if (syncCheckConnectionFailure.isFailed()) {
-          setConnectionFailure(syncCheckConnectionFailure.buildFailureOutput());
+          StandardSyncOutput syncOutput = syncCheckConnectionFailure.buildFailureOutput();
+          setConnectionFailure(syncOutput);
+          reportFailure(connectionUpdaterInput, syncOutput, FailureCause.CONNECTION);
         } else {
           boolean success = runSynchronization(jobInputs);
 
           if (!success) {
             setUnknownFailure();
-            reportFailure(connectionUpdaterInput, workflowState.getStandardSyncOutput(), FailureCause.UNKNOWN);
+            // reportFailure(connectionUpdaterInput, workflowState.getStandardSyncOutput(), FailureCause.UNKNOWN);
           } else {
             reportSuccess(connectionUpdaterInput, workflowState.getStandardSyncOutput());
           }
@@ -333,6 +335,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     } else {
       final String failureReason = failureType == FailureType.CONFIG_ERROR ? "Connection Check Failed " + connectionId
           : "Job failed after too many retries for connection " + connectionId;
+      log.error(connectionUpdaterInput.toString());
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(connectionUpdaterInput.getJobId(),
           connectionUpdaterInput.getConnectionId(), connectionUpdaterInput.getAttemptNumber(), failureReason));
 
