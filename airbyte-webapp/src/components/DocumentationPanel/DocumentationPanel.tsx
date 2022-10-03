@@ -8,8 +8,9 @@ import { useUpdateEffect } from "react-use";
 import rehypeSlug from "rehype-slug";
 import urls from "rehype-urls";
 
-import { LoadingPage, PageTitle } from "components";
-import { Markdown } from "components/Markdown";
+import { LoadingPage } from "components";
+import { Markdown } from "components/ui/Markdown";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { useConfig } from "config";
 import { useDocumentation } from "hooks/services/useDocumentation";
@@ -52,7 +53,7 @@ export const DocumentationPanel: React.FC = () => {
     <LoadingPage />
   ) : (
     <div className={styles.container}>
-      <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
+      <PageHeader withLine title={<FormattedMessage id="connector.setupGuide" />} />
       <Markdown
         className={styles.content}
         content={docs && !error ? docs : formatMessage({ id: "connector.setupGuide.notFound" })}

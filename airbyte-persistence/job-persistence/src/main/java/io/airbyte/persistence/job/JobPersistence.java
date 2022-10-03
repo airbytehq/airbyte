@@ -5,6 +5,7 @@
 package io.airbyte.persistence.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -234,6 +235,26 @@ public interface JobPersistence {
    * Set the airbyte version
    */
   void setVersion(String airbyteVersion) throws IOException;
+
+  /**
+   * Get the max supported Airbyte Protocol Version
+   */
+  Optional<Version> getAirbyteProtocolVersionMax() throws IOException;
+
+  /**
+   * Set the max supported Airbyte Protocol Version
+   */
+  void setAirbyteProtocolVersionMax(Version version) throws IOException;
+
+  /**
+   * Get the min supported Airbyte Protocol Version
+   */
+  Optional<Version> getAirbyteProtocolVersionMin() throws IOException;
+
+  /**
+   * Set the min supported Airbyte Protocol Version
+   */
+  void setAirbyteProtocolVersionMin(Version version) throws IOException;
 
   /**
    * Returns a deployment UUID.

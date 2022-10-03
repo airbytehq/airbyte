@@ -17,7 +17,7 @@ If your dataset is small and you just want a snapshot of your table in the desti
 
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer
 - Use Postgres v9.3.x or above for non-CDC workflows and Postgres v10 or above for CDC workflows
-- Allowlist one of our IP addresses to enable access to Airbyte:
+- Allowlist our IP addresses to enable access to Airbyte:
   - 34.106.109.131
   - 34.106.196.165
   - 34.106.60.246
@@ -189,7 +189,7 @@ To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, confi
 | Parameter  | Description  | Set value to |
 |------------|--------------|--------------|
 | wal_level  | Type of coding used within the Postgres write-ahead log  | logical |
-| max_wel_senders | The maximum number of processes used for handling WAL changes | Min: 1 |
+| max_wal_senders | The maximum number of processes used for handling WAL changes | Min: 1 |
 | max_replication_slots | The maximum number of replication slots that are allowed to stream WAL changes | 1 (if Airbyte is the only service reading subscribing to WAL changes. More than 1 if other services are also reading from the WAL) |
 
 To enable logical replication on AWS Postgres RDS or Aurora​:
@@ -386,6 +386,9 @@ Possible solutions include:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.13  | 2022-10-01 | [17459](https://github.com/airbytehq/airbyte/pull/17459) | Upgrade debezium version to 1.9.6 from 1.9.2                                                                                                                               |
+| 1.0.12  | 2022-09-27 | [17299](https://github.com/airbytehq/airbyte/pull/17299) | Improve error handling for strict-encrypt postgres source                                                                                                                  |
+| 1.0.11  | 2022-09-26 | [17131](https://github.com/airbytehq/airbyte/pull/17131) | Allow nullable columns to be used as cursor                                                                                                                                |
 | 1.0.10  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                                             |
 | 1.0.9   | 2022-09-13 | [16657](https://github.com/airbytehq/airbyte/pull/16657) | Improve CDC record queueing performance                                                                                                                                    |
 | 1.0.8   | 2022-09-08 | [16202](https://github.com/airbytehq/airbyte/pull/16202) | Adds error messaging factory to UI                                                                                                                                         |
@@ -402,13 +405,13 @@ Possible solutions include:
 | 0.4.43  | 2022-08-03 | [15226](https://github.com/airbytehq/airbyte/pull/15226) | Make connectionTimeoutMs configurable through JDBC url parameters                                                                                                          |
 | 0.4.42  | 2022-08-03 | [15273](https://github.com/airbytehq/airbyte/pull/15273) | Fix a bug in `0.4.36` and correctly parse the CDC initial record waiting time                                                                                              |
 | 0.4.41  | 2022-08-03 | [15077](https://github.com/airbytehq/airbyte/pull/15077) | Sync data from beginning if the LSN is no longer valid in CDC                                                                                                              |
-|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead)                                                                                       |
+|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead)                                                                                        |
 | 0.4.40  | 2022-08-03 | [15187](https://github.com/airbytehq/airbyte/pull/15187) | Add support for BCE dates/timestamps                                                                                                                                       |
 |         | 2022-08-03 | [14534](https://github.com/airbytehq/airbyte/pull/14534) | Align regular and CDC integration tests and data mappers                                                                                                                   |
 | 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                                                                                  |
 | 0.4.38  | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields.                                                                                                                       |
 | 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                                                                                                |
-| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                             |
+| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                              |
 | 0.4.35  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors                                                                                                             |
 | 0.4.34  | 2022-07-17 | [13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates.                                                                                               |
 | 0.4.33  | 2022-07-14 | [14586](https://github.com/airbytehq/airbyte/pull/14586) | Validate source JDBC url parameters                                                                                                                                        |

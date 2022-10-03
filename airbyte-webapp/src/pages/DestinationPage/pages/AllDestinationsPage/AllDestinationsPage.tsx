@@ -1,3 +1,5 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
@@ -5,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, MainPageWithScroll } from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
-import PageTitle from "components/PageTitle";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useDestinationList } from "hooks/services/useDestinationHook";
@@ -24,10 +26,15 @@ const AllDestinationsPage: React.FC = () => {
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.destinations" }]} />}
       pageTitle={
-        <PageTitle
+        <PageHeader
           title={<FormattedMessage id="admin.destinations" />}
           endComponent={
-            <Button onClick={onCreateDestination} data-id="new-destination">
+            <Button
+              icon={<FontAwesomeIcon icon={faPlus} />}
+              onClick={onCreateDestination}
+              size="sm"
+              data-id="new-destination"
+            >
               <FormattedMessage id="destinations.newDestination" />
             </Button>
           }
