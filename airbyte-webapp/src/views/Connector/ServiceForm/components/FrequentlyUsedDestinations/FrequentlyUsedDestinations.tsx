@@ -17,7 +17,6 @@ interface FrequentlyUsedDestinationsProps {
 export const FrequentlyUsedDestinations: React.FC<FrequentlyUsedDestinationsProps> = ({
   availableServices,
   onServiceSelect,
-  isLoading,
 }) => {
   const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", [
     "22f6c74f-5699-40ff-833c-4a879ea40133",
@@ -41,10 +40,6 @@ export const FrequentlyUsedDestinations: React.FC<FrequentlyUsedDestinationsProp
   );
 
   return (
-    <FrequentlyUsedDestinationsCard
-      destinations={frequentlyUsedDestinations}
-      onDestinationSelect={onServiceSelect}
-      isLoading={isLoading}
-    />
+    <FrequentlyUsedDestinationsCard destinations={frequentlyUsedDestinations} onDestinationSelect={onServiceSelect} />
   );
 };
