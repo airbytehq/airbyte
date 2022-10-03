@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.integrations.io.airbyte.integration_tests.sources.utils.TestConstants.INITIAL_CDC_WAITING_SECONDS;
 import static io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest.setEnv;
 import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -102,6 +103,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
+        .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
         .build());
     setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -111,6 +113,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
+        .put("is_test", true)
         .build());
 
     revokeAllPermissions();
