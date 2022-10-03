@@ -117,8 +117,8 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
           validateOnBlur
           validateOnChange
           validationSchema={validationSchema}
-          onSubmit={async (values, { setSubmitting }) => {
-            await onSubmit(values);
+          onSubmit={(values, { setSubmitting }) => {
+            onSubmit(values);
             setSubmitting(false);
           }}
         >

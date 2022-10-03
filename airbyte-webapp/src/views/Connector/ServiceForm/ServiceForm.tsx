@@ -303,9 +303,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   );
 
   const onFormSubmit = useCallback(
-    async (values: ServiceFormValues) => {
+    (values: ServiceFormValues) => {
       const valuesToSend = getValues(values);
-      await onSubmit(valuesToSend);
+      onSubmit(valuesToSend);
 
       clearFormChange(formId);
     },
