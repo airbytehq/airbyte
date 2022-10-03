@@ -19,8 +19,7 @@ class CommcareStream(HttpStream, IncrementalMixin, ABC):
     url_base = "https://www.commcarehq.org/a/sc-baseline/api/v0.5/"
     forms = {}
     dateformat = '%Y-%m-%dT%H:%M:%S'
-    initial_date = datetime(2000,1,1,0,0,0)
-    initial_date = datetime(2022,10,3,14,0,0)
+    initial_date = datetime(2022,1,1,0,0,0)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
