@@ -229,6 +229,7 @@ class DeclarativeComponentFactory:
                 # call __init__(definition) if definition is not a dict and is not of the expected type
                 # for instance, to turn a string into an InterpolatedString
                 options = kwargs.get(OPTIONS_STR, {})
+                options = self._merge_dicts(options, {k: v for k, v in kwargs.items() if k not in options})
                 try:
                     # enums can't accept options
                     if issubclass(expected_type, enum.Enum):

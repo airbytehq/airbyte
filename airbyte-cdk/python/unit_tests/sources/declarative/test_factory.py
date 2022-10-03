@@ -380,7 +380,7 @@ check:
 
 @pytest.mark.parametrize(
     "test_name, record_selector, expected_runtime_selector",
-    [("test_static_record_selector", "result", "result"), ("test_static_record_selector", "{{ options['name'] }}", "lists")],
+    [("test_static_record_selector", "result", "result"), ("test_options_record_selector", "{{ options['name'] }}", "lists")],
 )
 def test_create_record_selector(test_name, record_selector, expected_runtime_selector):
     content = f"""
