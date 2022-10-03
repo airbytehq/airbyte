@@ -4,11 +4,18 @@ connectionSpecification:
   title: Commcare Source Spec
   type: object
   required:
-    - api-key
+    - api_key
+    - app_id
   properties:
-    api-key:
+    api_key:
       type: string
       title: API Key
       description: >-
         Commcare API Key
       order: 0
+    app_id:
+      type: string
+      title: Application ID
+      description: >-
+        The Application ID we are interested in
+      order: 1
