@@ -181,6 +181,9 @@
 
     <Loggers>
         <Root level="${log-level}">
+            <!-- Use the rewrite policy to ensure that connector configuration secrets are masked when logged
+            Any additional appender references should be added to the <Rewrite> section above in this document
+            to ensure that any secrets logged via those appenders is masked.-->
             <AppenderRef ref="SecretMaskRewrite"/>
         </Root>
 

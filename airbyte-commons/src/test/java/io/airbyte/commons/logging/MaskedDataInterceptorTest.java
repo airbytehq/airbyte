@@ -25,6 +25,8 @@ class MaskedDataInterceptorTest {
   private static final String FOO = "foo";
   private static final String OTHER = "other";
   private static final String JSON_WITH_STRING_SECRETS = "{\"" + FOO + "\":\"test\",\"" + OTHER + "\":{\"prop\":\"value\",\"bar\":\"1234\"}}";
+  private static final String JSON_WITH_STRING_WITH_QUOTE_SECRETS =
+      "{\"" + FOO + "\":\"\\\"test\\\"\",\"" + OTHER + "\":{\"prop\":\"value\",\"bar\":\"1234\"}}";
   private static final String JSON_WITH_NUMBER_SECRETS = "{\"" + FOO + "\":\"test\",\"" + OTHER + "\":{\"prop\":\"value\",\"bar\":1234}}";
   private static final String JSON_WITHOUT_SECRETS = "{\"prop1\":\"test\",\"" + OTHER + "\":{\"prop2\":\"value\",\"prop3\":1234}}";
   public static final String TEST_SPEC_SECRET_MASK_YAML = "/test_spec_secret_mask.yaml";
@@ -38,6 +40,21 @@ class MaskedDataInterceptorTest {
 
     final MaskedDataInterceptor interceptor = MaskedDataInterceptor.createPolicy(TEST_SPEC_SECRET_MASK_YAML);
 
+    final LogEvent result = interceptor.rewrite(logEvent);
+
+    final JsonNode json = Jsons.deserialize(result.getMessage().getFormattedMessage());
+    assertEquals(MaskedDataInterceptor.MASK, json.get(FOO).asText());
+    assertEquals(MaskedDataInterceptor.MASK, json.get(OTHER).get("bar").asText());
+  }
+
+  @Test
+  void testMaskingMessageWithStringSecretWithQuotes() {
+    final Message message = mock(Message.class);
+    final LogEvent logEvent = mock(LogEvent.class);
+    when(message.getFormattedMessage()).thenReturn(JSON_WITH_STRING_WITH_QUOTE_SECRETS);
+    when(logEvent.getMessage()).thenReturn(message);
+
+    final MaskedDataInterceptor interceptor = MaskedDataInterceptor.createPolicy(TEST_SPEC_SECRET_MASK_YAML);
     final LogEvent result = interceptor.rewrite(logEvent);
 
     final JsonNode json = Jsons.deserialize(result.getMessage().getFormattedMessage());
