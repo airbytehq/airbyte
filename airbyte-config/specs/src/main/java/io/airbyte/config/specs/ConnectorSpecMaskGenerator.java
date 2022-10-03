@@ -55,7 +55,7 @@ public class ConnectorSpecMaskGenerator {
 
     final File[] inputFiles = specRoot.toFile().listFiles();
 
-    if(inputFiles != null) {
+    if (inputFiles != null) {
       final Set<File> specFiles = Stream.of(inputFiles)
           .filter(file -> file.getName().endsWith("specs.yaml"))
           .collect(Collectors.toSet());
