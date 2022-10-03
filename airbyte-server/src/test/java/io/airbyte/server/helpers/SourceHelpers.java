@@ -9,6 +9,7 @@ import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,7 +59,8 @@ public class SourceHelpers {
         .sourceId(source.getSourceId())
         .connectionConfiguration(source.getConfiguration())
         .name(source.getName())
-        .sourceName(standardSourceDefinition.getName());
+        .sourceName(standardSourceDefinition.getName())
+        .icon(SourceDefinitionsHandler.loadIcon(standardSourceDefinition.getIcon()));
   }
 
 }

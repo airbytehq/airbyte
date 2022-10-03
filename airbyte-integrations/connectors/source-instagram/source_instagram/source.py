@@ -2,18 +2,10 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from datetime import datetime
-from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AuthSpecification,
-    ConfiguredAirbyteCatalog,
-    ConnectorSpecification,
-    DestinationSyncMode,
-    OAuth2Specification,
-)
+from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
@@ -57,15 +49,6 @@ class SourceInstagram(AbstractSource):
             error_msg = repr(exc)
 
         return ok, error_msg
-
-    def read(
-        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
-    ) -> Iterator[AirbyteMessage]:
-        for stream in self.streams(config):
-            state_key = str(stream.name)
-            if state and state_key in state and hasattr(stream, "upgrade_state_to_latest_format"):
-                state[state_key] = stream.upgrade_state_to_latest_format(state[state_key])
-        return super().read(logger, config, catalog, state)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """Discovery method, returns available streams
