@@ -6,6 +6,7 @@ package io.airbyte.config.specs;
 
 import static io.airbyte.config.specs.ConnectorSpecMaskGenerator.MASK_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,7 +23,7 @@ import org.junit.jupiter.api.Test;
 class ConnectorSpecMaskGeneratorTest {
 
   @Test
-  void testConnectoSpecMaskGenerator() throws IOException {
+  void testConnectorSpecMaskGenerator() throws IOException {
     final String directory = "src/test/resources/valid_specs";
     final File outputFile = new File(directory, MASK_FILE);
     final String[] args = {"--specs-root", directory};
@@ -34,15 +35,12 @@ class ConnectorSpecMaskGeneratorTest {
   }
 
   @Test
-  void testConnectoSpecMaskGeneratorNoSpecs() throws IOException {
+  void testConnectorSpecMaskGeneratorNoSpecs() throws IOException {
     final String directory = "src/test/resources/no_specs";
     final File outputFile = new File(directory, MASK_FILE);
     final String[] args = {"--specs-root", directory};
     ConnectorSpecMaskGenerator.main(args);
-    assertTrue(outputFile.exists());
-
-    final JsonNode maskContents = Yamls.deserialize(FileUtils.readFileToString(outputFile, Charset.defaultCharset()));
-    assertEquals(Set.of(), Jsons.object(maskContents.get("properties"), new TypeReference<Set<String>>() {}));
+    assertFalse(outputFile.exists());
   }
 
 }
