@@ -177,7 +177,8 @@ describe("#useInitialValues", () => {
         mockDestinationDefinition as DestinationDefinitionSpecificationRead
       )
     );
-    expect(result).toMatchSnapshot();
+    expect(result.current).toMatchSnapshot();
+    expect(result.current.name).toBeDefined();
   });
 
   it("should generate initial values w/ 'not create' mode: false", () => {
@@ -188,7 +189,8 @@ describe("#useInitialValues", () => {
         false
       )
     );
-    expect(result).toMatchSnapshot();
+    expect(result.current).toMatchSnapshot();
+    expect(result.current.name).toBeDefined();
   });
 
   it("should generate initial values w/ 'not create' mode: true", () => {
@@ -199,7 +201,8 @@ describe("#useInitialValues", () => {
         true
       )
     );
-    expect(result).toMatchSnapshot();
+    expect(result.current).toMatchSnapshot();
+    expect(result.current.name).toBeUndefined();
   });
 
   // This is a low-priority test
