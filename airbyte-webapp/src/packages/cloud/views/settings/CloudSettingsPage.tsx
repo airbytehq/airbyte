@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 // import useConnector from "hooks/services/useConnector";
+import { DbtCloudSettingsView } from "packages/cloud/views/settings/integrations/DbtCloudSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
 import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
@@ -79,6 +80,17 @@ export const CloudSettingsPage: React.FC = () => {
               path: CloudSettingsRoutes.Notifications,
               name: <FormattedMessage id="settings.notifications" />,
               component: NotificationPage,
+            },
+          ],
+        },
+        {
+          category: <FormattedMessage id="settings.integrationSettings" />,
+          routes: [
+            {
+              path: CloudSettingsRoutes.DbtCloud,
+              name: <FormattedMessage id="settings.integrationSettings.dbtCloudSettings" />,
+              component: DbtCloudSettingsView,
+              id: "integrationSettings.dbtCloudSettings",
             },
           ],
         },
