@@ -1090,8 +1090,9 @@ class Users(JiraStream):
         self._max_results = max_results
 
     def path(self, **kwargs) -> str:
-        return "user/search?maxResults=" + self._max_results + "&query="
-
+        if int(self._max_results) > 0:
+            return "user/search?maxResults=" + self._max_results + "&query="
+        return "user/search?query="
 
 class Workflows(JiraStream):
     """
