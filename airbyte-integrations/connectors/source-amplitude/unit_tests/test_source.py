@@ -64,4 +64,4 @@ def test_streams(expected_stream_cls):
 def test_validate_start_date():
     start_date = pendulum.tomorrow().to_datetime_string()
     now = pendulum.now().to_datetime_string()
-    assert TEST_INSTANCE._validate_start_date(start_date) == now
+    assert TEST_INSTANCE._validate_start_date(start_date).to_datetime_string() == now

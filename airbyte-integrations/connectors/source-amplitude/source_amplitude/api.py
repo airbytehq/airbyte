@@ -60,7 +60,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = start_date
+        self._start_date = pendulum.parse(start_date) if isinstance(start_date, str) else start_date
 
     @property
     @abstractmethod
