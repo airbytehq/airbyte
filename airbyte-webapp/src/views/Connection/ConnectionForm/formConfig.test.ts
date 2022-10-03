@@ -170,7 +170,7 @@ describe("#mapFormPropsToOperation", () => {
 });
 
 describe("#useInitialValues", () => {
-  it("should generate initial values w/ no edit mode", () => {
+  it("should generate initial values w/ no 'not create' mode", () => {
     const { result } = renderHook(() =>
       useInitialValues(
         mockConnection as WebBackendConnectionRead,
@@ -180,7 +180,7 @@ describe("#useInitialValues", () => {
     expect(result).toMatchSnapshot();
   });
 
-  it("should generate initial values w/ edit mode: false", () => {
+  it("should generate initial values w/ 'not create' mode: false", () => {
     const { result } = renderHook(() =>
       useInitialValues(
         mockConnection as WebBackendConnectionRead,
@@ -191,7 +191,7 @@ describe("#useInitialValues", () => {
     expect(result).toMatchSnapshot();
   });
 
-  it("should generate initial values w/ edit mode: true", () => {
+  it("should generate initial values w/ 'not create' mode: true", () => {
     const { result } = renderHook(() =>
       useInitialValues(
         mockConnection as WebBackendConnectionRead,

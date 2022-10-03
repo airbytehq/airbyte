@@ -40,7 +40,7 @@ export const ConnectionReplicationTab: React.FC = () => {
   const formId = useUniqueFormId();
   const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, setSchemaHasBeenRefreshed } =
     useConnectionEditService();
-  const { initialValues, getErrorMessage, setSubmitError } = useConnectionFormService();
+  const { initialValues, mode, getErrorMessage, setSubmitError } = useConnectionFormService();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
 
@@ -74,7 +74,7 @@ export const ConnectionReplicationTab: React.FC = () => {
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, _: FormikHelpers<FormikConnectionFormValues>) => {
-      const formValues = tidyConnectionFormValues(values, workspaceId, connection.operations);
+      const formValues = tidyConnectionFormValues(values, workspaceId, mode, connection.operations);
 
       // Detect whether the catalog has any differences in its enabled streams compared to the original one.
       // This could be due to user changes (e.g. in the sync mode) or due to new/removed
@@ -128,6 +128,7 @@ export const ConnectionReplicationTab: React.FC = () => {
       connection.syncCatalog.streams,
       connectionService,
       formatMessage,
+      mode,
       openModal,
       saveConnection,
       setSchemaHasBeenRefreshed,
@@ -155,7 +156,7 @@ export const ConnectionReplicationTab: React.FC = () => {
       {!schemaRefreshing && connection ? (
         <Formik
           initialValues={initialValues}
-          validationSchema={connectionValidationSchema}
+          validationSchema={connectionValidationSchema(mode)}
           onSubmit={onFormSubmit}
           enableReinitialize
         >

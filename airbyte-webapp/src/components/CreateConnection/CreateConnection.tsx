@@ -45,12 +45,12 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({ schemaErr
   const workspaceId = useCurrentWorkspaceId();
   const formId = useUniqueFormId();
 
-  const { connection, initialValues, getErrorMessage, setSubmitError } = useConnectionFormService();
+  const { connection, initialValues, mode, getErrorMessage, setSubmitError } = useConnectionFormService();
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
 
   const onFormSubmit = useCallback(
     async (formValues: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      const values = tidyConnectionFormValues(formValues, workspaceId);
+      const values = tidyConnectionFormValues(formValues, workspaceId, mode);
 
       try {
         const createdConnection = await createConnection({
@@ -78,6 +78,7 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({ schemaErr
     },
     [
       workspaceId,
+      mode,
       createConnection,
       connection.source,
       connection.destination,
@@ -97,7 +98,11 @@ const CreateConnectionInner: React.FC<CreateConnectionPropsInner> = ({ schemaErr
   return (
     <Suspense fallback={<LoadingSchema />}>
       <div className={styles.connectionFormContainer}>
-        <Formik initialValues={initialValues} validationSchema={connectionValidationSchema} onSubmit={onFormSubmit}>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={connectionValidationSchema(mode)}
+          onSubmit={onFormSubmit}
+        >
           {({ values, isSubmitting, isValid, dirty }) => (
             <Form>
               <FormChangeTracker changed={dirty} formId={formId} />

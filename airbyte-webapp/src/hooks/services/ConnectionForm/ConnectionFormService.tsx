@@ -29,10 +29,11 @@ interface ConnectionServiceProps {
 export const tidyConnectionFormValues = (
   values: FormikConnectionFormValues,
   workspaceId: string,
+  mode: ConnectionFormMode,
   operations?: OperationRead[]
 ): ValuesProps => {
   // TODO: We should try to fix the types so we don't need the casting.
-  const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
+  const formValues: ConnectionFormValues = connectionValidationSchema(mode).cast(values, {
     context: { isRequest: true },
   }) as unknown as ConnectionFormValues;
 
@@ -43,7 +44,7 @@ export const tidyConnectionFormValues = (
 
 const useConnectionForm = ({ connection, mode, refreshSchema }: ConnectionServiceProps) => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
-  const initialValues = useInitialValues(connection, destDefinition, mode === "edit");
+  const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
   const { formatMessage } = useIntl();
   const [submitError, setSubmitError] = useState<FormError | null>(null);
 
