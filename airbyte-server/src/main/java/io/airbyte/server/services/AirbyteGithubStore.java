@@ -53,7 +53,6 @@ public class AirbyteGithubStore {
 
   public List<StandardDestinationDefinition> getLatestDestinations() throws InterruptedException {
     try {
-      System.out.println("DESTINATION_DEFINITION_LIST_LOCATION_PATH: " + DESTINATION_DEFINITION_LIST_LOCATION_PATH);
       return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
     } catch (final Throwable e) {
       LOGGER.warn(
@@ -65,7 +64,6 @@ public class AirbyteGithubStore {
 
   public List<StandardSourceDefinition> getLatestSources() throws InterruptedException {
     try {
-      System.out.println("SOURCE_DEFINITION_LIST_LOCATION_PATH: " + SOURCE_DEFINITION_LIST_LOCATION_PATH);
       return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
     } catch (final Throwable e) {
       LOGGER.warn(
