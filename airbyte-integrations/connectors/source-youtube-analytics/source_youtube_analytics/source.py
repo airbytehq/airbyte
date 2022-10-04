@@ -10,6 +10,7 @@ import json
 import pkgutil
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -161,11 +162,28 @@ class ReportResources(CustomBackoffMixin, HttpStream):
     primary_key = "id"
     url_base = "https://youtubereporting.googleapis.com/v1/"
 
-    def __init__(self, name: str, jobs_resource: JobsResource, job_id: str, **kwargs):
+    def __init__(self, name: str, jobs_resource: JobsResource, job_id: str, start_time: str = None, **kwargs):
         self.name = name
         self.jobs_resource = jobs_resource
         self.job_id = job_id
+        self.start_time = start_time
         super().__init__(**kwargs)
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        if not self.job_id:
+            self.job_id = self.jobs_resource.create(self.name)
+            self.logger.info(f"YouTube reporting job is created: '{self.job_id}'")
+        return "jobs/{}/reports".format(self.job_id)
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {'startTimeAtOrAfter': self.start_time} if self.start_time else {}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -180,18 +198,10 @@ class ReportResources(CustomBackoffMixin, HttpStream):
         reports.sort(key=lambda x: x["startTime"])
         date = kwargs["stream_state"].get("date")
         if date:
-            reports = [r for r in reports if int(r["startTime"].date().strftime("%Y%m%d")) >= date]
+            reports = [r for r in reports if int(r["startTime"].date().strftime("%Y%m%d")) > date]
         if not reports:
             reports.append(None)
         return reports
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        if not self.job_id:
-            self.job_id = self.jobs_resource.create(self.name)
-            self.logger.info(f"YouTube reporting job is created: '{self.job_id}'")
-        return "jobs/{}/reports".format(self.job_id)
 
 
 class ChannelReports(CustomBackoffMixin, HttpSubStream):
@@ -269,6 +279,11 @@ class SourceYoutubeAnalytics(AbstractSource):
         jobs = jobs_resource.list()
         report_to_job_id = {j["reportTypeId"]: j["id"] for j in jobs}
 
+        start_time = None
+        testing_period = config.get('testing_period')
+        if testing_period:
+            start_time = pendulum.today().add(days=-int(testing_period)).to_rfc3339_string()
+
         channel_reports = json.loads(pkgutil.get_data("source_youtube_analytics", "defaults/channel_reports.json"))
 
         streams = []
@@ -276,6 +291,6 @@ class SourceYoutubeAnalytics(AbstractSource):
             stream_name = channel_report["id"]
             dimensions = channel_report["dimensions"]
             job_id = report_to_job_id.get(stream_name)
-            parent = ReportResources(name=stream_name, jobs_resource=jobs_resource, job_id=job_id, authenticator=authenticator)
+            parent = ReportResources(name=stream_name, jobs_resource=jobs_resource, job_id=job_id, start_time=start_time, authenticator=authenticator)
             streams.append(ChannelReports(name=stream_name, dimensions=dimensions, parent=parent, authenticator=authenticator))
         return streams
