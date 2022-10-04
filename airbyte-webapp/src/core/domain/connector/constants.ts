@@ -29,7 +29,6 @@ export const getExcludedConnectorIds = (workspaceId: string) =>
         "2340cbba-358e-11ec-8d3d-0242ac130203", // hide Pular Destination https://github.com/airbytehq/airbyte-cloud/issues/2614
         "d4d3fef9-e319-45c2-881a-bd02ce44cc9f", // hide Redis Destination https://github.com/airbytehq/airbyte-cloud/issues/2593
         "2c9d93a7-9a17-4789-9de9-f46f0097eb70", // hide Rockset Destination https://github.com/airbytehq/airbyte-cloud/issues/2615
-        "4816b78f-1489-44c1-9060-4b19d5fa9362", // hide S3 Destination https://github.com/airbytehq/airbyte-cloud/issues/2616
         "69589781-7828-43c5-9f63-8925b1c1ccc2", // hide S3 Source https://github.com/airbytehq/airbyte-cloud/issues/2618
         "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
         "3dc6f384-cd6b-4be3-ad16-a41450899bf0", // hide Scylla Destination https://github.com/airbytehq/airbyte-cloud/issues/2617
