@@ -1,0 +1,11 @@
+@use "../../../../scss/variables";
+@use "../../../../scss/colors";
+
+.flex {
+  display: flex;
+  gap: variables.$spacing-md;
+}
+
+.textColorOrange {
+  color: colors.$orange;
+}

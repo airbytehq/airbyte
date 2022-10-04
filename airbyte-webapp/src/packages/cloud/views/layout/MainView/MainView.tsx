@@ -4,13 +4,15 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Link, Outlet } from "react-router-dom";
 
 import { LoadingPage } from "components";
+import { useExperimentSpeedyConnection } from "components/experiments/SpeedyConnection/hooks/use-experiment-speedy-connection-experiment";
+import { SpeedyConnectionBanner } from "components/experiments/SpeedyConnection/SpeedyConnectionBanner";
 import { AlertBanner } from "components/ui/Banner/AlertBanner";
 
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import SideBar from "packages/cloud/views/layout/SideBar";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { useCurrentWorkspace, useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
@@ -21,7 +23,6 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const { formatMessage } = useIntl();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
-
   const showCreditsBanner =
     cloudWorkspace.creditStatus &&
     [
@@ -29,9 +30,18 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
       CreditStatus.NEGATIVE_MAX_THRESHOLD,
       CreditStatus.NEGATIVE_WITHIN_GRACE_PERIOD,
     ].includes(cloudWorkspace.creditStatus) &&
-    !cloudWorkspace.trialExpiryTimestamp;
+    !Boolean(cloudWorkspace.trialExpiryTimestamp);
 
-  const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
+  const alertToShow = showCreditsBanner
+    ? "credits"
+    : Boolean(cloudWorkspace.trialExpiryTimestamp)
+    ? "trial"
+    : undefined;
+
+  // exp-speedy-connection
+  const { isExperimentVariant } = useExperimentSpeedyConnection();
+  const { hasConnections } = useCurrentWorkspaceState();
+  const showExperimentBanner = isExperimentVariant && !hasConnections;
 
   const alertMessage = useMemo(() => {
     if (alertToShow === "credits") {
@@ -63,7 +73,7 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
       <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
         <SideBar />
         <div className={classNames(styles.content, { [styles.alertBanner]: !!alertToShow })}>
-          {alertToShow && <AlertBanner message={alertMessage} />}
+          {showExperimentBanner ? <SpeedyConnectionBanner /> : alertToShow && <AlertBanner message={alertMessage} />}
           <div className={styles.dataBlock}>
             <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
               <React.Suspense fallback={<LoadingPage />}>{props.children ?? <Outlet />}</React.Suspense>

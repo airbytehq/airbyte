@@ -65,6 +65,8 @@ interface AuthContextApi {
   logout: AuthLogout;
 }
 
+const _24_HOURS = 24 * 60 * 60 * 1000;
+
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
 export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
@@ -259,6 +261,11 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
         // Create a user account in firebase
         const { user: firebaseUser } = await authService.signUp(form.email, form.password);
 
+        // exp-speedy-connection
+        localStorage.setItem(
+          "exp-speedy-connection-timestamp",
+          JSON.stringify(new Date(new Date().getTime() + _24_HOURS))
+        );
         // Create a user in our database for that firebase user
         await createAirbyteUser(firebaseUser, { name: form.name, companyName: form.companyName, news: form.news });
 
@@ -266,6 +273,11 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
         await authService.sendEmailVerifiedLink();
 
         if (auth.currentUser) {
+          // exp-speedy-connection
+          localStorage.setItem(
+            "exp-speedy-connection-timestamp",
+            JSON.stringify(new Date(new Date().getTime() + _24_HOURS))
+          );
           await onAfterAuth(auth.currentUser);
         }
       },

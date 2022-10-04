@@ -1,0 +1,42 @@
+@use "../../../../scss/colors";
+@use "../../../../scss/variables";
+
+.container {
+  height: 43px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  z-index: 3;
+  font-size: 12px;
+  line-height: 15px;
+  color: colors.$black;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  background-color: colors.$beige-100;
+
+  @media (min-width: 1280px) {
+    height: 50px;
+  }
+}
+
+.innerContainer {
+  display: flex;
+  width: 80%;
+  flex-direction: row;
+  gap: variables.$spacing-md;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+}
+
+.linkCta {
+  p {
+    color: colors.$dark-blue;
+    font-weight: 600;
+  }
+}
+
+.textDecorationNone {
+  text-decoration: none;
+}
