@@ -5,10 +5,9 @@
 import base64
 import json
 import logging
-import time
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -117,10 +116,26 @@ class Users(GenesysStream):
 #         raise NotImplementedError("Implement stream slices or delete this method!")
 
 # Source
-class SourceGenesys(AbstractSource):
+class SourceGenesys(AbstractSource): 
+
     @staticmethod
-    def get_connection_response(config: Mapping[str, Any]):
-        token_refresh_endpoint = "https://" + config["tenant_endpoint"] + "/oauth/token"
+    def get_connection_response(self, config: Mapping[str, Any]):
+        GENESYS_TENANT_ENDPOINT_MAP: Dict = {
+            "Americas (US East)": "https://login.mypurecloud.com",
+            "Americas (US East 2)": "https://login.use2.us-gov-pure.cloud",
+            "Americas (US West)": "https://login.usw2.pure.cloud",
+            "Americas (Canada)": "https://login.cac1.pure.cloud",
+            "Americas (São Paulo)": "https://login.sae1.pure.cloud",
+            "EMEA (Frankfurt)": "https://login.mypurecloud.de",
+            "EMEA (Dublin)": "https://login.mypurecloud.ie",
+            "EMEA (London)": "https://login.euw2.pure.cloud",
+            "Asia Pacific (Mumbai)": "https://login.aps1.pure.cloud",
+            "Asia Pacific (Seoul)": "https://login.apne2.pure.cloud",
+            "Asia Pacific (Sydney)": "https://login.mypurecloud.com.au"
+        }
+
+        token_refresh_endpoint = GENESYS_TENANT_ENDPOINT_MAP.get(config["tenant_endpoint"])
+        token_refresh_endpoint = token_refresh_endpoint + "/oauth/token"
         client_id = config["client_id"]
         client_secret = config["client_secret"]
         refresh_token = None
@@ -153,7 +168,7 @@ class SourceGenesys(AbstractSource):
             )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        response = self.get_connection_response(config)
+        response = self.get_connection_response(self, config)
         response.raise_for_status()
 
         args = {
