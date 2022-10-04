@@ -95,6 +95,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: LOG_LEVEL
+            - name: SYNC_JOB_MAX_ATTEMPTS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: SYNC_JOB_MAX_ATTEMPTS
+            - name: SYNC_JOB_MAX_TIMEOUT_DAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: SYNC_JOB_MAX_TIMEOUT_DAYS
             - name: JOB_KUBE_NAMESPACE
               valueFrom:
                 fieldRef:
