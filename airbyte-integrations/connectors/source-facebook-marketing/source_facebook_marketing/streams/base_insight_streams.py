@@ -67,6 +67,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         super().__init__(**kwargs)
         self._start_date = self._start_date.date()
         self._end_date = self._end_date.date()
+        if fields and self.cursor_field not in fields:
+            fields.append(self.cursor_field)
         self._fields = fields
         self.action_breakdowns = action_breakdowns or self.action_breakdowns
         self.breakdowns = breakdowns or self.breakdowns

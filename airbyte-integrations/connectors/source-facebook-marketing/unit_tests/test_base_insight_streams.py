@@ -289,4 +289,4 @@ class TestBaseInsightsStream:
             insights_lookback_window=28,
         )
 
-        assert stream.fields == ["account_id", "account_currency"]
+        assert stream.fields == ["account_id", "account_currency", stream.cursor_field]
