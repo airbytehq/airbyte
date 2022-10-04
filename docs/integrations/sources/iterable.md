@@ -5,12 +5,13 @@ This page contains the setup guide and reference information for the Iterable so
 ## Prerequisites
 
 * Iterable Account
-* Iterable API Key with `standard` permissions. See [API Keys docs](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-) for more details.
+* Iterable `Server-side` API Key with `standard` permissions. See [API Keys docs](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-) for more details.
 
 ## Setup guide
 ### Step 1: Set up Iterable
 
-Please read [How to find your API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-#creating-api-keys).
+* Please read [How to find your API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-#creating-api-keys).
+* Make sure that selected API Key has sufficient **permissions** to read all selected [streams](https://api.iterable.com/api/docs#).
 
 ## Step 2: Set up the Iterable connector in Airbyte
 ### For Airbyte Cloud:

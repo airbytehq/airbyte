@@ -386,6 +386,7 @@ Possible solutions include:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.14  | 2022-10-03 | [17515](https://github.com/airbytehq/airbyte/pull/17515) | Fix an issue preventing connection using client certificate                                                                                                                |
 | 1.0.13  | 2022-10-01 | [17459](https://github.com/airbytehq/airbyte/pull/17459) | Upgrade debezium version to 1.9.6 from 1.9.2                                                                                                                               |
 | 1.0.12  | 2022-09-27 | [17299](https://github.com/airbytehq/airbyte/pull/17299) | Improve error handling for strict-encrypt postgres source                                                                                                                  |
 | 1.0.11  | 2022-09-26 | [17131](https://github.com/airbytehq/airbyte/pull/17131) | Allow nullable columns to be used as cursor                                                                                                                                |
