@@ -85,7 +85,7 @@ class FormCase(CommcareStream):
         ix = super().initial_date
         if '_cursor_value' in stream_state:
             ix = stream_state['_cursor_value']
-        params = {'format': 'json', 'indexed_on_start': ix.strftime(super().dateformat), 'order_by': 'indexed_on'}
+        params = {'format': 'json', 'indexed_on_start': ix.strftime(super().dateformat), 'order_by': 'indexed_on', 'limit': '1000'}
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -120,7 +120,7 @@ class Form(CommcareStream):
         ix = super().initial_date
         if '_cursor_value' in stream_state:
             ix = stream_state['_cursor_value']
-        params = {'format': 'json', 'app_id': self.app_id, 'indexed_on_start': ix.strftime(super().dateformat), 'order_by': 'indexed_on'}
+        params = {'format': 'json', 'app_id': self.app_id, 'indexed_on_start': ix.strftime(super().dateformat), 'order_by': 'indexed_on', 'limit': '1000'}
         if next_page_token:
             params.update(next_page_token)
         return params
