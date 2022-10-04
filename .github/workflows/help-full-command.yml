@@ -1,4 +1,5 @@
 name: Run help-full command for e2e-testing-tool
+
 on:
   workflow_dispatch:
     inputs:
