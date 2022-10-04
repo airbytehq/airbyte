@@ -92,16 +92,13 @@ class StateAggregatorTest {
     final AirbyteStateMessage state1 = getGlobalMessage(1);
     final AirbyteStateMessage state2 = getGlobalMessage(2);
 
-    final AirbyteStateMessage state1NoData = getGlobalMessage(1).withData(null);
-    final AirbyteStateMessage state2NoData = getGlobalMessage(2).withData(null);
-
-    stateAggregator.ingest(Jsons.object(Jsons.jsonNode(state1), AirbyteStateMessage.class));
+    stateAggregator.ingest(state1);
     Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
-        .withState(Jsons.jsonNode(List.of(state1NoData))));
+        .withState(Jsons.jsonNode(List.of(state1))));
 
-    stateAggregator.ingest(Jsons.object(Jsons.jsonNode(state2), AirbyteStateMessage.class));
+    stateAggregator.ingest(state2);
     Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
-        .withState(Jsons.jsonNode(List.of(state2NoData))));
+        .withState(Jsons.jsonNode(List.of(state2))));
   }
 
   @Test
@@ -129,23 +126,19 @@ class StateAggregatorTest {
     final AirbyteStateMessage state2 = getStreamMessage("b", 2);
     final AirbyteStateMessage state3 = getStreamMessage("b", 3);
 
-    final AirbyteStateMessage state1NoData = getStreamMessage("a", 1).withData(null);
-    final AirbyteStateMessage state2NoData = getStreamMessage("b", 2).withData(null);
-    final AirbyteStateMessage state3NoData = getStreamMessage("b", 3).withData(null);
-
     stateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
 
-    stateAggregator.ingest(Jsons.object(Jsons.jsonNode(state1), AirbyteStateMessage.class));
+    stateAggregator.ingest(state1);
     Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
-        .withState(Jsons.jsonNode(List.of(state1NoData))));
+        .withState(Jsons.jsonNode(List.of(state1))));
 
-    stateAggregator.ingest(Jsons.object(Jsons.jsonNode(state2), AirbyteStateMessage.class));
+    stateAggregator.ingest(state2);
     Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
-        .withState(Jsons.jsonNode(List.of(state2NoData, state1NoData))));
+        .withState(Jsons.jsonNode(List.of(state2, state1))));
 
-    stateAggregator.ingest(Jsons.object(Jsons.jsonNode(state3), AirbyteStateMessage.class));
+    stateAggregator.ingest(state3);
     Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
-        .withState(Jsons.jsonNode(List.of(state3NoData, state1NoData))));
+        .withState(Jsons.jsonNode(List.of(state3, state1))));
   }
 
   private AirbyteStateMessage getNullMessage(final int stateValue) {
@@ -165,8 +158,7 @@ class StateAggregatorTest {
                         .withStreamDescriptor(
                             new StreamDescriptor()
                                 .withName("test"))
-                        .withStreamState(Jsons.jsonNode(stateValue)))))
-        .withData(Jsons.jsonNode("HelloWorld"));
+                        .withStreamState(Jsons.jsonNode(stateValue)))));
   }
 
   private AirbyteStateMessage getStreamMessage(final String streamName, final int stateValue) {
@@ -176,8 +168,7 @@ class StateAggregatorTest {
                 .withStreamDescriptor(
                     new StreamDescriptor()
                         .withName(streamName))
-                .withStreamState(Jsons.jsonNode(stateValue)))
-        .withData(Jsons.jsonNode("Hello"));
+                .withStreamState(Jsons.jsonNode(stateValue)));
   }
 
   private AirbyteStateMessage getEmptyMessage(final AirbyteStateType stateType) {
