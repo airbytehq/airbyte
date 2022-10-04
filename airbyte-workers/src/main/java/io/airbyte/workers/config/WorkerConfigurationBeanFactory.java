@@ -40,7 +40,7 @@ public class WorkerConfigurationBeanFactory {
   private static final String DOCKER = "DOCKER";
   private static final String JOB_DEFAULT_ENV_PREFIX = "JOB_DEFAULT_ENV_";
   private static final String KUBERNETES = "KUBERNETES";
-  private static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
+  public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
 
   @Singleton
   @Named("checkJobKubeAnnotations")
