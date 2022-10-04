@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
+  private static final int MAX_TEMPORAL_MESSAGE_SIZE = 2 * 1024 * 1024;
 
   private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
   private final WorkerConfigs workerConfigs;
@@ -156,7 +157,14 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           final ReplicationOutput attemptOutput = temporalAttempt.get();
           final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
 
-          LOGGER.info("sync summary: {}", standardSyncOutput);
+          final String standardSyncOutputString = standardSyncOutput.toString();
+          LOGGER.info("sync summary: {}", standardSyncOutputString);
+          if (standardSyncOutputString.length() > MAX_TEMPORAL_MESSAGE_SIZE) {
+            LOGGER.error("Sync ouput exceeds the max temporal message size of {}, actual is {}.", MAX_TEMPORAL_MESSAGE_SIZE,
+                standardSyncOutputString.length());
+          } else {
+            LOGGER.info("Sync summary length: {}", standardSyncOutputString.length());
+          }
 
           return standardSyncOutput;
         },
