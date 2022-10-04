@@ -152,6 +152,8 @@ class GithubStream(HttpStream, ABC):
                     f"Syncing `{self.name}` stream isn't available for repository "
                     f"`{stream_slice['repository']}`, it seems like this repository is empty."
                 )
+            elif e.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
+                error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
             else:
                 # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
                 self.logger.error(f"Undefined error while reading records: {e.response.text}")
