@@ -2,6 +2,10 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import base64
+import json
+import logging
+import time
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -11,41 +15,10 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
-
-
-class GenesysAuthenticator(Oauth2Authenticator):
-    def __init__(self, config):
-        super().__init__(
-            token_refresh_endpoint=f"https://{config['tenant_endpoint']}/identity/oauth/token",
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=None,
-        )
-
-    def get_refresh_request_params(self) -> Mapping[str, Any]:
-        payload: MutableMapping[str, Any] = {
-            "grant_type": "client_credentials",
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-        }
-
-        return payload
-
-    def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        Returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
-        try:
-            response = requests.request(method="GET", url=self.token_refresh_endpoint, params=self.get_refresh_request_params())
-            response.raise_for_status()
-            response_json = response.json()
-            return response_json["access_token"], response_json["expires_in"]
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 class GenesysStream(HttpStream, ABC):
-    url_base = "https://login.mypurecloud.com.au/api/v2/"
+    url_base = "https://api.mypurecloud.com.au/api/v2/"
     page_size = 500
 
     def backoff_time(self, response: requests.Response) -> Optional[int]:
@@ -62,8 +35,8 @@ class GenesysStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # print(response.content)
         yield {}
-
 
 class Users(GenesysStream):
     primary_key = "id"
@@ -143,16 +116,35 @@ class Users(GenesysStream):
 #         """
 #         raise NotImplementedError("Implement stream slices or delete this method!")
 
-
 # Source
 class SourceGenesys(AbstractSource):
+    @staticmethod
+    def get_connection_response(config: Mapping[str, Any]):
+        token_refresh_endpoint = f'{"https://login.mypurecloud.com.au/oauth/token"}'
+        client_id = config["client_id"]
+        client_secret = config["client_secret"]
+        refresh_token = None
+        headers = {"content-type": "application/x-www-form-urlencoded"}
+        data = {"grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret, "refresh_token": refresh_token}
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         try:
-            authenticator = GenesysAuthenticator(config)
-            users_stream = Users(authenticator=GenesysAuthenticator)
-            next(users_stream.read_records(SyncMode.full_refresh))
+            response = requests.request(method="POST", url=token_refresh_endpoint, data=data, headers=headers)
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
+        return response
+
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
+        """
+        Testing connection availability for the connector by granting the credentials.
+        """
+
+        try:
+            if not config["client_secret"] or not config["client_id"]:
+                raise Exception("Empty config values! Check your configuration file!")
+
+            self.get_connection_response(config).raise_for_status()
             return True, None
+
         except Exception as e:
             return (
                 False,
@@ -161,7 +153,10 @@ class SourceGenesys(AbstractSource):
             )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config["authenticator"] = GenesysAuthenticator(config)
+        response = self.get_connection_response(config)
+        response.raise_for_status()
+        authenticator = TokenAuthenticator(response.json()["access_token"])
+
         return [
-            Users(config)
+            Users(authenticator=authenticator)
         ]
