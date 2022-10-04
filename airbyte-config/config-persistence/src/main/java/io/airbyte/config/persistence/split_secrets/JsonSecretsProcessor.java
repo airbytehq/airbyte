@@ -39,6 +39,7 @@ public class JsonSecretsProcessor {
   static final String TYPE_FIELD = "type";
   static final String ARRAY_TYPE_FIELD = "array";
   static final String ITEMS_FIELD = "items";
+  static final String ONE_OF_FIELD = "oneOf";
 
   /**
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
@@ -175,8 +176,10 @@ public class JsonSecretsProcessor {
   }
 
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-  private static boolean isValidJsonSchema(final JsonNode schema) {
-    return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
+  @VisibleForTesting
+  public static boolean isValidJsonSchema(final JsonNode schema) {
+    return schema.isObject() && ((schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject())
+        || (schema.has(ONE_OF_FIELD) && schema.get(ONE_OF_FIELD).isArray()));
   }
 
 }

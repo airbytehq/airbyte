@@ -11,6 +11,12 @@ The [Paypal Transaction API](https://developer.paypal.com/docs/api/transaction-s
 
 In order to get an `Client ID` and `Secret` please go to [this](https://developer.paypal.com/docs/platforms/get-started/) page and follow the instructions. After registration you may find your `Client ID` and `Secret` [here](https://developer.paypal.com/developer/accounts/).
 
+:::note
+
+Note: Our Paypal Transactions Source Connector does not support OAuth at this time due to limitations outside of our control. If OAuth for Paypal Transactions is critical to your business, [please reach out to us](mailto:product@airbyte.io) to discuss how we may be able to partner on this effort.
+
+:::
+
 ## Step 2: Set up the Paypal Transaction connector in Airbyte
 
 ### For Airbyte Cloud:
