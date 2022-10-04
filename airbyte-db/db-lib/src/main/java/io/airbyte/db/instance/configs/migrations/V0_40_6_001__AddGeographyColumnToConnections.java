@@ -31,7 +31,8 @@ public class V0_40_6_001__AddGeographyColumnToConnections extends BaseJavaMigrat
     final DSLContext ctx = DSL.using(context.getConnection());
 
     addGeographyEnumDataTypes(ctx);
-    addGeographyColumn(ctx);
+    addGeographyColumnToConnection(ctx);
+    addGeographyColumnToWorkspace(ctx);
   }
 
   private static void addGeographyEnumDataTypes(final DSLContext ctx) {
@@ -40,11 +41,19 @@ public class V0_40_6_001__AddGeographyColumnToConnections extends BaseJavaMigrat
         .execute();
   }
 
-  private static void addGeographyColumn(final DSLContext ctx) {
+  private static void addGeographyColumnToConnection(final DSLContext ctx) {
     ctx.alterTable("connection")
         .addColumnIfNotExists(DSL.field(
             "geography",
-            SQLDataType.VARCHAR.asEnumDataType(GeographyType.class)))
+            SQLDataType.VARCHAR.asEnumDataType(GeographyType.class).nullable(false).defaultValue(GeographyType.AUTO)))
+        .execute();
+  }
+
+  private static void addGeographyColumnToWorkspace(final DSLContext ctx) {
+    ctx.alterTable("workspace")
+        .addColumnIfNotExists(DSL.field(
+            "geography",
+            SQLDataType.VARCHAR.asEnumDataType(GeographyType.class).nullable(false).defaultValue(GeographyType.AUTO)))
         .execute();
   }
 
