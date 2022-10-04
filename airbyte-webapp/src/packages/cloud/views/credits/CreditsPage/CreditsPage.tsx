@@ -2,9 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { PageTitle } from "components";
 import HeadTitle from "components/HeadTitle";
 import MainPageWithScroll from "components/MainPageWithScroll";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -28,7 +28,7 @@ const CreditsPage: React.FC = () => {
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "credits.credits" }]} />}
-      pageTitle={<PageTitle title={<FormattedMessage id="credits.credits" />} />}
+      pageTitle={<PageHeader title={<FormattedMessage id="credits.credits" />} />}
     >
       <Content>
         {!emailVerified && <EmailVerificationHintWithMargin />}
