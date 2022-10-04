@@ -33,12 +33,13 @@ Primary.args = {
         transformType: "update_stream",
         streamDescriptor: { namespace: "apple", name: "harissa_paste" },
         updateStream: [
-          { transformType: "add_field", fieldName: ["users", "phone"] },
-          { transformType: "add_field", fieldName: ["users", "email"] },
-          { transformType: "remove_field", fieldName: ["users", "lastName"] },
+          { transformType: "add_field", fieldName: ["users", "phone"], isBreaking: false },
+          { transformType: "add_field", fieldName: ["users", "email"], isBreaking: false },
+          { transformType: "remove_field", fieldName: ["users", "lastName"], isBreaking: false },
 
           {
             transformType: "update_field_schema",
+            isBreaking: false,
             fieldName: ["users", "address"],
             updateFieldSchema: { oldSchema: { type: "number" }, newSchema: { type: "string" } },
           },
