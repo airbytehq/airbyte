@@ -619,38 +619,71 @@ public class ConfigRepository {
 
   public List<StandardSync> listStandardSyncsUsingOperation(final UUID operationId)
       throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+    final Result<Record> connectionResult = database.query(ctx -> ctx.select(CONNECTION.asterisk(), CONNECTION_OPERATION.asterisk())
         .from(CONNECTION)
         .join(CONNECTION_OPERATION)
         .on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
         .where(CONNECTION_OPERATION.OPERATION_ID.eq(operationId))).fetch();
-    return getStandardSyncsFromResult(result);
+
+    final List<UUID> connectionIds = connectionResult.stream().map(r -> r.get(CONNECTION.ID)).toList();
+
+    final Result<Record> connectionOperationResult = database.query(ctx -> ctx.select(CONNECTION_OPERATION.asterisk()))
+        .from(CONNECTION_OPERATION)
+        .where(CONNECTION_OPERATION.CONNECTION_ID.in(connectionIds))
+        .fetch();
+
+    return getStandardSyncsFromResult(connectionResult, connectionOperationResult);
   }
 
   public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId, final boolean includeDeleted) throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+    final Result<Record> connectionResult = database.query(ctx -> ctx.select(CONNECTION.asterisk())
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId)
             .and(includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated))))
         .fetch();
-    return getStandardSyncsFromResult(result);
+
+    final List<UUID> connectionIds = connectionResult.stream().map(r -> r.get(CONNECTION.ID)).toList();
+
+    final Result<Record> connectionOperationResult = database.query(ctx -> ctx.select(CONNECTION_OPERATION.asterisk()))
+        .from(CONNECTION_OPERATION)
+        .where(CONNECTION_OPERATION.CONNECTION_ID.in(connectionIds))
+        .fetch();
+
+    return getStandardSyncsFromResult(connectionResult, connectionOperationResult);
   }
 
-  private List<StandardSync> getStandardSyncsFromResult(final Result<Record> result) throws IOException {
-    final List<StandardSync> standardSyncs = new ArrayList<>();
-    for (final Record record : result) {
-      final UUID connectionId = record.get(CONNECTION.ID);
-      final Result<Record> connectionOperationRecords = database.query(ctx -> ctx.select(asterisk())
-          .from(CONNECTION_OPERATION)
-          .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
-          .fetch());
+  private List<StandardSync> getStandardSyncsFromResult(
+                                                        final Result<Record> connectionResult,
+                                                        final Result<Record> connectionOperationResult) {
 
-      final List<UUID> connectionOperationIds =
-          connectionOperationRecords.stream().map(r -> r.get(CONNECTION_OPERATION.OPERATION_ID)).collect(Collectors.toList());
-      standardSyncs.add(DbConverter.buildStandardSync(record, connectionOperationIds));
+    final Map<UUID, List<UUID>> connectionIdToOperationIds = getConnectionIdToOperationIds(connectionOperationResult);
+    final List<StandardSync> standardSyncs = new ArrayList<>();
+
+    for (final Record record : connectionResult) {
+      final UUID connectionId = record.get(CONNECTION.ID);
+      final List<UUID> operationIds = connectionIdToOperationIds.get(connectionId);
+      standardSyncs.add(DbConverter.buildStandardSync(record, operationIds));
     }
+
     return standardSyncs;
+  }
+
+  /**
+   * Given a query result containing ConnectionOperation records, perform an in-memory groupBy
+   * operation on the records to group operationIds by connectionId
+   *
+   * @param connectionOperationResult a Jooq query result containing ConnectionOperation records
+   * @return a Map of connectionId to a list of operationIds
+   */
+  private Map<UUID, List<UUID>> getConnectionIdToOperationIds(final Result<Record> connectionOperationResult) {
+    return connectionOperationResult.stream().collect(Collectors.groupingBy(
+        // classifier that maps input records to connectionId keys
+        r -> r.get(CONNECTION_OPERATION.CONNECTION_ID),
+        // mapFactory supplier that provides a map to store the result
+        HashMap::new,
+        // downstream collector that reduces groups to a final value list of operationIds
+        Collectors.mapping(r -> r.get(CONNECTION_OPERATION.OPERATION_ID), Collectors.toList())));
   }
 
   public StandardSyncOperation getStandardSyncOperation(final UUID operationId) throws JsonValidationException, IOException, ConfigNotFoundException {

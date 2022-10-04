@@ -35,7 +35,6 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -43,7 +42,7 @@ import org.jooq.Record;
 
 public class DbConverter {
 
-  public static StandardSync buildStandardSync(final Record record, final List<UUID> connectionOperationId) throws IOException {
+  public static StandardSync buildStandardSync(final Record record, final List<UUID> connectionOperationId) {
     return new StandardSync()
         .withConnectionId(record.get(CONNECTION.ID))
         .withNamespaceDefinition(
