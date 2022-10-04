@@ -63,8 +63,7 @@ More details on the connector definition file can be found in the [overview](../
 
 Let's fill this out these TODOs with the information found in the [Exchange Rates API docs](https://apilayer.com/marketplace/exchangerates_data-api).
 
-1. We'll first set the API's base url.
-   According to the API documentation, the base url is `"https://api.apilayer.com"`.
+1. We'll first set the API's base url. According to the API documentation, the base url is `"https://api.apilayer.com"`.
 
 ```yaml
 definitions:
