@@ -52,6 +52,19 @@ class Locations(GenesysStream):
     def path(self, **kwargs) -> str:
         return "locations"
 
+# https://developer.genesys.cloud/routing/conversations/conversations-apis
+# https://developer.genesys.cloud/routing/architect/
+# https://developer.genesys.cloud/routing/outbound/
+# https://developer.genesys.cloud/routing/routing/
+# https://developer.genesys.cloud/routing/scripts/
+# https://developer.genesys.cloud/telephony/stations-apis
+# https://developer.genesys.cloud/telephony/telephony-apis
+# https://developer.genesys.cloud/commdigital/voicemail/
+
+# analytics
+# https://developer.genesys.cloud/routing/conversations/conversations-apis
+
+
 
 # # Basic incremental stream
 # class IncrementalGenesysStream(GenesysStream, ABC):
