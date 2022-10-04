@@ -1105,7 +1105,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.14"
+- dockerImage: "airbyte/source-amplitude:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amplitude"
     connectionSpecification:
@@ -1460,7 +1460,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.14"
+- dockerImage: "airbyte/source-bing-ads:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
     connectionSpecification:
@@ -2561,7 +2561,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.66"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.67"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -3092,7 +3092,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.23"
+- dockerImage: "airbyte/source-file:0.2.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -3503,7 +3503,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.3.3"
+- dockerImage: "airbyte/source-github:0.3.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -4715,7 +4715,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.2.1"
+- dockerImage: "airbyte/source-hubspot:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -6965,7 +6965,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.1"
+- dockerImage: "airbyte/source-mysql:1.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -7160,7 +7160,7 @@
           description: "Replication method to use for extracting data from the database."
           order: 8
           oneOf:
-          - title: "STANDARD"
+          - title: "Standard"
             description: "Standard replication requires no setup on the DB side but\
               \ will not be able to represent deletions incrementally."
             required:
@@ -7186,6 +7186,18 @@
                 - "CDC"
                 default: "CDC"
                 order: 0
+              initial_waiting_seconds:
+                type: "integer"
+                title: "Initial Waiting Time in Seconds (Advanced)"
+                description: "The amount of time the connector will wait when it launches\
+                  \ to determine if there is new data to sync or not. Defaults to\
+                  \ 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about\
+                  \ <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"\
+                  >initial waiting time</a>."
+                default: 300
+                order: 4
+                min: 120
+                max: 1200
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -8167,7 +8179,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paypal-transaction:0.1.9"
+- dockerImage: "airbyte/source-paypal-transaction:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paypal-transactions"
     connectionSpecification:
@@ -8578,7 +8590,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.13"
+- dockerImage: "airbyte/source-postgres:1.0.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11169,7 +11181,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:0.1.16"
+- dockerImage: "airbyte/source-tiktok-marketing:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"

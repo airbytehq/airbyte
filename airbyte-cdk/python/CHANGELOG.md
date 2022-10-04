@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.92
+- Low-code: Properly propagate $options to array items
+- Low-code: Log request and response when running check operation in debug mode
+
 ## 0.1.91
 - Low-code: Rename LimitPaginator to DefaultPaginator and move page_size field to PaginationStrategy
 
