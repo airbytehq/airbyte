@@ -31,7 +31,7 @@ describe("CreateConnectionForm", () => {
 
   it("should render", async () => {
     let renderResult: RenderResult;
-    jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementation(() => baseUseDiscoverSchema);
+    jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => baseUseDiscoverSchema);
     await act(async () => {
       renderResult = render(
         <Wrapper>
