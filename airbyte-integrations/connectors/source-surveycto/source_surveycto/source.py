@@ -59,6 +59,8 @@ class SurveyctoStream(HttpStream, ABC):
             try:
                 yield data
             except Exception as e:
+                msg = f"""Encountered an exception parsing schema"""
+                self.logger.exception(msg)
                 raise e
     # @TODO: Refactor this path method into a separate FormClass for cleaner
     def path(
