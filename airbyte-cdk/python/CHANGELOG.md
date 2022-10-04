@@ -1,11 +1,8 @@
 # Changelog
 
 ## 0.1.92
-- Low-code: Stream schema loader has a default value and can be omitted 
-
-## 0.1.92
 - Low-code: Log requests and responses when running check in debug mode
-- Low-code: Set default schema loader
+- Low-code: Stream schema loader has a default value and can be omitted 
 
 
 ## 0.1.91
