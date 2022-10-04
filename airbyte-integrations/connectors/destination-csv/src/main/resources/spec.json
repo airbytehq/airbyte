@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-csv",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/local-csv",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -12,7 +12,7 @@
     "additionalProperties": false,
     "properties": {
       "destination_path": {
-        "description": "Path to the directory where csv files will be written. The destination uses the local mount \"/local\" and any data files will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.io/integrations/destinations/local-csv\">docs</a>",
+        "description": "Path to the directory where csv files will be written. The destination uses the local mount \"/local\" and any data files will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.com/integrations/destinations/local-csv\">docs</a>",
         "type": "string",
         "examples": ["/local"]
       }

@@ -156,3 +156,41 @@ class ProjectDetail(SentryStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
+
+
+class DiscoverEvents(SentryStreamPagination):
+    """
+    Docs: https://docs.sentry.io/api/discover/query-discover-events-in-table-format/
+    """
+
+    def __init__(self, organization: str, project: str, fields: str[], **kwargs):
+        super().__init__(**kwargs)
+        self._organization = organization
+        self._project = project
+
+    def path(
+            self,
+            stream_state: Optional[Mapping[str, Any]] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+
+        return f"organizations/{self._organization}/events/"
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({
+            "project": self._project,
+            "sort": "timestamp",
+            "field": ["timestamp"].join(),
+        })
+
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield response.json()

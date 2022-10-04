@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/r2",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/r2",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,

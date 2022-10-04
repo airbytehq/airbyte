@@ -147,4 +147,4 @@ connectionSpecification:
   - dimensions
   title: Adjust Spec
   type: object
-documentationUrl: https://docs.airbyte.io/integrations/sources/adjust
+documentationUrl: https://docs.airbyte.com/integrations/sources/adjust

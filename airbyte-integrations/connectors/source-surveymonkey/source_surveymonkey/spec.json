@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/surveymonkey",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/surveymonkey",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "SurveyMonkey Spec",
@@ -12,7 +12,7 @@
         "order": 0,
         "type": "string",
         "airbyte_secret": true,
-        "description": "Access Token for making authenticated requests. See the <a href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
+        "description": "Access Token for making authenticated requests. See the <a href=\"https://docs.airbyte.com/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
       },
       "start_date": {
         "title": "Start Date",

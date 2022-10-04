@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bigquery",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/bigquery",
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": true,
@@ -22,7 +22,7 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of your Service Account Key JSON file. See the <a href=\"https://docs.airbyte.io/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">docs</a> for more information on how to obtain this key.",
+        "description": "The contents of your Service Account Key JSON file. See the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">docs</a> for more information on how to obtain this key.",
         "title": "Credentials JSON",
         "airbyte_secret": true
       }
