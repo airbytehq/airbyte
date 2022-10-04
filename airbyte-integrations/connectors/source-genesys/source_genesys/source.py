@@ -34,15 +34,12 @@ class GenesysStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # print(response.content)
-        yield {}
+        json_response = response.json()
+        yield from json_response.get("entities", [])
 
 class Users(GenesysStream):
     primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "users"
 
 
