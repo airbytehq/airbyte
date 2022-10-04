@@ -536,7 +536,8 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| 0.1.17  | 2022-10-04 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Retry error 50002                                                                             |
 | 0.1.16  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream state                                                                   |                                               
 | 0.1.15  | 2022-08-30 | [16137](https://github.com/airbytehq/airbyte/pull/16137) | Fixed bug with normalization caused by unsupported nested cursor field                        |                                               
 | 0.1.14  | 2022-06-29 | [13890](https://github.com/airbytehq/airbyte/pull/13890) | Removed granularity config option                                                             |                                               
