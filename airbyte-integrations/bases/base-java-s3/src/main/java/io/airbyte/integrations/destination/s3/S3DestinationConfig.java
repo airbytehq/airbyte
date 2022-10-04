@@ -15,6 +15,7 @@ import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_EN
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_PATH_FORMAT;
 
 import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
@@ -253,7 +254,7 @@ public class S3DestinationConfig {
           .build();
     }
 
-    final ClientConfiguration clientConfiguration = new ClientConfiguration();
+    final ClientConfiguration clientConfiguration = new ClientConfiguration().withProtocol(Protocol.HTTPS);
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
     return AmazonS3ClientBuilder.standard()

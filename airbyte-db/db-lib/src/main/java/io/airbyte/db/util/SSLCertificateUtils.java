@@ -41,7 +41,8 @@ public class SSLCertificateUtils {
   private static final String PKCS_12 = "PKCS12";
   private static final String X509 = "X.509";
   private static final Random RANDOM = new SecureRandom();
-  public static final String KEYSTORE_ENTRY_PREFIX = "ab_";
+  // #17000: postgres driver is hardcoded to only load an entry alias "user"
+  public static final String KEYSTORE_ENTRY_PREFIX = "user";
   public static final String KEYSTORE_FILE_NAME = KEYSTORE_ENTRY_PREFIX + "keystore_";
   public static final String KEYSTORE_FILE_TYPE = ".p12";
 
