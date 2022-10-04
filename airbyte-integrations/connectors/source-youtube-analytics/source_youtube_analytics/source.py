@@ -279,6 +279,11 @@ class SourceYoutubeAnalytics(AbstractSource):
         jobs = jobs_resource.list()
         report_to_job_id = {j["reportTypeId"]: j["id"] for j in jobs}
 
+        # By default, API returns reports for last 60 days. Report for each day requires a separate request.
+        # Full scan of all 18 streams requires ~ 1100 requests (18+18*60), so we can hit 'default' API quota limits:
+        # - 60 reqs per minute
+        # - 20000 reqs per day
+        # For SAT: scan only last N days ('testing_period' option) in order to decrease a number of requests and avoid API limits
         start_time = None
         testing_period = config.get('testing_period')
         if testing_period:
