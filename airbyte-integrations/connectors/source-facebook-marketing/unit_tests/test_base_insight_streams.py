@@ -289,4 +289,6 @@ class TestBaseInsightsStream:
             insights_lookback_window=28,
         )
 
-        assert stream.fields == ["account_id", "account_currency", stream.cursor_field]
+        assert stream.fields == ["account_id", "account_currency"]
+        schema = stream.get_json_schema()
+        assert schema["properties"].keys() == set(["account_currency", "account_id", stream.cursor_field])
