@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { useIntl } from "react-intl";
 
-import { OperationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionScheduleType, OperationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
 import {
@@ -40,6 +40,11 @@ export const tidyConnectionFormValues = (
   }) as unknown as ConnectionFormValues;
 
   formValues.operations = mapFormPropsToOperation(values, operations, workspaceId);
+
+  if (formValues.scheduleType === ConnectionScheduleType.manual) {
+    // Have to set this to undefined to override the existing scheduleData
+    formValues.scheduleData = undefined;
+  }
 
   return formValues;
 };
