@@ -165,10 +165,52 @@ module.exports = {
       items: [
         {
           type: 'category',
-          label: 'Creating your first HTTP API Source',
+          label: 'Low-code connector development',
+          link: {
+            type: 'doc',
+            id: 'connector-development/config-based/low-code-cdk-overview',
+          },
           items: [
-            'connector-development/config-based/index',
-            'connector-development/config-based/tutorial/getting-started'
+            {
+              type: 'category',
+              label: 'Tutorial',
+              items: [
+                'connector-development/config-based/tutorial/getting-started',
+                'connector-development/config-based/tutorial/create-source',
+                'connector-development/config-based/tutorial/install-dependencies',
+                'connector-development/config-based/tutorial/connecting-to-the-API-source',
+                'connector-development/config-based/tutorial/reading-data',
+                'connector-development/config-based/tutorial/incremental-reads',
+                'connector-development/config-based/tutorial/testing',
+              ],
+            },
+            {
+              type: 'category',
+              label: 'Understanding the YAML file',
+              link: {
+                type: 'doc',
+                id: 'connector-development/config-based/understanding-the-yaml-file/yaml-overview',
+              },
+              items: [
+                {
+                  type: `category`,
+                  label: `Requester`,
+                  link: {
+                    type: 'doc',
+                    id: 'connector-development/config-based/understanding-the-yaml-file/requester',
+                  },
+                  items: [
+                    'connector-development/config-based/understanding-the-yaml-file/request-options',
+                    'connector-development/config-based/understanding-the-yaml-file/authentication',
+                    'connector-development/config-based/understanding-the-yaml-file/error-handling',  
+                  ]
+              },
+                'connector-development/config-based/understanding-the-yaml-file/pagination',
+                'connector-development/config-based/understanding-the-yaml-file/record-selector',
+                'connector-development/config-based/understanding-the-yaml-file/stream-slicers',
+              ]
+            },
+            'connector-development/config-based/advanced-topics',    
           ]
         },
         'connector-development/tutorials/cdk-speedrun',
