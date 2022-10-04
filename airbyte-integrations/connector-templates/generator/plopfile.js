@@ -236,7 +236,7 @@ module.exports = function (plop) {
                 templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
                 path: `${pythonSourceOutputRoot}/.dockerignore`
             },
-            {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
+            {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.com/connector-development/tutorials/building-a-python-source"}]
     });
 
   plop.setGenerator('Java JDBC Source', {
