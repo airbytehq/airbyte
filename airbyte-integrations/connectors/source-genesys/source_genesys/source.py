@@ -120,7 +120,7 @@ class Users(GenesysStream):
 class SourceGenesys(AbstractSource):
     @staticmethod
     def get_connection_response(config: Mapping[str, Any]):
-        token_refresh_endpoint = f'{"https://login.mypurecloud.com.au/oauth/token"}'
+        token_refresh_endpoint = "https://" + config["tenant_endpoint"] + "/oauth/token"
         client_id = config["client_id"]
         client_secret = config["client_secret"]
         refresh_token = None
@@ -155,8 +155,10 @@ class SourceGenesys(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         response = self.get_connection_response(config)
         response.raise_for_status()
-        authenticator = TokenAuthenticator(response.json()["access_token"])
 
+        args = {
+            "authenticator": TokenAuthenticator(response.json()["access_token"])
+        }
         return [
-            Users(authenticator=authenticator)
+            Users(**args)
         ]
