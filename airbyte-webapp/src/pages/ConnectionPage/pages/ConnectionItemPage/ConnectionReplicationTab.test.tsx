@@ -3,20 +3,13 @@
 
 import { render, act, RenderResult } from "@testing-library/react";
 import { Suspense } from "react";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { MemoryRouter } from "react-router-dom";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
 
 import { WebBackendConnectionUpdate } from "core/request/AirbyteClient";
-import { ServicesProvider } from "core/servicesProvider";
-import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { ConnectionEditServiceProvider } from "hooks/services/ConnectionEdit/ConnectionEditService";
-import { ModalServiceProvider } from "hooks/services/Modal";
 import * as connectionHook from "hooks/services/useConnectionHook";
-import { ConfigProvider } from "packages/cloud/services/ConfigProvider";
-import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 
 import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
 
@@ -29,21 +22,9 @@ describe("ConnectionReplicationTab", () => {
   const Wrapper: React.FC = ({ children }) => (
     <Suspense fallback={<div>I should not show up in a snapshot</div>}>
       <TestWrapper>
-        <MemoryRouter>
-          <ModalServiceProvider>
-            <ConfigProvider>
-              <ServicesProvider>
-                <QueryClientProvider client={new QueryClient()}>
-                  <ConfirmationModalService>
-                    <ConnectionEditServiceProvider connectionId={mockConnection.connectionId}>
-                      <AnalyticsProvider>{children}</AnalyticsProvider>
-                    </ConnectionEditServiceProvider>
-                  </ConfirmationModalService>
-                </QueryClientProvider>
-              </ServicesProvider>
-            </ConfigProvider>
-          </ModalServiceProvider>
-        </MemoryRouter>
+        <ConnectionEditServiceProvider connectionId={mockConnection.connectionId}>
+          {children}
+        </ConnectionEditServiceProvider>
       </TestWrapper>
     </Suspense>
   );

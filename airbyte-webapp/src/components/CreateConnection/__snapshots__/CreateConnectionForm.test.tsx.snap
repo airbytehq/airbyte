@@ -815,7 +815,7 @@ exports[`CreateConnectionForm should render 1`] = `
             <h5
               class="heading md"
             >
-              Normalization
+              Normalization & Transformation
             </h5>
             <div
               class="sc-jfmDQi gnQatQ"
@@ -885,6 +885,26 @@ exports[`CreateConnectionForm should render 1`] = `
                     </a>
                   </span>
                 </label>
+              </div>
+            </div>
+            <div
+              class="container"
+            >
+              <div
+                class="sc-dIouRR hRIsJE"
+              >
+                No custom transformation
+                <button
+                  class="button sizeXS typeSecondary"
+                  data-testid="addItemButton"
+                  type="button"
+                >
+                  <div
+                    class="childrenContainer"
+                  >
+                    + Add transformation
+                  </div>
+                </button>
               </div>
             </div>
           </div>

@@ -1,19 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { act, render, RenderResult } from "@testing-library/react";
-import { Suspense } from "react";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { MemoryRouter } from "react-router-dom";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
 
 import { AirbyteCatalog } from "core/request/AirbyteClient";
-import { ServicesProvider } from "core/servicesProvider";
-import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureService } from "hooks/services/Feature";
 import * as sourceHook from "hooks/services/useSourceHook";
-import { ConfigProvider } from "packages/cloud/services/ConfigProvider";
-import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 
 import { CreateConnectionForm } from "./CreateConnectionForm";
 
@@ -21,26 +13,13 @@ jest.mock("services/connector/DestinationDefinitionSpecificationService", () => 
   useGetDestinationDefinitionSpecification: () => mockDest,
 }));
 
+jest.mock("services/workspaces/WorkspacesService", () => ({
+  useCurrentWorkspace: () => ({}),
+  useCurrentWorkspaceId: () => "workspace-id",
+}));
+
 describe("CreateConnectionForm", () => {
-  const Wrapper: React.FC = ({ children }) => (
-    <Suspense fallback={<div>I should not show up in a snapshot</div>}>
-      <TestWrapper>
-        <MemoryRouter>
-          <ConfigProvider>
-            <ServicesProvider>
-              <QueryClientProvider client={new QueryClient()}>
-                <ConfirmationModalService>
-                  <FeatureService features={[]}>
-                    <AnalyticsProvider>{children}</AnalyticsProvider>
-                  </FeatureService>
-                </ConfirmationModalService>
-              </QueryClientProvider>
-            </ServicesProvider>
-          </ConfigProvider>
-        </MemoryRouter>
-      </TestWrapper>
-    </Suspense>
-  );
+  const Wrapper: React.FC = ({ children }) => <TestWrapper>{children}</TestWrapper>;
 
   const baseUseDiscoverSchema = {
     schemaErrorStatus: null,
@@ -52,7 +31,7 @@ describe("CreateConnectionForm", () => {
 
   it("should render", async () => {
     let renderResult: RenderResult;
-    jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => baseUseDiscoverSchema);
+    jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementation(() => baseUseDiscoverSchema);
     await act(async () => {
       renderResult = render(
         <Wrapper>
@@ -61,6 +40,7 @@ describe("CreateConnectionForm", () => {
       );
     });
     expect(renderResult!.container).toMatchSnapshot();
+    expect(renderResult!.queryByText("Please wait a little bit more…")).toBeFalsy();
   });
 
   it("should render when loading", async () => {

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { act, renderHook } from "@testing-library/react-hooks";
 import React from "react";
-import { MemoryRouter } from "react-router-dom";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
@@ -9,7 +8,6 @@ import { TestWrapper } from "test-utils/testutils";
 import { WebBackendConnectionUpdate } from "core/request/AirbyteClient";
 
 import { useConnectionFormService } from "../ConnectionForm/ConnectionFormService";
-import { ModalServiceProvider } from "../Modal";
 import { ConnectionEditServiceProvider, useConnectionEditService } from "./ConnectionEditService";
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
@@ -30,11 +28,7 @@ jest.mock("../useConnectionHook", () => ({
 describe("ConnectionFormService", () => {
   const Wrapper: React.FC<Parameters<typeof ConnectionEditServiceProvider>[0]> = ({ children, ...props }) => (
     <TestWrapper>
-      <MemoryRouter>
-        <ModalServiceProvider>
-          <ConnectionEditServiceProvider {...props}>{children}</ConnectionEditServiceProvider>
-        </ModalServiceProvider>
-      </MemoryRouter>
+      <ConnectionEditServiceProvider {...props}>{children}</ConnectionEditServiceProvider>
     </TestWrapper>
   );
 
