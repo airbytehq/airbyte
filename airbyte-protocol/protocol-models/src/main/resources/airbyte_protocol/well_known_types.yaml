@@ -25,7 +25,9 @@ definitions:
     #   2022-01-23T01:23:45.678-11:30
     # format: date-time is a superset of what we want, so we cannot use it here (e.g. it accepts 2-digit years)
     pattern: \d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{1,2}(:\d{2})?)( BC)?
-    description: An instant in time. Frequently simply referred to as just a timestamp, or timestamptz.
+    description: >
+      An instant in time. Frequently simply referred to as just a timestamp, or timestamptz.
+      Note that we do _not_ use Unix epochs here.
   TimestampWithoutTimezone:
     type: string
     # Examples:
@@ -50,13 +52,13 @@ definitions:
     pattern: \d{2}:\d{2}:\d{2}(\.\d+)?
   Number:
     type: string
-    # Note the mix of regex validation for normal numbers, and enum validation for special values
     oneOf:
       - pattern: -?(0|[0-9]\d*)(\.\d+)?
       - enum:
           - Infinity
           - -Infinity
           - NaN
+    description: Note the mix of regex validation for normal numbers, and enum validation for special values.
   Integer:
     type: string
     oneOf:
@@ -66,5 +68,5 @@ definitions:
           - -Infinity
           - NaN
   Boolean:
-    # Note the direct usage of a primitive boolean rather than string. Unlike Numbers and Integers, we don't expect unusual values  here.
     type: boolean
+    description: Note the direct usage of a primitive boolean rather than string. Unlike Numbers and Integers, we don't expect unusual values  here.
