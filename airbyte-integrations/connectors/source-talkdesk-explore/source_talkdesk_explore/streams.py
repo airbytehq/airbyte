@@ -24,15 +24,19 @@ class GenerateReportStream(HttpStream):
 
     primary_key = None
 
-    def __init__(self, base_path, start_date, timezone, **kwargs):
+    def __init__(self, base_path, start_date, timezone, region, **kwargs):
         super().__init__(**kwargs)
         self.base_path = base_path
         self.start_date = start_date
         self.timezone = timezone
+        self.region = region
 
     @property
-    def url_base(self) -> str:
-        return "https://api.talkdeskapp.com/data/"
+    def url_base(self, **kwargs) -> str:
+        # Can we remove **kwargs here?
+        region_dict = {"US": ".com", "Europe": ".eu", "Canada": "ca.com"}
+        region_domain = region_dict.get(self.region)
+        return f"https://api.talkdeskapp{region_domain}/data/"
 
     @property
     def http_method(self) -> str:
@@ -72,14 +76,18 @@ class GenerateReportStream(HttpStream):
 class ReadReportStream(HttpStream):
     primary_key = None
 
-    def __init__(self, start_date, timezone, **kwargs):
+    def __init__(self, start_date, timezone, region, **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.timezone = timezone
+        self.region = region
 
     @property
-    def url_base(self) -> str:
-        return "https://api.talkdeskapp.com/data/"
+    def url_base(self, **kwargs) -> str:
+        # Can we remove **kwargs here?
+        region_dict = {"US": ".com", "Europe": ".eu", "Canada": "ca.com"}
+        region_domain = region_dict.get(self.region)
+        return f"https://api.talkdeskapp{region_domain}/data/"
 
     def path(self, **kwargs) -> str:
         latest_state = kwargs.get("stream_state").get(self.cursor_field, None)

@@ -23,6 +23,14 @@
         "default": "UTC",
         "order": 1
       },
+      "region": {
+        "type": "string",
+        "title": "REGION",
+        "description": "Region to use when generating reports. Only US, Canada and Europe are supported. Defaults to US region.",
+        "examples": ["US", "Europe"],
+        "default": "US",
+        "order": 2
+      },
       "auth_url": {
         "title": "AUTH URL",
         "type": "string",
@@ -30,13 +38,13 @@
         "examples": [
           "https://xxxxxx.talkdeskid.com/oauth/token?grant_type=client_credentials"
         ],
-        "order": 2
+        "order": 3
       },
       "api_key": {
         "title": "API KEY",
         "type": "string",
         "description": "Talkdesk API key.",
-        "order": 3
+        "order": 4
       }
     }
   }

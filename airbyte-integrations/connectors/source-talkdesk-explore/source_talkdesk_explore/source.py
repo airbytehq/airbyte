@@ -38,13 +38,14 @@ class SourceTalkdeskExplore(AbstractSource):
 
         start_date = config.get("start_date", None)
         timezone = config.get("timezone", None)
+        region = config.get("region", None)
 
         streams_ = [
-            Calls(start_date=start_date, timezone=timezone, authenticator=authenticator),
-            UserStatus(start_date=start_date, timezone=timezone, authenticator=authenticator),
-            StudioFlowExecution(start_date=start_date, timezone=timezone, authenticator=authenticator),
-            Contacts(start_date=start_date, timezone=timezone, authenticator=authenticator),
-            RingAttempts(start_date=start_date, timezone=timezone, authenticator=authenticator),
+            Calls(start_date=start_date, timezone=timezone, region=region, authenticator=authenticator),
+            UserStatus(start_date=start_date, timezone=timezone, region=region, authenticator=authenticator),
+            StudioFlowExecution(start_date=start_date, timezone=timezone, region=region, authenticator=authenticator),
+            Contacts(start_date=start_date, timezone=timezone, region=region, authenticator=authenticator),
+            RingAttempts(start_date=start_date, timezone=timezone, region=region, authenticator=authenticator),
         ]
 
         return streams_
