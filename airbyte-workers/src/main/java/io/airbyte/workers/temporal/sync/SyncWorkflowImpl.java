@@ -69,7 +69,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
             Boolean shouldRun;
             try {
               shouldRun = normalizationSummaryCheckActivity.shouldRunNormalization(Long.valueOf(jobRunConfig.getJobId()), jobRunConfig.getAttemptId(),
-                  Optional.of(syncOutput.getStandardSyncSummary().getTotalStats().getRecordsCommitted()));
+                  Optional.ofNullable(syncOutput.getStandardSyncSummary().getTotalStats().getRecordsCommitted()));
             } catch (final IOException e) {
               shouldRun = true;
             }
