@@ -51,7 +51,7 @@ class DockerProcessFactoryTest {
     LineGobbler.gobble(process.getInputStream(), out::append);
     LineGobbler.gobble(process.getErrorStream(), err::append);
 
-    WorkerUtils.gentleClose(new WorkerConfigs(new EnvConfigs()), process, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
     assertEquals(0, process.exitValue(),
         String.format("Error while checking for jq. STDOUT: %s STDERR: %s Please make sure jq is installed (used by testImageExists)", out, err));
@@ -135,7 +135,7 @@ class DockerProcessFactoryTest {
     LineGobbler.gobble(process.getInputStream(), out::append);
     LineGobbler.gobble(process.getErrorStream(), err::append);
 
-    WorkerUtils.gentleClose(new WorkerConfigs(new EnvConfigs()), process, 20, TimeUnit.SECONDS);
+    WorkerUtils.gentleClose(process, 20, TimeUnit.SECONDS);
 
     assertEquals(0, process.exitValue(), String.format("Process failed with stdout: %s and stderr: %s", out, err));
     assertEquals("ENV_VAR_1=ENV_VALUE_1", out.toString(), String.format("Output did not contain the expected string. stdout: %s", out));

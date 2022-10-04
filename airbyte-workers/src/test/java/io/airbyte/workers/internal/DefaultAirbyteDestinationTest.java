@@ -21,13 +21,11 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.TestConfigHelpers;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
@@ -76,7 +74,6 @@ class DefaultAirbyteDestinationTest {
     }
   }
 
-  private WorkerConfigs workerConfigs;
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
   private Process process;
@@ -85,7 +82,6 @@ class DefaultAirbyteDestinationTest {
 
   @BeforeEach
   void setup() throws IOException, WorkerException {
-    workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), JOB_ROOT_PREFIX);
 
     process = mock(Process.class);
@@ -123,7 +119,7 @@ class DefaultAirbyteDestinationTest {
   @SuppressWarnings("BusyWait")
   @Test
   void testSuccessfulLifecycle() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher, streamFactory);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
@@ -162,7 +158,7 @@ class DefaultAirbyteDestinationTest {
   @Test
   void testTaggedLogs() throws Exception {
 
-    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher, streamFactory);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
@@ -190,7 +186,7 @@ class DefaultAirbyteDestinationTest {
 
   @Test
   void testCloseNotifiesLifecycle() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     verify(outputStream, never()).close();
@@ -202,7 +198,7 @@ class DefaultAirbyteDestinationTest {
 
   @Test
   void testNonzeroExitCodeThrowsException() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     when(process.isAlive()).thenReturn(false);
@@ -212,7 +208,7 @@ class DefaultAirbyteDestinationTest {
 
   @Test
   void testGetExitValue() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     when(process.isAlive()).thenReturn(false);
