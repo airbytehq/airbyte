@@ -35,12 +35,22 @@ class GenesysStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
+        # FIXME: Remove this debug line on PR merge
+        # print(json_response)
         yield from json_response.get("entities", [])
 
 class Users(GenesysStream):
     primary_key = "id"
     def path(self, **kwargs) -> str:
         return "users"
+class Groups(GenesysStream):
+    primary_key = "id"
+    def path(self, **kwargs) -> str:
+        return "groups"
+class Locations(GenesysStream):
+    primary_key = "id"
+    def path(self, **kwargs) -> str:
+        return "locations"
 
 
 # # Basic incremental stream
@@ -172,5 +182,7 @@ class SourceGenesys(AbstractSource):
             "authenticator": TokenAuthenticator(response.json()["access_token"])
         }
         return [
-            Users(**args)
+            Users(**args),
+            Groups(**args),
+            Locations(**args)
         ]
