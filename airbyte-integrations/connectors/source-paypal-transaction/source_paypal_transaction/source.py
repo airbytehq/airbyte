@@ -442,9 +442,9 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
             "refresh_token": "",
         }
         # support old configs
-        if "client_id" and ("client_secret" in config or "secret" in config):
+        if "client_id" in config and ("client_secret" in config or "secret" in config):
             self.old_config = True
-            client_secret = config.get("client_secret", config["secret"])
+            client_secret = config.get("client_secret", config.get("secret"))
             self.auth_args.update(
                 **{"client_id": config["client_id"], "client_secret": client_secret, "refresh_token": config.get("refresh_token")}
             )
