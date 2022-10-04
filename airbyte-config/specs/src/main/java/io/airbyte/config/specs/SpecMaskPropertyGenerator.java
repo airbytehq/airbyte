@@ -5,6 +5,7 @@
 package io.airbyte.config.specs;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.constants.AirbyteSecretConstants;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -15,8 +16,6 @@ import java.util.Set;
  * marked as secret.
  */
 public class SpecMaskPropertyGenerator {
-
-  private static final String AIRBYTE_SECRET_KEY = "airbyte_secret";
 
   /**
    * Builds a set of property names from the provided connection spec properties object that are
@@ -41,8 +40,8 @@ public class SpecMaskPropertyGenerator {
          * see if any of those contain any secrets.
          */
         if (field.getValue().isObject()) {
-          if (field.getValue().has(AIRBYTE_SECRET_KEY)) {
-            if (field.getValue().get(AIRBYTE_SECRET_KEY).asBoolean()) {
+          if (field.getValue().has(AirbyteSecretConstants.AIRBYTE_SECRET_FIELD)) {
+            if (field.getValue().get(AirbyteSecretConstants.AIRBYTE_SECRET_FIELD).asBoolean()) {
               secretPropertyNames.add(field.getKey());
             }
           } else {

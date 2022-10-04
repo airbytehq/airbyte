@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.constants.AirbyteSecretConstants;
 import io.airbyte.commons.json.Jsons;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.message.Message;
@@ -43,8 +44,8 @@ class MaskedDataInterceptorTest {
     final LogEvent result = interceptor.rewrite(logEvent);
 
     final JsonNode json = Jsons.deserialize(result.getMessage().getFormattedMessage());
-    assertEquals(MaskedDataInterceptor.MASK, json.get(FOO).asText());
-    assertEquals(MaskedDataInterceptor.MASK, json.get(OTHER).get("bar").asText());
+    assertEquals(AirbyteSecretConstants.SECRETS_MASK, json.get(FOO).asText());
+    assertEquals(AirbyteSecretConstants.SECRETS_MASK, json.get(OTHER).get("bar").asText());
   }
 
   @Test
@@ -58,8 +59,8 @@ class MaskedDataInterceptorTest {
     final LogEvent result = interceptor.rewrite(logEvent);
 
     final JsonNode json = Jsons.deserialize(result.getMessage().getFormattedMessage());
-    assertEquals(MaskedDataInterceptor.MASK, json.get(FOO).asText());
-    assertEquals(MaskedDataInterceptor.MASK, json.get(OTHER).get("bar").asText());
+    assertEquals(AirbyteSecretConstants.SECRETS_MASK, json.get(FOO).asText());
+    assertEquals(AirbyteSecretConstants.SECRETS_MASK, json.get(OTHER).get("bar").asText());
   }
 
   @Test
@@ -74,8 +75,8 @@ class MaskedDataInterceptorTest {
     final LogEvent result = interceptor.rewrite(logEvent);
 
     final JsonNode json = Jsons.deserialize(result.getMessage().getFormattedMessage());
-    assertEquals(MaskedDataInterceptor.MASK, json.get(FOO).asText());
-    assertEquals(MaskedDataInterceptor.MASK, json.get(OTHER).get("bar").asText());
+    assertEquals(AirbyteSecretConstants.SECRETS_MASK, json.get(FOO).asText());
+    assertEquals(AirbyteSecretConstants.SECRETS_MASK, json.get(OTHER).get("bar").asText());
   }
 
   @Test
@@ -90,9 +91,9 @@ class MaskedDataInterceptorTest {
     final LogEvent result = interceptor.rewrite(logEvent);
 
     final JsonNode json = Jsons.deserialize(result.getMessage().getFormattedMessage());
-    assertNotEquals(MaskedDataInterceptor.MASK, json.get("prop1").asText());
-    assertNotEquals(MaskedDataInterceptor.MASK, json.get(OTHER).get("prop2").asText());
-    assertNotEquals(MaskedDataInterceptor.MASK, json.get(OTHER).get("prop3").asText());
+    assertNotEquals(AirbyteSecretConstants.SECRETS_MASK, json.get("prop1").asText());
+    assertNotEquals(AirbyteSecretConstants.SECRETS_MASK, json.get(OTHER).get("prop2").asText());
+    assertNotEquals(AirbyteSecretConstants.SECRETS_MASK, json.get(OTHER).get("prop3").asText());
   }
 
   @Test
@@ -106,7 +107,7 @@ class MaskedDataInterceptorTest {
     final MaskedDataInterceptor interceptor = MaskedDataInterceptor.createPolicy(TEST_SPEC_SECRET_MASK_YAML);
 
     final LogEvent result = interceptor.rewrite(logEvent);
-    assertFalse(result.getMessage().getFormattedMessage().contains(MaskedDataInterceptor.MASK));
+    assertFalse(result.getMessage().getFormattedMessage().contains(AirbyteSecretConstants.SECRETS_MASK));
     assertEquals(actualMessage, result.getMessage().getFormattedMessage());
   }
 

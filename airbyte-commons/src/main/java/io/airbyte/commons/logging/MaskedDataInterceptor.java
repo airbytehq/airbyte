@@ -5,6 +5,7 @@
 package io.airbyte.commons.logging;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.airbyte.commons.constants.AirbyteSecretConstants;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.yaml.Yamls;
 import java.nio.charset.Charset;
@@ -38,11 +39,6 @@ import org.apache.logging.log4j.status.StatusLogger;
 public class MaskedDataInterceptor implements RewritePolicy {
 
   protected static final Logger logger = StatusLogger.getLogger();
-
-  /**
-   * Mask string used as a replacement value for any sensitive properties found in the log message.
-   */
-  public static final String MASK = "********";
 
   /**
    * The pattern used to determine if a message contains sensitive data.
@@ -85,7 +81,7 @@ public class MaskedDataInterceptor implements RewritePolicy {
    */
   private String applyMask(final String message) {
     if (pattern.isPresent()) {
-      return message.replaceAll(pattern.get(), "\"$1\":\"" + MASK + "\"");
+      return message.replaceAll(pattern.get(), "\"$1\":\"" + AirbyteSecretConstants.SECRETS_MASK + "\"");
     } else {
       return message;
     }
