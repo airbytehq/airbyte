@@ -4,16 +4,19 @@
 
 
 import logging
-import os
 from typing import Any, List, Mapping, Optional, Tuple
 
-from airbyte_cdk.connector import _WriteConfigProtocol
+import pendulum
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 from .schemas import Profile
 from .streams import (
+    AttributionReportPerformanceAdgroup,
+    AttributionReportPerformanceCampaign,
+    AttributionReportPerformanceCreative,
+    AttributionReportProducts,
     Profiles,
     SponsoredBrandsAdGroups,
     SponsoredBrandsCampaigns,
@@ -36,16 +39,19 @@ from .streams import (
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
+CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
 class SourceAmazonAds(AbstractSource):
-    def configure(self: _WriteConfigProtocol, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        start_date = config.get("start_date")
+        if start_date:
+            config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
+        else:
+            config["start_date"] = None
         if not config.get("region"):
             source_spec = self.spec(logging.getLogger("airbyte"))
-            default_region = source_spec.connectionSpecification["properties"]["region"]["default"]
-            config["region"] = default_region
-        config_path = os.path.join(temp_dir, "config.json")
-        self.write_config(config, config_path)
+            config["region"] = source_spec.connectionSpecification["properties"]["region"]["default"]
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -54,6 +60,10 @@ class SourceAmazonAds(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        try:
+            config = self._validate_and_transform(config)
+        except Exception as e:
+            return False, str(e)
         # Check connection by sending list of profiles request. Its most simple
         # request, not require additional parameters and usually has few data
         # in response body.
@@ -67,6 +77,7 @@ class SourceAmazonAds(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return list of streams for current source
         """
+        config = self._validate_and_transform(config)
         auth = self._make_authenticator(config)
         stream_args = {"config": config, "authenticator": auth}
         # All data for individual Amazon Ads stream divided into sets of data for
@@ -95,6 +106,10 @@ class SourceAmazonAds(AbstractSource):
             SponsoredBrandsKeywords,
             SponsoredBrandsReportStream,
             SponsoredBrandsVideoReportStream,
+            AttributionReportPerformanceAdgroup,
+            AttributionReportPerformanceCampaign,
+            AttributionReportPerformanceCreative,
+            AttributionReportProducts,
         ]
         return [profiles_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
 

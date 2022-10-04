@@ -1,8 +1,8 @@
-# Google Analytics (v4)
+# Google Analytics 4 (GA4)
 
 This page guides you through the process of setting up the Google Analytics source connector.
 
-This connector supports [Google Analytics v4](https://developers.google.com/analytics/devguides/collection/ga4).
+This connector supports GA4 properties through the [Analytics Data API v1](https://developers.google.com/analytics/devguides/reporting/data/v1).
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ First, you need to select existing or create a new project in the Google Develop
 
 ### Add service account to the Google Analytics account
 
-Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API. You will need to grant [Read & Analyze permissions](https://support.google.com/analytics/answer/2884495).
+Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API. You will need to grant [Viewer permissions](https://support.google.com/analytics/answer/2884495).
 
 ### Enable the APIs
 

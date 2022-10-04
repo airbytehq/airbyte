@@ -55,7 +55,7 @@ class HttpRequester(Requester, JsonSchemaMixin):
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
         else:
             self._request_options_provider = self.request_options_provider
-        self.authenticator = self.authenticator or NoAuth()
+        self.authenticator = self.authenticator or NoAuth(options)
         if type(self.http_method) == str:
             self.http_method = HttpMethod[self.http_method]
         self._method = self.http_method

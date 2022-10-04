@@ -2,11 +2,11 @@ import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import BarChart from "components/BarChart";
-import ContentCard from "components/ContentCard";
+import { BarChart } from "components/ui/BarChart";
+import { Card } from "components/ui/Card";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useGetUsage } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useGetCloudWorkspaceUsage } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 
 import UsagePerConnectionTable from "./UsagePerConnectionTable";
 
@@ -16,7 +16,7 @@ export const ChartWrapper = styled.div`
   padding: 0 50px 24px 0;
 `;
 
-const CardBlock = styled(ContentCard)`
+const CardBlock = styled(Card)`
   margin: 10px 0 20px;
 `;
 
@@ -35,7 +35,7 @@ const CreditsUsage: React.FC = () => {
   const { formatMessage, formatDate } = useIntl();
 
   const { workspaceId } = useCurrentWorkspace();
-  const data = useGetUsage(workspaceId);
+  const data = useGetCloudWorkspaceUsage(workspaceId);
 
   const chartData = useMemo(
     () =>
@@ -51,7 +51,7 @@ const CreditsUsage: React.FC = () => {
 
   return (
     <>
-      <ContentCard title={<FormattedMessage id="credits.totalUsage" />} light>
+      <Card title={<FormattedMessage id="credits.totalUsage" />} lightPadding>
         <ChartWrapper>
           {data?.creditConsumptionByDay?.length ? (
             <BarChart
@@ -70,9 +70,9 @@ const CreditsUsage: React.FC = () => {
             </Empty>
           )}
         </ChartWrapper>
-      </ContentCard>
+      </Card>
 
-      <CardBlock title={<FormattedMessage id="credits.usagePerConnection" />} light>
+      <CardBlock title={<FormattedMessage id="credits.usagePerConnection" />} lightPadding>
         {data?.creditConsumptionByConnector?.length ? (
           <UsagePerConnectionTable creditConsumption={data.creditConsumptionByConnector} />
         ) : (

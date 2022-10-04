@@ -8,16 +8,16 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.temporal.TemporalUtils;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -36,17 +36,14 @@ import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
-import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.TemporalEventRunner;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.WebUrlHelper;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClient;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClientFactory;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
-import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.persistence.job.DefaultJobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WebUrlHelper;
+import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
+import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
+import io.airbyte.persistence.job.errorreporter.JobErrorReportingClientFactory;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
+import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
@@ -54,10 +51,14 @@ import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.DbMigrationHandler;
+import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
+import io.airbyte.server.scheduler.EventRunner;
+import io.airbyte.server.scheduler.TemporalEventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.airbyte.workers.temporal.ConnectionManagerUtils;
+import io.airbyte.workers.temporal.StreamResetRecordsHelper;
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -100,6 +101,7 @@ public class ServerApp implements ServerRunnable {
   }
 
   @Override
+  @SuppressWarnings("PMD.InvalidLogMessageFormat")
   public void start() throws Exception {
     final Server server = new Server(PORT);
 
@@ -138,7 +140,7 @@ public class ServerApp implements ServerRunnable {
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
       try {
         server.stop();
-      } catch (Exception ex) {
+      } catch (final Exception ex) {
         // silently fail at this stage because server is terminating.
         LOGGER.warn("exception: " + ex);
       }
@@ -163,7 +165,6 @@ public class ServerApp implements ServerRunnable {
   }
 
   public static ServerRunnable getServer(final ServerFactory apiFactory,
-                                         final ConfigPersistence seed,
                                          final Configs configs,
                                          final DSLContext configsDslContext,
                                          final Flyway configsFlyway,
@@ -178,14 +179,9 @@ public class ServerApp implements ServerRunnable {
     LOGGER.info("Checking databases..");
     assertDatabasesReady(configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway);
 
-    LOGGER.info("Creating Staged Resource folder...");
-    ConfigDumpImporter.initStagedResourceFolder();
-
     LOGGER.info("Creating config repository...");
     final Database configsDatabase = new Database(configsDslContext);
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .maskSecrets(!featureFlags.exposeSecretsInExport())
         .copySecrets(false)
         .build();
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configsDatabase, jsonSecretsProcessor);
@@ -223,14 +219,27 @@ public class ServerApp implements ServerRunnable {
             webUrlHelper,
             jobErrorReportingClient);
 
+    final TemporalUtils temporalUtils = new TemporalUtils(
+        configs.getTemporalCloudClientCert(),
+        configs.getTemporalCloudClientKey(),
+        configs.temporalCloudEnabled(),
+        configs.getTemporalCloudHost(),
+        configs.getTemporalCloudNamespace(),
+        configs.getTemporalHost(),
+        configs.getTemporalRetentionInDays());
+
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configsDatabase);
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
+    final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService();
+    final ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils();
+    final StreamResetRecordsHelper streamResetRecordsHelper = new StreamResetRecordsHelper(jobPersistence, streamResetPersistence);
 
     final TemporalClient temporalClient = new TemporalClient(
-        TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace()),
         configs.getWorkspaceRoot(),
+        TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace()),
         temporalService,
-        streamResetPersistence);
+        streamResetPersistence,
+        connectionManagerUtils,
+        streamResetRecordsHelper);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
@@ -254,7 +263,6 @@ public class ServerApp implements ServerRunnable {
         secretsRepositoryReader,
         secretsRepositoryWriter,
         jobPersistence,
-        seed,
         configsDatabase,
         jobsDatabase,
         trackingClient,
@@ -283,13 +291,14 @@ public class ServerApp implements ServerRunnable {
     final Set<UUID> connectionIds =
         configRepository.listStandardSyncs().stream()
             .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
-            .map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
+            .map(StandardSync::getConnectionId)
+            .collect(Collectors.toSet());
     eventRunner.migrateSyncIfNeeded(connectionIds);
     jobPersistence.setSchedulerMigrationDone();
     LOGGER.info("Done migrating to the new scheduler...");
   }
 
-  public static void main(final String[] args) throws Exception {
+  public static void main(final String[] args) {
     try {
       final Configs configs = new EnvConfigs();
 
@@ -310,10 +319,8 @@ public class ServerApp implements ServerRunnable {
             ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
         final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
             JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-        final ConfigPersistence yamlSeedConfigPersistence =
-            new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
 
-        getServer(new ServerFactory.Api(), yamlSeedConfigPersistence, configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway).start();
+        getServer(new ServerFactory.Api(), configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway).start();
       }
     } catch (final Throwable e) {
       LOGGER.error("Server failed", e);

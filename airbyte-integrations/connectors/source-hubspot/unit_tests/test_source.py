@@ -64,7 +64,7 @@ def test_check_connection_exception(config):
 def test_streams(config):
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 27
+    assert len(streams) == 26
 
 
 def test_check_credential_title_exception(config):
@@ -142,15 +142,11 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, 
     """
 
     # Mapping tipical response for mocker
-    responses = [
-        {
-            "json": {
-                "status": "error",
-                "message": f'This hapikey ({creds_with_wrong_permissions.get("api_key")}) does not have proper permissions! (requires any of [automation-access])',
-                "correlationId": "2fe0a9af-3609-45c9-a4d7-83a1774121aa",
-            }
-        }
-    ]
+    json = {
+        "status": "error",
+        "message": f'This hapikey ({creds_with_wrong_permissions.get("api_key")}) does not have proper permissions! (requires any of [automation-access])',
+        "correlationId": "2fe0a9af-3609-45c9-a4d7-83a1774121aa",
+    }
 
     # We expect something like this
     expected_warining_message = {
@@ -165,11 +161,12 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, 
     test_stream = Workflows(**common_params)
 
     # Mocking Request
-    requests_mock.register_uri("GET", test_stream.url, responses)
-    list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
+    requests_mock.register_uri("GET", test_stream.url, json=json, status_code=403)
+    records = list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
 
     # match logged expected logged warning message with output given from preudo-output
     assert expected_warining_message["log"]["message"] in caplog.text
+    assert not records
 
 
 class TestSplittingPropertiesFunctionality:
@@ -354,7 +351,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                 "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(100)],
                 "paging": {
                     "next": {
-                        "after": f"{x*100}",
+                        "after": f"{x * 100}",
                     }
                 },
             },
@@ -370,7 +367,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                     "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)],
                     "paging": {
                         "next": {
-                            "after": f"{x*100}",
+                            "after": f"{x * 100}",
                         }
                     },
                 },
@@ -399,6 +396,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
 
     # Create test_stream instance with some state
     test_stream = Companies(**common_params)
+    test_stream._init_sync = pendulum.parse("2022-02-24T16:43:11Z")
     test_stream.state = {"updatedAt": "2022-02-24T16:43:11Z"}
 
     # Mocking Request
@@ -412,7 +410,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
     assert len(records) == 11000
-    assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00Z"
+    assert test_stream.state["updatedAt"] == test_stream._init_sync.to_iso8601_string()
 
 
 def test_engagements_stream_pagination_works(requests_mock, common_params):
@@ -488,12 +486,13 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
-    assert test_stream.state["lastUpdated"] == 1641234595251
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
+    test_stream = Engagements(**common_params)
     records, _ = read_incremental(test_stream, {})
-    # The stream should handle pagination correctly and output 600 records.
+    # The stream should handle pagination correctly and output 250 records.
     assert len(records) == 250
-    assert test_stream.state["lastUpdated"] == 1641234595252
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
 
 def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, common_params, fake_properties_list):
@@ -517,10 +516,9 @@ def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, comm
     # Create test_stream instance with some state
     test_stream = Engagements(**common_params)
     test_stream.state = {"lastUpdated": 1641234595251}
-
     # Mocking Request
     requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", responses)
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     assert len(records) == 10000
-    assert test_stream.state["lastUpdated"] == +1641234595252
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)

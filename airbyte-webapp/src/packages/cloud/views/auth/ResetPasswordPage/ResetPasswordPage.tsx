@@ -3,9 +3,10 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { LoadingButton, LabeledInput, Link } from "components";
+import { LabeledInput, Link, Button } from "components";
 import HeadTitle from "components/HeadTitle";
 
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
@@ -22,6 +23,7 @@ const ResetPasswordPage: React.FC = () => {
   const { registerNotification } = useNotificationService();
   const { formatMessage } = useIntl();
 
+  useTrackPage(PageTrackingCodes.RESET_PASSWORD);
   return (
     <div>
       <HeadTitle titles={[{ id: "login.resetPassword" }]} />
@@ -73,9 +75,9 @@ const ResetPasswordPage: React.FC = () => {
               <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
+              <Button type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
                 <FormattedMessage id="login.resetPassword" />
-              </LoadingButton>
+              </Button>
             </BottomBlock>
           </Form>
         )}

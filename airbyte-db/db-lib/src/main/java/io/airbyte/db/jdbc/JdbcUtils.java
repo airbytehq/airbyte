@@ -41,7 +41,7 @@ public class JdbcUtils {
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String PASSWORD_KEY = "password";
   public static final String PORT_KEY = "port";
-  public static final String TCP_PORT_KEY = "tcp-port";
+
   public static final List<String> PORT_LIST_KEY = List.of("port");
   public static final String SCHEMA_KEY = "schema";
   // NOTE: this is the plural version of SCHEMA_KEY
@@ -52,6 +52,7 @@ public class JdbcUtils {
   public static final String USERNAME_KEY = "username";
   public static final String MODE_KEY = "mode";
   public static final String AMPERSAND = "&";
+  public static final String EQUALS = "=";
   public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
       BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
@@ -86,6 +87,7 @@ public class JdbcUtils {
     return parseJdbcParameters(jdbcPropertiesString, "&");
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString, final String delimiter) {
     final Map<String, String> parameters = new HashMap<>();
     if (!jdbcPropertiesString.isBlank()) {

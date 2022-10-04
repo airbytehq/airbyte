@@ -1,5 +1,49 @@
 # Changelog
 
+## 0.1.92
+- Low-code: Properly propagate $options to array items
+- Low-code: Log request and response when running check operation in debug mode
+
+## 0.1.91
+- Low-code: Rename LimitPaginator to DefaultPaginator and move page_size field to PaginationStrategy
+
+## 0.1.90
+- Fix error when TypeTransformer tries to warn about invalid transformations in arrays
+
+## 0.1.89
+- Fix: properly emit state when a stream has empty slices, provided by an iterator
+
+## 0.1.88
+- Bugfix: Evaluate `response.text` only in debug mode
+
+## 0.1.87
+- During incremental syncs allow for streams to emit state messages in the per-stream format
+
+## 0.1.86
+- TypeTransformer now converts simple types to array of simple types
+- TypeTransformer make warning message more informative
+
+## 0.1.85
+- Make TypeTransformer more robust to incorrect incoming records
+
+## 0.1.84
+- Emit legacy format when state is unspecified for read override connectors
+
+## 0.1.83
+- Fix per-stream to send legacy format for connectors that override read
+
+## 0.1.82
+- Freeze dataclasses-jsonschema to 2.15.1
+
+## 0.1.81
+- Fix regression in `_checkpoint_state` arg
+
+## Unreleased
+- Update Airbyte Protocol model to support protocol_version
+
+## 0.1.80
+- Add NoAuth to declarative registry and auth parse bug fix
+
 ## 0.1.79
 - Fix yaml schema parsing when running from docker container
 

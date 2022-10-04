@@ -81,14 +81,14 @@ VERY_NESTED_SCHEMA = {
             COMPLEX_SCHEMA,
             {"prop": 12, "number_prop": "aa12", "array": [12]},
             {"prop": "12", "number_prop": "aa12", "array": ["12"]},
-            "'aa12' is not of type 'number'",
+            "Failed to transform value 'aa12' of type 'string' to 'number', key path: '.number_prop'",
         ),
         # Field too_many_types have ambigious type, skip formatting
         (
             COMPLEX_SCHEMA,
             {"prop": 12, "too_many_types": 1212, "array": [12]},
             {"prop": "12", "too_many_types": 1212, "array": ["12"]},
-            "1212 is not of type 'boolean', 'null', 'string'",
+            "Failed to transform value 1212 of type 'integer' to '['boolean', 'null', 'string']', key path: '.too_many_types'",
         ),
         # Test null field
         (COMPLEX_SCHEMA, {"prop": None, "array": [12]}, {"prop": "None", "array": ["12"]}, None),
@@ -114,22 +114,58 @@ VERY_NESTED_SCHEMA = {
             # Array without items and value is not an array
             {"type": "object", "properties": {"value": {"type": "array"}}},
             {"value": "12"},
-            {"value": "12"},
-            "'12' is not of type 'array'",
+            {"value": ["12"]},
+            None,
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": "array"}}},
+            {"value": 12},
+            {"value": [12]},
+            None,
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": "array"}}},
+            {"value": None},
+            {"value": [None]},
+            None,
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": ["null", "array"]}}},
+            {"value": None},
+            {"value": None},
+            None,
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": ["string"]}}}},
+            {"value": 10},
+            {"value": ["10"]},
+            None,
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": ["object"]}}}},
+            {"value": "string"},
+            {"value": "string"},
+            "Failed to transform value 'string' of type 'string' to 'array', key path: '.value'",
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": ["string"]}}}},
+            {"value": {"key": "value"}},
+            {"value": {"key": "value"}},
+            "Failed to transform value {'key': 'value'} of type 'object' to 'array', key path: '.value'",
         ),
         (
             # Schema root object is not an object, no convertion should happen
             {"type": "integer"},
             {"value": "12"},
             {"value": "12"},
-            "{'value': '12'} is not of type 'integer'",
+            "Failed to transform value {'value': '12'} of type 'object' to 'integer', key path: '.'",
         ),
         (
             # More than one type except null, no conversion should happen
             {"type": "object", "properties": {"value": {"type": ["string", "boolean", "null"]}}},
             {"value": 12},
             {"value": 12},
-            "12 is not of type 'string', 'boolean', 'null'",
+            "Failed to transform value 12 of type 'integer' to '['string', 'boolean', 'null']', key path: '.value'",
         ),
         (
             # Oneof not suported, no conversion for one_of_value should happen
@@ -148,6 +184,24 @@ VERY_NESTED_SCHEMA = {
             {"cpc": "6.6666"},
             {"cpc": 6.6666},
             None,
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": "string"}}}},
+            {"value": {"key": "value"}},
+            {"value": {"key": "value"}},
+            "Failed to transform value {'key': 'value'} of type 'object' to 'array', key path: '.value'",
+        ),
+        (
+            {"type": "object", "properties": {"value1": {"type": "object", "properties": {"value2": {"type": "string"}}}}},
+            {"value1": "value2"},
+            {"value1": "value2"},
+            "Failed to transform value 'value2' of type 'string' to 'object', key path: '.value1'",
+        ),
+        (
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": "object"}}}},
+            {"value": ["one", "two"]},
+            {"value": ["one", "two"]},
+            "Failed to transform value 'one' of type 'string' to 'object', key path: '.value.0'",
         ),
     ],
 )

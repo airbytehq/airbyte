@@ -4,6 +4,7 @@
 
 from typing import Mapping, Type
 
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
@@ -19,7 +20,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import DefaultPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
@@ -53,9 +54,10 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "InterpolatedBoolean": InterpolatedBoolean,
     "InterpolatedString": InterpolatedString,
     "JsonSchema": JsonSchema,
-    "LimitPaginator": LimitPaginator,
+    "DefaultPaginator": DefaultPaginator,
     "ListStreamSlicer": ListStreamSlicer,
     "MinMaxDatetime": MinMaxDatetime,
+    "NoAuth": NoAuth,
     "NoPagination": NoPagination,
     "OAuthAuthenticator": DeclarativeOauth2Authenticator,
     "OffsetIncrement": OffsetIncrement,

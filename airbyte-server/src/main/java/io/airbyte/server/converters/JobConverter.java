@@ -16,6 +16,7 @@ import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobStatus;
@@ -36,17 +37,19 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.scheduler.client.SynchronousJobMetadata;
-import io.airbyte.scheduler.client.SynchronousResponse;
-import io.airbyte.scheduler.models.Attempt;
-import io.airbyte.scheduler.models.Job;
+import io.airbyte.persistence.job.models.Attempt;
+import io.airbyte.persistence.job.models.Job;
+import io.airbyte.server.scheduler.SynchronousJobMetadata;
+import io.airbyte.server.scheduler.SynchronousResponse;
+import io.airbyte.workers.helper.ProtocolConverters;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class JobConverter {
 
   private final WorkerEnvironment workerEnvironment;
@@ -61,6 +64,10 @@ public class JobConverter {
     return new JobInfoRead()
         .job(getJobWithAttemptsRead(job).getJob())
         .attempts(job.getAttempts().stream().map(this::getAttemptInfoRead).collect(Collectors.toList()));
+  }
+
+  public JobInfoLightRead getJobInfoLightRead(final Job job) {
+    return new JobInfoLightRead().job(getJobRead(job));
   }
 
   public static JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
@@ -78,19 +85,23 @@ public class JobConverter {
   }
 
   public static JobWithAttemptsRead getJobWithAttemptsRead(final Job job) {
+    return new JobWithAttemptsRead()
+        .job(getJobRead(job))
+        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).toList());
+  }
+
+  public static JobRead getJobRead(final Job job) {
     final String configId = job.getScope();
     final JobConfigType configType = Enums.convertTo(job.getConfigType(), JobConfigType.class);
 
-    return new JobWithAttemptsRead()
-        .job(new JobRead()
-            .id(job.getId())
-            .configId(configId)
-            .configType(configType)
-            .resetConfig(extractResetConfigIfReset(job).orElse(null))
-            .createdAt(job.getCreatedAtInSecond())
-            .updatedAt(job.getUpdatedAtInSecond())
-            .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
-        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).toList());
+    return new JobRead()
+        .id(job.getId())
+        .configId(configId)
+        .configType(configType)
+        .resetConfig(extractResetConfigIfReset(job).orElse(null))
+        .createdAt(job.getCreatedAtInSecond())
+        .updatedAt(job.getUpdatedAtInSecond())
+        .status(Enums.convertTo(job.getStatus(), JobStatus.class));
   }
 
   /**
@@ -167,7 +178,11 @@ public class JobConverter {
         .map(JobOutput::getSync)
         .map(StandardSyncOutput::getStandardSyncSummary)
         .map(StandardSyncSummary::getStreamStats)
-        .orElse(Collections.emptyList());
+        .orElse(null);
+
+    if (streamStats == null) {
+      return null;
+    }
 
     return streamStats.stream()
         .map(streamStat -> new AttemptStreamStats()

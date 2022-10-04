@@ -15,12 +15,12 @@ To set up Google Sheets as a source in Airbyte Cloud:
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **Google Sheets** from the **Source type** dropdown. 
-4. For Name, enter a name for the Google Sheets connector. 
+4. Enter a name for the Google Sheets connector. 
 5. Authenticate your Google account via OAuth or Service Account Key Authentication. 
     - **(Recommended)** To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
     - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission. If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
-6. For Spreadsheet Link, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**. 
-7. For Row Batch Size, define the number of records you want the Google API to fetch at a time. The default value is 200.
+6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**. 
+7. For **Row Batch Size**, define the number of records you want the Google API to fetch at a time. The default value is 200.
 
 ### For Airbyte Open Source
 
@@ -34,11 +34,11 @@ To set up Google Sheets as a source in Airbyte Open Source:
 
 2. Go to the Airbyte UI and in the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **Google Sheets** from the Source type dropdown. 
-4. For Name, enter a name for the Google Sheets connector. 
+4. Enter a name for the Google Sheets connector. 
 5. Authenticate your Google account via OAuth or Service Account Key Authentication:
     - To authenticate your Google account via OAuth, enter your Google application's [client ID, client secret, and refresh token](https://developers.google.com/identity/protocols/oauth2).
     - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission. If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
-6. For Spreadsheet Link, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.     
+6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.     
 
 ### Output schema
 
@@ -71,7 +71,9 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| 0.2.18  | 2022-08-12 | [15591](https://github.com/airbytehq/airbyte/pull/15591) | Clean instantiation of AirbyteStream                                          |
+| 0.2.20  | 2022-10-04 | [15591](https://github.com/airbytehq/airbyte/pull/15591) | Clean instantiation of AirbyteStream                                          |
+| 0.2.19  | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Use latest CDK.                                                               |
+| 0.2.18  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                 |
 | 0.2.17  | 2022-08-03 | [15107](https://github.com/airbytehq/airbyte/pull/15107) | Expose Row Batch Size in Connector Specification                              |
 | 0.2.16  | 2022-07-07 | [13729](https://github.com/airbytehq/airbyte/pull/13729) | Improve configuration field description                                       |
 | 0.2.15  | 2022-06-02 | [13446](https://github.com/airbytehq/airbyte/pull/13446) | Retry requests resulting in a server error                                    |

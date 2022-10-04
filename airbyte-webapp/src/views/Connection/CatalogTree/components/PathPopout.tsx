@@ -1,9 +1,12 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
-import { Popout } from "components";
+import { Popout } from "components/ui/Popout";
+import { Tooltip } from "components/ui/Tooltip";
 
 import { Path } from "core/domain/catalog";
 
+import styles from "./PathPopout.module.scss";
 import { PathPopoutButton } from "./PathPopoutButton";
 
 export function pathDisplayName(path: Path): string {
@@ -34,16 +37,17 @@ type PathPopoutProps = PathPopoutBaseProps & (PathMultiProps | PathProps);
 
 export const PathPopout: React.FC<PathPopoutProps> = (props) => {
   if (props.pathType === "sourceDefined") {
-    if (props.path) {
-      const text = props.path
-        ? props.isMulti
-          ? props.path.map(pathDisplayName).join(", ")
-          : pathDisplayName(props.path)
-        : "";
+    if (props.path && props.path.length > 0) {
+      const text = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
 
-      return <>{text}</>;
+      return (
+        <Tooltip placement="bottom-start" control={<div className={styles.text}>{text}</div>}>
+          {text}
+        </Tooltip>
+      );
     }
-    return <>{"<sourceDefined>"}</>;
+
+    return <FormattedMessage id="connection.catalogTree.sourceDefined" />;
   }
 
   const text = props.path
@@ -61,7 +65,6 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
     <Popout
       options={options}
       value={props.path}
-      // @ts-expect-error need to solve issue with typings
       isMulti={props.isMulti}
       isSearchable
       onChange={(options: PathPopoutProps["isMulti"] extends true ? Array<{ value: Path }> : { value: Path }) => {
