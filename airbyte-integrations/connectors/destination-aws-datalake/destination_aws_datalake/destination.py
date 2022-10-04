@@ -18,6 +18,8 @@ from .stream_writer import StreamWriter
 
 logger = logging.getLogger("airbyte")
 
+# Flush records every 25000 records to limit memory consumption
+RECORD_FLUSH_INTERVAL = 25000
 
 class DestinationAwsDatalake(Destination):
     def _flush_streams(self, streams: Dict[str, StreamWriter]) -> None:
@@ -64,6 +66,14 @@ class DestinationAwsDatalake(Destination):
                     for stream in streams:
                         streams[stream].reset()
 
+                # Flush records when state is received
+                if message.state.stream:
+                    if message.state.stream.stream_state and hasattr(message.state.stream.stream_state, 'stream_name'):
+                        stream_name = message.state.stream.stream_state.stream_name
+                        if stream_name in streams:
+                            logger.info(f"Got state message from source: flushing records for {stream_name}")
+                            streams[stream_name].flush(force_append=True)
+
                 yield message
 
             elif message.type == Type.RECORD:
@@ -71,9 +81,16 @@ class DestinationAwsDatalake(Destination):
                 stream = message.record.stream
                 streams[stream].append_message(data)
 
+                # Flush records every RECORD_FLUSH_INTERVAL records to limit memory consumption
+                # Records will either get flushed when a state message is received or when hitting the RECORD_FLUSH_INTERVAL
+                if len(streams[stream]._messages) > RECORD_FLUSH_INTERVAL:
+                    logger.debug(f"Reached size limit: flushing records for {stream}")
+                    streams[stream].flush(force_append=True)
+
             else:
                 logger.info(f"Unhandled message type {message.type}: {message}")
 
+        # Flush any remaining records
         self._flush_streams(streams)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:

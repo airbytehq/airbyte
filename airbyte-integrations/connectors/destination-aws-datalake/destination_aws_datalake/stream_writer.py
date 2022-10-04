@@ -89,7 +89,7 @@ class StreamWriter:
         if not success:
             raise Exception(f"Failed to reset table {self._database}:{self._table}")
 
-    def flush(self):
+    def flush(self, force_append=False):
         logger.debug(f"Flushing {len(self._messages)} messages to table {self._database}:{self._table}")
 
         df = pd.DataFrame(self._messages)
@@ -108,7 +108,7 @@ class StreamWriter:
                     fields = self._add_partition_column(col, df)
                     self._partition_fields.extend(fields)
 
-        if self._sync_mode == DestinationSyncMode.overwrite:
+        if self._sync_mode == DestinationSyncMode.overwrite and not force_append:
             logger.debug(f"Overwriting {len(df)} records to {self._database}:{self._table}")
             self._aws_handler.write(
                 df,
@@ -118,7 +118,7 @@ class StreamWriter:
                 self._partition_fields,
             )
 
-        elif self._sync_mode == DestinationSyncMode.append:
+        elif self._sync_mode == DestinationSyncMode.append or force_append:
             logger.debug(f"Appending {len(df)} records to {self._database}:{self._table}")
             self._aws_handler.append(
                 df,
@@ -132,4 +132,5 @@ class StreamWriter:
             self._messages = []
             raise Exception(f"Unsupported sync mode: {self._sync_mode}")
 
+        del df
         self._messages.clear()
