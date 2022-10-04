@@ -163,6 +163,14 @@ module.exports = {
         id: 'connector-development/README',
       },      
       items: [
+        {
+          type: 'category',
+          label: 'Creating your first HTTP API Source',
+          items: [
+            'connector-development/config-based/index',
+            'connector-development/config-based/tutorial/getting-started'
+          ]
+        },
         'connector-development/tutorials/cdk-speedrun',
         {
           type: 'category',
@@ -274,7 +282,6 @@ module.exports = {
         'understanding-airbyte/namespaces',
         'understanding-airbyte/supported-data-types',
         'understanding-airbyte/json-avro-conversion',
-        'understanding-airbyte/glossary',
       ]
     },
     {
