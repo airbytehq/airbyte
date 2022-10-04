@@ -15,7 +15,6 @@ import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.RecordSchemaValidator;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -40,16 +39,13 @@ import lombok.extern.slf4j.Slf4j;
 public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncInput> {
 
   private final ProcessFactory processFactory;
-  private final WorkerConfigs workerConfigs;
   private final Configs configs;
   private final FeatureFlags featureFlags;
 
   public ReplicationJobOrchestrator(final Configs configs,
-                                    final WorkerConfigs workerConfigs,
                                     final ProcessFactory processFactory,
                                     final FeatureFlags featureFlags) {
     this.configs = configs;
-    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;
   }
@@ -98,7 +94,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final AirbyteSource airbyteSource =
         WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage()) ? new EmptyAirbyteSource(
             featureFlags.useStreamCapableState())
-            : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
+            : new DefaultAirbyteSource(sourceLauncher);
 
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
     final MetricClient metricClient = MetricClientFactory.getMetricClient();
@@ -110,7 +106,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Math.toIntExact(jobRunConfig.getAttemptId()),
         airbyteSource,
         new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-        new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
+        new DefaultAirbyteDestination(destinationLauncher),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter);
