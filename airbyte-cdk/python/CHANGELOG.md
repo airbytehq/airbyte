@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.93
+- Make `supported_sync_modes` a required `AirbyteStream` property
+
 ## 0.1.92
 - Low-code: Properly propagate $options to array items
 - Low-code: Log request and response when running check operation in debug mode
@@ -58,9 +61,6 @@
 
 ## 0.1.75
 - Improve `filter_secrets` skip empty secret
-
-## 0.1.74
-- Make `supported_sync_modes` a required `AirbyteStream` property
 
 ## 0.1.74
 - Replace JelloRecordExtractor with DpathRecordExtractor
