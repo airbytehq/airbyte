@@ -121,6 +121,37 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
+  it("creates a connection, then edits the schedule type", () => {
+      const sourceName = appendRandomString("Test connection source cypress");
+      const destName = appendRandomString("Test connection destination cypress")
+  
+      createTestConnection(sourceName, destName);
+  
+      cy.get("div").contains(sourceName).should("exist");
+      cy.get("div").contains(destName).should("exist");
+  
+      goToSourcePage();
+      openSourceDestinationFromGrid(sourceName);
+      openSourceDestinationFromGrid("Test update connection Local JSON destination cypress");
+  
+      goToReplicationTab();
+
+      selectSchedule("Cron");
+      submitButtonClick();
+      checkSuccessResult();
+
+      selectSchedule("Manual");
+      submitButtonClick();
+      checkSuccessResult();
+
+      selectSchedule("Every hour");
+      submitButtonClick();
+      checkSuccessResult();
+
+      deleteSource(sourceName);
+      deleteDestination(destName);
+  })
+
   it("Delete connection", () => {
     const sourceName = "Test delete connection source cypress";
     const destName = "Test delete connection destination cypress";
