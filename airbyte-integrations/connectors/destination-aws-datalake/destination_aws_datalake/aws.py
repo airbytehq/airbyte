@@ -10,6 +10,8 @@ import pyarrow as pa
 import awswrangler as wr
 
 from retrying import retry
+from decimal import Decimal
+from awswrangler import _data_types
 from typing import Dict, List, Optional
 from botocore.exceptions import ClientError
 from airbyte_cdk.destinations import Destination
@@ -17,6 +19,47 @@ from airbyte_cdk.destinations import Destination
 from .config_reader import CompressionCodec, CredentialsType, ConnectorConfig, OutputFormat
 
 logger = logging.getLogger("airbyte")
+
+
+def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_type: str) -> pd.DataFrame:
+    if desired_type == "datetime64":
+        df[col] = pd.to_datetime(df[col])
+    elif desired_type == "date":
+        df[col] = df[col].apply(lambda x: _data_types._cast2date(value=x)).replace(to_replace={pd.NaT: None})
+    elif desired_type == "bytes":
+        df[col] = df[col].astype("string").str.encode(encoding="utf-8").replace(to_replace={pd.NA: None})
+    elif desired_type == "decimal":
+        # First cast to string
+        df = _cast_pandas_column(df=df, col=col, current_type=current_type, desired_type="string")
+        # Then cast to decimal
+        df[col] = df[col].apply(lambda x: Decimal(str(x)) if str(x) not in ("", "none", "None", " ", "<NA>") else None)
+    elif desired_type.lower() in ["float64", "int64"]:
+        df[col] = df[col].fillna("")
+        df[col] = pd.to_numeric(df[col])
+    elif desired_type in ["boolean", "bool"]:
+        df[col] = df[col].astype(bool)
+    else:
+        try:
+            df[col] = df[col].astype(desired_type)
+        except (TypeError, ValueError) as ex:
+            if "object cannot be converted to an IntegerDtype" not in str(ex):
+                raise ex
+            logger.warn(
+                "Object cannot be converted to an IntegerDtype. Integer columns in Python cannot contain "
+                "missing values. If your input data contains missing values, it will be encoded as floats"
+                "which may cause precision loss.",
+                UserWarning,
+            )
+            df[col] = df[col].apply(lambda x: int(x) if str(x) not in ("", "none", "None", " ", "<NA>") else None).astype(desired_type)
+    return df
+
+
+# Overwrite to fix type conversion issues from athena to pandas
+# These happen when appending data to an existing table. awswrangler
+# tries to cast the data types to the existing table schema, examples include:
+# Fixes: ValueError: could not convert string to float: ''
+# Fixes: TypeError: Need to pass bool-like values
+_data_types._cast_pandas_column = _cast_pandas_column
 
 
 class AwsHandler:
