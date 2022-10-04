@@ -18,7 +18,6 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-persistence:job-persistence')
-    implementation project(':airbyte-workers')
     implementation project(':airbyte-metrics:metrics-lib')
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'

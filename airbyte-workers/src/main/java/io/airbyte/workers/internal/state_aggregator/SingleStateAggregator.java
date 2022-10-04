@@ -20,7 +20,7 @@ class SingleStateAggregator implements StateAggregator {
   }
 
   @Override
-  public State getAggregated() {
+  public State getAggregaasdasdasted() {
     if (state.getType() == null || state.getType() == AirbyteStateType.LEGACY) {
       return new State().withState(state.getData());
     } else {
