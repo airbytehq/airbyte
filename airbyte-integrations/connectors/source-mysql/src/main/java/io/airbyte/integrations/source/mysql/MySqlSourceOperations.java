@@ -30,6 +30,7 @@ import static com.mysql.cj.MysqlType.TINYINT_UNSIGNED;
 import static com.mysql.cj.MysqlType.TINYTEXT;
 import static com.mysql.cj.MysqlType.VARCHAR;
 import static com.mysql.cj.MysqlType.YEAR;
+import static io.airbyte.db.DataTypeUtils.TIME_FORMATTER;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
@@ -43,6 +44,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mysql.cj.MysqlType;
 import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import com.mysql.cj.result.Field;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
@@ -56,6 +58,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,10 +66,37 @@ import org.slf4j.LoggerFactory;
 public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperations<MysqlType> implements SourceOperations<ResultSet, MysqlType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSourceOperations.class);
-  private static Set<MysqlType> ALLOWED_CURSOR_TYPES = Set.of(TINYINT, TINYINT_UNSIGNED, SMALLINT,
+  private static final Set<MysqlType> ALLOWED_CURSOR_TYPES = Set.of(TINYINT, TINYINT_UNSIGNED, SMALLINT,
       SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED,
       FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP,
       TIME, YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
+
+  @Override
+  public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
+    // the first call communicates with the database. after that the result is cached.
+    final java.sql.ResultSetMetaData metadata = queryContext.getMetaData();
+    final int columnCount = metadata.getColumnCount();
+    final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+
+    for (int i = 1; i <= columnCount; i++) {
+      final String columnType = metadata.getColumnTypeName(i);
+
+      if (columnType.equalsIgnoreCase(TIME.getName())) {
+        // getObject will fail when it tries to parse time with negative value
+        queryContext.getString(i);
+      } else {
+        queryContext.getObject(i);
+      }
+      if (queryContext.wasNull()) {
+        continue;
+      }
+
+      // convert to java types that will convert into reasonable json.
+      setJsonField(queryContext, i, jsonNode);
+    }
+
+    return jsonNode;
+  }
 
   /**
    * @param colIndex 1-based column index.
@@ -218,7 +248,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
 
   @Override
   protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
+    node.put(columnName, convertToTime(resultSet.getString(index)));
   }
 
   @Override
@@ -291,6 +321,11 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       // https://github.com/airbytehq/airbyte/pull/15504
       super.setTime(preparedStatement, parameterIndex, value);
     }
+  }
+
+  private String convertToTime(String time) {
+    time = time.startsWith("-") ? time.substring(1) : time;
+    return LocalTime.parse(time).format(TIME_FORMATTER);
   }
 
 }
