@@ -27,7 +27,8 @@
         "type": "string",
         "title": "REGION",
         "description": "Region to use when generating reports. Only US, Canada and Europe are supported. Defaults to US region.",
-        "examples": ["US", "Europe"],
+        "examples": ["US", "Canada", "Europe" ],
+        "pattern": "^(US|Canada|Europe)$",
         "default": "US",
         "order": 2
       },
