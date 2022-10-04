@@ -61,59 +61,77 @@ components:
     StreamRead:
       type: object
       required:
-        - results
+        - slices
       properties:
-        results:
+        slices:
           type: array
-          description: The RECORD and STATE AirbyteMessages coming from the read operation
-          items:
-            type: string
-        logs:
-          type: array
-          description: The LOG AirbyteMessages coming from the read operation
-          items:
-            type: string
-        httpRequests:
-          type: array
-          description: HTTP requests sent to the source API, and their responses
+          description: The stream slices returned from the read command
           items:
             type: object
             required:
-              - request
-              - response
+              - sliceId
+              - pages
             properties:
-              request:
-                type: object
-                description: The HTTP request sent to the source API
-                required:
-                  - url
-                  - headers
-                properties:
-                  url:
-                    type: string
-                    description: URL that the request was sent to
-                  body:
-                    type: object
-                    description: The body of the HTTP request, if present
-                  headers:
-                    type: object
-                    description: The headers of the HTTP request
-              response:
-                type: object
-                description: The response from the source API
-                required:
-                  - status
-                  - headers
-                properties:
-                  status:
-                    type: integer
-                    description: The status of the response
-                  body:
-                    type: object
-                    description: The body of the HTTP response, if present
-                  headers:
-                    type: object
-                    description: The headers of the HTTP response
+              sliceId:
+                type: string
+                description: String identifying the current slice
+              pages:
+                type: array
+                description: The pages returned from the read command
+                items:
+                  type: object
+                  required:
+                    - pageId
+                    - results
+                    - logs
+                    - request
+                    - response
+                  properties:
+                    pageId:
+                      type: string
+                      description: String identifying the current page
+                    results:
+                      type: array
+                      description: The RECORD and STATE AirbyteMessages coming from the read operation for this page
+                      items:
+                        type: string
+                    logs:
+                      type: array
+                      description: The LOG AirbyteMessages coming from the read operation for this page
+                      items:
+                        type: string
+                    request:
+                      type: object
+                      description: The HTTP request sent to the source API for this page
+                      required:
+                        - url
+                        - headers
+                      properties:
+                        url:
+                          type: string
+                          description: URL that the request was sent to
+                        body:
+                          type: object
+                          description: The body of the HTTP request, if present
+                        headers:
+                          type: object
+                          description: The headers of the HTTP request
+                    response:
+                      type: object
+                      description: The response from the source API for this page
+                      required:
+                        - status
+                        - headers
+                      properties:
+                        status:
+                          type: integer
+                          description: The status of the response
+                        body:
+                          type: object
+                          description: The body of the HTTP response, if present
+                        headers:
+                          type: object
+                          description: The headers of the HTTP response
     StreamReadRequestBody:
       type: object
       required:
@@ -126,6 +144,17 @@ components:
         stream:
           type: string
           description: Name of the stream to read
+        numSlices:
+          type: integer
+          description: Number of stream slices to read from the source
+          default: 1
+        numPages:
+          type: integer
+          description: Number of pages to read from the source
+          default: 1
+        state:
+          type: object
+          description: State blob to use for incremental streams
     ConnectorDefinitionBody:
       $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
     StreamsListRequestBody:
