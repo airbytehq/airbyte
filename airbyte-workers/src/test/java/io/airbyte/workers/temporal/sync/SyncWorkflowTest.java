@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
@@ -23,12 +24,12 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.TestConfigHelpers;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
@@ -49,6 +50,7 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.UnusedPrivateMethod"})
@@ -89,7 +91,9 @@ class SyncWorkflowTest {
   private NormalizationInput normalizationInput;
   private OperatorDbtInput operatorDbtInput;
   private StandardSyncOutput replicationSuccessOutput;
+  private StandardSyncOutput replicationFailOutput;
   private StandardSyncSummary standardSyncSummary;
+  private StandardSyncSummary failedSyncSummary;
   private SyncStats syncStats;
   private NormalizationSummary normalizationSummary;
   private ActivityOptions longActivityOptions;
@@ -108,7 +112,10 @@ class SyncWorkflowTest {
 
     syncStats = new SyncStats().withRecordsCommitted(10L);
     standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
+    failedSyncSummary = new StandardSyncSummary().withStatus(ReplicationStatus.FAILED).withTotalStats(new SyncStats().withRecordsEmitted(0L));
     replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog()).withStandardSyncSummary(standardSyncSummary);
+    replicationFailOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog()).withStandardSyncSummary(failedSyncSummary);
+
     normalizationSummary = new NormalizationSummary();
 
     normalizationInput = new NormalizationInput()
@@ -218,6 +225,30 @@ class SyncWorkflowTest {
   }
 
   @Test
+  void testReplicationFailedGracefully() {
+    doReturn(replicationFailOutput).when(replicationActivity).replicate(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        syncInput);
+
+    doReturn(normalizationSummary).when(normalizationActivity).normalize(
+        JOB_RUN_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        normalizationInput);
+
+    final StandardSyncOutput actualOutput = execute();
+
+    verifyReplication(replicationActivity, syncInput);
+    verifyPersistState(persistStateActivity, sync, replicationFailOutput, syncInput.getCatalog());
+    verifyNormalize(normalizationActivity, normalizationInput);
+    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
+        operatorDbtInput);
+    assertEquals(replicationFailOutput.withNormalizationSummary(normalizationSummary),
+        actualOutput);
+  }
+
+  @Test
   void testNormalizationFailure() {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
@@ -282,6 +313,7 @@ class SyncWorkflowTest {
   }
 
   @Test
+  @Disabled("This behavior has been disabled temporarily (OC Issue #741)")
   void testSkipNormalization() throws IOException {
     final SyncStats syncStats = new SyncStats().withRecordsCommitted(0L);
     final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);

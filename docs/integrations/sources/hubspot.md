@@ -7,7 +7,7 @@ This page guides you through setting up the HubSpot source connector.
 You can use OAuth, API key, or Private App to authenticate your HubSpot account. If you choose to use OAuth or Private App, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
 
 | Stream                      | Required Scope                                                                   |
-|:----------------------------|:---------------------------------------------------------------------------------|
+| :-------------------------- | :------------------------------------------------------------------------------- |
 | `campaigns`                 | `content`                                                                        |
 | `companies`                 | `contacts`                                                                       |
 | `contact_lists`             | `contacts`                                                                       |
@@ -132,12 +132,14 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.2   | 2022-10-03 | [16914](https://github.com/airbytehq/airbyte/pull/16914) | Fix 403 forbidden error validation                                                                                                             |
+| 0.2.1   | 2022-09-26 | [17120](https://github.com/airbytehq/airbyte/pull/17120) | Migrate to per-stream state.                                                                                                                   |
 | 0.2.0   | 2022-09-13 | [16632](https://github.com/airbytehq/airbyte/pull/16632) | Remove Feedback Submissions stream as the one using unstable (beta) API.                                                                       |
 | 0.1.83  | 2022-09-01 | [16214](https://github.com/airbytehq/airbyte/pull/16214) | Update Tickets, fix missing properties and change how state is updated.                                                                        |
-| 0.1.82  | 2022-08-18 | [15110](https://github.com/airbytehq/airbyte/pull/15110) | Check if it has a state on search streams before first sync                                                                                    | 
+| 0.1.82  | 2022-08-18 | [15110](https://github.com/airbytehq/airbyte/pull/15110) | Check if it has a state on search streams before first sync                                                                                    |
 | 0.1.81  | 2022-08-05 | [15354](https://github.com/airbytehq/airbyte/pull/15354) | Fix `Deals` stream schema                                                                                                                      |
 | 0.1.80  | 2022-08-01 | [15156](https://github.com/airbytehq/airbyte/pull/15156) | Fix 401 error while retrieving associations using OAuth                                                                                        |
-| 0.1.79  | 2022-07-28 | [15144](https://github.com/airbytehq/airbyte/pull/15144) | Revert v0.1.78 due to permission issues                                                                                                        | 
+| 0.1.79  | 2022-07-28 | [15144](https://github.com/airbytehq/airbyte/pull/15144) | Revert v0.1.78 due to permission issues                                                                                                        |
 | 0.1.78  | 2022-07-28 | [15099](https://github.com/airbytehq/airbyte/pull/15099) | Fix to fetch associations when using incremental mode                                                                                          |
 | 0.1.77  | 2022-07-26 | [15035](https://github.com/airbytehq/airbyte/pull/15035) | Make PropertyHistory stream read historic data not limited to 30 days                                                                          |
 | 0.1.76  | 2022-07-25 | [14999](https://github.com/airbytehq/airbyte/pull/14999) | Partially revert changes made in v0.1.75                                                                                                       |
@@ -145,7 +147,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 | 0.1.74  | 2022-07-25 | [14412](https://github.com/airbytehq/airbyte/pull/14412) | Add private app authentication                                                                                                                 |
 | 0.1.73  | 2022-07-13 | [14666](https://github.com/airbytehq/airbyte/pull/14666) | Decrease number of http requests made, disable Incremental mode for PropertyHistory stream                                                     |
 | 0.1.72  | 2022-06-24 | [14054](https://github.com/airbytehq/airbyte/pull/14054) | Extended error logging                                                                                                                         |
-| 0.1.71  | 2022-06-24 | [14102](https://github.com/airbytehq/airbyte/pull/14102) | Removed legacy `AirbyteSentry` dependency from the code                                                                                        | 
+| 0.1.71  | 2022-06-24 | [14102](https://github.com/airbytehq/airbyte/pull/14102) | Removed legacy `AirbyteSentry` dependency from the code                                                                                        |
 | 0.1.70  | 2022-06-16 | [13837](https://github.com/airbytehq/airbyte/pull/13837) | Fix the missing data in CRM streams issue                                                                                                      |
 | 0.1.69  | 2022-06-10 | [13691](https://github.com/airbytehq/airbyte/pull/13691) | Fix the `URI Too Long` issue                                                                                                                   |
 | 0.1.68  | 2022-06-08 | [13596](https://github.com/airbytehq/airbyte/pull/13596) | Fix for the `property_history` which did not emit records                                                                                      |

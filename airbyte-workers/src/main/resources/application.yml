@@ -82,10 +82,9 @@ airbyte:
         value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
       host: ${INTERNAL_API_HOST}
   local:
-    docker-mount: ${LOCAL_DOCKER_MOUNT}
+    docker-mount: ${LOCAL_DOCKER_MOUNT:}
     root: ${LOCAL_ROOT}
   worker:
-    env: ${WORKER_ENVIRONMENT:DOCKER}
     check:
       enabled: ${SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS:true}
       kube:
@@ -149,7 +148,6 @@ airbyte:
           memory:
             limit: ${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT:}
             request: ${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST:}
-    plane: ${WORKER_PLANE:CONTROL_PLANE}
     replication:
       orchestrator:
         cpu:

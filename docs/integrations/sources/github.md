@@ -47,13 +47,13 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 The GitHub source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
+| Feature                       | Supported?  |
+| :---------------------------- | :---------- |
+| Full Refresh Sync             | Yes         |
+| Incremental - Append Sync     | Yes         |
 | Replicate Incremental Deletes | Coming soon |
-| SSL connection | Yes |
-| Namespaces | No |
+| SSL connection                | Yes         |
+| Namespaces                    | No          |
 
 ## Supported Streams
 
@@ -146,7 +146,10 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
-|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :---------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0.3.4   | 2022-10-04 | [17555](https://github.com/airbytehq/airbyte/pull/17555)                                                          | Skip repository if got HTTP 500 for WorkflowRuns stream                                                                                                             |
+| 0.3.3   | 2022-09-28 | [17287](https://github.com/airbytehq/airbyte/pull/17287)                                                          | Fix problem with "null" `cursor_field` for WorkflowJobs stream                                                                                                      |
+| 0.3.2   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304)                                                          | Migrate to per-stream state.                                                                                                                                        |
 | 0.3.1   | 2022-09-21 | [16947](https://github.com/airbytehq/airbyte/pull/16947)                                                          | Improve error logging when handling HTTP 500 error                                                                                                                  |
 | 0.3.0   | 2022-09-09 | [16534](https://github.com/airbytehq/airbyte/pull/16534)                                                          | Add new stream `WorkflowJobs`                                                                                                                                       |
 | 0.2.46  | 2022-08-17 | [15730](https://github.com/airbytehq/airbyte/pull/15730)                                                          | Validate input organizations and repositories                                                                                                                       |

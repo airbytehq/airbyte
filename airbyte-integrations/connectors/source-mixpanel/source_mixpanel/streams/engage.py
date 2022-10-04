@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
@@ -165,6 +166,7 @@ class Engage(IncrementalMixpanelStream):
             if not item_cursor or not state_cursor or item_cursor >= state_cursor:
                 yield item
 
+    @cache
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
