@@ -38,6 +38,8 @@ class CatalogHelpersTest {
   private static final String SOME_ARRAY = "someArray";
   private static final String PROPERTIES = "properties";
   private static final String USERS = "users";
+  private static final String DATE = "date";
+  private static final String SALES = "sales";
   private static final String COMPANIES_VALID = "companies_schema.json";
   private static final String COMPANIES_INVALID = "companies_schema_invalid.json";
 
@@ -96,7 +98,7 @@ class CatalogHelpersTest {
     final JsonNode node = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
     final Set<String> actualFieldNames = CatalogHelpers.getAllFieldNames(node);
     final List<String> expectedFieldNames =
-        List.of(CAD, "DKK", "HKD", "HUF", "ISK", "PHP", "date", "nestedkey", "somekey", "something", "something2", "文", SOME_ARRAY, ITEMS,
+        List.of("id", CAD, "DKK", "HKD", "HUF", "ISK", "PHP", DATE, "nestedkey", "somekey", "something", "something2", "文", SOME_ARRAY, ITEMS,
             "oldName");
 
     // sort so that the diff is easier to read.
@@ -112,16 +114,16 @@ class CatalogHelpersTest {
         new AirbyteStream().withName("accounts").withJsonSchema(Jsons.emptyObject())));
     final AirbyteCatalog catalog2 = new AirbyteCatalog().withStreams(List.of(
         new AirbyteStream().withName(USERS).withJsonSchema(schema2),
-        new AirbyteStream().withName("sales").withJsonSchema(Jsons.emptyObject())));
+        new AirbyteStream().withName(SALES).withJsonSchema(Jsons.emptyObject())));
 
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(USERS).withJsonSchema(schema2)).withSyncMode(SyncMode.FULL_REFRESH),
-        new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("sales").withJsonSchema(Jsons.emptyObject()))
+        new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(SALES).withJsonSchema(Jsons.emptyObject()))
             .withSyncMode(SyncMode.FULL_REFRESH)));
 
     final Set<StreamTransform> actualDiff = CatalogHelpers.getCatalogDiff(catalog1, catalog2, configuredAirbyteCatalog);
     final List<StreamTransform> expectedDiff = Stream.of(
-        StreamTransform.createAddStreamTransform(new StreamDescriptor().withName("sales")),
+        StreamTransform.createAddStreamTransform(new StreamDescriptor().withName(SALES)),
         StreamTransform.createRemoveStreamTransform(new StreamDescriptor().withName("accounts")),
         StreamTransform.createUpdateStreamTransform(new StreamDescriptor().withName(USERS), new UpdateStreamTransform(Set.of(
             FieldTransform.createAddFieldTransform(List.of("COD"), schema2.get(PROPERTIES).get("COD")),
@@ -202,7 +204,7 @@ class CatalogHelpersTest {
 
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(USERS).withJsonSchema(schema2)).withSyncMode(SyncMode.FULL_REFRESH),
-        new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("sales").withJsonSchema(Jsons.emptyObject()))
+        new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(SALES).withJsonSchema(Jsons.emptyObject()))
             .withSyncMode(SyncMode.FULL_REFRESH)));
 
     final Set<StreamTransform> actualDiff = CatalogHelpers.getCatalogDiff(catalog1, catalog2, configuredAirbyteCatalog);
@@ -224,7 +226,7 @@ class CatalogHelpersTest {
 
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(USERS).withJsonSchema(schema2)).withSyncMode(SyncMode.FULL_REFRESH),
-        new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("sales").withJsonSchema(Jsons.emptyObject()))
+        new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(SALES).withJsonSchema(Jsons.emptyObject()))
             .withSyncMode(SyncMode.FULL_REFRESH)));
 
     final Set<StreamTransform> actualDiff = CatalogHelpers.getCatalogDiff(catalog1, catalog2, configuredAirbyteCatalog);
@@ -243,13 +245,13 @@ class CatalogHelpersTest {
 
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(USERS).withJsonSchema(schema1)).withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(List.of("date")).withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP).withPrimaryKey(List.of(List.of("id")))));
+            .withCursorField(List.of(DATE)).withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP).withPrimaryKey(List.of(List.of("id")))));
 
     final Set<StreamTransform> diff = CatalogHelpers.getCatalogDiff(catalog1, catalog2, configuredAirbyteCatalog);
 
     final List<StreamTransform> expectedDiff = Stream.of(
         StreamTransform.createUpdateStreamTransform(new StreamDescriptor().withName(USERS), new UpdateStreamTransform(Set.of(
-            FieldTransform.createRemoveFieldTransform(List.of("date"), schema1.get(PROPERTIES).get("date"), true),
+            FieldTransform.createRemoveFieldTransform(List.of(DATE), schema1.get(PROPERTIES).get(DATE), true),
             FieldTransform.createRemoveFieldTransform(List.of("id"), schema1.get(PROPERTIES).get("id"), true)))))
         .toList();
 
