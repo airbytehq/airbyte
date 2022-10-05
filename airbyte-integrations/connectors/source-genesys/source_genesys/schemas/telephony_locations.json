@@ -59,7 +59,7 @@
         }
       }
     },
-    "status": {
+    "state": {
       "type": ["null", "string"]
     },
     "notes": {
