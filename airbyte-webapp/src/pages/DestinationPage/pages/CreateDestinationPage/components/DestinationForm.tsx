@@ -10,6 +10,8 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { FrequentlyUsedDestinations } from "views/Connector/ServiceForm/components/FrequentlyUsedDestinations";
+import { StartWithDestination } from "views/Connector/ServiceForm/components/StartWithDestination/StartWithDestination";
 
 interface DestinationFormProps {
   onSubmit: (values: {
@@ -77,12 +79,26 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
 
   const errorMessage = error ? generateMessageFromError(error) : null;
 
+  // FIXME: need to fix bugs:
+  //  - after opening the create form and go back - the UnsavedChanges Modal appear
+  //  - need to disable select service type dropdown on formSubmit
+  const frequentlyUsedDestinationsComponent = !isLoading && !destinationDefinitionId && (
+    <FrequentlyUsedDestinations onServiceSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+  );
+  const startWithDestinationComponent = !isLoading && !destinationDefinitionId && (
+    <StartWithDestination onServiceSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+  );
+
+  console.log(!destinationDefinitions.length && !isLoading && !destinationDefinitionId);
+
   return (
     <ConnectorCard
       onServiceSelect={onDropDownSelect}
       fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
       onSubmit={onSubmitForm}
       formType="destination"
+      additionalDropdownComponent={frequentlyUsedDestinationsComponent}
+      intermediateComponent={startWithDestinationComponent}
       availableServices={destinationDefinitions}
       selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
       hasSuccess={hasSuccess}
