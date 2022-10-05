@@ -76,7 +76,6 @@ class RechargeStream(HttpStream, ABC):
         return super().should_retry(response)
 
 
-
 class IncrementalRechargeStream(RechargeStream, ABC):
 
     cursor_field = "updated_at"
