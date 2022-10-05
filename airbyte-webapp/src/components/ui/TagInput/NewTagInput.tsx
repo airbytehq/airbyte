@@ -1,5 +1,5 @@
 import { KeyboardEventHandler, useState } from "react";
-import { MultiValue, OnChangeValue } from "react-select";
+import { OnChangeValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
 const components = {
@@ -12,23 +12,21 @@ interface Tag {
 }
 
 interface NewTagInputProps {
-  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  name: string;
+  value: string[];
+  onChange: (value: string[]) => void;
 }
-
-export const NewTagInput: React.FC<NewTagInputProps> = ({ inputProps }) => {
-  const [tags, setTags] = useState<MultiValue<Tag>>([]);
+// TODO: what happens if there are two tags with the same text?
+export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, value, name }) => {
+  const tags = value.map((value) => ({ id: value, value }));
   // input value is a tag draft
   const [inputValue, setInputValue] = useState("");
 
-  const createTag = (id: string) => ({
-    id,
-    value: id,
-  });
-
   // handle when an item is created
   const handleChange = (value: OnChangeValue<Tag, true>) => {
-    setTags(value);
+    onChange(value.map((item) => item.value));
     // todo: should also handle splitting up pasted strings by delimiters
+    //
   };
 
   // handle when a user types OR pastes in a value
@@ -45,16 +43,16 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ inputProps }) => {
     switch (event.key) {
       case "Enter":
       case "Tab":
-        setTags([...tags, createTag(inputValue)]);
+        onChange([...value, inputValue]);
         // todo: do i need to manually clear the input
         event.preventDefault();
     }
   };
 
-  const inputPlaceholder = !tags.length && inputProps?.placeholder ? inputProps.placeholder : "";
-
+  // todo: helpful placeholder
   return (
     <CreatableSelect
+      name={name}
       components={components}
       inputValue={inputValue}
       isClearable
@@ -63,7 +61,7 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ inputProps }) => {
       onChange={handleChange}
       onInputChange={handleInputChange}
       onKeyDown={handleKeyDown}
-      placeholder={inputPlaceholder}
+      placeholder=""
       value={tags}
     />
   );

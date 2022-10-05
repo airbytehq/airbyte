@@ -5,7 +5,7 @@ import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
 import { SecretTextArea } from "components/ui/SecretTextArea";
-import { TagInput } from "components/ui/TagInput";
+import { NewTagInput } from "components/ui/TagInput/NewTagInput";
 import { TextArea } from "components/ui/TextArea";
 
 import { FormBaseItem } from "core/form/types";
@@ -32,24 +32,21 @@ export const Control: React.FC<ControlProps> = ({
   disabled,
   error,
 }) => {
-  const [field, meta, form] = useField(name);
+  const [field, meta, helpers] = useField(name);
 
   if (property.type === "array" && !property.enum) {
     return (
+      // check how to use field array with new component
       <FieldArray
         name={name}
         render={(arrayHelpers) => (
-          <TagInput
+          <NewTagInput
             name={name}
-            value={(field.value || []).map((value: string, id: number) => ({
-              id,
-              value,
-            }))}
-            onEnter={(newItem) => arrayHelpers.push(newItem)}
-            onDelete={(item) => arrayHelpers.remove(Number.parseInt(item))}
-            addOnBlur
-            error={!!meta.error}
-            disabled={disabled}
+            value={field.value}
+            onChange={(values) => helpers.setValue(values)}
+            // addOnBlur
+            // error={!!meta.error}
+            // disabled={disabled}
           />
         )}
       />
@@ -65,7 +62,7 @@ export const Control: React.FC<ControlProps> = ({
       <Multiselect
         name={name}
         data={data}
-        onChange={(dataItems) => form.setValue(dataItems)}
+        onChange={(dataItems) => helpers.setValue(dataItems)}
         value={field.value}
         disabled={disabled}
       />
@@ -81,7 +78,7 @@ export const Control: React.FC<ControlProps> = ({
           label: dataItem?.toString() ?? "",
           value: dataItem?.toString() ?? "",
         }))}
-        onChange={(selectedItem) => selectedItem && form.setValue(selectedItem.value)}
+        onChange={(selectedItem) => selectedItem && helpers.setValue(selectedItem.value)}
         value={value}
         isDisabled={disabled}
       />
@@ -120,12 +117,12 @@ export const Control: React.FC<ControlProps> = ({
         onDone={() => removeUnfinishedFlow(name)}
         onStart={() => {
           addUnfinishedFlow(name, { startValue: field.value });
-          form.setValue("");
+          helpers.setValue("");
         }}
         onCancel={() => {
           removeUnfinishedFlow(name);
           if (unfinishedSecret && unfinishedSecret.hasOwnProperty("startValue")) {
-            form.setValue(unfinishedSecret.startValue);
+            helpers.setValue(unfinishedSecret.startValue);
           }
         }}
         disabled={disabled}
