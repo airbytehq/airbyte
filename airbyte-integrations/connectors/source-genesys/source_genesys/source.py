@@ -229,6 +229,7 @@ class SourceGenesys(AbstractSource):
         """
         Testing connection availability for the connector by granting the credentials.
         """
+        authenticator = self.get_connection_response(self, config)
 
         try:
             if not config["client_secret"] or not config["client_id"]:
