@@ -5,15 +5,7 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static com.mongodb.client.model.Filters.gt;
-import static org.bson.BsonType.DATE_TIME;
-import static org.bson.BsonType.DECIMAL128;
-import static org.bson.BsonType.DOCUMENT;
-import static org.bson.BsonType.DOUBLE;
-import static org.bson.BsonType.INT32;
-import static org.bson.BsonType.INT64;
-import static org.bson.BsonType.OBJECT_ID;
-import static org.bson.BsonType.STRING;
-import static org.bson.BsonType.TIMESTAMP;
+import static io.airbyte.integrations.source.mongodb.MongoDbSourceUtils.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -54,20 +46,6 @@ import org.slf4j.LoggerFactory;
 public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
-
-  private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=%s&ssl=%s";
-  private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?authSource=%s&retryWrites=true&w=majority&tls=true";
-  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
-  private static final String USER = "user";
-  private static final String INSTANCE_TYPE = "instance_type";
-  private static final String INSTANCE = "instance";
-  private static final String CLUSTER_URL = "cluster_url";
-  private static final String SERVER_ADDRESSES = "server_addresses";
-  private static final String REPLICA_SET = "replica_set";
-  private static final String AUTH_SOURCE = "auth_source";
-  private static final String PRIMARY_KEY = "_id";
-  private static final Set<BsonType> ALLOWED_CURSOR_TYPES = Set.of(DOUBLE, STRING, DOCUMENT, OBJECT_ID, DATE_TIME,
-      INT32, TIMESTAMP, INT64, DECIMAL128);
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -238,13 +216,10 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(INSTANCE).asText());
     switch (instance) {
       case STANDALONE -> {
-        // supports backward compatibility and secure only connector
-        final var tls = config.has(JdbcUtils.TLS_KEY) ? config.get(JdbcUtils.TLS_KEY).asBoolean()
-            : (instanceConfig.has(JdbcUtils.TLS_KEY) ? instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean() : true);
         connectionStrBuilder.append(
             String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
                 instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
-                config.get(JdbcUtils.DATABASE_KEY).asText(), config.get(AUTH_SOURCE).asText(), tls));
+                config.get(JdbcUtils.DATABASE_KEY).asText(), config.get(AUTH_SOURCE).asText(), tlsEnabledForStandaloneInstance(config, instanceConfig)));
       }
       case REPLICA -> {
         connectionStrBuilder.append(
