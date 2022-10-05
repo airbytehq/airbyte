@@ -110,6 +110,14 @@ class TelephonyProvidersEdgesSites(GenesysStream):
     cursor_field = "dateModified"
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/sites"
+class TelephonyProvidersEdgesTrunks(GenesysStream):
+    '''
+    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    '''
+    primary_key = "id"
+    cursor_field = "dateModified"
+    def path(self, **kwargs) -> str:
+        return "telephony/providers/edges/trunks"
 class TelephonyStations(GenesysStream):
     '''
     API Docs: https://developer.genesys.cloud/telephony/stations-apis
@@ -240,6 +248,8 @@ class SourceGenesys(AbstractSource):
             TelephonyProvidersEdgesLines(**args),
             TelephonyProvidersEdgesOutboundroutes(**args),
             TelephonyProvidersEdgesPhones(**args),
+            TelephonyProvidersEdgesSites(**args),
+            TelephonyProvidersEdgesTrunks(**args),
             TelephonyStations(**args),
             UserGroups(**args),
             UserUsers(**args),
