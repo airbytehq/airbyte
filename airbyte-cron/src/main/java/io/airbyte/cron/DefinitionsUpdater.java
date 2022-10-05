@@ -11,9 +11,9 @@ import io.airbyte.config.init.RemoteDefinitionsProvider;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.scheduling.annotation.Scheduled;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.net.URI;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -43,7 +43,7 @@ public class DefinitionsUpdater {
     deploymentMode = envConfigs.getDeploymentMode();
   }
 
-  @Scheduled(fixedRate = "30s",
+  @Scheduled(fixedRate = "45s",
              initialDelay = "1m")
   void updateDefinitions() {
     if (!shouldUpdateDefinitions)
