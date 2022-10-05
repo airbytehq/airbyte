@@ -1,13 +1,13 @@
 import styled from "styled-components";
 import { Theme } from "theme";
 
-interface IProps {
+interface DropDownTextProps {
   primary?: boolean;
   secondary?: boolean;
   fullText?: boolean;
 }
 
-const setColor = (props: IProps & { theme: Theme }) => {
+const setColor = (props: DropDownTextProps & { theme: Theme }) => {
   if (props.primary) {
     return props.theme.primaryColor;
   }
@@ -18,7 +18,7 @@ const setColor = (props: IProps & { theme: Theme }) => {
   return "inherit";
 };
 
-const Text = styled.div<IProps>`
+export const DropDownText = styled.div<DropDownTextProps>`
   white-space: ${({ fullText }) => (fullText ? "normal" : "nowrap")};
   overflow: ${({ fullText }) => (fullText ? "inherit" : "hidden")};
   text-overflow: ${({ fullText }) => (fullText ? "inherit" : "ellipsis")};
@@ -33,5 +33,3 @@ const Text = styled.div<IProps>`
     color: ${({ theme }) => theme.primaryColor};
   }
 `;
-
-export default Text;

@@ -75,9 +75,10 @@ class IterableExportStream(IterableStream, ABC):
     cursor_field = "createdAt"
     primary_key = None
 
-    def __init__(self, start_date=None, **kwargs):
+    def __init__(self, start_date=None, end_date=None, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
+        self._end_date = end_date and pendulum.parse(end_date)
         self.stream_params = {"dataTypeName": self.data_field}
 
     def path(self, **kwargs) -> str:
@@ -185,7 +186,7 @@ class IterableExportStream(IterableStream, ABC):
     ) -> Iterable[Optional[StreamSlice]]:
 
         start_datetime = self.get_start_date(stream_state)
-        return [StreamSlice(start_datetime, pendulum.now("UTC"))]
+        return [StreamSlice(start_datetime, self._end_date or pendulum.now("UTC"))]
 
 
 class IterableExportStreamRanged(IterableExportStream, ABC):
@@ -204,7 +205,7 @@ class IterableExportStreamRanged(IterableExportStream, ABC):
 
         start_datetime = self.get_start_date(stream_state)
 
-        return RangeSliceGenerator(start_datetime)
+        return RangeSliceGenerator(start_datetime, self._end_date)
 
 
 class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
@@ -238,7 +239,7 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
     ) -> Iterable[Optional[StreamSlice]]:
 
         start_datetime = self.get_start_date(stream_state)
-        self._adjustable_generator = AdjustableSliceGenerator(start_datetime)
+        self._adjustable_generator = AdjustableSliceGenerator(start_datetime, self._end_date)
         return self._adjustable_generator
 
     def read_records(
@@ -325,12 +326,13 @@ class CampaignsMetrics(IterableStream):
     primary_key = None
     data_field = None
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: str, end_date: Optional[str] = None, **kwargs):
         """
         https://api.iterable.com/api/docs#campaigns_metrics
         """
         super().__init__(**kwargs)
         self.start_date = start_date
+        self.end_date = end_date
 
     def path(self, **kwargs) -> str:
         return "campaigns/metrics"
@@ -339,7 +341,8 @@ class CampaignsMetrics(IterableStream):
         params = super().request_params(**kwargs)
         params["campaignId"] = stream_slice.get("campaign_ids")
         params["startDateTime"] = self.start_date
-
+        if self.end_date:
+            params["endDateTime"] = self.end_date
         return params
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:

@@ -2,7 +2,7 @@ import { useField } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Input } from "components";
+import { Input } from "components/ui/Input";
 
 import { FormBaseItem } from "core/form/types";
 
