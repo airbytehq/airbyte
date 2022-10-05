@@ -623,7 +623,7 @@ class SchedulerHandlerTest {
     when(configRepository.getAllStreamsForConnection(connectionId))
         .thenReturn(streamDescriptors);
 
-    when(eventRunner.resetConnection(connectionId, streamDescriptors))
+    when(eventRunner.resetConnection(connectionId, streamDescriptors, false))
         .thenReturn(manualOperationResult);
 
     doReturn(new JobInfoRead())
@@ -631,7 +631,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    verify(eventRunner).resetConnection(connectionId, streamDescriptors);
+    verify(eventRunner).resetConnection(connectionId, streamDescriptors, false);
   }
 
   @Test
