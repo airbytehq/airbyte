@@ -1,0 +1,425 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "address": {
+      "type": "object",
+      "properties": {
+        "zip": {
+          "type": "string"
+        },
+        "state": {
+          "type": "null"
+        },
+        "country": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "name"
+          ]
+        },
+        "city": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zip",
+        "state",
+        "country",
+        "city",
+        "street",
+        "street2"
+      ]
+    },
+    "locale": {
+      "type": "string"
+    },
+    "resources": {
+      "type": "array"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "services": {
+      "type": "array"
+    },
+    "activeServices": {
+      "type": "array"
+    },
+    "isPublicSearch": {
+      "type": "boolean"
+    },
+    "wait": {
+      "type": "integer"
+    },
+    "visitQrCodeAction": {
+      "type": "null"
+    },
+    "numBooked": {
+      "type": "integer"
+    },
+    "availableBookingServiceIds": {
+      "type": "array"
+    },
+    "numServing": {
+      "type": "integer"
+    },
+    "openDuration": {
+      "type": "integer"
+    },
+    "lastActive": {
+      "type": "string"
+    },
+    "showPublicNameAs": {
+      "type": "null"
+    },
+    "showGuestFieldsPublic": {
+      "type": "boolean"
+    },
+    "isPublicWaitlist": {
+      "type": "boolean"
+    },
+    "isWaitlistOpen": {
+      "type": "boolean"
+    },
+    "numBookedTodayByResource": {
+      "type": "object"
+    },
+    "shortName": {
+      "type": "string"
+    },
+    "isBookingOpen": {
+      "type": "boolean"
+    },
+    "availableBookingResourceIds": {
+      "type": "array"
+    },
+    "numBookedToday": {
+      "type": "integer"
+    },
+    "availableWaitlistServiceIds": {
+      "type": "array"
+    },
+    "isForceClosed": {
+      "type": "boolean"
+    },
+    "numAllBooked": {
+      "type": "integer"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "numServers": {
+      "type": "integer"
+    },
+    "showCheckInWelcome": {
+      "type": "boolean"
+    },
+    "accountBusinessNameCollated": {
+      "type": "string"
+    },
+    "isBookingActive": {
+      "type": "boolean"
+    },
+    "numBookedGuests": {
+      "type": "integer"
+    },
+    "numServingByResource": {
+      "type": "object"
+    },
+    "isFreeAccount": {
+      "type": "boolean"
+    },
+    "numAllWaiting": {
+      "type": "integer"
+    },
+    "accountShortName": {
+      "type": "string"
+    },
+    "isPublicBooking": {
+      "type": "boolean"
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "numWaitingByPartySize": {
+      "type": "object"
+    },
+    "isServingFull": {
+      "type": "boolean"
+    },
+    "logoUrl": {
+      "type": "string"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "numWaitingByResource": {
+      "type": "object"
+    },
+    "email": {
+      "type": "string"
+    },
+    "waitEstimationMethod": {
+      "type": "string"
+    },
+    "accountBusinessName": {
+      "type": "string"
+    },
+    "waitByService": {
+      "type": "object"
+    },
+    "publicLocales": {
+      "type": "array"
+    },
+    "businessType": {
+      "type": "string"
+    },
+    "waitByServer": {
+      "type": "object"
+    },
+    "numWaiting": {
+      "type": "integer"
+    },
+    "waitByResource": {
+      "type": "object"
+    },
+    "nextTicket": {
+      "type": "integer"
+    },
+    "isWaitlistActive": {
+      "type": "boolean"
+    },
+    "numServingByPartySize": {
+      "type": "object"
+    },
+    "isWaitlistFull": {
+      "type": "boolean"
+    },
+    "waitInterval": {
+      "type": "object",
+      "properties": {
+        "upper": {
+          "type": "integer"
+        },
+        "lower": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "upper",
+        "lower"
+      ]
+    },
+    "numServingGuests": {
+      "type": "integer"
+    },
+    "smsSignupText": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "allowIncomingMessages": {
+      "type": "boolean"
+    },
+    "signUpTriggers": {
+      "type": "array",
+      "items": {}
+    },
+    "maxPartySizeBookings": {
+      "type": "integer"
+    },
+    "numWaitingGuests": {
+      "type": "integer"
+    },
+    "accountId": {
+      "type": "string"
+    },
+    "isPublicCheckIn": {
+      "type": "boolean"
+    },
+    "numPendingWaitingGuests": {
+      "type": "integer"
+    },
+    "created": {
+      "type": "string"
+    },
+    "isForceOpen": {
+      "type": "boolean"
+    },
+    "numServingByService": {
+      "type": "object"
+    },
+    "numAllServing": {
+      "type": "integer"
+    },
+    "availableWaitlistResourceIds": {
+      "type": "array"
+    },
+    "activeResources": {
+      "type": "array"
+    },
+    "enableNewStatusPage": {
+      "type": "boolean"
+    },
+    "maxPartySize": {
+      "type": "integer"
+    },
+    "website": {
+      "type": "string"
+    },
+    "numAllPendingWaiting": {
+      "type": "integer"
+    },
+    "waitByPartySize": {
+      "type": "object"
+    },
+    "recaptchaMinScore": {
+      "type": "null"
+    },
+    "businessNameCollated": {
+      "type": "string"
+    },
+    "numWaitingByService": {
+      "type": "object"
+    },
+    "isMaxCapacityActive": {
+      "type": "boolean"
+    },
+    "numPendingWaiting": {
+      "type": "integer"
+    },
+    "updated": {
+      "type": "string"
+    },
+    "allowSMSSignup": {
+      "type": "boolean"
+    },
+    "guestTerm": {
+      "type": "string"
+    },
+    "isOpen": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "isGoogleWaitlist": {
+      "type": "boolean"
+    },
+    "lastBookingUpdate": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "address",
+    "locale",
+    "resources",
+    "timezone",
+    "services",
+    "activeServices",
+    "isPublicSearch",
+    "wait",
+    "visitQrCodeAction",
+    "numBooked",
+    "availableBookingServiceIds",
+    "numServing",
+    "openDuration",
+    "lastActive",
+    "showPublicNameAs",
+    "showGuestFieldsPublic",
+    "isPublicWaitlist",
+    "isWaitlistOpen",
+    "numBookedTodayByResource",
+    "shortName",
+    "isBookingOpen",
+    "availableBookingResourceIds",
+    "numBookedToday",
+    "availableWaitlistServiceIds",
+    "isForceClosed",
+    "numAllBooked",
+    "phone",
+    "numServers",
+    "showCheckInWelcome",
+    "accountBusinessNameCollated",
+    "isBookingActive",
+    "numBookedGuests",
+    "numServingByResource",
+    "isFreeAccount",
+    "numAllWaiting",
+    "accountShortName",
+    "isPublicBooking",
+    "isActive",
+    "numWaitingByPartySize",
+    "isServingFull",
+    "logoUrl",
+    "businessName",
+    "numWaitingByResource",
+    "email",
+    "waitEstimationMethod",
+    "accountBusinessName",
+    "waitByService",
+    "publicLocales",
+    "businessType",
+    "waitByServer",
+    "numWaiting",
+    "waitByResource",
+    "nextTicket",
+    "isWaitlistActive",
+    "numServingByPartySize",
+    "isWaitlistFull",
+    "waitInterval",
+    "numServingGuests",
+    "smsSignupText",
+    "currency",
+    "allowIncomingMessages",
+    "signUpTriggers",
+    "maxPartySizeBookings",
+    "numWaitingGuests",
+    "accountId",
+    "isPublicCheckIn",
+    "numPendingWaitingGuests",
+    "created",
+    "isForceOpen",
+    "numServingByService",
+    "numAllServing",
+    "availableWaitlistResourceIds",
+    "activeResources",
+    "enableNewStatusPage",
+    "maxPartySize",
+    "website",
+    "numAllPendingWaiting",
+    "waitByPartySize",
+    "recaptchaMinScore",
+    "businessNameCollated",
+    "numWaitingByService",
+    "isMaxCapacityActive",
+    "numPendingWaiting",
+    "updated",
+    "allowSMSSignup",
+    "guestTerm",
+    "isOpen",
+    "name",
+    "isGoogleWaitlist",
+    "lastBookingUpdate",
+    "id"
+  ]
+}

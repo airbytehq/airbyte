@@ -1,0 +1,423 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string"
+    },
+    "isActiveBooking": {
+      "type": "boolean"
+    },
+    "isActiveWaitlist": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "isCategory": {
+      "type": "boolean"
+    },
+    "locationIds": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "parentId": {
+      "type": "string"
+    },
+    "hours": {
+      "type": "object",
+      "properties": {
+        "thu": {
+          "type": "object",
+          "properties": {
+            "periods": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "from": {
+                      "type": "string"
+                    },
+                    "to": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "from",
+                    "to"
+                  ]
+                }
+              ]
+            },
+            "isOpen": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "periods",
+            "isOpen"
+          ]
+        },
+        "mon": {
+          "type": "object",
+          "properties": {
+            "periods": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "to": {
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "to",
+                    "from"
+                  ]
+                }
+              ]
+            },
+            "isOpen": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "periods",
+            "isOpen"
+          ]
+        },
+        "tue": {
+          "type": "object",
+          "properties": {
+            "periods": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "to": {
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "to",
+                    "from"
+                  ]
+                }
+              ]
+            },
+            "isOpen": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "periods",
+            "isOpen"
+          ]
+        },
+        "wed": {
+          "type": "object",
+          "properties": {
+            "isOpen": {
+              "type": "boolean"
+            },
+            "periods": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "to": {
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "to",
+                    "from"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "isOpen",
+            "periods"
+          ]
+        },
+        "fri": {
+          "type": "object",
+          "properties": {
+            "periods": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "to": {
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "to",
+                    "from"
+                  ]
+                }
+              ]
+            },
+            "isOpen": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "periods",
+            "isOpen"
+          ]
+        },
+        "sun": {
+          "type": "object",
+          "properties": {
+            "periods": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "to": {
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "to",
+                    "from"
+                  ]
+                }
+              ]
+            },
+            "isOpen": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "periods",
+            "isOpen"
+          ]
+        },
+        "sat": {
+          "type": "object",
+          "properties": {
+            "isOpen": {
+              "type": "boolean"
+            },
+            "periods": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "from": {
+                      "type": "string"
+                    },
+                    "to": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "from",
+                    "to"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "isOpen",
+            "periods"
+          ]
+        }
+      },
+      "required": [
+        "thu",
+        "mon",
+        "tue",
+        "wed",
+        "fri",
+        "sun",
+        "sat"
+      ]
+    },
+    "access": {
+      "type": "string"
+    },
+    "validation": {
+      "type": "null"
+    },
+    "price": {
+      "type": "number"
+    },
+    "photoUrl": {
+      "type": "string"
+    },
+    "bufferDuration": {
+      "type": "integer"
+    },
+    "order": {
+      "type": "integer"
+    },
+    "color": {
+      "type": "string"
+    },
+    "updatedBy": {
+      "type": "string"
+    },
+    "created": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "integer"
+    },
+    "createdBy": {
+      "type": "string"
+    },
+    "maxValue": {
+      "type": "null"
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "isPublic": {
+      "type": "boolean"
+    },
+    "minValue": {
+      "type": "null"
+    },
+    "id": {
+      "type": "string"
+    },
+    "accountId": {
+      "type": "string"
+    },
+    "activeLocationIds": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "availableLocationIds": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "availableBookingLocationIds": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "isActiveBooking",
+    "isActiveWaitlist",
+    "name",
+    "isCategory",
+    "locationIds",
+    "displayName",
+    "parentId",
+    "hours",
+    "access",
+    "validation",
+    "price",
+    "photoUrl",
+    "bufferDuration",
+    "order",
+    "color",
+    "updatedBy",
+    "created",
+    "updated",
+    "description",
+    "duration",
+    "createdBy",
+    "maxValue",
+    "isActive",
+    "isPublic",
+    "minValue",
+    "id",
+    "accountId",
+    "activeLocationIds",
+    "availableLocationIds",
+    "availableBookingLocationIds"
+  ]
+}
