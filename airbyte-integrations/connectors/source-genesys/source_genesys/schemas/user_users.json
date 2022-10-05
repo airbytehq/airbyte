@@ -37,7 +37,6 @@
       "type": ["null", "string"]
     },
     "primaryContactInfo": {
-      "type": "object",
       "type": "array",
       "properties": {
         "address": {
@@ -64,7 +63,7 @@
       }
     },
     "addresses": {
-      "type": "object",
+      "type": "array",
       "properties": {
         "address": {
           "type": ["null", "string"]
