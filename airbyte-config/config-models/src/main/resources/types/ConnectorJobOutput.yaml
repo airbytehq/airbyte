@@ -12,12 +12,14 @@ properties:
     type: string
     enum:
       - checkConnection
-      - discoverCatalog
+      - discoverCatalogId
       - spec
   checkConnection:
     "$ref": StandardCheckConnectionOutput.yaml
-  discoverCatalog:
-    existingJavaType: io.airbyte.protocol.models.AirbyteCatalog
+  discoverCatalogId:
+    description: A UUID for the discovered catalog which is persisted by the job
+    type: string
+    format: uuid
   spec:
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
   failureReason:

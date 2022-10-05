@@ -160,7 +160,7 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
   );
 
   return (
-    <div className={styles.statusView}>
+    <>
       <Card
         className={styles.contentCard}
         title={
@@ -213,7 +213,6 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
           <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
         )}
       </Card>
-
       {(moreJobPagesAvailable || isJobPageLoading) && (
         <footer className={styles.footer}>
           <Button isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
@@ -221,6 +220,6 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
           </Button>
         </footer>
       )}
-    </div>
+    </>
   );
 };
