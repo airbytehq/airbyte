@@ -43,7 +43,7 @@ public class DefinitionsUpdater {
     deploymentMode = envConfigs.getDeploymentMode();
   }
 
-  @Scheduled(fixedRate = "45s",
+  @Scheduled(fixedRate = "30s",
              initialDelay = "1m")
   void updateDefinitions() {
     if (!shouldUpdateDefinitions)
