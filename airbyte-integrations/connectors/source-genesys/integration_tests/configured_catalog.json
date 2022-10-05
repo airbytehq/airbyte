@@ -60,6 +60,18 @@
     },
     {
       "stream": {
+        "name": "telephony_providers_edges_lines",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dateModified"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["dateModified"]
+    },
+    {
+      "stream": {
         "name": "telephony_stations",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
