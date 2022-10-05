@@ -4,6 +4,7 @@
 
 package io.airbyte.server.scheduler;
 
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -17,7 +18,9 @@ import java.io.IOException;
  */
 public interface SynchronousSchedulerClient {
 
-  SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(SourceConnection source, String dockerImage)
+  SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(SourceConnection source,
+                                                                                    String dockerImage,
+                                                                                    Version protocolVersion)
       throws IOException;
 
   SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)

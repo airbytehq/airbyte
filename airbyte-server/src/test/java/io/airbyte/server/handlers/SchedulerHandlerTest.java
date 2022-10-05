@@ -40,6 +40,7 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
@@ -89,10 +90,12 @@ class SchedulerHandlerTest {
   private static final String SOURCE_DOCKER_REPO = "srcimage";
   private static final String SOURCE_DOCKER_TAG = "tag";
   private static final String SOURCE_DOCKER_IMAGE = DockerUtils.getTaggedImageName(SOURCE_DOCKER_REPO, SOURCE_DOCKER_TAG);
+  private static final String SOURCE_PROTOCOL_VERSION = "0.4.5";
 
   private static final String DESTINATION_DOCKER_REPO = "dstimage";
   private static final String DESTINATION_DOCKER_TAG = "tag";
   private static final String DESTINATION_DOCKER_IMAGE = DockerUtils.getTaggedImageName(DESTINATION_DOCKER_REPO, DESTINATION_DOCKER_TAG);
+  private static final String DESTINATION_PROTOCOL_VERSION = "0.7.9";
 
   private static final SourceConnection SOURCE = new SourceConnection()
       .withName("my postgres db")
@@ -162,20 +165,22 @@ class SchedulerHandlerTest {
   void testCheckSourceConnectionFromSourceId() throws JsonValidationException, IOException, ConfigNotFoundException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final SourceIdRequestBody request = new SourceIdRequestBody().sourceId(source.getSourceId());
+    final Version protocolVersion = new Version(SOURCE_PROTOCOL_VERSION);
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withProtocolVersion(SOURCE_PROTOCOL_VERSION)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
-    when(synchronousSchedulerClient.createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE))
+    when(synchronousSchedulerClient.createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE, protocolVersion))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
 
     schedulerHandler.checkSourceConnectionFromSourceId(request);
 
     verify(configRepository).getSourceConnection(source.getSourceId());
-    verify(synchronousSchedulerClient).createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE);
+    verify(synchronousSchedulerClient).createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE, protocolVersion);
   }
 
   @Test
@@ -188,20 +193,23 @@ class SchedulerHandlerTest {
         .sourceDefinitionId(source.getSourceDefinitionId())
         .connectionConfiguration(source.getConfiguration());
 
+    final Version protocolVersion = new Version(SOURCE_PROTOCOL_VERSION);
+
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withProtocolVersion(SOURCE_PROTOCOL_VERSION)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(source.getConfiguration()),
         any())).thenReturn(source.getConfiguration());
-    when(synchronousSchedulerClient.createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE))
+    when(synchronousSchedulerClient.createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE, protocolVersion))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
 
     schedulerHandler.checkSourceConnectionFromSourceCreate(sourceCoreConfig);
 
-    verify(synchronousSchedulerClient).createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE);
+    verify(synchronousSchedulerClient).createSourceCheckConnectionJob(source, SOURCE_DOCKER_IMAGE, protocolVersion);
   }
 
   @Test
@@ -214,8 +222,10 @@ class SchedulerHandlerTest {
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withDockerRepository(DESTINATION_DOCKER_REPO)
         .withDockerImageTag(DESTINATION_DOCKER_TAG)
+        .withProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withSourceDefinitionId(source.getSourceDefinitionId())
         .withSpec(CONNECTOR_SPECIFICATION);
+    final Version protocolVersion = new Version(DESTINATION_PROTOCOL_VERSION);
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(sourceDefinition);
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
@@ -223,7 +233,7 @@ class SchedulerHandlerTest {
     final SourceConnection submittedSource = new SourceConnection()
         .withSourceDefinitionId(source.getSourceDefinitionId())
         .withConfiguration(source.getConfiguration());
-    when(synchronousSchedulerClient.createSourceCheckConnectionJob(submittedSource, DESTINATION_DOCKER_IMAGE))
+    when(synchronousSchedulerClient.createSourceCheckConnectionJob(submittedSource, DESTINATION_DOCKER_IMAGE, protocolVersion))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
     when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(source.getConfiguration()),
@@ -231,7 +241,7 @@ class SchedulerHandlerTest {
     schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate);
 
     verify(jsonSchemaValidator).ensure(CONNECTOR_SPECIFICATION.getConnectionSpecification(), source.getConfiguration());
-    verify(synchronousSchedulerClient).createSourceCheckConnectionJob(submittedSource, DESTINATION_DOCKER_IMAGE);
+    verify(synchronousSchedulerClient).createSourceCheckConnectionJob(submittedSource, DESTINATION_DOCKER_IMAGE, protocolVersion);
   }
 
   @Test

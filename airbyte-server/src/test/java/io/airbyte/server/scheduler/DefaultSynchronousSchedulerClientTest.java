@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -55,6 +56,7 @@ class DefaultSynchronousSchedulerClientTest {
 
   private static final Path LOG_PATH = Path.of("/tmp");
   private static final String DOCKER_IMAGE = "foo/bar";
+  private static final Version PROTOCOL_VERSION = new Version("0.2.3");
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
@@ -201,14 +203,15 @@ class DefaultSynchronousSchedulerClientTest {
     void testCreateSourceCheckConnectionJob() throws IOException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
           .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE);
+          .withDockerImage(DOCKER_IMAGE)
+          .withProtocolVersion(PROTOCOL_VERSION);
 
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withCheckConnection(mockOutput);
       when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
       final SynchronousResponse<StandardCheckConnectionOutput> response =
-          schedulerClient.createSourceCheckConnectionJob(SOURCE_CONNECTION, DOCKER_IMAGE);
+          schedulerClient.createSourceCheckConnectionJob(SOURCE_CONNECTION, DOCKER_IMAGE, PROTOCOL_VERSION);
       assertEquals(mockOutput, response.getOutput());
     }
 

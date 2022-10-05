@@ -7,6 +7,7 @@ package io.airbyte.server.scheduler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -54,7 +55,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage)
+  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source,
+                                                                                           final String dockerImage,
+                                                                                           final Version protocolVersion)
       throws IOException {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
@@ -62,7 +65,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         source.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(sourceConfiguration)
-        .withDockerImage(dockerImage);
+        .withDockerImage(dockerImage)
+        .withProtocolVersion(protocolVersion);
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
