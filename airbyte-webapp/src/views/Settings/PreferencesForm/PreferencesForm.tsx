@@ -4,10 +4,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button } from "components";
 import Label from "components/Label";
 import LabeledInput from "components/LabeledInput";
 import { LabeledSwitch } from "components/LabeledSwitch";
+import { Button } from "components/ui/Button";
 
 import { useConfig } from "config";
 
