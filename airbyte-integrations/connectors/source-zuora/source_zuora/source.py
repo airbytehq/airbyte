@@ -503,14 +503,9 @@ class SourceZuora(AbstractSource):
         """
         Testing connection availability for the connector by granting the token.
         """
+        auth = ZuoraAuthenticator(config).get_auth()
         try:
-            url = f"{config['domain_url']}/query/jobs"
-
-            authenticator = ZuoraAuthenticator(config)
-
-            session = requests.get(url, headers=authenticator.get_auth_header())
-            session.raise_for_status()
-
+            auth.get_auth_header()
             return True, None
         except Exception as e:
             return False, e
@@ -521,7 +516,7 @@ class SourceZuora(AbstractSource):
         Defining streams to run by building stream classes dynamically.
         """
         auth = ZuoraAuthenticator(config)
-        config["authenticator"] = auth
+        config["authenticator"] = auth.get_auth()
         config["url_base"] = auth.url_base
 
         # List available objects (streams) names from Zuora
