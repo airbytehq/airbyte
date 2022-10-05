@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
@@ -157,8 +158,8 @@ public abstract class AbstractSourceConnectorTest {
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection().getStatus().toString();
   }
 
-  protected String runDiscover() throws Exception {
-    final String toReturn = new DefaultDiscoverCatalogWorker(
+  protected UUID runDiscover() throws Exception {
+    final UUID toReturn = new DefaultDiscoverCatalogWorker(
         mConfigRepository,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
             .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot).getDiscoverCatalogId();

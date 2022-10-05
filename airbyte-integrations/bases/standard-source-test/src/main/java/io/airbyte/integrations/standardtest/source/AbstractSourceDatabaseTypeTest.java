@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -108,7 +109,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   public void testDataTypes() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
     final List<AirbyteMessage> allMessages = runRead(catalog);
-    final String catalogId = runDiscover();
+    final UUID catalogId = runDiscover();
     final Map<String, AirbyteStream> streams = getLastPersistedCatalog().getStreams().stream()
         .collect(Collectors.toMap(AirbyteStream::getName, s -> s));
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).toList();
