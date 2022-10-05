@@ -102,6 +102,14 @@ class TelephonyProvidersEdgesPhones(GenesysStream):
     cursor_field = "dateModified"
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/phones"
+class TelephonyProvidersEdgesSites(GenesysStream):
+    '''
+    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    '''
+    primary_key = "id"
+    cursor_field = "dateModified"
+    def path(self, **kwargs) -> str:
+        return "telephony/providers/edges/sites"
 class TelephonyStations(GenesysStream):
     '''
     API Docs: https://developer.genesys.cloud/telephony/stations-apis
