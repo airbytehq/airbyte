@@ -7,7 +7,6 @@ package io.airbyte.workers;
 import io.airbyte.commons.temporal.TemporalInitializationUtils;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalUtils;
-import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -62,8 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ApplicationInitializer implements ApplicationEventListener<ServiceReadyEvent> {
 
-  @Inject
-  private AirbyteVersion airbyteVersion;
   @Inject
   @Named("checkConnectionActivities")
   private Optional<List<Object>> checkConnectionActivities;
