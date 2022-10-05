@@ -199,6 +199,7 @@ docker:
 endpoints:
   all:
     enabled: true
+    sensitive: false
 
 google:
   application:
