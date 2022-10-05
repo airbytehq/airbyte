@@ -3,7 +3,7 @@
 connector_image: airbyte/source-genesys:dev
 tests:
   spec:
-    - spec_path: "source_genesys/spec.yaml"
+    - spec_path: "source_genesys/spec.json"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
