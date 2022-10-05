@@ -123,20 +123,19 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       throws Exception {
     final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
-    for (final String collectionName : getAuthorizedCollections(database)) {
+    final Set<String> authorizedCollections = getAuthorizedCollections(database);
+    // The field name _id is reserved for use as a primary key;
+    authorizedCollections.parallelStream().forEach(collectionName -> {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
       final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
-
-      // The field name _id is reserved for use as a primary key;
       final TableInfo<CommonField<BsonType>> tableInfo = TableInfo.<CommonField<BsonType>>builder()
-          .nameSpace(database.getName())
-          .name(collectionName)
-          .fields(fields)
-          .primaryKeys(List.of(PRIMARY_KEY))
-          .build();
-
+              .nameSpace(database.getName())
+              .name(collectionName)
+              .fields(fields)
+              .primaryKeys(List.of(PRIMARY_KEY))
+              .build();
       tableInfos.add(tableInfo);
-    }
+    });
     return tableInfos;
   }
 
