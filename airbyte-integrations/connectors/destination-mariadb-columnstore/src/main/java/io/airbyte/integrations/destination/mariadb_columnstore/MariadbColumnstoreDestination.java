@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
 
+import static io.airbyte.integrations.destination.mariadb_columnstore.MariaDbColumnstoreSslUtils.PARAM_SSL_MODE;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -28,7 +30,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestination.class);
   public static final String DRIVER_CLASS = DatabaseDriver.MARIADB.getDriverClassName();
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
-      "allowLoadLocalInfile", "true");
+      "allowLoadLocalInfile", "true", "allowLocalInfile", "true");
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new MariadbColumnstoreDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -74,6 +76,13 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
     }
 
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+  }
+
+  @Override
+  protected Map<String, String> getConnectionProperties(JsonNode config) {
+    var connectionProperties = super.getConnectionProperties(config);
+    connectionProperties.putAll(MariaDbColumnstoreSslUtils.handleSslProperties(config.get(PARAM_SSL_MODE)));
+    return connectionProperties;
   }
 
   @Override

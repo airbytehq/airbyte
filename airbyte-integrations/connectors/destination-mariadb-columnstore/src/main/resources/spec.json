@@ -51,6 +51,93 @@
         "title": "JDBC URL Params",
         "type": "string",
         "order": 5
+      },
+      "ssl_mode": {
+        "title": "SSL modes",
+        "description": "SSL connection modes. \n <b>disable</b> - Chose this mode to disable encryption of communication between Airbyte and destination database\n <b>trust</b> - Only use SSL/TLS for encryption. Do not perform certificate or hostname verification. This mode is not safe for production applications.\n <b>verify-ca</b> - Use SSL/TLS for encryption and perform certificates verification, but do not perform hostname verification.\n <b>verify-full</b> - Use SSL/TLS for encryption, certificate verification, and hostname verification\n See more information - <a href=\"https://mariadb.com/kb/en/about-mariadb-connector-j/#tls-parameters\"> in the docs</a>.",
+        "type": "object",
+        "order": 6,
+        "oneOf": [
+          {
+            "title": "disable",
+            "additionalProperties": false,
+            "description": "Disable SSL.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "disable",
+                "enum": ["disable"],
+                "default": "disable",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "trust",
+            "additionalProperties": false,
+            "description": "Trust SSL mode.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "trust",
+                "enum": ["trust"],
+                "default": "trust",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "verify-ca",
+            "additionalProperties": false,
+            "description": "Verify-ca SSL mode.",
+            "required": ["mode", "ca_certificate"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "verify-ca",
+                "enum": ["verify-ca"],
+                "default": "verify-ca",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              }
+            }
+          },
+          {
+            "title": "verify-full",
+            "additionalProperties": false,
+            "description": "Verify-full SSL mode.",
+            "required": [
+              "mode",
+              "ca_certificate"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "verify-full",
+                "enum": ["verify-full"],
+                "default": "verify-full",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              }
+            }
+          }
+        ]
       }
     }
   }
