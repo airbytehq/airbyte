@@ -5,7 +5,6 @@
 package io.airbyte.workers.normalization;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.ProcessFactory;
 import java.util.Map;
@@ -37,13 +36,11 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-tidb", ImmutablePair.of("airbyte/normalization-tidb", DestinationType.TIDB))
           .build();
 
-  public static NormalizationRunner create(final WorkerConfigs workerConfigs,
-                                           final String connectorImageName,
+  public static NormalizationRunner create(final String connectorImageName,
                                            final ProcessFactory processFactory,
                                            final String normalizationVersion) {
     final var valuePair = getNormalizationInfoForConnector(connectorImageName);
     return new DefaultNormalizationRunner(
-        workerConfigs,
         valuePair.getRight(),
         processFactory,
         String.format("%s:%s", valuePair.getLeft(), normalizationVersion));

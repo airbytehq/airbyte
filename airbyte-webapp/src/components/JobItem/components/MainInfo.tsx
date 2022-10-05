@@ -68,12 +68,12 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
     } else if (isPartialSuccess) {
       status = "partialSuccess";
     } else {
-      return <FormattedMessage id="sources.jobStatus.unknown" />;
+      return <FormattedMessage id="jobs.jobStatus.unknown" />;
     }
     return (
       <FormattedMessage
         values={{ count: streamsToReset?.length || 0 }}
-        id={`sources.jobStatus.${jobConfigType}.${status}`}
+        id={`jobs.jobStatus.${jobConfigType}.${status}`}
       />
     );
   }, [isPartialSuccess, jobConfigType, jobStatus, streamsToReset?.length]);

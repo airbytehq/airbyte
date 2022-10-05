@@ -21,10 +21,8 @@ const ExclamationLight = styled(FontAwesomeIcon)`
   color: ${({ theme }) => theme.whiteColor};
 `;
 
-const ErrorSign: React.FC = () => (
+export const ErrorSign: React.FC = () => (
   <ErrorIcon>
     <ExclamationLight icon={faExclamation} />
   </ErrorIcon>
 );
-
-export default ErrorSign;

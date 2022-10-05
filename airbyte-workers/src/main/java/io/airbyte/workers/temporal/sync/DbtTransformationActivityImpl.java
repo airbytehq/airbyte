@@ -130,9 +130,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
         Math.toIntExact(jobRunConfig.getAttemptId()),
         resourceRequirements,
         new DbtTransformationRunner(
-            workerConfigs,
             processFactory, NormalizationRunnerFactory.create(
-                workerConfigs,
                 destinationLauncherConfig.getDockerImage(),
                 processFactory,
                 NormalizationRunnerFactory.NORMALIZATION_VERSION)));

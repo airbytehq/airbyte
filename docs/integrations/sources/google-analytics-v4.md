@@ -26,7 +26,7 @@ First, you need to select existing or create a new project in the Google Develop
 
 ### Add service account to the Google Analytics account
 
-Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API. You will need to grant [Read & Analyze permissions](https://support.google.com/analytics/answer/2884495).
+Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API. You will need to grant [Viewer permissions](https://support.google.com/analytics/answer/2884495).
 
 ### Enable the APIs
 

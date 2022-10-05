@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.92
+- Low-code: Properly propagate $options to array items
+- Low-code: Log request and response when running check operation in debug mode
+
+## 0.1.91
+- Low-code: Rename LimitPaginator to DefaultPaginator and move page_size field to PaginationStrategy
+
+## 0.1.90
+- Fix error when TypeTransformer tries to warn about invalid transformations in arrays
+
 ## 0.1.89
 - Fix: properly emit state when a stream has empty slices, provided by an iterator
 

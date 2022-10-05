@@ -28,6 +28,7 @@ import io.airbyte.workers.WorkerConfigs;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -68,8 +69,8 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  public WorkerEnvironment workerEnvironment(@Value("${airbyte.worker.env}") final String workerEnv) {
-    return convertToEnum(workerEnv, WorkerEnvironment::valueOf, WorkerEnvironment.DOCKER);
+  public WorkerEnvironment workerEnvironment(final Environment environment) {
+    return environment.getActiveNames().contains(Environment.KUBERNETES) ? WorkerEnvironment.KUBERNETES : WorkerEnvironment.DOCKER;
   }
 
   @Singleton
@@ -126,7 +127,6 @@ public class ApplicationBeanFactory {
   @Requires(env = WorkerMode.CONTROL_PLANE)
   public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
     return JsonSecretsProcessor.builder()
-        .maskSecrets(!featureFlags.exposeSecretsInExport())
         .copySecrets(false)
         .build();
   }

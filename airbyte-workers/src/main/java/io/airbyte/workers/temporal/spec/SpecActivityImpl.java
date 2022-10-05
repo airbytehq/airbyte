@@ -89,7 +89,7 @@ public class SpecActivityImpl implements SpecActivity {
           processFactory,
           workerConfigs.getResourceRequirements());
 
-      return new DefaultGetSpecWorker(workerConfigs, integrationLauncher);
+      return new DefaultGetSpecWorker(integrationLauncher);
     };
   }
 

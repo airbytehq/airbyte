@@ -2,7 +2,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { Input } from "components";
+import { Input } from "components/ui/Input";
 
 interface SearchProps {
   onSearch: (value: string) => void;
