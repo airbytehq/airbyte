@@ -97,6 +97,9 @@
     "username": {
       "type": ["null", "string"]
     },
+    "version": {
+      "type": ["null", "number"]
+    },
     "acdAutoAnswer": {
       "type": ["null", "boolean"]
     },
