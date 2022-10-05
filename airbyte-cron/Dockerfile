@@ -1,6 +1,4 @@
-ARG JDK_VERSION=17.0.4
-ARG JDK_IMAGE=amazoncorretto:${JDK_VERSION}
-FROM ${JDK_IMAGE} AS cron
+FROM airbyte/java-datadog-tracer-base:3.1 AS cron
 
 ARG VERSION=0.40.11
 

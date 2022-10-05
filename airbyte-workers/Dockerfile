@@ -1,11 +1,9 @@
-ARG JDK_VERSION=17.0.4
-ARG JDK_IMAGE=amazoncorretto:${JDK_VERSION}
-FROM ${JDK_IMAGE} AS worker
+FROM airbyte/java-datadog-tracer-base:3.1 AS worker
 
 ARG DOCKER_BUILD_ARCH=amd64
 
 RUN amazon-linux-extras install -y docker
-RUN yum install -y jq tar && yum clean all
+RUN yum install -y jq && yum clean all
 
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${DOCKER_BUILD_ARCH}/kubectl" \
         && chmod +x kubectl && mv kubectl /usr/local/bin/
