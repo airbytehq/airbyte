@@ -115,5 +115,3 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
     </div>
   );
 };
-
-export default Input;

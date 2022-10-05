@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Card } from "components";
 import { JobItem } from "components/JobItem/JobItem";
+import { Card } from "components/ui/Card";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorT } from "core/domain/connector";
