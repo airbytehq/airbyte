@@ -53,12 +53,15 @@ class SurveyctoStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        return [
-            {
-                'data': response.json()
-            }
-        ]
+        response_json = response.json()
 
+        for data in response_json:
+            try:
+                yield data
+            except Exception as e:
+                msg = f"""Encountered an exception parsing schema"""
+                self.logger.exception(msg)
+                raise e
     # @TODO: Refactor this path method into a separate FormClass for cleaner
     def path(
         self, 
