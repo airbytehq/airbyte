@@ -5,7 +5,8 @@ import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link, Button } from "components";
+import { LabeledInput, Link } from "components";
+import { Button } from "components/ui/Button";
 
 import { useConfig } from "config";
 import { useExperiment } from "hooks/services/Experiment";
