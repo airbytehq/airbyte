@@ -7,7 +7,6 @@ from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -51,7 +50,6 @@ class RoutingOutboundEvents(GenesysStream):
     """
 
     primary_key = "id"
-    # next: pageNumber
 
     def path(self, **kwargs) -> str:
         return "routing/assessments"
@@ -65,7 +63,6 @@ class RoutingRoutingAssessments(GenesysStream):
     page_size = 200
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: before/after for cursor
 
     def path(self, **kwargs) -> str:
         return "routing/assessments"
@@ -78,7 +75,6 @@ class RoutingRoutingQueues(GenesysStream):
 
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: before/after for cursor
 
     def path(self, **kwargs) -> str:
         return "routing/queues"
@@ -90,7 +86,7 @@ class TelephonyLocations(GenesysStream):
     """
 
     primary_key = "id"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "locations"
 
@@ -102,7 +98,7 @@ class TelephonyProvidersEdges(GenesysStream):
 
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges"
 
@@ -114,7 +110,7 @@ class TelephonyProvidersEdgesDids(GenesysStream):
 
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/dids"
 
@@ -126,7 +122,7 @@ class TelephonyProvidersEdgesDidpools(GenesysStream):
 
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/didpools"
 
@@ -138,7 +134,7 @@ class TelephonyProvidersEdgesExtensions(GenesysStream):
 
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/extensions"
 
@@ -150,7 +146,7 @@ class TelephonyProvidersEdgesLines(GenesysStream):
 
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/lines"
 
@@ -162,7 +158,7 @@ class TelephonyProvidersEdgesOutboundroutes(GenesysStream):
 
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/outboundroutes"
 
@@ -174,7 +170,7 @@ class TelephonyProvidersEdgesPhones(GenesysStream):
 
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/phones"
 
@@ -186,7 +182,7 @@ class TelephonyProvidersEdgesSites(GenesysStream):
 
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/sites"
 
@@ -209,7 +205,7 @@ class TelephonyStations(GenesysStream):
     """
 
     primary_key = "id"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "stations"
 
@@ -220,7 +216,7 @@ class UserUsers(GenesysStream):
     """
 
     primary_key = "id"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "users"
 
@@ -232,7 +228,7 @@ class UserGroups(GenesysStream):
 
     primary_key = "id"
     cursor_field = "dateModified"
-    # next: pageNumber
+
     def path(self, **kwargs) -> str:
         return "groups"
 
