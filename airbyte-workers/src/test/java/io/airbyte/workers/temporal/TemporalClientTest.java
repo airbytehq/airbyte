@@ -258,35 +258,6 @@ class TemporalClientTest {
       verify(workflowClient).newWorkflowStub(SyncWorkflow.class, TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.SYNC));
     }
 
-    @Test
-    void testSynchronousResetConnection() throws IOException {
-      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-      final WorkflowState mWorkflowState = mock(WorkflowState.class);
-      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
-      when(mWorkflowState.isDeleted()).thenReturn(false);
-      final long resetJobId = 1L;
-
-      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(
-          new JobInformation(NON_RUNNING_JOB_ID, 0),
-          new JobInformation(NON_RUNNING_JOB_ID, 0),
-          new JobInformation(resetJobId, 0),
-          new JobInformation(resetJobId, 0),
-          new JobInformation(NON_RUNNING_JOB_ID, 0),
-          new JobInformation(NON_RUNNING_JOB_ID, 0));
-
-      doReturn(true).when(temporalClient).isWorkflowReachable(any(UUID.class));
-
-      when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
-
-      final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR);
-      final ManualOperationResult manualOperationResult = temporalClient.synchronousResetConnection(CONNECTION_ID, streamsToReset);
-
-      verify(streamResetPersistence).createStreamResets(CONNECTION_ID, streamsToReset);
-      verify(mConnectionManagerWorkflow).resetConnection();
-
-      assertEquals(manualOperationResult.getJobId().get(), resetJobId);
-    }
-
   }
 
   @Nested
@@ -663,7 +634,7 @@ class TemporalClientTest {
       when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
 
       final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR);
-      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset);
+      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset, false);
 
       verify(streamResetPersistence).createStreamResets(CONNECTION_ID, streamsToReset);
 
@@ -699,7 +670,7 @@ class TemporalClientTest {
           mNewConnectionManagerWorkflow);
 
       final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR);
-      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset);
+      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset, false);
 
       verify(streamResetPersistence).createStreamResets(CONNECTION_ID, streamsToReset);
 
@@ -729,7 +700,7 @@ class TemporalClientTest {
       mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_COMPLETED);
 
       final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR);
-      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset);
+      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset, false);
 
       verify(streamResetPersistence).createStreamResets(CONNECTION_ID, streamsToReset);
 

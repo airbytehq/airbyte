@@ -385,7 +385,9 @@ public class TemporalClient {
         Optional.of(jobId), Optional.empty());
   }
 
-  public ManualOperationResult resetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset) {
+  public ManualOperationResult resetConnection(final UUID connectionId,
+                                               final List<StreamDescriptor> streamsToReset,
+                                               final boolean syncImmediatelyAfter) {
     log.info("reset sync request");
 
     try {
@@ -401,7 +403,11 @@ public class TemporalClient {
     final long oldJobId = connectionManagerUtils.getCurrentJobId(client, connectionId);
 
     try {
-      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnection);
+      if (syncImmediatelyAfter) {
+        connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnectionAndSkipNextScheduling);
+      } else {
+        connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnection);
+      }
     } catch (final DeletedWorkflowException e) {
       log.error("Can't reset a deleted workflow", e);
       return new ManualOperationResult(
@@ -436,36 +442,6 @@ public class TemporalClient {
     } else {
       return Optional.of(currentJobId);
     }
-  }
-
-  /**
-   * This is launching a reset and wait for the reset to be performed.
-   *
-   * The way to do so is to wait for the jobId to change, either to a new job id or the default id
-   * that signal that a workflow is waiting to be submitted
-   */
-  public ManualOperationResult synchronousResetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset) {
-    final ManualOperationResult resetResult = resetConnection(connectionId, streamsToReset);
-    if (resetResult.getFailingReason().isPresent()) {
-      return resetResult;
-    }
-
-    final long resetJobId = resetResult.getJobId().get();
-    do {
-      try {
-        Thread.sleep(DELAY_BETWEEN_QUERY_MS);
-      } catch (final InterruptedException e) {
-        return new ManualOperationResult(
-            Optional.of("Didn't manage to reset a sync for: " + connectionId),
-            Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
-      }
-    } while (connectionManagerUtils.getCurrentJobId(client, connectionId) == resetJobId);
-
-    log.info("End of reset");
-
-    return new ManualOperationResult(
-        Optional.empty(),
-        Optional.of(resetJobId), Optional.empty());
   }
 
   /**

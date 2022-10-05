@@ -422,12 +422,9 @@ public class WebBackendConnectionsHandler {
         if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET) {
           streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
         }
-        ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+        ManualOperationResult manualOperationResult = eventRunner.resetConnection(
             connectionId,
-            streamsToReset);
-        verifyManualOperationResult(manualOperationResult);
-        manualOperationResult = eventRunner.startNewManualSync(connectionId);
-        verifyManualOperationResult(manualOperationResult);
+            streamsToReset, true);
 
         // return updated connectionRead after reset
         return connectionsHandler.getConnection(connectionId);
