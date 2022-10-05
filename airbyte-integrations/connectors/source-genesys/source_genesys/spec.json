@@ -4,12 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Genesys Connector Configuration",
     "type": "object",
-    "required": [
-      "start_date",
-      "tenant_endpoint",
-      "client_id",
-      "client_secret"
-    ],
+    "required": ["start_date", "tenant_endpoint", "client_id", "client_secret"],
     "properties": {
       "client_id": {
         "type": "string",
