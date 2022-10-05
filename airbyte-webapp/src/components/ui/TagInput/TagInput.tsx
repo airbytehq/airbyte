@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import styled from "styled-components";
 
-import TagItem, { IItemProps } from "./TagItem";
+import { TagItem, IItemProps } from "./TagItem";
 
 const MainContainer = styled.div<{ error?: boolean; disabled?: boolean }>`
   width: 100%;

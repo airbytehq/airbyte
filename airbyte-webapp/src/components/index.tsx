@@ -1,5 +1,3 @@
-export * from "./ui";
-
 export * from "./ArrayOfObjectsEditor";
 export * from "./DefaultLogoCatalog";
 export * from "./Label";
