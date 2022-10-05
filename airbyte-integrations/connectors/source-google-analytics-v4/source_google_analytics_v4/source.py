@@ -103,8 +103,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
         self.dimensions = config["dimensions"]
-        self.segments = config["segments"]
-        self.filtersExpression = config["filter"]
+        self.segments = config.get("segments", list())
+        self.filtersExpression = config.get("filter", "")
         self._config = config
         self.dimensions_ref, self.metrics_ref = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
 
