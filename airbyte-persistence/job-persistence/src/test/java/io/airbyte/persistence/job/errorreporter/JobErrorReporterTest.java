@@ -278,6 +278,43 @@ class JobErrorReporterTest {
   }
 
   @Test
+  void testReportSourceCheckJobFailureNullWorkspaceId() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final String connectorCommand = "check";
+    final FailureReason failureReason = new FailureReason()
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, connectorCommand))
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.SYSTEM_ERROR);
+
+    final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(JOB_ID, SOURCE_DOCKER_IMAGE);
+
+    Mockito.when(configRepository.getStandardSourceDefinition(SOURCE_DEFINITION_ID))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPOSITORY)
+            .withReleaseStage(SOURCE_RELEASE_STAGE)
+            .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+            .withName(SOURCE_DEFINITION_NAME));
+
+    jobErrorReporter.reportSourceCheckJobFailure(SOURCE_DEFINITION_ID, null, failureReason, jobContext);
+
+    final Map<String, String> expectedMetadata = Map.ofEntries(
+        Map.entry(JOB_ID_KEY, JOB_ID.toString()),
+        Map.entry(DEPLOYMENT_MODE_KEY, DEPLOYMENT_MODE.name()),
+        Map.entry(AIRBYTE_VERSION_KEY, AIRBYTE_VERSION),
+        Map.entry(FAILURE_ORIGIN_KEY, SOURCE),
+        Map.entry(FAILURE_TYPE_KEY, SYSTEM_ERROR),
+        Map.entry(CONNECTOR_DEFINITION_ID_KEY, SOURCE_DEFINITION_ID.toString()),
+        Map.entry(CONNECTOR_REPOSITORY_KEY, SOURCE_DOCKER_REPOSITORY),
+        Map.entry(CONNECTOR_NAME_KEY, SOURCE_DEFINITION_NAME),
+        Map.entry(CONNECTOR_RELEASE_STAGE_KEY, SOURCE_RELEASE_STAGE.toString()),
+        Map.entry(CONNECTOR_COMMAND_KEY, connectorCommand));
+
+    Mockito.verify(jobErrorReportingClient).reportJobFailureReason(null, failureReason, SOURCE_DOCKER_IMAGE, expectedMetadata);
+    Mockito.verifyNoMoreInteractions(jobErrorReportingClient);
+  }
+
+  @Test
   void testReportDestinationCheckJobFailure() throws JsonValidationException, ConfigNotFoundException, IOException {
     final String connectorCommand = "check";
     final FailureReason failureReason = new FailureReason()
@@ -321,6 +358,43 @@ class JobErrorReporterTest {
   }
 
   @Test
+  void testReportDestinationCheckJobFailureNullWorkspaceId() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final String connectorCommand = "check";
+    final FailureReason failureReason = new FailureReason()
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, connectorCommand))
+        .withFailureOrigin(FailureOrigin.DESTINATION)
+        .withFailureType(FailureType.SYSTEM_ERROR);
+
+    final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(JOB_ID, DESTINATION_DOCKER_IMAGE);
+
+    Mockito.when(configRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID))
+        .thenReturn(new StandardDestinationDefinition()
+            .withDockerRepository(DESTINATION_DOCKER_REPOSITORY)
+            .withReleaseStage(DESTINATION_RELEASE_STAGE)
+            .withDestinationDefinitionId(DESTINATION_DEFINITION_ID)
+            .withName(DESTINATION_DEFINITION_NAME));
+
+    jobErrorReporter.reportDestinationCheckJobFailure(DESTINATION_DEFINITION_ID, null, failureReason, jobContext);
+
+    final Map<String, String> expectedMetadata = Map.ofEntries(
+        Map.entry(JOB_ID_KEY, JOB_ID.toString()),
+        Map.entry(DEPLOYMENT_MODE_KEY, DEPLOYMENT_MODE.name()),
+        Map.entry(AIRBYTE_VERSION_KEY, AIRBYTE_VERSION),
+        Map.entry(FAILURE_ORIGIN_KEY, "destination"),
+        Map.entry(FAILURE_TYPE_KEY, SYSTEM_ERROR),
+        Map.entry(CONNECTOR_DEFINITION_ID_KEY, DESTINATION_DEFINITION_ID.toString()),
+        Map.entry(CONNECTOR_REPOSITORY_KEY, DESTINATION_DOCKER_REPOSITORY),
+        Map.entry(CONNECTOR_NAME_KEY, DESTINATION_DEFINITION_NAME),
+        Map.entry(CONNECTOR_RELEASE_STAGE_KEY, DESTINATION_RELEASE_STAGE.toString()),
+        Map.entry(CONNECTOR_COMMAND_KEY, connectorCommand));
+
+    Mockito.verify(jobErrorReportingClient).reportJobFailureReason(null, failureReason, DESTINATION_DOCKER_IMAGE, expectedMetadata);
+    Mockito.verifyNoMoreInteractions(jobErrorReportingClient);
+  }
+
+  @Test
   void testReportDiscoverJobFailure() throws JsonValidationException, ConfigNotFoundException, IOException {
     final FailureReason failureReason = new FailureReason()
         .withMetadata(new Metadata()
@@ -359,6 +433,42 @@ class JobErrorReporterTest {
         Map.entry(CONNECTOR_COMMAND_KEY, "discover"));
 
     Mockito.verify(jobErrorReportingClient).reportJobFailureReason(mWorkspace, failureReason, SOURCE_DOCKER_IMAGE, expectedMetadata);
+    Mockito.verifyNoMoreInteractions(jobErrorReportingClient);
+  }
+
+  @Test
+  void testReportDiscoverJobFailureNullWorkspaceId() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final FailureReason failureReason = new FailureReason()
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, "discover"))
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.SYSTEM_ERROR);
+
+    final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(JOB_ID, SOURCE_DOCKER_IMAGE);
+
+    Mockito.when(configRepository.getStandardSourceDefinition(SOURCE_DEFINITION_ID))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPOSITORY)
+            .withReleaseStage(SOURCE_RELEASE_STAGE)
+            .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+            .withName(SOURCE_DEFINITION_NAME));
+
+    jobErrorReporter.reportDiscoverJobFailure(SOURCE_DEFINITION_ID, null, failureReason, jobContext);
+
+    final Map<String, String> expectedMetadata = Map.ofEntries(
+        Map.entry(JOB_ID_KEY, JOB_ID.toString()),
+        Map.entry(DEPLOYMENT_MODE_KEY, DEPLOYMENT_MODE.name()),
+        Map.entry(AIRBYTE_VERSION_KEY, AIRBYTE_VERSION),
+        Map.entry(FAILURE_ORIGIN_KEY, SOURCE),
+        Map.entry(FAILURE_TYPE_KEY, SYSTEM_ERROR),
+        Map.entry(CONNECTOR_DEFINITION_ID_KEY, SOURCE_DEFINITION_ID.toString()),
+        Map.entry(CONNECTOR_REPOSITORY_KEY, SOURCE_DOCKER_REPOSITORY),
+        Map.entry(CONNECTOR_NAME_KEY, SOURCE_DEFINITION_NAME),
+        Map.entry(CONNECTOR_RELEASE_STAGE_KEY, SOURCE_RELEASE_STAGE.toString()),
+        Map.entry(CONNECTOR_COMMAND_KEY, "discover"));
+
+    Mockito.verify(jobErrorReportingClient).reportJobFailureReason(null, failureReason, SOURCE_DOCKER_IMAGE, expectedMetadata);
     Mockito.verifyNoMoreInteractions(jobErrorReportingClient);
   }
 
