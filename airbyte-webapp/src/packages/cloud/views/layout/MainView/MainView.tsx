@@ -30,13 +30,9 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
       CreditStatus.NEGATIVE_MAX_THRESHOLD,
       CreditStatus.NEGATIVE_WITHIN_GRACE_PERIOD,
     ].includes(cloudWorkspace.creditStatus) &&
-    !Boolean(cloudWorkspace.trialExpiryTimestamp);
+    !cloudWorkspace.trialExpiryTimestamp;
 
-  const alertToShow = showCreditsBanner
-    ? "credits"
-    : Boolean(cloudWorkspace.trialExpiryTimestamp)
-    ? "trial"
-    : undefined;
+  const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
 
   // exp-speedy-connection
   const { isExperimentVariant } = useExperimentSpeedyConnection();
