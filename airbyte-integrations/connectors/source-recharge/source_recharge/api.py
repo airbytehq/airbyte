@@ -19,6 +19,7 @@ class RechargeStream(HttpStream, ABC):
 
     limit = 250
     page_num = 1
+    raise_on_http_errors = True
 
     # regestring the default schema transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -62,6 +63,10 @@ class RechargeStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         res = super().should_retry(response)
+        if isinstance(response.json(), dict):
+            if response.status_code == requests.codes.FORBIDDEN:
+                setattr(self, "raise_on_http_errors", False)
+                return False
         if res:
             return res
 

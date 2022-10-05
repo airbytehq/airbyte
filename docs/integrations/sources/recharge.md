@@ -67,6 +67,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.2 | 2022-10-05 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Skip stream if we receive 403 error
 | 0.2.2 | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.
 | 0.2.1 | 2022-09-23 | [17080](https://github.com/airbytehq/airbyte/pull/17080) | Fix `total_weight` value to be `int` instead of `float`
 | 0.2.0 | 2022-09-21 | [16959](https://github.com/airbytehq/airbyte/pull/16959) | Use TypeTransformer to reliably convert to schema declared data types
