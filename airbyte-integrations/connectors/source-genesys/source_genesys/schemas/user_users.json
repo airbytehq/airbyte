@@ -38,6 +38,7 @@
     },
     "primaryContactInfo": {
       "type": "object",
+      "type": "array",
       "properties": {
         "address": {
           "type": ["null", "string"]
