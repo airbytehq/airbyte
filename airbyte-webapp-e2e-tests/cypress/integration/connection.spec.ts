@@ -48,7 +48,11 @@ describe("Connection main actions", () => {
     goToReplicationTab();
 
     selectSchedule("Every hour");
-    fillOutDestinationPrefix("auto_test");
+    const prefix = "auto_test";
+    fillOutDestinationPrefix(prefix);
+
+    // Ensures the prefix is applied to the streams
+    assert(cy.get(`[title*="${prefix}"]`));
 
     submitButtonClick();
 
