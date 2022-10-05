@@ -303,9 +303,11 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   );
 
   const onFormSubmit = useCallback(
-    (values: ServiceFormValues) => {
+    async (values: ServiceFormValues) => {
       const valuesToSend = getValues(values);
-      onSubmit(valuesToSend);
+      // This is currently wrongly typed but we'll need the await to not break code
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      await onSubmit(valuesToSend);
 
       clearFormChange(formId);
     },
