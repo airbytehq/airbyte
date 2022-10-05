@@ -155,7 +155,7 @@
               },
               "client_certificate": {
                 "type": "string",
-                "title": "Client Certificate (Optional)",
+                "title": "Client Certificate",
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -163,7 +163,7 @@
               },
               "client_key": {
                 "type": "string",
-                "title": "Client Key (Optional)",
+                "title": "Client Key",
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -171,7 +171,7 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
+                "title": "Client key password",
                 "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
@@ -201,7 +201,7 @@
               },
               "client_certificate": {
                 "type": "string",
-                "title": "Client Certificate (Optional)",
+                "title": "Client Certificate",
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -209,7 +209,7 @@
               },
               "client_key": {
                 "type": "string",
-                "title": "Client Key (Optional)",
+                "title": "Client Key",
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -217,7 +217,7 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
+                "title": "Client key password",
                 "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
