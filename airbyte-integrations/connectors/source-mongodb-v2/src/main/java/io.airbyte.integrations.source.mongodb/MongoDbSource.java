@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static com.mongodb.client.model.Filters.gt;
-import static io.airbyte.integrations.source.mongodb.MongoDbSourceUtils.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -56,8 +55,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final var credentials = config.has(USER) && config.has(JdbcUtils.PASSWORD_KEY)
-        ? String.format("%s:%s@", config.get(USER).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText())
+    final var credentials = config.has(MongoDbSourceUtils.USER) && config.has(JdbcUtils.PASSWORD_KEY)
+        ? String.format("%s:%s@", config.get(MongoDbSourceUtils.USER).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText())
         : StringUtils.EMPTY;
 
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -110,7 +109,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
           .nameSpace(database.getName())
           .name(collectionName)
           .fields(fields)
-          .primaryKeys(List.of(PRIMARY_KEY))
+          .primaryKeys(List.of(MongoDbSourceUtils.PRIMARY_KEY))
           .build();
 
       tableInfos.add(tableInfo);
@@ -192,7 +191,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     // when we have no cursor field here, at least id could be used as cursor here.
     // This logic will be used feather when we will implement part which will show only list of possible
     // cursor fields on UI
-    return ALLOWED_CURSOR_TYPES.contains(bsonType);
+    return MongoDbSourceUtils.ALLOWED_CURSOR_TYPES.contains(bsonType);
   }
 
   private AutoCloseableIterator<JsonNode> queryTable(final MongoDatabase database,
@@ -212,28 +211,30 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private String buildConnectionString(final JsonNode config, final String credentials) {
     final StringBuilder connectionStrBuilder = new StringBuilder();
 
-    final JsonNode instanceConfig = config.get(INSTANCE_TYPE);
-    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(INSTANCE).asText());
+    final JsonNode instanceConfig = config.get(MongoDbSourceUtils.INSTANCE_TYPE);
+    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(MongoDbSourceUtils.INSTANCE).asText());
     switch (instance) {
       case STANDALONE -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
+            String.format(MongoDbSourceUtils.MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
                 instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
-                config.get(JdbcUtils.DATABASE_KEY).asText(), config.get(AUTH_SOURCE).asText(), tlsEnabledForStandaloneInstance(config, instanceConfig)));
+                config.get(JdbcUtils.DATABASE_KEY).asText(),
+                config.get(MongoDbSourceUtils.AUTH_SOURCE).asText(), MongoDbSourceUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)));
       }
       case REPLICA -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(),
+            String.format(MongoDbSourceUtils.MONGODB_REPLICA_URL, credentials, instanceConfig.get(MongoDbSourceUtils.SERVER_ADDRESSES).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText(),
-                config.get(AUTH_SOURCE).asText()));
-        if (instanceConfig.has(REPLICA_SET)) {
-          connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
+                config.get(MongoDbSourceUtils.AUTH_SOURCE).asText()));
+        if (instanceConfig.has(MongoDbSourceUtils.REPLICA_SET)) {
+          connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(MongoDbSourceUtils.REPLICA_SET).asText()));
         }
       }
       case ATLAS -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(JdbcUtils.DATABASE_KEY).asText(),
-                config.get(AUTH_SOURCE).asText()));
+            String.format(MongoDbSourceUtils.MONGODB_CLUSTER_URL, credentials,
+                instanceConfig.get(MongoDbSourceUtils.CLUSTER_URL).asText(), config.get(JdbcUtils.DATABASE_KEY).asText(),
+                config.get(MongoDbSourceUtils.AUTH_SOURCE).asText()));
       }
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
     }
