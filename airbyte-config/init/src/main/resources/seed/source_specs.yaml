@@ -6073,8 +6073,8 @@
           title: "Client ID"
           type: "string"
           description: "The Client ID of your Marketo developer application. See <a\
-            \ href=\"https://docs.airbyte.com/integrations/sources/marketo\"> the docs\
-            \ </a> for info on how to obtain this."
+            \ href=\"https://docs.airbyte.com/integrations/sources/marketo\"> the\
+            \ docs </a> for info on how to obtain this."
           order: 0
           airbyte_secret: true
         client_secret:
@@ -10921,8 +10921,8 @@
           type: "string"
           airbyte_secret: true
           description: "Access Token for making authenticated requests. See the <a\
-            \ href=\"https://docs.airbyte.com/integrations/sources/surveymonkey\">docs</a>\
-            \ for information on how to generate this key."
+            \ href=\"https://docs.airbyte.com/integrations/sources/surveymonkey\"\
+            >docs</a> for information on how to generate this key."
         start_date:
           title: "Start Date"
           order: 1
@@ -12040,8 +12040,8 @@
                 type: "string"
                 title: "Access Token"
                 description: "The value of the API token generated. See the <a href=\"\
-                  https://docs.airbyte.com/integrations/sources/zendesk-support\">docs</a>\
-                  \ for more information."
+                  https://docs.airbyte.com/integrations/sources/zendesk-support\"\
+                  >docs</a> for more information."
                 airbyte_secret: true
           - title: "API Token"
             type: "object"
