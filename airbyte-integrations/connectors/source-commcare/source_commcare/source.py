@@ -18,17 +18,21 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 class CommcareStream(HttpStream, IncrementalMixin, ABC):
     url_base = "https://www.commcarehq.org/a/sc-baseline/api/v0.5/"
     forms = {}
-    dateformat = '%Y-%m-%dT%H:%M:%S'
+    dateformat = '%Y-%m-%dT%H:%M:%S.%f'
     initial_date = datetime(2022,1,1,0,0,0)
+    cursor_field = 'indexed_on'
+    _cursor_value = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.forms = {}
-        self._cursor_value = None
 
     @property
     def state(self) -> Mapping[str, Any]:
-        return {self.cursor_field: self._cursor_value.strftime(self.dateformat)}
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {self.cursor_field: self.initial_date}
     
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -61,11 +65,15 @@ class CommcareStream(HttpStream, IncrementalMixin, ABC):
         return None
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        print(f'++++++============= READ DONE {self._cursor_value} ===============')
         for record in super().read_records(*args, **kwargs):
-            if self._cursor_value:
-                latest_record_date = datetime.strptime(record[self.cursor_field], self.dateformat)
-                self._cursor_value = max(self._cursor_value, latest_record_date)
+            # print(self._cursor_value)
+            # print(record[self.cursor_field])
+            self._cursor_value = datetime.strptime(record[self.cursor_field], self.dateformat)
             yield record
+
+        print(f'######============= READ DONE {self._cursor_value} ===============')
+
 
 
 
@@ -82,10 +90,13 @@ class FormCase(CommcareStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         
-        ix = super().initial_date
-        if '_cursor_value' in stream_state:
-            ix = stream_state['_cursor_value']
-        params = {'format': 'json', 'indexed_on_start': ix.strftime(super().dateformat), 'order_by': 'indexed_on', 'limit': '5000'}
+        ix = self.state[self.cursor_field] if self.cursor_field in self.state else super().initial_date
+        params = {
+            'format': 'json', 
+            'indexed_on_start': ix.strftime(super().dateformat), 
+            'order_by': 'indexed_on', 
+            'limit': '5000'
+        }
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -117,10 +128,14 @@ class Form(CommcareStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         
-        ix = super().initial_date
-        if '_cursor_value' in stream_state:
-            ix = stream_state['_cursor_value']
-        params = {'format': 'json', 'app_id': self.app_id, 'indexed_on_start': ix.strftime(super().dateformat), 'order_by': 'indexed_on', 'limit': '1000'}
+        ix = self.state[self.cursor_field] if self.cursor_field in self.state else super().initial_date
+        params = {
+            'format': 'json', 
+            'app_id': self.app_id, 
+            'indexed_on_start': ix.strftime(super().dateformat), 
+            'order_by': 'indexed_on', 
+            'limit': '1000'
+        }
         if next_page_token:
             params.update(next_page_token)
         return params
