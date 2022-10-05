@@ -110,7 +110,7 @@ class DefaultNormalizationRunnerTest {
   @Test
   void test() throws Exception {
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory,
             NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
 
     when(process.exitValue()).thenReturn(0);
@@ -122,7 +122,7 @@ class DefaultNormalizationRunnerTest {
   void testLog() throws Exception {
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory,
             NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
 
     when(process.exitValue()).thenReturn(0);
@@ -145,7 +145,7 @@ class DefaultNormalizationRunnerTest {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory,
             NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
     runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements());
     runner.close();
@@ -158,7 +158,7 @@ class DefaultNormalizationRunnerTest {
     when(process.exitValue()).thenReturn(1);
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory,
             NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
@@ -171,16 +171,16 @@ class DefaultNormalizationRunnerTest {
   void testFailureWithTraceMessage() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    String errorTraceString = """
-                              {"type": "TRACE", "trace": {
-                                "type": "ERROR", "emitted_at": 123.0, "error": {
-                                  "message": "Something went wrong in normalization.", "internal_message": "internal msg",
-                                  "stack_trace": "abc.xyz", "failure_type": "system_error"}}}
-                              """.replace("\n", "");
+    final String errorTraceString = """
+                                    {"type": "TRACE", "trace": {
+                                      "type": "ERROR", "emitted_at": 123.0, "error": {
+                                        "message": "Something went wrong in normalization.", "internal_message": "internal msg",
+                                        "stack_trace": "abc.xyz", "failure_type": "system_error"}}}
+                                    """.replace("\n", "");
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(errorTraceString.getBytes(StandardCharsets.UTF_8)));
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory,
             NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
@@ -195,19 +195,19 @@ class DefaultNormalizationRunnerTest {
   void testFailureWithDbtError() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    String dbtErrorString = """
-                            [info ] [MainThread]: Completed with 1 error and 0 warnings:
-                            [info ] [MainThread]:
-                            [error] [MainThread]: Database Error in model xyz (models/generated/airbyte_incremental/abc/xyz.sql)
-                            [error] [MainThread]:   1292 (22007): Truncated incorrect DOUBLE value: 'ABC'
-                            [error] [MainThread]:   compiled SQL at ../build/run/airbyte_utils/models/generated/airbyte_incremental/abc/xyz.sql
-                            [info ] [MainThread]:
-                            [info ] [MainThread]: Done. PASS=1 WARN=0 ERROR=1 SKIP=0 TOTAL=2
-                            """;
+    final String dbtErrorString = """
+                                  [info ] [MainThread]: Completed with 1 error and 0 warnings:
+                                  [info ] [MainThread]:
+                                  [error] [MainThread]: Database Error in model xyz (models/generated/airbyte_incremental/abc/xyz.sql)
+                                  [error] [MainThread]:   1292 (22007): Truncated incorrect DOUBLE value: 'ABC'
+                                  [error] [MainThread]:   compiled SQL at ../build/run/airbyte_utils/models/generated/airbyte_incremental/abc/xyz.sql
+                                  [info ] [MainThread]:
+                                  [info ] [MainThread]: Done. PASS=1 WARN=0 ERROR=1 SKIP=0 TOTAL=2
+                                  """;
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(dbtErrorString.getBytes(StandardCharsets.UTF_8)));
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory,
             NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
@@ -222,14 +222,14 @@ class DefaultNormalizationRunnerTest {
   void testFailureWithDbtErrorJsonFormat() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    String dbtErrorString =
+    final String dbtErrorString =
         """
         {"code": "Q035", "data": {"description": "table model public.start_products", "execution_time": 0.1729569435119629, "index": 1, "status": "error", "total": 2}, "invocation_id": "6ada8ee5-11c1-4239-8bd0-7e45178217c5", "level": "error", "log_version": 1, "msg": "1 of 2 ERROR creating table model public.start_products................................................................. [\\u001b[31mERROR\\u001b[0m in 0.17s]", "node_info": {"materialized": "table", "node_finished_at": null, "node_name": "start_products", "node_path": "generated/airbyte_incremental/public/start_products.sql", "node_started_at": "2022-07-18T15:04:27.036328", "node_status": "compiling", "resource_type": "model", "type": "node_status", "unique_id": "model.airbyte_utils.start_products"}, "pid": 14, "thread_name": "Thread-1", "ts": "2022-07-18T15:04:27.215077Z", "type": "log_line"}
         """;
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(dbtErrorString.getBytes(StandardCharsets.UTF_8)));
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+        new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory,
             NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
