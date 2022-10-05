@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import urllib.parse
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
 
@@ -22,7 +23,12 @@ class GenesysStream(HttpStream, ABC):
             return int(delay_time)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+        response_json = response.json()
+
+        if response_json.get("nextUri"):
+            next_query_string = urllib.parse.urlsplit(response_json.get("nextUri")).query
+            params = dict(urllib.parse.parse_qsl(next_query_string))
+            return params
 
     def request_params(
         self,
@@ -31,12 +37,41 @@ class GenesysStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"pageSize": self.page_size}
-        return params
 
+        # Handle pagination by inserting the next page's token in the request parameters
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+        
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         yield from json_response.get("entities", [])
 
+class GenesysStreamPagination(GenesysStream):
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Expect the link header field to always contain the values ​​for `rel`, `results`, and `cursor`.
+        If there is actually the next page, rel="next"; results="true"; cursor="<next-page-token>".
+        """
+        if response.links["nextUri"] == "true":
+            return {"after": response.links["next"]["cursor"]}
+        else:
+            return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        if next_page_token:
+            params.update(next_page_token)
+
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()
 class RoutingOutboundEvents(GenesysStream):
     '''
     API Docs: https://developer.genesys.cloud/routing/routing/
