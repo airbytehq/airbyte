@@ -2,30 +2,56 @@
   "streams": [
     {
       "stream": {
-        "name": "users",
+        "name": "telephony_locations",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },{
+      "stream": {
+        "name": "telephony_providers_edges",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dateModified"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["dateModified"]
+    },
+    {
+      "stream": {
+        "name": "telephony_stations",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "groups",
+        "name": "user_users",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "locations",
+        "name": "user_groups",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dateModified"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["dateModified"]
     }
   ]
 }
