@@ -14,6 +14,7 @@ import {
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
+import { update } from "cypress/types/lodash";
 
 describe("Connection main actions", () => {
   beforeEach(() => {
@@ -125,48 +126,99 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it.only("creates a connection, then edits the schedule type", () => {
-      const sourceName = appendRandomString("Test connection source cypress PokeAPI");
-      const destName = appendRandomString("Test connection destination cypress")
-  
-      createTestConnection(sourceName, destName);
-  
-      cy.get("div").contains(sourceName).should("exist");
-      cy.get("div").contains(destName).should("exist");
-  
-      openSourceDestinationFromGrid(sourceName);
-  
-      goToReplicationTab();
+  it("creates a connection, then edits the schedule type", () => {
+    const sourceName = appendRandomString("Test connection source cypress PokeAPI");
+    const destName = appendRandomString("Test connection destination cypress")
 
-      cy.intercept("https://api.segment.io/v1/t").as("analyticsCall");
+    createTestConnection(sourceName, destName);
 
-      let analyticsCalls = 0;
+    cy.get("div").contains(sourceName).should("exist");
+    cy.get("div").contains(destName).should("exist");
 
-      selectSchedule("Cron");
-      cy.wait("@analyticsCall").then(() => {
-        analyticsCalls++;
+    openSourceDestinationFromGrid(sourceName);
+
+    goToReplicationTab();
+
+    cy.intercept("https://api.segment.io/v1/t").as("analyticsCall");
+
+    let analyticsCalls = 0;
+
+    selectSchedule("Cron");
+    cy.wait("@analyticsCall").then(() => {
+      analyticsCalls++;
+    });
+    submitButtonClick();
+    checkSuccessResult();
+
+    selectSchedule("Manual");
+    cy.wait("@analyticsCall").then(() => {
+      analyticsCalls++;
+    });
+    submitButtonClick();
+    checkSuccessResult();
+
+    selectSchedule("Every hour");
+    cy.wait("@analyticsCall").then(() => {
+      analyticsCalls++;
+      expect(analyticsCalls).to.eq(3);
+    });
+    submitButtonClick();
+    checkSuccessResult();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
+
+  it("Saving a connection's schedule type only changes expected values", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+    cy.intercept("/api/v1/web_backend/connections/get").as("getConnection");
+
+    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
+    const destName = appendRandomString("Test update connection Local JSON destination cypress")
+
+    createTestConnection(
+      sourceName,
+      destName
+    );
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(`${sourceName} <> ${destName}`);
+
+    let loadedConnection: any = null; // Should be a WebBackendConnectionRead
+    cy.wait("@getConnection").then((interception) => {
+      loadedConnection = interception.response?.body;
+      expect(!!loadedConnection).to.eq(true);
+    });
+
+    goToReplicationTab();
+
+    selectSchedule("Every hour");
+    submitButtonClick();
+
+    cy.wait("@updateConnection").then((interception) => {
+      // Schedule is pulled out here, but we don't do anything with is as it's legacy
+      const { scheduleType, scheduleData, schedule, ...connectionUpdate } = interception.response?.body;
+      expect(scheduleType).to.eq("basic");
+      expect(scheduleData.basicSchedule
+        ).to.deep.eq({
+        timeUnit
+          :
+          "hours",
+        units
+          :
+          1
       });
-      submitButtonClick();
-      checkSuccessResult();
+      const { scheduleType: readScheduleType, scheduleData: readScheduleData, ...connectionRead } = loadedConnection
+      expect(readScheduleType).to.eq("manual");
+      expect(readScheduleData).to.eq(undefined);
+      expect(connectionRead).to.deep.eq(connectionUpdate);
+    });
+    checkSuccessResult();
 
-      selectSchedule("Manual");
-      cy.wait("@analyticsCall").then(() => {
-        analyticsCalls++;
-      });
-      submitButtonClick();
-      checkSuccessResult();
-
-      selectSchedule("Every hour");
-      cy.wait("@analyticsCall").then(() => {
-        analyticsCalls++;
-        expect(analyticsCalls).to.eq(3);
-      });
-      submitButtonClick();
-      checkSuccessResult();
-
-      deleteSource(sourceName);
-      deleteDestination(destName);
-  })
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
 
   it("Delete connection", () => {
     const sourceName = "Test delete connection source cypress";
