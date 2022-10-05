@@ -62,17 +62,18 @@ class RechargeStream(HttpStream, ABC):
             return [response_data]
 
     def should_retry(self, response: requests.Response) -> bool:
-        res = super().should_retry(response)
-        if isinstance(response.json(), dict):
-            if response.status_code == requests.codes.FORBIDDEN:
-                setattr(self, "raise_on_http_errors", False)
-                return False
-        if res:
-            return res
-
-        # For some reason, successful responses contains incomplete data
         content_length = int(response.headers.get("Content-Length", 0))
-        return response.status_code == 200 and content_length > len(response.content)
+        incomplete_data_response = response.status_code == 200 and content_length > len(response.content)
+        forbidden_error = isinstance(response.json(), dict) and response.status_code == requests.codes.FORBIDDEN
+
+        if incomplete_data_response:
+            return True
+        elif forbidden_error:
+            setattr(self, "raise_on_http_errors", False)
+            return False
+
+        return super().should_retry(response)
+
 
 
 class IncrementalRechargeStream(RechargeStream, ABC):
