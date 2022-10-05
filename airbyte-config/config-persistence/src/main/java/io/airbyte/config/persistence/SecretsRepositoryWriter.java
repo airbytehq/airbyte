@@ -289,13 +289,18 @@ public class SecretsRepositoryWriter {
         previousWebhookConfig,
         workspace.getWebhookOperationConfigs(),
         webhookConfigSchema);
-    final JsonNode partialConfig = statefulUpdateSecrets(
-        workspace.getWorkspaceId(),
-        previousWebhookConfig,
-        workspace.getWebhookOperationConfigs(),
-        webhookConfigSchema);
+
+    final JsonNode partialConfig = workspace.getWebhookOperationConfigs() == null ? null
+        : statefulUpdateSecrets(
+            workspace.getWorkspaceId(),
+            previousWebhookConfig,
+            workspace.getWebhookOperationConfigs(),
+            webhookConfigSchema);
     LOGGER.info("partial config: {}", partialConfig);
-    final StandardWorkspace partialWorkspace = Jsons.clone(workspace).withWebhookOperationConfigs(partialConfig);
+    final StandardWorkspace partialWorkspace = Jsons.clone(workspace);
+    if (partialConfig != null) {
+      partialWorkspace.withWebhookOperationConfigs(partialConfig);
+    }
     LOGGER.info("persisting: {}", partialWorkspace);
     configRepository.writeStandardWorkspaceNoSecrets(partialWorkspace);
   }

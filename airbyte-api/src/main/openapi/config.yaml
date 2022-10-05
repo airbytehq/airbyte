@@ -3629,12 +3629,15 @@ components:
           $ref: "#/components/schemas/OperatorNormalization"
         dbt:
           $ref: "#/components/schemas/OperatorDbt"
+        webhook:
+          $ref: "#/components/schemas/OperatorWebhook"
     OperatorType:
       type: string
       enum:
         # - destination
         - normalization
         - dbt
+        - webhook
       # - docker
       # - webhook
     OperatorNormalization:
@@ -3658,6 +3661,18 @@ components:
           type: string
         dbtArguments:
           type: string
+    OperatorWebhook:
+      type: object
+      required:
+        - executionUrl
+      properties:
+        executionUrl:
+          type: string
+        executionBody:
+          type: string
+        webhookConfigName:
+          type: string
+          description: The name of the webhook configs to use from the workspace
     CheckOperationRead:
       type: object
       required:

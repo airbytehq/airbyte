@@ -7,6 +7,7 @@ package io.airbyte.workers.temporal.sync;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
+import io.airbyte.config.OperatorWebhookInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -43,6 +44,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private PersistStateActivity persistActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private WebhookOperationActivity webhookOperationActivity;
 
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
@@ -92,6 +95,14 @@ public class SyncWorkflowImpl implements SyncWorkflow {
               .withOperatorDbt(standardSyncOperation.getOperatorDbt());
 
           dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, syncInput.getResourceRequirements(), operatorDbtInput);
+        } else if (standardSyncOperation.getOperatorType() == OperatorType.WEBHOOK) {
+          LOGGER.info("running webhook activity: {}", standardSyncOperation);
+          webhookOperationActivity
+              .invokeWebhook(new OperatorWebhookInput()
+                  .withExecutionUrl(standardSyncOperation.getOperatorWebhook().getExecutionUrl())
+                  .withExecutionBody(standardSyncOperation.getOperatorWebhook().getExecutionBody())
+                  .withWebhookConfig(standardSyncOperation.getOperatorWebhook().getWebhookConfig()));
+          LOGGER.info("finished running dbt cloud");
         } else {
           final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
           LOGGER.error(message);

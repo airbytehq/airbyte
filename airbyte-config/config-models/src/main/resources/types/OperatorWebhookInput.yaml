@@ -1,0 +1,17 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/OperatorWebhookInput.yaml
+title: OperatorWebhookInput
+description: Execution input for a webhook operation
+type: object
+required:
+  - executionUrl
+  - webhookConfigName
+properties:
+  executionUrl:
+    type: string
+  executionBody:
+    type: string
+  webhookConfig:
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode

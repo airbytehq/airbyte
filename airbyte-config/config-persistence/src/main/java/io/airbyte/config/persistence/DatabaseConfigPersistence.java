@@ -36,6 +36,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
+import io.airbyte.config.OperatorWebhook;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -598,8 +599,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withName(record.get(OPERATION.NAME))
         .withWorkspaceId(record.get(OPERATION.WORKSPACE_ID))
         .withOperatorType(Enums.toEnum(record.get(OPERATION.OPERATOR_TYPE, String.class), OperatorType.class).orElseThrow())
-        .withOperatorNormalization(Jsons.deserialize(record.get(OPERATION.OPERATOR_NORMALIZATION).data(), OperatorNormalization.class))
-        .withOperatorDbt(Jsons.deserialize(record.get(OPERATION.OPERATOR_DBT).data(), OperatorDbt.class))
+        .withOperatorNormalization(record.get(OPERATION.OPERATOR_NORMALIZATION) == null ? null
+            : Jsons.deserialize(record.get(OPERATION.OPERATOR_NORMALIZATION).data(), OperatorNormalization.class))
+        .withOperatorDbt(
+            record.get(OPERATION.OPERATOR_DBT) == null ? null : Jsons.deserialize(record.get(OPERATION.OPERATOR_DBT).data(), OperatorDbt.class))
+        .withOperatorWebhook(record.get(OPERATION.OPERATOR_WEBHOOK) == null ? null
+            : Jsons.deserialize(record.get(OPERATION.OPERATOR_WEBHOOK).data(),
+                OperatorWebhook.class))
         .withTombstone(record.get(OPERATION.TOMBSTONE));
   }
 
@@ -1053,6 +1059,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                 io.airbyte.db.instance.configs.jooq.generated.enums.OperatorType.class).orElseThrow())
             .set(OPERATION.OPERATOR_NORMALIZATION, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorNormalization())))
             .set(OPERATION.OPERATOR_DBT, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorDbt())))
+            .set(OPERATION.OPERATOR_WEBHOOK, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorWebhook())))
             .set(OPERATION.TOMBSTONE, standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone())
             .set(OPERATION.UPDATED_AT, timestamp)
             .where(OPERATION.ID.eq(standardSyncOperation.getOperationId()))
@@ -1067,6 +1074,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                 io.airbyte.db.instance.configs.jooq.generated.enums.OperatorType.class).orElseThrow())
             .set(OPERATION.OPERATOR_NORMALIZATION, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorNormalization())))
             .set(OPERATION.OPERATOR_DBT, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorDbt())))
+            .set(OPERATION.OPERATOR_WEBHOOK, JSONB.valueOf(Jsons.serialize(standardSyncOperation.getOperatorWebhook())))
             .set(OPERATION.TOMBSTONE, standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone())
             .set(OPERATION.CREATED_AT, timestamp)
             .set(OPERATION.UPDATED_AT, timestamp)
