@@ -181,7 +181,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     LogClientSingleton.getInstance().setWorkspaceMdc(workerEnvironment, logConfigs.orElseThrow(),
         LogClientSingleton.getInstance().getSchedulerLogsRoot(Path.of(workspaceRoot)));
 
-    if (WorkerEnvironment.KUBERNETES.equals(workerEnvironment)) {
+    if (environment.getActiveNames().contains(Environment.KUBERNETES)) {
       KubePortManagerSingleton.init(temporalWorkerPorts);
     }
 
@@ -236,8 +236,10 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private void registerCheckConnection(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker checkConnectionWorker =
         factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkersConfig.getMaxCheckWorkers()));
+    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
     checkConnectionWorker
-        .registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(CheckConnectionWorkflowImpl.class));
+        .registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(CheckConnectionWorkflowImpl.class));
     checkConnectionWorker.registerActivitiesImplementations(checkConnectionActivities.orElseThrow().toArray(new Object[] {}));
     log.info("Check Connection Workflow registered.");
   }
@@ -256,15 +258,19 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private void registerDiscover(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker discoverWorker =
         factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkersConfig.getMaxDiscoverWorkers()));
+    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
     discoverWorker
-        .registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(DiscoverCatalogWorkflowImpl.class));
+        .registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(DiscoverCatalogWorkflowImpl.class));
     discoverWorker.registerActivitiesImplementations(discoverActivities.orElseThrow().toArray(new Object[] {}));
     log.info("Discover Workflow registered.");
   }
 
   private void registerGetSpec(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkersConfig.getMaxSpecWorkers()));
-    specWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SpecWorkflowImpl.class));
+    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
+    specWorker.registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(SpecWorkflowImpl.class));
     specWorker.registerActivitiesImplementations(specActivities.orElseThrow().toArray(new Object[] {}));
     log.info("Get Spec Workflow registered.");
   }
@@ -281,7 +287,9 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     for (final String taskQueue : taskQueues) {
       log.info("Registering sync workflow for task queue '{}'...", taskQueue);
       final Worker syncWorker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
-      syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
+      final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+          .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
+      syncWorker.registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
       syncWorker.registerActivitiesImplementations(syncActivities.orElseThrow().toArray(new Object[] {}));
     }
     log.info("Sync Workflow registered.");
