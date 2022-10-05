@@ -1,5 +1,5 @@
 import { JobItem } from "components/JobItem/JobItem";
-import { Card } from "components/ui";
+import { Card } from "components/ui/Card";
 
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";

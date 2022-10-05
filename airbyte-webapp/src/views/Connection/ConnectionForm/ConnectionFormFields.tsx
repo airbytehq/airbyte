@@ -5,7 +5,9 @@ import { Field, FieldProps } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Button, ControlLabels, Input } from "components";
+import { ControlLabels } from "components";
+import { Button } from "components/ui/Button";
+import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
