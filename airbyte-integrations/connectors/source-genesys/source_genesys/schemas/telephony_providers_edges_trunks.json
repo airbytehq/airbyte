@@ -152,7 +152,7 @@
       "type": ["null", "number"]
     },
     "proxyAddressList": {
-      "type": ["null", "string"]
+      "type": ["array"]
     },
     "selfUri": {
       "type": ["null", "string"]

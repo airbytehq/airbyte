@@ -108,7 +108,7 @@
       }
     },
     "lines": {
-      "type": "object",
+      "type": "array",
       "properties": {
         "id": {
           "type": ["null", "string"]

@@ -52,7 +52,7 @@
       "type": ["null", "string"]
     },
     "classificationTypes": {
-      "type": ["null", "string"]
+      "type": ["array"]
     },
     "enabled": {
       "type": ["null", "boolean"]
@@ -61,7 +61,7 @@
       "type": ["null", "string"]
     },
     "externalTrunkBases": {
-      "type": "object",
+      "type": "array",
       "properties": {
         "id": {
           "type": ["null", "string"]

@@ -8,8 +8,6 @@
     "name": {
       "type": ["null", "string"]
     },
-    "description": {
-      "type": ["null", "string"]
     "dateModified": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -26,24 +24,10 @@
     "type": {
       "type": ["null", "string"]
     },
-    "images": {
-      "type": "object",
-      "properties": {
-        "resolution": {
-          "type": ["null", "string"]
-        },
-        "imageUri": {
-          "type": ["null", "string"]
-        }
-      }
-    },
     "addresses": {
       "type": "array",
       "properties": {
         "address": {
-          "type": ["null", "string"]
-        },
-        "extension": {
           "type": ["null", "string"]
         },
         "display": {
@@ -53,12 +37,6 @@
           "type": ["null", "string"]
         },
         "mediaType": {
-          "type": ["null", "string"]
-        },
-        "street2": {
-          "type": ["null", "string"]
-        },
-        "zipcode": {
           "type": ["null", "string"]
         }
       }
@@ -79,10 +57,6 @@
     },
     "selfUri": {
       "type": ["null", "string"]
-    },
-    "dateModified": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }

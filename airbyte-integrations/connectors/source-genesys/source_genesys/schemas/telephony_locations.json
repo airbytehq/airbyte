@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "name": {
       "type": ["null", "string"]
@@ -67,9 +67,6 @@
     },
     "version": {
       "type": ["null", "number"]
-    },
-    "path": {
-      "type": ["null", "string"]
     },
     "profileImage": {
       "type": "object",
