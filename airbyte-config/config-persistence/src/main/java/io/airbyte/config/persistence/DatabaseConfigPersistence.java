@@ -1113,6 +1113,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
+            .set(CONNECTION.GEOGRAPHY, standardSync.getGeography())
             .where(CONNECTION.ID.eq(standardSync.getConnectionId()))
             .execute();
 
@@ -1151,6 +1152,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
+            .set(CONNECTION.GEOGRAPHY, standardSync.getGeography())
             .set(CONNECTION.CREATED_AT, timestamp)
             .set(CONNECTION.UPDATED_AT, timestamp)
             .execute();

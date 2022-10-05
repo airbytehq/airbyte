@@ -114,3 +114,5 @@ properties:
     format: uuid
   resourceRequirements:
     "$ref": ResourceRequirements.yaml
+  geography:
+    "$ref": Geography.yaml

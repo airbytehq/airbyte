@@ -3194,6 +3194,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     WebBackendConnectionCreate:
       type: object
       required:
