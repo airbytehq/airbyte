@@ -8,9 +8,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultNormalizationWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
@@ -26,12 +25,10 @@ import lombok.extern.slf4j.Slf4j;
 public class NormalizationJobOrchestrator implements JobOrchestrator<NormalizationInput> {
 
   private final Configs configs;
-  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
 
-  public NormalizationJobOrchestrator(final Configs configs, final WorkerConfigs workerConfigs, final ProcessFactory processFactory) {
+  public NormalizationJobOrchestrator(final Configs configs, final ProcessFactory processFactory) {
     this.configs = configs;
-    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
   }
 
@@ -59,7 +56,6 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
         NormalizationRunnerFactory.create(
-            workerConfigs,
             destinationLauncherConfig.getDockerImage(),
             processFactory,
             NormalizationRunnerFactory.NORMALIZATION_VERSION),

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { DropDownRow } from "components";
+import { DropDownOptionDataItem } from "components/ui/DropDown";
 
 import { frequencyConfig } from "config/frequencyConfig";
 import { SyncSchema } from "core/domain/catalog";
@@ -24,7 +24,7 @@ import {
   SyncMode,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
-import { ConnectionOrPartialConnection } from "hooks/services/Connection/ConnectionFormService";
+import { ConnectionOrPartialConnection } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
@@ -294,7 +294,7 @@ export const useInitialValues = (
 
 export const useFrequencyDropdownData = (
   additionalFrequency: WebBackendConnectionRead["scheduleData"]
-): DropDownRow.IDataItem[] => {
+): DropDownOptionDataItem[] => {
   const { formatMessage } = useIntl();
 
   return useMemo(() => {

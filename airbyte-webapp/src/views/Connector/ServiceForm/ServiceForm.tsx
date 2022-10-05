@@ -121,8 +121,11 @@ export interface ServiceFormProps {
   formId?: string;
   availableServices: ConnectorDefinition[];
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
-  onServiceSelect?: (id: string) => void;
-  onSubmit: (values: ServiceFormValues) => void;
+  onServiceSelect?: (
+    id: string,
+    trackParams?: { actionDescription: string; connector_destination_suggested: boolean }
+  ) => void;
+  onSubmit: (values: ServiceFormValues) => Promise<void> | void;
   isLoading?: boolean;
   isEditMode?: boolean;
   formValues?: Partial<ServiceFormValues>;

@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.config;
 
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.general.DocumentStoreClient;
@@ -13,10 +14,10 @@ import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Optional;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * Micronaut bean factory for container orchestrator configuration-related singletons.
@@ -40,7 +41,8 @@ public class ContainerOrchestratorConfigBeanFactory {
                                                                            @Value("${airbyte.container.orchestrator.secret-mount-path}") final String containerOrchestratorSecretMountPath,
                                                                            @Value("${airbyte.container.orchestrator.secret-name}") final String containerOrchestratorSecretName,
                                                                            @Value("${google.application.credentials}") final String googleApplicationCredentials,
-                                                                           @Value("${airbyte.worker.job.kube.namespace}") final String namespace) {
+                                                                           @Value("${airbyte.worker.job.kube.namespace}") final String namespace,
+                                                                           final WorkerEnvironment workerEnvironment) {
     final var kubernetesClient = new DefaultKubernetesClient();
 
     final DocumentStoreClient documentStoreClient = StateClients.create(
@@ -55,7 +57,8 @@ public class ContainerOrchestratorConfigBeanFactory {
         containerOrchestratorSecretMountPath,
         StringUtils.isNotEmpty(containerOrchestratorImage) ? containerOrchestratorImage : "airbyte/container-orchestrator:" + airbyteVersion,
         containerOrchestratorImagePullPolicy,
-        googleApplicationCredentials);
+        googleApplicationCredentials,
+        workerEnvironment);
   }
 
 }

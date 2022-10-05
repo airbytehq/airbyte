@@ -492,7 +492,7 @@ public class MockData {
         .withNamespaceFormat("")
         .withPrefix("")
         .withResourceRequirements(resourceRequirements)
-        .withStatus(Status.INACTIVE)
+        .withStatus(Status.DEPRECATED)
         .withSchedule(schedule);
 
     final StandardSync standardSync5 = new StandardSync()

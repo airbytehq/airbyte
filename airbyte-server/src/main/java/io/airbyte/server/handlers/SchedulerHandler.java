@@ -48,19 +48,19 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.SynchronousJobMetadata;
-import io.airbyte.scheduler.client.SynchronousResponse;
-import io.airbyte.scheduler.client.SynchronousSchedulerClient;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.OauthModelConverter;
 import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
+import io.airbyte.server.scheduler.EventRunner;
+import io.airbyte.server.scheduler.SynchronousJobMetadata;
+import io.airbyte.server.scheduler.SynchronousResponse;
+import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.ErrorCode;
@@ -220,14 +220,8 @@ public class SchedulerHandler {
         configRepository.getActorCatalog(discoverSchemaRequestBody.getSourceId(), connectorVersion, configHash);
     final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
-      final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
-      final SourceDiscoverSchemaRead returnValue = discoverJobToOutput(response);
-      if (response.isSuccess()) {
-        final UUID catalogId =
-            configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
-        returnValue.catalogId(catalogId);
-      }
-      return returnValue;
+      final SynchronousResponse<UUID> persistedCatalogId = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, connectorVersion);
+      return retrieveDiscoveredSchema(persistedCatalogId);
     }
     final AirbyteCatalog airbyteCatalog = Jsons.object(currentCatalog.get().getCatalog(), AirbyteCatalog.class);
     final SynchronousJobRead emptyJob = new SynchronousJobRead()
@@ -257,16 +251,19 @@ public class SchedulerHandler {
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
         .withConfiguration(partialConfig);
-    final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
-    return discoverJobToOutput(response);
+    final SynchronousResponse<UUID> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, sourceDef.getDockerImageTag());
+    return retrieveDiscoveredSchema(response);
   }
 
-  private SourceDiscoverSchemaRead discoverJobToOutput(final SynchronousResponse<AirbyteCatalog> response) {
+  private SourceDiscoverSchemaRead retrieveDiscoveredSchema(final SynchronousResponse<UUID> response) throws ConfigNotFoundException, IOException {
     final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
     if (response.isSuccess()) {
-      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(response.getOutput()));
+      ActorCatalog catalog = configRepository.getActorCatalogById(response.getOutput());
+      final AirbyteCatalog persistenceCatalog = Jsons.object(catalog.getCatalog(),
+          io.airbyte.protocol.models.AirbyteCatalog.class);
+      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(persistenceCatalog));
     }
 
     return sourceDiscoverSchemaRead;

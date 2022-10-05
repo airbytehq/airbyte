@@ -3,7 +3,10 @@ import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
-import { LoadingButton, Switch } from "components";
+import { Button } from "components/ui/Button";
+import { Switch } from "components/ui/Switch";
+
+import { useEnableConnection } from "hooks/services/useConnectionHook";
 
 interface IProps {
   allowSync?: boolean;
@@ -11,28 +14,28 @@ interface IProps {
   isSyncing?: boolean;
   isManual?: boolean;
   id: string;
-  onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
 }
-
-const SmallButton = styled(LoadingButton)`
-  padding: 6px 8px 7px;
-`;
 
 const ProgressMessage = styled.div`
   padding: 7px 0;
 `;
 
-const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, isSyncing, onSync, allowSync }) => {
+const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing, onSync, allowSync }) => {
+  const { mutateAsync: enableConnection, isLoading } = useEnableConnection();
+
   const [{ loading }, OnLaunch] = useAsyncFn(async (event: React.SyntheticEvent) => {
     event.stopPropagation();
-    await onSync(id);
+    onSync(id);
   }, []);
 
   if (!isManual) {
-    const onSwitchChange = (event: React.SyntheticEvent) => {
+    const onSwitchChange = async (event: React.SyntheticEvent) => {
       event.stopPropagation();
-      onChangeStatus(id);
+      await enableConnection({
+        connectionId: id,
+        enable: !enabled,
+      });
     };
 
     return (
@@ -42,7 +45,7 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, i
         onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
         onKeyPress={(event: React.SyntheticEvent) => event.stopPropagation()}
       >
-        <Switch checked={enabled} onChange={onSwitchChange} disabled={!allowSync} />
+        <Switch checked={enabled} onChange={onSwitchChange} disabled={!allowSync} loading={isLoading} />
       </div>
     );
   }
@@ -56,9 +59,9 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, i
   }
 
   return (
-    <SmallButton onClick={OnLaunch} isLoading={loading} disabled={!allowSync}>
+    <Button size="xs" onClick={OnLaunch} isLoading={loading} disabled={!allowSync || !enabled}>
       <FormattedMessage id="tables.launch" />
-    </SmallButton>
+    </Button>
   );
 };
 
