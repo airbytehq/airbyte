@@ -125,7 +125,7 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it("creates a connection, then edits the schedule type", () => {
+  it.only("creates a connection, then edits the schedule type", () => {
       const sourceName = appendRandomString("Test connection source cypress PokeAPI");
       const destName = appendRandomString("Test connection destination cypress")
   
@@ -138,15 +138,29 @@ describe("Connection main actions", () => {
   
       goToReplicationTab();
 
+      cy.intercept("https://api.segment.io/v1/t").as("analyticsCall");
+
+      let analyticsCalls = 0;
+
       selectSchedule("Cron");
+      cy.wait("@analyticsCall").then(() => {
+        analyticsCalls++;
+      });
       submitButtonClick();
       checkSuccessResult();
 
       selectSchedule("Manual");
+      cy.wait("@analyticsCall").then(() => {
+        analyticsCalls++;
+      });
       submitButtonClick();
       checkSuccessResult();
 
       selectSchedule("Every hour");
+      cy.wait("@analyticsCall").then(() => {
+        analyticsCalls++;
+        expect(analyticsCalls).to.eq(3);
+      });
       submitButtonClick();
       checkSuccessResult();
 
