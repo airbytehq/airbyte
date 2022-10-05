@@ -39,9 +39,11 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.discovery.event.ServiceReadyEvent;
 import io.micronaut.scheduling.TaskExecutors;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.worker.NonDeterministicException;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
+import io.temporal.worker.WorkflowImplementationOptions;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -179,7 +181,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     LogClientSingleton.getInstance().setWorkspaceMdc(workerEnvironment, logConfigs.orElseThrow(),
         LogClientSingleton.getInstance().getSchedulerLogsRoot(Path.of(workspaceRoot)));
 
-    if (WorkerEnvironment.KUBERNETES.equals(workerEnvironment)) {
+    if (environment.getActiveNames().contains(Environment.KUBERNETES)) {
       KubePortManagerSingleton.init(temporalWorkerPorts);
     }
 
@@ -243,8 +245,10 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private void registerConnectionManager(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
+    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
     connectionUpdaterWorker
-        .registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
+        .registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
     connectionUpdaterWorker.registerActivitiesImplementations(connectionManagerActivities.orElseThrow().toArray(new Object[] {}));
     log.info("Connection Manager Workflow registered.");
   }

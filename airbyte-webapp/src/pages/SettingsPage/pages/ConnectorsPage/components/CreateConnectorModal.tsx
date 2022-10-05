@@ -4,7 +4,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, LabeledInput, Link, StatusIcon } from "components";
+import { LabeledInput, Link, StatusIcon } from "components";
+import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
 
 import { useConfig } from "config";
@@ -117,8 +118,8 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
           validateOnBlur
           validateOnChange
           validationSchema={validationSchema}
-          onSubmit={async (values, { setSubmitting }) => {
-            await onSubmit(values);
+          onSubmit={(values, { setSubmitting }) => {
+            onSubmit(values);
             setSubmitting(false);
           }}
         >

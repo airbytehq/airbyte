@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";
@@ -109,7 +109,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
     });
-    await analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
+    analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
       actionDescription: "Checkout Start",
     });
     // Forward to stripe as soon as we created a checkout session successfully
