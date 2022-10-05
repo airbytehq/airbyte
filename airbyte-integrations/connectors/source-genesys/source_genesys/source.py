@@ -36,6 +36,15 @@ class GenesysStream(HttpStream, ABC):
         json_response = response.json()
         yield from json_response.get("entities", [])
 
+class RoutingOutboundEvents(GenesysStream):
+    '''
+    API Docs: https://developer.genesys.cloud/routing/routing/
+    '''
+    primary_key = "id"
+    # next: pageNumber
+
+    def path(self, **kwargs) -> str:
+        return "routing/assessments"
 class RoutingRoutingAssessments(GenesysStream):
     '''
     API Docs: https://developer.genesys.cloud/routing/routing/
@@ -272,6 +281,7 @@ class SourceGenesys(AbstractSource):
             "authenticator": TokenAuthenticator(response.json()["access_token"])
         }
         return [
+            RoutingOutboundEvents(**args),
             RoutingRoutingAssessments(**args),
             RoutingRoutingQueues(**args),
             TelephonyLocations(**args),
