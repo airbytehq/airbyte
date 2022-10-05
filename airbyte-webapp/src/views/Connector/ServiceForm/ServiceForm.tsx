@@ -125,7 +125,7 @@ export interface ServiceFormProps {
     id: string,
     trackParams?: { actionDescription: string; connector_destination_suggested: boolean }
   ) => void;
-  onSubmit: (values: ServiceFormValues) => void;
+  onSubmit: (values: ServiceFormValues) => Promise<void> | void;
   isLoading?: boolean;
   isEditMode?: boolean;
   formValues?: Partial<ServiceFormValues>;
@@ -305,8 +305,6 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const onFormSubmit = useCallback(
     async (values: ServiceFormValues) => {
       const valuesToSend = getValues(values);
-      // This is currently wrongly typed but we'll need the await to not break code
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       await onSubmit(valuesToSend);
 
       clearFormChange(formId);
