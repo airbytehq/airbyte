@@ -70,6 +70,7 @@ class RechargeStream(HttpStream, ABC):
             return True
         elif forbidden_error:
             setattr(self, "raise_on_http_errors", False)
+            self.logger.error(f"Skiping stream {self.name} because of a 403 error.")
             return False
 
         return super().should_retry(response)
