@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Switch } from "components";
+import { Switch } from "components/ui/Switch";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";

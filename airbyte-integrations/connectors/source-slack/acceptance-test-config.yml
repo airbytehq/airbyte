@@ -18,8 +18,6 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_catalog.json"
-      expect_records:
-        path: "integration_tests/expected_records.txt"
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/incremental_catalog.json"

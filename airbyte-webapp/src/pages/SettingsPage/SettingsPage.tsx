@@ -7,7 +7,7 @@ import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import { PageHeader } from "components/ui/PageHeader";
-import { SideMenu, CategoryItem } from "components/ui/SideMenu";
+import { SideMenu, CategoryItem, SideMenuItem } from "components/ui/SideMenu";
 
 import useConnector from "hooks/services/useConnector";
 
@@ -105,6 +105,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
             <Routes>
               {menuItems
                 .flatMap((menuItem) => menuItem.routes)
+                .filter(
+                  (menuItem): menuItem is SideMenuItem & { component: NonNullable<SideMenuItem["component"]> } =>
+                    !!menuItem.component
+                )
                 .map(({ path, component: Component }) => (
                   <Route key={path} path={path} element={<Component />} />
                 ))}

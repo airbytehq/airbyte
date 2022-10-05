@@ -2,7 +2,7 @@ import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { ChangeEvent, useState } from "react";
 
-import { Input } from "components";
+import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
