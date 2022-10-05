@@ -20,12 +20,9 @@ class CommcareStream(HttpStream, IncrementalMixin, ABC):
     forms = {}
     dateformat = '%Y-%m-%dT%H:%M:%S.%f'
     initial_date = datetime(2022,1,1,0,0,0)
+    last_form_date = initial_date
     cursor_field = 'indexed_on'
     _cursor_value = None
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.forms = {}
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -64,18 +61,6 @@ class CommcareStream(HttpStream, IncrementalMixin, ABC):
             yield o
         return None
 
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        print(f'++++++============= READ DONE {self._cursor_value} ===============')
-        for record in super().read_records(*args, **kwargs):
-            # print(self._cursor_value)
-            # print(record[self.cursor_field])
-            self._cursor_value = datetime.strptime(record[self.cursor_field], self.dateformat)
-            yield record
-
-        print(f'######============= READ DONE {self._cursor_value} ===============')
-
-
-
 
 class FormCase(CommcareStream):
     cursor_field = 'indexed_on'
@@ -90,7 +75,8 @@ class FormCase(CommcareStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         
-        ix = self.state[self.cursor_field] if self.cursor_field in self.state else super().initial_date
+        # start date is what we saved for forms
+        ix = self.state[self.cursor_field] if self.cursor_field in self.state else super().last_form_date
         params = {
             'format': 'json', 
             'indexed_on_start': ix.strftime(super().dateformat), 
@@ -111,7 +97,16 @@ class FormCase(CommcareStream):
             if found:
                 yield o
         return None
-    
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            yield record
+
+        super().forms.clear()
+        self._cursor_value = super().last_form_date
+        print(f'######============= CASE READ DONE {self.state[self.cursor_field]} ===============')
+
+
 class Form(CommcareStream):
     cursor_field = 'indexed_on'
     primary_key = "id"
@@ -146,7 +141,13 @@ class Form(CommcareStream):
             yield o
         return None
     
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            self._cursor_value = datetime.strptime(record[self.cursor_field], self.dateformat)
+            yield record
 
+        print(f'######============= FORM READ DONE {self.state[self.cursor_field]} ===============')
+        CommcareStream.last_form_date = self._cursor_value
 
 # Source
 class SourceCommcare(AbstractSource):
