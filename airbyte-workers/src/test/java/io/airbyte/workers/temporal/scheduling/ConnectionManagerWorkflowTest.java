@@ -719,7 +719,7 @@ class ConnectionManagerWorkflowTest {
 
     @Test
     @Timeout(value = 10,
-        unit = TimeUnit.SECONDS)
+             unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a non-running workflow starts a reset job")
     void resetAndContinue() throws InterruptedException {
 
