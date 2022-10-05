@@ -30,7 +30,8 @@ class GenesysStream(HttpStream, ABC):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {}
+        params = {"pageSize": self.page_size}
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
@@ -183,19 +184,6 @@ class UserGroups(GenesysStream):
     def path(self, **kwargs) -> str:
         return "groups"
 
-# https://developer.genesys.cloud/routing/conversations/conversations-apis
-# https://developer.genesys.cloud/routing/architect/
-# https://developer.genesys.cloud/routing/outbound/
-# https://developer.genesys.cloud/routing/scripts/
-# https://developer.genesys.cloud/telephony/telephony-apis
-# https://developer.genesys.cloud/commdigital/voicemail/
-
-# analytics
-# https://developer.genesys.cloud/routing/conversations/conversations-apis
-
-
-
-# # Basic incremental stream
 # class IncrementalGenesysStream(GenesysStream, ABC):
 #     """
 #     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
