@@ -33,10 +33,13 @@ public class TemporalEventRunner implements EventRunner {
   }
 
   @Override
-  public ManualOperationResult resetConnection(final UUID connectionId,
-                                               final List<StreamDescriptor> streamsToReset,
-                                               final boolean runSyncImmediately) {
-    return temporalClient.resetConnection(connectionId, streamsToReset, runSyncImmediately);
+  public ManualOperationResult resetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset) {
+    return temporalClient.resetConnection(connectionId, streamsToReset);
+  }
+
+  @Override
+  public ManualOperationResult synchronousResetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset) {
+    return temporalClient.synchronousResetConnection(connectionId, streamsToReset);
   }
 
   @Override

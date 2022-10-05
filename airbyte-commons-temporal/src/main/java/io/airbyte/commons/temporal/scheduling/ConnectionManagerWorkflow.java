@@ -56,9 +56,6 @@ public interface ConnectionManagerWorkflow {
   @SignalMethod
   void resetConnection();
 
-  @SignalMethod
-  void resetConnectionAndSkipNextScheduling();
-
   /**
    * If an activity fails the workflow will be stuck. This signal activity can be used to retry the
    * activity.

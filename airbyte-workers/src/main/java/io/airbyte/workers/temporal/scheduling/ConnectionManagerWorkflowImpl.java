@@ -493,18 +493,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   @Override
-  public void resetConnectionAndSkipNextScheduling() {
-    if (workflowState.isDoneWaiting()) {
-      workflowState.setCancelledForReset(true);
-      workflowState.setSkipSchedulingNextWorkflow(true);
-      cancellableSyncWorkflow.cancel();
-    } else {
-      workflowState.setSkipScheduling(true);
-      workflowState.setSkipSchedulingNextWorkflow(true);
-    }
-  }
-
-  @Override
   public void retryFailedActivity() {
     workflowState.setRetryFailedActivity(true);
   }
@@ -549,9 +537,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     workflowInternalState.getFailures().clear();
     workflowInternalState.setPartialSuccess(null);
     final boolean isDeleted = workflowState.isDeleted();
-    if (workflowState.isSkipSchedulingNextWorkflow()) {
-      connectionUpdaterInput.setSkipScheduling(true);
-    }
     workflowState.reset();
     if (!isDeleted) {
       Workflow.continueAsNew(connectionUpdaterInput);
