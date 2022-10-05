@@ -1,9 +1,9 @@
 import { components, MenuProps } from "react-select";
 import styled from "styled-components";
 
-import { IDataItem } from "./Option";
+import { DropDownOptionDataItem } from "./Option";
 
-const Menu = styled(components.Menu)<MenuProps<IDataItem, false>>`
+export const Menu = styled(components.Menu)<MenuProps<DropDownOptionDataItem, false>>`
   background: ${({ theme }) => theme.textColor};
 
   &.react-select__menu {
@@ -26,5 +26,3 @@ const Menu = styled(components.Menu)<MenuProps<IDataItem, false>>`
     }
   }
 `;
-
-export default Menu;
