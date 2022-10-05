@@ -752,7 +752,7 @@ class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
                         response_json["error"], response_json["error_description"], e
                     )
                 ) from e
-            raise Exception(f"Error refreshing access token: {e.response.status_code}: {e.response.text}") from e
+            raise Exception(f"Error refreshing access token: {response.status_code}: {response.text}") from e
         else:
             return response_json["access_token"], response_json["expires_in"]
 
