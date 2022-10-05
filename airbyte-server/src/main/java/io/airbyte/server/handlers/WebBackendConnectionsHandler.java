@@ -52,6 +52,7 @@ import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ProtocolConverters;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -421,9 +422,12 @@ public class WebBackendConnectionsHandler {
         if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET) {
           streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
         }
-        eventRunner.resetConnection(
+        ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
             connectionId,
-            streamsToReset, true);
+            streamsToReset);
+        verifyManualOperationResult(manualOperationResult);
+        manualOperationResult = eventRunner.startNewManualSync(connectionId);
+        verifyManualOperationResult(manualOperationResult);
 
         // return updated connectionRead after reset
         return connectionsHandler.getConnection(connectionId);
@@ -431,6 +435,12 @@ public class WebBackendConnectionsHandler {
     }
     // if no reset was necessary, return the connectionRead without changes
     return updatedConnectionRead;
+  }
+
+  private void verifyManualOperationResult(final ManualOperationResult manualOperationResult) throws IllegalStateException {
+    if (manualOperationResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(manualOperationResult.getFailingReason().get());
+    }
   }
 
   private List<UUID> createOperations(final WebBackendConnectionCreate webBackendConnectionCreate)
