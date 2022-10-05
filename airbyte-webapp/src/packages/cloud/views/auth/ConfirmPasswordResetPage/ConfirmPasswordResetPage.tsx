@@ -5,7 +5,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { LabeledInput, Link, Button } from "components";
+import { LabeledInput, Link } from "components";
+import { Button } from "components/ui/Button";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useQuery } from "hooks/useQuery";
