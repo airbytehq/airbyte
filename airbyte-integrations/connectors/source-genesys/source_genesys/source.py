@@ -46,31 +46,6 @@ class GenesysStream(HttpStream, ABC):
         json_response = response.json()
         yield from json_response.get("entities", [])
 
-class GenesysStreamPagination(GenesysStream):
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Expect the link header field to always contain the values ​​for `rel`, `results`, and `cursor`.
-        If there is actually the next page, rel="next"; results="true"; cursor="<next-page-token>".
-        """
-        if response.links["nextUri"] == "true":
-            return {"after": response.links["next"]["cursor"]}
-        else:
-            return None
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
-        if next_page_token:
-            params.update(next_page_token)
-
-        return params
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
 class RoutingOutboundEvents(GenesysStream):
     '''
     API Docs: https://developer.genesys.cloud/routing/routing/
