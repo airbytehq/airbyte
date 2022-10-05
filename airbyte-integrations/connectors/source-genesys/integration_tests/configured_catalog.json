@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "routing_assessments",
+        "name": "routing_routing_assessments",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -14,7 +14,7 @@
     },
     {
       "stream": {
-        "name": "routing_queues",
+        "name": "routing_routing_queues",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

@@ -36,7 +36,7 @@ class GenesysStream(HttpStream, ABC):
         json_response = response.json()
         yield from json_response.get("entities", [])
 
-class RoutingAssessments(GenesysStream):
+class RoutingRoutingAssessments(GenesysStream):
     '''
     API Docs: https://developer.genesys.cloud/routing/routing/
     '''
@@ -47,7 +47,7 @@ class RoutingAssessments(GenesysStream):
 
     def path(self, **kwargs) -> str:
         return "routing/assessments"
-class RoutingQueues(GenesysStream):
+class RoutingRoutingQueues(GenesysStream):
     '''
     API Docs: https://developer.genesys.cloud/routing/routing/
     '''
@@ -177,7 +177,6 @@ class UserGroups(GenesysStream):
 # https://developer.genesys.cloud/routing/conversations/conversations-apis
 # https://developer.genesys.cloud/routing/architect/
 # https://developer.genesys.cloud/routing/outbound/
-# https://developer.genesys.cloud/routing/routing/
 # https://developer.genesys.cloud/routing/scripts/
 # https://developer.genesys.cloud/telephony/telephony-apis
 # https://developer.genesys.cloud/commdigital/voicemail/
@@ -273,8 +272,8 @@ class SourceGenesys(AbstractSource):
             "authenticator": TokenAuthenticator(response.json()["access_token"])
         }
         return [
-            RoutingAssessments(**args),
-            RoutingQueues(**args),
+            RoutingRoutingAssessments(**args),
+            RoutingRoutingQueues(**args),
             TelephonyLocations(**args),
             TelephonyProvidersEdges(**args),
             TelephonyProvidersEdgesDids(**args),
