@@ -188,7 +188,7 @@ describe("Connection main actions", () => {
     let loadedConnection: any = null; // Should be a WebBackendConnectionRead
     cy.wait("@getConnection").then((interception) => {
       loadedConnection = interception.response?.body;
-      expect(!!loadedConnection).to.eq(true);
+      expect(loadedConnection).not.to.eq(null);
     });
 
     goToReplicationTab();
