@@ -17,9 +17,9 @@ import org.jooq.impl.SchemaImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class V0_40_6_001__AddGeographyColumnToConnections extends BaseJavaMigration {
+public class V0_40_11_001__AddGeographyColumnToConnections extends BaseJavaMigration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_6_001__AddGeographyColumnToConnections.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_40_11_001__AddGeographyColumnToConnections.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
