@@ -121,7 +121,7 @@ class NfeReceived(BaseClass):
             "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "cnpjs": "[]",
-            "invoice_type": "inbound",
+            "invoice_type": '',
             "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "sensible": True
         }
@@ -165,7 +165,7 @@ class NfeEmitted(BaseClass):
             "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "cnpjs": "[]",
-            "invoice_type": "outbound",
+            "invoice_type": '',
             "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "sensible": True
         }
@@ -216,7 +216,7 @@ class NfeEvents(BaseClass):
         return invoice
 
 
-class Cte(BaseClass):
+class CteTaker(BaseClass):
 
     url_base = "https://api.arquivei.com.br/v1/"
     primary_key = "cte_id"
@@ -231,6 +231,49 @@ class Cte(BaseClass):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "cte/taker" 
+    
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"X-API-ID": self.api_id, "X-API-KEY": self.api_key, "content-type":"application/json"}
+
+    def format_xml(
+        self,
+        xml_item: Mapping[str, Any]
+    ) -> str:
+        
+        invoice = {
+            "data": xml_item["xml"],
+            "merchant": self.merchant.upper(),
+            "source": "BR_ARQUIVEI",
+            "type": f"{self.merchant.lower()}_cte",
+            "id": "CTe" + xml_item["access_key"],
+            "timeline": "historic",
+            "invoice_id": "CTe" + xml_item["access_key"],
+            "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "cnpjs": "[]",
+            "invoice_type": "cte",
+            "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "sensible": True
+        }
+        return invoice
+
+class CteNotTaker(BaseClass):
+
+    url_base = "https://api.arquivei.com.br/v1/"
+    primary_key = "cte_id"
+
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__()
+        self.api_key = config["api_key"]
+        self.api_id = config["api_id"]
+        self.merchant = config["merchant"]
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "cte/not-taker" 
     
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -335,6 +378,7 @@ class SourceArquivei(AbstractSource):
             NfeReceived(authenticator=auth, config=config),
             NfeEmitted(authenticator=auth, config=config),
             NfeEvents(authenticator=auth, config=config),
-            Cte(authenticator=auth, config=config),
+            CteTaker(authenticator=auth, config=config),
+            CteNotTaker(authenticator=auth, config=config),
             CteEvents(authenticator=auth, config=config)
         ]

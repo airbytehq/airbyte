@@ -71,7 +71,30 @@
     },
     {
       "stream": {
-        "name": "cte_events",
+        "name": "cte_taker",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string"
+            },
+            "api_id": {
+              "type": "string"
+            },
+            "merchant": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "cte_not_taker",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
