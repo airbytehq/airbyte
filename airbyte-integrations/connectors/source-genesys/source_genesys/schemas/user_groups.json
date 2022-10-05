@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "memberCount": {
+      "type": ["null", "number"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "number"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "images": {
+      "type": "object",
+      "properties": {
+        "resolution": {
+          "type": ["null", "string"]
+        },
+        "imageUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "addresses": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": ["null", "string"]
+        },
+        "extension": {
+          "type": ["null", "string"]
+        },
+        "display": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "mediaType": {
+          "type": ["null", "string"]
+        },
+        "street2": {
+          "type": ["null", "string"]
+        },
+        "zipcode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "rulesVisible": {
+      "type": ["null", "boolean"]
+    },
+    "visibility": {
+      "type": ["null", "string"]
+    },
+    "selfUri": {
+      "type": ["null", "string"]
+    },
+    "dateModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
