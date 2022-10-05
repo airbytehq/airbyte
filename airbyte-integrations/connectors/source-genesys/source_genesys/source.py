@@ -2,10 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import base64
-import json
-import logging
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
 
@@ -29,35 +25,61 @@ class GenesysStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
-        # FIXME: Remove this debug line on PR merge
-        # print(json_response)
         yield from json_response.get("entities", [])
 
-class Users(GenesysStream):
-    primary_key = "id"
-    def path(self, **kwargs) -> str:
-        return "users"
-class Groups(GenesysStream):
-    primary_key = "id"
-    def path(self, **kwargs) -> str:
-        return "groups"
-class Locations(GenesysStream):
+class TelephonyLocations(GenesysStream):
+    '''
+    API Docs: https://developer.genesys.cloud/telephony/locations-apis
+    '''
     primary_key = "id"
     def path(self, **kwargs) -> str:
         return "locations"
+
+class TelephonyProvidersEdges(GenesysStream):
+    '''
+    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    '''
+    primary_key = "id"
+    cursor_field = "dateModified"
+    def path(self, **kwargs) -> str:
+        return "telephony/providers/edges"
+class TelephonyStations(GenesysStream):
+    '''
+    API Docs: https://developer.genesys.cloud/telephony/stations-apis
+    '''
+    primary_key = "id"
+    def path(self, **kwargs) -> str:
+        return "stations"
+class UserUsers(GenesysStream):
+    '''
+    API Docs: https://developer.genesys.cloud/useragentman/users/
+    '''
+    primary_key = "id"
+    def path(self, **kwargs) -> str:
+        return "users"
+class UserGroups(GenesysStream):
+    '''
+    API Docs: https://developer.genesys.cloud/useragentman/groups/
+    '''
+    primary_key = "id"
+    cursor_field = "dateModified"
+    def path(self, **kwargs) -> str:
+        return "groups"
 
 # https://developer.genesys.cloud/routing/conversations/conversations-apis
 # https://developer.genesys.cloud/routing/architect/
 # https://developer.genesys.cloud/routing/outbound/
 # https://developer.genesys.cloud/routing/routing/
 # https://developer.genesys.cloud/routing/scripts/
-# https://developer.genesys.cloud/telephony/stations-apis
 # https://developer.genesys.cloud/telephony/telephony-apis
 # https://developer.genesys.cloud/commdigital/voicemail/
 
@@ -195,7 +217,9 @@ class SourceGenesys(AbstractSource):
             "authenticator": TokenAuthenticator(response.json()["access_token"])
         }
         return [
-            Users(**args),
-            Groups(**args),
-            Locations(**args)
+            TelephonyLocations(**args),
+            TelephonyProvidersEdges(**args),
+            TelephonyStations(**args),
+            UserGroups(**args),
+            UserUsers(**args),
         ]
