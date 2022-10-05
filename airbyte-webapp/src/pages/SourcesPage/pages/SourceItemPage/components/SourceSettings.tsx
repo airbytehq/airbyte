@@ -42,11 +42,12 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
-  }) =>
+  }) => {
     await updateSource({
       values,
       sourceId: currentSource.sourceId,
     });
+  };
 
   const onDelete = async () => {
     clearFormChange(formId);

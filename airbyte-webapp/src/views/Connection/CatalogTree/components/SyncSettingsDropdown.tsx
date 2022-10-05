@@ -3,10 +3,14 @@ import { FormattedMessage } from "react-intl";
 import { components, ControlProps } from "react-select";
 import styled from "styled-components";
 
-import { DropDown, DropdownProps } from "components";
-import { IDataItem, OptionView } from "components/ui/DropDown/components/Option";
-import { IProps } from "components/ui/DropDown/components/SingleValue";
-import Text from "components/ui/DropDown/components/Text";
+import {
+  DropDown,
+  DropdownProps,
+  DropDownText,
+  DropDownOptionDataItem,
+  OptionView,
+  SingleValueProps,
+} from "components/ui/DropDown";
 
 const ValueView = styled(components.SingleValue)`
   display: flex;
@@ -24,10 +28,10 @@ const Separator = styled.div`
   padding: 0 5px;
 `;
 
-const SingleValue: React.FC<IProps<unknown>> = (props) => {
+const SingleValue: React.FC<SingleValueProps<unknown>> = (props) => {
   const { syncMode, destinationSyncMode } = props.data?.value;
   return (
-    <Text>
+    <DropDownText>
       <ValueView {...props}>
         <div>
           <FormattedMessage id={`syncMode.${syncMode}`} />
@@ -37,7 +41,7 @@ const SingleValue: React.FC<IProps<unknown>> = (props) => {
           <FormattedMessage id={`destinationSyncMode.${destinationSyncMode}`} />
         </div>
       </ValueView>
-    </Text>
+    </DropDownText>
   );
 };
 
@@ -52,7 +56,7 @@ const OptionContent = styled(OptionView)`
   font-size: 12px;
 `;
 
-const DropdownControl = styled(components.Control)<ControlProps<IDataItem, false>>`
+const DropdownControl = styled(components.Control)<ControlProps<DropDownOptionDataItem, false>>`
   &.react-select__control {
     // background: ${({ theme }) => theme.greyColor20};
     // TODO: fix theme

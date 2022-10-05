@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useUpdateEffect } from "react-use";
 import styled from "styled-components";
 
-import { Switch } from "components";
+import { Switch } from "components/ui/Switch";
 
 import { Action, Namespace } from "core/analytics";
 import { buildConnectionUpdate } from "core/domain/connection";

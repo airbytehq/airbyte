@@ -125,7 +125,7 @@ export interface ServiceFormProps {
     id: string,
     trackParams?: { actionDescription: string; connector_destination_suggested: boolean }
   ) => void;
-  onSubmit: (values: ServiceFormValues) => void;
+  onSubmit: (values: ServiceFormValues) => Promise<void> | void;
   isLoading?: boolean;
   isEditMode?: boolean;
   formValues?: Partial<ServiceFormValues>;
@@ -303,9 +303,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   );
 
   const onFormSubmit = useCallback(
-    (values: ServiceFormValues) => {
+    async (values: ServiceFormValues) => {
       const valuesToSend = getValues(values);
-      onSubmit(valuesToSend);
+      await onSubmit(valuesToSend);
 
       clearFormChange(formId);
     },
