@@ -9,6 +9,7 @@ required:
   - name
   - slug
   - initialSetupComplete
+  - defaultGeography
 additionalProperties: false
 properties:
   workspaceId:

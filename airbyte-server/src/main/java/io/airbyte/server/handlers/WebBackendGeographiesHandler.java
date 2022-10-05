@@ -7,6 +7,7 @@ package io.airbyte.server.handlers;
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.WebBackendGeographiesListResult;
 import java.util.Arrays;
+import java.util.Collections;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,14 +15,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebBackendGeographiesHandler {
 
-  /**
-   * Returns all available Geography settings that can be set on a Workspace or Connection.
-   *
-   * @return result containing list of geographies
-   */
-  public WebBackendGeographiesListResult listGeographies() {
+  public WebBackendGeographiesListResult listGeographiesOSS() {
+    // for now, OSS only supports AUTO. This can evolve to account for complex OSS use cases
     return new WebBackendGeographiesListResult().geographies(
-        Arrays.stream(Geography.values()).toList());
+        Collections.singletonList(Geography.AUTO));
+  }
+
+  /**
+   * Only called by the wrapped Cloud API to enable multi-cloud
+   */
+  public WebBackendGeographiesListResult listGeographiesCloud() {
+    return new WebBackendGeographiesListResult().geographies(Arrays.asList(Geography.values()));
   }
 
 }

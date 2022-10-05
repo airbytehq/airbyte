@@ -3295,6 +3295,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     WebBackendConnectionUpdate:
       type: object
       description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged

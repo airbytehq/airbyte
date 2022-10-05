@@ -183,13 +183,30 @@ class ConnectionsHandlerTest {
   class UnMockedConnectionHelper {
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws JsonValidationException, ConfigNotFoundException, IOException {
       connectionsHandler = new ConnectionsHandler(
           configRepository,
           uuidGenerator,
           workspaceHelper,
           trackingClient,
           eventRunner);
+
+      when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
+      final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+          .withName(SOURCE_TEST)
+          .withSourceDefinitionId(UUID.randomUUID());
+      final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+          .withName(DESTINATION_TEST)
+          .withDestinationDefinitionId(UUID.randomUUID());
+      when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
+      when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(
+          sourceDefinition);
+      when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(
+          destinationDefinition);
+      when(configRepository.getSourceConnection(source.getSourceId()))
+          .thenReturn(source);
+      when(configRepository.getDestinationConnection(destination.getDestinationId()))
+          .thenReturn(destination);
     }
 
     @Nested
@@ -197,25 +214,12 @@ class ConnectionsHandlerTest {
 
       @Test
       void testCreateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
-        when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
-        final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-            .withName(SOURCE_TEST)
-            .withSourceDefinitionId(UUID.randomUUID());
-        final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-            .withName(DESTINATION_TEST)
-            .withDestinationDefinitionId(UUID.randomUUID());
-        when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
-        when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
-        when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);
-        when(configRepository.getSourceConnection(source.getSourceId()))
-            .thenReturn(source);
-        when(configRepository.getDestinationConnection(destination.getDestinationId()))
-            .thenReturn(destination);
 
         final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
 
         // set a defaultGeography on the workspace as EU, but expect connection to be
-        // created AUTO because the ConnectionCreate geography takes precedence over the workspace defaultGeography.
+        // created AUTO because the ConnectionCreate geography takes precedence over the workspace
+        // defaultGeography.
         final StandardWorkspace workspace = new StandardWorkspace()
             .withWorkspaceId(workspaceId)
             .withDefaultGeography(Geography.EU);
@@ -258,31 +262,12 @@ class ConnectionsHandlerTest {
 
       @Test
       void testCreateConnectionUsesDefaultGeographyFromWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-        when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
-        final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-            .withName(SOURCE_TEST)
-            .withSourceDefinitionId(UUID.randomUUID());
-        final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-            .withName(DESTINATION_TEST)
-            .withDestinationDefinitionId(UUID.randomUUID());
-        when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
-        when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
-        when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);
-        when(configRepository.getSourceConnection(source.getSourceId()))
-            .thenReturn(source);
-        when(configRepository.getDestinationConnection(destination.getDestinationId()))
-            .thenReturn(destination);
-        when(workspaceHelper.getWorkspaceForSourceId(source.getSourceId())).thenReturn(workspaceId);
 
-        // Expect the created connection's geography to be inherited from the workspace, because
-        // the ConnectionCreate geography is unset
-        final StandardWorkspace workspace = new StandardWorkspace()
-            .withWorkspaceId(workspaceId)
-            .withDefaultGeography(Geography.EU);
-        when(configRepository.getStandardWorkspace(workspaceId, true)).thenReturn(workspace);
+        when(workspaceHelper.getWorkspaceForSourceId(sourceId)).thenReturn(workspaceId);
 
         final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
 
+        // don't set a geography on the ConnectionCreate to force inheritance from workspace default
         final ConnectionCreate connectionCreate = new ConnectionCreate()
             .sourceId(standardSync.getSourceId())
             .destinationId(standardSync.getDestinationId())
@@ -301,33 +286,27 @@ class ConnectionsHandlerTest {
                 .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()))
             .sourceCatalogId(standardSync.getSourceCatalogId());
 
+        // set the workspace default to EU
+        final StandardWorkspace workspace = new StandardWorkspace()
+            .withWorkspaceId(workspaceId)
+            .withDefaultGeography(Geography.EU);
+        when(configRepository.getStandardWorkspace(workspaceId, true)).thenReturn(workspace);
+
+        // the expected read and verified write is generated from the standardSync, so set this to EU as
+        // well
+        standardSync.setGeography(Geography.EU);
+
+        final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
         final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 
-        final StandardSync expectedStandardSync = Jsons.clone(standardSync);
-        expectedStandardSync.setGeography(Geography.EU);
-
-        final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(expectedStandardSync);
-
         assertEquals(expectedConnectionRead, actualConnectionRead);
-
-        verify(configRepository).writeStandardSync(expectedStandardSync);
-
-        // Use new schedule schema, verify that we get the same results.
-        connectionCreate
-            .schedule(null)
-            .scheduleType(ConnectionScheduleType.BASIC)
-            .scheduleData(ConnectionHelpers.generateBasicConnectionScheduleData());
-        assertEquals(expectedConnectionRead, connectionsHandler.createConnection(connectionCreate));
+        verify(configRepository).writeStandardSync(standardSync);
       }
 
       @Test
-      void testValidateConnectionCreateSourceAndDestinationInDifferenceWorkspace()
-          throws JsonValidationException, ConfigNotFoundException, IOException {
+      void testValidateConnectionCreateSourceAndDestinationInDifferenceWorkspace() {
+
         when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(UUID.randomUUID());
-        when(configRepository.getSourceConnection(source.getSourceId()))
-            .thenReturn(source);
-        when(configRepository.getDestinationConnection(destination.getDestinationId()))
-            .thenReturn(destination);
 
         final ConnectionCreate connectionCreate = new ConnectionCreate()
             .sourceId(standardSync.getSourceId())
@@ -337,12 +316,9 @@ class ConnectionsHandlerTest {
       }
 
       @Test
-      void testValidateConnectionCreateOperationInDifferentWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+      void testValidateConnectionCreateOperationInDifferentWorkspace() {
+
         when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(UUID.randomUUID());
-        when(configRepository.getSourceConnection(source.getSourceId()))
-            .thenReturn(source);
-        when(configRepository.getDestinationConnection(destination.getDestinationId()))
-            .thenReturn(destination);
 
         final ConnectionCreate connectionCreate = new ConnectionCreate()
             .sourceId(standardSync.getSourceId())
@@ -354,19 +330,9 @@ class ConnectionsHandlerTest {
 
       @Test
       void testCreateConnectionWithBadDefinitionIds() throws JsonValidationException, ConfigNotFoundException, IOException {
-        when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
+
         final UUID sourceIdBad = UUID.randomUUID();
         final UUID destinationIdBad = UUID.randomUUID();
-
-        final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-            .withName(SOURCE_TEST)
-            .withSourceDefinitionId(UUID.randomUUID());
-        final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-            .withName(DESTINATION_TEST)
-            .withDestinationDefinitionId(UUID.randomUUID());
-        when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
-        when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
-        when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);
 
         when(configRepository.getSourceConnection(sourceIdBad))
             .thenThrow(new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION, sourceIdBad));

@@ -802,7 +802,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public WebBackendGeographiesListResult webBackendListGeographies() {
-    return execute(() -> webBackendGeographiesHandler.listGeographies());
+    return execute(webBackendGeographiesHandler::listGeographiesOSS);
   }
 
   @Override

@@ -11,6 +11,7 @@ required:
   - catalog
   - manual
   - namespaceDefinition
+  - geography
 additionalProperties: false
 properties:
   namespaceDefinition:
