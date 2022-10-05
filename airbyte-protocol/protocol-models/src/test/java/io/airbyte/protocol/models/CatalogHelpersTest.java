@@ -242,14 +242,15 @@ class CatalogHelpersTest {
         new AirbyteStream().withName(USERS).withJsonSchema(breakingSchema)));
 
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
-        new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(USERS).withJsonSchema(schema1)).withSyncMode(SyncMode.INCREMENTAL).withCursorField(List.of("date")).withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP).withPrimaryKey(List.of(List.of("id")))));
+        new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(USERS).withJsonSchema(schema1)).withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("date")).withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP).withPrimaryKey(List.of(List.of("id")))));
 
     final Set<StreamTransform> diff = CatalogHelpers.getCatalogDiff(catalog1, catalog2, configuredAirbyteCatalog);
 
     final List<StreamTransform> expectedDiff = Stream.of(
-            StreamTransform.createUpdateStreamTransform(new StreamDescriptor().withName(USERS), new UpdateStreamTransform(Set.of(
-                FieldTransform.createRemoveFieldTransform(List.of("date"), schema1.get(PROPERTIES).get("date"), true),
-                FieldTransform.createRemoveFieldTransform(List.of("id"), schema1.get(PROPERTIES).get("id"), true)))))
+        StreamTransform.createUpdateStreamTransform(new StreamDescriptor().withName(USERS), new UpdateStreamTransform(Set.of(
+            FieldTransform.createRemoveFieldTransform(List.of("date"), schema1.get(PROPERTIES).get("date"), true),
+            FieldTransform.createRemoveFieldTransform(List.of("id"), schema1.get(PROPERTIES).get("id"), true)))))
         .toList();
 
     Assertions.assertThat(diff).containsAll(expectedDiff);
