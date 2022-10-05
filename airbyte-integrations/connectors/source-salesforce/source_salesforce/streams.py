@@ -471,7 +471,8 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             page_token: str = last_record[self.cursor_field]
-            return {"next_token": page_token}
+            primary_key: str = last_record[self.primary_key]
+            return {"next_token": page_token, "primary_key": primary_key}
         return None
 
     def request_params(
@@ -486,8 +487,11 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if start_date:
             query += f"WHERE {self.cursor_field} >= {start_date} "
+            if next_page_token and "primary_key" in next_page_token:
+                primary_key = next_page_token["primary_key"]
+                query += f"AND {self.primary_key} > '{primary_key}' "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
+            query += f"ORDER BY {self.cursor_field}, {self.primary_key} ASC LIMIT {self.page_size}"
         return {"q": query}
 
 
