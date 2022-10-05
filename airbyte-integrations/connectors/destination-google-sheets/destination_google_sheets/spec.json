@@ -21,7 +21,7 @@
       },
       "credentials": {
         "type": "object",
-        "title": "* Authentication via Google (OAuth)",
+        "title": "Authentication via Google (OAuth)",
         "description": "Google API Credentials for connecting to Google Sheets and Google Drive APIs",
         "required": ["client_id", "client_secret", "refresh_token"],
         "properties": {

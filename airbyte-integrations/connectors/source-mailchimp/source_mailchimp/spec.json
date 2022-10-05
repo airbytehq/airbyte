@@ -9,7 +9,7 @@
     "properties": {
       "credentials": {
         "type": "object",
-        "title": "Authentication *",
+        "title": "Authentication",
         "oneOf": [
           {
             "title": "OAuth2.0",

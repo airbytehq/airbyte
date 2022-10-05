@@ -6,7 +6,7 @@
     "type": "object",
     "properties": {
       "app_id": {
-        "title": "App Id *",
+        "title": "App Id",
         "description": "Your Amazon App ID",
         "airbyte_secret": true,
         "order": 0,
