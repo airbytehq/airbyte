@@ -38,7 +38,7 @@
       }
     },
     "addresses": {
-      "type": "object",
+      "type": "array",
       "properties": {
         "address": {
           "type": ["null", "string"]
@@ -68,6 +68,14 @@
     },
     "visibility": {
       "type": ["null", "string"]
+    },
+    "chat": {
+      "type": "object",
+      "properties": {
+        "jabberId": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "selfUri": {
       "type": ["null", "string"]
