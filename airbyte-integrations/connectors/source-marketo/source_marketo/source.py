@@ -533,7 +533,7 @@ class SourceMarketo(AbstractSource):
         """
 
         try:
-            url = f"{config['domain_url']}/api/v2/users"
+            url = f"{config['domain_url']}/rest/v1/leads/describe"
 
             authenticator = MarketoAuthenticator(config)
 
