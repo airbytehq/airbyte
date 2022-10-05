@@ -1,7 +1,7 @@
 # Amazon Sqs Destination
 
 This is the repository for the Amazon Sqs destination connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/amazon-sqs).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/amazon-sqs).
 
 ## Local development
 
@@ -36,7 +36,7 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/destinations/amazon-sqs)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/amazon-sqs)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination_amazon_sqs/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.

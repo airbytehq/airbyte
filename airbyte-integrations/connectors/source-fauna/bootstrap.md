@@ -2,7 +2,7 @@
 
 [Fauna](https://fauna.com/) is a serverless "document-relational" database that user's interact with via APIs. This connector delivers Fauna as an airbyte source.
 
-This source is implemented in the [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+This source is implemented in the [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 It also uses the [Fauna Python Driver](https://docs.fauna.com/fauna/current/drivers/python), which
 allows the connector to build FQL queries in python. This driver is what queries the Fauna database.
 

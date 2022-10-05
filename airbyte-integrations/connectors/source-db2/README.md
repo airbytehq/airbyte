@@ -1,7 +1,7 @@
 # IBM DB2 Source
 
 ## Documentation
-* [User Documentation](https://docs.airbyte.io/integrations/sources/db2)
+* [User Documentation](https://docs.airbyte.com/integrations/sources/db2)
 
 
 ## Integration tests

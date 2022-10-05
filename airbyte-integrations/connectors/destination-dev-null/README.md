@@ -1,6 +1,6 @@
 # Destination Dev Null
 
-This destination is a "safe" version of the [E2E Test destination](https://docs.airbyte.io/integrations/destinations/e2e-test). It only allows the "silent" mode. 
+This destination is a "safe" version of the [E2E Test destination](https://docs.airbyte.com/integrations/destinations/e2e-test). It only allows the "silent" mode. 
 
 ## Local development
 

@@ -33,7 +33,7 @@ from .streams import (
     ReportGranularity,
 )
 
-DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
+DOCUMENTATION_URL = "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
 
 
 def get_report_stream(report: BasicReports, granularity: ReportGranularity) -> BasicReports:

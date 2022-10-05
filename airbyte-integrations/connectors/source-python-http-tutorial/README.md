@@ -1,7 +1,7 @@
 # Python Http Tutorial Source
 
 This is the repository for the Python Http Tutorial source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/python-http-tutorial).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/python-http-tutorial).
 
 ## Local development
 
@@ -38,7 +38,7 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/python-http-tutorial)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/python-http-tutorial)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_python_http_tutorial/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.

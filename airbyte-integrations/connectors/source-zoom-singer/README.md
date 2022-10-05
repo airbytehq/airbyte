@@ -1,7 +1,7 @@
 # Source Zoom Singer
 
 This is the repository for the Zoom source connector, based on a Singer tap.
-For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/zoom).
+For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.com/integrations/sources/zoom).
 
 ## Local development
 
@@ -36,7 +36,7 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/zoom)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/zoom)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_zoom_singer/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.

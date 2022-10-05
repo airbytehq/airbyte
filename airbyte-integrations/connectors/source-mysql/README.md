@@ -2,7 +2,7 @@
 
 ## Documentation
 This is the repository for the MySQL only source connector in Java.
-For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.io/integrations/sources/mysql)
+For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.com/integrations/sources/mysql)
 
 ## Local development
 

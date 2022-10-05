@@ -1,7 +1,7 @@
 # Destination Databricks Lakehouse
 
 This is the repository for the Databricks destination connector in Java.
-For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/databricks).
+For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.com/integrations/destinations/databricks).
 
 ## Databricks JDBC Driver
 This connector requires a JDBC driver to connect to Databricks cluster. Before using this connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this driver to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.

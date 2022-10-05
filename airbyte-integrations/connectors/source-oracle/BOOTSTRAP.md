@@ -7,4 +7,4 @@ Connector works with `useFetchSizeWithLongColumn=true` property, which required 
 Oracle recommends avoiding LONG and LONG RAW columns. Use LOB instead. They are included in Oracle only for legacy reasons.
 THIS IS A THIN ONLY PROPERTY. IT SHOULD NOT BE USED WITH ANY OTHER DRIVERS.
 
-See [this](https://docs.airbyte.io/integrations/sources/oracle) link for the nuances about the connector.
+See [this](https://docs.airbyte.com/integrations/sources/oracle) link for the nuances about the connector.

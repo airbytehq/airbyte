@@ -1,7 +1,7 @@
 # Google Sheets Destination
 
 This is the repository for the Google Sheets destination connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/google-sheets).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/google-sheets).
 
 ## Local development
 
@@ -36,7 +36,7 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/destinations/google-sheets)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/google-sheets)
 to generate the necessary credentials. Then create a file `secrets/config_oauth.json` conforming to the `destination_google_sheets/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config_oauth.json` for a sample config file.

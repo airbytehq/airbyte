@@ -1,7 +1,7 @@
 # Snowflake Source
 
 ## Documentation
-* [User Documentation](https://docs.airbyte.io/integrations/sources/snowflake)
+* [User Documentation](https://docs.airbyte.com/integrations/sources/snowflake)
 
 ## Community Contributor
 1. Look at the integration documentation to see how to create a warehouse/database/schema/user/role for Airbyte to sync into.

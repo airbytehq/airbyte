@@ -1,6 +1,6 @@
 ## Core streams
 
-Pinterest is a REST based API. Connector is implemented with [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+Pinterest is a REST based API. Connector is implemented with [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 
 Connector has such core streams: 
 
@@ -23,4 +23,4 @@ Connector uses `start_date` config for initial reports sync depend on connector 
 
 Connector has `window_in_days` config which allows set the amount of days for each data-chunk begining from start_date. Default: 30 days. Max: 30 days.
 
-See [this](https://docs.airbyte.io/integrations/sources/pinterest) link for the nuances about the connector.
+See [this](https://docs.airbyte.com/integrations/sources/pinterest) link for the nuances about the connector.

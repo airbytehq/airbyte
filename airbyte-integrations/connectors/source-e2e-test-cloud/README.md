@@ -1,6 +1,6 @@
 # End-to-End Testing Source Cloud Variant
 
-This is the Cloud variant of the [E2E Test Source](https://docs.airbyte.io/integrations/sources/e2e-test). It only allows the "continuous feed" mode a finite number of record messages. The two legacy modes ("infinite feed" and "exception after n") are excluded from cloud because 1) the catalog is not customized under those modes, and 2) the connector should not emit infinite records, which may result in high cost accidentally.
+This is the Cloud variant of the [E2E Test Source](https://docs.airbyte.com/integrations/sources/e2e-test). It only allows the "continuous feed" mode a finite number of record messages. The two legacy modes ("infinite feed" and "exception after n") are excluded from cloud because 1) the catalog is not customized under those modes, and 2) the connector should not emit infinite records, which may result in high cost accidentally.
 
 ## Local development
 
