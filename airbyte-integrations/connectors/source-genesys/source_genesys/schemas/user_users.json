@@ -103,6 +103,8 @@
     "dateLastLogin": {
       "type": ["null", "string"],
       "format": "date-time"
+    "selfUri": {
+      "type": ["null", "string"]
     }
   }
 }
