@@ -1,0 +1,9 @@
+@use "../../../scss/variables" as vars;
+
+.serviceTypeSelectCard {
+  margin-bottom: vars.$spacing-xl;
+}
+
+.dropdownContainer {
+  padding: 22px 27px 23px 24px;
+}

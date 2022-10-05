@@ -5,13 +5,15 @@ import { Card } from "components";
 import { JobItem } from "components/JobItem/JobItem";
 
 import { Action, Namespace } from "core/analytics";
-import { Connector, ConnectorT } from "core/domain/connector";
+import { Connector, ConnectorSpecification, ConnectorT } from "core/domain/connector";
 import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { generateMessageFromError } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
+import { ConnectorServiceTypeControl } from "../ServiceForm/components/Controls/ConnectorServiceTypeControl";
+import styles from "./ConnectorCard.module.scss";
 import { useTestConnector } from "./useTestConnector";
 
 type ConnectorCardProvidedProps = Omit<
@@ -23,6 +25,8 @@ interface ConnectorCardBaseProps extends ConnectorCardProvidedProps {
   title?: React.ReactNode;
   full?: boolean;
   jobInfo?: SynchronousJobRead | null;
+  additionalDropdownComponent?: React.ReactNode;
+  intermediateComponent?: React.ReactNode;
 }
 
 interface ConnectorCardCreateProps extends ConnectorCardBaseProps {
@@ -39,6 +43,8 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   full,
   jobInfo,
   onSubmit,
+  additionalDropdownComponent,
+  intermediateComponent,
   ...props
 }) => {
   const [saved, setSaved] = useState(false);
@@ -95,20 +101,39 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
 
   const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
+  const { selectedConnectorDefinitionSpecification, onServiceSelect, availableServices, isEditMode } = props;
+  const selectedConnectorDefinitionSpecificationId =
+    selectedConnectorDefinitionSpecification && ConnectorSpecification.id(selectedConnectorDefinitionSpecification);
+
   return (
-    <Card title={title} fullWidth={full}>
-      <ServiceForm
-        {...props}
-        errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
-        isTestConnectionInProgress={isTestConnectionInProgress}
-        onStopTesting={onStopTesting}
-        testConnector={testConnector}
-        onSubmit={onHandleSubmit}
-        successMessage={
-          props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
-        }
-      />
-      {job && <JobItem job={job} />}
-    </Card>
+    <>
+      <Card title={title} fullWidth={full} className={styles.serviceTypeSelectCard}>
+        <div className={styles.dropdownContainer}>
+          <ConnectorServiceTypeControl
+            formType={props.formType}
+            onChangeServiceType={onServiceSelect}
+            availableServices={availableServices}
+            isEditMode={isEditMode}
+            selectedServiceId={selectedConnectorDefinitionSpecificationId}
+          />
+          {additionalDropdownComponent}
+        </div>
+      </Card>
+      {intermediateComponent}
+      <Card>
+        <ServiceForm
+          {...props}
+          errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onStopTesting={onStopTesting}
+          testConnector={testConnector}
+          onSubmit={onHandleSubmit}
+          successMessage={
+            props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
+          }
+        />
+        {job && <JobItem job={job} />}
+      </Card>
+    </>
   );
 };
