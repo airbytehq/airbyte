@@ -36,11 +36,33 @@ class GenesysStream(HttpStream, ABC):
         json_response = response.json()
         yield from json_response.get("entities", [])
 
+class RoutingAssessments(GenesysStream):
+    '''
+    API Docs: https://developer.genesys.cloud/routing/routing/
+    '''
+    page_size = 200
+    primary_key = "id"
+    cursor_field = "dateModified"
+    # next: before/after for cursor
+
+    def path(self, **kwargs) -> str:
+        return "routing/assessments"
+class RoutingQueues(GenesysStream):
+    '''
+    API Docs: https://developer.genesys.cloud/routing/routing/
+    '''
+    primary_key = "id"
+    cursor_field = "dateModified"
+    # next: before/after for cursor
+
+    def path(self, **kwargs) -> str:
+        return "routing/queues"
 class TelephonyLocations(GenesysStream):
     '''
     API Docs: https://developer.genesys.cloud/telephony/locations-apis
     '''
     primary_key = "id"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "locations"
 
@@ -50,6 +72,7 @@ class TelephonyProvidersEdges(GenesysStream):
     '''
     primary_key = "id"
     cursor_field = "dateModified"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges"
 
@@ -59,6 +82,7 @@ class TelephonyProvidersEdgesDids(GenesysStream):
     '''
     primary_key = "id"
     cursor_field = "dateModified"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/dids"
 
@@ -68,6 +92,7 @@ class TelephonyProvidersEdgesDidpools(GenesysStream):
     '''
     primary_key = "id"
     cursor_field = "dateModified"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/didpools"
 class TelephonyProvidersEdgesExtensions(GenesysStream):
@@ -76,6 +101,7 @@ class TelephonyProvidersEdgesExtensions(GenesysStream):
     '''
     primary_key = "id"
     cursor_field = "dateModified"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/extensions"
 class TelephonyProvidersEdgesLines(GenesysStream):
@@ -84,6 +110,7 @@ class TelephonyProvidersEdgesLines(GenesysStream):
     '''
     primary_key = "id"
     cursor_field = "dateModified"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/lines"
 class TelephonyProvidersEdgesOutboundroutes(GenesysStream):
@@ -92,6 +119,7 @@ class TelephonyProvidersEdgesOutboundroutes(GenesysStream):
     '''
     primary_key = "id"
     cursor_field = "dateModified"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/outboundroutes"
 class TelephonyProvidersEdgesPhones(GenesysStream):
@@ -100,6 +128,7 @@ class TelephonyProvidersEdgesPhones(GenesysStream):
     '''
     primary_key = "id"
     cursor_field = "dateModified"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/phones"
 class TelephonyProvidersEdgesSites(GenesysStream):
@@ -108,6 +137,7 @@ class TelephonyProvidersEdgesSites(GenesysStream):
     '''
     primary_key = "id"
     cursor_field = "dateModified"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "telephony/providers/edges/sites"
 class TelephonyProvidersEdgesTrunks(GenesysStream):
@@ -123,6 +153,7 @@ class TelephonyStations(GenesysStream):
     API Docs: https://developer.genesys.cloud/telephony/stations-apis
     '''
     primary_key = "id"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "stations"
 class UserUsers(GenesysStream):
@@ -130,6 +161,7 @@ class UserUsers(GenesysStream):
     API Docs: https://developer.genesys.cloud/useragentman/users/
     '''
     primary_key = "id"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "users"
 class UserGroups(GenesysStream):
@@ -138,6 +170,7 @@ class UserGroups(GenesysStream):
     '''
     primary_key = "id"
     cursor_field = "dateModified"
+    # next: pageNumber
     def path(self, **kwargs) -> str:
         return "groups"
 
@@ -240,6 +273,8 @@ class SourceGenesys(AbstractSource):
             "authenticator": TokenAuthenticator(response.json()["access_token"])
         }
         return [
+            RoutingAssessments(**args),
+            RoutingQueues(**args),
             TelephonyLocations(**args),
             TelephonyProvidersEdges(**args),
             TelephonyProvidersEdgesDids(**args),
