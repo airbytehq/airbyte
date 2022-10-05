@@ -645,6 +645,36 @@ class TemporalClientTest {
     }
 
     @Test
+    @DisplayName("Test resetConnection successful")
+    void testResetConnectionSuccessAndContinue() throws IOException {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
+      when(mWorkflowState.isRunning()).thenReturn(false);
+      final long jobId1 = 1;
+      final long jobId2 = 2;
+      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(
+          new JobInformation(jobId1, 0),
+          new JobInformation(jobId1, 0),
+          new JobInformation(NON_RUNNING_JOB_ID, 0),
+          new JobInformation(NON_RUNNING_JOB_ID, 0),
+          new JobInformation(jobId2, 0),
+          new JobInformation(jobId2, 0));
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR);
+      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset, true);
+
+      verify(streamResetPersistence).createStreamResets(CONNECTION_ID, streamsToReset);
+
+      assertTrue(result.getJobId().isPresent());
+      assertEquals(jobId2, result.getJobId().get());
+      assertFalse(result.getFailingReason().isPresent());
+      verify(mConnectionManagerWorkflow).resetConnectionAndSkipNextScheduling();
+    }
+
+    @Test
     @DisplayName("Test resetConnection repairs the workflow if it is in a bad state")
     void testResetConnectionRepairsBadWorkflowState() throws IOException {
       final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
