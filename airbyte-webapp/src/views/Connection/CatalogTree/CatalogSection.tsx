@@ -2,7 +2,7 @@ import { FormikErrors, getIn } from "formik";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 
-import { DropDownRow } from "components";
+import { DropDownOptionDataItem } from "components/ui/DropDown";
 
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
@@ -54,7 +54,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   );
 
   const onSelectSyncMode = useCallback(
-    (data: DropDownRow.IDataItem) => updateStreamWithConfig(data.value),
+    (data: DropDownOptionDataItem) => updateStreamWithConfig(data.value),
     [updateStreamWithConfig]
   );
 
