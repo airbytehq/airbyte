@@ -10,6 +10,9 @@
     },
     "description": {
       "type": ["null", "string"]
+    "dateModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "memberCount": {
       "type": ["null", "number"]
