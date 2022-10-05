@@ -107,7 +107,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
           new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
               processFactory, workerConfigs.getResourceRequirements());
       final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
-      return new DefaultDiscoverCatalogWorker(configRepository, workerConfigs, integrationLauncher, streamFactory);
+      return new DefaultDiscoverCatalogWorker(configRepository, integrationLauncher, streamFactory);
     };
   }
 

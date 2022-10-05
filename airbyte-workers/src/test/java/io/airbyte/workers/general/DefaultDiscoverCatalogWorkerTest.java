@@ -27,7 +27,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -37,7 +36,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.AirbyteMessageUtils;
@@ -75,7 +73,6 @@ class DefaultDiscoverCatalogWorkerTest {
           Field.of(COLUMN_NAME, JsonSchemaType.STRING),
           Field.of(COLUMN_AGE, JsonSchemaType.NUMBER))));
 
-  private WorkerConfigs workerConfigs;
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
   private Process process;
@@ -85,7 +82,6 @@ class DefaultDiscoverCatalogWorkerTest {
 
   @BeforeEach
   void setup() throws Exception {
-    workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "");
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
@@ -107,8 +103,7 @@ class DefaultDiscoverCatalogWorkerTest {
   @SuppressWarnings("BusyWait")
   @Test
   void testDiscoverSchema() throws Exception {
-    final DefaultDiscoverCatalogWorker worker =
-        new DefaultDiscoverCatalogWorker(mConfigRepository, workerConfigs, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, streamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
 
     assertNull(output.getFailureReason());
@@ -130,8 +125,7 @@ class DefaultDiscoverCatalogWorkerTest {
   void testDiscoverSchemaProcessFail() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultDiscoverCatalogWorker worker =
-        new DefaultDiscoverCatalogWorker(mConfigRepository, workerConfigs, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, streamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
@@ -151,8 +145,7 @@ class DefaultDiscoverCatalogWorkerTest {
 
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultDiscoverCatalogWorker worker =
-        new DefaultDiscoverCatalogWorker(mConfigRepository, workerConfigs, integrationLauncher, traceStreamFactory);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, traceStreamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
     // assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
     // assertNull(output.getDiscoverCatalog());
@@ -175,15 +168,13 @@ class DefaultDiscoverCatalogWorkerTest {
     when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS)))
         .thenThrow(new RuntimeException());
 
-    final DefaultDiscoverCatalogWorker worker =
-        new DefaultDiscoverCatalogWorker(mConfigRepository, workerConfigs, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, streamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
   }
 
   @Test
   void testCancel() throws WorkerException {
-    final DefaultDiscoverCatalogWorker worker =
-        new DefaultDiscoverCatalogWorker(mConfigRepository, workerConfigs, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, streamFactory);
     worker.run(INPUT, jobRoot);
 
     worker.cancel();

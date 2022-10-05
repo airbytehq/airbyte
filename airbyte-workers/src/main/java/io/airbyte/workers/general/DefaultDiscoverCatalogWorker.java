@@ -14,7 +14,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.workers.*;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
@@ -37,26 +38,22 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   private final ConfigRepository configRepository;
 
-  private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
   private volatile Process process;
 
   public DefaultDiscoverCatalogWorker(final ConfigRepository configRepository,
-                                      final WorkerConfigs workerConfigs,
                                       final IntegrationLauncher integrationLauncher,
                                       final AirbyteStreamFactory streamFactory) {
     this.configRepository = configRepository;
-    this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
 
   public DefaultDiscoverCatalogWorker(final ConfigRepository configRepository,
-                                      final WorkerConfigs workerConfigs,
                                       final IntegrationLauncher integrationLauncher) {
-    this(configRepository, workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory());
+    this(configRepository, integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @Override
@@ -75,7 +72,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
         messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
             .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
-        WorkerUtils.gentleClose(workerConfigs, process, 30, TimeUnit.MINUTES);
+        WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
       }
 
       final Optional<AirbyteCatalog> catalog = messagesByType

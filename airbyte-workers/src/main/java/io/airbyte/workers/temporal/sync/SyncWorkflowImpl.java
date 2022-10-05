@@ -69,13 +69,15 @@ public class SyncWorkflowImpl implements SyncWorkflow {
             Boolean shouldRun;
             try {
               shouldRun = normalizationSummaryCheckActivity.shouldRunNormalization(Long.valueOf(jobRunConfig.getJobId()), jobRunConfig.getAttemptId(),
-                  Optional.of(syncOutput.getStandardSyncSummary().getTotalStats().getRecordsCommitted()));
+                  Optional.ofNullable(syncOutput.getStandardSyncSummary().getTotalStats().getRecordsCommitted()));
             } catch (final IOException e) {
               shouldRun = true;
             }
             if (!shouldRun) {
-              LOGGER.info("Skipping normalization because there are no records to normalize.");
-              continue;
+              LOGGER.info("No records to normalize detected");
+              // Normalization skip has been disabled: issue #5417
+              // LOGGER.info("Skipping normalization because there are no records to normalize.");
+              // continue;
             }
           }
 
