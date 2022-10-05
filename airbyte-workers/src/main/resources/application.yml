@@ -198,6 +198,7 @@ docker:
 endpoints:
   all:
     enabled: true
+    sensitive: false
 
 google:
   application:
@@ -218,4 +219,4 @@ logger:
   levels:
     io.airbyte.bootloader: DEBUG
 # Uncomment to help resolve issues with conditional beans
-#    io.micronaut.context.condition: DEBUG
+    io.micronaut.context.condition: DEBUG
