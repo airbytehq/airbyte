@@ -1,7 +1,6 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import styled from "styled-components";
 
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
@@ -16,17 +15,7 @@ import ConfigurationsPage from "./pages/ConfigurationsPage";
 import { DestinationsPage, SourcesPage } from "./pages/ConnectorsPage";
 import MetricsPage from "./pages/MetricsPage";
 import NotificationPage from "./pages/NotificationPage";
-
-const Content = styled.div`
-  margin: 0 33px 0 27px;
-  display: flex;
-  flex-direction: row;
-  padding-bottom: 15px;
-`;
-const MainView = styled.div`
-  width: 100%;
-  margin-left: 47px;
-`;
+import styles from "./SettingsPage.module.scss";
 
 export interface PageConfig {
   menuConfig: CategoryItem[];
@@ -97,10 +86,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
       pageTitle={<PageHeader title={<FormattedMessage id="sidebar.settings" />} />}
     >
-      <Content>
+      <div className={styles.content}>
         <SideMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
 
-        <MainView>
+        <div className={styles.mainView}>
           <Suspense fallback={<LoadingPage />}>
             <Routes>
               {menuItems
@@ -116,8 +105,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               <Route path="*" element={<Navigate to={firstRoute} replace />} />
             </Routes>
           </Suspense>
-        </MainView>
-      </Content>
+        </div>
+      </div>
     </MainPageWithScroll>
   );
 };
