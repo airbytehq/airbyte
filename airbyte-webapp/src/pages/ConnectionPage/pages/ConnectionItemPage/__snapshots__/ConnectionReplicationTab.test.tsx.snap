@@ -32,13 +32,13 @@ exports[`ConnectionReplicationTab should render 1`] = `
                   class="controlContainer connectorLabel"
                 >
                   <label
-                    class="sc-hHLeRK dVbamU"
+                    class="sc-eCYdqJ cgRkWU"
                   >
                     Replication frequency*
                     <span>
                       <br />
                       <span
-                        class="sc-dmRaPn xLnZo"
+                        class="sc-jSMfEi dkwDTm"
                       >
                         Set how often data should sync to the destination
                       </span>
@@ -51,7 +51,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                 style="pointer-events: auto;"
               >
                 <div
-                  class="sc-kDDrLX gExbLT react-select-container css-b62m3t-container"
+                  class="sc-hTtwUo jeHdmP react-select-container css-b62m3t-container"
                   data-testid="scheduleData"
                   role="combobox"
                 >
@@ -72,10 +72,10 @@ exports[`ConnectionReplicationTab should render 1`] = `
                       class="react-select__value-container react-select__value-container--has-value css-dlobye-Component"
                     >
                       <div
-                        class="sc-papXJ jgARHI"
+                        class="sc-bBXxYQ jeFflr"
                       >
                         <div
-                          class="sc-jSMfEi kppMrt"
+                          class="sc-jOrMOR cHBbJY"
                         >
                           <div
                             class="react-select__single-value css-qc6sy-singleValue"
@@ -106,7 +106,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                       >
                         <svg
                           aria-hidden="true"
-                          class="svg-inline--fa fa-sort-down sc-iBkjds jdrXbO"
+                          class="svg-inline--fa fa-sort-down sc-BeQoi gptVmb"
                           data-icon="sort-down"
                           data-prefix="fas"
                           focusable="false"
@@ -156,13 +156,13 @@ exports[`ConnectionReplicationTab should render 1`] = `
                     class="controlContainer"
                   >
                     <label
-                      class="sc-hHLeRK Jymcf"
+                      class="sc-eCYdqJ iCvyIv"
                     >
                       Destination Namespace*
                       <span>
                         <br />
                         <span
-                          class="sc-dmRaPn xLnZo"
+                          class="sc-jSMfEi dkwDTm"
                         >
                           Define the location where the data will be stored in the destination
                         </span>
@@ -174,7 +174,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                   class="rightFieldCol"
                 >
                   <div
-                    class="sc-kDDrLX gExbLT react-select-container css-b62m3t-container"
+                    class="sc-hTtwUo jeHdmP react-select-container css-b62m3t-container"
                     data-testid="namespaceDefinition"
                     role="combobox"
                   >
@@ -195,10 +195,10 @@ exports[`ConnectionReplicationTab should render 1`] = `
                         class="react-select__value-container react-select__value-container--has-value css-dlobye-Component"
                       >
                         <div
-                          class="sc-papXJ jgARHI"
+                          class="sc-bBXxYQ jeFflr"
                         >
                           <div
-                            class="sc-jSMfEi kppMrt"
+                            class="sc-jOrMOR cHBbJY"
                           >
                             <div
                               class="react-select__single-value css-qc6sy-singleValue"
@@ -229,7 +229,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                         >
                           <svg
                             aria-hidden="true"
-                            class="svg-inline--fa fa-sort-down sc-iBkjds jdrXbO"
+                            class="svg-inline--fa fa-sort-down sc-BeQoi gptVmb"
                             data-icon="sort-down"
                             data-prefix="fas"
                             focusable="false"
@@ -264,13 +264,13 @@ exports[`ConnectionReplicationTab should render 1`] = `
                   class="controlContainer"
                 >
                   <label
-                    class="sc-hHLeRK dVbamU"
+                    class="sc-eCYdqJ cgRkWU"
                   >
                     Destination Stream Prefix (Optional)
                     <span>
                       <br />
                       <span
-                        class="sc-dmRaPn xLnZo"
+                        class="sc-jSMfEi dkwDTm"
                       >
                         Add a prefix to stream names (ex. “airbyte_” causes “projects” =&gt; “airbyte_projects”)
                       </span>
@@ -309,7 +309,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
               class="loadingBackdropContainer"
             >
               <div
-                class="sc-grREDI feBGGu"
+                class="sc-dsQDmV kEdlmI"
               >
                 <h5
                   class="sc-bczRLJ sc-dkzDqf UeZWt ebWyjL"
@@ -343,44 +343,44 @@ exports[`ConnectionReplicationTab should render 1`] = `
                 </button>
               </div>
               <div
-                class="sc-jQHtVU iQXhAp"
+                class="sc-eKBdFk dwHdlA"
               >
                 <div
                   class="container"
                   data-testid="input-container"
                 >
                   <input
-                    class="input sc-jTYCaT ckmfOI"
+                    class="input sc-hlnMnd ePcvlI"
                     data-testid="input"
                     placeholder="Search stream name"
                   />
                 </div>
               </div>
               <div
-                class="sc-llJcti sc-iIPllB iqWUcJ gPHNTr catalogHeader"
+                class="sc-ksZaOG sc-hAZoDl fmKtaK jIJKIB catalogHeader"
               >
                 <div
-                  class="sc-gicCDI kTorOZ checkboxCell"
+                  class="sc-fnykZs imOUQR checkboxCell"
                 >
                   <label
-                    class="sc-eCYdqJ khjPeN"
+                    class="sc-crXcEl iWbiAC"
                   >
                     <input
-                      class="sc-hKMtZM liFvax"
+                      class="sc-iqcoie djcshM"
                       type="checkbox"
                     />
                   </label>
                 </div>
                 <div
-                  class="sc-gicCDI hZhTbA"
+                  class="sc-fnykZs jUKmJs"
                 />
                 <div
-                  class="sc-gicCDI yenzN"
+                  class="sc-fnykZs bOivtp"
                 >
                   Sync
                 </div>
                 <div
-                  class="sc-gicCDI clbBWa"
+                  class="sc-fnykZs VApCG"
                 >
                   Source
                   <div
@@ -408,10 +408,10 @@ exports[`ConnectionReplicationTab should render 1`] = `
                   </div>
                 </div>
                 <div
-                  class="sc-gicCDI kTorOZ"
+                  class="sc-fnykZs imOUQR"
                 />
                 <div
-                  class="sc-gicCDI dXvzuR"
+                  class="sc-fnykZs ciVNhF"
                 >
                   Sync mode
                   <div
@@ -439,7 +439,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                   </div>
                 </div>
                 <div
-                  class="sc-gicCDI clbBWa"
+                  class="sc-fnykZs VApCG"
                 >
                   Cursor field
                   <div
@@ -467,7 +467,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                   </div>
                 </div>
                 <div
-                  class="sc-gicCDI clbBWa"
+                  class="sc-fnykZs VApCG"
                 >
                   Primary key
                   <div
@@ -495,7 +495,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                   </div>
                 </div>
                 <div
-                  class="sc-gicCDI clbBWa"
+                  class="sc-fnykZs VApCG"
                 >
                   Destination
                   <div
@@ -523,74 +523,74 @@ exports[`ConnectionReplicationTab should render 1`] = `
                   </div>
                 </div>
                 <div
-                  class="sc-gicCDI kTorOZ"
+                  class="sc-fnykZs imOUQR"
                 />
               </div>
               <div
-                class="sc-llJcti sc-iIPllB iqWUcJ gPHNTr catalogSubheader"
+                class="sc-ksZaOG sc-hAZoDl fmKtaK jIJKIB catalogSubheader"
               >
                 <div
-                  class="sc-gicCDI sc-fctJkW clbBWa fprcpO"
+                  class="sc-fnykZs sc-kIKDeO VApCG cDMRZi"
                 >
                   Namespace
                 </div>
                 <div
-                  class="sc-gicCDI sc-fctJkW clbBWa fprcpO"
+                  class="sc-fnykZs sc-kIKDeO VApCG cDMRZi"
                 >
                   Stream name
                 </div>
                 <div
-                  class="sc-gicCDI sc-fctJkW dXvzuR fprcpO"
+                  class="sc-fnykZs sc-kIKDeO ciVNhF cDMRZi"
                 >
                   Source | Destination
                 </div>
                 <div
-                  class="sc-gicCDI sc-fctJkW sc-HzFiz clbBWa fprcpO jrWeYv"
+                  class="sc-fnykZs sc-kIKDeO sc-hNKHps VApCG cDMRZi kMVUZG"
                 />
                 <div
-                  class="sc-gicCDI sc-fctJkW sc-HzFiz clbBWa fprcpO jrWeYv"
+                  class="sc-fnykZs sc-kIKDeO sc-hNKHps VApCG cDMRZi kMVUZG"
                 />
                 <div
-                  class="sc-gicCDI sc-fctJkW clbBWa fprcpO"
+                  class="sc-fnykZs sc-kIKDeO VApCG cDMRZi"
                 >
                   Namespace
                 </div>
                 <div
-                  class="sc-gicCDI sc-fctJkW clbBWa fprcpO"
+                  class="sc-fnykZs sc-kIKDeO VApCG cDMRZi"
                 >
                   Stream name
                 </div>
               </div>
               <div
-                class="sc-fvNpTx gBNpkp"
+                class="sc-bUbCnL jRvKCb"
               >
                 <div
                   class="catalogSection"
                 >
                   <div
-                    class="sc-llJcti iqWUcJ catalogSectionRow"
+                    class="sc-ksZaOG fmKtaK catalogSectionRow"
                   >
                     <div
                       class="checkboxCell streamRowCheckboxCell"
                     >
                       <label
-                        class="sc-eCYdqJ khjPeN"
+                        class="sc-crXcEl iWbiAC"
                       >
                         <input
-                          class="sc-hKMtZM liFvax"
+                          class="sc-iqcoie djcshM"
                           type="checkbox"
                         />
                       </label>
                     </div>
                     <div
-                      class="sc-gicCDI sc-gFGZVQ sc-fbPSWO kTorOZ eoGYPA iFRMSh"
+                      class="sc-fnykZs sc-iNWwEs sc-eKszNL imOUQR hkiohy hRhuJX"
                     >
                       <span
-                        class="sc-jIAOiI cvrXTt"
+                        class="sc-gFGZVQ bAXgVf"
                       >
                         <svg
                           aria-hidden="true"
-                          class="svg-inline--fa fa-chevron-right sc-ZyCDH imBDyF"
+                          class="svg-inline--fa fa-chevron-right sc-ckMVTt eVXgVK"
                           data-icon="chevron-right"
                           data-prefix="fas"
                           focusable="false"
@@ -609,7 +609,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                       class="streamHeaderContent"
                     >
                       <div
-                        class="sc-gicCDI sc-gFGZVQ fvHEhm eoGYPA"
+                        class="sc-fnykZs sc-iNWwEs hgpwyO hkiohy"
                       >
                         <label
                           class="switch small"
@@ -626,26 +626,26 @@ exports[`ConnectionReplicationTab should render 1`] = `
                         </label>
                       </div>
                       <div
-                        class="sc-gicCDI sc-gFGZVQ aYYqC eoGYPA"
+                        class="sc-fnykZs sc-iNWwEs kjjuyS hkiohy"
                         title=""
                       >
                         <span
-                          class="sc-hNKHps jRIQZg"
+                          class="sc-jIAOiI hYhVOz"
                         >
                           No namespace
                         </span>
                       </div>
                       <div
-                        class="sc-gicCDI sc-gFGZVQ aYYqC eoGYPA"
+                        class="sc-fnykZs sc-iNWwEs kjjuyS hkiohy"
                         title="pokemon"
                       >
                         pokemon
                       </div>
                       <div
-                        class="sc-gicCDI icOcKO"
+                        class="sc-fnykZs bKHgDK"
                       >
                         <div
-                          class="sc-kDDrLX imznfs react-select-container css-b62m3t-container"
+                          class="sc-hTtwUo kMJoGo react-select-container css-b62m3t-container"
                           data-testid="syncSettingsDropdown"
                           role="combobox"
                         >
@@ -660,22 +660,22 @@ exports[`ConnectionReplicationTab should render 1`] = `
                             class="css-1f43avz-a11yText-A11yText"
                           />
                           <div
-                            class="sc-kIKDeO kOhont react-select__control css-1s2u09g-control"
+                            class="sc-TRNrF dezywu react-select__control css-1s2u09g-control"
                           >
                             <div
                               class="react-select__value-container react-select__value-container--has-value css-dlobye-Component"
                             >
                               <div
-                                class="sc-jSMfEi kppMrt"
+                                class="sc-jOrMOR cHBbJY"
                               >
                                 <div
-                                  class="sc-jOhDuK nygwz react-select__single-value css-qc6sy-singleValue"
+                                  class="sc-fbPSWO fHcqVn react-select__single-value css-qc6sy-singleValue"
                                 >
                                   <div>
                                     Full refresh
                                   </div>
                                   <div
-                                    class="sc-hlnMnd eKLxNV"
+                                    class="sc-GVOUr dMfdNd"
                                   >
                                     |
                                   </div>
@@ -706,7 +706,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="svg-inline--fa fa-sort-down sc-iBkjds jdrXbO"
+                                  class="svg-inline--fa fa-sort-down sc-BeQoi gptVmb"
                                   data-icon="sort-down"
                                   data-prefix="fas"
                                   focusable="false"
@@ -725,19 +725,19 @@ exports[`ConnectionReplicationTab should render 1`] = `
                         </div>
                       </div>
                       <div
-                        class="sc-gicCDI sc-gFGZVQ kTorOZ eoGYPA"
+                        class="sc-fnykZs sc-iNWwEs imOUQR hkiohy"
                       />
                       <div
-                        class="sc-gicCDI sc-gFGZVQ aYYqC eoGYPA"
+                        class="sc-fnykZs sc-iNWwEs kjjuyS hkiohy"
                       />
                       <div
-                        class="sc-gicCDI sc-gFGZVQ aYYqC eoGYPA"
+                        class="sc-fnykZs sc-iNWwEs kjjuyS hkiohy"
                         title="<source schema>"
                       >
                         &lt;source schema&gt;
                       </div>
                       <div
-                        class="sc-gicCDI sc-gFGZVQ aYYqC eoGYPA"
+                        class="sc-fnykZs sc-iNWwEs kjjuyS hkiohy"
                         title="pokemon"
                       >
                         pokemon
@@ -797,7 +797,7 @@ exports[`ConnectionReplicationTab should show an error if there is a schemaError
         class="container"
       >
         <div
-          class="sc-bZkfAO sc-kLLXSd glkhTk iGpeBL"
+          class="sc-fEOsli sc-bjUoiL dDTmSV kvEXJM"
         >
           <svg
             aria-hidden="true"

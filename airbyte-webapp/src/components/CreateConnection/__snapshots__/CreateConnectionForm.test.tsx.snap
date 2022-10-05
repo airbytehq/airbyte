@@ -24,7 +24,7 @@ exports[`CreateConnectionForm should render 1`] = `
                 class="controlContainer connectionLabel"
               >
                 <label
-                  class="sc-hHLeRK dVbamU"
+                  class="sc-eCYdqJ cgRkWU"
                 >
                   <h5
                     class="heading md labelHeading"
@@ -34,7 +34,7 @@ exports[`CreateConnectionForm should render 1`] = `
                   <span>
                     <br />
                     <span
-                      class="sc-dmRaPn xLnZo"
+                      class="sc-jSMfEi dkwDTm"
                     >
                       Pick a name to help you identify this connection
                     </span>
@@ -85,13 +85,13 @@ exports[`CreateConnectionForm should render 1`] = `
                   class="controlContainer connectorLabel"
                 >
                   <label
-                    class="sc-hHLeRK dVbamU"
+                    class="sc-eCYdqJ cgRkWU"
                   >
                     Replication frequency*
                     <span>
                       <br />
                       <span
-                        class="sc-dmRaPn xLnZo"
+                        class="sc-jSMfEi dkwDTm"
                       >
                         Set how often data should sync to the destination
                       </span>
@@ -104,7 +104,7 @@ exports[`CreateConnectionForm should render 1`] = `
                 style="pointer-events: auto;"
               >
                 <div
-                  class="sc-kDDrLX gExbLT react-select-container css-b62m3t-container"
+                  class="sc-cOFTSb bBiOrV react-select-container css-b62m3t-container"
                   data-testid="scheduleData"
                   role="combobox"
                 >
@@ -125,10 +125,10 @@ exports[`CreateConnectionForm should render 1`] = `
                       class="react-select__value-container react-select__value-container--has-value css-dlobye-Component"
                     >
                       <div
-                        class="sc-papXJ jgARHI"
+                        class="sc-cTQhss haoKjh"
                       >
                         <div
-                          class="sc-jSMfEi kppMrt"
+                          class="sc-iAvgwm fQiUpU"
                         >
                           <div
                             class="react-select__single-value css-qc6sy-singleValue"
@@ -159,7 +159,7 @@ exports[`CreateConnectionForm should render 1`] = `
                       >
                         <svg
                           aria-hidden="true"
-                          class="svg-inline--fa fa-sort-down sc-iBkjds jdrXbO"
+                          class="svg-inline--fa fa-sort-down sc-dPyBCJ eGVczJ"
                           data-icon="sort-down"
                           data-prefix="fas"
                           focusable="false"
@@ -209,13 +209,13 @@ exports[`CreateConnectionForm should render 1`] = `
                     class="controlContainer"
                   >
                     <label
-                      class="sc-hHLeRK Jymcf"
+                      class="sc-eCYdqJ iCvyIv"
                     >
                       Destination Namespace*
                       <span>
                         <br />
                         <span
-                          class="sc-dmRaPn xLnZo"
+                          class="sc-jSMfEi dkwDTm"
                         >
                           Define the location where the data will be stored in the destination
                         </span>
@@ -227,7 +227,7 @@ exports[`CreateConnectionForm should render 1`] = `
                   class="rightFieldCol"
                 >
                   <div
-                    class="sc-kDDrLX gExbLT react-select-container css-b62m3t-container"
+                    class="sc-cOFTSb bBiOrV react-select-container css-b62m3t-container"
                     data-testid="namespaceDefinition"
                     role="combobox"
                   >
@@ -248,10 +248,10 @@ exports[`CreateConnectionForm should render 1`] = `
                         class="react-select__value-container react-select__value-container--has-value css-dlobye-Component"
                       >
                         <div
-                          class="sc-papXJ jgARHI"
+                          class="sc-cTQhss haoKjh"
                         >
                           <div
-                            class="sc-jSMfEi kppMrt"
+                            class="sc-iAvgwm fQiUpU"
                           >
                             <div
                               class="react-select__single-value css-qc6sy-singleValue"
@@ -282,7 +282,7 @@ exports[`CreateConnectionForm should render 1`] = `
                         >
                           <svg
                             aria-hidden="true"
-                            class="svg-inline--fa fa-sort-down sc-iBkjds jdrXbO"
+                            class="svg-inline--fa fa-sort-down sc-dPyBCJ eGVczJ"
                             data-icon="sort-down"
                             data-prefix="fas"
                             focusable="false"
@@ -317,13 +317,13 @@ exports[`CreateConnectionForm should render 1`] = `
                   class="controlContainer"
                 >
                   <label
-                    class="sc-hHLeRK dVbamU"
+                    class="sc-eCYdqJ cgRkWU"
                   >
                     Destination Stream Prefix (Optional)
                     <span>
                       <br />
                       <span
-                        class="sc-dmRaPn xLnZo"
+                        class="sc-jSMfEi dkwDTm"
                       >
                         Add a prefix to stream names (ex. “airbyte_” causes “projects” =&gt; “airbyte_projects”)
                       </span>
@@ -362,7 +362,7 @@ exports[`CreateConnectionForm should render 1`] = `
               class="loadingBackdropContainer"
             >
               <div
-                class="sc-fvNpTx kJtlzv"
+                class="sc-bUbCnL keYsWp"
               >
                 <h5
                   class="sc-bczRLJ sc-dkzDqf UeZWt ebWyjL"
@@ -396,44 +396,44 @@ exports[`CreateConnectionForm should render 1`] = `
                 </button>
               </div>
               <div
-                class="sc-dsQDmV cHlaEI"
+                class="sc-ZyCDH gpzrdJ"
               >
                 <div
                   class="container"
                   data-testid="input-container"
                 >
                   <input
-                    class="input sc-hNKHps eCwFdz"
+                    class="input sc-jIAOiI bxGgcg"
                     data-testid="input"
                     placeholder="Search stream name"
                   />
                 </div>
               </div>
               <div
-                class="sc-llJcti sc-iIPllB iqWUcJ gPHNTr catalogHeader"
+                class="sc-ksZaOG sc-hAZoDl fmKtaK jIJKIB catalogHeader"
               >
                 <div
-                  class="sc-gicCDI kTorOZ checkboxCell"
+                  class="sc-fnykZs imOUQR checkboxCell"
                 >
                   <label
-                    class="sc-eCYdqJ khjPeN"
+                    class="sc-crXcEl iWbiAC"
                   >
                     <input
-                      class="sc-hKMtZM liFvax"
+                      class="sc-iqcoie djcshM"
                       type="checkbox"
                     />
                   </label>
                 </div>
                 <div
-                  class="sc-gicCDI hZhTbA"
+                  class="sc-fnykZs jUKmJs"
                 />
                 <div
-                  class="sc-gicCDI yenzN"
+                  class="sc-fnykZs bOivtp"
                 >
                   Sync
                 </div>
                 <div
-                  class="sc-gicCDI clbBWa"
+                  class="sc-fnykZs VApCG"
                 >
                   Source
                   <div
@@ -461,10 +461,10 @@ exports[`CreateConnectionForm should render 1`] = `
                   </div>
                 </div>
                 <div
-                  class="sc-gicCDI kTorOZ"
+                  class="sc-fnykZs imOUQR"
                 />
                 <div
-                  class="sc-gicCDI dXvzuR"
+                  class="sc-fnykZs ciVNhF"
                 >
                   Sync mode
                   <div
@@ -492,7 +492,7 @@ exports[`CreateConnectionForm should render 1`] = `
                   </div>
                 </div>
                 <div
-                  class="sc-gicCDI clbBWa"
+                  class="sc-fnykZs VApCG"
                 >
                   Cursor field
                   <div
@@ -520,7 +520,7 @@ exports[`CreateConnectionForm should render 1`] = `
                   </div>
                 </div>
                 <div
-                  class="sc-gicCDI clbBWa"
+                  class="sc-fnykZs VApCG"
                 >
                   Primary key
                   <div
@@ -548,7 +548,7 @@ exports[`CreateConnectionForm should render 1`] = `
                   </div>
                 </div>
                 <div
-                  class="sc-gicCDI clbBWa"
+                  class="sc-fnykZs VApCG"
                 >
                   Destination
                   <div
@@ -576,74 +576,74 @@ exports[`CreateConnectionForm should render 1`] = `
                   </div>
                 </div>
                 <div
-                  class="sc-gicCDI kTorOZ"
+                  class="sc-fnykZs imOUQR"
                 />
               </div>
               <div
-                class="sc-llJcti sc-iIPllB iqWUcJ gPHNTr catalogSubheader"
+                class="sc-ksZaOG sc-hAZoDl fmKtaK jIJKIB catalogSubheader"
               >
                 <div
-                  class="sc-gicCDI sc-jTYCaT clbBWa jCFRck"
+                  class="sc-fnykZs sc-hlnMnd VApCG ezaSgM"
                 >
                   Namespace
                 </div>
                 <div
-                  class="sc-gicCDI sc-jTYCaT clbBWa jCFRck"
+                  class="sc-fnykZs sc-hlnMnd VApCG ezaSgM"
                 >
                   Stream name
                 </div>
                 <div
-                  class="sc-gicCDI sc-jTYCaT dXvzuR jCFRck"
+                  class="sc-fnykZs sc-hlnMnd ciVNhF ezaSgM"
                 >
                   Source | Destination
                 </div>
                 <div
-                  class="sc-gicCDI sc-jTYCaT sc-jQHtVU clbBWa jCFRck cwfLFc"
+                  class="sc-fnykZs sc-hlnMnd sc-eKBdFk VApCG ezaSgM iBiQnB"
                 />
                 <div
-                  class="sc-gicCDI sc-jTYCaT sc-jQHtVU clbBWa jCFRck cwfLFc"
+                  class="sc-fnykZs sc-hlnMnd sc-eKBdFk VApCG ezaSgM iBiQnB"
                 />
                 <div
-                  class="sc-gicCDI sc-jTYCaT clbBWa jCFRck"
+                  class="sc-fnykZs sc-hlnMnd VApCG ezaSgM"
                 >
                   Namespace
                 </div>
                 <div
-                  class="sc-gicCDI sc-jTYCaT clbBWa jCFRck"
+                  class="sc-fnykZs sc-hlnMnd VApCG ezaSgM"
                 >
                   Stream name
                 </div>
               </div>
               <div
-                class="sc-cZwWEu hjGXsu"
+                class="sc-jOhDuK iHjNjo"
               >
                 <div
                   class="catalogSection"
                 >
                   <div
-                    class="sc-llJcti iqWUcJ catalogSectionRow"
+                    class="sc-ksZaOG fmKtaK catalogSectionRow"
                   >
                     <div
                       class="checkboxCell streamRowCheckboxCell"
                     >
                       <label
-                        class="sc-eCYdqJ khjPeN"
+                        class="sc-crXcEl iWbiAC"
                       >
                         <input
-                          class="sc-hKMtZM liFvax"
+                          class="sc-iqcoie djcshM"
                           type="checkbox"
                         />
                       </label>
                     </div>
                     <div
-                      class="sc-gicCDI sc-hiMGwR sc-lbOyJj kTorOZ kwTVZp hAticO"
+                      class="sc-fnykZs sc-jgbSNz sc-lbxAil imOUQR dkANJX bHBjjw"
                     >
                       <span
-                        class="sc-fXynhf eJylun"
+                        class="sc-hiMGwR kmDbQS"
                       >
                         <svg
                           aria-hidden="true"
-                          class="svg-inline--fa fa-chevron-right sc-dwLEzm dgcOyo"
+                          class="svg-inline--fa fa-chevron-right sc-ehmTmK eOIlNv"
                           data-icon="chevron-right"
                           data-prefix="fas"
                           focusable="false"
@@ -662,7 +662,7 @@ exports[`CreateConnectionForm should render 1`] = `
                       class="streamHeaderContent"
                     >
                       <div
-                        class="sc-gicCDI sc-hiMGwR fvHEhm kwTVZp"
+                        class="sc-fnykZs sc-jgbSNz hgpwyO dkANJX"
                       >
                         <label
                           class="switch small"
@@ -679,26 +679,26 @@ exports[`CreateConnectionForm should render 1`] = `
                         </label>
                       </div>
                       <div
-                        class="sc-gicCDI sc-hiMGwR aYYqC kwTVZp"
+                        class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
                         title=""
                       >
                         <span
-                          class="sc-eKBdFk njRIj"
+                          class="sc-fXynhf sAcSt"
                         >
                           No namespace
                         </span>
                       </div>
                       <div
-                        class="sc-gicCDI sc-hiMGwR aYYqC kwTVZp"
+                        class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
                         title="pokemon"
                       >
                         pokemon
                       </div>
                       <div
-                        class="sc-gicCDI icOcKO"
+                        class="sc-fnykZs bKHgDK"
                       >
                         <div
-                          class="sc-kDDrLX imznfs react-select-container css-b62m3t-container"
+                          class="sc-cOFTSb jqsVWu react-select-container css-b62m3t-container"
                           data-testid="syncSettingsDropdown"
                           role="combobox"
                         >
@@ -713,22 +713,22 @@ exports[`CreateConnectionForm should render 1`] = `
                             class="css-1f43avz-a11yText-A11yText"
                           />
                           <div
-                            class="sc-hlnMnd gIQUtH react-select__control css-1s2u09g-control"
+                            class="sc-GVOUr ldWtuj react-select__control css-1s2u09g-control"
                           >
                             <div
                               class="react-select__value-container react-select__value-container--has-value css-dlobye-Component"
                             >
                               <div
-                                class="sc-jSMfEi kppMrt"
+                                class="sc-iAvgwm fQiUpU"
                               >
                                 <div
-                                  class="sc-TRNrF eaVrRU react-select__single-value css-qc6sy-singleValue"
+                                  class="sc-lbOyJj cHLvYg react-select__single-value css-qc6sy-singleValue"
                                 >
                                   <div>
                                     Full refresh
                                   </div>
                                   <div
-                                    class="sc-jIAOiI jGExzN"
+                                    class="sc-gFGZVQ ijSWZb"
                                   >
                                     |
                                   </div>
@@ -759,7 +759,7 @@ exports[`CreateConnectionForm should render 1`] = `
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="svg-inline--fa fa-sort-down sc-iBkjds jdrXbO"
+                                  class="svg-inline--fa fa-sort-down sc-dPyBCJ eGVczJ"
                                   data-icon="sort-down"
                                   data-prefix="fas"
                                   focusable="false"
@@ -778,19 +778,19 @@ exports[`CreateConnectionForm should render 1`] = `
                         </div>
                       </div>
                       <div
-                        class="sc-gicCDI sc-hiMGwR kTorOZ kwTVZp"
+                        class="sc-fnykZs sc-jgbSNz imOUQR dkANJX"
                       />
                       <div
-                        class="sc-gicCDI sc-hiMGwR aYYqC kwTVZp"
+                        class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
                       />
                       <div
-                        class="sc-gicCDI sc-hiMGwR aYYqC kwTVZp"
+                        class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
                         title="<source schema>"
                       >
                         &lt;source schema&gt;
                       </div>
                       <div
-                        class="sc-gicCDI sc-hiMGwR aYYqC kwTVZp"
+                        class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
                         title="pokemon"
                       >
                         pokemon
@@ -818,19 +818,19 @@ exports[`CreateConnectionForm should render 1`] = `
               Normalization & Transformation
             </h5>
             <div
-              class="sc-jfmDQi gnQatQ"
+              class="sc-iTONeN jVBGIe"
             >
               <div
-                class="sc-kgflAQ iWwYiq"
+                class="sc-papXJ jBZEjH"
               >
                 <label
-                  class="sc-ksZaOG hhSESh"
+                  class="sc-ftvSup eAaJEM"
                 >
                   <div
-                    class="sc-breuTD eNBhJG"
+                    class="sc-iBkjds btSpQj"
                   />
                   <input
-                    class="sc-evZas bFsDXq"
+                    class="sc-gKXOVf iqfEmu"
                     id="radiobutton-normalization.raw"
                     label="[object Object]"
                     name="normalization"
@@ -839,27 +839,27 @@ exports[`CreateConnectionForm should render 1`] = `
                   />
                 </label>
                 <label
-                  class="sc-fLlhyt hSlCqd"
+                  class="sc-jqUVSM jYhteM"
                   for="radiobutton-normalization.raw"
                 >
                   Raw data (JSON)
                   <span
-                    class="sc-bBrHrO bWkoFb"
+                    class="sc-kDDrLX iVZNpR"
                   />
                 </label>
               </div>
               <div
-                class="sc-kgflAQ iWwYiq"
+                class="sc-papXJ jBZEjH"
               >
                 <label
-                  class="sc-ksZaOG hhSESh"
+                  class="sc-ftvSup eAaJEM"
                 >
                   <div
-                    class="sc-breuTD eNBhJG"
+                    class="sc-iBkjds btSpQj"
                   />
                   <input
                     checked=""
-                    class="sc-evZas bFsDXq"
+                    class="sc-gKXOVf iqfEmu"
                     id="radiobutton-normalization.basic"
                     label="[object Object]"
                     name="normalization"
@@ -868,16 +868,16 @@ exports[`CreateConnectionForm should render 1`] = `
                   />
                 </label>
                 <label
-                  class="sc-fLlhyt hSlCqd"
+                  class="sc-jqUVSM jYhteM"
                   for="radiobutton-normalization.basic"
                 >
                   Normalized tabular data
                   <span
-                    class="sc-bBrHrO bWkoFb"
+                    class="sc-kDDrLX iVZNpR"
                   >
                     Map the JSON object to the types and format native to the destination. 
                     <a
-                      class="sc-ivTmOn fywBlk"
+                      class="sc-evZas hBbGvM"
                       href="https://docs.airbyte.com/understanding-airbyte/connections#airbyte-basic-normalization"
                       target="_blank"
                     >
@@ -891,7 +891,7 @@ exports[`CreateConnectionForm should render 1`] = `
               class="container"
             >
               <div
-                class="sc-dIouRR hRIsJE"
+                class="sc-hKMtZM bXwcwi"
               >
                 No custom transformation
                 <button
@@ -911,7 +911,7 @@ exports[`CreateConnectionForm should render 1`] = `
         </div>
       </div>
       <div
-        class="sc-BeQoi cEbGZP"
+        class="sc-jIZahH gCZAUv"
       >
         <div />
         <div>
@@ -935,22 +935,22 @@ exports[`CreateConnectionForm should render 1`] = `
 exports[`CreateConnectionForm should render when loading 1`] = `
 <div>
   <div
-    class="sc-bBXxYQ jchspM"
+    class="sc-kLLXSd deahmE"
   >
     <div
-      class="sc-cTQhss eMrEzF"
+      class="sc-gicCDI jGzLnQ"
     >
       <div
-        class="sc-jOrMOR jTUnYA"
+        class="sc-ezWOiH effmVN"
       />
       <div
-        class="sc-dPyBCJ eUflxt"
+        class="sc-bZkfAO bFYxgQ"
       >
         Please wait a little bit more…
       </div>
     </div>
     <div
-      class="sc-cOFTSb bPSdJL"
+      class="sc-ikZpkk fsbYKM"
     >
       We are fetching the schema of your data source. 
 This should take less than a minute, but may take a few minutes on slow internet connections or data sources with a large amount of tables.
@@ -968,7 +968,7 @@ exports[`CreateConnectionForm should render with an error 1`] = `
       class="container"
     >
       <div
-        class="sc-bZkfAO sc-kLLXSd glkhTk iGpeBL"
+        class="sc-fEOsli sc-bjUoiL dDTmSV kvEXJM"
       >
         <svg
           aria-hidden="true"
