@@ -67,7 +67,7 @@
       "type": ["null", "number"]
     },
     "selfUri": {
-      "type": ["null", "boolean"]
+      "type": ["null", "string"]
     }
   }
 }
