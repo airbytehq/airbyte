@@ -3,7 +3,7 @@
 ---
 - dockerImage: "airbyte/destination-azure-blob-storage:0.1.6"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/azureblobstorage"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/azureblobstorage"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "AzureBlobStorage Destination Spec"
@@ -92,7 +92,7 @@
     - "append"
 - dockerImage: "airbyte/destination-amazon-sqs:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/amazon-sqs"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/amazon-sqs"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination Amazon Sqs"
@@ -190,7 +190,7 @@
     - "append"
 - dockerImage: "airbyte/destination-aws-datalake:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/aws-datalake"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/aws-datalake"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "AWS Datalake Destination Spec"
@@ -287,7 +287,7 @@
     - "append"
 - dockerImage: "airbyte/destination-bigquery:1.2.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "BigQuery Destination Spec"
@@ -497,7 +497,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/destination-bigquery-denormalized:1.2.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "BigQuery Denormalized Typed Struct Destination Spec"
@@ -695,7 +695,7 @@
     - "append"
 - dockerImage: "airbyte/destination-cassandra:0.1.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/cassandra"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/cassandra"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Cassandra Destination Spec"
@@ -760,7 +760,7 @@
     - "append"
 - dockerImage: "airbyte/destination-keen:0.2.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/keen"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/keen"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Keen Spec"
@@ -799,7 +799,7 @@
     - "append"
 - dockerImage: "airbyte/destination-clickhouse:0.2.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/clickhouse"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "ClickHouse Destination Spec"
@@ -965,7 +965,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/destination-r2:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/r2"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/r2"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "R2 Destination Spec"
@@ -1241,7 +1241,7 @@
     - "append"
 - dockerImage: "airbyte/destination-databricks:0.2.6"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/databricks"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/databricks"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Databricks Lakehouse Destination Spec"
@@ -1416,7 +1416,7 @@
     - "append"
 - dockerImage: "airbyte/destination-dynamodb:0.1.5"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/dynamodb"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/dynamodb"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "DynamoDB Destination Spec"
@@ -1497,7 +1497,7 @@
     - "append"
 - dockerImage: "airbyte/destination-e2e-test:0.2.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/e2e-test"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/e2e-test"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "E2E Test Destination Spec"
@@ -1656,7 +1656,7 @@
     - "append"
 - dockerImage: "airbyte/destination-elasticsearch:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/elasticsearch"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/elasticsearch"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Elasticsearch Connection Configuration"
@@ -1742,7 +1742,7 @@
     supportsNamespaces: true
 - dockerImage: "airbyte/destination-firebolt:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/firebolt"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/firebolt"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Firebolt Spec"
@@ -1838,7 +1838,7 @@
     - "append"
 - dockerImage: "airbyte/destination-gcs:0.2.11"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/gcs"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "GCS Destination Spec"
@@ -2217,7 +2217,7 @@
     $schema: "http://json-schema.org/draft-07/schema#"
 - dockerImage: "airbyte/destination-firestore:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/firestore"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/firestore"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination Google Firestore"
@@ -2234,7 +2234,7 @@
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
-            \ <a href=\"https://docs.airbyte.io/integrations/destinations/firestore\"\
+            \ <a href=\"https://docs.airbyte.com/integrations/destinations/firestore\"\
             >docs</a> if you need help generating this key. Default credentials will\
             \ be used if this field is left empty."
           title: "Credentials JSON"
@@ -2247,7 +2247,7 @@
     - "overwrite"
 - dockerImage: "airbyte/destination-pubsub:0.1.6"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/pubsub"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/pubsub"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google PubSub Destination Spec"
@@ -2269,7 +2269,7 @@
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
-            \ <a href=\"https://docs.airbyte.io/integrations/destinations/pubsub\"\
+            \ <a href=\"https://docs.airbyte.com/integrations/destinations/pubsub\"\
             >docs</a> if you need help generating this key."
           title: "Credentials JSON"
           airbyte_secret: true
@@ -2280,7 +2280,7 @@
     - "append"
 - dockerImage: "airbyte/destination-kafka:0.1.10"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/kafka"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/kafka"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Kafka Destination Spec"
@@ -2571,7 +2571,7 @@
     - "append"
 - dockerImage: "airbyte/destination-kinesis:0.1.5"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/kinesis"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/kinesis"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Kinesis Destination Spec"
@@ -2635,7 +2635,7 @@
     - "append"
 - dockerImage: "airbyte/destination-csv:0.2.10"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/local-csv"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/local-csv"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "CSV Destination Spec"
@@ -2648,7 +2648,7 @@
           description: "Path to the directory where csv files will be written. The\
             \ destination uses the local mount \"/local\" and any data files will\
             \ be placed inside that local mount. For more information check out our\
-            \ <a href=\"https://docs.airbyte.io/integrations/destinations/local-csv\"\
+            \ <a href=\"https://docs.airbyte.com/integrations/destinations/local-csv\"\
             >docs</a>"
           type: "string"
           examples:
@@ -2661,7 +2661,7 @@
     - "append"
 - dockerImage: "airbyte/destination-local-json:0.2.11"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/local-json"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/local-json"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Local Json Destination Spec"
@@ -2673,7 +2673,7 @@
         destination_path:
           description: "Path to the directory where json files will be written. The\
             \ files will be placed inside that local mount. For more information check\
-            \ out our <a href=\"https://docs.airbyte.io/integrations/destinations/local-json\"\
+            \ out our <a href=\"https://docs.airbyte.com/integrations/destinations/local-json\"\
             >docs</a>"
           title: "Destination Path"
           type: "string"
@@ -2687,7 +2687,7 @@
     - "append"
 - dockerImage: "airbyte/destination-mqtt:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/mqtt"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/mqtt"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MQTT Destination Spec"
@@ -2794,7 +2794,7 @@
     - "append"
 - dockerImage: "airbyte/destination-mssql:0.1.20"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MS SQL Server Destination Spec"
@@ -3016,7 +3016,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/destination-meilisearch:0.2.13"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/meilisearch"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/meilisearch"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MeiliSearch Destination Spec"
@@ -3033,7 +3033,7 @@
         api_key:
           title: "API Key"
           airbyte_secret: true
-          description: "MeiliSearch API Key. See the <a href=\"https://docs.airbyte.io/integrations/destinations/meilisearch\"\
+          description: "MeiliSearch API Key. See the <a href=\"https://docs.airbyte.com/integrations/destinations/meilisearch\"\
             >docs</a> for more information on how to obtain this key."
           type: "string"
           order: 1
@@ -3045,7 +3045,7 @@
     - "append"
 - dockerImage: "airbyte/destination-mongodb:0.1.7"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/mongodb"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/mongodb"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MongoDB Destination Spec"
@@ -3092,7 +3092,7 @@
                 type: "boolean"
                 description: "Indicates whether TLS encryption protocol will be used\
                   \ to connect to MongoDB. It is recommended to use TLS connection\
-                  \ if possible. For more information see <a href=\"https://docs.airbyte.io/integrations/sources/mongodb-v2\"\
+                  \ if possible. For more information see <a href=\"https://docs.airbyte.com/integrations/sources/mongodb-v2\"\
                   >documentation</a>."
                 default: false
                 order: 2
@@ -3183,7 +3183,7 @@
     - "append"
 - dockerImage: "airbyte/destination-mysql:0.1.20"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/mysql"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/mysql"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MySQL Destination Spec"
@@ -3348,7 +3348,7 @@
     - "append"
 - dockerImage: "airbyte/destination-oracle:0.1.19"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/oracle"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/oracle"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Oracle Destination Spec"
@@ -3580,7 +3580,7 @@
     - "append"
 - dockerImage: "airbyte/destination-postgres:0.3.26"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/postgres"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Postgres Destination Spec"
@@ -3901,7 +3901,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/destination-pulsar:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/pulsar"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/pulsar"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Pulsar Destination Spec"
@@ -4049,7 +4049,7 @@
     - "append"
 - dockerImage: "airbyte/destination-rabbitmq:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/rabbitmq"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/rabbitmq"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination Rabbitmq"
@@ -4093,7 +4093,7 @@
     - "append"
 - dockerImage: "airbyte/destination-redis:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/redis"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/redis"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Redis Destination Spec"
@@ -4148,7 +4148,7 @@
     - "append"
 - dockerImage: "airbyte/destination-redshift:0.3.50"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Redshift Destination Spec"
@@ -4369,7 +4369,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/destination-rockset:0.1.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/rockset"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/rockset"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Rockset Destination Spec"
@@ -4412,7 +4412,7 @@
     - "overwrite"
 - dockerImage: "airbyte/destination-s3:0.3.16"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/s3"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "S3 Destination Spec"
@@ -4789,7 +4789,7 @@
     - "append"
 - dockerImage: "airbyte/destination-sftp-json:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/sftp-json"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/sftp-json"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination SFTP JSON"
@@ -4842,7 +4842,7 @@
     - "append"
 - dockerImage: "airbyte/destination-snowflake:0.4.38"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/snowflake"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Snowflake Destination Spec"
@@ -4960,7 +4960,7 @@
                 type: "string"
                 title: "Private Key"
                 description: "RSA Private key to use for Snowflake connection. See\
-                  \ the <a href=\"https://docs.airbyte.io/integrations/destinations/snowflake\"\
+                  \ the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake\"\
                   >docs</a> for more information on how to obtain this key."
                 multiline: true
                 airbyte_secret: true
@@ -5299,7 +5299,7 @@
               - "client_secret"
 - dockerImage: "airbyte/destination-mariadb-columnstore:0.1.7"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/mariadb-columnstore"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/mariadb-columnstore"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MariaDB Columnstore Destination Spec"
@@ -5458,7 +5458,7 @@
     - "append"
 - dockerImage: "ghcr.io/devmate-cloud/streamr-airbyte-connectors:0.0.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/streamr"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/streamr"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination Streamr"
@@ -5485,7 +5485,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/destination-scylla:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/scylla"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/scylla"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Scylla Destination Spec"
@@ -5542,7 +5542,7 @@
     - "append"
 - dockerImage: "airbyte/destination-google-sheets:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/google-sheets"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/google-sheets"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination Google Sheets"
@@ -5603,7 +5603,7 @@
         - - "refresh_token"
 - dockerImage: "airbyte/destination-sqlite:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/sqlite"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/sqlite"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination Sqlite"
@@ -5615,7 +5615,7 @@
         destination_path:
           type: "string"
           description: "Path to the sqlite.db file. The file will be placed inside\
-            \ that local mount. For more information check out our <a href=\"https://docs.airbyte.io/integrations/destinations/sqlite\"\
+            \ that local mount. For more information check out our <a href=\"https://docs.airbyte.com/integrations/destinations/sqlite\"\
             >docs</a>"
           example: "/local/sqlite.db"
     supportsIncremental: true
@@ -5626,7 +5626,7 @@
     - "append"
 - dockerImage: "airbyte/destination-tidb:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/tidb"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/tidb"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "TiDB Destination Spec"
