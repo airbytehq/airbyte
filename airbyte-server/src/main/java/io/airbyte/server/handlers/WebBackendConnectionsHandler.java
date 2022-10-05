@@ -422,7 +422,7 @@ public class WebBackendConnectionsHandler {
         if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET) {
           streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
         }
-        ManualOperationResult manualOperationResult = eventRunner.resetConnection(
+        eventRunner.resetConnection(
             connectionId,
             streamsToReset, true);
 
@@ -432,12 +432,6 @@ public class WebBackendConnectionsHandler {
     }
     // if no reset was necessary, return the connectionRead without changes
     return updatedConnectionRead;
-  }
-
-  private void verifyManualOperationResult(final ManualOperationResult manualOperationResult) throws IllegalStateException {
-    if (manualOperationResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(manualOperationResult.getFailingReason().get());
-    }
   }
 
   private List<UUID> createOperations(final WebBackendConnectionCreate webBackendConnectionCreate)
