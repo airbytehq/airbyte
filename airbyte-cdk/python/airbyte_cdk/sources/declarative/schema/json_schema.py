@@ -4,13 +4,20 @@
 
 import json
 import pkgutil
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, Union
 
+import __main__
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config
 from dataclasses_jsonschema import JsonSchemaMixin
+
+
+def _default_file_path() -> str:
+    main_file = __main__.__file__
+    module = main_file.split("/")[-2].replace("-", "_")
+    return f"./{module}/schemas/{{{{options['name']}}}}.json"
 
 
 @dataclass
@@ -25,9 +32,9 @@ class JsonSchema(SchemaLoader, JsonSchemaMixin):
         options (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed
     """
 
-    file_path: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
+    file_path: Union[InterpolatedString, str] = field(default=_default_file_path())
 
     def __post_init__(self, options: Mapping[str, Any]):
         self.file_path = InterpolatedString.create(self.file_path, options=options)
