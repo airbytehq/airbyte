@@ -130,18 +130,12 @@ public class WebBackendConnectionsHandler {
 
   private Map<UUID, JobRead> getLatestJobByConnectionId(final List<UUID> connectionIds) throws IOException {
     return jobHistoryHandler.getLatestSyncJobsForConnections(connectionIds).stream()
-        .filter(Optional::isPresent)
-        .collect(Collectors.toMap(
-            j -> UUID.fromString(j.get().getConfigId()),
-            Optional::get));
+        .collect(Collectors.toMap(j -> UUID.fromString(j.getConfigId()), Function.identity()));
   }
 
   private Map<UUID, JobRead> getRunningJobByConnectionId(final List<UUID> connectionIds) throws IOException {
     return jobHistoryHandler.getRunningSyncJobForConnections(connectionIds).stream()
-        .filter(Optional::isPresent)
-        .collect(Collectors.toMap(
-            j -> UUID.fromString(j.get().getConfigId()),
-            Optional::get));
+        .collect(Collectors.toMap(j -> UUID.fromString(j.getConfigId()), Function.identity()));
   }
 
   private Map<UUID, SourceRead> getSourceReadById(final List<UUID> sourceIds) throws IOException {

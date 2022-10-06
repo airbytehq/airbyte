@@ -592,7 +592,7 @@ public class DefaultJobPersistence implements JobPersistence {
    * Optional if one exists.
    */
   @Override
-  public List<Optional<Job>> getLastSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
+  public List<Job> getLastSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
     if (connectionIds.isEmpty()) {
       return Collections.emptyList();
     }
@@ -605,7 +605,7 @@ public class DefaultJobPersistence implements JobPersistence {
             Sqls.toSqlName(ConfigType.SYNC),
             connectionIds.stream().map(UUID::toString).map(Names::singleQuote).collect(Collectors.joining(",")))
         .stream()
-        .map(r -> getJobOptional(ctx, r.get("id", Long.class)))
+        .flatMap(r -> getJobOptional(ctx, r.get("id", Long.class)).stream())
         .collect(Collectors.toList()));
   }
 
@@ -614,7 +614,7 @@ public class DefaultJobPersistence implements JobPersistence {
    * return it in an Optional if one exists.
    */
   @Override
-  public List<Optional<Job>> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
+  public List<Job> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
     if (connectionIds.isEmpty()) {
       return Collections.emptyList();
     }
@@ -629,7 +629,7 @@ public class DefaultJobPersistence implements JobPersistence {
             connectionIds.stream().map(UUID::toString).map(Names::singleQuote).collect(Collectors.joining(",")),
             JobStatus.NON_TERMINAL_STATUSES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")))
         .stream()
-        .map(r -> getJobOptional(ctx, r.get("id", Long.class)))
+        .flatMap(r -> getJobOptional(ctx, r.get("id", Long.class)).stream())
         .collect(Collectors.toList()));
   }
 

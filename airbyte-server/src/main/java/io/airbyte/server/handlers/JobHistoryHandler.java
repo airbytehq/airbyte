@@ -140,15 +140,15 @@ public class JobHistoryHandler {
     return jobPersistence.getLastSyncJob(connectionId).map(JobConverter::getJobRead);
   }
 
-  public List<Optional<JobRead>> getLatestSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
-    return jobPersistence.getLastSyncJobsForConnections(connectionIds).stream()
-        .map(j -> j.map(JobConverter::getJobRead))
+  public List<JobRead> getLatestSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobPersistence.getLastSyncJobForConnections(connectionIds).stream()
+        .map(JobConverter::getJobRead)
         .collect(Collectors.toList());
   }
 
-  public List<Optional<JobRead>> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
+  public List<JobRead> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
     return jobPersistence.getRunningSyncJobForConnections(connectionIds).stream()
-        .map(j -> j.map(JobConverter::getJobRead))
+        .map(JobConverter::getJobRead)
         .collect(Collectors.toList());
   }
 

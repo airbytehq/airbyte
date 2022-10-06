@@ -205,7 +205,7 @@ class WebBackendConnectionsHandlerTest {
     when(jobHistoryHandler.getLatestSyncJob(connectionRead.getConnectionId())).thenReturn(Optional.of(jobRead.getJob()));
 
     when(jobHistoryHandler.getLatestSyncJobsForConnections(Collections.singletonList(connectionRead.getConnectionId())))
-        .thenReturn(Collections.singletonList(Optional.of(jobRead.getJob())));
+        .thenReturn(Collections.singletonList(jobRead.getJob()));
 
     expectedListItem = ConnectionHelpers.generateExpectedWebBackendConnectionListItem(
         standardSync,
