@@ -28,6 +28,7 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
 import { RoutePaths } from "../../pages/routePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
+import { useDatadog } from "./services/thirdParty/datadog/useDatadog";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
 import { DefaultView } from "./views/DefaultView";
@@ -138,8 +139,9 @@ const MainViewRoutes = () => {
 
 export const Routing: React.FC = () => {
   const { user, inited, providers } = useAuthService();
-
   const { search } = useLocation();
+
+  useDatadog();
 
   useEffectOnce(() => {
     storeUtmFromQuery(search);

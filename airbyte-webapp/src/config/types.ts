@@ -6,6 +6,10 @@ declare global {
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     CLOUD?: string;
+    DATADOG_APPLICATION_ID: string;
+    DATADOG_CLIENT_TOKEN: string;
+    DATADOG_SITE: string;
+    DATADOG_SERVICE: string;
     REACT_APP_SENTRY_DSN?: string;
     REACT_APP_WEBAPP_TAG?: string;
     REACT_APP_INTERCOM_APP_ID?: string;

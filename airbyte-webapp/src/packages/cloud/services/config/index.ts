@@ -8,6 +8,12 @@ export function useConfig(): CloudConfig {
 
 const cloudConfigExtensionDefault: CloudConfigExtension = {
   cloudApiUrl: "",
+  datadog: {
+    applicationId: "",
+    clientToken: "",
+    site: "",
+    service: "",
+  },
   firebase: {
     apiKey: "",
     authDomain: "",

@@ -12,6 +12,12 @@ declare global {
 
 export interface CloudConfigExtension {
   cloudApiUrl: string;
+  datadog: {
+    applicationId: string;
+    clientToken: string;
+    site: string;
+    service: string;
+  };
   firebase: {
     apiKey: string;
     authDomain: string;
