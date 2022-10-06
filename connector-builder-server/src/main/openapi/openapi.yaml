@@ -17,7 +17,7 @@ externalDocs:
 paths:
   /v1/stream/read:
     post:
-      summary: Reads a specific stream in the source
+      summary: Reads a specific stream in the source. TODO in a later phase - only read a single slice of data.
       requestBody:
         content:
           application/json:
@@ -69,59 +69,46 @@ components:
           items:
             type: object
             required:
-              - sliceId
               - pages
             properties:
-              sliceId:
-                type: string
-                description: String identifying the current slice
               pages:
                 type: array
                 description: The pages returned from the read command
                 items:
                   type: object
                   required:
-                    - pageId
-                    - results
-                    - logs
+                    - airbyteMessages
                     - request
                     - response
                   properties:
-                    pageId:
-                      type: string
-                      description: String identifying the current page
-                    results:
+                    airbyteMessages:
                       type: array
-                      description: The RECORD and STATE AirbyteMessages coming from the read operation for this page
+                      description: The RECORD/STATE/LOG AirbyteMessages coming from the read operation for this page
                       items:
-                        type: string
-                    logs:
-                      type: array
-                      description: The LOG AirbyteMessages coming from the read operation for this page
-                      items:
-                        type: string
+                        $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteMessage"
                     request:
                       type: object
                       description: The HTTP request sent to the source API for this page
                       required:
                         - url
-                        - headers
                       properties:
                         url:
                           type: string
                           description: URL that the request was sent to
+                        parameters:
+                          type: object
+                          description: The request parameters that were set on the HTTP request, if any
                         body:
                           type: object
                           description: The body of the HTTP request, if present
                         headers:
                           type: object
-                          description: The headers of the HTTP request
+                          description: The headers of the HTTP request, if any
                     response:
                       type: object
                       description: The response from the source API for this page
                       required:
                         - status
-                        - headers
                       properties:
                         status:
                           type: integer
@@ -131,7 +118,7 @@ components:
                           description: The body of the HTTP response, if present
                         headers:
                           type: object
-                          description: The headers of the HTTP response
+                          description: The headers of the HTTP response, if any
     StreamReadRequestBody:
       type: object
       required:
@@ -144,19 +131,17 @@ components:
         stream:
           type: string
           description: Name of the stream to read
-        numSlices:
-          type: integer
-          description: Number of stream slices to read from the source
-          default: 1
         numPages:
           type: integer
-          description: Number of pages to read from the source
+          description: Number of pages to read from the source for each slice
           default: 1
         state:
           type: object
           description: State blob to use for incremental streams
     ConnectorDefinitionBody:
       $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
+    AirbyteProtocol:
+      $ref: ../../../../airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
     StreamsListRequestBody:
       type: object
       required:
@@ -186,6 +171,12 @@ components:
                 type: string
                 format: uri
                 description: The URL to which read requests will be made for this stream
+              # --- Potential addition for a later phase ---
+              # slices:
+              #   type: array
+              #   description: list of slices that will be retrieved for this stream
+              #   items:
+              #     type: object
 
     # The following exception structs were copied from airbyte-api/src/main/openapi/config.yaml
     InvalidInputProperty:
