@@ -1,0 +1,9 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "last_modified": "2022-10-04T13:31:15" },
+      "stream_descriptor": { "name": "test_stream" }
+    }
+  }
+]
