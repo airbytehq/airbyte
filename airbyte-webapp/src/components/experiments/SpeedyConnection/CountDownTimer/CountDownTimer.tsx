@@ -1,7 +1,7 @@
 import { Text } from "components/ui/Text";
 
 import styles from "./CountDownTimer.module.scss";
-import { useCountdown } from "./use-countdown";
+import { useCountdown } from "./useCountdown";
 export const CountDownTimer: React.FC<{ expiredOfferDate: string }> = ({ expiredOfferDate }) => {
   const [hours, minutes, seconds] = useCountdown(expiredOfferDate);
 

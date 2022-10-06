@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Link, Outlet } from "react-router-dom";
 
 import { LoadingPage } from "components";
-import { useExperimentSpeedyConnection } from "components/experiments/SpeedyConnection/hooks/use-experiment-speedy-connection-experiment";
+import { useExperimentSpeedyConnection } from "components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { SpeedyConnectionBanner } from "components/experiments/SpeedyConnection/SpeedyConnectionBanner";
 import { AlertBanner } from "components/ui/Banner/AlertBanner";
 
@@ -34,6 +34,11 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
 
   const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
 
+  // exp-speedy-connection
+  localStorage.setItem(
+    "exp-speedy-connection-timestamp",
+    new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toString()
+  );
   // exp-speedy-connection
   const { isExperimentVariant } = useExperimentSpeedyConnection();
   const { hasConnections } = useCurrentWorkspaceState();

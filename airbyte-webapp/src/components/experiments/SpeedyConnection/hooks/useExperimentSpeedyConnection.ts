@@ -9,8 +9,7 @@ export const useExperimentSpeedyConnection = () => {
 
   const isTrial = Boolean(cloudWorkspace.trialExpiryTimestamp);
   const timestamp = localStorage.getItem("exp-speedy-connection-timestamp");
-
-  const expiredOfferDate = timestamp ? JSON.parse(timestamp) : 0;
+  const expiredOfferDate = timestamp ? String(timestamp) : String(0);
 
   const now = new Date();
   const isExperimentVariant = isTrial && expiredOfferDate && new Date(expiredOfferDate) >= now && isVariantEnabled;

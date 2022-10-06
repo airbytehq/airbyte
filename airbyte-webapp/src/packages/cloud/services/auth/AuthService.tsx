@@ -65,8 +65,6 @@ interface AuthContextApi {
   logout: AuthLogout;
 }
 
-const _24_HOURS = 24 * 60 * 60 * 1000;
-
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
 export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
@@ -183,6 +181,11 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
             .then(async () => {
               state.next("loading");
               if (auth.currentUser) {
+                // exp-speedy-connection
+                localStorage.setItem(
+                  "exp-speedy-connection-timestamp",
+                  String(new Date(new Date().getTime() + 24 * 60 * 60 * 1000))
+                );
                 await onAfterAuth(auth.currentUser);
                 state.next("done");
                 state.complete();
@@ -271,7 +274,7 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
           // exp-speedy-connection
           localStorage.setItem(
             "exp-speedy-connection-timestamp",
-            JSON.stringify(new Date(new Date().getTime() + _24_HOURS))
+            String(new Date(new Date().getTime() + 24 * 60 * 60 * 1000))
           );
           await onAfterAuth(auth.currentUser);
         }
