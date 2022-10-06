@@ -133,11 +133,11 @@ public class JobErrorReporter {
    * @param jobContext - connector job reporting context
    */
   public void reportSourceCheckJobFailure(final UUID sourceDefinitionId,
-                                          final UUID workspaceId,
+                                          @Nullable final UUID workspaceId,
                                           final FailureReason failureReason,
                                           final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspace(workspaceId, true) : null;
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final Map<String, String> metadata = MoreMaps.merge(
         getSourceMetadata(sourceDefinition),
@@ -154,11 +154,11 @@ public class JobErrorReporter {
    * @param jobContext - connector job reporting context
    */
   public void reportDestinationCheckJobFailure(final UUID destinationDefinitionId,
-                                               final UUID workspaceId,
+                                               @Nullable final UUID workspaceId,
                                                final FailureReason failureReason,
                                                final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspace(workspaceId, true) : null;
     final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     final Map<String, String> metadata = MoreMaps.merge(
         getDestinationMetadata(destinationDefinition),
@@ -174,11 +174,11 @@ public class JobErrorReporter {
    * @param jobContext - connector job reporting context
    */
   public void reportDiscoverJobFailure(final UUID sourceDefinitionId,
-                                       final UUID workspaceId,
+                                       @Nullable final UUID workspaceId,
                                        final FailureReason failureReason,
                                        final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspace(workspaceId, true) : null;
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final Map<String, String> metadata = MoreMaps.merge(
         getSourceMetadata(sourceDefinition),

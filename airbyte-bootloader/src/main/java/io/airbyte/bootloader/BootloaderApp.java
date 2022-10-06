@@ -9,9 +9,13 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.init.ApplyDefinitionsHelper;
+import io.airbyte.config.init.DefinitionsProvider;
+import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -65,7 +69,7 @@ public class BootloaderApp {
   private final FeatureFlags featureFlags;
   private final SecretMigrator secretMigrator;
   private ConfigPersistence configPersistence;
-  private ConfigPersistence yamlSeedConfigPersistence;
+  private DefinitionsProvider localDefinitionsProvider;
   private Database configDatabase;
   private Database jobDatabase;
   private JobPersistence jobPersistence;
@@ -124,7 +128,11 @@ public class BootloaderApp {
 
     postLoadExecution = () -> {
       try {
-        configPersistence.loadData(yamlSeedConfigPersistence);
+        final ConfigRepository configRepository =
+            new ConfigRepository(configPersistence, configDatabase);
+
+        final ApplyDefinitionsHelper applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, localDefinitionsProvider);
+        applyDefinitionsHelper.apply();
 
         if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
           if (this.secretMigrator != null) {
@@ -152,6 +160,11 @@ public class BootloaderApp {
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
     assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
+
+    final Version airbyteProtocolVersionMax = configs.getAirbyteProtocolVersionMax();
+    final Version airbyteProtocolVersionMin = configs.getAirbyteProtocolVersionMin();
+    // TODO ProtocolVersion validation should happen here
+    trackProtocolVersion(airbyteProtocolVersionMin, airbyteProtocolVersionMax);
 
     // TODO Will be converted to an injected singleton during DI migration
     final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
@@ -185,15 +198,14 @@ public class BootloaderApp {
 
   private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .maskSecrets(true)
         .copySecrets(true)
         .build();
 
     return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
   }
 
-  private static ConfigPersistence getYamlSeedConfigPersistence() throws IOException {
-    return new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+  private static DefinitionsProvider getLocalDefinitionsProvider() throws IOException {
+    return new LocalDefinitionsProvider(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
   }
 
   private static Database getJobDatabase(final DSLContext dslContext) throws IOException {
@@ -208,7 +220,7 @@ public class BootloaderApp {
     try {
       configDatabase = getConfigDatabase(configsDslContext);
       configPersistence = getConfigPersistence(configDatabase);
-      yamlSeedConfigPersistence = getYamlSeedConfigPersistence();
+      localDefinitionsProvider = getLocalDefinitionsProvider();
       jobDatabase = getJobDatabase(jobsDslContext);
       jobPersistence = getJobPersistence(jobDatabase);
     } catch (final IOException e) {
@@ -297,6 +309,12 @@ public class BootloaderApp {
       LOGGER.error(message);
       throw new RuntimeException(message);
     }
+  }
+
+  private void trackProtocolVersion(final Version airbyteProtocolVersionMin, final Version airbyteProtocolVersionMax) throws IOException {
+    jobPersistence.setAirbyteProtocolVersionMin(airbyteProtocolVersionMin);
+    jobPersistence.setAirbyteProtocolVersionMax(airbyteProtocolVersionMax);
+    LOGGER.info("AirbyteProtocol version support range [{}:{}]", airbyteProtocolVersionMin.serialize(), airbyteProtocolVersionMax.serialize());
   }
 
   static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {

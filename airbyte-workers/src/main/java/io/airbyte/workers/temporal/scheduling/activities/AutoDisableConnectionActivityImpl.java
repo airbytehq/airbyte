@@ -19,6 +19,7 @@ import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.persistence.job.models.JobWithStatusAndTimestamp;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
@@ -29,8 +30,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          pattern = "(?i)^(?!data_plane).*")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionActivity {
 
   private final ConfigRepository configRepository;

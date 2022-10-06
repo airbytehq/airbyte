@@ -2,8 +2,8 @@ import classNames from "classnames";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components/base/Button";
-import { Text } from "components/base/Text";
+import { Button } from "components/ui/Button";
+import { Text } from "components/ui/Text";
 
 import styles from "./EmptyResourceListView.module.scss";
 
@@ -44,7 +44,7 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({ re
           resource={resourceType}
         />
       </div>
-      <Button onClick={onCreateClick} size="xl" data-id={`new-${singularResourceType}`}>
+      <Button onClick={onCreateClick} size="lg" data-id={`new-${singularResourceType}`}>
         <FormattedMessage id={buttonMessageId} />
       </Button>
     </div>

@@ -12,6 +12,7 @@ import { FeatureItem, IfFeatureEnabled, useFeature } from "hooks/services/Featur
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import ConnectorCell from "./ConnectorCell";
+import styles from "./ConnectorsView.module.scss";
 import CreateConnector from "./CreateConnector";
 import ImageCell from "./ImageCell";
 import { Block, FormContentTitle, Title } from "./PageComponents";
@@ -107,7 +108,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   const renderHeaderControls = (section: "used" | "available") =>
     ((section === "used" && usedConnectorsDefinitions.length > 0) ||
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
-      <div>
+      <div className={styles.buttonsContainer}>
         <IfFeatureEnabled feature={FeatureItem.AllowUploadCustomImage}>
           <CreateConnector type={type} />
         </IfFeatureEnabled>

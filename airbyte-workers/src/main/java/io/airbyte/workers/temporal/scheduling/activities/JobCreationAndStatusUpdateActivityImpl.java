@@ -41,6 +41,7 @@ import io.airbyte.persistence.job.tracker.JobTracker.JobState;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import io.airbyte.workers.run.WorkerRun;
@@ -56,8 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          pattern = "(?i)^(?!data_plane).*")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndStatusUpdateActivity {
 
   private final SyncJobFactory jobFactory;

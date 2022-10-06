@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import Step from "./Step";
+import { Step } from "./Step";
 
 export interface StepMenuItem {
   id: string;

@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.integrations.io.airbyte.integration_tests.sources.utils.TestConstants.INITIAL_CDC_WAITING_SECONDS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -19,7 +21,6 @@ import org.testcontainers.containers.MySQLContainer;
 public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
 
   private DSLContext dslContext;
-
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     dslContext.close();
@@ -32,6 +33,7 @@ public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSour
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
+        .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
@@ -41,6 +43,7 @@ public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSour
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
         .put("snapshot_mode", "initial_only")
+        .put("is_test", true)
         .build());
 
     dslContext = DSLContextFactory.create(

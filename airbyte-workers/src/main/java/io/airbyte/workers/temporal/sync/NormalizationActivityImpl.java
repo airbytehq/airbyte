@@ -9,6 +9,8 @@ import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.CancellationHandler;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -27,9 +29,7 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultNormalizationWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
@@ -105,7 +105,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig,
             () -> context);
       } else {
-        workerFactory = getLegacyWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
+        workerFactory = getLegacyWorkerFactory(destinationLauncherConfig, jobRunConfig);
       }
 
       final TemporalAttemptExecution<NormalizationInput, NormalizationSummary> temporalAttemptExecution = new TemporalAttemptExecution<>(
@@ -132,14 +132,12 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   }
 
   private CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> getLegacyWorkerFactory(
-                                                                                                              final WorkerConfigs workerConfigs,
                                                                                                               final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                               final JobRunConfig jobRunConfig) {
     return () -> new DefaultNormalizationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
         NormalizationRunnerFactory.create(
-            workerConfigs,
             destinationLauncherConfig.getDockerImage(),
             processFactory,
             NormalizationRunnerFactory.NORMALIZATION_VERSION),

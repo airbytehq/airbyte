@@ -2,6 +2,8 @@ connector_image: airbyte/source-amazon-seller-partner:dev
 tests:
   spec:
     - spec_path: "integration_tests/spec.json"
+      backward_compatibility_tests_config:
+          disable_for_version: "0.2.26"
   connection:
     # - config_path: "secrets/config.json"
     #   status: "succeed"
@@ -11,6 +13,8 @@ tests:
       timeout_seconds: 60
   discovery:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+          disable_for_version: "0.2.26"
 # TODO: uncomment when at least one record exist
 #  basic_read:
 #    - config_path: "secrets/config.json"

@@ -10,7 +10,7 @@ import { JobInfo } from "core/domain/job";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-import { SourceRead, SynchronousJobRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { SourceRead, SynchronousJobRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
@@ -103,7 +103,7 @@ const useDeleteSource = () => {
   const removeConnectionsFromList = useRemoveConnectionsFromList();
 
   return useMutation(
-    (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionRead[] }) =>
+    (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionListItem[] }) =>
       service.delete(payload.source.sourceId),
     {
       onSuccess: (_data, ctx) => {

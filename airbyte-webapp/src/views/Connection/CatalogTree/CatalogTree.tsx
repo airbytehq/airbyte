@@ -3,7 +3,7 @@ import React, { useCallback } from "react";
 
 import { SyncSchemaStream } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { ConnectionFormValues, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import { CatalogSection } from "./CatalogSection";

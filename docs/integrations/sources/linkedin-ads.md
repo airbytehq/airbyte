@@ -134,12 +134,12 @@ This Source is capable of syncing the following data as streams:
 * [Ad Analytics by Creative](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl#ad-analytics) 
 
 
-| Sync Mode                                 | Supported?\(Yes/No\) | 
+| Sync Mode                                 | Supported?\(Yes/No\) |
 | :---------------------------------------- | :------------------- |
-| Full Refresh Overwrite Sync               | Yes                  |  
-| Full Refresh Append Sync                  | Yes                  |       
-| Incremental - Append Sync                 | Yes                  |       
-| Incremental - Append + Deduplication Sync | Yes                  |  
+| Full Refresh Overwrite Sync               | Yes                  |
+| Full Refresh Append Sync                  | Yes                  |
+| Incremental - Append Sync                 | Yes                  |
+| Incremental - Append + Deduplication Sync | Yes                  |
 
 
 ### NOTE:
@@ -181,8 +181,9 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                           |
-|:--------| :--------- | :-----------------------------------------------------   | :---------------------------------------------------------------------------------------------------------------- |
-| 0.1.9   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas                                                                   |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                     |
+| 0.1.9   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas                                                                  |
 | 0.1.8   | 2022-06-07 | [13495](https://github.com/airbytehq/airbyte/pull/13495) | Fixed `base-normalization` issue on `Destination Redshift` caused by wrong casting of `pivot` column              |
 | 0.1.7   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                                   |
 | 0.1.6   | 2022-04-04 | [11690](https://github.com/airbytehq/airbyte/pull/11690) | Small documenation corrections                                                                                    |

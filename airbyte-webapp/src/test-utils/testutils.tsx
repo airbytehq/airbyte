@@ -50,7 +50,7 @@ export async function render<
 
   let renderResult: RenderResult<Q, Container>;
   await act(async () => {
-    renderResult = await rtlRender<Q, Container>(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
+    renderResult = rtlRender<Q, Container>(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
   });
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

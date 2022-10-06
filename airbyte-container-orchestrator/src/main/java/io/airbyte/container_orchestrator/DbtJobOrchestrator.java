@@ -58,9 +58,7 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
         Math.toIntExact(jobRunConfig.getAttemptId()),
         workerConfigs.getResourceRequirements(),
         new DbtTransformationRunner(
-            workerConfigs,
             processFactory, NormalizationRunnerFactory.create(
-                workerConfigs,
                 destinationLauncherConfig.getDockerImage(),
                 processFactory,
                 NormalizationRunnerFactory.NORMALIZATION_VERSION)));

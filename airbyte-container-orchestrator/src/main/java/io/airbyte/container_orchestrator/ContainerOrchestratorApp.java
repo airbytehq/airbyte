@@ -131,6 +131,7 @@ public class ContainerOrchestratorApp {
       // required to kill clients with thread pools
       System.exit(0);
     } catch (final Throwable t) {
+      log.error("Killing orchestrator because of an Exception", t);
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
       System.exit(1);
     }
@@ -202,8 +203,8 @@ public class ContainerOrchestratorApp {
                                                        final String application,
                                                        final FeatureFlags featureFlags) {
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory, featureFlags);
-      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, processFactory, featureFlags);
+      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, processFactory);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
       default -> null;
