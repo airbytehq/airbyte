@@ -9,7 +9,7 @@ import styles from "./FrequentlyUsedDestinationsCard.module.scss";
 
 export interface FrequentlyUsedDestinationsCardProps {
   destinations: DestinationConnectorCard[];
-  onDestinationSelect?: (id: string) => void;
+  onDestinationSelect: (id: string) => void;
 }
 
 export const FrequentlyUsedDestinationsCard: React.FC<FrequentlyUsedDestinationsCardProps> = ({
@@ -22,7 +22,7 @@ export const FrequentlyUsedDestinationsCard: React.FC<FrequentlyUsedDestinations
     return null;
   }
   const onSlideClick = (id: string) => {
-    onDestinationSelect?.(id);
+    onDestinationSelect(id);
   };
   return (
     <div className={styles.container}>

@@ -87,10 +87,10 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   //  - after opening the create form and go back - the UnsavedChanges Modal appear
   //  - need to disable select service type dropdown on formSubmit
   const frequentlyUsedDestinationsComponent = !isLoading && !destinationDefinitionId && (
-    <FrequentlyUsedDestinations onServiceSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+    <FrequentlyUsedDestinations onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
   );
   const startWithDestinationComponent = !isLoading && !destinationDefinitionId && (
-    <StartWithDestination onServiceSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+    <StartWithDestination onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
   );
 
   console.log(!destinationDefinitions.length && !isLoading && !destinationDefinitionId);

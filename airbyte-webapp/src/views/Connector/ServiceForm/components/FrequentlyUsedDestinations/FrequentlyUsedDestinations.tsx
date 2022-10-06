@@ -10,13 +10,12 @@ import { FrequentlyUsedDestinationsCard } from "./FrequentlyUsedDestinationsCard
 
 interface FrequentlyUsedDestinationsProps {
   availableServices: ConnectorDefinition[];
-  onServiceSelect: ((id: string) => void) | undefined;
-  isLoading?: boolean;
+  onDestinationSelect: (id: string) => void;
 }
 
 export const FrequentlyUsedDestinations: React.FC<FrequentlyUsedDestinationsProps> = ({
   availableServices,
-  onServiceSelect,
+  onDestinationSelect,
 }) => {
   const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", [
     "22f6c74f-5699-40ff-833c-4a879ea40133",
@@ -40,6 +39,9 @@ export const FrequentlyUsedDestinations: React.FC<FrequentlyUsedDestinationsProp
   );
 
   return (
-    <FrequentlyUsedDestinationsCard destinations={frequentlyUsedDestinations} onDestinationSelect={onServiceSelect} />
+    <FrequentlyUsedDestinationsCard
+      destinations={frequentlyUsedDestinations}
+      onDestinationSelect={onDestinationSelect}
+    />
   );
 };
