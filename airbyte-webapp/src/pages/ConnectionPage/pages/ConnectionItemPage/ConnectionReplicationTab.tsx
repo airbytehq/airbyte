@@ -46,7 +46,10 @@ export const ConnectionReplicationTab: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
 
   const saveConnection = useCallback(
-    async (values: ValuesProps, skipReset: boolean, catalogHasChanged: boolean) => {
+    async (
+      values: ValuesProps,
+      { skipReset, catalogHasChanged }: { skipReset: boolean; catalogHasChanged: boolean }
+    ) => {
       const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
       await updateConnection({
@@ -103,14 +106,17 @@ export const ConnectionReplicationTab: React.FC = () => {
           if (result.type !== "canceled") {
             // Save the connection taking into account the correct skipReset value from the dialog choice.
             // We also want to skip the reset sync if the connection is not in an "active" status
-            await saveConnection(formValues, !result.reason || connection.status !== "active", catalogHasChanged);
+            await saveConnection(formValues, {
+              skipReset: !result.reason || connection.status !== "active",
+              catalogHasChanged,
+            });
           } else {
             // We don't want to set saved to true or schema has been refreshed to false.
             return;
           }
         } else {
           // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save.
-          await saveConnection(formValues, true, catalogHasChanged);
+          await saveConnection(formValues, { skipReset: true, catalogHasChanged });
         }
 
         setSaved(true);
