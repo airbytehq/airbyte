@@ -9,7 +9,7 @@ import styles from "./FrequentlyUsedDestinationsCard.module.scss";
 
 export interface FrequentlyUsedDestinationsCardProps {
   destinations: DestinationConnectorCard[];
-  onDestinationSelect: (id: string) => void;
+  onDestinationSelect: (id: string, connectorName: string) => void;
 }
 
 export const FrequentlyUsedDestinationsCard: React.FC<FrequentlyUsedDestinationsCardProps> = ({
@@ -21,14 +21,16 @@ export const FrequentlyUsedDestinationsCard: React.FC<FrequentlyUsedDestinations
   if (!destinations?.length) {
     return null;
   }
-  const onSlideClick = (id: string) => {
-    onDestinationSelect(id);
-  };
+
   return (
     <div className={styles.container}>
       <SlickSlider title={formatMessage({ id: "destinations.frequentlyUsed" })}>
         {destinations.map(({ destinationDefinitionId, name, icon, releaseStage }, index) => (
-          <button key={index} className={styles.card} onClick={() => onSlideClick(destinationDefinitionId)}>
+          <button
+            key={index}
+            className={styles.card}
+            onClick={() => onDestinationSelect(destinationDefinitionId, name)}
+          >
             <ConnectorCard connectionName={name} icon={icon} releaseStage={releaseStage} fullWidth />
           </button>
         ))}
