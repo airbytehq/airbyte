@@ -104,6 +104,7 @@ create table "public"."connection"(
   "source_catalog_id" uuid null,
   "schedule_type" schedule_type null,
   "schedule_data" jsonb null,
+  "geography" geography_type not null default null,
   constraint "connection_pkey"
     primary key ("id")
 );
@@ -173,6 +174,7 @@ create table "public"."workspace"(
   "feedback_complete" bool null,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
+  "geography" geography_type not null default null,
   constraint "workspace_pkey"
     primary key ("id")
 );
