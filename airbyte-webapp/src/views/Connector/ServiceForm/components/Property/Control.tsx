@@ -39,14 +39,13 @@ export const Control: React.FC<ControlProps> = ({
       // check how to use field array with new component
       <FieldArray
         name={name}
-        render={(arrayHelpers) => (
+        render={() => (
           <NewTagInput
             name={name}
             value={field.value}
             onChange={(values) => helpers.setValue(values)}
-            // addOnBlur
             // error={!!meta.error}
-            // disabled={disabled}
+            disabled={disabled}
           />
         )}
       />

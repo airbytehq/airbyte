@@ -15,9 +15,11 @@ interface NewTagInputProps {
   name: string;
   value: string[];
   onChange: (value: string[]) => void;
+  error?: boolean;
+  disabled?: boolean;
 }
 // TODO: what happens if there are two tags with the same text?
-export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, value, name }) => {
+export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, value, name, disabled }) => {
   const tags = value.map((value) => ({ id: value, value }));
   // input value is a tag draft
   const [inputValue, setInputValue] = useState("");
@@ -57,12 +59,15 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, value, name 
       inputValue={inputValue}
       isClearable
       isMulti
+      // todo: is this actually what we want on blur?
+      onBlur={() => handleChange}
       menuIsOpen={false}
       onChange={handleChange}
       onInputChange={handleInputChange}
       onKeyDown={handleKeyDown}
       placeholder=""
       value={tags}
+      isDisabled={disabled}
     />
   );
 };
