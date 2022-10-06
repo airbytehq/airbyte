@@ -29,7 +29,7 @@ const RadioButtonContainer = styled.label<{ checked?: boolean; disabled?: boolea
   cursor: pointer;
 `;
 
-const RadioButton: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => {
+export const RadioButton: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => {
   return (
     <RadioButtonContainer
       className={props.className}
@@ -42,5 +42,3 @@ const RadioButton: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (prop
     </RadioButtonContainer>
   );
 };
-
-export default RadioButton;

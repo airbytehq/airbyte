@@ -2,17 +2,17 @@
 @use "../../../scss/variables";
 
 .container {
-  padding: variables.$spacing-xl 32px 0;
-  position: relative;
   z-index: 2;
-  color: colors.$dark-blue;
+  position: relative;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  padding: variables.$spacing-xl variables.$spacing-xl 0;
+  color: colors.$dark-blue;
 
   &.withLine {
-    border-bottom: 1px solid colors.$grey-100;
+    border-bottom: variables.$border-thin solid colors.$grey-100;
   }
 }
 

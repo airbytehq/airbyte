@@ -16,7 +16,7 @@
       },
       "subdomain": {
         "type": "string",
-        "title": "Subdomain (Optional)",
+        "title": "Subdomain",
         "description": "Required if you access Zendesk Chat from a Zendesk Support subdomain.",
         "default": ""
       },

@@ -4,7 +4,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, ControlLabels, DropDown, Input } from "components";
+import { ControlLabels } from "components/LabeledControl";
+import { Button } from "components/ui/Button";
+import { DropDown } from "components/ui/DropDown";
+import { Input } from "components/ui/Input";
 
 import { Values } from "../types";
 import styles from "./ConnectorForm.module.scss";

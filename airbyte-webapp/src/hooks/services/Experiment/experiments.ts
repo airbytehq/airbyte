@@ -4,6 +4,7 @@
  */
 
 export interface Experiments {
+  "onboarding.hideOnboarding": boolean;
   "connector.orderOverwrite": Record<string, number>;
   "connector.frequentlyUsedDestinationIds": string[];
   "connector.startWithDestinationId": string;

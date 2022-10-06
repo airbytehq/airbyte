@@ -4,9 +4,11 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, ControlLabels, DropDown } from "components";
 import { ConnectorIcon } from "components/ConnectorIcon";
+import { ControlLabels } from "components/LabeledControl";
+import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
+import { DropDown } from "components/ui/DropDown";
 
 import { useDestinationList } from "hooks/services/useDestinationHook";
 import { useSourceList } from "hooks/services/useSourceHook";

@@ -4,7 +4,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Input, Button } from "components";
+import { Button } from "components/ui/Button";
+import { Input } from "components/ui/Input";
 
 interface CreateWorkspaceFormProps {
   onSubmit: (values: { name: string }) => Promise<void>;
