@@ -39,6 +39,7 @@ class FindSupabaseStream(HttpStream):
         yield from response.json()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+
         if len(response.json()) < self.limit:
             return None
         else:
