@@ -803,7 +803,6 @@ def test_checkpoint_state_from_stream_instance():
 
 
 def test_airbyte_record_message_custom_data_validation_error():
-    stream = MockStream(name="my_stream")
     invalid_data = "Not a dict"
     with pytest.raises(ValueError):
-        AirbyteRecordMessage(stream=stream, data=invalid_data, emitted_at=GLOBAL_EMITTED_AT)
+        AirbyteRecordMessage(stream="stream", data=invalid_data, emitted_at=GLOBAL_EMITTED_AT)
