@@ -806,3 +806,9 @@ def test_airbyte_record_message_custom_data_validation_error():
     invalid_data = "Not a dict"
     with pytest.raises(ValueError):
         AirbyteRecordMessage(stream="stream", data=invalid_data, emitted_at=GLOBAL_EMITTED_AT)
+
+
+def test_airbyte_record_message_valid_data():
+    valid_data = {"foo": "bar"}
+    AirbyteRecordMessage(stream="stream", data=valid_data, emitted_at=GLOBAL_EMITTED_AT)
+
