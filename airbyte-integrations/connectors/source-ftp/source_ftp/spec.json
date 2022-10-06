@@ -57,10 +57,11 @@
         "order": 1
       },
       "file_type": {
-        "title": "File types",
-        "description": "Coma separated file types. Currently only 'csv' and 'json' types are supported.",
+        "title": "File type",
+        "description": "The file type you want to sync. Currently only 'csv' and 'json' files are supported.",
         "type": "string",
         "default": "csv",
+        "enum": ["csv", "json"],
         "order": 4,
         "examples": ["csv", "json"]
       },
