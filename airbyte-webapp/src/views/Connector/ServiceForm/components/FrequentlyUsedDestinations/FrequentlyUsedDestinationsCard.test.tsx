@@ -33,10 +33,7 @@ describe("<FrequentlyUsedDestinations />", () => {
 
     await waitFor(() => {
       expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler).toHaveBeenCalledWith("2", {
-        actionDescription: "Suggested destination connector type selected",
-        connector_destination_suggested: true,
-      });
+      expect(handler).toHaveBeenCalledWith("2", "BigQuery");
     });
   });
 });

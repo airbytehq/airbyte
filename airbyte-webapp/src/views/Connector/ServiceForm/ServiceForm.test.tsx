@@ -440,7 +440,7 @@ describe("Service Form", () => {
 
       const submitBtn = container.querySelector('button[type="submit"]');
 
-      expect(submitBtn).toBeInTheDocument();
+      expect(submitBtn).not.toBeInTheDocument();
     });
   });
 });
