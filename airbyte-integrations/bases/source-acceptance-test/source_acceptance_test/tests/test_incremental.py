@@ -231,9 +231,7 @@ class TestIncremental(BaseTest):
         stream_name_to_per_stream_state = dict()
         for idx, message_batch in enumerate(checkpoint_messages):
             assert len(message_batch) > 0 and message_batch[0].type == Type.STATE
-            state_input, complete_state = self.get_next_state_input(
-                message_batch, latest_state, stream_name_to_per_stream_state, is_per_stream
-            )
+            state_input, complete_state = self.get_next_state_input(message_batch, stream_name_to_per_stream_state, is_per_stream)
 
             if len(checkpoint_messages) >= min_batches_to_test and idx % sample_rate != 0:
                 continue
@@ -260,7 +258,6 @@ class TestIncremental(BaseTest):
     def get_next_state_input(
         self,
         message_batch: List[AirbyteStateMessage],
-        latest_state: MutableMapping,
         stream_name_to_per_stream_state: MutableMapping,
         is_per_stream,
     ) -> Tuple[Union[List[MutableMapping], MutableMapping], MutableMapping]:
@@ -276,7 +273,7 @@ class TestIncremental(BaseTest):
                     )
             state_input = [
                 {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
-                for stream_name, stream_state in latest_state.items()
+                for stream_name, stream_state in stream_name_to_per_stream_state.items()
             ]
             return state_input, stream_name_to_per_stream_state
         else:
