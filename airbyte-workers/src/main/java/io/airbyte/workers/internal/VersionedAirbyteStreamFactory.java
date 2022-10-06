@@ -54,7 +54,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
       final io.airbyte.protocol.models.v0.AirbyteMessage message = migrator.upgrade(deserializer.deserialize(json));
       return Stream.of(convert(message));
     } catch (RuntimeException e) {
-      LOGGER.warn("Failed to upgrade a message from version {}: {}", protocolVersion, Jsons.serialize(json));
+      logger.warn("Failed to upgrade a message from version {}: {}", protocolVersion, Jsons.serialize(json), e);
       return Stream.empty();
     }
   }

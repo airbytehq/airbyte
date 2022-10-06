@@ -7,13 +7,13 @@ package io.airbyte.commons.protocol.migrations;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.AirbyteMessage;
+import jakarta.inject.Singleton;
 
 /**
  * Demo migration to illustrate the template. This should be deleted once we added the v0 to v1
  * migration.
  */
-// NOTE, to actually wire this migration, uncomment the annotation
-// @Singleton
+@Singleton
 public class AirbyteMessageMigrationV0
     implements AirbyteMessageMigration<AirbyteMessage, io.airbyte.protocol.models.v0.AirbyteMessage> {
 
