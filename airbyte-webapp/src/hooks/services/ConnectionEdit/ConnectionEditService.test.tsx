@@ -20,7 +20,9 @@ jest.mock("../useConnectionHook", () => ({
     getConnection: () => mockConnection,
   }),
   useUpdateConnection: () => ({
-    mutateAsync: jest.fn(async (connection: WebBackendConnectionUpdate) => connection),
+    mutateAsync: jest.fn(async (connection: WebBackendConnectionUpdate) => {
+      return { ...mockConnection, ...connection };
+    }),
     isLoading: false,
   }),
 }));
@@ -57,18 +59,18 @@ describe("ConnectionFormService", () => {
       },
     });
 
-    const mockUpdateConnection: unknown = {
-      status: "asdf",
-      destination: {},
-      source: {},
+    const mockUpdateConnection: WebBackendConnectionUpdate = {
+      connectionId: mockConnection.connectionId,
+      name: "new connection name",
+      prefix: "new connection prefix",
       syncCatalog: { streams: [] },
     };
 
     await act(async () => {
-      await result.current.updateConnection(mockUpdateConnection as WebBackendConnectionUpdate);
+      await result.current.updateConnection(mockUpdateConnection);
     });
 
-    expect(result.current.connection).toEqual(mockUpdateConnection);
+    expect(result.current.connection).toEqual({ ...mockConnection, ...mockUpdateConnection });
   });
 
   it("should refresh connection", async () => {
@@ -84,18 +86,18 @@ describe("ConnectionFormService", () => {
       },
     });
 
-    const mockUpdateConnection: unknown = {
-      status: "asdf",
-      destination: {},
-      source: {},
+    const mockUpdateConnection: WebBackendConnectionUpdate = {
+      connectionId: mockConnection.connectionId,
+      name: "new connection name",
+      prefix: "new connection prefix",
       syncCatalog: { streams: [] },
     };
 
     await act(async () => {
-      await result.current[0].updateConnection(mockUpdateConnection as WebBackendConnectionUpdate);
+      await result.current[0].updateConnection(mockUpdateConnection);
     });
 
-    expect(result.current[0].connection).toEqual(mockUpdateConnection);
+    expect(result.current[0].connection).toEqual({ ...mockConnection, ...mockUpdateConnection });
 
     await act(async () => {
       await result.current[1].refreshSchema();
