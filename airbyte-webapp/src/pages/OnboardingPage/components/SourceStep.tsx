@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 
-import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
@@ -24,8 +22,6 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
 
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { mutateAsync: createSource } = useCreateSource();
-
-  const analyticsService = useAnalyticsService();
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
@@ -70,12 +66,6 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
     setDocumentationPanelOpen(false);
     const sourceDefinition = getSourceDefinitionById(sourceId);
     setDocumentationUrl(sourceDefinition?.documentationUrl || "");
-
-    analyticsService.track(Namespace.SOURCE, Action.SELECT, {
-      actionDescription: "Source connector type selected",
-      connector_source: sourceDefinition?.name,
-      connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
-    });
 
     setError(null);
     setSourceDefinitionId(sourceId);

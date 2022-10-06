@@ -2,10 +2,8 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation } from "react-router-dom";
 
-import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
@@ -19,7 +17,6 @@ interface SourceFormProps {
     sourceDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
-  afterSelectConnector?: () => void;
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
   hasSuccess?: boolean;
   error?: FormError | null;
@@ -33,15 +30,8 @@ const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: s
   );
 };
 
-export const SourceForm: React.FC<SourceFormProps> = ({
-  onSubmit,
-  sourceDefinitions,
-  error,
-  hasSuccess,
-  afterSelectConnector,
-}) => {
+export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefinitions, error, hasSuccess }) => {
   const location = useLocation();
-  const analyticsService = useAnalyticsService();
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
     hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
@@ -55,18 +45,6 @@ export const SourceForm: React.FC<SourceFormProps> = ({
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
-
-    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
-
-    if (afterSelectConnector) {
-      afterSelectConnector();
-    }
-
-    analyticsService.track(Namespace.SOURCE, Action.SELECT, {
-      actionDescription: "Source connector type selected",
-      connector_source: connector?.name,
-      connector_source_definition_id: sourceDefinitionId,
-    });
   };
 
   const onSubmitForm = (values: ServiceFormValues) => {

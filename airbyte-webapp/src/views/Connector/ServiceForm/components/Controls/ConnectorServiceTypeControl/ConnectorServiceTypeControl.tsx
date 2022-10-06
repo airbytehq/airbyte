@@ -116,7 +116,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
 }) => {
   const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
-  const { trackMenuOpen, trackNoOptionMessage } = useAnalyticsTrackFunctions(formType);
+  const { trackMenuOpen, trackNoOptionMessage, trackConnectorSelection } = useAnalyticsTrackFunctions(formType);
 
   const workspace = useCurrentWorkspace();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
@@ -146,9 +146,10 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
     (item: DropDownOptionDataItem | null) => {
       if (item && onChangeServiceType) {
         onChangeServiceType(item.value);
+        trackConnectorSelection(item.value, item.label || "");
       }
     },
-    [onChangeServiceType]
+    [onChangeServiceType, trackConnectorSelection]
   );
 
   const selectProps = useMemo(
