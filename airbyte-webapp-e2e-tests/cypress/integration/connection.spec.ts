@@ -23,7 +23,7 @@ describe("Connection main actions", () => {
 
   it("Create new connection", () => {
     const sourceName = appendRandomString("Test connection source cypress");
-    const destName = appendRandomString("Test connection destination cypress")
+    const destName = appendRandomString("Test connection destination cypress");
 
     createTestConnection(sourceName, destName);
 
@@ -49,11 +49,7 @@ describe("Connection main actions", () => {
     goToReplicationTab();
 
     selectSchedule("Every hour");
-    const prefix = "auto_test";
-    fillOutDestinationPrefix(prefix);
-
-    // Ensures the prefix is applied to the streams
-    assert(cy.get(`[title*="${prefix}"]`));
+    fillOutDestinationPrefix("auto_test");
 
     submitButtonClick();
 
@@ -71,12 +67,9 @@ describe("Connection main actions", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
-    const destName = appendRandomString("Test update connection Local JSON destination cypress")
+    const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
-    createTestConnection(
-      sourceName,
-      destName
-    );
+    createTestConnection(sourceName, destName);
 
     goToSourcePage();
     openSourceDestinationFromGrid(sourceName);
@@ -89,19 +82,27 @@ describe("Connection main actions", () => {
     setupDestinationNamespaceCustomFormat("_test");
     selectFullAppendSyncMode();
 
+    const prefix = "auto_test";
+    fillOutDestinationPrefix(prefix);
+
+    // Ensures the prefix is applied to the streams
+    assert(cy.get(`[title*="${prefix}"]`));
+
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
 
     cy.wait("@updateConnection").then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
       expect(interception.request.method).to.eq("POST");
-      expect(interception.request).property("body").to.contain({
-        name: sourceName + " <> " + destName + "Connection name",
-        prefix: "auto_test",
-        namespaceDefinition: "customformat",
-        namespaceFormat: "${SOURCE_NAMESPACE}_test",
-        status: "active",
-      });
+      expect(interception.request)
+        .property("body")
+        .to.contain({
+          name: sourceName + " <> " + destName + "Connection name",
+          prefix: "auto_test",
+          namespaceDefinition: "customformat",
+          namespaceFormat: "${SOURCE_NAMESPACE}_test",
+          status: "active",
+        });
       expect(interception.request.body.scheduleData.basicSchedule).to.contain({
         units: 1,
         timeUnit: "hours",
@@ -128,7 +129,37 @@ describe("Connection main actions", () => {
 
   it("creates a connection, then edits the schedule type", () => {
     const sourceName = appendRandomString("Test connection source cypress PokeAPI");
-    const destName = appendRandomString("Test connection destination cypress")
+    const destName = appendRandomString("Test connection destination cypress");
+
+    createTestConnection(sourceName, destName);
+
+    cy.get("div").contains(sourceName).should("exist");
+    cy.get("div").contains(destName).should("exist");
+
+    openSourceDestinationFromGrid(sourceName);
+
+    goToReplicationTab();
+
+    selectSchedule("Cron");
+    submitButtonClick();
+    checkSuccessResult();
+
+    selectSchedule("Manual");
+    submitButtonClick();
+    checkSuccessResult();
+
+    selectSchedule("Every hour");
+    submitButtonClick();
+    checkSuccessResult();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
+
+  // Analytics calls are not made in CI.
+  it.skip("Should make analytics calls", () => {
+    const sourceName = appendRandomString("Test connection source cypress PokeAPI");
+    const destName = appendRandomString("Test connection destination cypress");
 
     createTestConnection(sourceName, destName);
 
@@ -174,12 +205,9 @@ describe("Connection main actions", () => {
     cy.intercept("/api/v1/web_backend/connections/get").as("getConnection");
 
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
-    const destName = appendRandomString("Test update connection Local JSON destination cypress")
+    const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
-    createTestConnection(
-      sourceName,
-      destName
-    );
+    createTestConnection(sourceName, destName);
 
     goToSourcePage();
     openSourceDestinationFromGrid(sourceName);
@@ -200,16 +228,12 @@ describe("Connection main actions", () => {
       // Schedule is pulled out here, but we don't do anything with is as it's legacy
       const { scheduleType, scheduleData, schedule, ...connectionUpdate } = interception.response?.body;
       expect(scheduleType).to.eq("basic");
-      expect(scheduleData.basicSchedule
-        ).to.deep.eq({
-        timeUnit
-          :
-          "hours",
-        units
-          :
-          1
+      expect(scheduleData.basicSchedule).to.deep.eq({
+        timeUnit: "hours",
+        units: 1,
       });
-      const { scheduleType: readScheduleType, scheduleData: readScheduleData, ...connectionRead } = loadedConnection
+
+      const { scheduleType: readScheduleType, scheduleData: readScheduleData, ...connectionRead } = loadedConnection;
       expect(readScheduleType).to.eq("manual");
       expect(readScheduleData).to.eq(undefined);
       expect(connectionRead).to.deep.eq(connectionUpdate);
