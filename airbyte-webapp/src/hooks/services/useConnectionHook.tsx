@@ -100,7 +100,7 @@ export const useSyncConnection = () => {
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: !connection.scheduleData ? "manual" : getScheduleInfo(connection.scheduleData),
+      frequency: getScheduleInfo(connection.scheduleData),
     });
 
     return service.sync(connection.connectionId);
@@ -145,7 +145,7 @@ const useCreateConnection = () => {
 
       analyticsService.track(Namespace.CONNECTION, Action.CREATE, {
         actionDescription: "New connection created",
-        frequency: !values.scheduleData ? "manual" : getScheduleInfo(values.scheduleData),
+        frequency: getScheduleInfo(values.scheduleData),
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
@@ -228,7 +228,7 @@ export const useEnableConnection = () => {
         const action = connection.status === ConnectionStatus.active ? Action.REENABLE : Action.DISABLE;
 
         analyticsService.track(Namespace.CONNECTION, action, {
-          frequency: !connection.scheduleData ? "manual" : getScheduleInfo(connection.scheduleData),
+          frequency: getScheduleInfo(connection.scheduleData),
           connector_source: connection.source?.sourceName,
           connector_source_definition_id: connection.source?.sourceDefinitionId,
           connector_destination: connection.destination?.destinationName,

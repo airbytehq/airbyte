@@ -38,7 +38,7 @@ export const ConnectionItemPage: React.FC = () => {
       connector_source_definition_id: source.sourceDefinitionId,
       connector_destination: destination.destinationName,
       connector_destination_definition_id: destination.destinationDefinitionId,
-      frequency: !connection.scheduleData ? "manual" : getScheduleInfo(connection.scheduleData),
+      frequency: getScheduleInfo(connection.scheduleData),
     });
   };
 
