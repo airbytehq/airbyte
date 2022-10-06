@@ -12,19 +12,7 @@
           "type": "null"
         },
         "country": {
-          "type": "object",
-          "properties": {
-            "code": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "code",
-            "name"
-          ]
+          "type": "object"
         },
         "city": {
           "type": "string"
@@ -211,19 +199,7 @@
       "type": "boolean"
     },
     "waitInterval": {
-      "type": "object",
-      "properties": {
-        "upper": {
-          "type": "integer"
-        },
-        "lower": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "upper",
-        "lower"
-      ]
+      "type": "object"
     },
     "numServingGuests": {
       "type": "integer"

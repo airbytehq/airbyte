@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "isAnonymized": {
+      "type": "boolean"
+    },
+    "externalCustomerId": {
+      "type": "string"
+    },
+    "customerId": {
+      "type": "string"
+    },
+    "publicId": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "completedTime": {
+      "type": "string"
+    },
+    "serveTime": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "fields": {
+      "type": "object"
+    },
+    "locationId": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "resourceIds": {
+      "type": "array"
+    },
+    "services": {
+      "type": "object"
+    },
+    "dataFields": {
+      "type": "array"
+    },
+    "bookingTime": {
+      "type": "string"
+    },
+    "isBlock": {
+      "type": "boolean"
+    },
+    "duration": {
+      "type": "integer"
+    },
+    "tags": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "locale": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "waitlistTime": {
+      "type": "string"
+    },
+    "resources": {
+      "type": "object"
+    },
+    "created": {
+      "type": "string"
+    },
+    "numVisits": {
+      "type": "integer"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "updatedBy": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string"
+    },
+    "serviceIds": {
+      "type": "array"
+    },
+    "remoteIp": {
+      "type": "string"
+    },
+    "ticket": {
+      "type": "string"
+    },
+    "partySize": {
+      "type": "integer"
+    },
+    "removedTime": {
+      "type": "string"
+    },
+    "createdBy": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "accountId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "isAnonymized",
+    "externalCustomerId",
+    "customerId",
+    "publicId",
+    "region",
+    "name",
+    "completedTime",
+    "serveTime",
+    "phone",
+    "state",
+    "fields",
+    "locationId",
+    "date",
+    "email",
+    "resourceIds",
+    "services",
+    "dataFields",
+    "bookingTime",
+    "isBlock",
+    "duration",
+    "tags",
+    "locale",
+    "lastName",
+    "waitlistTime",
+    "resources",
+    "created",
+    "numVisits",
+    "notes",
+    "country",
+    "updatedBy",
+    "source",
+    "city",
+    "updated",
+    "serviceIds",
+    "remoteIp",
+    "ticket",
+    "partySize",
+    "removedTime",
+    "createdBy",
+    "firstName",
+    "id",
+    "accountId"
+  ]
+}

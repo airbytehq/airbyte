@@ -18,15 +18,7 @@
       "type": "null"
     },
     "reports": {
-      "type": "object",
-      "properties": {
-        "performance": {
-          "type": "array"
-        }
-      },
-      "required": [
-        "performance"
-      ]
+      "type": "object"
     },
     "nameCollated": {
       "type": "string"
@@ -96,57 +88,7 @@
       "type": "string"
     },
     "notifications": {
-      "type": "object",
-      "properties": {
-        "cancelled": {
-          "type": "object",
-          "properties": {
-            "stateOrTag": {
-              "type": "string"
-            },
-            "channels": {
-              "type": "array",
-              "items": [
-                {
-                  "type": "string"
-                }
-              ]
-            },
-            "onlyIfAssigned": {
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "stateOrTag",
-            "channels",
-            "onlyIfAssigned"
-          ]
-        },
-        "booked": {
-          "type": "object",
-          "properties": {
-            "onlyIfAssigned": {
-              "type": "boolean"
-            },
-            "stateOrTag": {
-              "type": "string"
-            },
-            "channels": {
-              "type": "array",
-              "items": {}
-            }
-          },
-          "required": [
-            "onlyIfAssigned",
-            "stateOrTag",
-            "channels"
-          ]
-        }
-      },
-      "required": [
-        "cancelled",
-        "booked"
-      ]
+      "type": "object"
     },
     "defaultLocationId": {
       "type": "string"

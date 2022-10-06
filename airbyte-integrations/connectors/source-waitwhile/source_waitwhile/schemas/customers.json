@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "created": {
+      "type": "string"
+    },
+    "numVisits": {
+      "type": "integer"
+    },
+    "email": {
+      "type": "string"
+    },
+    "services": {
+      "type": "object"
+    },
+    "tags": {
+      "type": "array"
+    },
+    "lastVisit": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string"
+    },
+    "fields": {
+      "type": "object"
+    },
+    "locationIds": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "externalId": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "updatedBy": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "createdBy": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "resources": {
+      "type": "object"
+    },
+    "states": {
+      "type": "object"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "lastVisits": {
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "accountId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "created",
+    "numVisits",
+    "email",
+    "services",
+    "tags",
+    "lastVisit",
+    "updated",
+    "fields",
+    "locationIds",
+    "externalId",
+    "name",
+    "updatedBy",
+    "phone",
+    "createdBy",
+    "notes",
+    "resources",
+    "states",
+    "firstName",
+    "lastName",
+    "lastVisits",
+    "id",
+    "accountId"
+  ]
+}
