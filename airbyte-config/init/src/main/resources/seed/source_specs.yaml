@@ -362,21 +362,21 @@
                 order: 1
               client_certificate:
                 type: "string"
-                title: "Client Certificate (Optional)"
+                title: "Client Certificate"
                 description: "Client certificate"
                 airbyte_secret: true
                 multiline: true
                 order: 2
               client_key:
                 type: "string"
-                title: "Client Key (Optional)"
+                title: "Client Key"
                 description: "Client key"
                 airbyte_secret: true
                 multiline: true
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. If you do not add it - the\
                   \ password will be generated automatically."
                 airbyte_secret: true
@@ -404,21 +404,21 @@
                 order: 1
               client_certificate:
                 type: "string"
-                title: "Client Certificate (Optional)"
+                title: "Client Certificate"
                 description: "Client certificate"
                 airbyte_secret: true
                 multiline: true
                 order: 2
               client_key:
                 type: "string"
-                title: "Client Key (Optional)"
+                title: "Client Key"
                 description: "Client key"
                 airbyte_secret: true
                 multiline: true
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. If you do not add it - the\
                   \ password will be generated automatically."
                 airbyte_secret: true
@@ -682,7 +682,7 @@
           order: 3
           type: "string"
         region:
-          title: "Region *"
+          title: "Region"
           description: "Region to pull data from (EU/NA/FE). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\"\
             >docs</a> for more details."
           enum:
@@ -693,7 +693,7 @@
           default: "NA"
           order: 4
         report_wait_timeout:
-          title: "Report Wait Timeout *"
+          title: "Report Wait Timeout"
           description: "Timeout duration in minutes for Reports. Default is 60 minutes."
           default: 60
           examples:
@@ -702,7 +702,7 @@
           order: 5
           type: "integer"
         report_generation_max_retries:
-          title: "Report Generation Maximum Retries *"
+          title: "Report Generation Maximum Retries"
           description: "Maximum retries Airbyte will attempt for fetching report data.\
             \ Default is 5."
           default: 5
@@ -713,7 +713,7 @@
           order: 6
           type: "integer"
         start_date:
-          title: "Start Date (Optional)"
+          title: "Start Date"
           description: "The Start date for collecting reports, should not be more\
             \ than 60 days in the past. In YYYY-MM-DD format"
           examples:
@@ -722,7 +722,7 @@
           order: 7
           type: "string"
         profiles:
-          title: "Profile IDs (Optional)"
+          title: "Profile IDs"
           description: "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\"\
             >docs</a> for more details."
           order: 8
@@ -780,7 +780,7 @@
       type: "object"
       properties:
         app_id:
-          title: "App Id *"
+          title: "App Id"
           description: "Your Amazon App ID"
           airbyte_secret: true
           order: 0
@@ -3516,7 +3516,7 @@
       additionalProperties: true
       properties:
         credentials:
-          title: "Authentication *"
+          title: "Authentication"
           description: "Choose how to authenticate to GitHub"
           type: "object"
           order: 0
@@ -3579,7 +3579,7 @@
           order: 2
         branch:
           type: "string"
-          title: "Branch (Optional)"
+          title: "Branch"
           examples:
           - "airbytehq/airbyte/master airbytehq/airbyte/my-branch"
           description: "Space-delimited list of GitHub repository branches to pull\
@@ -3588,7 +3588,7 @@
           order: 3
         page_size_for_large_streams:
           type: "integer"
-          title: "Page size for large streams (Optional)"
+          title: "Page size for large streams"
           minimum: 1
           maximum: 100
           default: 10
@@ -3763,7 +3763,7 @@
               airbyte_secret: true
             access_token:
               type: "string"
-              title: "Access Token (Optional)"
+              title: "Access Token"
               order: 4
               description: "Access Token for making authenticated requests. More instruction\
                 \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
@@ -3792,7 +3792,7 @@
           order: 2
         end_date:
           type: "string"
-          title: "End Date (Optional)"
+          title: "End Date"
           description: "UTC date and time in the format 2017-01-25. Any data after\
             \ this date will not be replicated."
           pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
@@ -3801,7 +3801,7 @@
           order: 6
         custom_queries:
           type: "array"
-          title: "Custom GAQL Queries (Optional)"
+          title: "Custom GAQL Queries"
           description: ""
           order: 3
           items:
@@ -3827,7 +3827,7 @@
                   \ query."
         login_customer_id:
           type: "string"
-          title: "Login Customer ID for Managed Accounts (Optional)"
+          title: "Login Customer ID for Managed Accounts"
           description: "If your access to the customer account is through a manager\
             \ account, this field is required and must be set to the customer ID of\
             \ the manager account (10-digit number without dashes). More information\
@@ -3838,7 +3838,7 @@
           - "7349206847"
           order: 4
         conversion_window_days:
-          title: "Conversion Window (Optional)"
+          title: "Conversion Window"
           type: "integer"
           description: "A conversion window is the period of time after an ad interaction\
             \ (such as an ad click or video view) during which a conversion, such\
@@ -3915,7 +3915,7 @@
                 airbyte_secret: true
                 order: 3
               access_token:
-                title: "Access Token (Optional)"
+                title: "Access Token"
                 type: "string"
                 description: "Access Token for making authenticated requests."
                 airbyte_secret: true
@@ -3955,14 +3955,14 @@
         custom_reports:
           order: 3
           type: "string"
-          title: "Custom Reports (Optional)"
+          title: "Custom Reports"
           description: "A JSON array describing the custom reports you want to sync\
             \ from Google Analytics. See <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4#data-processing-latency\"\
             >the docs</a> for more information about the exact format you can use\
             \ to fill out this field."
         window_in_days:
           type: "integer"
-          title: "Data request time increment in days (Optional)"
+          title: "Data request time increment in days"
           description: "The time increment used by the connector when requesting data\
             \ from the Google Analytics API. More information is available in the\
             \ <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\"\
@@ -4051,7 +4051,7 @@
                 airbyte_secret: true
                 order: 3
               access_token:
-                title: "Access Token (Optional)"
+                title: "Access Token"
                 type: "string"
                 description: "Access Token for making authenticated requests."
                 airbyte_secret: true
@@ -4082,14 +4082,14 @@
         custom_reports:
           order: 3
           type: "string"
-          title: "Custom Reports (Optional)"
+          title: "Custom Reports"
           description: "A JSON array describing the custom reports you want to sync\
             \ from Google Analytics. See <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4#data-processing-latency\"\
             >the docs</a> for more information about the exact format you can use\
             \ to fill out this field."
         window_in_days:
           type: "integer"
-          title: "Data request time increment in days (Optional)"
+          title: "Data request time increment in days"
           description: "The time increment used by the connector when requesting data\
             \ from the Google Analytics API. More information is available in the\
             \ <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\"\
@@ -4334,7 +4334,7 @@
         custom_reports:
           order: 4
           type: "string"
-          title: "Custom Reports (Optional)"
+          title: "Custom Reports"
           description: "A JSON array describing the custom reports you want to sync\
             \ from Google Search Console. See <a href=\"https://docs.airbyte.com/integrations/sources/google-search-console#step-2-set-up-the-google-search-console-connector-in-airbyte\"\
             >the docs</a> for more information about the exact format you can use\
@@ -5002,7 +5002,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-iterable:0.1.18"
+- dockerImage: "airbyte/source-iterable:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/iterable"
     connectionSpecification:
@@ -5686,7 +5686,7 @@
       additionalProperties: true
       properties:
         credentials:
-          title: "Authentication *"
+          title: "Authentication"
           type: "object"
           oneOf:
           - type: "object"
@@ -5738,7 +5738,7 @@
           examples:
           - "2021-05-17"
         account_ids:
-          title: "Account IDs (Optional)"
+          title: "Account IDs"
           type: "array"
           description: "Specify the account IDs separated by a space, to pull the\
             \ data from. Leave empty, if you want to pull the data from all associated\
@@ -5780,7 +5780,7 @@
           examples:
           - "123456789"
         credentials:
-          title: "Authentication *"
+          title: "Authentication"
           type: "object"
           oneOf:
           - type: "object"
@@ -5912,7 +5912,7 @@
           items:
             type: "string"
             pattern: "^[0-9]*$"
-          description: "The IDs of any Looks to run (optional)"
+          description: "The IDs of any Looks to run"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -5928,7 +5928,7 @@
       properties:
         credentials:
           type: "object"
-          title: "Authentication *"
+          title: "Authentication"
           oneOf:
           - title: "OAuth2.0"
             type: "object"
@@ -6569,7 +6569,7 @@
       type: "object"
       properties:
         credentials:
-          title: "Authentication *"
+          title: "Authentication"
           description: "Choose how to authenticate to Mixpanel"
           type: "object"
           order: 0
@@ -6712,7 +6712,7 @@
             properties:
               subdomain:
                 type: "string"
-                title: "Subdomain/Slug (Optional)"
+                title: "Subdomain/Slug"
                 description: "Slug/subdomain of the account, or the first part of\
                   \ the URL that comes before .monday.com"
                 default: ""
@@ -7104,7 +7104,7 @@
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. This field is optional. If\
                   \ you do not add it - the password will be generated automatically."
                 airbyte_secret: true
@@ -7149,7 +7149,7 @@
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. This field is optional. If\
                   \ you do not add it - the password will be generated automatically."
                 airbyte_secret: true
@@ -7351,7 +7351,7 @@
           airbyte_secret: true
         object_types:
           type: "array"
-          title: "Object Types (Optional)"
+          title: "Object Types"
           items:
             type: "string"
           description: "The API names of the Netsuite objects you want to sync. Setting\
@@ -7374,7 +7374,7 @@
           - "2017-01-25T00:00:00Z"
         window_in_days:
           type: "integer"
-          title: "Window in Days (Optional)"
+          title: "Window in Days"
           description: "The amount of days used to query the data with date chunks.\
             \ Set smaller value, if you have lots of data."
           order: 7
@@ -7487,7 +7487,7 @@
           - "2022-07-22T00:00:00Z"
           title: "Start Date"
         credentials:
-          title: "Authorization Method *"
+          title: "Authorization Method"
           type: "object"
           oneOf:
           - type: "object"
@@ -8203,7 +8203,7 @@
           airbyte_secret: true
         refresh_token:
           type: "string"
-          title: "Refresh token (Optional)"
+          title: "Refresh token"
           description: "The key to refresh the expired access token."
           airbyte_secret: true
         start_date:
@@ -8754,21 +8754,21 @@
                 order: 1
               client_certificate:
                 type: "string"
-                title: "Client Certificate (Optional)"
+                title: "Client Certificate"
                 description: "Client certificate"
                 airbyte_secret: true
                 multiline: true
                 order: 2
               client_key:
                 type: "string"
-                title: "Client Key (Optional)"
+                title: "Client Key"
                 description: "Client key"
                 airbyte_secret: true
                 multiline: true
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. If you do not add it - the\
                   \ password will be generated automatically."
                 airbyte_secret: true
@@ -8796,21 +8796,21 @@
                 order: 1
               client_certificate:
                 type: "string"
-                title: "Client Certificate (Optional)"
+                title: "Client Certificate"
                 description: "Client certificate"
                 airbyte_secret: true
                 multiline: true
                 order: 2
               client_key:
                 type: "string"
-                title: "Client Key (Optional)"
+                title: "Client Key"
                 description: "Client key"
                 airbyte_secret: true
                 multiline: true
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. If you do not add it - the\
                   \ password will be generated automatically."
                 airbyte_secret: true
@@ -9168,7 +9168,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.2.2"
+- dockerImage: "airbyte/source-recharge:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -9655,7 +9655,7 @@
                 order: 2
                 type: "integer"
         schema:
-          title: "Manually enforced data schema (Optional)"
+          title: "Manually enforced data schema"
           description: "Optionally provide a schema to enforce, as a valid JSON string.\
             \ Ensure this is a mapping of <strong>{ \"column\" : \"type\" }</strong>,\
             \ where types are valid <a href=\"https://json-schema.org/understanding-json-schema/reference/type.html\"\
@@ -9857,7 +9857,7 @@
                 type: "string"
                 title: "Search value"
                 order: 2
-          title: "Filter Salesforce Objects (Optional)"
+          title: "Filter Salesforce Objects"
           description: "Filter streams relevant to you"
     supportsNormalization: false
     supportsDBT: false
@@ -10323,7 +10323,7 @@
           type: "string"
           order: 1
         start_datetime:
-          title: "Start Datetime (Optional)"
+          title: "Start Datetime"
           type: "string"
           examples:
           - "2000-01-01T13:00:00"
@@ -10404,7 +10404,7 @@
           order: 3
         end_date:
           type: "string"
-          title: "End Date (Optional)"
+          title: "End Date"
           description: "Date in the format 2017-01-25. Any data after this date will\
             \ not be replicated."
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
@@ -10875,7 +10875,7 @@
           order: 2
         lookback_window_days:
           type: "integer"
-          title: "Lookback Window in days (Optional)"
+          title: "Lookback Window in days"
           default: 0
           minimum: 0
           description: "When set, the connector will always re-export data from the\
@@ -10885,7 +10885,7 @@
           order: 3
         slice_range:
           type: "integer"
-          title: "Data request time increment in days (Optional)"
+          title: "Data request time increment in days"
           default: 365
           minimum: 1
           examples:
@@ -11245,7 +11245,7 @@
             - "advertiser_id"
             - "access_token"
         start_date:
-          title: "Replication Start Date *"
+          title: "Replication Start Date"
           description: "The Start Date in format: YYYY-MM-DD. Any data before this\
             \ date will not be replicated. If this parameter is not set, all data\
             \ will be replicated."
@@ -11687,7 +11687,7 @@
           description: "The CUSTOMER SECRET for API in WooCommerce shop."
           airbyte_secret: true
         conversion_window_days:
-          title: "Conversion Window (Optional)"
+          title: "Conversion Window"
           type: "integer"
           description: "A conversion window is the period of time after an ad interaction\
             \ (such as an ad click or video view) during which a conversion, such\
@@ -11759,7 +11759,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         subdomain:
           type: "string"
-          title: "Subdomain (Optional)"
+          title: "Subdomain"
           description: "Required if you access Zendesk Chat from a Zendesk Support\
             \ subdomain."
           default: ""
@@ -12021,7 +12021,7 @@
             \ URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN\
             \ is the value of your subdomain."
         credentials:
-          title: "Authentication *"
+          title: "Authentication"
           type: "object"
           description: "Zendesk service provides two authentication methods. Choose\
             \ between: `OAuth2.0` or `API token`."
@@ -12566,7 +12566,7 @@
           order: 2
         credentials:
           type: "object"
-          title: "Authentication *"
+          title: "Authentication"
           description: "The server authentication method"
           order: 3
           oneOf:
@@ -12615,7 +12615,7 @@
           - "csv,json"
           - "csv"
         folder_path:
-          title: "Folder Path (Optional)"
+          title: "Folder Path"
           description: "The directory to search files for sync"
           type: "string"
           default: ""
@@ -12623,7 +12623,7 @@
           - "/logs/2022"
           order: 5
         file_pattern:
-          title: "File Pattern (Optional)"
+          title: "File Pattern"
           description: "The regular expression to specify files for sync in a chosen\
             \ Folder Path"
           type: "string"
