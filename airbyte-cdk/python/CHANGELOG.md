@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.1.93
+## 0.1.94
 - Make `supported_sync_modes` a required `AirbyteStream` property
+
+## 0.1.93
+- Low-code: Standardize slashes in url_base and path
 
 ## 0.1.92
 - Low-code: Properly propagate $options to array items
