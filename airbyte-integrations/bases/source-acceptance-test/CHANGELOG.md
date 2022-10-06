@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.2.5
-Make full refresh tests tolerant to new records in a sequential read.[#00000](https://github.com/airbytehq/airbyte/pull/00000/)
+Make full refresh tests tolerant to new records in a sequential read.[#17660](https://github.com/airbytehq/airbyte/pull/17660/)
 
 ## 0.2.4
 Make incremental tests compatible with per stream states.[#16686](https://github.com/airbytehq/airbyte/pull/16686/)
