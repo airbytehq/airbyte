@@ -11,7 +11,7 @@ import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Tooltip } from "components/ui/Tooltip";
 
-import { getFrequencyType } from "config/utils";
+import { getScheduleInfo } from "config/utils";
 import { Action, Namespace } from "core/analytics";
 import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
@@ -144,7 +144,7 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: getFrequencyType(connection.schedule),
+      frequency: !connection.scheduleData ? "manual" : getScheduleInfo(connection.scheduleData),
       job_page_size: jobPageSize,
     });
   };
