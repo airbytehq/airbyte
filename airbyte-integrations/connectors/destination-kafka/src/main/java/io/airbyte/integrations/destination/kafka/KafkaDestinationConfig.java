@@ -13,6 +13,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
 import org.slf4j.Logger;
@@ -85,7 +86,13 @@ public class KafkaDestinationConfig {
 
     switch (protocol) {
       case PLAINTEXT -> {}
-      case SASL_SSL, SASL_PLAINTEXT -> {
+      case SASL_SSL -> {
+        builder.put(SaslConfigs.SASL_JAAS_CONFIG, protocolConfig.get("sasl_jaas_config").asText());
+        builder.put(SaslConfigs.SASL_MECHANISM, protocolConfig.get("sasl_mechanism").asText());
+        builder.put(SslConfigs.SSL_TRUSTSTORE_CERTIFICATES_CONFIG, protocolConfig.get("truststore_certificates").asText());
+        builder.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "PEM");
+      }
+      case SASL_PLAINTEXT -> {
         builder.put(SaslConfigs.SASL_JAAS_CONFIG, protocolConfig.get("sasl_jaas_config").asText());
         builder.put(SaslConfigs.SASL_MECHANISM, protocolConfig.get("sasl_mechanism").asText());
       }

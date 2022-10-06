@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +49,7 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
     stubProtocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("bootstrap_servers", KAFKA.getBootstrapServers())
+        .put("bootstrap_servers", "PLAINTEXT://" + HostPortResolver.resolveHost(KAFKA) + ":" + HostPortResolver.resolvePort(KAFKA))
         .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
         .put("sync_producer", true)
         .put("protocol", stubProtocolConfig)

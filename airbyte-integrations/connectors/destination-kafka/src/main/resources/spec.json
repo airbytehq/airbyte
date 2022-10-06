@@ -66,6 +66,8 @@
             "required": ["security_protocol"],
             "properties": {
               "security_protocol": {
+                "title": "Security protocol",
+                "description": "Security protocol for communication with brokers",
                 "type": "string",
                 "enum": ["PLAINTEXT"],
                 "default": "PLAINTEXT"
@@ -81,6 +83,8 @@
             ],
             "properties": {
               "security_protocol": {
+                "title": "Security protocol",
+                "description": "Security protocol for communication with brokers",
                 "type": "string",
                 "enum": ["SASL_PLAINTEXT"],
                 "default": "SASL_PLAINTEXT"
@@ -110,6 +114,8 @@
             ],
             "properties": {
               "security_protocol": {
+                "title": "Security protocol",
+                "description": "Security protocol for communication with brokers",
                 "type": "string",
                 "enum": ["SASL_SSL"],
                 "default": "SASL_SSL"
@@ -133,6 +139,14 @@
                 "type": "string",
                 "default": "",
                 "airbyte_secret": true
+              },
+              "truststore_certificates": {
+                "title": "SSL truststore certificates",
+                "description": "SSL certificates in PEM format with X.509 certificates.",
+                "type": "string",
+                "default": "",
+                "airbyte_secret": "true",
+                "multiline": true
               }
             }
           }
