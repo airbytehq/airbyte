@@ -4,10 +4,11 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { Button, MainPageWithScroll } from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
-import PageTitle from "components/PageTitle";
+import { MainPageWithScroll } from "components/MainPageWithScroll";
+import { Button } from "components/ui/Button";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useDestinationList } from "hooks/services/useDestinationHook";
@@ -26,7 +27,7 @@ const AllDestinationsPage: React.FC = () => {
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.destinations" }]} />}
       pageTitle={
-        <PageTitle
+        <PageHeader
           title={<FormattedMessage id="admin.destinations" />}
           endComponent={
             <Button

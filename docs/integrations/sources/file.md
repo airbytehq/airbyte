@@ -128,7 +128,9 @@ In order to read large files from a remote location, this connector uses the [sm
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
-|---------|------------|----------------------------------------------------------|----------------------------------------------------------|
+| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------- |
+| 0.2.24  | 2022-10-03 | [17504](https://github.com/airbytehq/airbyte/pull/17504) | Validate data for `HTTPS` while `check_connection`       |
+| 0.2.23  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                             |
 | 0.2.22  | 2022-09-15 | [16772](https://github.com/airbytehq/airbyte/pull/16772) | Fix schema generation for JSON files containing arrays   |
 | 0.2.21  | 2022-08-26 | [15568](https://github.com/airbytehq/airbyte/pull/15568) | Specify `pyxlsb` library for Excel Binary Workbook files |
 | 0.2.20  | 2022-08-23 | [15870](https://github.com/airbytehq/airbyte/pull/15870) | Fix CSV schema discovery                                 |

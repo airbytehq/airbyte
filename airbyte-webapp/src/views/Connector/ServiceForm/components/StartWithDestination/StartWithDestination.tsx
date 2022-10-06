@@ -2,7 +2,8 @@ import { useField } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { Card, ConnectorCard } from "components";
+import { ConnectorCard } from "components/ConnectorCard";
+import { Card } from "components/ui/Card";
 
 import { DestinationConnectorCard } from "../../types";
 import styles from "./StartWithDestination.module.scss";

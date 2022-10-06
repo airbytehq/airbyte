@@ -89,11 +89,6 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: WORKSPACE_ROOT
-        - name: WORKER_ENVIRONMENT
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Release.Name }}-airbyte-env
-              key: WORKER_ENVIRONMENT
         - name: LOCAL_ROOT
           valueFrom:
             configMapKeyRef:

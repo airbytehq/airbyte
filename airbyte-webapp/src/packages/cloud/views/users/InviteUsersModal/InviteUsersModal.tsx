@@ -6,8 +6,11 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, DropDown, H5, Input } from "components";
+import { H5 } from "components/base/Titles";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
+import { Button } from "components/ui/Button";
+import { DropDown } from "components/ui/DropDown";
+import { Input } from "components/ui/Input";
 import { Modal } from "components/ui/Modal";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";

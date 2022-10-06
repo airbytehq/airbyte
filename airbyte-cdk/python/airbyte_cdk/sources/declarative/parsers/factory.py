@@ -138,13 +138,11 @@ class DeclarativeComponentFactory:
             class_ = self._get_class_from_fully_qualified_class_name(class_or_class_name)
         else:
             class_ = class_or_class_name
-
         # create components in options before propagating them
         if OPTIONS_STR in kwargs:
             kwargs[OPTIONS_STR] = {
                 k: self._create_subcomponent(k, v, kwargs, config, class_, instantiate) for k, v in kwargs[OPTIONS_STR].items()
             }
-
         updated_kwargs = {k: self._create_subcomponent(k, v, kwargs, config, class_, instantiate) for k, v in kwargs.items()}
 
         if instantiate:
@@ -216,7 +214,7 @@ class DeclarativeComponentFactory:
                 self._create_subcomponent(
                     key,
                     sub,
-                    self._merge_dicts(kwargs.get(OPTIONS_STR, dict()), self._get_subcomponent_options(sub)),
+                    kwargs,
                     config,
                     parent_class,
                     instantiate,

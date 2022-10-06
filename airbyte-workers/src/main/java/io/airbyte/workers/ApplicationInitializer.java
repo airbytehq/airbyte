@@ -4,25 +4,19 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.analytics.Deployment;
-import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.temporal.TemporalInitializationUtils;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalUtils;
-import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.config.Configs.DeploymentMode;
-import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.Configs.WorkerPlane;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.check.DatabaseCheckException;
 import io.airbyte.db.check.DatabaseMigrationCheck;
 import io.airbyte.db.check.impl.JobsDatabaseAvailabilityCheck;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
-import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
@@ -30,7 +24,6 @@ import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
-import io.grpc.StatusRuntimeException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
@@ -38,11 +31,12 @@ import io.micronaut.context.event.ApplicationEventListener;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.discovery.event.ServiceReadyEvent;
 import io.micronaut.scheduling.TaskExecutors;
-import io.temporal.api.workflowservice.v1.DescribeNamespaceRequest;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.worker.NonDeterministicException;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
+import io.temporal.worker.WorkflowImplementationOptions;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -67,10 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ApplicationInitializer implements ApplicationEventListener<ServiceReadyEvent> {
 
-  @Value("${airbyte.role}")
-  private String airbyteRole;
-  @Inject
-  private AirbyteVersion airbyteVersion;
   @Inject
   @Named("checkConnectionActivities")
   private Optional<List<Object>> checkConnectionActivities;
@@ -78,12 +68,8 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   @Named("configsDatabaseMigrationCheck")
   private Optional<DatabaseMigrationCheck> configsDatabaseMigrationCheck;
   @Inject
-  private Optional<ConfigRepository> configRepository;
-  @Inject
   @Named("connectionManagerActivities")
   private Optional<List<Object>> connectionManagerActivities;
-  @Inject
-  private DeploymentMode deploymentMode;
   @Inject
   @Named("discoverActivities")
   private Optional<List<Object>> discoverActivities;
@@ -96,8 +82,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   @Inject
   @Named("jobsDatabaseAvailabilityCheck")
   private Optional<JobsDatabaseAvailabilityCheck> jobsDatabaseAvailabilityCheck;
-  @Inject
-  private Optional<JobPersistence> jobPersistence;
+
   @Inject
   private Optional<LogConfigs> logConfigs;
   @Value("${airbyte.worker.check.max-workers}")
@@ -125,6 +110,8 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   @Named("syncActivities")
   private Optional<List<Object>> syncActivities;
   @Inject
+  private TemporalInitializationUtils temporalInitializationUtils;
+  @Inject
   private TemporalProxyHelper temporalProxyHelper;
   @Inject
   private WorkflowServiceStubs temporalService;
@@ -133,26 +120,22 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   @Value("${airbyte.temporal.worker.ports}")
   private Set<Integer> temporalWorkerPorts;
   @Inject
-  private Optional<TrackingStrategy> trackingStrategy;
-  @Inject
   private WorkerEnvironment workerEnvironment;
   @Inject
   private WorkerFactory workerFactory;
-  @Inject
-  private WorkerPlane workerPlane;
   @Value("${airbyte.workspace.root}")
   private String workspaceRoot;
-  @Value("${temporal.cloud.namespace}")
-  private String temporalCloudNamespace;
   @Value("${airbyte.data.sync.task-queue}")
   private String syncTaskQueue;
+  @Inject
+  private Environment environment;
 
   @Override
   public void onApplicationEvent(final ServiceReadyEvent event) {
     try {
       initializeCommonDependencies();
 
-      if (WorkerPlane.CONTROL_PLANE.equals(workerPlane)) {
+      if (environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
         initializeControlPlaneDependencies();
       } else {
         log.info("Skipping Control Plane dependency initialization.");
@@ -163,7 +146,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
       log.info("Starting worker factory...");
       workerFactory.start();
 
-      log.info("Application initialized (mode = {}).", workerPlane);
+      log.info("Application initialized.");
     } catch (final DatabaseCheckException | ExecutionException | InterruptedException | IOException | TimeoutException e) {
       log.error("Unable to initialize application.", e);
       throw new IllegalStateException(e);
@@ -180,7 +163,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     LogClientSingleton.getInstance().setWorkspaceMdc(workerEnvironment, logConfigs.orElseThrow(),
         LogClientSingleton.getInstance().getSchedulerLogsRoot(Path.of(workspaceRoot)));
 
-    if (WorkerEnvironment.KUBERNETES.equals(workerEnvironment)) {
+    if (environment.getActiveNames().contains(Environment.KUBERNETES)) {
       KubePortManagerSingleton.init(temporalWorkerPorts);
     }
 
@@ -199,14 +182,6 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     // Ensure that the Jobs database is available
     log.info("Checking jobs database availability...");
     jobsDatabaseAvailabilityCheck.orElseThrow().check();
-
-    TrackingClientSingleton.initialize(
-        trackingStrategy.orElseThrow(),
-        new Deployment(deploymentMode, jobPersistence.orElseThrow().getDeployment().orElseThrow(),
-            workerEnvironment),
-        airbyteRole,
-        airbyteVersion,
-        configRepository.orElseThrow());
   }
 
   private void registerWorkerFactory(final WorkerFactory workerFactory, final MaxWorkersConfig maxWorkersConfiguration) {
@@ -235,8 +210,10 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private void registerCheckConnection(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker checkConnectionWorker =
         factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkersConfig.getMaxCheckWorkers()));
+    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
     checkConnectionWorker
-        .registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(CheckConnectionWorkflowImpl.class));
+        .registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(CheckConnectionWorkflowImpl.class));
     checkConnectionWorker.registerActivitiesImplementations(checkConnectionActivities.orElseThrow().toArray(new Object[] {}));
     log.info("Check Connection Workflow registered.");
   }
@@ -244,8 +221,10 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private void registerConnectionManager(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
+    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
     connectionUpdaterWorker
-        .registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
+        .registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
     connectionUpdaterWorker.registerActivitiesImplementations(connectionManagerActivities.orElseThrow().toArray(new Object[] {}));
     log.info("Connection Manager Workflow registered.");
   }
@@ -253,15 +232,19 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private void registerDiscover(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker discoverWorker =
         factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkersConfig.getMaxDiscoverWorkers()));
+    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
     discoverWorker
-        .registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(DiscoverCatalogWorkflowImpl.class));
+        .registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(DiscoverCatalogWorkflowImpl.class));
     discoverWorker.registerActivitiesImplementations(discoverActivities.orElseThrow().toArray(new Object[] {}));
     log.info("Discover Workflow registered.");
   }
 
   private void registerGetSpec(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkersConfig.getMaxSpecWorkers()));
-    specWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SpecWorkflowImpl.class));
+    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
+    specWorker.registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(SpecWorkflowImpl.class));
     specWorker.registerActivitiesImplementations(specActivities.orElseThrow().toArray(new Object[] {}));
     log.info("Get Spec Workflow registered.");
   }
@@ -278,7 +261,9 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     for (final String taskQueue : taskQueues) {
       log.info("Registering sync workflow for task queue '{}'...", taskQueue);
       final Worker syncWorker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
-      syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
+      final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+          .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
+      syncWorker.registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
       syncWorker.registerActivitiesImplementations(syncActivities.orElseThrow().toArray(new Object[] {}));
     }
     log.info("Sync Workflow registered.");
@@ -307,39 +292,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
 
     // Ensure that the Temporal namespace exists before continuing.
     // If it does not exist after 30 seconds, fail the startup.
-    executorService.submit(this::waitForTemporalNamespace).get(30, TimeUnit.SECONDS);
-  }
-
-  /**
-   * Blocks until the Temporal {@link TemporalUtils#DEFAULT_NAMESPACE} has been created. This is
-   * necessary to avoid issues related to
-   * https://community.temporal.io/t/running-into-an-issue-when-creating-namespace-programmatically/2783/8.
-   */
-  private void waitForTemporalNamespace() {
-    boolean namespaceExists = false;
-    final String temporalNamespace = getTemporalNamespace();
-    while (!namespaceExists) {
-      try {
-        temporalService.blockingStub().describeNamespace(DescribeNamespaceRequest.newBuilder().setNamespace(temporalNamespace).build());
-        namespaceExists = true;
-        // This is to allow the configured namespace to be available in the Temporal
-        // cache before continuing on with any additional configuration/bean creation.
-        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-      } catch (final StatusRuntimeException e) {
-        log.debug("Namespace '{}' does not exist yet.  Re-checking...", temporalNamespace);
-      } catch (final InterruptedException e) {
-        log.debug("Sleep interrupted.  Exiting loop...");
-      }
-    }
-  }
-
-  /**
-   * Retrieve the Temporal namespace based on the configuration.
-   *
-   * @return The Temporal namespace.
-   */
-  private String getTemporalNamespace() {
-    return StringUtils.isNotEmpty(temporalCloudNamespace) ? temporalCloudNamespace : TemporalUtils.DEFAULT_NAMESPACE;
+    executorService.submit(temporalInitializationUtils::waitForTemporalNamespace).get(30, TimeUnit.SECONDS);
   }
 
   /**

@@ -12,11 +12,13 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
@@ -34,8 +36,7 @@ import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          pattern = "(?i)^(?!data_plane).*")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 @Slf4j
 public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
@@ -48,14 +49,18 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   private final AirbyteApiClient airbyteApiClient;;
   private final String airbyteVersion;
 
+  private final ConfigRepository configRepository;
+
   public DiscoverCatalogActivityImpl(@Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
                                      @Named("discoverProcessFactory") final ProcessFactory processFactory,
+                                     final ConfigRepository configRepository,
                                      final SecretsHydrator secretsHydrator,
                                      @Named("workspaceRoot") final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
                                      final AirbyteApiClient airbyteApiClient,
                                      @Value("${airbyte.version}") final String airbyteVersion) {
+    this.configRepository = configRepository;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
@@ -73,11 +78,12 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     final JsonNode fullConfig = secretsHydrator.hydrate(config.getConnectionConfiguration());
 
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
-        .withConnectionConfiguration(fullConfig);
+        .withConnectionConfiguration(fullConfig)
+        .withSourceId(config.getSourceId())
+        .withConnectorVersion(config.getConnectorVersion())
+        .withConfigHash(config.getConfigHash());
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
-
-    log.info("Fetching catalog data {}", fullConfig);
 
     final TemporalAttemptExecution<StandardDiscoverCatalogInput, ConnectorJobOutput> temporalAttemptExecution =
         new TemporalAttemptExecution<>(
@@ -101,7 +107,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
           new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
               processFactory, workerConfigs.getResourceRequirements());
       final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
-      return new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
+      return new DefaultDiscoverCatalogWorker(configRepository, integrationLauncher, streamFactory);
     };
   }
 

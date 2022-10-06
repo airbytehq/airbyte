@@ -4,6 +4,7 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.workers.general.DocumentStoreClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
@@ -15,4 +16,5 @@ public record ContainerOrchestratorConfig(
                                           String secretMountPath,
                                           String containerOrchestratorImage,
                                           String containerOrchestratorImagePullPolicy,
-                                          String googleApplicationCredentials) {}
+                                          String googleApplicationCredentials,
+                                          WorkerEnvironment workerEnvironment) {}

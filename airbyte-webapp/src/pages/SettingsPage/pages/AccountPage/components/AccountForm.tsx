@@ -4,9 +4,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Label, LabeledInput, LabeledSwitch, Button } from "components";
-import { InfoTooltip } from "components/base/Tooltip";
+import { Label, LabeledInput, LabeledSwitch } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
+import { Button } from "components/ui/Button";
+import { InfoTooltip } from "components/ui/Tooltip";
 
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 
