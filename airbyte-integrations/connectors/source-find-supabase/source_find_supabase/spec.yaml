@@ -1,0 +1,15 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Find Supabase Spec
+  type: object
+  required:
+    - anon_public_key
+    - project_url
+  properties:
+    anon_public_key:
+      type: string
+    project_url:
+      type: string
+    limit:
+      type: string
