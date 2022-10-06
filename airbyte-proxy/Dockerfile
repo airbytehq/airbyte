@@ -10,12 +10,13 @@ ENV VERSION ${VERSION}
 RUN apt-get update -y && apt-get install -y apache2-utils && rm -rf /var/lib/apt/lists/*
 
 # Basic auth credentials
-ENV BASIC_AUTH_USERNAME=airbyte
-ENV BASIC_AUTH_PASSWORD=password
+ENV BASIC_AUTH_USERNAME ""
+ENV BASIC_AUTH_PASSWORD ""
 
 # Nginx config file
 WORKDIR /
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx-auth.conf /etc/nginx/nginx-auth.conf
+COPY nginx-no-auth.conf /etc/nginx/nginx-no-auth.conf
 
 # Startup script
 COPY run.sh ./
