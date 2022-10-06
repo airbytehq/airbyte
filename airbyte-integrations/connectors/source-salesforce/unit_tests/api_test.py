@@ -531,13 +531,13 @@ def test_convert_to_standard_instance(stream_config, stream_api):
 
 
 def test_bulk_stream_paging(stream_config, stream_api_pk):
-    stream_config["start_date"] = "2022-10-01T00:00:00Z"
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api_pk)
-    stream.page_size = 2
-
     LastModifiedDate1 = "2022-10-01T00:00:00Z"
     LastModifiedDate2 = "2022-10-02T00:00:00Z"
     assert LastModifiedDate1 < LastModifiedDate2
+
+    stream_config["start_date"] = LastModifiedDate1
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api_pk)
+    stream.page_size = 2
 
     csv_header = "Field1,LastModifiedDate,Id"
     pages = [
@@ -569,15 +569,17 @@ def test_bulk_stream_paging(stream_config, stream_api_pk):
             {"Field1": "test", "Id": 6, "LastModifiedDate": LastModifiedDate2},
         ]
 
+        req = lambda i: m.request_history[i].json()["query"]
+
         SELECT = "SELECT LastModifiedDate,Id FROM Account"
         ORDER_BY = "ORDER BY LastModifiedDate,Id ASC LIMIT 2"
-        assert m.request_history[0].json()["query"] == f"{SELECT} WHERE LastModifiedDate >= {LastModifiedDate1} {ORDER_BY}"
-        assert (
-            m.request_history[4].json()["query"]
-            == f"{SELECT} WHERE (LastModifiedDate = {LastModifiedDate1} AND Id > '3') OR (LastModifiedDate > {LastModifiedDate1}) {ORDER_BY}"
-        )
-        assert m.request_history[8].json()["query"] == f"{SELECT} WHERE LastModifiedDate >= {LastModifiedDate2} {ORDER_BY}"
-        assert (
-            m.request_history[12].json()["query"]
-            == f"{SELECT} WHERE (LastModifiedDate = {LastModifiedDate2} AND Id > '4') OR (LastModifiedDate > {LastModifiedDate2}) {ORDER_BY}"
-        )
+
+        assert req(0) == f"{SELECT} WHERE LastModifiedDate >= {LastModifiedDate1} {ORDER_BY}"
+
+        q = f"{SELECT} WHERE (LastModifiedDate = {LastModifiedDate1} AND Id > '3') OR (LastModifiedDate > {LastModifiedDate1}) {ORDER_BY}"
+        assert req(4) == q
+
+        assert req(8) == f"{SELECT} WHERE LastModifiedDate >= {LastModifiedDate2} {ORDER_BY}"
+
+        q = f"{SELECT} WHERE (LastModifiedDate = {LastModifiedDate2} AND Id > '4') OR (LastModifiedDate > {LastModifiedDate2}) {ORDER_BY}"
+        assert req(12) == q
