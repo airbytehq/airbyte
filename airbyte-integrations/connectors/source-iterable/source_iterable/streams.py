@@ -16,8 +16,8 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from pendulum.datetime import DateTime
-from requests.exceptions import ChunkedEncodingError
 from requests import codes
+from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
 
 EVENT_ROWS_LIMIT = 200
@@ -47,7 +47,7 @@ class IterableStream(HttpStream, ABC):
 
     def check_unauthorized_key(self, response: requests.Response) -> bool:
         if response.status_code == codes.UNAUTHORIZED:
-            self.logger.warn(f'Provided API Key has not sufficient permissions to read from stream: {self.data_field}')
+            self.logger.warn(f"Provided API Key has not sufficient permissions to read from stream: {self.data_field}")
             setattr(self, "raise_on_http_errors", False)
             return False
         return True
