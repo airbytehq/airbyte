@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.96
+
+- Improve error for returning non-iterable from connectors parse_response
+
 ## 0.1.95
 
 - Low-code: Expose PageIncrement strategy as component type
