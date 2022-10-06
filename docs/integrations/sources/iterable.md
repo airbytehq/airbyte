@@ -5,12 +5,13 @@ This page contains the setup guide and reference information for the Iterable so
 ## Prerequisites
 
 * Iterable Account
-* Iterable API Key with `standard` permissions. See [API Keys docs](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-) for more details.
+* Iterable `Server-side` API Key with `standard` permissions. See [API Keys docs](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-) for more details.
 
 ## Setup guide
 ### Step 1: Set up Iterable
 
-Please read [How to find your API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-#creating-api-keys).
+* Please read [How to find your API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-#creating-api-keys).
+* Make sure that selected API Key has sufficient **permissions** to read all selected [streams](https://api.iterable.com/api/docs#).
 
 ## Step 2: Set up the Iterable connector in Airbyte
 ### For Airbyte Cloud:
@@ -91,6 +92,8 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.1.19  | 2022-10-05 | [17602](https://github.com/airbytehq/airbyte/pull/17602) | Add check for stream permissions                                           |
+| 0.1.18  | 2022-10-04 | [17573](https://github.com/airbytehq/airbyte/pull/17573) | Limit time range for SATs                                                  |
 | 0.1.17  | 2022-09-02 | [16067](https://github.com/airbytehq/airbyte/pull/16067) | added new events streams                                                   |
 | 0.1.16  | 2022-08-15 | [15670](https://github.com/airbytehq/airbyte/pull/15670) | Api key is passed via header                                               |
 | 0.1.15  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description                                  |

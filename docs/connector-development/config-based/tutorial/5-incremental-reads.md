@@ -87,7 +87,7 @@ Instead, we would like to iterate over all the dates between the `start_date` an
 
 We can do this by adding a `DatetimeStreamSlicer` to the connector definition, and update the `path` to point to the stream_slice's `start_date`:
 
-More details on the stream slicers can be found [here](../stream-slicers.md).
+More details on the stream slicers can be found [here](../understanding-the-yaml-file/stream-slicers.md).
 
 Let's first define a stream slicer at the top level of the connector definition:
 
@@ -108,7 +108,24 @@ definitions:
     cursor_field: "{{ options['stream_cursor_field'] }}"
 ```
 
-and refer to it in the retriever.
+and refer to it in the stream's retriever.
+This will generate slices from the start time until the end time, where each slice is exactly one day.
+The start time is defined in the config file, while the end time is defined by the `now_local()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
+
+Note that we're also setting the `stream_cursor_field` in the stream's `$options` so it can be accessed by the `StreamSlicer`:
+
+```yaml
+streams:
+  - type: DeclarativeStream
+    $options:
+      name: "rates"
+      stream_cursor_field: "date"
+    primary_key: "rates"
+    <...>
+```
+
+We'll also update the retriever to user the stream slicer:
+> > > > > > > master
 
 ```yaml
 definitions:
@@ -282,5 +299,5 @@ Next, we'll run the [Source Acceptance Tests suite to ensure the connector invar
 ## More readings
 
 - [Incremental reads](../../cdk-python/incremental-stream.md)
-- [Stream slicers](../stream-slicers.md)
+- [Stream slicers](../understanding-the-yaml-file/stream-slicers.md)
 - [Stream slices](../../cdk-python/stream-slices.md)
