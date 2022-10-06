@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="INFO">
+<Configuration status="INFO" packages="io.airbyte.commons.logging">
     <Properties>
 
         <!-- Mask the string apikey=<string> to apikey=***** to prevent secrets leaking. -->
@@ -34,6 +34,18 @@
             </ContextMapFilter>
             <PatternLayout pattern="${simple-pattern}"/>
         </Console>
+
+        <Rewrite name="SecretMaskRewrite">
+            <MaskedDataInterceptor></MaskedDataInterceptor>
+            <AppenderRef ref="Default"/>
+            <AppenderRef ref="SimpleDefault"/>
+            <AppenderRef ref="LogSplit"/>
+            <AppenderRef ref="SimpleLogSplit"/>
+            <AppenderRef ref="LogSplitCloud"/>
+            <AppenderRef ref="SimpleLogSplitCloud"/>
+            <AppenderRef ref="AppLogSplit"/>
+            <AppenderRef ref="AppLogSplitCloud"/>
+        </Rewrite>
 
         <Routing name="LogSplit">
             <ContextMapFilter onMatch="DENY" onMismatch="ACCEPT">
@@ -169,14 +181,10 @@
 
     <Loggers>
         <Root level="${log-level}">
-            <AppenderRef ref="Default"/>
-            <AppenderRef ref="SimpleDefault"/>
-            <AppenderRef ref="LogSplit"/>
-            <AppenderRef ref="SimpleLogSplit"/>
-            <AppenderRef ref="LogSplitCloud"/>
-            <AppenderRef ref="SimpleLogSplitCloud"/>
-            <AppenderRef ref="AppLogSplit"/>
-            <AppenderRef ref="AppLogSplitCloud"/>
+            <!-- Use the rewrite policy to ensure that connector configuration secrets are masked when logged
+            Any additional appender references should be added to the <Rewrite> section above in this document
+            to ensure that any secrets logged via those appenders is masked.-->
+            <AppenderRef ref="SecretMaskRewrite"/>
         </Root>
 
         <Logger name="org.eclipse.jetty" level="INFO" />
