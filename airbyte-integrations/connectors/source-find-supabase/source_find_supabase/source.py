@@ -4,7 +4,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .streams import (
-    UnpackedItems
+    AirdroppedItems
 )
 
 class SourceFindSupabase(AbstractSource):
@@ -29,5 +29,5 @@ class SourceFindSupabase(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
-            UnpackedItems(config, "unpacked_items")
+            AirdroppedItems(config, "unpacked_items")
         ]

@@ -1,6 +1,4 @@
-import json
 import requests
-from datetime import datetime
 from typing import Any, Mapping, Iterable, Optional, MutableMapping
 
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -57,6 +55,6 @@ class FindSupabaseStream(HttpStream):
         self._cursor_value = value["offset"]
 
 
-class UnpackedItems(FindSupabaseStream):
+class AirdroppedItems(FindSupabaseStream):
     def path(self, **_) -> str:
-        return f"rest/v1/{self.table_name}"
+        return f"rest/v1/{self.table_name}?treasury=eq.airdropped"
