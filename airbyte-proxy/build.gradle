@@ -3,7 +3,7 @@ plugins {
 }
 
 task prepareBuild(type: Copy) {
-    from layout.projectDirectory.file("nginx-auth.conf"), layout.projectDirectory.file("nginx-no-auth.conf"), layout.projectDirectory.file("run.sh")
+    from layout.projectDirectory.file("nginx-auth.conf"), layout.projectDirectory.file("nginx-no-auth.conf"), layout.projectDirectory.file("run.sh"), layout.projectDirectory.file("401.html")
     into layout.buildDirectory.dir("docker")
 }
 

@@ -17,6 +17,7 @@ ENV BASIC_AUTH_PASSWORD ""
 WORKDIR /
 COPY nginx-auth.conf /etc/nginx/nginx-auth.conf
 COPY nginx-no-auth.conf /etc/nginx/nginx-no-auth.conf
+COPY 401.html /etc/nginx/401.html
 
 # Startup script
 COPY run.sh ./
