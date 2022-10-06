@@ -1,0 +1,8 @@
+{
+  "host": "myhost",
+  "port": 1111,
+  "loading_method": {
+    "method": "SQL"
+  }
+}
+
