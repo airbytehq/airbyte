@@ -114,8 +114,8 @@ export interface ServiceFormProps {
   formId?: string;
   availableServices: ConnectorDefinition[];
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
-  onServiceSelect?: (id: string) => void; // check this prop there is an error in connector card
-  onSubmit: (values: ServiceFormValues) => void;
+  onServiceSelect?: (id: string) => void;
+  onSubmit: (values: ServiceFormValues) => Promise<void> | void;
   isLoading?: boolean;
   isEditMode?: boolean;
   formValues?: Partial<ServiceFormValues>;
