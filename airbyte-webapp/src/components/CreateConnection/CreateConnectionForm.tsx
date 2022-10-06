@@ -70,7 +70,11 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
         // We need to clear the form changes otherwise the dirty form intercept service will prevent navigation
         clearFormChange(formId);
 
-        afterSubmitConnection?.() ?? navigate(`../../connections/${createdConnection.connectionId}`);
+        if (afterSubmitConnection) {
+          afterSubmitConnection();
+        } else {
+          navigate(`../../connections/${createdConnection.connectionId}`);
+        }
       } catch (e) {
         setSubmitError(e);
       }
