@@ -485,16 +485,15 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
 
         stream_date = stream_state.get(self.cursor_field)
         next_token = (next_page_token or {}).get("next_token")
+        primary_key = (next_page_token or {}).get("primary_key")
         start_date = next_token or stream_date or self.start_date
         self.prev_start_date = start_date
 
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if start_date:
             query += f"WHERE {self.cursor_field} >= {start_date} "
-            if next_page_token:
-                primary_key = next_page_token.get("primary_key")
-                if primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-                    query += f"AND {self.primary_key} > '{primary_key}' "
+            if primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
+                query += f"AND {self.primary_key} > '{primary_key}' "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             order_by_fields = [self.cursor_field]
             if self.primary_key:
