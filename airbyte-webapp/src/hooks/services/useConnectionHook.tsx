@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
-import { getScheduleInfo } from "config/utils";
 import { Action, Namespace } from "core/analytics";
+import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
@@ -100,7 +100,7 @@ export const useSyncConnection = () => {
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: getScheduleInfo(connection.scheduleData),
+      frequency: getFrequencyFromScheduleData(connection.scheduleData),
     });
 
     return service.sync(connection.connectionId);
@@ -145,7 +145,7 @@ const useCreateConnection = () => {
 
       analyticsService.track(Namespace.CONNECTION, Action.CREATE, {
         actionDescription: "New connection created",
-        frequency: getScheduleInfo(values.scheduleData),
+        frequency: getFrequencyFromScheduleData(values.scheduleData),
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
@@ -228,7 +228,7 @@ export const useEnableConnection = () => {
         const action = connection.status === ConnectionStatus.active ? Action.REENABLE : Action.DISABLE;
 
         analyticsService.track(Namespace.CONNECTION, action, {
-          frequency: getScheduleInfo(connection.scheduleData),
+          frequency: getFrequencyFromScheduleData(connection.scheduleData),
           connector_source: connection.source?.sourceName,
           connector_source_definition_id: connection.source?.sourceDefinitionId,
           connector_destination: connection.destination?.destinationName,

@@ -5,8 +5,8 @@ import styled from "styled-components";
 
 import { Switch } from "components/ui/Switch";
 
-import { getScheduleInfo } from "config/utils";
 import { Action, Namespace } from "core/analytics";
+import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { buildConnectionUpdate } from "core/domain/connection";
 import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -54,7 +54,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, o
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: getScheduleInfo(connection.scheduleData),
+      frequency: getFrequencyFromScheduleData(connection.scheduleData),
     });
   };
 

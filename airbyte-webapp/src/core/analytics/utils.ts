@@ -1,6 +1,6 @@
 import { ConnectionScheduleData } from "core/request/AirbyteClient";
 
-export const getScheduleInfo = (scheduleData?: ConnectionScheduleData) => {
+export const getFrequencyFromScheduleData = (scheduleData?: ConnectionScheduleData) => {
   if (!scheduleData) {
     return "manual";
   } else if (scheduleData.cron) {
