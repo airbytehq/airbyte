@@ -210,15 +210,16 @@ services:
       - workspace:${WORKSPACE_ROOT}
     networks:
       - airbyte_internal
-  airbyte-proxy:
-    image: nginx:latest
+  proxy:
+    build:
+      context: ./nginx
     container_name: airbyte-proxy
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/.htpasswd:/etc/nginx/.htpasswd
     ports:
       - 8000:8000
       - 8001:8001
+    environment:
+      - BASIC_AUTH_USERNAME=airbyte
+      - BASIC_AUTH_PASSWORD=password
     networks:
       - airbyte_internal
       - airbyte_public
