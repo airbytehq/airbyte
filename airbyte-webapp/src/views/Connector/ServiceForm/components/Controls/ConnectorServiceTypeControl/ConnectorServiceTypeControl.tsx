@@ -5,7 +5,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
 import { MenuListProps } from "react-select";
 
-import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
 import { ControlLabels } from "components/LabeledControl";
 import {

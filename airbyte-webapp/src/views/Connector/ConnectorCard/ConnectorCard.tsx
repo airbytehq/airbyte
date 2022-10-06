@@ -135,8 +135,8 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
             props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
           }
         />
-          {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
-          {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
+        {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
+        {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
       </Card>
     </>
   );
