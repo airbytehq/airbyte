@@ -87,7 +87,10 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
         }
 
         final UUID catalogId =
-            configRepository.writeActorCatalogFetchEvent(catalog.get(), UUID.fromString(discoverSchemaInput.getSourceId()),
+            configRepository.writeActorCatalogFetchEvent(catalog.get(),
+                // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
+                // it, so we check again here.
+                discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()),
                 discoverSchemaInput.getConnectorVersion(),
                 discoverSchemaInput.getConfigHash());
         return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID).withDiscoverCatalogId(catalogId);
