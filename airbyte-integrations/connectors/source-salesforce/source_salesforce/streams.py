@@ -491,9 +491,10 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
 
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if start_date:
-            query += f"WHERE {self.cursor_field} >= {start_date} "
             if primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-                query += f"AND {self.primary_key} > '{primary_key}' "
+                query += f"WHERE ({self.cursor_field} = {start_date} AND {self.primary_key} > '{primary_key}') OR ({self.cursor_field} > {start_date}) "
+            else:
+                query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             order_by_fields = [self.cursor_field]
             if self.primary_key:
