@@ -740,17 +740,7 @@ class BasicAcceptanceTests {
   void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
-    final SourceRead source = testHarness.createSource(
-        E2E_TEST_SOURCE + UUID.randomUUID(),
-        workspaceId,
-        sourceDefinition.getSourceDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put(TYPE, INFINITE_FEED)
-            .put(MAX_RECORDS, 5000)
-            .put(MESSAGE_INTERVAL, 100)
-            .build()));
-    final UUID sourceId = source.getSourceId();
+    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
