@@ -66,6 +66,8 @@ public abstract class AbstractSourceConnectorTest {
   private static final String JOB_ID = String.valueOf(0L);
   private static final int JOB_ATTEMPT = 0;
 
+  private static final UUID SOURCE_ID = UUID.randomUUID();
+
   private static final String CPU_REQUEST_FIELD_NAME = "cpuRequest";
   private static final String CPU_LIMIT_FIELD_NAME = "cpuLimit";
   private static final String MEMORY_REQUEST_FIELD_NAME = "memoryRequest";
@@ -162,7 +164,8 @@ public abstract class AbstractSourceConnectorTest {
     final UUID toReturn = new DefaultDiscoverCatalogWorker(
         mConfigRepository,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
-            .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot).getDiscoverCatalogId();
+            .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
+            .getDiscoverCatalogId();
     verify(mConfigRepository).writeActorCatalogFetchEvent(lastPersistedCatalog.capture(), any(), any(), any());
     return toReturn;
   }
