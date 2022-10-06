@@ -123,7 +123,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
         </div>
       </Card>
       {intermediateComponent}
-      <Card>
+      <Card fullWidth={full}>
         <ServiceForm
           {...props}
           errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
