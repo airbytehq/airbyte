@@ -16,6 +16,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.ResourceRequirements;
@@ -86,7 +87,9 @@ public class DbConverter {
         .withTombstone(record.get(WORKSPACE.TOMBSTONE))
         .withNotifications(notificationList)
         .withFirstCompletedSync(record.get(WORKSPACE.FIRST_SYNC_COMPLETE))
-        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE));
+        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE))
+        .withDefaultGeography(
+            Enums.toEnum(record.get(WORKSPACE.GEOGRAPHY, String.class), Geography.class).orElseThrow());
   }
 
   public static StandardSourceDefinition buildStandardSourceDefinition(final Record record) {
