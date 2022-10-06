@@ -34,7 +34,6 @@ import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.persistence.job.tracker.JobTracker.JobState;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.temporal.JobMetadata;
 import io.airbyte.workers.temporal.TemporalClient;
@@ -56,6 +55,7 @@ class DefaultSynchronousSchedulerClientTest {
 
   private static final Path LOG_PATH = Path.of("/tmp");
   private static final String DOCKER_IMAGE = "foo/bar";
+  private static final String DOCKER_IMAGE_TAG = "baz/qux";
   private static final Version PROTOCOL_VERSION = new Version("0.2.3");
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID UUID1 = UUID.randomUUID();
@@ -232,16 +232,12 @@ class DefaultSynchronousSchedulerClientTest {
 
     @Test
     void testCreateDiscoverSchemaJob() throws IOException {
-      final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
-          .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE);
-
-      final AirbyteCatalog mockOutput = mock(AirbyteCatalog.class);
-      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withDiscoverCatalog(mockOutput);
-      when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), eq(jobDiscoverCatalogConfig)))
+      final UUID expectedCatalogId = UUID.randomUUID();
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withDiscoverCatalogId(expectedCatalogId);
+      when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), any(JobDiscoverCatalogConfig.class)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
-      final SynchronousResponse<AirbyteCatalog> response = schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE);
-      assertEquals(mockOutput, response.getOutput());
+      final SynchronousResponse<UUID> response = schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE, DOCKER_IMAGE_TAG);
+      assertEquals(expectedCatalogId, response.getOutput());
     }
 
     @Test

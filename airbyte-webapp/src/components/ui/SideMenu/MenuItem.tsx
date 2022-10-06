@@ -38,7 +38,7 @@ const Counter = styled.div`
   margin-left: 5px;
 `;
 
-const MenuItem: React.FC<IProps> = ({ count, isActive, name, id, onClick }) => {
+export const MenuItem: React.FC<IProps> = ({ count, isActive, name, id, onClick }) => {
   return (
     <Item data-testid={id} isActive={isActive} onClick={onClick}>
       {name}
@@ -46,5 +46,3 @@ const MenuItem: React.FC<IProps> = ({ count, isActive, name, id, onClick }) => {
     </Item>
   );
 };
-
-export default MenuItem;
