@@ -55,16 +55,20 @@ public class DbConverter {
         .withCatalog(
             Jsons.deserialize(record.get(CONNECTION.CATALOG).data(), ConfiguredAirbyteCatalog.class))
         .withStatus(
-            record.get(CONNECTION.STATUS) == null ? null : Enums.toEnum(record.get(CONNECTION.STATUS, String.class), Status.class).orElseThrow())
+            record.get(CONNECTION.STATUS) == null ? null
+                : Enums.toEnum(record.get(CONNECTION.STATUS, String.class), Status.class).orElseThrow())
         .withSchedule(Jsons.deserialize(record.get(CONNECTION.SCHEDULE).data(), Schedule.class))
         .withManual(record.get(CONNECTION.MANUAL))
         .withScheduleType(record.get(CONNECTION.SCHEDULE_TYPE) == null ? null
             : Enums.toEnum(record.get(CONNECTION.SCHEDULE_TYPE, String.class), ScheduleType.class).orElseThrow())
         .withScheduleData(
-            record.get(CONNECTION.SCHEDULE_DATA) == null ? null : Jsons.deserialize(record.get(CONNECTION.SCHEDULE_DATA).data(), ScheduleData.class))
+            record.get(CONNECTION.SCHEDULE_DATA) == null ? null
+                : Jsons.deserialize(record.get(CONNECTION.SCHEDULE_DATA).data(), ScheduleData.class))
         .withOperationIds(connectionOperationId)
-        .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
-        .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID));
+        .withResourceRequirements(
+            Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
+        .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID))
+        .withGeography(Enums.toEnum(record.get(CONNECTION.GEOGRAPHY, String.class), Geography.class).orElseThrow());
   }
 
   public static StandardWorkspace buildStandardWorkspace(final Record record) {
