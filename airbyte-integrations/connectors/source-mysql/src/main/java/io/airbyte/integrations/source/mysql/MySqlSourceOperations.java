@@ -71,33 +71,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP,
       TIME, YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
 
-  @Override
-  public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
-    // the first call communicates with the database. after that the result is cached.
-    final java.sql.ResultSetMetaData metadata = queryContext.getMetaData();
-    final int columnCount = metadata.getColumnCount();
-    final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-
-    for (int i = 1; i <= columnCount; i++) {
-      final String columnType = metadata.getColumnTypeName(i);
-
-      if (columnType.equalsIgnoreCase(TIME.getName())) {
-        // getObject will fail when it tries to parse time with negative value
-        queryContext.getString(i);
-      } else {
-        queryContext.getObject(i);
-      }
-      if (queryContext.wasNull()) {
-        continue;
-      }
-
-      // convert to java types that will convert into reasonable json.
-      setJsonField(queryContext, i, jsonNode);
-    }
-
-    return jsonNode;
-  }
-
   /**
    * @param colIndex 1-based column index.
    */
@@ -248,7 +221,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
 
   @Override
   protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, convertToTime(resultSet.getString(index)));
+    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
   }
 
   @Override
@@ -321,11 +294,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       // https://github.com/airbytehq/airbyte/pull/15504
       super.setTime(preparedStatement, parameterIndex, value);
     }
-  }
-
-  private String convertToTime(String time) {
-    time = time.startsWith("-") ? time.substring(1) : time;
-    return LocalTime.parse(time).format(TIME_FORMATTER);
   }
 
 }

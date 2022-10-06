@@ -152,7 +152,12 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         config.get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 
-    jdbcUrl.append("?zeroDateTimeBehavior=convertToNull");
+    // To fetch the result in batches, the "useCursorFetch=true" must be set.
+    // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-implementation-notes.html.
+    // When using this approach MySql creates a temporary table which may have some effect on db
+    // performance.
+    jdbcUrl.append("?useCursorFetch=true");
+    jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
     // ensure the return tinyint(1) is boolean
     jdbcUrl.append("&tinyInt1isBit=true");
     // ensure the return year value is a Date; see the rationale
