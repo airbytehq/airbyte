@@ -5,7 +5,7 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from urllib.parse import parse_qs
@@ -147,6 +147,7 @@ class Form(CommcareStream):
             yield record
 
         print(f'######============= FORM READ DONE {self.state[self.cursor_field]} ===============')
+        self._cursor_value += timedelta(microseconds=1)
         CommcareStream.last_form_date = self._cursor_value
 
 # Source
