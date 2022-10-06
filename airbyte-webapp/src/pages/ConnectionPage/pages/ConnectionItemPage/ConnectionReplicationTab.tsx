@@ -5,8 +5,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { SchemaError } from "components/CreateConnection/SchemaError";
 import LoadingSchema from "components/LoadingSchema";
 
-import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
+import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { PageTrackingCodes, useAnalyticsService, useTrackPage } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
@@ -64,7 +64,7 @@ export const ConnectionReplicationTab: React.FC = () => {
           connector_source_definition_id: connection.source.sourceDefinitionId,
           connector_destination: connection.destination.destinationName,
           connector_destination_definition_id: connection.destination.destinationDefinitionId,
-          frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
+          frequency: getFrequencyFromScheduleData(connection.scheduleData),
         });
       }
     },
