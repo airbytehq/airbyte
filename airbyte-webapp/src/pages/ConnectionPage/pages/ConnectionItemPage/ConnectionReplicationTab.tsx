@@ -90,7 +90,7 @@ export const ConnectionReplicationTab: React.FC = () => {
       setSubmitError(null);
 
       // Whenever the catalog changed show a warning to the user, that we're about to reset their data.
-      // Given them a choice to opt-out in which case we'll be sending skipRe: true to the update
+      // Given them a choice to opt-out in which case we'll be sending skipReset: true to the update
       // endpoint.
       try {
         if (catalogHasChanged) {

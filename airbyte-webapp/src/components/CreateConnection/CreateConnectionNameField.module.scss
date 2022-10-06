@@ -1,4 +1,5 @@
 @forward "../../views/Connection/ConnectionForm/ConnectionFormFields.module.scss";
+@use "../../scss/variables";
 
 .labelHeading {
   line-height: 16px;
@@ -7,6 +8,6 @@
 
 .connectionLabel {
   max-width: 328px;
-  margin-right: 20px;
+  margin-right: variables.$spacing-xl;
   vertical-align: top;
 }

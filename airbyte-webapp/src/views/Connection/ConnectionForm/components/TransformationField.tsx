@@ -44,7 +44,10 @@ const TransformationField: React.FC<TransformationFieldProps> = ({
         setEditableItem(idx);
         onStartEdit?.();
       }}
-      onCancel={clearEditableItem}
+      onCancel={() => {
+        clearEditableItem();
+        onEndEdit?.();
+      }}
       mode={mode}
       editModalSize="xl"
       renderItemEditorForm={(editableItem) => (

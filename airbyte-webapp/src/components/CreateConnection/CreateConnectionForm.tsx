@@ -1,7 +1,6 @@
 import { Form, Formik, FormikHelpers } from "formik";
-import React, { Suspense, useCallback } from "react";
+import React, { Suspense, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToggle } from "react-use";
 
 import { FormChangeTracker } from "components/FormChangeTracker";
 import LoadingSchema from "components/LoadingSchema";
@@ -46,7 +45,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
   const formId = useUniqueFormId();
 
   const { connection, initialValues, mode, getErrorMessage, setSubmitError } = useConnectionFormService();
-  const [editingTransformation, toggleEditingTransformation] = useToggle(false);
+  const [editingTransformation, setEditingTransformation] = useState(false);
 
   const onFormSubmit = useCallback(
     async (formValues: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
@@ -109,8 +108,8 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
               <CreateConnectionNameField />
               <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
               <OperationsSection
-                onStartEditTransformation={toggleEditingTransformation}
-                onEndEditTransformation={toggleEditingTransformation}
+                onStartEditTransformation={() => setEditingTransformation(true)}
+                onEndEditTransformation={() => setEditingTransformation(false)}
               />
               <CreateControls
                 isSubmitting={isSubmitting}

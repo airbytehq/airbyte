@@ -2,9 +2,11 @@ import { useCallback } from "react";
 import { useUnmount } from "react-use";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
-export const usePreventRefreshOnDirty = (dirty: boolean, refreshSourceSchema: () => Promise<void>) => {
+export const useRefreshSourceSchemaWithConfirmationOnDirty = (dirty: boolean) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const { refreshSchema } = useConnectionFormService();
 
   useUnmount(() => {
     closeConfirmationModal();
@@ -18,11 +20,11 @@ export const usePreventRefreshOnDirty = (dirty: boolean, refreshSourceSchema: ()
         submitButtonText: "connection.updateSchema.formChanged.confirm",
         onSubmit: () => {
           closeConfirmationModal();
-          refreshSourceSchema();
+          refreshSchema();
         },
       });
     } else {
-      refreshSourceSchema();
+      refreshSchema();
     }
-  }, [closeConfirmationModal, dirty, openConfirmationModal, refreshSourceSchema]);
+  }, [closeConfirmationModal, dirty, openConfirmationModal, refreshSchema]);
 };

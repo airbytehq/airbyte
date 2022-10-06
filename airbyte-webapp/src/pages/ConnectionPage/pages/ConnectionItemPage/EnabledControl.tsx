@@ -1,5 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
 import { Switch } from "components/ui/Switch";
@@ -37,7 +38,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
   const { connection, updateConnection, connectionUpdating } = useConnectionEditService();
   const frequencyType = getFrequencyType(connection.scheduleData?.basicSchedule);
 
-  const onChangeStatus = async () => {
+  const [{ loading }, onChangeStatus] = useAsyncFn(async () => {
     await updateConnection({
       connectionId: connection.connectionId,
       status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
@@ -53,7 +54,17 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       frequency: frequencyType,
     });
-  };
+  }, [
+    analyticsService,
+    connection.connectionId,
+    connection.destination?.destinationDefinitionId,
+    connection.destination?.destinationName,
+    connection.source?.sourceDefinitionId,
+    connection.source?.sourceName,
+    connection.status,
+    frequencyType,
+    updateConnection,
+  ]);
 
   return (
     <Content>
@@ -61,10 +72,10 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
         <FormattedMessage id={connection.status === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
       </ToggleLabel>
       <Switch
-        disabled={disabled}
+        disabled={disabled || connectionUpdating}
         onChange={onChangeStatus}
         checked={connection.status === ConnectionStatus.active}
-        loading={connectionUpdating}
+        loading={loading}
         id="toggle-enabled-source"
       />
     </Content>

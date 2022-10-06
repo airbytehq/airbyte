@@ -15,7 +15,7 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import { ValuesProps } from "hooks/services/useConnectionHook";
 
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
-import { usePreventRefreshOnDirty } from "./components/PreventRefreshOnDirty";
+import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
 import ScheduleField from "./components/ScheduleField";
 import { Section } from "./components/Section";
 import SchemaField from "./components/SyncCatalogField";
@@ -29,14 +29,14 @@ interface ConnectionFormFieldsProps {
 }
 
 export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ values, isSubmitting, dirty }) => {
-  const { mode, refreshSchema } = useConnectionFormService();
+  const { mode } = useConnectionFormService();
   const { formatMessage } = useIntl();
 
   const readonlyClass = classNames({
     [styles.readonly]: mode === "readonly",
   });
 
-  const doRefreshSchema = usePreventRefreshOnDirty(dirty, refreshSchema);
+  const refreshSchema = useRefreshSourceSchemaWithConfirmationOnDirty(dirty);
 
   return (
     <div className={styles.formContainer}>
@@ -111,7 +111,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
           component={SchemaField}
           isSubmitting={isSubmitting}
           additionalControl={
-            <Button onClick={doRefreshSchema} type="button" variant="secondary">
+            <Button onClick={refreshSchema} type="button" variant="secondary">
               <FontAwesomeIcon icon={faSyncAlt} className={styles.tryArrow} />
               <FormattedMessage id="connection.updateSchema" />
             </Button>
