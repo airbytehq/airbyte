@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "photoUrl": {
+      "type": "string"
+    },
+    "updatedBy": {
+      "type": "string"
+    },
+    "messagingTokens": {
+      "type": "array"
+    },
+    "name": {
+      "type": "string"
+    },
+    "resourceId": {
+      "type": "null"
+    },
+    "reports": {
+      "type": "object"
+    },
+    "nameCollated": {
+      "type": "string"
+    },
+    "remoteIp": {
+      "type": "string"
+    },
+    "locale": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "createdBy": {
+      "type": "string"
+    },
+    "lastActive": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "created": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "emailDomain": {
+      "type": "string"
+    },
+    "authMethod": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "roles": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "organizationId": {
+      "type": "string"
+    },
+    "accountId": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "locationIds": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "region": {
+      "type": "string"
+    },
+    "notifications": {
+      "type": "object"
+    },
+    "defaultLocationId": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "photoUrl",
+    "updatedBy",
+    "messagingTokens",
+    "name",
+    "resourceId",
+    "reports",
+    "nameCollated",
+    "remoteIp",
+    "locale",
+    "country",
+    "createdBy",
+    "lastActive",
+    "email",
+    "created",
+    "updated",
+    "city",
+    "emailDomain",
+    "authMethod",
+    "phone",
+    "roles",
+    "organizationId",
+    "accountId",
+    "language",
+    "locationIds",
+    "region",
+    "notifications",
+    "defaultLocationId",
+    "id"
+  ]
+}
