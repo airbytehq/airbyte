@@ -164,8 +164,8 @@ public abstract class AbstractSourceConnectorTest {
     final UUID toReturn = new DefaultDiscoverCatalogWorker(
         mConfigRepository,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
-        .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
-        .getDiscoverCatalogId();
+            .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
+            .getDiscoverCatalogId();
     verify(mConfigRepository).writeActorCatalogFetchEvent(lastPersistedCatalog.capture(), any(), any(), any());
     return toReturn;
   }
