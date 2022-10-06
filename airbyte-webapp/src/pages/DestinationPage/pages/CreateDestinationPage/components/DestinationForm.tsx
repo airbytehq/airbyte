@@ -54,7 +54,10 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     isLoading,
   } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
 
-  const onDropDownSelect = (destinationDefinitionId: string) => {
+  const onDropDownSelect = (
+    destinationDefinitionId: string,
+    trackParams?: { actionDescription: string; connector_destination_suggested: boolean }
+  ) => {
     setDestinationDefinitionId(destinationDefinitionId);
 
     const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId);
@@ -67,11 +70,12 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
       actionDescription: "Destination connector type selected",
       connector_destination: connector?.name,
       connector_destination_definition_id: destinationDefinitionId,
+      ...trackParams,
     });
   };
 
   const onSubmitForm = async (values: { name: string; serviceType: string }) => {
-    await onSubmit({
+    onSubmit({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
     });
@@ -83,10 +87,10 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   //  - after opening the create form and go back - the UnsavedChanges Modal appear
   //  - need to disable select service type dropdown on formSubmit
   const frequentlyUsedDestinationsComponent = !isLoading && !destinationDefinitionId && (
-    <FrequentlyUsedDestinations onServiceSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+    <FrequentlyUsedDestinations onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
   );
   const startWithDestinationComponent = !isLoading && !destinationDefinitionId && (
-    <StartWithDestination onServiceSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+    <StartWithDestination onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
   );
 
   console.log(!destinationDefinitions.length && !isLoading && !destinationDefinitionId);

@@ -23,7 +23,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
@@ -47,7 +46,6 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       .setLogPrefix("normalization")
       .setPrefixColor(Color.GREEN_BACKGROUND);
 
-  private final WorkerConfigs workerConfigs;
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
@@ -69,11 +67,9 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     TIDB
   }
 
-  public DefaultNormalizationRunner(final WorkerConfigs workerConfigs,
-                                    final DestinationType destinationType,
+  public DefaultNormalizationRunner(final DestinationType destinationType,
                                     final ProcessFactory processFactory,
                                     final String normalizationImageName) {
-    this.workerConfigs = workerConfigs;
     this.destinationType = destinationType;
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImageName;
@@ -199,7 +195,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     }
 
     LOGGER.debug("Closing normalization process");
-    WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
       throw new WorkerException("Normalization process wasn't successful");
     }

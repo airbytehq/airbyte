@@ -242,7 +242,9 @@ describe("Service Form", () => {
         <ServiceForm
           formType="source"
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
-          onSubmit={(values) => (result = values)}
+          onSubmit={(values) => {
+            result = values;
+          }}
           selectedConnectorDefinitionSpecification={
             // @ts-expect-error Partial objects for testing
             {

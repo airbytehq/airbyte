@@ -5,14 +5,17 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
 import { MenuListProps } from "react-select";
 
-import { ControlLabels, DropDown, DropDownRow } from "components";
 import { GAIcon } from "components/icons/GAIcon";
-import { IDataItem, IProps as OptionProps, OptionView } from "components/ui/DropDown/components/Option";
+import { ControlLabels } from "components/LabeledControl";
 import {
-  Icon as SingleValueIcon,
-  IProps as SingleValueProps,
-  ItemView as SingleValueView,
-} from "components/ui/DropDown/components/SingleValue";
+  DropDown,
+  DropDownOptionDataItem,
+  DropDownOptionProps,
+  OptionView,
+  SingleValueIcon,
+  SingleValueProps,
+  SingleValueView,
+} from "components/ui/DropDown";
 import { Text } from "components/ui/Text";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
@@ -30,7 +33,7 @@ import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
 import { getSortedDropdownDataUsingExperiment } from "./utilityFunctions";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type MenuWithRequestButtonProps = MenuListProps<IDataItem, false> & { selectProps: any };
+type MenuWithRequestButtonProps = MenuListProps<DropDownOptionDataItem, false> & { selectProps: any };
 
 const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => (
   <>
@@ -63,7 +66,7 @@ const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage })
   );
 };
 
-const Option: React.FC<OptionProps> = (props) => {
+const Option: React.FC<DropDownOptionProps> = (props) => {
   return (
     <components.Option {...props}>
       <OptionView data-testid={props.data.label} isSelected={props.isSelected} isDisabled={props.isDisabled}>
@@ -140,7 +143,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
   );
 
   const handleSelect = useCallback(
-    (item: DropDownRow.IDataItem | null) => {
+    (item: DropDownOptionDataItem | null) => {
       if (item && onChangeServiceType) {
         onChangeServiceType(item.value);
       }

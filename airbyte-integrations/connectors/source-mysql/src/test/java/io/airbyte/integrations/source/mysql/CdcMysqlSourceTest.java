@@ -51,6 +51,7 @@ import org.testcontainers.containers.MySQLContainer;
 public class CdcMysqlSourceTest extends CdcSourceTest {
 
   private static final String DB_NAME = MODELS_SCHEMA;
+  protected static final int INITIAL_WAITING_SECONDS = 5;
   private MySQLContainer<?> container;
   private Database database;
   private MySqlSource source;
@@ -78,13 +79,19 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
             container.getFirstMappedPort()),
         SQLDialect.MYSQL));
 
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "CDC")
+        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
+        .build());
+
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", DB_NAME)
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-        .put("replication_method", "CDC")
+        .put("replication_method", replicationMethod)
+        .put("is_test", true)
         .build());
   }
 
@@ -104,14 +111,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   public void tearDown() {
     try {
       container.close();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
   protected CdcTargetPosition cdcLatestTargetPosition() {
-    DataSource dataSource = DataSourceFactory.create(
+    final DataSource dataSource = DataSourceFactory.create(
         "root",
         "test",
         DRIVER_CLASS,
@@ -119,7 +126,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
             container.getHost(),
             container.getFirstMappedPort()),
         Collections.emptyMap());
-    JdbcDatabase jdbcDatabase = new DefaultJdbcDatabase(dataSource);
+    final JdbcDatabase jdbcDatabase = new DefaultJdbcDatabase(dataSource);
 
     return MySqlCdcTargetPosition.targetPosition(jdbcDatabase);
   }

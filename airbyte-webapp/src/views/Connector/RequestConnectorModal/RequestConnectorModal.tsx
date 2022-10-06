@@ -3,7 +3,10 @@ import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { Button, ControlLabels, DropDown, Input } from "components";
+import { ControlLabels } from "components/LabeledControl";
+import { Button } from "components/ui/Button";
+import { DropDown } from "components/ui/DropDown";
+import { Input } from "components/ui/Input";
 import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import useRequestConnector from "hooks/services/useRequestConnector";

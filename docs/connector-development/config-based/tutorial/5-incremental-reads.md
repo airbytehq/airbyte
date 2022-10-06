@@ -79,7 +79,7 @@ streams:
 You can test these changes by executing the `read` operation:
 
 ```bash
-$ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 By reading the output record, you should see that we read historical data instead of the latest exchange rate.
@@ -91,7 +91,7 @@ Instead, we would like to iterate over all the dates between the `start_date` an
 
 We can do this by adding a `DatetimeStreamSlicer` to the connector definition, and update the `path` to point to the stream_slice's `start_date`:
 
-More details on the stream slicers can be found [here](../stream-slicers.md).
+More details on the stream slicers can be found [here](../understanding-the-yaml-file/stream-slicers.md).
 
 Let's first define a stream slicer at the top level of the connector definition:
 
@@ -116,7 +116,7 @@ definitions:
 
 and refer to it in the stream's retriever.
 This will generate slices from the start time until the end time, where each slice is exactly one day.
-The start time is defined in the config file, while the end time is defined by the `now_local()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../yaml-structure.md#string-interpolation) for more details.
+The start time is defined in the config file, while the end time is defined by the `now_local()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
 
 Note that we're also setting the `stream_cursor_field` in the stream's `$options` so it can be accessed by the `StreamSlicer`:
 
@@ -226,7 +226,7 @@ check:
 Running the `read` operation will now read all data for all days between start_date and now:
 
 ```bash
-$ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 The operation should now output more than one record:
@@ -281,7 +281,7 @@ We can simulate incremental syncs by creating a state file containing the last s
 Running the `read` operation will now only read data for dates later than the given state:
 
 ```bash
-$ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/sample_state.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/sample_state.json
 ```
 
 There shouldn't be any data read if the state is today's date:
@@ -298,5 +298,5 @@ Next, we'll run the [Source Acceptance Tests suite to ensure the connector invar
 ## More readings
 
 - [Incremental reads](../../cdk-python/incremental-stream.md)
-- [Stream slicers](../stream-slicers.md)
+- [Stream slicers](../understanding-the-yaml-file/stream-slicers.md)
 - [Stream slices](../../cdk-python/stream-slices.md)

@@ -9,11 +9,14 @@ import { DestinationConnectorCard } from "../../types";
 import { StartWithDestinationCard } from "./StartWithDestinationCard";
 
 interface StartWithDestinationProps {
-  onServiceSelect: ((id: string) => void) | undefined;
+  onDestinationSelect: (id: string) => void;
   availableServices: ConnectorDefinition[];
 }
 
-export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ onServiceSelect, availableServices }) => {
+export const StartWithDestination: React.FC<StartWithDestinationProps> = ({
+  onDestinationSelect,
+  availableServices,
+}) => {
   const startWithDestinationId = useExperiment("connector.startWithDestinationId", "");
 
   const startWithDestination = useMemo<DestinationConnectorCard | undefined>(() => {
@@ -22,7 +25,6 @@ export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ onSe
         isDestinationDefinition(service) && service.destinationDefinitionId === startWithDestinationId
     );
     if (!destination) {
-      console.error("No destination provided");
       return undefined;
     }
     const { destinationDefinitionId, name, icon, releaseStage } = destination;
@@ -30,5 +32,5 @@ export const StartWithDestination: React.FC<StartWithDestinationProps> = ({ onSe
     return { destinationDefinitionId, name, icon, releaseStage };
   }, [availableServices, startWithDestinationId]);
 
-  return <StartWithDestinationCard onDestinationSelect={onServiceSelect} destination={startWithDestination} />;
+  return <StartWithDestinationCard onDestinationSelect={onDestinationSelect} destination={startWithDestination} />;
 };
