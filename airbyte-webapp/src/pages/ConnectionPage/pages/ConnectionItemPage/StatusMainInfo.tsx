@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 
 import { ConnectorCard } from "components";
 
-import { getFrequencyType } from "config/utils";
 import { ConnectionStatus, SourceRead, DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
@@ -59,12 +58,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
       </div>
       {connection.status !== ConnectionStatus.deprecated && (
         <div className={styles.enabledControlContainer}>
-          <EnabledControl
-            onStatusUpdating={onStatusUpdating}
-            disabled={!allowSync}
-            connection={connection}
-            frequencyType={getFrequencyType(connection.scheduleData?.basicSchedule)}
-          />
+          <EnabledControl onStatusUpdating={onStatusUpdating} disabled={!allowSync} connection={connection} />
         </div>
       )}
     </div>
