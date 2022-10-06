@@ -35,11 +35,6 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
 
   // exp-speedy-connection
-  localStorage.setItem(
-    "exp-speedy-connection-timestamp",
-    new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toString()
-  );
-  // exp-speedy-connection
   const { isExperimentVariant } = useExperimentSpeedyConnection();
   const { hasConnections } = useCurrentWorkspaceState();
   const showExperimentBanner = isExperimentVariant && !hasConnections;
@@ -73,7 +68,12 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
     <div className={styles.mainContainer}>
       <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
         <SideBar />
-        <div className={classNames(styles.content, { [styles.alertBanner]: !!alertToShow })}>
+        <div
+          className={classNames(styles.content, {
+            [styles.alertBanner]: !!alertToShow,
+            [styles.speedyConnectionBanner]: showExperimentBanner,
+          })}
+        >
           {showExperimentBanner ? <SpeedyConnectionBanner /> : alertToShow && <AlertBanner message={alertMessage} />}
           <div className={styles.dataBlock}>
             <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
