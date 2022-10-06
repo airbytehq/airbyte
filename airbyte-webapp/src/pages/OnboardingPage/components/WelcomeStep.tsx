@@ -2,8 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button } from "components";
 import { useExperimentSpeedyConnection } from "components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
+import { Button } from "components/ui/Button";
 
 import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";
