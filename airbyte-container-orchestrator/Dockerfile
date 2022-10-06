@@ -1,5 +1,5 @@
-ARG JDK_VERSION=17.0.4
-ARG JDK_IMAGE=amazoncorretto:${JDK_VERSION}
+ARG JDK_VERSION=3.1
+ARG JDK_IMAGE=airbyte/java-datadog-tracer-base:${JDK_VERSION}
 FROM ${JDK_IMAGE} AS orchestrator
 
 ARG DOCKER_BUILD_ARCH=amd64
