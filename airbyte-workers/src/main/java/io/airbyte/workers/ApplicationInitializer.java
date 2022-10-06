@@ -4,25 +4,18 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.analytics.Deployment;
-import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.temporal.TemporalInitializationUtils;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalUtils;
-import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.config.Configs.DeploymentMode;
-import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.check.DatabaseCheckException;
 import io.airbyte.db.check.DatabaseMigrationCheck;
 import io.airbyte.db.check.impl.JobsDatabaseAvailabilityCheck;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
-import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
@@ -68,10 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ApplicationInitializer implements ApplicationEventListener<ServiceReadyEvent> {
 
-  @Value("${airbyte.role}")
-  private String airbyteRole;
-  @Inject
-  private AirbyteVersion airbyteVersion;
   @Inject
   @Named("checkConnectionActivities")
   private Optional<List<Object>> checkConnectionActivities;
@@ -79,12 +68,8 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   @Named("configsDatabaseMigrationCheck")
   private Optional<DatabaseMigrationCheck> configsDatabaseMigrationCheck;
   @Inject
-  private Optional<ConfigRepository> configRepository;
-  @Inject
   @Named("connectionManagerActivities")
   private Optional<List<Object>> connectionManagerActivities;
-  @Inject
-  private DeploymentMode deploymentMode;
   @Inject
   @Named("discoverActivities")
   private Optional<List<Object>> discoverActivities;
@@ -97,8 +82,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   @Inject
   @Named("jobsDatabaseAvailabilityCheck")
   private Optional<JobsDatabaseAvailabilityCheck> jobsDatabaseAvailabilityCheck;
-  @Inject
-  private Optional<JobPersistence> jobPersistence;
+
   @Inject
   private Optional<LogConfigs> logConfigs;
   @Value("${airbyte.worker.check.max-workers}")
@@ -135,8 +119,6 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private TemporalUtils temporalUtils;
   @Value("${airbyte.temporal.worker.ports}")
   private Set<Integer> temporalWorkerPorts;
-  @Inject
-  private Optional<TrackingStrategy> trackingStrategy;
   @Inject
   private WorkerEnvironment workerEnvironment;
   @Inject
@@ -200,14 +182,6 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     // Ensure that the Jobs database is available
     log.info("Checking jobs database availability...");
     jobsDatabaseAvailabilityCheck.orElseThrow().check();
-
-    TrackingClientSingleton.initialize(
-        trackingStrategy.orElseThrow(),
-        new Deployment(deploymentMode, jobPersistence.orElseThrow().getDeployment().orElseThrow(),
-            workerEnvironment),
-        airbyteRole,
-        airbyteVersion,
-        configRepository.orElseThrow());
   }
 
   private void registerWorkerFactory(final WorkerFactory workerFactory, final MaxWorkersConfig maxWorkersConfiguration) {
