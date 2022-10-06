@@ -5,7 +5,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 export const useExperimentSpeedyConnection = () => {
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
-  console.log("cloudWorkspace", cloudWorkspace);
+
   const isVariantEnabled = useExperiment("onbarding.speedyConnection", false);
 
   const isTrial = Boolean(cloudWorkspace.trialExpiryTimestamp);

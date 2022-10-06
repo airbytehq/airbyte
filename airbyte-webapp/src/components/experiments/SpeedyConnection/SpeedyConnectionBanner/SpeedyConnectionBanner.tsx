@@ -47,7 +47,7 @@ export const SpeedyConnectionBanner = () => {
                 <Text bold>{link}</Text>
               </Link>
             ),
-            count: (_) => <CountDownTimer expiredOfferDate={expiredOfferDate} />,
+            count: () => <CountDownTimer expiredOfferDate={expiredOfferDate} />,
           }}
         />
         <img src={credits} alt="" />
