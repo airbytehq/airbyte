@@ -362,6 +362,8 @@ class TransformConfig:
             dbt_config["host"] = config["host"]
         if "account_name" in config:
             dbt_config["account_name"] = config["account_name"]
+        if "engine" in config:
+            dbt_config["engine_name"] = config["engine"]
         return dbt_config
 
     @staticmethod
