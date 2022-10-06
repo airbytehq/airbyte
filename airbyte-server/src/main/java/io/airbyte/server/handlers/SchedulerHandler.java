@@ -377,8 +377,7 @@ public class SchedulerHandler {
   private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException, JsonValidationException, ConfigNotFoundException {
     final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(
         connectionId,
-        configRepository.getAllStreamsForConnection(connectionId),
-        false);
+        configRepository.getAllStreamsForConnection(connectionId));
 
     return readJobFromResult(resetConnectionResult);
   }
