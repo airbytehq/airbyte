@@ -508,7 +508,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/iterable
   icon: iterable.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Jenkins
   sourceDefinitionId: d6f73702-d7a0-4e95-9758-b0fb1af0bfba
   dockerRepository: farosai/airbyte-jenkins-source
