@@ -2,7 +2,6 @@ import { Form, Formik, FormikHelpers } from "formik";
 import React, { Suspense, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { FormChangeTracker } from "components/FormChangeTracker";
 import LoadingSchema from "components/LoadingSchema";
 
 import { DestinationRead, SourceRead } from "core/request/AirbyteClient";
@@ -11,7 +10,7 @@ import {
   tidyConnectionFormValues,
   useConnectionFormService,
 } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useCreateConnection } from "hooks/services/useConnectionHook";
 import { SchemaError as SchemaErrorType, useDiscoverSchema } from "hooks/services/useSourceHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
@@ -42,9 +41,8 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
   const { clearFormChange } = useFormChangeTrackerService();
 
   const workspaceId = useCurrentWorkspaceId();
-  const formId = useUniqueFormId();
 
-  const { connection, initialValues, mode, getErrorMessage, setSubmitError } = useConnectionFormService();
+  const { connection, initialValues, mode, formId, getErrorMessage, setSubmitError } = useConnectionFormService();
   const [editingTransformation, setEditingTransformation] = useState(false);
 
   const onFormSubmit = useCallback(
@@ -108,7 +106,6 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
         >
           {({ values, isSubmitting, isValid, dirty }) => (
             <Form>
-              <FormChangeTracker changed={dirty} formId={formId} />
               <CreateConnectionNameField />
               <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
               <OperationsSection
