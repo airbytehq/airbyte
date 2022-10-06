@@ -67,7 +67,7 @@ interface AuthContextApi {
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
-export const AuthenticationProvider: React.FC = ({ children }) => {
+export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const [state, { loggedIn, emailVerified, authInited, loggedOut, updateUserName }] = useTypesafeReducer<
     AuthServiceState,
     typeof actions

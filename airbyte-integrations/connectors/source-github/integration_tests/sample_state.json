@@ -1,67 +1,137 @@
-{
-  "commit_comments": {
-    "airbytehq/integration-test": {
-      "updated_at": "2021-04-30T20:36:17Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "updated_at": "2021-04-30T20:36:17Z" }
+      },
+      "stream_descriptor": { "name": "commit_comments" }
     }
   },
-  "projects": {
-    "airbytehq/integration-test": {
-      "updated_at": "2021-06-28T17:24:51Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "updated_at": "2021-06-28T17:24:51Z" }
+      },
+      "stream_descriptor": { "name": "projects" }
     }
   },
-  "stargazers": {
-    "airbytehq/integration-test": {
-      "starred_at": "2021-06-29T02:04:57Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "starred_at": "2021-06-29T02:04:57Z" }
+      },
+      "stream_descriptor": { "name": "stargazers" }
     }
   },
-  "events": {
-    "airbytehq/integration-test": {
-      "created_at": "2021-06-29T03:44:45Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "created_at": "2021-06-29T03:44:45Z" }
+      },
+      "stream_descriptor": { "name": "events" }
     }
   },
-  "issue_events": {
-    "airbytehq/integration-test": {
-      "created_at": "2021-06-29T01:49:42Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "created_at": "2021-06-29T01:49:42Z" }
+      },
+      "stream_descriptor": { "name": "issue_events" }
     }
   },
-  "releases": {
-    "airbytehq/integration-test": {
-      "created_at": "2021-06-23T23:57:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "created_at": "2021-06-23T23:57:07Z" }
+      },
+      "stream_descriptor": { "name": "releases" }
     }
   },
-  "pull_request_stats": {
-    "airbytehq/integration-test": {
-      "updated_at": "2021-08-30T12:01:15Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "updated_at": "2021-08-30T12:01:15Z" }
+      },
+      "stream_descriptor": { "name": "pull_request_stats" }
     }
   },
-  "pull_requests": {
-    "airbytehq/integration-test": {
-      "updated_at": "2021-06-28T23:36:35Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "updated_at": "2021-06-28T23:36:35Z" }
+      },
+      "stream_descriptor": { "name": "pull_requests" }
     }
   },
-  "issue_milestones": {
-    "airbytehq/integration-test": {
-      "updated_at": "2021-06-25T22:28:33Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "updated_at": "2021-06-25T22:28:33Z" }
+      },
+      "stream_descriptor": { "name": "issue_milestones" }
     }
   },
-  "issues": {
-    "airbytehq/integration-test": {
-      "updated_at": "2021-06-30T11:32:49Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "updated_at": "2021-06-30T11:32:49Z" }
+      },
+      "stream_descriptor": { "name": "issues" }
     }
   },
-  "comments": {
-    "airbytehq/integration-test": {
-      "updated_at": "2021-06-30T10:22:10Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "updated_at": "2021-06-30T10:22:10Z" }
+      },
+      "stream_descriptor": { "name": "comments" }
     }
   },
-  "commits": {
-    "airbytehq/integration-test": {
-      "created_at": "2021-06-30T10:04:41Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "created_at": "2021-06-30T10:04:41Z" }
+      },
+      "stream_descriptor": { "name": "commits" }
     }
   },
-  "reviews": {
-    "airbytehq/integration-test": {
-      "updated_at": "2021-08-30T12:01:15Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "updated_at": "2021-08-30T12:01:15Z" }
+      },
+      "stream_descriptor": { "name": "reviews" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "completed_at": "2021-08-30T12:01:15Z" }
+      },
+      "stream_descriptor": { "name": "workflow_runs" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "completed_at": "2021-08-30T12:01:15Z" }
+      },
+      "stream_descriptor": { "name": "workflow_jobs" }
     }
   }
-}
+]

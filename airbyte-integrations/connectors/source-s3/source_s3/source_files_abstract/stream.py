@@ -185,6 +185,21 @@ class FileStream(Stream, ABC):
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
 
+    @staticmethod
+    def _broadest_type(type_1: str, type_2: str) -> Optional[str]:
+        non_comparable_types = ["object", "array", "null"]
+        if type_1 in non_comparable_types or type_2 in non_comparable_types:
+            return None
+        types = {type_1, type_2}
+        if types == {"boolean", "string"}:
+            return "string"
+        if types == {"integer", "number"}:
+            return "number"
+        if types == {"integer", "string"}:
+            return "string"
+        if types == {"number", "string"}:
+            return "string"
+
     def _get_master_schema(self, min_datetime: datetime = None) -> Dict[str, Any]:
         """
         In order to auto-infer a schema across many files and/or allow for additional properties (columns),
@@ -223,22 +238,27 @@ class FileStream(Stream, ABC):
                 # this compares datatype of every column that the two schemas have in common
                 for col in column_superset:
                     if (col in master_schema.keys()) and (col in this_schema.keys()) and (master_schema[col] != this_schema[col]):
-                        # If this column exists in a provided schema or schema state, we'll WARN here rather than throw an error
-                        # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to
-                        # provided schema state. If not, then the read will error anyway
-                        if col in self._schema.keys():
+                        # If this column exists in a provided schema or schema state, we'll WARN here rather than throw an error.
+                        # This is to allow more leniency as we may be able to coerce this datatype mismatch on read according to
+                        # provided schema state. Else we're inferring the schema (or at least this column) from scratch, and therefore
+                        # we try to choose the broadest type among two if possible
+                        broadest_of_types = self._broadest_type(master_schema[col], this_schema[col])
+                        type_explicitly_defined = col in self._schema.keys()
+                        override_type = broadest_of_types and not type_explicitly_defined
+                        if override_type:
+                            master_schema[col] = broadest_of_types
+                        if override_type or type_explicitly_defined:
                             LOGGER.warn(
                                 f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
                                 + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
                             )
-                        # else we're inferring the schema (or at least this column) from scratch and therefore
-                        # throw an error on mismatching datatypes
-                        else:
-                            raise RuntimeError(
-                                f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
-                                + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
-                            )
+                            continue
+                        # otherwise throw an error on mismatching datatypes
+                        raise RuntimeError(
+                            f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
+                            + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
+                        )
 
                 # missing columns in this_schema doesn't affect our master_schema, so we don't check for it here
 

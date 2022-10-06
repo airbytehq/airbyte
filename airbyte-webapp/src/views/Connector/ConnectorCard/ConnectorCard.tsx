@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { ContentCard } from "components";
 import { JobItem } from "components/JobItem/JobItem";
+import { Card } from "components/ui/Card";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorT } from "core/domain/connector";
 import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
@@ -34,7 +35,7 @@ interface ConnectorCardEditProps extends ConnectorCardBaseProps {
   connector: ConnectorT;
 }
 
-export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
+export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
   title,
   full,
   jobInfo,
@@ -43,6 +44,8 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
 }) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
+
+  const [advancedMode] = useAdvancedModeSetting();
 
   const { testConnector, isTestConnectionInProgress, onStopTesting, error, reset } = useTestConnector(props);
 
@@ -86,7 +89,7 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
 
     try {
       await testConnectorWithTracking();
-      await onSubmit(values);
+      onSubmit(values);
       setSaved(true);
     } catch (e) {
       setErrorStatusRequest(e);
@@ -96,7 +99,7 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
   const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
   return (
-    <ContentCard title={title} full={full}>
+    <Card title={title} fullWidth={full}>
       <ServiceForm
         {...props}
         errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
@@ -108,7 +111,8 @@ export const ConnectorCard: React.VFC<ConnectorCardCreateProps | ConnectorCardEd
           props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
         }
       />
-      {job && <JobItem job={job} />}
-    </ContentCard>
+      {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
+      {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
+    </Card>
   );
 };

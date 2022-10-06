@@ -10,6 +10,7 @@ Object {
       "normalization": "basic",
       "prefix": "",
       "scheduleData": null,
+      "scheduleType": "manual",
       "syncCatalog": Object {
         "streams": Array [
           Object {
@@ -539,6 +540,7 @@ Object {
     "normalization": "basic",
     "prefix": "",
     "scheduleData": null,
+    "scheduleType": "manual",
     "syncCatalog": Object {
       "streams": Array [
         Object {
@@ -1074,6 +1076,7 @@ Object {
       "normalization": "basic",
       "prefix": "",
       "scheduleData": null,
+      "scheduleType": "manual",
       "syncCatalog": Object {
         "streams": Array [
           Object {
@@ -1603,6 +1606,7 @@ Object {
     "normalization": "basic",
     "prefix": "",
     "scheduleData": null,
+    "scheduleType": "manual",
     "syncCatalog": Object {
       "streams": Array [
         Object {
@@ -2138,6 +2142,7 @@ Object {
       "normalization": "basic",
       "prefix": "",
       "scheduleData": null,
+      "scheduleType": "manual",
       "syncCatalog": Object {
         "streams": Array [
           Object {
@@ -2667,6 +2672,7 @@ Object {
     "normalization": "basic",
     "prefix": "",
     "scheduleData": null,
+    "scheduleType": "manual",
     "syncCatalog": Object {
       "streams": Array [
         Object {

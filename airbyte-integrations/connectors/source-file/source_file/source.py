@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
+from pandas.errors import ParserError
 
 from .client import Client
 
@@ -84,8 +85,21 @@ class SourceFile(Source):
         client = self._get_client(config)
         logger.info(f"Checking access to {client.reader.full_url}...")
         try:
-            with client.reader.open():
+            with client.reader.open() as f:
+                if config.get("provider").get("storage") == "HTTPS":
+                    # on behalf of https://github.com/airbytehq/alpha-beta-issues/issues/224
+                    # some providers like Dropbox creates the Shared Public URLs with ?dl=0 query param,
+                    # this requires user interaction before accessing the file,
+                    # we should validate this on the Check Connection stage to avoid sync issues further.
+                    client.CSV_CHUNK_SIZE = 2
+                    next(client.load_dataframes(f))
+                    return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+                # for all other formats and storrage providers
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        except ParserError:
+            reason = f"Failed to load {client.reader.full_url}, check the URL is valid and allows to download file directly"
+            logger.error(reason)
+            return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
         except Exception as err:
             reason = f"Failed to load {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)

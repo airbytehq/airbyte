@@ -36,7 +36,7 @@ The LinkedIn Ads source connector is based on a [Airbyte CDK](https://docs.airby
      * Review permissions and ensure app has the permissions \(above\).
      * Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.io`
      * Review the `Products` tab and ensure `Marketing Developer Platform` has been added and approved \(listed in the `Products` section/tab\).
-     * Review the `Usage & limits` tab. This shows the daily application and user/member limits with percent used for each resource endpoint.
+     * Review the `Analytics` tab. This shows the daily application and user/member limits with percent used for each resource endpoint.
 
 4. **Authorize App**:
 
@@ -46,7 +46,7 @@ The LinkedIn Ads source connector is based on a [Airbyte CDK](https://docs.airby
 
    Create an Authorization URL with the following pattern:
 
-   * The permissions set you need to use is: `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
+   * The permissions set you need to use is (can be found in the `Auth` tab under OAuth 2.0 scopes): `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
    * URL pattern: Provide the scope from permissions above \(with + delimiting each permission\) and replace the other highlighted parameters: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
    * Modify and open the `url` in the browser.
    * Once redirected, click `Allow` to authorize app.
@@ -134,12 +134,12 @@ This Source is capable of syncing the following data as streams:
 * [Ad Analytics by Creative](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl#ad-analytics) 
 
 
-| Sync Mode                                 | Supported?\(Yes/No\) | 
+| Sync Mode                                 | Supported?\(Yes/No\) |
 | :---------------------------------------- | :------------------- |
-| Full Refresh Overwrite Sync               | Yes                  |  
-| Full Refresh Append Sync                  | Yes                  |       
-| Incremental - Append Sync                 | Yes                  |       
-| Incremental - Append + Deduplication Sync | Yes                  |  
+| Full Refresh Overwrite Sync               | Yes                  |
+| Full Refresh Append Sync                  | Yes                  |
+| Incremental - Append Sync                 | Yes                  |
+| Incremental - Append + Deduplication Sync | Yes                  |
 
 
 ### NOTE:
@@ -181,8 +181,9 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                           |
-|:--------| :--------- | :-----------------------------------------------------   | :---------------------------------------------------------------------------------------------------------------- |
-| 0.1.9   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas                                                                   |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                     |
+| 0.1.9   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas                                                                  |
 | 0.1.8   | 2022-06-07 | [13495](https://github.com/airbytehq/airbyte/pull/13495) | Fixed `base-normalization` issue on `Destination Redshift` caused by wrong casting of `pivot` column              |
 | 0.1.7   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                                   |
 | 0.1.6   | 2022-04-04 | [11690](https://github.com/airbytehq/airbyte/pull/11690) | Small documenation corrections                                                                                    |

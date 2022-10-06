@@ -2,8 +2,8 @@ import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
-import { Text } from "components/base/Text";
-import { Tooltip } from "components/base/Tooltip";
+import { Text } from "components/ui/Text";
+import { Tooltip } from "components/ui/Tooltip";
 
 import styles from "./PathPopoutButton.module.scss";
 
@@ -12,7 +12,11 @@ interface PathPopoutButtonProps {
   onClick: React.MouseEventHandler;
 }
 
-export const PathPopoutButton: React.FC<PathPopoutButtonProps> = ({ items = [], onClick, children }) => (
+export const PathPopoutButton: React.FC<React.PropsWithChildren<PathPopoutButtonProps>> = ({
+  items = [],
+  onClick,
+  children,
+}) => (
   <Tooltip
     control={
       <button className={styles.button} onClick={onClick}>

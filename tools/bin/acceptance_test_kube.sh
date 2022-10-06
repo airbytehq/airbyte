@@ -16,6 +16,7 @@ if [ -n "$CI" ]; then
   kind load docker-image airbyte/db:dev --name chart-testing &
   kind load docker-image airbyte/container-orchestrator:dev --name chart-testing &
   kind load docker-image airbyte/bootloader:dev --name chart-testing &
+  kind load docker-image airbyte/cron:dev --name chart-testing &
   wait
 fi
 

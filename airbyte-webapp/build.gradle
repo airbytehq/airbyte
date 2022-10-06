@@ -22,7 +22,7 @@ node {
 
 npm_run_build {
     inputs.files commonConfigs
-    inputs.file '.eslintrc'
+    inputs.file '.eslintrc.js'
     inputs.dir 'public'
     inputs.dir 'src'
 
@@ -117,10 +117,10 @@ check.dependsOn validateLinks, licenseCheck, test, stylelint
 
 build.dependsOn buildStorybook
 
-Task dockerBuildTask = getDockerBuildTask("webapp", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyDocker)
-dockerBuildTask.dependsOn(copyBuildOutput)
-dockerBuildTask.dependsOn(copyNginx)
-dockerBuildTask.dependsOn(copyDocs)
-dockerBuildTask.dependsOn(copyDocAssets)
-assemble.dependsOn(dockerBuildTask)
+tasks.named("buildDockerImage") {
+    dependsOn copyDocker
+    dependsOn copyBuildOutput
+    dependsOn copyNginx
+    dependsOn copyDocs
+    dependsOn copyDocAssets
+}

@@ -1294,6 +1294,11 @@ paths:
       tags:
         - connection
       summary: Update a connection
+      description: |
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        containing the updated stream needs to be sent.
       operationId: updateConnection
       requestBody:
         content:
@@ -1913,29 +1918,6 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/connections/list_all:
-    post:
-      tags:
-        - web_backend
-      summary: Returns all connections for a workspace.
-      operationId: webBackendListAllConnectionsForWorkspace
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WebBackendConnectionReadList"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/get:
     post:
       tags:
@@ -1985,6 +1967,14 @@ paths:
       tags:
         - web_backend
       summary: Update a connection
+      description: |
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Any operations that lack an ID will be created. Then, the newly created operationId will be applied to the
+        connection along with the rest of the operationIds in the request body.
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        containing the updated stream needs to be sent.
       operationId: webBackendUpdateConnection
       requestBody:
         content:
@@ -1999,27 +1989,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/connections/search:
-    post:
-      tags:
-        - web_backend
-      summary: Search connections
-      operationId: webBackendSearchConnections
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WebBackendConnectionSearch"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WebBackendConnectionReadList"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/state/get_type:
@@ -2109,6 +2078,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JobInfoRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_light:
+    post:
+      tags:
+        - jobs
+      summary: Get information about a job excluding attempt info and logs
+      operationId: getJobInfoLight
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoLightRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2382,12 +2374,9 @@ components:
           type: string
     WorkspaceUpdate:
       type: object
+      description: Used to apply a patch-style update to a workspace, which means that null properties remain unchanged
       required:
         - workspaceId
-        - initialSetupComplete
-        - anonymousDataCollection
-        - news
-        - securityUpdates
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -2508,6 +2497,9 @@ components:
           type: string
           format: uri
         icon:
+          type: string
+        protocolVersion:
+          description: The Airbyte Protocol version supported by the connector
           type: string
         releaseStage:
           $ref: "#/components/schemas/ReleaseStage"
@@ -2764,6 +2756,8 @@ components:
           type: string
         sourceName:
           type: string
+        icon:
+          type: string
     SourceReadList:
       type: object
       required:
@@ -2868,6 +2862,9 @@ components:
           type: string
           format: uri
         icon:
+          type: string
+        protocolVersion:
+          description: The Airbyte Protocol version supported by the connector
           type: string
         releaseStage:
           $ref: "#/components/schemas/ReleaseStage"
@@ -3058,6 +3055,8 @@ components:
           type: string
         destinationName:
           type: string
+        icon:
+          type: string
     DestinationReadList:
       type: object
       required:
@@ -3219,10 +3218,9 @@ components:
           $ref: "#/components/schemas/ConnectionState"
     ConnectionUpdate:
       type: object
+      description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
       required:
         - connectionId
-        - syncCatalog
-        - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -3260,10 +3258,9 @@ components:
           format: uuid
     WebBackendConnectionUpdate:
       type: object
+      description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
       required:
         - connectionId
-        - syncCatalog
-        - status
       properties:
         name:
           type: string
@@ -3280,10 +3277,6 @@ components:
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
-        operationIds:
-          type: array
-          items:
-            $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -3353,39 +3346,6 @@ components:
           type: string
           format: uuid
     ConnectionSearch:
-      type: object
-      properties:
-        connectionId:
-          $ref: "#/components/schemas/ConnectionId"
-        name:
-          type: string
-        namespaceDefinition:
-          $ref: "#/components/schemas/NamespaceDefinitionType"
-        namespaceFormat:
-          type: string
-          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
-          default: null
-          example: "${SOURCE_NAMESPACE}"
-        prefix:
-          type: string
-          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
-        sourceId:
-          $ref: "#/components/schemas/SourceId"
-        destinationId:
-          $ref: "#/components/schemas/DestinationId"
-        schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
-        scheduleType:
-          $ref: "#/components/schemas/ConnectionScheduleType"
-        scheduleData:
-          $ref: "#/components/schemas/ConnectionScheduleData"
-        status:
-          $ref: "#/components/schemas/ConnectionStatus"
-        source:
-          $ref: "#/components/schemas/SourceSearch"
-        destination:
-          $ref: "#/components/schemas/DestinationSearch"
-    WebBackendConnectionSearch:
       type: object
       properties:
         connectionId:
@@ -3497,7 +3457,6 @@ components:
     NamespaceDefinitionType:
       type: string
       description: Method used for computing final namespace in destination
-      default: source
       enum:
         - source
         - destination
@@ -3769,6 +3728,9 @@ components:
             $ref: "#/components/schemas/JobConfigType"
         configId:
           type: string
+        includingJobId:
+          description: If the job with this ID exists for the specified connection, returns the number of pages of jobs necessary to include this job. Returns an empty list if this job is specified and cannot be found in this connection.
+          $ref: "#/components/schemas/JobId"
         pagination:
           $ref: "#/components/schemas/Pagination"
     JobIdRequestBody:
@@ -3855,6 +3817,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptRead"
+    JobCreatedAt:
+      description: epoch time of the latest sync job. null if no sync job has taken place.
+      type: integer
+      format: int64
     JobStatus:
       type: string
       enum:
@@ -3986,11 +3952,16 @@ components:
       type: object
       required:
         - jobs
+        - totalJobCount
       properties:
         jobs:
           type: array
           items:
             $ref: "#/components/schemas/JobWithAttemptsRead"
+        totalJobCount:
+          description: the total count of jobs for the specified connection
+          type: integer
+          format: int64
     JobInfoRead:
       type: object
       required:
@@ -4003,6 +3974,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptInfoRead"
+    JobInfoLightRead:
+      type: object
+      required:
+        - job
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
     JobDebugInfoRead:
       type: object
       required:
@@ -4538,6 +4516,43 @@ components:
           type: object
           additionalProperties: true
     # Web Backend
+    WebBackendConnectionListItem:
+      type: object
+      description: Information about a connection that shows up in the connection list view.
+      required:
+        - connectionId
+        - name
+        - sourceId
+        - destinationId
+        - source
+        - destination
+        - status
+        - isSyncing
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        name:
+          type: string
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        source:
+          $ref: "#/components/schemas/SourceRead"
+        destination:
+          $ref: "#/components/schemas/DestinationRead"
+        latestSyncJobCreatedAt:
+          $ref: "#/components/schemas/JobCreatedAt"
+        latestSyncJobStatus:
+          $ref: "#/components/schemas/JobStatus"
+        isSyncing:
+          type: boolean
     WebBackendConnectionRead:
       type: object
       required:
@@ -4592,9 +4607,7 @@ components:
           items:
             $ref: "#/components/schemas/OperationRead"
         latestSyncJobCreatedAt:
-          description: epoch time of the latest sync job. null if no sync job has taken place.
-          type: integer
-          format: int64
+          $ref: "#/components/schemas/JobCreatedAt"
         latestSyncJobStatus:
           $ref: "#/components/schemas/JobStatus"
         isSyncing:
@@ -4614,7 +4627,7 @@ components:
         connections:
           type: array
           items:
-            $ref: "#/components/schemas/WebBackendConnectionRead"
+            $ref: "#/components/schemas/WebBackendConnectionListItem"
     SyncMode:
       type: string
       enum:

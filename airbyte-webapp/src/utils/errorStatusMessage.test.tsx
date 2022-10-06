@@ -1,6 +1,6 @@
 import { generateMessageFromError, FormError } from "./errorStatusMessage";
 
-describe("#errorStatusMessage", () => {
+describe("#generateMessageFromError", () => {
   it("should return a provided error message", () => {
     const errMsg = "test";
     expect(generateMessageFromError(new Error(errMsg))).toBe(errMsg);

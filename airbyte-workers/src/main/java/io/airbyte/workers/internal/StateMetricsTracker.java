@@ -27,7 +27,7 @@ public class StateMetricsTracker {
   private final List<byte[]> stateHashesAndTimestamps;
   private final Map<String, List<byte[]>> streamStateHashesAndTimestamps;
   private LocalDateTime firstRecordReceivedAt;
-  private final LocalDateTime lastStateMessageReceivedAt;
+  private LocalDateTime lastStateMessageReceivedAt;
   private Long maxSecondsToReceiveSourceStateMessage;
   private Long meanSecondsToReceiveSourceStateMessage;
   private Long maxSecondsBetweenStateMessageEmittedandCommitted;
@@ -192,6 +192,10 @@ public class StateMetricsTracker {
 
   public void setFirstRecordReceivedAt(final LocalDateTime receivedAt) {
     firstRecordReceivedAt = receivedAt;
+  }
+
+  public void setLastStateMessageReceivedAt(final LocalDateTime receivedAt) {
+    lastStateMessageReceivedAt = receivedAt;
   }
 
   public void incrementTotalSourceEmittedStateMessages() {

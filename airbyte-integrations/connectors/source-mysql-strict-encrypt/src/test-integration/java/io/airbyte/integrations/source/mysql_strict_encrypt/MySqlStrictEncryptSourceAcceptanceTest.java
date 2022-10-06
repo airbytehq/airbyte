@@ -130,4 +130,9 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
     return Jsons.jsonNode(new HashMap<>());
   }
 
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
+  }
+
 }

@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,7 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceStrictEncrypt.class);
 
-  PostgresSourceStrictEncrypt() {
+  public PostgresSourceStrictEncrypt() {
     super(PostgresSource.sshWrappedSource());
   }
 

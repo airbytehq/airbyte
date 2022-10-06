@@ -5,25 +5,32 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.Job;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.temporal.exception.RetryableException;
+import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.util.List;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
+@Singleton
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class GenerateInputActivityImpl implements GenerateInputActivity {
 
-  private JobPersistence jobPersistence;
+  private final JobPersistence jobPersistence;
+
+  public GenerateInputActivityImpl(final JobPersistence jobPersistence) {
+    this.jobPersistence = jobPersistence;
+  }
 
   @Override
   public GeneratedJobInput getSyncWorkflowInput(final SyncInput input) {
@@ -61,7 +68,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
                 List.of(ConfigType.SYNC, ConfigType.RESET_CONNECTION)));
       }
 
-      final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
+      final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
       final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))

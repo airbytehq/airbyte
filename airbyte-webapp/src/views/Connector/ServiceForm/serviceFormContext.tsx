@@ -51,7 +51,7 @@ interface ServiceFormContextProviderProps {
   validationSchema: AnySchema;
 }
 
-export const ServiceFormContextProvider: React.FC<ServiceFormContextProviderProps> = ({
+export const ServiceFormContextProvider: React.FC<React.PropsWithChildren<ServiceFormContextProviderProps>> = ({
   availableServices,
   children,
   widgetsInfo,

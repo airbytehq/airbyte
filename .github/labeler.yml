@@ -4,12 +4,12 @@ area/platform:
   - airbyte-webapp/**/*
   - airbyte-api/*
   - airbyte-api/**/*
-  - airbyte-server/*
-  - airbyte-server/**/*
-  - airbyte-scheduler/*
-  - airbyte-scheduler/**/*
+  - airbyte-persistence/*
+  - airbyte-persistence/**/*
   - airbyte-protocol/*
   - airbyte-protocol/**/*
+  - airbyte-server/*
+  - airbyte-server/**/*
   - airbyte-workers/*
   - airbyte-workers/**/*
   - kube/*
@@ -28,10 +28,6 @@ area/api:
 area/server:
   - airbyte-server/*
   - airbyte-server/**/*
-
-area/scheduler:
-  - airbyte-scheduler/*
-  - airbyte-scheduler/**/*
 
 area/protocol:
   - airbyte-protocol/*

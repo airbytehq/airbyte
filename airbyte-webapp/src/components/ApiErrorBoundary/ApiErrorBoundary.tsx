@@ -38,7 +38,7 @@ interface ApiErrorBoundaryProps {
 const RETRY_DELAY = 2500;
 
 class ApiErrorBoundary extends React.Component<
-  ApiErrorBoundaryHookProps & ApiErrorBoundaryProps,
+  React.PropsWithChildren<ApiErrorBoundaryHookProps & ApiErrorBoundaryProps>,
   ApiErrorBoundaryState
 > {
   state: ApiErrorBoundaryState = {
@@ -107,7 +107,10 @@ class ApiErrorBoundary extends React.Component<
   }
 }
 
-const ApiErrorBoundaryWithHooks: React.FC<ApiErrorBoundaryProps> = ({ children, ...props }) => {
+const ApiErrorBoundaryWithHooks: React.FC<React.PropsWithChildren<ApiErrorBoundaryProps>> = ({
+  children,
+  ...props
+}) => {
   const { reset } = useQueryErrorResetBoundary();
   const location = useLocation();
   const navigate = useNavigate();

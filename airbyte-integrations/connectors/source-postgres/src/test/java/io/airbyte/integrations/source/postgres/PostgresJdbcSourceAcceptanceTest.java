@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -25,6 +26,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -41,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +52,9 @@ import org.testcontainers.utility.MountableFile;
 
 class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
+  private static final String DATABASE = "new_db";
+  protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
+  protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
   private static PostgreSQLContainer<?> PSQL_DB;
   public static String COL_WAKEUP_AT = "wakeup_at";
   public static String COL_LAST_VISITED_AT = "last_visited_at";
@@ -448,6 +454,71 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   protected boolean supportsPerStream() {
     return true;
+  }
+
+  /**
+   * Postgres Source Error Codes:
+   * <p>
+   * https://www.postgresql.org/docs/current/errcodes-appendix.html
+   * </p>
+   *
+   * @throws Exception
+   */
+  @Test
+  void testCheckIncorrectPasswordFailure() throws Exception {
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28P01;"));
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() throws Exception {
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28P01;"));
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() throws Exception {
+    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testCheckIncorrectPortFailure() throws Exception {
+    ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testCheckIncorrectDataBaseFailure() throws Exception {
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 3D000;"));
+  }
+
+  @Test
+  public void testUserHasNoPermissionToDataBase() throws Exception {
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("create user %s with password '%s';", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION)));
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("create database %s;", DATABASE)));
+    // deny access for database for all users from group public
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("revoke all on database %s from public;", DATABASE)));
+    ((ObjectNode) config).put("username", USERNAME_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put("database", DATABASE);
+    final AirbyteConnectionStatus status = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 42501;"));
   }
 
 }

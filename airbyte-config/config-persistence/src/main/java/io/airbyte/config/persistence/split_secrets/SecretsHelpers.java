@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.constants.AirbyteSecretConstants;
 import io.airbyte.commons.json.JsonPaths;
 import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
@@ -175,7 +176,7 @@ public class SecretsHelpers {
         spec,
         node -> MoreIterators.toList(node.fields())
             .stream()
-            .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)))
+            .anyMatch(field -> AirbyteSecretConstants.AIRBYTE_SECRET_FIELD.equals(field.getKey())))
         .stream()
         .map(JsonPaths::mapJsonSchemaPathToJsonPath)
         .distinct()

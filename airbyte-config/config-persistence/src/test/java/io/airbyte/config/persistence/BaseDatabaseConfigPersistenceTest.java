@@ -61,6 +61,7 @@ class BaseDatabaseConfigPersistenceTest {
       .withDocumentationUrl("https://docs.airbyte.io/integrations/sources/github")
       .withIcon("github.svg")
       .withSourceType(SourceType.API)
+      .withProtocolVersion("0.2.0")
       .withTombstone(false);
   protected static final StandardSourceDefinition SOURCE_POSTGRES = new StandardSourceDefinition()
       .withName("Postgres")
@@ -88,6 +89,7 @@ class BaseDatabaseConfigPersistenceTest {
       .withDockerRepository("airbyte/destination-snowflake")
       .withDockerImageTag("0.3.16")
       .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/snowflake")
+      .withProtocolVersion("0.2.0")
       .withTombstone(false);
   protected static final StandardDestinationDefinition DESTINATION_S3 = new StandardDestinationDefinition()
       .withName("S3")
@@ -95,6 +97,7 @@ class BaseDatabaseConfigPersistenceTest {
       .withDockerRepository("airbyte/destination-s3")
       .withDockerImageTag("0.1.12")
       .withDocumentationUrl("https://docs.airbyte.io/integrations/destinations/s3")
+      .withProtocolVersion("0.2.0")
       .withTombstone(false);
   protected static final StandardDestinationDefinition DESTINATION_CUSTOM = new StandardDestinationDefinition()
       .withName("Custom")
