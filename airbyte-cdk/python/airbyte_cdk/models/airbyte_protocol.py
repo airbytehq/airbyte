@@ -42,6 +42,7 @@ class AirbyteRecordMessage(BaseModel):
         raise ValueError("Data object is not a dictionary. "
             "This can happen when the parse_response method directly returns the response.json, "
             "instead of yielding a it/elements of it."
+            f"Object instead is {type(value)} with value: {value}"
         )
 
 
