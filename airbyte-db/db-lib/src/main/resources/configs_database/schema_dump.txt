@@ -105,6 +105,9 @@ create table "public"."connection"(
   "schedule_type" schedule_type null,
   "schedule_data" jsonb null,
   "geography" geography_type not null default null,
+  "notify_schema_changes" bool not null default true,
+  "non_breaking_change_preference" varchar(7) not null default '''ignore''::character varying',
+  "breaking_change" bool not null default false,
   constraint "connection_pkey"
     primary key ("id")
 );
