@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.95
+
+- Low-code: Expose PageIncrement strategy as component type
+
 ## 0.1.94
 
 - Low-code: Stream schema loader has a default value and can be omitted
