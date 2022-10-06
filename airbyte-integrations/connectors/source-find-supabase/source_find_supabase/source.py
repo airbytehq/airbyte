@@ -21,7 +21,7 @@ class SourceFindSupabase(AbstractSource):
         }
         url = f"{base_url}/rest/v1/unpacked_items"
         response = requests.get(url, headers=headers, params=params)
-        if response.json()[0]["id"] == 1191948:
+        if len(response.json()) == 10:
             return True, "accepted"
         else:
             return False, "error"
