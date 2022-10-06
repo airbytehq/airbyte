@@ -528,3 +528,56 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
     assert isinstance(rest_stream, IncrementalSalesforceStream)
+
+
+def test_bulk_stream_paging(stream_config, stream_api_pk):
+    stream_config["start_date"] = "2022-10-01T00:00:00Z"
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api_pk)
+    stream.page_size = 2
+
+    LastModifiedDate1 = "2022-10-01T00:00:00Z"
+    LastModifiedDate2 = "2022-10-02T00:00:00Z"
+    assert LastModifiedDate1 < LastModifiedDate2
+
+    csv_header = "Field1,LastModifiedDate,Id"
+    pages = [
+        [f"test,{LastModifiedDate1},1", f"test,{LastModifiedDate1},3"],
+        [f"test,{LastModifiedDate1},5", f"test,{LastModifiedDate2},2"],
+        [f"test,{LastModifiedDate2},2", f"test,{LastModifiedDate2},4"],
+        [f"test,{LastModifiedDate2},6"],
+    ]
+
+    with requests_mock.Mocker() as m:
+
+        post_responses = []
+        for job_id, page in enumerate(pages, 1):
+            post_responses.append({"json": {"id": f"{job_id}"}})
+            m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+            m.register_uri("GET", stream.path() + f"/{job_id}/results", text="\n".join([csv_header] + page))
+            m.register_uri("DELETE", stream.path() + f"/{job_id}")
+        m.register_uri("POST", stream.path(), post_responses)
+
+        records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+        assert records == [
+            {"Field1": "test", "Id": 1, "LastModifiedDate": LastModifiedDate1},
+            {"Field1": "test", "Id": 3, "LastModifiedDate": LastModifiedDate1},
+            {"Field1": "test", "Id": 5, "LastModifiedDate": LastModifiedDate1},
+            {"Field1": "test", "Id": 2, "LastModifiedDate": LastModifiedDate2},
+            {"Field1": "test", "Id": 2, "LastModifiedDate": LastModifiedDate2},  # duplicate record
+            {"Field1": "test", "Id": 4, "LastModifiedDate": LastModifiedDate2},
+            {"Field1": "test", "Id": 6, "LastModifiedDate": LastModifiedDate2},
+        ]
+
+        SELECT = "SELECT LastModifiedDate,Id FROM Account"
+        ORDER_BY = "ORDER BY LastModifiedDate,Id ASC LIMIT 2"
+        assert m.request_history[0].json()["query"] == f"{SELECT} WHERE LastModifiedDate >= {LastModifiedDate1} {ORDER_BY}"
+        assert (
+            m.request_history[4].json()["query"]
+            == f"{SELECT} WHERE (LastModifiedDate = {LastModifiedDate1} AND Id > '3') OR (LastModifiedDate > {LastModifiedDate1}) {ORDER_BY}"
+        )
+        assert m.request_history[8].json()["query"] == f"{SELECT} WHERE LastModifiedDate >= {LastModifiedDate2} {ORDER_BY}"
+        assert (
+            m.request_history[12].json()["query"]
+            == f"{SELECT} WHERE (LastModifiedDate = {LastModifiedDate2} AND Id > '4') OR (LastModifiedDate > {LastModifiedDate2}) {ORDER_BY}"
+        )
