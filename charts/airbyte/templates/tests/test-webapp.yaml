@@ -12,5 +12,5 @@ spec:
   - name: wget
     image: busybox
     command: ['wget']
-    args: ['{{ include "common.names.fullname" . }}-webapp:{{ .Values.webapp.service.port }}']
+    args: ['{{ .Release.Name }}-airbyte-webapp-svc:{{ .Values.webapp.service.port }}']
   restartPolicy: Never
