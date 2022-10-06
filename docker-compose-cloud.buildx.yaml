@@ -100,3 +100,19 @@ services:
         platforms:
           - linux/amd64
           - linux/arm64
+  proxy:
+    image: airbyte/proxy:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-proxy
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/proxy:${VERSION}
+          - airbyte/proxy:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64

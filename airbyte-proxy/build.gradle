@@ -1,0 +1,13 @@
+plugins {
+    id 'application'
+}
+
+task prepareBuild(type: Copy) {
+    from layout.projectDirectory.file("nginx.conf"), layout.projectDirectory.file("run.sh")
+    into layout.buildDirectory.dir("docker")
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn prepareBuild
+    dependsOn copyDocker
+}
