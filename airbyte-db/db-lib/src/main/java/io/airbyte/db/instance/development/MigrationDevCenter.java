@@ -18,7 +18,6 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.ext.ScriptUtils;
 import org.testcontainers.jdbc.JdbcDatabaseDelegate;
-import org.testcontainers.utility.MountableFile;
 
 /**
  * Helper class for migration development. See README for details.
