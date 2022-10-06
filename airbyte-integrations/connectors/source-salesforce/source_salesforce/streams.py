@@ -472,6 +472,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             page_token: str = last_record[self.cursor_field]
             res = {"next_token": page_token}
+            # use primary key as additional filtering param, if cursor_field is not increased from previous batch
             if self.primary_key and self.prev_start_date == page_token:
                 res["primary_key"] = last_record[self.primary_key]
             return res
