@@ -200,7 +200,7 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Saving a connection's schedule type only changes expected values", () => {
+  it.only("Saving a connection's schedule type only changes expected values", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
     cy.intercept("/api/v1/web_backend/connections/get").as("getConnection");
 
@@ -215,8 +215,12 @@ describe("Connection main actions", () => {
 
     let loadedConnection: any = null; // Should be a WebBackendConnectionRead
     cy.wait("@getConnection").then((interception) => {
-      loadedConnection = interception.response?.body;
+      const { scheduleType: readScheduleType, scheduleData: readScheduleData, ...connectionRead } = interception.response?.body;
+      loadedConnection = connectionRead;
+
       expect(loadedConnection).not.to.eq(null);
+      expect(readScheduleType).to.eq("manual");
+      expect(readScheduleData).to.eq(undefined);
     });
 
     goToReplicationTab();
@@ -233,10 +237,7 @@ describe("Connection main actions", () => {
         units: 1,
       });
 
-      const { scheduleType: readScheduleType, scheduleData: readScheduleData, ...connectionRead } = loadedConnection;
-      expect(readScheduleType).to.eq("manual");
-      expect(readScheduleData).to.eq(undefined);
-      expect(connectionRead).to.deep.eq(connectionUpdate);
+      expect(loadedConnection).to.deep.eq(connectionUpdate);
     });
     checkSuccessResult();
 
