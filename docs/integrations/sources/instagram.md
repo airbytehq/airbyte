@@ -4,11 +4,11 @@ This page contains the setup guide and reference information for the Instagram s
 
 ## Prerequisites
 
-* Create a [Meta for Developers account](https://developers.facebook.com)
-* Add the [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your Facebook page
-* Add the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-* Get the Facebook API [access token](https://developers.facebook.com/docs/facebook-login/access-tokens/#usertokens) 
-* Find the [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte)
+* [Meta for Developers account](https://developers.facebook.com)
+* [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your Facebook page
+* [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
+* Facebook API [access token](https://developers.facebook.com/docs/facebook-login/access-tokens/#usertokens) 
+* [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte)
 
 ## Setup Guide
 
@@ -51,6 +51,11 @@ The Instagram source connector supports the following [sync modes](https://docs.
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
+:::note
+
+Incremental sync modes are only available for the [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) stream.
+
+:::
 
 ## Supported Streams
 The Instagram source connector supports the following streams. For more information, see the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) and [Instagram Insights API documentation](https://developers.facebook.com/docs/instagram-api/guides/insights/).
@@ -61,13 +66,6 @@ The Instagram source connector supports the following streams. For more informat
   * [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 * [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
   * [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
-
-### Features
-
-| Feature           | Supported?\(Yes/No\) | Notes              |
-| :---------------- | :------------------- | :----------------- |
-| Full Refresh Sync | Yes                  |                    |
-| Incremental Sync  | Yes                  | Only User Insights |
 
 ### Rate Limiting and Performance Considerations
 
