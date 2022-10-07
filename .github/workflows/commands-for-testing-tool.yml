@@ -2,7 +2,6 @@ name: Run Testing Tool Commands
 on:
   issue_comment:
     types: [created]
-
 jobs:
   set-params:
     # Only allow slash commands on pull request (not on issues)
