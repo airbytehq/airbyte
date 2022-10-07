@@ -3,7 +3,7 @@
 The primary way to set request parameters and headers is to define them as key-value pairs using a `RequestOptionsProvider`.
 Other components, such as an `Authenticator` can also set additional request params or headers as needed.
 
-Additionally, some stateful components using a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](#configuring-the-paginator) and [Stream slicers](./advanced-topics.md#stream-slicers).
+Additionally, some stateful components using a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](./pagination.md) and [Stream slicers](./stream-slicers.md).
 
 ## Request Options Provider
 
@@ -121,7 +121,7 @@ paginator:
     field_name: "page"
 ```
 
-More details on paginators can be found in the [pagination section](pagination.md).
+More details on paginators can be found in the [pagination section](./pagination.md).
 
 ## Stream slicers
 
@@ -143,4 +143,4 @@ stream_slicer:
     inject_into: "request_parameter"
 ```
 
-More details on the stream slicers can be found in the [stream-slicers section](stream-slicers.md).
+More details on the stream slicers can be found in the [stream-slicers section](./stream-slicers.md).

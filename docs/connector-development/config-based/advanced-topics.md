@@ -240,7 +240,7 @@ some_object:
 ```
 
 Some components also pass in additional arguments to the context.
-This is the case for the [record selector](./understanding-the-yaml-file.md#configuring-the-record-selector), which passes in an additional `response` argument.
+This is the case for the [record selector](./understanding-the-yaml-file/record-selector.md), which passes in an additional `response` argument.
 
 Both dot notation and bracket notations (with single quotes ( `'`)) are interchangeable.
 This means that both these string templates will evaluate to the same string:

@@ -8,7 +8,7 @@ Streams define the schema of the data to sync, as well as how to read it from th
 A stream generally corresponds to a resource within the API. They are analogous to tables for a relational database source.
 
 A stream's schema will can defined as a [JSONSchema](https://json-schema.org/) file in `<source_connector_name>/schemas/<stream_name>.json`.
-More information on how to define a stream's schema can be found [here](../cdk-python/schemas.md)
+More information on how to define a stream's schema can be found [here](../source_schema.yaml)
 
 The schema of a stream object is:
 
@@ -46,7 +46,7 @@ Stream:
       type: integer
 ```
 
-More details on streams and sources can be found in the [basic concepts section](../cdk-python/basic-concepts.md).
+More details on streams and sources can be found in the [basic concepts section](../../cdk-python/basic-concepts.md).
 
 ### Data retriever
 
@@ -54,10 +54,10 @@ The data retriever defines how to read the data for a Stream and acts as an orch
 
 It is described by:
 
-1. [Requester](#configuring-the-requester): Describes how to submit requests to the API source
-2. [Paginator](#configuring-the-paginator): Describes how to navigate through the API's pages
-3. [Record selector](#configuring-the-paginator): Describes how to extract records from a HTTP response
-4. [Stream Slicer](./advanced-topics.md#stream-slicers): Describes how to partition the stream, enabling incremental syncs and checkpointing
+1. [Requester](./requester.md): Describes how to submit requests to the API source
+2. [Paginator](./pagination.md): Describes how to navigate through the API's pages
+3. [Record selector](./record-selector.md): Describes how to extract records from a HTTP response
+4. [Stream Slicer](./stream-slicers.md): Describes how to partition the stream, enabling incremental syncs and checkpointing
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
@@ -169,6 +169,6 @@ MinMaxDatetime:
       type: string
 ```
 
-More information on `DatetimeStreamSlicer` can be found in the [stream slicers](./advanced-topics.md#datetimestreamslicer) section.
+More information on `DatetimeStreamSlicer` can be found in the [stream slicers](./stream-slicers.md#datetimestreamslicer) section.
 
 ## More readings

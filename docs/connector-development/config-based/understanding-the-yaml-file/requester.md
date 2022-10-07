@@ -6,9 +6,9 @@ There is currently only one implementation, the `HttpRequester`, which is define
 1. A base url: The root of the API source
 2. A path: The specific endpoint to fetch data from for a resource
 3. The HTTP method: the HTTP method to use (GET or POST)
-4. [A request options provider](#request-options-provider): Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
-5. [An authenticator](#configuring-the-authentication): Defines how to authenticate to the source
-6. [An error handler](./advanced-topics.md#error-handling): Defines how to handle errors
+4. [A request options provider](./request-options.md#request-options-provider): Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
+5. [An authenticator](./authentication.md): Defines how to authenticate to the source
+6. [An error handler](./error-handling.md): Defines how to handle errors
 
 The schema of a request object is:
 
@@ -59,4 +59,4 @@ HttpMethod:
 The primary way to set request parameters and headers is to define them as key-value pairs using a `RequestOptionsProvider`.
 Other components, such as an `Authenticator` can also set additional request params or headers as needed.
 
-Additionally, some stateful components using a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](#configuring-the-paginator) and [Stream slicers](./advanced-topics.md#stream-slicers).
+Additionally, some stateful components using a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](./pagination.md) and [Stream slicers](./stream-slicers.md).
