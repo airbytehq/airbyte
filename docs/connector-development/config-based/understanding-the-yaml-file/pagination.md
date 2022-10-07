@@ -15,7 +15,7 @@ Paginator:
     - "$ref": "#/definitions/DefaultPaginator"
 ```
 
-### Default paginator
+## Default paginator
 
 The default paginator is defined by
 
@@ -54,7 +54,7 @@ DefaultPaginator:
 2. Offset increment
 3. Cursor-based
 
-### Pagination Strategies
+## Pagination Strategies
 
 Schema:
 
@@ -67,7 +67,7 @@ PaginationStrategy:
     - "$ref": "#/definitions/PageIncrement"
 ```
 
-#### Page increment
+### Page increment
 
 When using the `PageIncrement` strategy, the page number will be set as part of the `page_token_option`.
 
@@ -111,7 +111,7 @@ Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_d
 the first request will be sent as `https://cloud.airbyte.com/api/get_data?page_size=5&page=0`
 and the second request as `https://cloud.airbyte.com/api/get_data?page_size=5&page=1`,
 
-#### Offset increment
+### Offset increment
 
 When using the `OffsetIncrement` strategy, the number of records read will be set as part of the `page_token_option`.
 
@@ -152,7 +152,7 @@ Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_d
 the first request will be sent as `https://cloud.airbyte.com/api/get_data?page_size=5&offset=0`
 and the second request as `https://cloud.airbyte.com/api/get_data?page_size=5&offset=5`,
 
-#### Cursor
+### Cursor
 
 The `CursorPaginationStrategy` outputs a token by evaluating its `cursor_value` string with the following parameters:
 
@@ -183,7 +183,7 @@ CursorPaginationStrategy:
       type: integer
 ```
 
-##### Cursor paginator in request parameters
+#### Cursor paginator in request parameters
 
 In this example, the next page of record is defined by setting the `from` request parameter to the id of the last record read:
 
@@ -204,7 +204,7 @@ the first request will be sent as `https://cloud.airbyte.com/api/get_data`.
 Assuming the id of the last record fetched is 1000,
 the next request will be sent as `https://cloud.airbyte.com/api/get_data?from=1000`.
 
-##### Cursor paginator in path
+#### Cursor paginator in path
 
 Some APIs directly point to the URL of the next page to fetch. In this example, the URL of the next page is extracted from the response headers:
 

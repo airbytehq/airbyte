@@ -51,11 +51,11 @@ DpathExtractor:
         type: string
 ```
 
-### Common recipes:
+## Common recipes:
 
 Here are some common patterns:
 
-#### Selecting the whole response
+### Selecting the whole response
 
 If the root of the response is an array containing the records, the records can be extracted using the following definition:
 
@@ -92,7 +92,7 @@ The selected records will be
 ]
 ```
 
-#### Selecting a field
+### Selecting a field
 
 Given a response body of the form
 
@@ -124,7 +124,7 @@ The selected records will be
 ]
 ```
 
-#### Selecting an inner field
+### Selecting an inner field
 
 Given a response body of the form
 
@@ -164,7 +164,7 @@ The selected records will be
 ]
 ```
 
-### Filtering records
+## Filtering records
 
 Records can be filtered by adding a record_filter to the selector.
 The expression in the filter will be evaluated to a boolean returning true if the record should be included.

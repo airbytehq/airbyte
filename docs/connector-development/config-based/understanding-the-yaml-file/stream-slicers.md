@@ -233,9 +233,7 @@ the resulting stream slices are
 ]
 ```
 
-[^1] This is a slight oversimplification. See [update cursor section](#cursor-update) for more details on how the cursor is updated.
-
-### SubstreamSlicer
+## SubstreamSlicer
 
 Substreams are streams that depend on the records on another stream
 
@@ -327,3 +325,5 @@ Nested streams, subresources, or streams that depend on other streams can be imp
 
 - [Incremental streams](../../cdk-python/incremental-stream.md)
 - [Stream slices](../../cdk-python/stream-slices.md)
+
+[^1] This is a slight oversimplification. See [update cursor section](#cursor-update) for more details on how the cursor is updated.

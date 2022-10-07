@@ -23,7 +23,7 @@ BackoffStrategy:
     - "$ref": "#/definitions/WaitUntilTimeFromHeader"
 ```
 
-### Default error handler
+## Default error handler
 
 Schema:
 
@@ -50,9 +50,9 @@ DefaultErrorHandler:
       default: [ ]
 ```
 
-### Defining errors
+## Defining errors
 
-#### From status code
+### From status code
 
 Response filters can be used to define how to handle requests resulting in responses with a specific HTTP status code.
 For instance, this example will configure the handler to also retry responses with 404 error:
@@ -111,7 +111,7 @@ requester:
           action: IGNORE
 ```
 
-#### From error message
+### From error message
 
 Errors can also be defined by parsing the error message.
 For instance, this error handler will ignore responses if the error message contains the string "ignorethisresponse"
@@ -154,11 +154,11 @@ requester:
                     action: RETRY
 ```
 
-### Backoff Strategies
+## Backoff Strategies
 
 The error handler supports a few backoff strategies, which are described in the following sections.
 
-#### Exponential backoff
+### Exponential backoff
 
 This is the default backoff strategy. The requester will backoff with an exponential backoff interval
 
@@ -176,7 +176,7 @@ Schema:
         default: 5
 ```
 
-#### Constant Backoff
+### Constant Backoff
 
 When using the `ConstantBackoffStrategy`, the requester will backoff with a constant interval.
 
@@ -195,7 +195,7 @@ Schema:
         type: number
 ```
 
-#### Wait time defined in header
+### Wait time defined in header
 
 When using the `WaitTimeFromHeaderBackoffStrategy`, the requester will backoff by an interval specified in the response header.
 In this example, the requester will backoff by the response's "wait_time" header value:
@@ -244,7 +244,7 @@ requester:
           regex: "[-+]?\d+"
 ```
 
-#### Wait until time defined in header
+### Wait until time defined in header
 
 When using the `WaitUntilTimeFromHeaderBackoffStrategy`, the requester will backoff until the time specified in the response header.
 In this example, the requester will wait until the time specified in the "wait_until" header value:
@@ -284,7 +284,7 @@ requester:
 
 The strategy accepts an optional regular expression to extract the time from the header value, and a minimum time to wait.
 
-### Advanced error handling
+## Advanced error handling
 
 The error handler can have multiple backoff strategies, allowing it to fallback if a strategy cannot be evaluated.
 For instance, the following defines an error handler that will read the backoff time from a header, and default to a constant backoff if the wait time could not be extracted from the response:
