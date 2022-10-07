@@ -10,7 +10,7 @@ interface NumberBadgeProps {
 }
 
 export const NumberBadge: React.FC<NumberBadgeProps> = ({ value, color, "aria-label": ariaLabel }) => {
-  const imageCircleClassnames = classnames(styles.circle, {
+  const numberBadgeClassnames = classnames(styles.circle, {
     [styles.darkBlue]: !color,
     [styles.green]: color === "green",
     [styles.red]: color === "red",
@@ -18,7 +18,7 @@ export const NumberBadge: React.FC<NumberBadgeProps> = ({ value, color, "aria-la
   });
 
   return (
-    <div className={imageCircleClassnames} aria-label={ariaLabel}>
+    <div className={numberBadgeClassnames} aria-label={ariaLabel}>
       <div className={styles.number}>{value}</div>
     </div>
   );

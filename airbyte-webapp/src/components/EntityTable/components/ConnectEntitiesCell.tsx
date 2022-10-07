@@ -48,9 +48,6 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
     return (
       <Content enabled={enabled}>
         <Count value={0} />
-        <div>
-          <p>No connections.</p>
-        </div>
       </Content>
     );
   }
