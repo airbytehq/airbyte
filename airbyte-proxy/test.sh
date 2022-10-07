@@ -31,7 +31,7 @@ if [[ $RESPONSE == *"401 Unauthorized"* ]]; then
   echo "✔️  access without auth blocked"
 else
   echo "Auth not working"
-  exit 0
+  exit 1
 fi
 
 echo "Testing access with auth"
@@ -40,7 +40,7 @@ if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access with auth worked"
 else
   echo "Auth not working"
-  exit 0
+  exit 1
 fi
 
 stop_container;
@@ -54,7 +54,7 @@ if [[ $RESPONSE == *"401 Unauthorized"* ]]; then
   echo "✔️  access with original auth blocked"
 else
   echo "Auth not working"
-  exit 0
+  exit 1
 fi
 
 echo "Testing access updated auth"
@@ -63,7 +63,7 @@ if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access with updated auth worked"
 else
   echo "Auth not working"
-  exit 0
+  exit 1
 fi
 
 stop_container;
@@ -77,7 +77,7 @@ if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access without auth allowed when configured"
 else
   echo "Auth not working"
-  exit 0
+  exit 1
 fi
 
 stop_container;
