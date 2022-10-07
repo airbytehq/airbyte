@@ -13,7 +13,7 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 * Improved the visibility button behavior for the password input field. This ensures that passwords are always submitted as sensitive fields. [#16011](https://github.com/airbytehq/airbyte/pull/16011)
 * Improved Sync History page performance by adding the **Load more** button, which you can click to display previous syncs. [#15938](https://github.com/airbytehq/airbyte/pull/15938)
 * Improved the validation error that displays when submitting an incomplete ServiceForm. [#15625](https://github.com/airbytehq/airbyte/pull/15625)
-* Improved the source-defined cursors and primary key by adding a tooltip, which displays the full cursor or primary key when you hover over them. [#16116](https://github.com/airbytehq/airbyte/pull/16116)
+* Improved the source-defined cursor and primary key by adding a tooltip, which displays the full cursor or primary key when you hover over them. [#16116](https://github.com/airbytehq/airbyte/pull/16116)
 * Improved Airbyte Cloud’s method of updating source and destination definitions by using `airbyte-cron` to schedule updates. This allows us to keep connectors updated as the catalog changes. [#16438](https://github.com/airbytehq/airbyte/pull/16438)
 * Improved the speed that workspace connections are listed. [#17004](https://github.com/airbytehq/airbyte/pull/17004)
 
