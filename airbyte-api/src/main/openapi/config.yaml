@@ -2040,7 +2040,13 @@ paths:
     post:
       tags:
         - web_backend
-      summary: Returns two-letter country codes that can be selected for running data syncs in a particular geography.
+      description:
+        Returns all available geographies in which a data sync can run.
+      summary: |
+        Returns available geographies can be selected to run data syncs in a particular geography. 
+        The 'auto' entry indicates that the sync will be automatically assigned to a geography according 
+        to the platform default behavior. Entries other than 'auto' are two-letter country codes that 
+        follow the ISO 3166-1 alpha-2 standard.
       operationId: webBackendListGeographies
       responses:
         "200":

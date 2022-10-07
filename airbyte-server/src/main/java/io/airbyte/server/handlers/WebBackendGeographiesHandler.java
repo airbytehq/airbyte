@@ -16,7 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 public class WebBackendGeographiesHandler {
 
   public WebBackendGeographiesListResult listGeographiesOSS() {
-    // for now, OSS only supports AUTO. This can evolve to account for complex OSS use cases
+    // for now, OSS only supports AUTO. This can evolve to account for complex OSS use cases, but for now
+    // we expect OSS deployments to use a single default Task Queue for scheduling syncs in a vast majority of cases.
     return new WebBackendGeographiesListResult().geographies(
         Collections.singletonList(Geography.AUTO));
   }
