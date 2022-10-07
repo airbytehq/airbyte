@@ -13,8 +13,6 @@ required:
   - streamStats
   - replicationStartTime
   - replicationEndTime
-  - normalizationStartTime
-  - normalizationEndTime
   - sourceReadStartTime
   - sourceReadEndTime
   - destinationWriteStartTime

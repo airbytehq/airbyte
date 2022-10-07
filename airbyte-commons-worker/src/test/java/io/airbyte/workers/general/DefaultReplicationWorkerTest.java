@@ -536,9 +536,10 @@ class DefaultReplicationWorkerTest {
             Jsons.jsonNode(actual));
     assertTrue(validate.isEmpty(), "Validation errors: " + Strings.join(validate, ","));
 
-    // remove times so we can do the rest of the object <> object comparison.
-    actual.getReplicationAttemptSummary().withStartTime(null);
-    actual.getReplicationAttemptSummary().withEndTime(null);
+    // remove times, so we can do the rest of the object <> object comparison.
+    actual.getReplicationAttemptSummary().withStartTime(null).withEndTime(null).withReplicationStartTime(null).withReplicationEndTime(null)
+        .withNormalizationStartTime(null).withNormalizationEndTime(null).withSourceReadStartTime(null).withSourceReadEndTime(null)
+        .withDestinationWriteStartTime(null).withDestinationWriteEndTime(null);
 
     assertEquals(replicationOutput, actual);
   }
