@@ -87,38 +87,9 @@ components:
                       items:
                         $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteMessage"
                     request:
-                      type: object
-                      description: The HTTP request sent to the source API for this page
-                      required:
-                        - url
-                      properties:
-                        url:
-                          type: string
-                          description: URL that the request was sent to
-                        parameters:
-                          type: object
-                          description: The request parameters that were set on the HTTP request, if any
-                        body:
-                          type: object
-                          description: The body of the HTTP request, if present
-                        headers:
-                          type: object
-                          description: The headers of the HTTP request, if any
+                      $ref: "#/components/schemas/HttpRequest"
                     response:
-                      type: object
-                      description: The response from the source API for this page
-                      required:
-                        - status
-                      properties:
-                        status:
-                          type: integer
-                          description: The status of the response
-                        body:
-                          type: object
-                          description: The body of the HTTP response, if present
-                        headers:
-                          type: object
-                          description: The headers of the HTTP response, if any
+                      $ref: "#/components/schemas/HttpResponse"
     StreamReadRequestBody:
       type: object
       required:
@@ -138,6 +109,37 @@ components:
         state:
           type: object
           description: State blob to use for incremental streams
+    HttpRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          description: URL that the request was sent to
+        parameters:
+          type: object
+          description: The request parameters that were set on the HTTP request, if any
+        body:
+          type: object
+          description: The body of the HTTP request, if present
+        headers:
+          type: object
+          description: The headers of the HTTP request, if any
+    HttpResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: integer
+          description: The status of the response
+        body:
+          type: object
+          description: The body of the HTTP response, if present
+        headers:
+          type: object
+          description: The headers of the HTTP response, if any
     ConnectorDefinitionBody:
       $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
     AirbyteProtocol:
