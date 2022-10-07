@@ -1,28 +1,27 @@
 # Timely
 
-This page contains the setup guide and reference information for the Asana source connector.
+This page contains the setup guide and reference information for the Timely source connector.
 
 ## Prerequisites
 
-Please follow these [steps](https://dev.timelyapp.com/#authorization) to obtain Bearer Token for your account.
+1. Please follow these [steps](https://dev.timelyapp.com/#authorization) to obtain `Bearer_token` for your account. <br>
+2. Login into your `https://app.timelyapp.com` portal, fetch the `account-id` present in the URL. <br>
+   URL `https://app.timelyapp.com/12345/calendar` <br>
+   account-id `12345` <br>
+3. Get a start-date to your events. <br>
+   Dateformat `YYYY-MM-DD`
 
 ## Setup guide
-## Step 1: Set up the Asana connector in Airbyte
-
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Asana connector and select **Asana** from the Source type dropdown.
-4. Select `Authenticate your account`.
-5. Log in and Authorize to the Asana account and click `Set up source`.
+## Step 1: Set up the Timely connector in Airbyte
 
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard
-2. Set the name for your source 
-3. Enter your `personal_access_token`
-4. Click **Set up source**
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the Timely connector and select **Timely** from the Source type dropdown.
+4. Enter your `Bearer_token`, `account-id`, and `start-date`.
+5. Select `Authenticate your account`.
+6. Click **Set up source**
 
 ## Supported sync modes
 
@@ -32,24 +31,8 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | No         |
-| Namespaces        | No         |
 
-
-
-
----
-description: 'This connector extracts "events" from Timely'
----
-
-# Timely
-
-Timely can track time spent in every web and desktop app automatically for you. Get a precise daily record of all the time you spend in documents, meetings, emails, websites and video calls with zero effort.[Timely APIs](https://dev.timelyapp.com/).
-
-Timely uses [Events](https://dev.timelyapp.com/#events) to store all the entries a user makes. Users can add, delete and edit all entries. Some user’s actions are restricted based on their access level in Timely.
-
-# Timely credentials
-
-You should be able to create a Timely `Bearer Token` as described in [Intro to the Timely API](https://dev.timelyapp.com/#authorization)
+## Changelog
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
