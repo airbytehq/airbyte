@@ -6,6 +6,7 @@ import styled from "styled-components";
 import { Switch } from "components/ui/Switch";
 
 import { Action, Namespace } from "core/analytics";
+import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { buildConnectionUpdate } from "core/domain/connection";
 import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -31,11 +32,10 @@ const Content = styled.div`
 interface EnabledControlProps {
   connection: WebBackendConnectionRead;
   disabled?: boolean;
-  frequencyType?: string;
   onStatusUpdating?: (updating: boolean) => void;
 }
 
-const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyType, onStatusUpdating }) => {
+const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, onStatusUpdating }) => {
   const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
   const analyticsService = useAnalyticsService();
 
@@ -54,7 +54,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequencyType,
+      frequency: getFrequencyFromScheduleData(connection.scheduleData),
     });
   };
 
