@@ -57,37 +57,20 @@ interface CreateConnectionProps {
   sourceCatalogId: string | undefined;
 }
 
-function useWebConnectionService() {
+export const useWebConnectionService = () => {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
     () => new WebBackendConnectionService(config.apiUrl, middlewares),
     [config.apiUrl, middlewares]
   );
-}
+};
 
 export function useConnectionService() {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(() => new ConnectionService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
 }
-
-export const useConnectionLoad = (
-  connectionId: string
-): {
-  connection: WebBackendConnectionRead;
-  refreshConnectionCatalog: () => Promise<WebBackendConnectionRead>;
-} => {
-  const connection = useGetConnection(connectionId);
-  const connectionService = useWebConnectionService();
-
-  const refreshConnectionCatalog = async () => await connectionService.getConnection(connectionId, true);
-
-  return {
-    connection,
-    refreshConnectionCatalog,
-  };
-};
 
 export const useSyncConnection = () => {
   const service = useConnectionService();

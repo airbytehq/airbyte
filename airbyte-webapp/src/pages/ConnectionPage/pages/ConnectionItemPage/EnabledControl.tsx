@@ -1,16 +1,15 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useUpdateEffect } from "react-use";
+import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
 import { Switch } from "components/ui/Switch";
 
 import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
-import { buildConnectionUpdate } from "core/domain/connection";
-import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { useUpdateConnection } from "hooks/services/useConnectionHook";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -30,21 +29,19 @@ const Content = styled.div`
 `;
 
 interface EnabledControlProps {
-  connection: WebBackendConnectionRead;
   disabled?: boolean;
-  onStatusUpdating?: (updating: boolean) => void;
 }
 
-const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, onStatusUpdating }) => {
-  const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
+const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
   const analyticsService = useAnalyticsService();
 
-  const onChangeStatus = async () => {
-    await updateConnection(
-      buildConnectionUpdate(connection, {
-        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
-      })
-    );
+  const { connection, updateConnection, connectionUpdating } = useConnectionEditService();
+
+  const [{ loading }, onChangeStatus] = useAsyncFn(async () => {
+    await updateConnection({
+      connectionId: connection.connectionId,
+      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
+    });
 
     const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
 
@@ -56,11 +53,16 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, o
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       frequency: getFrequencyFromScheduleData(connection.scheduleData),
     });
-  };
-
-  useUpdateEffect(() => {
-    onStatusUpdating?.(isLoading);
-  }, [isLoading]);
+  }, [
+    analyticsService,
+    connection.connectionId,
+    connection.destination?.destinationDefinitionId,
+    connection.destination?.destinationName,
+    connection.source?.sourceDefinitionId,
+    connection.source?.sourceName,
+    connection.status,
+    updateConnection,
+  ]);
 
   return (
     <Content>
@@ -68,10 +70,10 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, o
         <FormattedMessage id={connection.status === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
       </ToggleLabel>
       <Switch
-        disabled={disabled}
+        disabled={disabled || connectionUpdating}
         onChange={onChangeStatus}
         checked={connection.status === ConnectionStatus.active}
-        loading={isLoading}
+        loading={loading}
         id="toggle-enabled-source"
       />
     </Content>
