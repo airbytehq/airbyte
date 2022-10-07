@@ -43,8 +43,6 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -139,30 +137,19 @@ public class WebBackendConnectionsHandler {
   }
 
   private Map<UUID, SourceRead> getSourceReadById(final List<UUID> sourceIds) throws IOException {
-    final Map<UUID, StandardSourceDefinition> sourceDefinitionsById = configRepository
-        .getSourceDefinitionsFromSourceIds(sourceIds)
+    final List<SourceRead> sourceReads = configRepository.getSourceAndDefinitionsFromSourceIds(sourceIds)
         .stream()
-        .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, Function.identity()));
-
-    final List<SourceRead> sourceReads = configRepository.getSourceConnections(sourceIds).stream()
-        .map(sourceConnection -> SourceHandler.toSourceRead(
-            sourceConnection,
-            sourceDefinitionsById.get(sourceConnection.getSourceDefinitionId())))
+        .map(sourceAndDefinition -> SourceHandler.toSourceRead(sourceAndDefinition.source(), sourceAndDefinition.definition()))
         .toList();
 
     return sourceReads.stream().collect(Collectors.toMap(SourceRead::getSourceId, Function.identity()));
   }
 
   private Map<UUID, DestinationRead> getDestinationReadById(final List<UUID> destinationIds) throws IOException {
-    final Map<UUID, StandardDestinationDefinition> destinationDefinitionsById = configRepository
-        .getDestinationDefinitionsFromDestinationIds(destinationIds)
+    final List<DestinationRead> destinationReads = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds)
         .stream()
-        .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, Function.identity()));
-
-    final List<DestinationRead> destinationReads = configRepository.getDestinationConnections(destinationIds).stream()
-        .map(destinationConnection -> DestinationHandler.toDestinationRead(
-            destinationConnection,
-            destinationDefinitionsById.get(destinationConnection.getDestinationDefinitionId())))
+        .map(destinationAndDefinition ->
+            DestinationHandler.toDestinationRead(destinationAndDefinition.destination(), destinationAndDefinition.definition()))
         .toList();
 
     return destinationReads.stream().collect(Collectors.toMap(DestinationRead::getDestinationId, Function.identity()));

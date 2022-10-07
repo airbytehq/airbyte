@@ -26,6 +26,8 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
@@ -208,7 +210,7 @@ class ConfigRepositoryE2EReadWriteTest {
       final var expected = expectedSyncs.stream().filter(s -> s.getConnectionId().equals(actual.getConnectionId())).findFirst().orElseThrow();
 
       // operationIds can wind up in a different order, so validate them separately
-      assertThat(expected.getOperationIds()).hasSameElementsAs(actual.getOperationIds());
+      assertThat(actual.getOperationIds()).hasSameElementsAs(expected.getOperationIds());
 
       // now, clear operationIds so the rest of the sync can be compared
       expected.setOperationIds(null);
@@ -432,7 +434,7 @@ class ConfigRepositoryE2EReadWriteTest {
       final var expected = expectedSyncs.stream().filter(s -> s.getConnectionId().equals(actual.getConnectionId())).findFirst().orElseThrow();
 
       // operationIds can wind up in a different order, so validate them separately
-      assertThat(expected.getOperationIds()).hasSameElementsAs(actual.getOperationIds());
+      assertThat(actual.getOperationIds()).hasSameElementsAs(expected.getOperationIds());
 
       // now, clear operationIds so the rest of the sync can be compared
       expected.setOperationIds(null);
@@ -458,6 +460,30 @@ class ConfigRepositoryE2EReadWriteTest {
         }
       }
     }
+  }
+
+  @Test
+  void testGetSourceAndDefinitionsFromSourceIds() throws IOException {
+    final List<UUID> sourceIds = MockData.sourceConnections().subList(0, 2).stream().map(SourceConnection::getSourceId).toList();
+
+    final List<SourceAndDefinition> expected = List.of(
+        new SourceAndDefinition(MockData.sourceConnections().get(0), MockData.standardSourceDefinitions().get(0)),
+        new SourceAndDefinition(MockData.sourceConnections().get(1), MockData.standardSourceDefinitions().get(1)));
+
+    final List<SourceAndDefinition> actual = configRepository.getSourceAndDefinitionsFromSourceIds(sourceIds);
+    assertThat(actual).hasSameElementsAs(expected);
+  }
+
+  @Test
+  void testGetDestinationAndDefinitionsFromDestinationIds() throws IOException {
+    final List<UUID> destinationIds = MockData.destinationConnections().subList(0, 2).stream().map(DestinationConnection::getDestinationId).toList();
+
+    final List<DestinationAndDefinition> expected = List.of(
+        new DestinationAndDefinition(MockData.destinationConnections().get(0), MockData.standardDestinationDefinitions().get(0)),
+        new DestinationAndDefinition(MockData.destinationConnections().get(1), MockData.standardDestinationDefinitions().get(1)));
+
+    final List<DestinationAndDefinition> actual = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds);
+    assertThat(actual).hasSameElementsAs(expected);
   }
 
 }

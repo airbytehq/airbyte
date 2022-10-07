@@ -829,66 +829,55 @@ public class ConfigRepository {
     return result;
   }
 
-  public List<SourceConnection> getSourceConnections(final List<UUID> sourceIds) throws IOException {
-    return database.query(ctx -> getSourceConnections(sourceIds, ctx));
+  // Data-carrier records to hold combined result of query for a Source or Destination and its corresponding Definition. This enables the API layer to
+  // process combined information about a Source/Destination/Definition pair without requiring two separate queries and in-memory join operation,
+  // because the config models are grouped immediately in the repository layer.
+  public record SourceAndDefinition(SourceConnection source, StandardSourceDefinition definition) {
+
   }
 
-  public List<SourceConnection> getSourceConnections(final List<UUID> sourceIds, final DSLContext ctx) {
-    final Result<Record> records = ctx
-        .select(asterisk())
+  public record DestinationAndDefinition(DestinationConnection destination, StandardDestinationDefinition definition) {
+
+  }
+
+  public List<SourceAndDefinition> getSourceAndDefinitionsFromSourceIds(final List<UUID> sourceIds) throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx
+        .select(ACTOR.asterisk(), ACTOR_DEFINITION.asterisk())
         .from(ACTOR)
+        .join(ACTOR_DEFINITION)
+        .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.source), ACTOR.ID.in(sourceIds))
-        .fetch();
+        .fetch());
 
-    return records.stream().map(DbConverter::buildSourceConnection).toList();
+    final List<SourceAndDefinition> sourceAndDefinitions = new ArrayList<>();
+
+    for (final Record record : records) {
+      final SourceConnection source = DbConverter.buildSourceConnection(record);
+      final StandardSourceDefinition definition = DbConverter.buildStandardSourceDefinition(record);
+      sourceAndDefinitions.add(new SourceAndDefinition(source, definition));
+    }
+
+    return sourceAndDefinitions;
   }
 
-  public List<DestinationConnection> getDestinationConnections(final List<UUID> destinationIds) throws IOException {
-    return database.query(ctx -> getDestinationConnections(destinationIds, ctx));
-  }
-
-  public List<DestinationConnection> getDestinationConnections(final List<UUID> destinationIds, final DSLContext ctx) {
-    final Result<Record> records = ctx
-        .select(asterisk())
+  public List<DestinationAndDefinition> getDestinationAndDefinitionsFromDestinationIds(final List<UUID> destinationIds) throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx
+        .select(ACTOR.asterisk(), ACTOR_DEFINITION.asterisk())
         .from(ACTOR)
+        .join(ACTOR_DEFINITION)
+        .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination), ACTOR.ID.in(destinationIds))
-        .fetch();
+        .fetch());
 
-    return records.stream().map(DbConverter::buildDestinationConnection).toList();
-  }
+    final List<DestinationAndDefinition> destinationAndDefinitions = new ArrayList<>();
 
-  public List<StandardSourceDefinition> getSourceDefinitionsFromSourceIds(final List<UUID> sourceIds)
-      throws IOException {
-    return database.query(ctx -> getSourceDefinitionsFromSourceIds(sourceIds, ctx));
-  }
+    for (final Record record : records) {
+      final DestinationConnection destination = DbConverter.buildDestinationConnection(record);
+      final StandardDestinationDefinition definition = DbConverter.buildStandardDestinationDefinition(record);
+      destinationAndDefinitions.add(new DestinationAndDefinition(destination, definition));
+    }
 
-  public List<StandardSourceDefinition> getSourceDefinitionsFromSourceIds(final List<UUID> sourceIds, final DSLContext ctx) {
-    final Result<Record> records = ctx
-        .select(asterisk())
-        .from(ACTOR_DEFINITION)
-        .join(ACTOR)
-        .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
-        .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source), ACTOR.ID.in(sourceIds))
-        .fetch();
-
-    return records.stream().map(DbConverter::buildStandardSourceDefinition).toList();
-  }
-
-  public List<StandardDestinationDefinition> getDestinationDefinitionsFromDestinationIds(final List<UUID> destinationIds)
-      throws IOException {
-    return database.query(ctx -> getDestinationDefinitionsFromDestinationIds(destinationIds, ctx));
-  }
-
-  public List<StandardDestinationDefinition> getDestinationDefinitionsFromDestinationIds(final List<UUID> destinationIds, final DSLContext ctx) {
-    final Result<Record> records = ctx
-        .select(asterisk())
-        .from(ACTOR_DEFINITION)
-        .join(ACTOR)
-        .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
-        .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination), ACTOR.ID.in(destinationIds))
-        .fetch();
-
-    return records.stream().map(DbConverter::buildStandardDestinationDefinition).toList();
+    return destinationAndDefinitions;
   }
 
   public ActorCatalog getActorCatalogById(final UUID actorCatalogId)

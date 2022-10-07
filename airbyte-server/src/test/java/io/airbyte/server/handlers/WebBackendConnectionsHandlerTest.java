@@ -72,6 +72,8 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -148,10 +150,10 @@ class WebBackendConnectionsHandlerTest {
         eventRunner,
         configRepository);
 
-    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
-    standardSourceDefinition.setIcon(SOURCE_ICON);
-    final SourceConnection source = SourceHelpers.generateSource(standardSourceDefinition.getSourceDefinitionId());
-    sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
+    final StandardSourceDefinition sourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
+    sourceDefinition.setIcon(SOURCE_ICON);
+    final SourceConnection source = SourceHelpers.generateSource(sourceDefinition.getSourceDefinitionId());
+    sourceRead = SourceHelpers.getSourceRead(source, sourceDefinition);
 
     final StandardDestinationDefinition destinationDefinition = DestinationDefinitionHelpers.generateDestination();
     destinationDefinition.setIcon(DESTINATION_ICON);
@@ -161,14 +163,10 @@ class WebBackendConnectionsHandlerTest {
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId());
     when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
         .thenReturn(Collections.singletonList(standardSync));
-    when(configRepository.getSourceConnections(Collections.singletonList(source.getSourceId())))
-        .thenReturn(Collections.singletonList(source));
-    when(configRepository.getDestinationConnections(Collections.singletonList(destination.getDestinationId())))
-        .thenReturn(Collections.singletonList(destination));
-    when(configRepository.getSourceDefinitionsFromSourceIds(Collections.singletonList(source.getSourceId())))
-        .thenReturn(Collections.singletonList(standardSourceDefinition));
-    when(configRepository.getDestinationDefinitionsFromDestinationIds(Collections.singletonList(destination.getDestinationId())))
-        .thenReturn(Collections.singletonList(destinationDefinition));
+    when(configRepository.getSourceAndDefinitionsFromSourceIds(Collections.singletonList(source.getSourceId())))
+        .thenReturn(Collections.singletonList(new SourceAndDefinition(source, sourceDefinition)));
+    when(configRepository.getDestinationAndDefinitionsFromDestinationIds(Collections.singletonList(destination.getDestinationId())))
+        .thenReturn(Collections.singletonList(new DestinationAndDefinition(destination, destinationDefinition)));
 
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
     operationReadList = new OperationReadList()
