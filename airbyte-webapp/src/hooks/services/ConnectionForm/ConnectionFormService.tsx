@@ -12,6 +12,7 @@ import {
   useInitialValues,
 } from "views/Connection/ConnectionForm/formConfig";
 
+import { useUniqueFormId } from "../FormChangeTracker";
 import { ValuesProps } from "../useConnectionHook";
 import { SchemaError } from "../useSourceHook";
 
@@ -54,6 +55,7 @@ const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: Con
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
   const { formatMessage } = useIntl();
   const [submitError, setSubmitError] = useState<FormError | null>(null);
+  const formId = useUniqueFormId();
 
   const getErrorMessage = useCallback(
     (formValid: boolean, connectionDirty: boolean) =>
@@ -71,6 +73,7 @@ const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: Con
     destDefinition,
     initialValues,
     schemaError,
+    formId,
     setSubmitError,
     getErrorMessage,
     refreshSchema,

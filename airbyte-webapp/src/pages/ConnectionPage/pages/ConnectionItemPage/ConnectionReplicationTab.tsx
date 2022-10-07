@@ -3,11 +3,10 @@ import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { SchemaError } from "components/CreateConnection/SchemaError";
-import { FormChangeTracker } from "components/FormChangeTracker";
 import LoadingSchema from "components/LoadingSchema";
 
-import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
+import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { PageTrackingCodes, useAnalyticsService, useTrackPage } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
@@ -15,7 +14,6 @@ import {
   tidyConnectionFormValues,
   useConnectionFormService,
 } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
@@ -38,7 +36,6 @@ export const ConnectionReplicationTab: React.FC = () => {
 
   const [saved, setSaved] = useState(false);
 
-  const formId = useUniqueFormId();
   const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, setSchemaHasBeenRefreshed } =
     useConnectionEditService();
   const { initialValues, mode, schemaError, getErrorMessage, setSubmitError } = useConnectionFormService();
@@ -67,7 +64,7 @@ export const ConnectionReplicationTab: React.FC = () => {
           connector_source_definition_id: connection.source.sourceDefinitionId,
           connector_destination: connection.destination.destinationName,
           connector_destination_definition_id: connection.destination.destinationDefinitionId,
-          frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
+          frequency: getFrequencyFromScheduleData(connection.scheduleData),
         });
       }
     },
@@ -156,7 +153,6 @@ export const ConnectionReplicationTab: React.FC = () => {
         >
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
             <Form>
-              <FormChangeTracker changed={dirty} formId={formId} />
               <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
               <EditControls
                 isSubmitting={isSubmitting}

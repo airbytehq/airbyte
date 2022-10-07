@@ -104,7 +104,7 @@
 - name: BambooHR
   sourceDefinitionId: 90916976-a132-4ce9-8bce-82a03dd58788
   dockerRepository: airbyte/source-bamboo-hr
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/bamboo-hr
   icon: bamboohr.svg
   sourceType: api
@@ -508,7 +508,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/iterable
   icon: iterable.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Jenkins
   sourceDefinitionId: d6f73702-d7a0-4e95-9758-b0fb1af0bfba
   dockerRepository: farosai/airbyte-jenkins-source
@@ -662,7 +662,7 @@
 - name: MongoDb
   sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerRepository: airbyte/source-mongodb-v2
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
   icon: mongodb.svg
   sourceType: database

@@ -5,8 +5,8 @@ import styled from "styled-components";
 
 import { Switch } from "components/ui/Switch";
 
-import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
+import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
@@ -36,7 +36,6 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
   const analyticsService = useAnalyticsService();
 
   const { connection, updateConnection, connectionUpdating } = useConnectionEditService();
-  const frequencyType = getFrequencyType(connection.scheduleData?.basicSchedule);
 
   const [{ loading }, onChangeStatus] = useAsyncFn(async () => {
     await updateConnection({
@@ -52,7 +51,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequencyType,
+      frequency: getFrequencyFromScheduleData(connection.scheduleData),
     });
   }, [
     analyticsService,
@@ -62,7 +61,6 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
     connection.source?.sourceDefinitionId,
     connection.source?.sourceName,
     connection.status,
-    frequencyType,
     updateConnection,
   ]);
 

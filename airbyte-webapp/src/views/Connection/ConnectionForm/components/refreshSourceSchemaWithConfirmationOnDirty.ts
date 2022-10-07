@@ -3,10 +3,12 @@ import { useUnmount } from "react-use";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 
 export const useRefreshSourceSchemaWithConfirmationOnDirty = (dirty: boolean) => {
+  const { clearFormChange } = useFormChangeTrackerService();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { refreshSchema } = useConnectionFormService();
+  const { formId, refreshSchema } = useConnectionFormService();
 
   useUnmount(() => {
     closeConfirmationModal();
@@ -20,11 +22,12 @@ export const useRefreshSourceSchemaWithConfirmationOnDirty = (dirty: boolean) =>
         submitButtonText: "connection.updateSchema.formChanged.confirm",
         onSubmit: () => {
           closeConfirmationModal();
+          clearFormChange(formId);
           refreshSchema();
         },
       });
     } else {
       refreshSchema();
     }
-  }, [closeConfirmationModal, dirty, openConfirmationModal, refreshSchema]);
+  }, [clearFormChange, closeConfirmationModal, dirty, formId, openConfirmationModal, refreshSchema]);
 };
