@@ -144,3 +144,9 @@ stream_slicer:
 ```
 
 More details on the stream slicers can be found in the [stream-slicers section](./stream-slicers.md).
+
+## More readings
+
+- [Requester](./requester.md)
+- [Pagination](./pagination.md)
+- [Stream slicers](./stream-slicers.md)

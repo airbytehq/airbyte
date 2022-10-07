@@ -258,7 +258,7 @@ Additional information on jinja templating can be found at [https://jinja.pallet
 
 ## Component schema reference
 
-A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json).
+A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](./source_schema.yaml).
 
 ## Custom components
 
@@ -303,3 +303,9 @@ pagination_strategy:
     3. Repeat for as long as the paginator points to a next page
 
 [connector-flow](./assets/connector-flow.png)
+
+## More readings
+
+- [Record selector](./understanding-the-yaml-file/record-selector.md)
+- [Stream slicers](./understanding-the-yaml-file/stream-slicers.md)
+- [Source schema](./source_schema.yaml)

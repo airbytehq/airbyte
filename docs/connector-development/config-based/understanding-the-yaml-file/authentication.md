@@ -186,3 +186,8 @@ authenticator:
   client_secret: "{{ config['client_secret'] }}"
   refresh_token: ""
 ```
+
+## More readings
+
+- [Requester](./requester.md)
+- [Request options](./request-options.md)

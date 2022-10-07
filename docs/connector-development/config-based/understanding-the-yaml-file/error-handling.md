@@ -343,3 +343,7 @@ requester:
         backoff_strategies:
           - type: "ExponentialBackoffStrategy"
 ```
+
+## More readings
+
+- [Requester](./requester.md)

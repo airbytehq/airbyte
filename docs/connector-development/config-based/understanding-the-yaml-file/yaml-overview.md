@@ -172,3 +172,6 @@ MinMaxDatetime:
 More information on `DatetimeStreamSlicer` can be found in the [stream slicers](./stream-slicers.md#datetimestreamslicer) section.
 
 ## More readings
+
+- [Requester](./requester.md)
+- [Stream slicers](./stream-slicers.md)
