@@ -57,7 +57,7 @@ export const ConnectionReplicationTab: React.FC = () => {
       });
 
       if (catalogHasChanged) {
-        // TODO: Move this into a useTrackChangedCatalog method (name pending) post Vlad's analytics hook work
+        // TODO (https://github.com/airbytehq/airbyte/issues/17666): Move this into a useTrackChangedCatalog method (name pending) post Vlad's analytics hook work
         analyticsService.track(Namespace.CONNECTION, Action.EDIT_SCHEMA, {
           actionDescription: "Connection saved with catalog changes",
           connector_source: connection.source.sourceName,
