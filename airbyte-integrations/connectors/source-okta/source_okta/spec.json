@@ -21,7 +21,7 @@
         "title": "Start Date"
       },
       "credentials": {
-        "title": "Authorization Method *",
+        "title": "Authorization Method",
         "type": "object",
         "oneOf": [
           {
