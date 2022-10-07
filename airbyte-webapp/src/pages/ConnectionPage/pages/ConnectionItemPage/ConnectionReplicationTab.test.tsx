@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { render, act, RenderResult } from "@testing-library/react";
+import { render as tlr, act } from "@testing-library/react";
 import { Suspense } from "react";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
@@ -28,6 +28,17 @@ describe("ConnectionReplicationTab", () => {
       </TestWrapper>
     </Suspense>
   );
+  const render = async () => {
+    let renderResult: ReturnType<typeof tlr>;
+    await act(async () => {
+      renderResult = tlr(
+        <Wrapper>
+          <ConnectionReplicationTab />
+        </Wrapper>
+      );
+    });
+    return renderResult!;
+  };
 
   const setupSpies = (getConnection?: () => Promise<void>) => {
     const getConnectionImpl: any = {
@@ -46,55 +57,31 @@ describe("ConnectionReplicationTab", () => {
   it("should render", async () => {
     setupSpies();
 
-    let renderResult: RenderResult;
-    await act(async () => {
-      renderResult = render(
-        <Wrapper>
-          <ConnectionReplicationTab />
-        </Wrapper>
-      );
-    });
-    expect(renderResult!.container).toMatchSnapshot();
+    const renderResult = await render();
+    expect(renderResult.container).toMatchSnapshot();
   });
 
   it("should show an error if there is a schemaError", async () => {
     setupSpies(() => Promise.reject("Test Error"));
 
-    let renderResult: RenderResult;
-    await act(async () => {
-      renderResult = render(
-        <Wrapper>
-          <ConnectionReplicationTab />
-        </Wrapper>
-      );
-    });
+    const renderResult = await render();
 
     await act(async () => {
-      renderResult!.queryByText("Refresh source schema")?.click();
+      renderResult.queryByText("Refresh source schema")?.click();
     });
-    expect(renderResult!.container).toMatchSnapshot();
+    expect(renderResult.container).toMatchSnapshot();
   });
 
   it("should show loading if the schema is refreshing", async () => {
     setupSpies();
 
-    let renderResult: RenderResult;
+    const renderResult = await render();
     await act(async () => {
-      renderResult = render(
-        <Wrapper>
-          <ConnectionReplicationTab />
-        </Wrapper>
-      );
+      renderResult.queryByText("Refresh source schema")?.click();
     });
 
     await act(async () => {
-      renderResult!.queryByText("Refresh source schema")?.click();
-    });
-
-    await act(async () => {
-      expect(
-        renderResult!.findByText("We are fetching the schema of your data source.", { exact: false })
-      ).toBeTruthy();
+      expect(renderResult.findByText("We are fetching the schema of your data source.", { exact: false })).toBeTruthy();
     });
   });
 });

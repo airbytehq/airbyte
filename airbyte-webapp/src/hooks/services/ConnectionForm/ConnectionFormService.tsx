@@ -35,7 +35,7 @@ export const tidyConnectionFormValues = (
   mode: ConnectionFormMode,
   operations?: OperationRead[]
 ): ValuesProps => {
-  // TODO: We should try to fix the types so we don't need the casting.
+  // TODO (https://github.com/airbytehq/airbyte/issues/17279): We should try to fix the types so we don't need the casting.
   const formValues: ConnectionFormValues = connectionValidationSchema(mode).cast(values, {
     context: { isRequest: true },
   }) as unknown as ConnectionFormValues;
