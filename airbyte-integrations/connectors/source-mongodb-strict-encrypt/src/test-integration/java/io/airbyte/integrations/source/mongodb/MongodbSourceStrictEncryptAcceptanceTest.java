@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Test;
 public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String DATABASE_NAME = "test";
-  private static final String COLLECTION_NAME = "acceptance_test";
+  private static final String COLLECTION_NAME = "acceptance_test1";
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
   private static final String INSTANCE_TYPE = "instance_type";
 
