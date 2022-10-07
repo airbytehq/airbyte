@@ -17,7 +17,6 @@ jest.mock("services/connector/DestinationDefinitionSpecificationService", () => 
   useGetDestinationDefinitionSpecification: () => mockDest,
 }));
 
-// TODO: This component needs more testing but it should be done VIA e2e and integration-style tests.
 describe("ConnectionReplicationTab", () => {
   const Wrapper: React.FC = ({ children }) => (
     <Suspense fallback={<div>I should not show up in a snapshot</div>}>

@@ -1,14 +1,15 @@
 import { useEffect } from "react";
 import { useIntl } from "react-intl";
 
-import { WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useModalService } from "hooks/services/Modal";
 
 import { CatalogDiffModal } from "./CatalogDiffModal";
 
-export const useConfirmCatalogDiff = (connection: WebBackendConnectionRead) => {
+export const useConfirmCatalogDiff = () => {
   const { formatMessage } = useIntl();
   const { openModal } = useModalService();
+  const { connection } = useConnectionEditService();
 
   useEffect(() => {
     // If we have a catalogDiff we always want to show the modal

@@ -138,7 +138,7 @@ export const ConnectionReplicationTab: React.FC = () => {
     ]
   );
 
-  useConfirmCatalogDiff(connection);
+  useConfirmCatalogDiff();
 
   return (
     <div className={styles.content}>
