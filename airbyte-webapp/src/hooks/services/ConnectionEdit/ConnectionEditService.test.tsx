@@ -25,7 +25,7 @@ jest.mock("../useConnectionHook", () => ({
   }),
 }));
 
-describe("ConnectionFormService", () => {
+describe("ConnectionEditService", () => {
   const Wrapper: React.FC<Parameters<typeof ConnectionEditServiceProvider>[0]> = ({ children, ...props }) => (
     <TestWrapper>
       <ConnectionEditServiceProvider {...props}>{children}</ConnectionEditServiceProvider>
