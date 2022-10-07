@@ -68,7 +68,7 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
         <SideBar />
         <div
           className={classNames(styles.content, {
-            [styles.alertBanner]: !!alertToShow,
+            [styles.alertBanner]: !!alertToShow && !showExperimentBanner,
             [styles.speedyConnectionBanner]: showExperimentBanner,
           })}
         >

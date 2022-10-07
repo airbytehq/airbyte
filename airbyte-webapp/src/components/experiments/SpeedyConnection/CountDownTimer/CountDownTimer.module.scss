@@ -1,11 +1,14 @@
 @use "../../../../scss/variables";
 @use "../../../../scss/colors";
 
-.flex {
+.countDownTimerContainer {
   display: flex;
   gap: variables.$spacing-md;
 }
 
-.textColorOrange {
+.countDownTimerItem {
   color: colors.$orange;
+  font-size: 16px;
+  line-height: 28px;
+  font-weight: 700;
 }

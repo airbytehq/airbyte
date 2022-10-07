@@ -8,6 +8,7 @@ import { Text } from "components/ui/Text";
 
 import { Action, Namespace } from "core/analytics";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { useExperiment } from "hooks/services/Experiment";
 import { StepType } from "pages/OnboardingPage/types";
 import { RoutePaths } from "pages/routePaths";
 
@@ -19,6 +20,7 @@ export const SpeedyConnectionBanner = () => {
   const { expiredOfferDate } = useExperimentSpeedyConnection();
   const analyticsService = useAnalyticsService();
   const location = useLocation();
+  const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
 
   return (
     <div className={classnames(styles.container)}>
@@ -34,7 +36,7 @@ export const SpeedyConnectionBanner = () => {
                 className={classNames(styles.linkCta, {
                   [styles.textDecorationNone]: location.pathname.includes("onboarding"),
                 })}
-                to={RoutePaths.Onboarding}
+                to={hideOnboardingExperiment ? RoutePaths.Connections : RoutePaths.Onboarding}
                 state={{
                   step: StepType.CREATE_SOURCE,
                 }}
