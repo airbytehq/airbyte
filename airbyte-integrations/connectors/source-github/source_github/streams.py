@@ -597,6 +597,7 @@ class Comments(IncrementalMixin, GithubStream):
 
     use_cache = True
     large_stream = True
+    max_retries = 7
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
