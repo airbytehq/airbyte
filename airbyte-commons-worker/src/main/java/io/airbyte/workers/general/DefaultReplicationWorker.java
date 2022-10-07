@@ -131,7 +131,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
     final long startTime = System.currentTimeMillis();
     final long replicationStartTime = startTime;
-    long replicationEndTime = -1;
+    long replicationEndTime;
     long sourceReadStartTime = -1;
     long destinationWriteStartTime = -1;
     final ThreadedTimeHolder timeHolder = new ThreadedTimeHolder();
