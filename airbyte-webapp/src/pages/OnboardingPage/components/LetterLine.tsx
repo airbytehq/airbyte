@@ -42,7 +42,6 @@ export const ExitAnimation = keyframes`
 const Line = styled.div<{ $onRight?: boolean }>`
   position: absolute;
   width: calc(50% - 275px);
-  z-index: 1;
   top: 345px;
   left: ${({ $onRight }) => ($onRight ? "calc(50% + 275px)" : 0)};
 `;

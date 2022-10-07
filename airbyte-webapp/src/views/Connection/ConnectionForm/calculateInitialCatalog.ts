@@ -119,13 +119,13 @@ const getOptimalSyncMode = (
 const calculateInitialCatalog = (
   schema: SyncSchema,
   supportedDestinationSyncModes: DestinationSyncMode[],
-  isEditMode?: boolean
+  isNotCreateMode?: boolean
 ): SyncSchema => ({
   streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
     const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
-    const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isEditMode || false);
+    const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isNotCreateMode || false);
 
-    if (isEditMode) {
+    if (isNotCreateMode) {
       return nodeStream;
     }
 
