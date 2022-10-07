@@ -32,13 +32,13 @@ Our security and reliability commitments are only applicable to Airbyte Cloud. A
 
 ### Network Security
 
-Deploy Airbyte Open Source in a private network or use a firewall to filter which IP addresses are allowed to access your host. Airbyte Open Source currently does not include any user management or role-based access controls (RBAC) to prevent unauthorized access to the API or UI, only a HTTP basic auth password. Controlling who has access to the hardware and network your Airbyte deployment runs on is your responsibility.
+Deploy Airbyte Open Source in a private network or use a firewall to filter which IP addresses are allowed to access your host. Airbyte Open Source currently does not include any user management or role-based access controls (RBAC) to prevent unauthorized access to the API or UI. Controlling who has access to the hardware and network your Airbyte deployment runs on is your responsibility.
 
 You can secure access to Airbyte using the following methods:
 
 - Deploy Airbyte in a private network or use a firewall to filter which IP is allowed to access your host.
 - Deploy Airbyte behind a reverse proxy and handle the access control on the reverse proxy side.
-- Update the default HTTP basic-auth username and password
+- Update the default username and password
 - If you deployed Airbyte on a cloud provider:
   - GCP: use the [Identity-Aware proxy](https://cloud.google.com/iap) service
   - AWS: use the [AWS Systems Manager Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html) service
