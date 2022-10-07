@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { act, renderHook } from "@testing-library/react-hooks";
 import React from "react";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
