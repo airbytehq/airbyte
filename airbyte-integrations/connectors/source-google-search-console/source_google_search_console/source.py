@@ -41,7 +41,17 @@ custom_reports_schema = {
 
 
 class SourceGoogleSearchConsole(AbstractSource):
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        authorization = config["authorization"]
+        if authorization["auth_type"] == "Service":
+            try:
+                authorization["service_account_info"] = json.loads(authorization["service_account_info"])
+            except ValueError:
+                raise Exception("authorization.service_account_info is not valid JSON")
+        return config
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        config = self._validate_and_transform(config)
         try:
             stream_kwargs = self.get_stream_kwargs(config)
             self.validate_site_urls(config, stream_kwargs)
@@ -137,8 +147,7 @@ class SourceGoogleSearchConsole(AbstractSource):
                 refresh_token=authorization["refresh_token"],
             )
         elif auth_type == "Service":
-            service_account_info = json.loads(authorization["service_account_info"])
             return ServiceAccountAuthenticator(
-                service_account_info=service_account_info,
+                service_account_info=authorization["service_account_info"],
                 email=authorization["email"],
             )
