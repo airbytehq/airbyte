@@ -7,7 +7,7 @@ connectionSpecification:
     - server_name
     - username
     - password
-    - forms
+    - form_id
   properties:
     server_name:
       type: string
@@ -25,8 +25,8 @@ connectionSpecification:
       description: Password to authenticate into the SurveyCTO server
       airbyte_secret: true
       order: 2
-    forms:
+    form_id:
       type: array
-      title: Form's ID
+      title: Form's Id
       description: Unique identifier for one of your forms
       order: 3

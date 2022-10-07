@@ -22,7 +22,7 @@ class SurveyctoStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
         self.server_name = config['server_name']
-        self.forms = config.get("forms", [])
+        self.form_id = config.get("form_id", [])
         #base64 encode username and password as auth token
         user_name_password = f"{config['username']}:{config['password']}"
         self.auth_token = self._base64_encode(user_name_password)
@@ -37,20 +37,18 @@ class SurveyctoStream(HttpStream, ABC):
     def url_base(self) -> str:
         return f"https://{self.server_name}.surveycto.com/api/v2/forms/data/wide/json/"
 
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return print(f"forms/{stream_slice['form_id']}")
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for form in self.forms:
-            yield {"form": form}
-        
+       yield from [{"form_id": id} for id in self.form_id]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-         list_of_dicts = []
-         return {
-            "query": stream_slice["form"]
-         }
+         return {'date': 0}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -73,14 +71,6 @@ class SurveyctoStream(HttpStream, ABC):
                 msg = f"""Encountered an exception parsing schema"""
                 self.logger.exception(msg)
                 raise e
-    # @TODO: Refactor this path method into a separate FormClass for cleaner
-    def path(
-        self, 
-        stream_state: Mapping[str, Any] = None, 
-        stream_slice: Mapping[str, Any] = None, 
-        next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.forms
 
 # class Forms(SurveyctoStream):
 
