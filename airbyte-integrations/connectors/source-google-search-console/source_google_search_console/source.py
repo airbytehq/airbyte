@@ -5,6 +5,7 @@
 import json
 from typing import Any, List, Mapping, Optional, Tuple
 
+import jsonschema
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -12,7 +13,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
-from jsonschema import validate
 from source_google_search_console.exceptions import InvalidSiteURLValidationError
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
@@ -48,6 +48,14 @@ class SourceGoogleSearchConsole(AbstractSource):
                 authorization["service_account_info"] = json.loads(authorization["service_account_info"])
             except ValueError:
                 raise Exception("authorization.service_account_info is not valid JSON")
+
+        if "custom_reports" in config:
+            try:
+                config["custom_reports"] = json.loads(config["custom_reports"])
+            except ValueError:
+                raise Exception("custom_reports is not valid JSON")
+            jsonschema.validate(config["custom_reports"], custom_reports_schema)
+
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -116,15 +124,9 @@ class SourceGoogleSearchConsole(AbstractSource):
         return streams
 
     def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
-        if "custom_reports" not in config:
-            return []
-
-        reports = json.loads(config["custom_reports"])
-        validate(reports, custom_reports_schema)
-
         return [
             type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
-            for report in reports
+            for report in config.get("custom_reports", [])
         ]
 
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
