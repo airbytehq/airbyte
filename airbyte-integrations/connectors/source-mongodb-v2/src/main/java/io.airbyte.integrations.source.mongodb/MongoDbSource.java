@@ -100,7 +100,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       throws Exception {
     final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
-    for (final String collectionName : getAuthorizedCollections(database)) {
+    final Set<String> authorizedCollections = getAuthorizedCollections(database);
+    authorizedCollections.parallelStream().forEach(collectionName -> {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
       final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
 
@@ -113,7 +114,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
           .build();
 
       tableInfos.add(tableInfo);
-    }
+    });
     return tableInfos;
   }
 
