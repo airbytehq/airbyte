@@ -736,7 +736,7 @@ class SnapchatOauth2Authenticator(Oauth2Authenticator):
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
-        max_tries=5,
+        max_time=300,
     )
     def refresh_access_token(self) -> Tuple[str, int]:
         self.debug += 1
