@@ -35,8 +35,6 @@ export const Control: React.FC<ControlProps> = ({
   const [field, meta, helpers] = useField(name);
 
   if (property.type === "array" && !property.enum) {
-    console.log({ property });
-
     return (
       <Field
         name={name}

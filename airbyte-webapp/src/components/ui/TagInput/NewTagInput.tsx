@@ -59,7 +59,7 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, fieldValue, 
   const handleInputChange = (inputValue: string) => {
     setInputValue(inputValue);
 
-    delimiters.map((delimiter) => {
+    delimiters.forEach((delimiter) => {
       if (inputValue.includes(delimiter)) {
         const newTagStrings = inputValue
           .split(delimiter)
