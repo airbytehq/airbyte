@@ -785,9 +785,9 @@ exports[`CreateConnectionForm should render 1`] = `
                       />
                       <div
                         class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
-                        title="<source schema>"
+                        title="'<source schema>"
                       >
-                        &lt;source schema&gt;
+                        '&lt;source schema&gt;
                       </div>
                       <div
                         class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
