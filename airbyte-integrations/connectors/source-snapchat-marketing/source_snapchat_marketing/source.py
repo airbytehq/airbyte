@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import logging
 
-import backoff
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
+import backoff
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
@@ -17,9 +17,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import IncrementalMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-
 
 # https://marketingapi.snapchat.com/docs/#core-metrics
 # https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
@@ -731,13 +729,14 @@ class CampaignsStatsLifetime(Lifetime, Stats):
 
 class SnapchatOauth2Authenticator(Oauth2Authenticator):
     debug = 0
+
     @backoff.on_exception(
         backoff.expo,
         requests.exceptions.HTTPError,
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
-        max_tries=5
+        max_tries=5,
     )
     def refresh_access_token(self) -> Tuple[str, int]:
         self.debug += 1
@@ -772,7 +771,7 @@ class SourceSnapchatMarketing(AbstractSource):
                 token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
                 client_id=config["client_id"],
                 client_secret=config["client_secret"],
-                refresh_token=config["refresh_token"]
+                refresh_token=config["refresh_token"],
             )
             token = auth.get_access_token()
             url = f"{SnapchatMarketingStream.url_base}me"
@@ -798,7 +797,7 @@ class SourceSnapchatMarketing(AbstractSource):
                 token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
                 client_id=config["client_id"],
                 client_secret=config["client_secret"],
-                refresh_token=config["refresh_token"]
+                refresh_token=config["refresh_token"],
             ),
             "start_date": config["start_date"],
             "end_date": config.get("end_date", default_end_date),
