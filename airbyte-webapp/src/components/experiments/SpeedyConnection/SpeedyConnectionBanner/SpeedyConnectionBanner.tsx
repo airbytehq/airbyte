@@ -27,7 +27,7 @@ export const SpeedyConnectionBanner = () => {
 
         <FormattedMessage
           id="experiment.speedyConnection"
-          defaultMessage="<link>Set up your first connection</link> in the next {count} and get <b>100 additonal credits </b>for your trial"
+          defaultMessage="<link>Set up your first connection</link> in the next <timer></timer> and get <b>100 additonal credits</b> for your trial"
           values={{
             link: (link: React.ReactNode[]) => (
               <Link
@@ -47,7 +47,7 @@ export const SpeedyConnectionBanner = () => {
                 <Text bold>{link}</Text>
               </Link>
             ),
-            count: () => <CountDownTimer expiredOfferDate={expiredOfferDate} />,
+            timer: () => <CountDownTimer expiredOfferDate={expiredOfferDate} />,
           }}
         />
         <img src={credits} alt="" />
