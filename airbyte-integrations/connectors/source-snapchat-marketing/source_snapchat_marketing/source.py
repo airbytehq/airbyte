@@ -17,6 +17,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import IncrementalMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 # https://marketingapi.snapchat.com/docs/#core-metrics
@@ -728,18 +729,15 @@ class CampaignsStatsLifetime(Lifetime, Stats):
 
 
 class SnapchatOauth2Authenticator(Oauth2Authenticator):
-    debug = 0
-
     @backoff.on_exception(
         backoff.expo,
-        requests.exceptions.HTTPError,
+        DefaultBackoffException,
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
         max_time=300,
     )
     def refresh_access_token(self) -> Tuple[str, int]:
-        self.debug += 1
         """
         returns a tuple of (access_token, token_lifespan_in_seconds)
         """
@@ -755,7 +753,7 @@ class SnapchatOauth2Authenticator(Oauth2Authenticator):
             return response_json["access_token"], response_json["expires_in"]
         except requests.exceptions.RequestException as e:
             if e.response.status_code == 429 or e.response.status_code >= 500:
-                raise requests.exceptions.HTTPError(f"Failing with call count {self.debug}")
+                raise DefaultBackoffException(request=e.response.request, response=e.response)
             raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
