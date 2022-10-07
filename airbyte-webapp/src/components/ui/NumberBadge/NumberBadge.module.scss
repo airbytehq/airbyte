@@ -30,19 +30,11 @@
   }
 }
 
-.small {
-  border-radius: 0%;
-}
-
 .number {
   font-family: fonts.$primary;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 10px;
   color: colors.$white;
   padding: 3px 0;
-
-  &.light {
-    font-weight: 500;
-  }
 }

@@ -19,7 +19,7 @@ const Content = styled.div<{ enabled?: boolean }>`
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
 `;
 
-const Image = styled(NumberBadge)`
+const Count = styled(NumberBadge)`
   margin-right: 6px;
 `;
 
@@ -35,7 +35,7 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
   if (values.length === 1) {
     return (
       <Content enabled={enabled}>
-        <Image num={1} />
+        <Count value={1} />
         <div>
           {values[0].name}
           <Connector>{values[0].connector}</Connector>
@@ -45,10 +45,9 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
   }
 
   if (!values.length) {
-    console.log(`No values:`, values.length);
     return (
       <Content enabled={enabled}>
-        <Image num={Number(0)} />
+        <Count value={0} />
         <div>
           <p>No connections.</p>
         </div>
@@ -58,7 +57,7 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
 
   return (
     <Content enabled={enabled}>
-      <Image num={values.length} />
+      <Count value={values.length} />
       <div>
         <FormattedMessage id={`tables.${entity}ConnectWithNum`} values={{ num: values.length }} />
         <Connector>{`${values[0].connector}, ${values[1].connector}${values.length > 2 ? ",..." : ""}`}</Connector>
