@@ -16,12 +16,12 @@ This page contains the setup guide and reference information for the Timely sour
 
 ### For Airbyte OSS:
 
-1. Navigate to the Airbyte Open Source dashboard
+1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Timely connector and select **Timely** from the Source type dropdown.
 4. Enter your `Bearer_token`, `account-id`, and `start-date`.
 5. Select `Authenticate your account`.
-6. Click **Set up source**
+6. Click **Set up source**.
 
 ## Supported sync modes
 
