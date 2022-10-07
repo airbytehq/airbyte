@@ -20,7 +20,6 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class CustomBackoffMixin:
-
     def daily_quota_exceeded(self, response: requests.Response) -> bool:
         """Response example:
             {
@@ -46,10 +45,10 @@ class CustomBackoffMixin:
         :param response:
         :return:
         """
-        details = response.json().get('error', {}).get('details', [])
+        details = response.json().get("error", {}).get("details", [])
         for detail in details:
-            if detail.get('reason') == 'RATE_LIMIT_EXCEEDED':
-                if detail.get('metadata', {}).get('quota_limit') == "FreeQuotaRequestsPerDayPerProject":
+            if detail.get("reason") == "RATE_LIMIT_EXCEEDED":
+                if detail.get("metadata", {}).get("quota_limit") == "FreeQuotaRequestsPerDayPerProject":
                     self.logger.error(f"Exceeded daily quota: {detail.get('metadata', {}).get('quota_limit_value')} reqs/day")
                     return True
                 break
@@ -183,7 +182,7 @@ class ReportResources(CustomBackoffMixin, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        return {'startTimeAtOrAfter': self.start_time} if self.start_time else {}
+        return {"startTimeAtOrAfter": self.start_time} if self.start_time else {}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -285,7 +284,7 @@ class SourceYoutubeAnalytics(AbstractSource):
         # - 20000 reqs per day
         # For SAT: scan only last N days ('testing_period' option) in order to decrease a number of requests and avoid API limits
         start_time = None
-        testing_period = config.get('testing_period')
+        testing_period = config.get("testing_period")
         if testing_period:
             start_time = pendulum.today().add(days=-int(testing_period)).to_rfc3339_string()
 
@@ -296,6 +295,8 @@ class SourceYoutubeAnalytics(AbstractSource):
             stream_name = channel_report["id"]
             dimensions = channel_report["dimensions"]
             job_id = report_to_job_id.get(stream_name)
-            parent = ReportResources(name=stream_name, jobs_resource=jobs_resource, job_id=job_id, start_time=start_time, authenticator=authenticator)
+            parent = ReportResources(
+                name=stream_name, jobs_resource=jobs_resource, job_id=job_id, start_time=start_time, authenticator=authenticator
+            )
             streams.append(ChannelReports(name=stream_name, dimensions=dimensions, parent=parent, authenticator=authenticator))
         return streams
