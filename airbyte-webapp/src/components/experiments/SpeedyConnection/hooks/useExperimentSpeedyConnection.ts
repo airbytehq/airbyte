@@ -6,7 +6,7 @@ export const useExperimentSpeedyConnection = () => {
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
 
-  const isVariantEnabled = useExperiment("onbarding.speedyConnection", false);
+  const isVariantEnabled = useExperiment("onboarding.speedyConnection", false);
 
   const isTrial = Boolean(cloudWorkspace.trialExpiryTimestamp);
   const timestamp = localStorage.getItem("exp-speedy-connection-timestamp");
