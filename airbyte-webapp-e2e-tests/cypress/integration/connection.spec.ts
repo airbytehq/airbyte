@@ -200,7 +200,7 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it.only("Saving a connection's schedule type only changes expected values", () => {
+  it("Saving a connection's schedule type only changes expected values", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
     cy.intercept("/api/v1/web_backend/connections/get").as("getConnection");
 
