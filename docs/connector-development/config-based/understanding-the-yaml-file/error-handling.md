@@ -165,15 +165,15 @@ This is the default backoff strategy. The requester will backoff with an exponen
 Schema:
 
 ```yaml
-  ExponentialBackoff:
-    type: object
-    additionalProperties: false
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      factor:
-        type: integer
-        default: 5
+ExponentialBackoff:
+  type: object
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    factor:
+      type: integer
+      default: 5
 ```
 
 ### Constant Backoff
@@ -183,16 +183,16 @@ When using the `ConstantBackoffStrategy`, the requester will backoff with a cons
 Schema:
 
 ```yaml
-  ConstantBackoff:
-    type: object
-    additionalProperties: false
-    required:
-      - backoff_time_in_seconds
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      backoff_time_in_seconds:
-        type: number
+ConstantBackoff:
+  type: object
+  additionalProperties: false
+  required:
+    - backoff_time_in_seconds
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    backoff_time_in_seconds:
+      type: number
 ```
 
 ### Wait time defined in header
@@ -203,18 +203,18 @@ In this example, the requester will backoff by the response's "wait_time" header
 Schema:
 
 ```yaml
-  WaitTimeFromHeader:
-    type: object
-    additionalProperties: false
-    required:
-      - header
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      header:
-        type: string
-      regex:
-        type: string
+WaitTimeFromHeader:
+  type: object
+  additionalProperties: false
+  required:
+    - header
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    header:
+      type: string
+    regex:
+      type: string
 ```
 
 Example:
@@ -252,20 +252,20 @@ In this example, the requester will wait until the time specified in the "wait_u
 Schema:
 
 ```yaml
-  WaitUntilTimeFromHeader:
-    type: object
-    additionalProperties: false
-    required:
-      - header
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      header:
-        type: string
-      regex:
-        type: string
-      min_wait:
-        type: float
+WaitUntilTimeFromHeader:
+  type: object
+  additionalProperties: false
+  required:
+    - header
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    header:
+      type: string
+    regex:
+      type: string
+    min_wait:
+      type: float
 ```
 
 Example:
