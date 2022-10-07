@@ -25,7 +25,7 @@ export const DropdownMenu: React.FC<
   return (
     <Menu className={styles.dropDownMenu} as="div">
       <Menu.Button as={React.Fragment}>
-        <Button data-testid={testId} disabled={disabled}>
+        <Button data-id={testId} disabled={disabled}>
           {label}
         </Button>
       </Menu.Button>
@@ -37,7 +37,7 @@ export const DropdownMenu: React.FC<
                 className={classNames(styles.item, { [styles.active]: active, [styles.primary]: item.primary })}
                 title={item.label}
                 onClick={() => onChange(item)}
-                data-testid={item.label}
+                data-id={item.label}
               >
                 <Text className={styles.text} size="lg">
                   {item.label}
