@@ -12,7 +12,7 @@ import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import SideBar from "packages/cloud/views/layout/SideBar";
-import { useCurrentWorkspace, useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
@@ -35,9 +35,7 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
 
   // exp-speedy-connection
-  const { isExperimentVariant } = useExperimentSpeedyConnection();
-  const { hasConnections } = useCurrentWorkspaceState();
-  const showExperimentBanner = isExperimentVariant && !hasConnections;
+  const { isExperimentVariant: showExperimentBanner } = useExperimentSpeedyConnection();
 
   const alertMessage = useMemo(() => {
     if (alertToShow === "credits") {
