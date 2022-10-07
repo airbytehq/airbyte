@@ -126,7 +126,7 @@ const useCreateConnection = () => {
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
   // exp-speedy-connection
-  const { isExperimentVariant: isSpeedyConnection } = useExperimentSpeedyConnection();
+  const { isExperimentVariant: isSpeedyConnection, trialExpiryTimestamp } = useExperimentSpeedyConnection();
   return useMutation(
     async ({
       values,
@@ -155,7 +155,8 @@ const useCreateConnection = () => {
         connector_destination_definition_id: destinationDefinition?.destinationDefinitionId,
         available_streams: values.syncCatalog.streams.length,
         enabled_streams: enabledStreams,
-        isSpeedyConnection,
+        // exp-speedy-connection
+        ...(isSpeedyConnection && { isSpeedyConnection, trialExpiryTimestamp }),
       });
 
       return response;

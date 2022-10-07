@@ -14,5 +14,5 @@ export const useExperimentSpeedyConnection = () => {
 
   const now = new Date();
   const isExperimentVariant = isTrial && expiredOfferDate && new Date(expiredOfferDate) >= now && isVariantEnabled;
-  return { isExperimentVariant, expiredOfferDate };
+  return { isExperimentVariant, expiredOfferDate, trialExpiryTimestamp: cloudWorkspace.trialExpiryTimestamp };
 };
