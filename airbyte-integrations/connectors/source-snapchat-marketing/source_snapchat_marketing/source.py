@@ -1,7 +1,9 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+import logging
 
+import backoff
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -15,7 +17,9 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import IncrementalMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+
 
 # https://marketingapi.snapchat.com/docs/#core-metrics
 # https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
@@ -93,6 +97,9 @@ METRICS_NOT_HOURLY = [
     "total_reach",
     "earned_reach",
 ]
+
+
+logger = logging.getLogger("airbyte")
 
 
 class GranularityType(Enum):
@@ -722,13 +729,44 @@ class CampaignsStatsLifetime(Lifetime, Stats):
     parent = Campaigns
 
 
+class SnapchatOauth2Authenticator(Oauth2Authenticator):
+    @backoff.on_exception(
+        backoff.expo,
+        DefaultBackoffException,
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        max_tries=5
+    )
+    def refresh_access_token(self) -> Tuple[str, int]:
+        """
+        returns a tuple of (access_token, token_lifespan_in_seconds)
+        """
+        try:
+            response = requests.request(
+                method="POST",
+                url=self.token_refresh_endpoint,
+                data=self.get_refresh_request_body(),
+                headers=self.get_refresh_access_token_headers(),
+            )
+            response.raise_for_status()
+            response_json = response.json()
+            return response_json["access_token"], response_json["expires_in"]
+        except requests.exceptions.RequestException as e:
+            if e.response.status_code == 429 or e.response.status_code >= 500:
+                raise DefaultBackoffException(request=e.response.request, response=e.response)
+            raise
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
+
+
 # Source
 class SourceSnapchatMarketing(AbstractSource):
     """Source Snapchat Marketing helps to retrieve the different Ad data from Snapchat business account"""
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = Oauth2Authenticator(
+            auth = SnapchatOauth2Authenticator(
                 token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
                 client_id=config["client_id"],
                 client_secret=config["client_secret"],
@@ -754,7 +792,7 @@ class SourceSnapchatMarketing(AbstractSource):
         # 2. when timezone is not specified, default account's timezone will be used automatically
         default_end_date = pendulum.now().subtract(days=DELAYED_DAYS).to_date_string()
         kwargs = {
-            "authenticator": Oauth2Authenticator(
+            "authenticator": SnapchatOauth2Authenticator(
                 token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
                 client_id=config["client_id"],
                 client_secret=config["client_secret"],

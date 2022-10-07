@@ -16,6 +16,7 @@ from source_snapchat_marketing.source import (
     AdsStatsLifetime,
     Organizations,
     SourceSnapchatMarketing,
+    SnapchatOauth2Authenticator
 )
 
 config_mock = {
@@ -369,3 +370,24 @@ def test_source_check_connection(requests_mock):
 
     results = SourceSnapchatMarketing().check_connection(logger=None, config=source_config)
     assert results == (True, None)
+
+
+def test_retry_get_access_token(requests_mock):
+    requests_mock.register_uri(
+        "POST",
+        "https://accounts.snapchat.com/login/oauth2/access_token",
+        [
+            {"status_code": 429},
+            {"status_code": 429},
+            {"status_code": 200, "json": {"access_token": "token", "expires_in": 3600}}
+        ]
+    )
+    auth = SnapchatOauth2Authenticator(
+        token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
+        client_id="client_id",
+        client_secret="client_secret",
+        refresh_token="refresh_token"
+    )
+    token = auth.get_access_token()
+    assert len(requests_mock.request_history) == 3
+    assert token == "token"
