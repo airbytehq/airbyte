@@ -6,7 +6,7 @@ import datetime
 from collections import OrderedDict
 from unittest.mock import MagicMock
 
-from source_youtube_analytics.source import ChannelReports, JobsResource, ReportResources
+from source_youtube_analytics.source import ChannelReports, CustomBackoffMixin, JobsResource, ReportResources
 
 
 def test_jobs_resource_list(requests_mock):
@@ -159,3 +159,71 @@ def test_channel_reports_parse_response():
         OrderedDict([("date", "20211026"), ("channel_id", "UCybpwL6sPt6SSzazIV400WQ"), ("likes", "210"), ("dislikes", "21")]),
         OrderedDict([("date", "20211026"), ("channel_id", "UCybpwL6sPt6SSzazIV400WQ"), ("likes", "150"), ("dislikes", "18")]),
     ]
+
+
+def test_backoff_505():
+    response = MagicMock()
+    response.status_code = 505
+    assert CustomBackoffMixin().should_retry(response) is True
+
+
+def test_backoff_429():
+    response = MagicMock()
+    response.status_code = 429
+    assert CustomBackoffMixin().should_retry(response) is True
+
+
+def test_backoff_429_per_minute_limit():
+    response = MagicMock()
+    response.status_code = 429
+    response.json = MagicMock(
+        return_value={
+            "error": {
+                "code": 429,
+                "message": "Quota exceeded for quota metric 'Free requests' and limit 'Free requests per minute' of service 'youtubereporting.googleapis.com' for consumer 'project_number:863188056127'.",
+                "status": "RESOURCE_EXHAUSTED",
+                "details": [
+                    {
+                        "reason": "RATE_LIMIT_EXCEEDED",
+                        "metadata": {
+                            "consumer": "projects/863188056127",
+                            "quota_limit": "FreeQuotaRequestsPerMinutePerProject",
+                            "quota_limit_value": "60",
+                            "quota_metric": "youtubereporting.googleapis.com/free_quota_requests",
+                            "service": "youtubereporting.googleapis.com",
+                        },
+                    }
+                ],
+            }
+        }
+    )
+    assert CustomBackoffMixin().should_retry(response) is True
+
+
+def test_backoff_429_per_day_limit():
+    response = MagicMock()
+    response.status_code = 429
+    response.json = MagicMock(
+        return_value={
+            "error": {
+                "code": 429,
+                "message": "Quota exceeded for quota metric 'Free requests' and limit 'Free requests per day' of service 'youtubereporting.googleapis.com' for consumer 'project_number:863188056127",
+                "status": "RESOURCE_EXHAUSTED",
+                "details": [
+                    {
+                        "reason": "RATE_LIMIT_EXCEEDED",
+                        "metadata": {
+                            "consumer": "projects/863188056127",
+                            "quota_limit": "FreeQuotaRequestsPerDayPerProject",
+                            "quota_limit_value": "20000",
+                            "quota_metric": "youtubereporting.googleapis.com/free_quota_requests",
+                            "service": "youtubereporting.googleapis.com",
+                        },
+                    }
+                ],
+            }
+        }
+    )
+    custom_mixin = CustomBackoffMixin()
+    custom_mixin.logger = MagicMock()
+    assert custom_mixin.should_retry(response) is False
