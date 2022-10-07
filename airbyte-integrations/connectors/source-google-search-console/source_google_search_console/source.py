@@ -117,29 +117,28 @@ class SourceGoogleSearchConsole(AbstractSource):
             for report in reports
         ]
 
-    @staticmethod
-    def get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        authorization = config.get("authorization", {})
-
-        stream_kwargs = {
+    def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
             "site_urls": config.get("site_urls"),
             "start_date": config.get("start_date"),
             "end_date": config.get("end_date") or pendulum.now().to_date_string(),
+            "authenticator": self.get_authenticator(config),
         }
 
-        auth_type = authorization.get("auth_type")
+    def get_authenticator(self, config):
+        authorization = config["authorization"]
+        auth_type = authorization["auth_type"]
+
         if auth_type == "Client":
-            stream_kwargs["authenticator"] = Oauth2Authenticator(
+            return Oauth2Authenticator(
                 token_refresh_endpoint="https://oauth2.googleapis.com/token",
-                client_secret=authorization.get("client_secret"),
-                client_id=authorization.get("client_id"),
-                refresh_token=authorization.get("refresh_token"),
+                client_secret=authorization["client_secret"],
+                client_id=authorization["client_id"],
+                refresh_token=authorization["refresh_token"],
             )
         elif auth_type == "Service":
-            stream_kwargs["authenticator"] = ServiceAccountAuthenticator(
-                service_account_info=json.loads(authorization.get("service_account_info")), email=authorization.get("email")
+            service_account_info = json.loads(authorization["service_account_info"])
+            return ServiceAccountAuthenticator(
+                service_account_info=service_account_info,
+                email=authorization["email"],
             )
-        else:
-            raise Exception(f"Invalid auth type: {auth_type}")
-
-        return stream_kwargs
