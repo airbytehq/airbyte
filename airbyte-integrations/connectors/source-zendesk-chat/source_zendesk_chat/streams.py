@@ -232,6 +232,19 @@ class Chats(TimeIncrementalStream):
     data_field = "chats"
     limit = 1000
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        response_data = response.json()           
+        if response_data["count"] == self.limit:
+            obj = {
+                "start_time": response_data["end_time"]
+            }
+
+            start_id = response_data.get("end_id")
+            if start_id:
+                obj.update({"start_id": start_id})
+
+            return obj
+
 
 class Shortcuts(Stream):
     """
