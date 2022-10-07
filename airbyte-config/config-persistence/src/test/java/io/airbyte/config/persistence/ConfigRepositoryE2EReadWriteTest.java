@@ -202,7 +202,19 @@ class ConfigRepositoryE2EReadWriteTest {
   void testListWorkspaceStandardSyncAll() throws IOException {
 
     final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
-    assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+
+    for (final StandardSync actual : syncs) {
+      final var expected = expectedSyncs.stream().filter(s -> s.getConnectionId().equals(actual.getConnectionId())).findFirst().orElseThrow();
+
+      // operationIds can wind up in a different order, so validate them separately
+      assertThat(expected.getOperationIds()).hasSameElementsAs(actual.getOperationIds());
+
+      // now, clear operationIds so the rest of the sync can be compared
+      expected.setOperationIds(null);
+      actual.setOperationIds(null);
+      assertEquals(expected, actual);
+    }
   }
 
   @Test
@@ -416,8 +428,17 @@ class ConfigRepositoryE2EReadWriteTest {
 
     final List<StandardSync> syncs = configRepository.listStandardSyncsUsingOperation(operationId);
 
-    assertThat(syncs).hasSameElementsAs(expectedSyncs);
+    for (final StandardSync actual : syncs) {
+      final var expected = expectedSyncs.stream().filter(s -> s.getConnectionId().equals(actual.getConnectionId())).findFirst().orElseThrow();
 
+      // operationIds can wind up in a different order, so validate them separately
+      assertThat(expected.getOperationIds()).hasSameElementsAs(actual.getOperationIds());
+
+      // now, clear operationIds so the rest of the sync can be compared
+      expected.setOperationIds(null);
+      actual.setOperationIds(null);
+      assertEquals(expected, actual);
+    }
   }
 
   @Test

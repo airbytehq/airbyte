@@ -629,23 +629,18 @@ public class ConfigRepository {
         // SELECT connection.* plus the connection's associated operationIds as a concatenated list
         .select(
             CONNECTION.asterisk(),
-            groupConcat(CONNECTION_OPERATION.OPERATION_ID)
-                .separator(OPERATION_IDS_AGG_DELIMITER)
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).orderBy(CONNECTION_OPERATION.CREATED_AT.asc()).separator(OPERATION_IDS_AGG_DELIMITER)
                 .as(OPERATION_IDS_AGG_FIELD))
         .from(CONNECTION)
 
         // join with all connection_operation rows that match the connection's id
-        .join(CONNECTION_OPERATION)
-        .on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+        .join(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
 
         // only keep rows for connections that have an operationId that matches the input.
         // needs to be a sub query because we want to keep all operationIds for matching connections
         // in the main query
         .where(CONNECTION.ID.in(
-            select(CONNECTION.ID)
-                .from(CONNECTION)
-                .join(CONNECTION_OPERATION)
-                .on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+            select(CONNECTION.ID).from(CONNECTION).join(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
                 .where(CONNECTION_OPERATION.OPERATION_ID.eq(operationId))))
 
         // group by connection.id so that the groupConcat above works
@@ -659,14 +654,12 @@ public class ConfigRepository {
         // SELECT connection.* plus the connection's associated operationIds as a concatenated list
         .select(
             CONNECTION.asterisk(),
-            groupConcat(CONNECTION_OPERATION.OPERATION_ID)
-                .separator(OPERATION_IDS_AGG_DELIMITER)
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).orderBy(CONNECTION_OPERATION.CREATED_AT.asc()).separator(OPERATION_IDS_AGG_DELIMITER)
                 .as(OPERATION_IDS_AGG_FIELD))
         .from(CONNECTION)
 
         // join with all connection_operation rows that match the connection's id
-        .join(CONNECTION_OPERATION)
-        .on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+        .join(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
 
         // join with source actors so that we can filter by workspaceId
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
