@@ -134,6 +134,23 @@ public class TrackingMetadata {
             if (syncSummary.getTotalStats().getMeanSecondsBetweenStateMessageEmittedandCommitted() != null)
               metadata.put("mean_seconds_between_state_message_emit_and_commit",
                   syncSummary.getTotalStats().getMeanSecondsBetweenStateMessageEmittedandCommitted());
+
+            if (syncSummary.getReplicationStartTime() != null)
+              metadata.put("replication_start_time", syncSummary.getReplicationStartTime());
+            if (syncSummary.getReplicationEndTime() != null)
+              metadata.put("replication_end_time", syncSummary.getReplicationEndTime());
+            if (syncSummary.getSourceReadStartTime() != null)
+              metadata.put("source_read_start_time", syncSummary.getSourceReadStartTime());
+            if (syncSummary.getSourceReadEndTime() != null)
+              metadata.put("source_read_end_time", syncSummary.getSourceReadEndTime());
+            if (syncSummary.getDestinationWriteStartTime() != null)
+              metadata.put("destination_write_start_time", syncSummary.getDestinationWriteStartTime());
+            if (syncSummary.getDestinationWriteEndTime() != null)
+              metadata.put("destination_write_end_time", syncSummary.getDestinationWriteEndTime());
+            if (syncSummary.getNormalizationStartTime() != null)
+              metadata.put("normalization_start_time", syncSummary.getNormalizationStartTime());
+            if (syncSummary.getNormalizationEndTime() != null)
+              metadata.put("normalization_end_time", syncSummary.getNormalizationEndTime());
           }
         }
 
