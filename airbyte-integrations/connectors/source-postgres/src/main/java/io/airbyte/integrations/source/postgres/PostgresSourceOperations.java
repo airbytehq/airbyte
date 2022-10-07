@@ -16,6 +16,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.jackson.MoreMappers;
@@ -195,7 +197,10 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_varchar","_char","_bpchar","_text","_name" -> putArray(json, columnName, resultSet, colIndex);
         case "_int2","_int4","_int8","_oid" -> putLongArray(json, columnName, resultSet, colIndex);
         case "_numeric","_decimal" -> putBigDecimalArray(json, columnName, resultSet, colIndex);
+        case "_money" -> putMoneyArray(json, columnName, resultSet, colIndex);
         case "_float4","_float8" -> putDoubleArray(json, columnName, resultSet, colIndex);
+        case "_bool" -> putBooleanArray(json, columnName, resultSet, colIndex);
+        case "_bit" -> putBitArray(json, columnName, resultSet, colIndex);
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -219,6 +224,34 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     }
   }
 
+  private void putBitArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
+    while (arrayResultSet.next()) {
+      final String res = arrayResultSet.getString(2);
+      if (res==null){
+        arrayNode.add(NullNode.getInstance());
+      } else {
+        arrayNode.add("1".equals(res));
+      }
+    }
+    node.set(columnName, arrayNode);
+  }
+
+  private void putBooleanArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
+    while (arrayResultSet.next()) {
+      final String res = arrayResultSet.getString(2);
+      if (res==null){
+        arrayNode.add(NullNode.getInstance());
+      } else {
+        arrayNode.add("t".equalsIgnoreCase(res));
+      }
+    }
+    node.set(columnName, arrayNode);
+  }
+
   private void putBigDecimalArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
 
     final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
@@ -235,12 +268,24 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   private void putDoubleArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
-    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getDouble(colIndex), Double::isFinite));
+//    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getDouble(colIndex), Double::isFinite));
 
     final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       arrayNode.add( DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(colIndex), Double::isFinite));
+    }
+    node.set(columnName, arrayNode);
+  }
+
+  private void putMoneyArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+//    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getDouble(colIndex), Double::isFinite));
+
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
+    while (arrayResultSet.next()) {
+      final String moneyValue = parseMoneyValue(arrayResultSet.getString(colIndex));
+      arrayNode.add( DataTypeUtils.returnNullIfInvalid(() -> DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
     }
     node.set(columnName, arrayNode);
   }
@@ -331,15 +376,25 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 //              .build();
       case BIT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
-                      .withFormat("some").build())
+                      .build())
               .withAirbyteType("bit_array")
               .build();
+//      case BOOL_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.BOOLEAN.name().toLowerCase())
+//              .withAirbyteType("bool_array")
+//              .build();
       case BOOL_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.BOOLEAN.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
+                      .build())
               .withAirbyteType("bool_array")
               .build();
+//      case NAME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withAirbyteType("name_array")
+//              .build();
       case NAME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .build())
               .withAirbyteType("name_array")
               .build();
 //      case VARCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
@@ -348,78 +403,147 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 //              .build();
       case VARCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-                      .withFormat("some_v_array1")
-                      .withAirbyteType("iti")
                       .build())
               .withAirbyteType("varchar_array")
               .build();
+//      case CHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withAirbyteType("char_array")
+//              .build();
       case CHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .build())
               .withAirbyteType("char_array")
               .build();
+//      case BPCHAR_ARRAY-> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withAirbyteType("bpchar_array")
+//              .build();
       case BPCHAR_ARRAY-> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .build())
               .withAirbyteType("bpchar_array")
               .build();
+//      case TEXT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withAirbyteType("text_array")
+//              .build();
       case TEXT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .build())
               .withAirbyteType("text_array")
               .build();
+//      case INT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+//              .withAirbyteType("int4_array")
+//              .build();
       case INT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+              .withItems(INTEGER)
               .withAirbyteType("int4_array")
               .build();
+//      case INT2_ARRAY-> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+//              .withAirbyteType("int2_array")
+//              .build();
       case INT2_ARRAY-> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+              .withItems(INTEGER)
               .withAirbyteType("int2_array")
               .build();
+//      case INT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+//              .withAirbyteType("int8_array")
+//              .build();
       case INT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+              .withItems(INTEGER)
               .withAirbyteType("int8_array")
               .build();
+//      case MONEY_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+//              .withAirbyteType("money_array")
+//              .build();
       case MONEY_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .build())
               .withAirbyteType("money_array")
               .build();
       case OID_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+              .withItems(INTEGER)
               .withAirbyteType("oid_array")
               .build();
+//      case OID_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+//              .withAirbyteType("oid_array")
+//              .build();
       case NUMERIC_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .build())
               .withAirbyteType("numeric_array")
               .build();
+//      case NUMERIC_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+//              .withAirbyteType("numeric_array")
+//              .build();
       case FLOAT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .build())
               .withAirbyteType("float4_array")
               .build();
+//      case FLOAT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+//              .withAirbyteType("float4_array")
+//              .build();
       case FLOAT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .build())
               .withAirbyteType("float8_array")
               .build();
+//      case FLOAT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+//              .withAirbyteType("float8_array")
+//              .build();
       case TIMESTAMPTZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withFormat(DATE_TIME)
-              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withFormat(DATE_TIME)
+              .withItems(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
               .withAirbyteType("timestamp_with_timezone_array")
               .build();
+//      case TIMESTAMP_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withFormat(DATE_TIME)
+//              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withAirbyteType("timestamp_without_timezone_array")
+//              .build();
       case TIMESTAMP_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withFormat(DATE_TIME)
-              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withFormat(DATE_TIME)
+              .withItems(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
               .withAirbyteType("timestamp_without_timezone_array")
               .build();
+//      case TIMETZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withFormat(TIME)
+//              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withAirbyteType("time_with_timezone_array")
+//              .build();
       case TIMETZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withFormat(TIME)
-              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withFormat(TIME)
+              .withItems(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
               .withAirbyteType("time_with_timezone_array")
               .build();
+//      case TIME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withFormat(TIME)
+//              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withAirbyteType("time_without_timezone_array")
+//              .build();
       case TIME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withFormat(TIME)
-              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withFormat(TIME)
+              .withItems(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               .withAirbyteType("time_without_timezone_array")
               .build();
+//      case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+//              .withFormat(DATE)
+//              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withAirbyteType("date_array")
+//              .build();
       case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withFormat(DATE)
-              .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
+//              .withFormat(DATE)
+              .withItems(JsonSchemaType.STRING_DATE)
               .withAirbyteType("date_array")
               .build();
 
