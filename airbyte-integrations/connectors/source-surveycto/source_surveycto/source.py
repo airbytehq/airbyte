@@ -6,6 +6,8 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+from airbyte_cdk.models import SyncMode
+
 import requests
 import base64
 from airbyte_cdk.sources import AbstractSource
@@ -20,11 +22,10 @@ class SurveyctoStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
         self.server_name = config['server_name']
-        self.form_id = config['form_id']
+        self.forms = config.get("forms", [])
         #base64 encode username and password as auth token
         user_name_password = f"{config['username']}:{config['password']}"
         self.auth_token = self._base64_encode(user_name_password)
-        
         
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -36,10 +37,20 @@ class SurveyctoStream(HttpStream, ABC):
     def url_base(self) -> str:
         return f"https://{self.server_name}.surveycto.com/api/v2/forms/data/wide/json/"
 
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for form in self.forms:
+            yield {"form": form}
+        
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {'date': 0}
+         list_of_dicts = []
+         return {
+            "query": stream_slice["form"]
+         }
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -69,7 +80,7 @@ class SurveyctoStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None, 
         next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return self.form_id
+        return self.forms
 
 # class Forms(SurveyctoStream):
 
