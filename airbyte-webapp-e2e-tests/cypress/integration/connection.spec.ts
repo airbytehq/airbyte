@@ -156,50 +156,6 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  // Analytics calls are not made in CI.
-  it.skip("Should make analytics calls", () => {
-    const sourceName = appendRandomString("Test connection source cypress PokeAPI");
-    const destName = appendRandomString("Test connection destination cypress");
-
-    createTestConnection(sourceName, destName);
-
-    cy.get("div").contains(sourceName).should("exist");
-    cy.get("div").contains(destName).should("exist");
-
-    openSourceDestinationFromGrid(sourceName);
-
-    goToReplicationTab();
-
-    cy.intercept("https://api.segment.io/v1/t").as("analyticsCall");
-
-    let analyticsCalls = 0;
-
-    selectSchedule("Cron");
-    cy.wait("@analyticsCall").then(() => {
-      analyticsCalls++;
-    });
-    submitButtonClick();
-    checkSuccessResult();
-
-    selectSchedule("Manual");
-    cy.wait("@analyticsCall").then(() => {
-      analyticsCalls++;
-    });
-    submitButtonClick();
-    checkSuccessResult();
-
-    selectSchedule("Every hour");
-    cy.wait("@analyticsCall").then(() => {
-      analyticsCalls++;
-      expect(analyticsCalls).to.eq(3);
-    });
-    submitButtonClick();
-    checkSuccessResult();
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-
   it("Saving a connection's schedule type only changes expected values", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
     cy.intercept("/api/v1/web_backend/connections/get").as("getConnection");
