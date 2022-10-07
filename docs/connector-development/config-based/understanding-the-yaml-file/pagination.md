@@ -6,11 +6,47 @@ Iterating over pages of result is different from iterating over stream slices.
 Stream slices have semantic value, for instance, a Datetime stream slice defines data for a specific date range. Two stream slices will have data for different date ranges.
 Conversely, pages don't have semantic value. More pages simply means that more records are to be read, without specifying any meaningful difference between the records of the first and later pages.
 
-The paginator is defined by
+Schema:
+
+```yaml
+Paginator:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/DefaultPaginator"
+```
+
+### Default paginator
+
+The default paginator is defined by
 
 - `page_size_option`: How to specify the page size in the outgoing HTTP request
 - `pagination_strategy`: How to compute the next page to fetch
 - `page_token_option`: How to specify the next page to fetch in the outgoing HTTP request
+
+Schema:
+
+```yaml
+DefaultPaginator:
+  type: object
+  additionalProperties: false
+  required:
+    - page_token_option
+    - pagination_strategy
+    - url_base
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    page_size:
+      type: integer
+    page_size_option:
+      "$ref": "#/definitions/RequestOption"
+    page_token_option:
+      "$ref": "#/definitions/RequestOption"
+    pagination_strategy:
+      "$ref": "#/definitions/PaginationStrategy"
+    url_base:
+      type: string
+```
 
 3 pagination strategies are supported
 
@@ -18,13 +54,41 @@ The paginator is defined by
 2. Offset increment
 3. Cursor-based
 
-## Pagination Strategies
+### Pagination Strategies
 
-### Page increment
+Schema:
+
+```yaml
+PaginationStrategy:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/CursorPagination"
+    - "$ref": "#/definitions/OffsetIncrement"
+    - "$ref": "#/definitions/PageIncrement"
+```
+
+#### Page increment
 
 When using the `PageIncrement` strategy, the page number will be set as part of the `page_token_option`.
 
+Schema:
+
+```yaml
+PageIncrement:
+  type: object
+  additionalProperties: false
+  required:
+    - page_size
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    page_size:
+      type: integer
+```
+
 The following paginator example will fetch 5 records per page, and specify the page number as a request_parameter:
+
+Example:
 
 ```yaml
 paginator:
@@ -47,11 +111,28 @@ Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_d
 the first request will be sent as `https://cloud.airbyte.com/api/get_data?page_size=5&page=0`
 and the second request as `https://cloud.airbyte.com/api/get_data?page_size=5&page=1`,
 
-### Offset increment
+#### Offset increment
 
 When using the `OffsetIncrement` strategy, the number of records read will be set as part of the `page_token_option`.
 
+Schema:
+
+```yaml
+OffsetIncrement:
+  type: object
+  additionalProperties: false
+  required:
+    - page_size
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    page_size:
+      type: integer
+```
+
 The following paginator example will fetch 5 records per page, and specify the offset as a request_parameter:
+
+Example:
 
 ```yaml
 paginator:
@@ -71,7 +152,7 @@ Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_d
 the first request will be sent as `https://cloud.airbyte.com/api/get_data?page_size=5&offset=0`
 and the second request as `https://cloud.airbyte.com/api/get_data?page_size=5&offset=5`,
 
-### Cursor
+#### Cursor
 
 The `CursorPaginationStrategy` outputs a token by evaluating its `cursor_value` string with the following parameters:
 
@@ -81,7 +162,28 @@ The `CursorPaginationStrategy` outputs a token by evaluating its `cursor_value` 
 
 This cursor value can be used to request the next page of record.
 
-#### Cursor paginator in request parameters
+Schema:
+
+```yaml
+Schema:
+  ```yaml
+CursorPaginationStrategy:
+  type: object
+  additionalProperties: false
+  required:
+    - cursor_value
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    cursor_value:
+      type: string
+    stop_condition:
+      type: string
+    page_size:
+      type: integer
+```
+
+##### Cursor paginator in request parameters
 
 In this example, the next page of record is defined by setting the `from` request parameter to the id of the last record read:
 
@@ -99,11 +201,10 @@ paginator:
 
 Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_data`,
 the first request will be sent as `https://cloud.airbyte.com/api/get_data`.
-
 Assuming the id of the last record fetched is 1000,
 the next request will be sent as `https://cloud.airbyte.com/api/get_data?from=1000`.
 
-#### Cursor paginator in path
+##### Cursor paginator in path
 
 Some APIs directly point to the URL of the next page to fetch. In this example, the URL of the next page is extracted from the response headers:
 
@@ -120,6 +221,5 @@ paginator:
 
 Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_data`,
 the first request will be sent as `https://cloud.airbyte.com/api/get_data`
-
 Assuming the response's next url is `https://cloud.airbyte.com/api/get_data?page=1&page_size=100`,
 the next request will be sent as `https://cloud.airbyte.com/api/get_data?page=1&page_size=100`

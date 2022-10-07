@@ -1,14 +1,61 @@
 # Record selector
 
 The record selector is responsible for translating an HTTP response into a list of Airbyte records by extracting records from the response and optionally filtering and shaping records based on a heuristic.
+Schema:
+
+```yaml
+HttpSelector:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/RecordSelector"
+RecordSelector:
+  type: object
+  required:
+    - extractor
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    extractor:
+      "$ref": "#/definitions/RecordExtractor"
+    record_filter:
+      "$ref": "#/definitions/RecordFilter"
+RecordExtractor:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/DpathExtractor"
+```
 
 The current record extraction implementation uses [dpath](https://pypi.org/project/dpath/) to select records from the json-decoded HTTP response.
+Schema:
 
-## Common recipes:
+```yaml
+DpathExtractor:
+  type: object
+  additionalProperties: false
+  required:
+    - field_pointer
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    field_pointer:
+      type: array
+      items:
+        type: string
+  RecordFilter:
+    type: object
+    additionalProperties: false
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      condition:
+        type: string
+```
+
+### Common recipes:
 
 Here are some common patterns:
 
-### Selecting the whole response
+#### Selecting the whole response
 
 If the root of the response is an array containing the records, the records can be extracted using the following definition:
 
@@ -19,7 +66,6 @@ selector:
 ```
 
 If the root of the response is a json object representing a single record, the record can be extracted and wrapped in an array.
-
 For example, given a response body of the form
 
 ```json
@@ -46,7 +92,7 @@ The selected records will be
 ]
 ```
 
-### Selecting a field
+#### Selecting a field
 
 Given a response body of the form
 
@@ -78,7 +124,7 @@ The selected records will be
 ]
 ```
 
-### Selecting an inner field
+#### Selecting an inner field
 
 Given a response body of the form
 
@@ -102,9 +148,7 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_pointer:
-      - "data"
-      - "records"
+    field_pointer: [ "data", "records" ]
 ```
 
 The selected records will be
@@ -120,7 +164,7 @@ The selected records will be
 ]
 ```
 
-## Filtering records
+### Filtering records
 
 Records can be filtered by adding a record_filter to the selector.
 The expression in the filter will be evaluated to a boolean returning true if the record should be included.
@@ -139,10 +183,56 @@ selector:
 
 Fields can be added or removed from records by adding `Transformation`s to a stream's definition.
 
+Schema:
+
+```yaml
+RecordTransformation:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/AddFields"
+    - "$ref": "#/definitions/RemoveFields"
+```
+
 ### Adding fields
 
 Fields can be added with the `AddFields` transformation.
 This example adds a top-level field "field1" with a value "static_value"
+
+Schema:
+
+```yaml
+AddFields:
+  type: object
+  required:
+    - fields
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    fields:
+      type: array
+      items:
+        "$ref": "#/definitions/AddedFieldDefinition"
+AddedFieldDefinition:
+  type: object
+  required:
+    - path
+    - value
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    path:
+      "$ref": "#/definitions/FieldPointer"
+    value:
+      type: string
+FieldPointer:
+  type: array
+  items:
+    type: string
+```
+
+Example:
 
 ```yaml
 stream:
@@ -163,7 +253,7 @@ stream:
       - type: AddFields
         fields:
           - path: [ "start_date" ]
-            value: {{ stream_slice[ 'start_date' ] }}
+            value: { { stream_slice[ 'start_date' ] } }
 ```
 
 Fields can also be added in a nested object by writing the fields' path as a list.
@@ -208,6 +298,23 @@ resulting in the following record:
 ### Removing fields
 
 Fields can be removed from records with the `RemoveFields` transformation.
+
+Schema:
+
+```yaml
+RemoveFields:
+  type: object
+  required:
+    - field_pointers
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    field_pointers:
+      type: array
+      items:
+        "$ref": "#/definitions/FieldPointer"
+```
 
 Given a record of the following shape:
 

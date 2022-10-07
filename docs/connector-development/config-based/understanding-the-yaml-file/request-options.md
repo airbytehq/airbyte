@@ -1,11 +1,42 @@
 # Request Options
 
-There are a few ways to set request parameters, headers, and body on ongoing HTTP requests.
+The primary way to set request parameters and headers is to define them as key-value pairs using a `RequestOptionsProvider`.
+Other components, such as an `Authenticator` can also set additional request params or headers as needed.
+
+Additionally, some stateful components using a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](#configuring-the-paginator) and [Stream slicers](./advanced-topics.md#stream-slicers).
 
 ## Request Options Provider
 
 The primary way to set request options is through the `Requester`'s `RequestOptionsProvider`.
 The options can be configured as key value pairs:
+
+Schema:
+
+```yaml
+RequestOptionsProvider:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+InterpolatedRequestOptionsProvider:
+  type: object
+  additionalProperties: false
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    request_parameters:
+      "$ref": "#/definitions/RequestInput"
+    request_headers:
+      "$ref": "#/definitions/RequestInput"
+    request_body_data:
+      "$ref": "#/definitions/RequestInput"
+    request_body_json:
+      "$ref": "#/definitions/RequestInput"
+RequestInput:
+  type: object
+  additionalProperties: true
+```
+
+Example:
 
 ```yaml
 requester:
@@ -33,6 +64,33 @@ requester:
   request_options_provider:
     request_body_json:
       key: value
+```
+
+### Request Options
+
+Some components can add request options to the requests sent to the API endpoint.
+
+Schema:
+
+```yaml
+RequestOption:
+  type: object
+  additionalProperties: false
+  required:
+    - inject_into
+  properties:
+    inject_into:
+      "$ref": "#/definitions/RequestOptionType"
+    field_name:
+      type: string
+RequestOptionType:
+  type: string
+  enum:
+    - request_parameter
+    - header
+    - path
+    - body_data
+    - body_json
 ```
 
 ## Authenticators

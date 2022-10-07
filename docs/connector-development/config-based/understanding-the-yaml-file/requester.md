@@ -1,10 +1,62 @@
 # Requester
 
-The Requester defines how to prepare HTTP requests to send to the source API. The current implementation is called the HttpRequester, which is defined by:
+The `Requester` defines how to prepare HTTP requests to send to the source API.
+There is currently only one implementation, the `HttpRequester`, which is defined by
 
-- A base url: The root of the API source
-- A path: The specific endpoint to fetch data from for a resource
-- The HTTP method: the HTTP method to use (GET or POST)
-- A [request options provider](request-options.md): Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
-- An [authenticator](authentication.md): Defines how to authenticate to the source
-- An [error handler](error-handling.md): Defines how to handle errors
+1. A base url: The root of the API source
+2. A path: The specific endpoint to fetch data from for a resource
+3. The HTTP method: the HTTP method to use (GET or POST)
+4. [A request options provider](#request-options-provider): Defines the request parameters (query parameters), headers, and request body to set on outgoing HTTP requests
+5. [An authenticator](#configuring-the-authentication): Defines how to authenticate to the source
+6. [An error handler](./advanced-topics.md#error-handling): Defines how to handle errors
+
+The schema of a request object is:
+
+```yaml
+Requester:
+  type: object
+  oneOf:
+    - "$ref": "#/definitions/HttpRequester"
+HttpRequester:
+  type: object
+  additionalProperties: false
+  required:
+    - name
+    - url_base
+    - path
+    - http_method
+    - request_options_provider
+    - authenticator
+    - error_handler
+  properties:
+    "$options":
+      "$ref": "#/definitions/$options"
+    name:
+      type: string
+    url_base:
+      type: string
+      description: "base url"
+    path:
+      type: string
+      description: "path"
+    http_method:
+      "$ref": "#/definitions/HttpMethod"
+    request_options_provider:
+      "$ref": "#/definitions/RequestOptionsProvider"
+    authenticator:
+      "$ref": "#/definitions/Authenticator"
+    error_handler:
+      "$ref": "#/definitions/ErrorHandler"
+HttpMethod:
+  type: string
+  enum:
+    - GET
+    - POST
+```
+
+## Configuring request parameters and headers
+
+The primary way to set request parameters and headers is to define them as key-value pairs using a `RequestOptionsProvider`.
+Other components, such as an `Authenticator` can also set additional request params or headers as needed.
+
+Additionally, some stateful components using a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](#configuring-the-paginator) and [Stream slicers](./advanced-topics.md#stream-slicers).
