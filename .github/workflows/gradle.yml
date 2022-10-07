@@ -536,7 +536,7 @@ jobs:
         with:
           account: 59758427
           repository: 283046497
-          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml'
+          path: '/actions-runner/_work/airbyte/airbyte/*'
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
 
