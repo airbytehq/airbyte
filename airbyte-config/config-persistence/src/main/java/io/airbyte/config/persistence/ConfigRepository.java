@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -629,11 +630,10 @@ public class ConfigRepository {
         // SELECT connection.* plus the connection's associated operationIds as a concatenated list
         .select(
             CONNECTION.asterisk(),
-            groupConcat(CONNECTION_OPERATION.OPERATION_ID).orderBy(CONNECTION_OPERATION.CREATED_AT.asc()).separator(OPERATION_IDS_AGG_DELIMITER)
-                .as(OPERATION_IDS_AGG_FIELD))
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).separator(OPERATION_IDS_AGG_DELIMITER).as(OPERATION_IDS_AGG_FIELD))
         .from(CONNECTION)
 
-        // join with all connection_operation rows that match the connection's id
+        // inner join with all connection_operation rows that match the connection's id
         .join(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
 
         // only keep rows for connections that have an operationId that matches the input.
@@ -654,12 +654,12 @@ public class ConfigRepository {
         // SELECT connection.* plus the connection's associated operationIds as a concatenated list
         .select(
             CONNECTION.asterisk(),
-            groupConcat(CONNECTION_OPERATION.OPERATION_ID).orderBy(CONNECTION_OPERATION.CREATED_AT.asc()).separator(OPERATION_IDS_AGG_DELIMITER)
-                .as(OPERATION_IDS_AGG_FIELD))
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).separator(OPERATION_IDS_AGG_DELIMITER).as(OPERATION_IDS_AGG_FIELD))
         .from(CONNECTION)
 
-        // join with all connection_operation rows that match the connection's id
-        .join(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+        // left join with all connection_operation rows that match the connection's id.
+        // left join includes connections that don't have any connection_operations
+        .leftJoin(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
 
         // join with source actors so that we can filter by workspaceId
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
@@ -676,8 +676,13 @@ public class ConfigRepository {
     final List<StandardSync> standardSyncs = new ArrayList<>();
 
     for (final Record record : connectionAndOperationIdsResult) {
-      final String[] operationIdsFromRecord = record.get(OPERATION_IDS_AGG_FIELD, String.class).split(OPERATION_IDS_AGG_DELIMITER);
-      final List<UUID> operationIds = Arrays.stream(operationIdsFromRecord).map(UUID::fromString).toList();
+      final String operationIdsFromRecord = record.get(OPERATION_IDS_AGG_FIELD, String.class);
+
+      // can be null when connection has no connectionOperations
+      final List<UUID> operationIds = operationIdsFromRecord == null
+          ? Collections.emptyList()
+          : Arrays.stream(operationIdsFromRecord.split(OPERATION_IDS_AGG_DELIMITER)).map(UUID::fromString).toList();
+
       standardSyncs.add(DbConverter.buildStandardSync(record, operationIds));
     }
 

@@ -58,6 +58,7 @@ import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,7 +88,7 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @BeforeEach
-  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException {
+  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException, InterruptedException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
@@ -202,28 +203,18 @@ class ConfigRepositoryE2EReadWriteTest {
 
   @Test
   void testListWorkspaceStandardSyncAll() throws IOException {
-
-    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
     final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
 
-    for (final StandardSync actual : syncs) {
-      final var expected = expectedSyncs.stream().filter(s -> s.getConnectionId().equals(actual.getConnectionId())).findFirst().orElseThrow();
-
-      // operationIds can wind up in a different order, so validate them separately
-      assertThat(actual.getOperationIds()).hasSameElementsAs(expected.getOperationIds());
-
-      // now, clear operationIds so the rest of the sync can be compared
-      expected.setOperationIds(null);
-      actual.setOperationIds(null);
-      assertEquals(expected, actual);
-    }
+    assertSyncsMatch(expectedSyncs, actualSyncs);
   }
 
   @Test
   void testListWorkspaceStandardSyncExcludeDeleted() throws IOException {
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3);
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), false);
 
-    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), false);
-    assertThat(MockData.standardSyncs().subList(0, 3)).hasSameElementsAs(syncs);
+    assertSyncsMatch(expectedSyncs, actualSyncs);
   }
 
   @Test
@@ -426,14 +417,28 @@ class ConfigRepositoryE2EReadWriteTest {
   @Test
   void testGetStandardSyncUsingOperation() throws IOException {
     final UUID operationId = MockData.standardSyncOperations().get(0).getOperationId();
-    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3);
+    final List<StandardSync> actualSyncs = configRepository.listStandardSyncsUsingOperation(operationId);
 
-    final List<StandardSync> syncs = configRepository.listStandardSyncsUsingOperation(operationId);
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
 
-    for (final StandardSync actual : syncs) {
-      final var expected = expectedSyncs.stream().filter(s -> s.getConnectionId().equals(actual.getConnectionId())).findFirst().orElseThrow();
+  private void assertSyncsMatch(final List<StandardSync> expectedSyncs, final List<StandardSync> actualSyncs) {
+    assertEquals(expectedSyncs.size(), actualSyncs.size());
 
-      // operationIds can wind up in a different order, so validate them separately
+    for (final StandardSync expected : expectedSyncs) {
+
+      final Optional<StandardSync> maybeActual = actualSyncs.stream().filter(s -> s.getConnectionId().equals(expected.getConnectionId())).findFirst();
+      if (maybeActual.isEmpty()) {
+        Assertions.fail(String.format("Expected to find connectionId %s in result, but actual connectionIds are %s",
+            expected.getConnectionId(),
+            actualSyncs.stream().map(StandardSync::getConnectionId).collect(Collectors.toList())));
+      }
+      final StandardSync actual = maybeActual.get();
+
+      // operationIds can be ordered differently in the query result than in the mock data, so they need
+      // to be verified separately
+      // from the rest of the sync.
       assertThat(actual.getOperationIds()).hasSameElementsAs(expected.getOperationIds());
 
       // now, clear operationIds so the rest of the sync can be compared
