@@ -2,7 +2,6 @@ name: Run Testing Tool Commands
 on:
   issue_comment:
     types: [created]
-
 jobs:
   set-params:
     # Only allow slash commands on pull request (not on issues)
@@ -116,7 +115,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "/secrets/service_account_credentials.json"
-          json: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          json: ${{ secrets.GCP_GSM_CREDENTIALS_FOR_TESTING_TOOL }}
       - name: Run docker container with params
         run: docker run -v $(pwd)/secrets:/secrets -v $(pwd)/result:/result airbyte/airbyte-e2e-testing-tool:latest ${{ github.event.comment.body }}
       - name: Read file with results
