@@ -800,15 +800,3 @@ def test_checkpoint_state_from_stream_instance():
     assert actual_message == _as_state(
         {"teams": {"updated_at": "2022-09-11"}, "managers": {"updated": "expected_here"}}, "managers", {"updated": "expected_here"}
     )
-
-
-def test_airbyte_record_message_custom_data_validation_error():
-    invalid_data = "Not a dict"
-    with pytest.raises(ValueError):
-        AirbyteRecordMessage(stream="stream", data=invalid_data, emitted_at=GLOBAL_EMITTED_AT)
-
-
-def test_airbyte_record_message_valid_data():
-    valid_data = {"foo": "bar"}
-    AirbyteRecordMessage(stream="stream", data=valid_data, emitted_at=GLOBAL_EMITTED_AT)
-
