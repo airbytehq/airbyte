@@ -599,11 +599,10 @@ public class DefaultJobPersistence implements JobPersistence {
 
     return jobDatabase.query(ctx -> ctx
         .fetch("SELECT DISTINCT ON (scope) * FROM jobs "
-            + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
-            + AND + scopeInList(connectionIds)
-            + "ORDER BY scope, created_at DESC",
-            Sqls.toSqlName(ConfigType.SYNC),
-            connectionIds.stream().map(UUID::toString).map(Names::singleQuote).collect(Collectors.joining(",")))
+                + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
+                + AND + scopeInList(connectionIds)
+                + "ORDER BY scope, created_at DESC",
+            Sqls.toSqlName(ConfigType.SYNC))
         .stream()
         .flatMap(r -> getJobOptional(ctx, r.get("id", Long.class)).stream())
         .collect(Collectors.toList()));
@@ -621,13 +620,11 @@ public class DefaultJobPersistence implements JobPersistence {
 
     return jobDatabase.query(ctx -> ctx
         .fetch("SELECT DISTINCT ON (scope) * FROM jobs "
-            + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
-            + AND + scopeInList(connectionIds)
-            + AND + JOB_STATUS_IS_NON_TERMINAL
-            + "ORDER BY scope, created_at DESC",
-            Sqls.toSqlName(ConfigType.SYNC),
-            connectionIds.stream().map(UUID::toString).map(Names::singleQuote).collect(Collectors.joining(",")),
-            JobStatus.NON_TERMINAL_STATUSES.stream().map(Sqls::toSqlName).map(Names::singleQuote).collect(Collectors.joining(",")))
+                + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
+                + AND + scopeInList(connectionIds)
+                + AND + JOB_STATUS_IS_NON_TERMINAL
+                + "ORDER BY scope, created_at DESC",
+            Sqls.toSqlName(ConfigType.SYNC))
         .stream()
         .flatMap(r -> getJobOptional(ctx, r.get("id", Long.class)).stream())
         .collect(Collectors.toList()));
