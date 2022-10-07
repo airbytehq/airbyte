@@ -1,5 +1,6 @@
+import { uniqueId } from "lodash";
 import { KeyboardEventHandler, useState } from "react";
-import { OnChangeValue } from "react-select";
+import { ActionMeta, MultiValue, OnChangeValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
 const components = {
@@ -8,25 +9,35 @@ const components = {
 
 interface Tag {
   readonly id: string;
-  readonly value: string;
+  readonly label: string;
 }
 
 interface NewTagInputProps {
   name: string;
-  value: string[];
-  onChange: (value: string[]) => void;
+  value: MultiValue<Tag>;
+  onChange: (value: MultiValue<Tag>) => void;
   error?: boolean;
   disabled?: boolean;
 }
-// TODO: what happens if there are two tags with the same text?
-export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, value, name, disabled }) => {
-  const tags = value.map((value) => ({ id: value, value }));
+
+// TODO: defaultValue, child component doing crummy stuff with keys
+export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, value: fieldValue, name, disabled }) => {
+  const generateTag = (inputValue: string) => ({ id: uniqueId(`tag_`), label: inputValue });
+  // give each tag a unique id
+  const tags = fieldValue;
   // input value is a tag draft
   const [inputValue, setInputValue] = useState("");
 
   // handle when an item is created
-  const handleChange = (value: OnChangeValue<Tag, true>) => {
-    onChange(value.map((item) => item.value));
+  const handleChange = (value: OnChangeValue<Tag, true>, actionMeta: ActionMeta<Tag>) => {
+    // the value should always contain just the value, not the id
+    let newTags: MultiValue<Tag> = tags;
+    if (actionMeta.action === "remove-value") {
+      newTags = tags.filter((tag) => tag.id !== actionMeta.removedValue.id);
+    } else if (actionMeta.action === "clear") {
+      newTags = [];
+    }
+    onChange(newTags);
     // todo: should also handle splitting up pasted strings by delimiters
     //
   };
@@ -45,13 +56,15 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, value, name,
     switch (event.key) {
       case "Enter":
       case "Tab":
-        onChange([...value, inputValue]);
+        const newTag = generateTag(inputValue);
+        onChange([...fieldValue, newTag]);
         // todo: do i need to manually clear the input
         event.preventDefault();
+        setInputValue("");
     }
   };
 
-  // todo: helpful placeholder
+  // todo: helpful placeholder!
   return (
     <CreatableSelect
       name={name}

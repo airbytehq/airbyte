@@ -1,4 +1,4 @@
-import { FieldArray, useField } from "formik";
+import { Field, useField } from "formik";
 import React from "react";
 
 import { DropDown } from "components/ui/DropDown";
@@ -35,14 +35,16 @@ export const Control: React.FC<ControlProps> = ({
   const [field, meta, helpers] = useField(name);
 
   if (property.type === "array" && !property.enum) {
+    // console.log(field.value);
     return (
       // check how to use field array with new component
-      <FieldArray
+      <Field
         name={name}
+        defaultValue={[]}
         render={() => (
           <NewTagInput
             name={name}
-            value={field.value}
+            value={field.value || []}
             onChange={(values) => helpers.setValue(values)}
             // error={!!meta.error}
             disabled={disabled}
