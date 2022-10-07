@@ -10,7 +10,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyUrl, BaseModel, Extra, Field
+from pydantic import AnyUrl, BaseModel, Extra, Field, validator
 
 
 class Type(Enum):
@@ -34,6 +34,16 @@ class AirbyteRecordMessage(BaseModel):
         ...,
         description="when the data was emitted from the source. epoch in millisecond.",
     )
+
+    @validator("data", pre=True)
+    def data_is_dict(cls: AirbyteRecordMessage, value: Dict[str, Any]):
+        if isinstance(value, dict):
+            return value
+        raise ValueError("Data object is not a dictionary. "
+            "This can happen when the parse_response method directly returns the response.json, "
+            "instead of yielding a it/elements of it."
+            f"Object instead is {type(value)} with value: {value}"
+        )
 
 
 class AirbyteStateType(Enum):

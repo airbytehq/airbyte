@@ -30,7 +30,6 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -61,9 +60,9 @@ import org.slf4j.LoggerFactory;
 public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
+  private static final int MAX_TEMPORAL_MESSAGE_SIZE = 2 * 1024 * 1024;
 
   private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
-  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
@@ -77,7 +76,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final AirbyteApiClient airbyteApiClient;
 
   public ReplicationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
-                                 @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
                                  @Named("replicationProcessFactory") final ProcessFactory processFactory,
                                  final SecretsHydrator secretsHydrator,
                                  @Named("workspaceRoot") final Path workspaceRoot,
@@ -90,7 +88,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final TemporalUtils temporalUtils,
                                  final AirbyteApiClient airbyteApiClient) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
-    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
@@ -156,7 +153,14 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           final ReplicationOutput attemptOutput = temporalAttempt.get();
           final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
 
-          LOGGER.info("sync summary: {}", standardSyncOutput);
+          final String standardSyncOutputString = standardSyncOutput.toString();
+          LOGGER.info("sync summary: {}", standardSyncOutputString);
+          if (standardSyncOutputString.length() > MAX_TEMPORAL_MESSAGE_SIZE) {
+            LOGGER.error("Sync ouput exceeds the max temporal message size of {}, actual is {}.", MAX_TEMPORAL_MESSAGE_SIZE,
+                standardSyncOutputString.length());
+          } else {
+            LOGGER.info("Sync summary length: {}", standardSyncOutputString.length());
+          }
 
           return standardSyncOutput;
         },
@@ -207,7 +211,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       final AirbyteSource airbyteSource =
           WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage())
               ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
-              : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
+              : new DefaultAirbyteSource(sourceLauncher);
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
@@ -217,7 +221,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           Math.toIntExact(jobRunConfig.getAttemptId()),
           airbyteSource,
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-          new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
+          new DefaultAirbyteDestination(destinationLauncher),
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
           metricReporter);

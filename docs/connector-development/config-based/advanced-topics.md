@@ -1,30 +1,4 @@
-# Connector definition
-
-Connectors are defined as a yaml configuration describing the connector's Source.
-
-3 top-level fields are required:
-
-1. `streams`: List of streams that are part of the source
-2. `check`: Component describing how to check the connection.
-3. `version`: The framework version.
-
-The configuration will be validated against this JSON Schema, which defines the set of valid properties.
-
-The general structure of the YAML is as follows:
-
-```yaml
-version: "0.1.0"
-definitions:
-  <key-value pairs defining objects which will be reused in the YAML connector>
-streams:
-  <list stream definitions>
-check:
-  <definition of connection checker>
-```
-
-We recommend using the `Configuration Based Source` template from the template generator in `airbyte-integrations/connector-templates/generator` to generate the basic file structure.
-
-See the [tutorial for a complete connector definition](tutorial/6-testing.md)
+# Advanced Topics
 
 ## Object instantiation
 
@@ -243,7 +217,7 @@ If the input string is a raw string, the interpolated string will be the same.
 `"hello world" -> "hello world"`
 
 The engine will evaluate the content passed within `{{...}}`, interpolating the keys from context-specific arguments.
-The "options" keyword [see ($options)](yaml-structure.md#object-instantiation) can be referenced.
+The "options" keyword [see ($options)](#object-instantiation) can be referenced.
 
 For example, some_object.inner_object.key will evaluate to "Hello airbyte" at runtime.
 
@@ -256,7 +230,7 @@ some_object:
 ```
 
 Some components also pass in additional arguments to the context.
-This is the case for the [record selector](record-selector.md), which passes in an additional `response` argument.
+This is the case for the [record selector](understanding-the-yaml-file/record-selector.md), which passes in an additional `response` argument.
 
 Both dot notation and bracket notations (with single quotes ( `'`)) are interchangeable.
 This means that both these string templates will evaluate to the same string:
@@ -275,3 +249,36 @@ Additional information on jinja templating can be found at https://jinja.pallets
 ## Component schema reference
 
 A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json).
+
+## Custom components
+
+Any builtin components can be overloaded by a custom Python class.
+To create a custom component, define a new class in a new file in the connector's module.
+The class must implement the interface of the component it is replacing. For instance, a pagination strategy must implement `airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy.PaginationStrategy`.
+The class must also be a dataclass where each field represents an argument to configure from the yaml file, and an `InitVar` named options.
+
+For example:
+
+```
+@dataclass
+class MyPaginationStrategy(PaginationStrategy):
+  my_field: Union[InterpolatedString, str]
+  options: InitVar[Mapping[str, Any]]
+
+  def __post_init__(self, options: Mapping[str, Any]):
+    pass
+
+  def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    pass
+
+  def reset(self):
+    pass
+```
+
+This class can then be referred from the yaml file using its fully qualified class name:
+
+```yaml
+pagination_strategy:
+  class_name: "my_connector_module.MyPaginationStrategy"
+  my_field: "hello world"
+```

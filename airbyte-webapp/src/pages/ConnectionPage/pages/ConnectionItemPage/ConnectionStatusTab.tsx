@@ -11,8 +11,8 @@ import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Tooltip } from "components/ui/Tooltip";
 
-import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
+import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { useTrackPage, PageTrackingCodes, useAnalyticsService } from "hooks/services/Analytics";
@@ -144,7 +144,7 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: getFrequencyType(connection.schedule),
+      frequency: getFrequencyFromScheduleData(connection.scheduleData),
       job_page_size: jobPageSize,
     });
   };
@@ -161,7 +161,7 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
   );
 
   return (
-    <div className={styles.statusView}>
+    <>
       <Card
         className={styles.contentCard}
         title={
@@ -214,7 +214,6 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
           <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
         )}
       </Card>
-
       {(moreJobPagesAvailable || isJobPageLoading) && (
         <footer className={styles.footer}>
           <Button isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
@@ -222,6 +221,6 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
           </Button>
         </footer>
       )}
-    </div>
+    </>
   );
 };
