@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { act, render, RenderResult } from "@testing-library/react";
+import { act, render as tlr } from "@testing-library/react";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
@@ -20,6 +20,18 @@ jest.mock("services/workspaces/WorkspacesService", () => ({
 
 describe("CreateConnectionForm", () => {
   const Wrapper: React.FC = ({ children }) => <TestWrapper>{children}</TestWrapper>;
+  const render = async () => {
+    let renderResult: ReturnType<typeof tlr>;
+
+    await act(async () => {
+      renderResult = tlr(
+        <Wrapper>
+          <CreateConnectionForm source={mockConnection.source} destination={mockConnection.destination} />
+        </Wrapper>
+      );
+    });
+    return renderResult!;
+  };
 
   const baseUseDiscoverSchema = {
     schemaErrorStatus: null,
@@ -30,47 +42,28 @@ describe("CreateConnectionForm", () => {
   };
 
   it("should render", async () => {
-    let renderResult: RenderResult;
     jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => baseUseDiscoverSchema);
-    await act(async () => {
-      renderResult = render(
-        <Wrapper>
-          <CreateConnectionForm source={mockConnection.source} destination={mockConnection.destination} />
-        </Wrapper>
-      );
-    });
-    expect(renderResult!.container).toMatchSnapshot();
-    expect(renderResult!.queryByText("Please wait a little bit more…")).toBeFalsy();
+    const renderResult = await render();
+    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult.queryByText("Please wait a little bit more…")).toBeFalsy();
   });
 
   it("should render when loading", async () => {
-    let renderResult: RenderResult;
     jest
       .spyOn(sourceHook, "useDiscoverSchema")
       .mockImplementationOnce(() => ({ ...baseUseDiscoverSchema, isLoading: true }));
-    await act(async () => {
-      renderResult = render(
-        <Wrapper>
-          <CreateConnectionForm source={mockConnection.source} destination={mockConnection.destination} />
-        </Wrapper>
-      );
-    });
-    expect(renderResult!.container).toMatchSnapshot();
+
+    const renderResult = await render();
+    expect(renderResult.container).toMatchSnapshot();
   });
 
   it("should render with an error", async () => {
-    let renderResult: RenderResult;
     jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => ({
       ...baseUseDiscoverSchema,
       schemaErrorStatus: new Error("Test Error") as sourceHook.SchemaError,
     }));
-    await act(async () => {
-      renderResult = render(
-        <Wrapper>
-          <CreateConnectionForm source={mockConnection.source} destination={mockConnection.destination} />
-        </Wrapper>
-      );
-    });
-    expect(renderResult!.container).toMatchSnapshot();
+
+    const renderResult = await render();
+    expect(renderResult.container).toMatchSnapshot();
   });
 });
