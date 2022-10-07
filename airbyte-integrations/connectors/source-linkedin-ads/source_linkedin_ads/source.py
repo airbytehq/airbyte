@@ -3,12 +3,12 @@
 #
 
 
+import logging
 from abc import ABC, abstractproperty
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlencode
 
 import backoff
-import logging
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -20,7 +20,6 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
 from .utils import get_parent_stream_values, transform_data
-
 
 logger = logging.getLogger("airbyte")
 

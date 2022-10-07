@@ -18,8 +18,8 @@ from source_linkedin_ads.source import (
     CampaignGroups,
     Campaigns,
     Creatives,
-    SourceLinkedinAds,
     LinkedinAdsOAuth2Authenticator,
+    SourceLinkedinAds,
 )
 
 TEST_OAUTH_CONFIG: dict = {
