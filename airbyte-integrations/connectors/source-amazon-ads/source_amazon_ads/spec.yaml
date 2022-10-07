@@ -31,7 +31,7 @@ connectionSpecification:
     report_generation_max_retries:
       title: Report Generation Maximum Retries *
       description:
-        Maximum retries Airbyte will attempt for fetching report data.
+        Maximum retries Estuary will attempt for fetching report data.
         Default is 5.
       default: 5
       examples:
