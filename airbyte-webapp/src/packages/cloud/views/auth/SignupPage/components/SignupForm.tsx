@@ -5,12 +5,14 @@ import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link, Button } from "components";
+import { LabeledInput, Link } from "components";
+import { Button } from "components/ui/Button";
 
 import { useConfig } from "config";
 import { useExperiment } from "hooks/services/Experiment";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { isGdprCountry } from "utils/dataPrivacy";
 
 import CheckBoxControl from "../../components/CheckBoxControl";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
@@ -204,7 +206,7 @@ export const SignupForm: React.FC = () => {
     companyName: search.company ?? "",
     email: search.email ?? "",
     password: "",
-    news: true,
+    news: !isGdprCountry(),
   };
   return (
     <Formik<FormValues>
