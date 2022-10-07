@@ -730,15 +730,17 @@ class CampaignsStatsLifetime(Lifetime, Stats):
 
 
 class SnapchatOauth2Authenticator(Oauth2Authenticator):
+    debug = 0
     @backoff.on_exception(
         backoff.expo,
-        DefaultBackoffException,
+        requests.exceptions.HTTPError,
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
         max_tries=5
     )
     def refresh_access_token(self) -> Tuple[str, int]:
+        self.debug += 1
         """
         returns a tuple of (access_token, token_lifespan_in_seconds)
         """
@@ -754,7 +756,7 @@ class SnapchatOauth2Authenticator(Oauth2Authenticator):
             return response_json["access_token"], response_json["expires_in"]
         except requests.exceptions.RequestException as e:
             if e.response.status_code == 429 or e.response.status_code >= 500:
-                raise DefaultBackoffException(request=e.response.request, response=e.response)
+                raise requests.exceptions.HTTPError(f"Failing with call count {self.debug}")
             raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
