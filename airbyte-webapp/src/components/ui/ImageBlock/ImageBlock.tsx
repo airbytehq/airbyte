@@ -22,5 +22,3 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ img, small, "aria-label"
     </div>
   );
 };
-
-export default ImageBlock;

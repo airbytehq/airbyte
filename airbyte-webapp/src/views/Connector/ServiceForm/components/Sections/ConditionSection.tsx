@@ -2,8 +2,7 @@ import { useFormikContext, setIn } from "formik";
 import React, { useCallback, useMemo } from "react";
 
 import GroupControls from "components/GroupControls";
-import { DropDown } from "components/ui/DropDown";
-import { IDataItem } from "components/ui/DropDown/components/Option";
+import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 
 import { FormBlock, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
@@ -30,7 +29,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
   const onOptionChange = useCallback(
-    (selectedItem: IDataItem) => {
+    (selectedItem: DropDownOptionDataItem) => {
       const newSelectedPath = formField.conditions[selectedItem.value];
 
       const newValues =

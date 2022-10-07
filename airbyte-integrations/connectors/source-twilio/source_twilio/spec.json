@@ -34,6 +34,8 @@
         "description": "How far into the past to look for records. (in minutes)",
         "examples": [60],
         "default": 0,
+        "minimum": 0,
+        "maximum": 576000,
         "type": "integer",
         "order": 4
       }

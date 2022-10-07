@@ -35,13 +35,14 @@ def prepared_prod_args():
 
 
 @timeout_decorator.timeout(20)
-def test_backoff(prepared_sandbox_args):
+@pytest.mark.parametrize("error_code", (40100, 50002))
+def test_backoff(prepared_sandbox_args, error_code):
     """TiktokMarketing sends the header 'Retry-After' about needed delay.
     All streams have to handle it"""
     stream = Advertisers(**prepared_sandbox_args)
     with requests_mock.Mocker() as m:
         url = stream.url_base + stream.path()
-        m.get(url, text=json.dumps({"code": 40100}))
+        m.get(url, text=json.dumps({"code": error_code}))
         with pytest.raises(UserDefinedBackoffException):
             list(stream.read_records(sync_mode=None))
 

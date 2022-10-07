@@ -100,7 +100,7 @@ export class GoogleAuthService {
   }
 
   async updateEmail(email: string, password: string): Promise<void> {
-    const user = await this.getCurrentUser();
+    const user = this.getCurrentUser();
 
     if (user) {
       await this.reauthenticate(email, password);
