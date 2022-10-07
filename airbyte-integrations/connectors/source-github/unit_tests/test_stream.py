@@ -70,7 +70,8 @@ def test_internal_server_error_retry(time_mock):
 @pytest.mark.parametrize(
     ("http_status", "response_headers", "expected_backoff_time"),
     [
-        (HTTPStatus.BAD_GATEWAY, {}, 60),
+        (HTTPStatus.BAD_GATEWAY, {}, None),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, None),
         (HTTPStatus.FORBIDDEN, {"Retry-After": 120}, 120),
         (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": 1655804724}, 300.0),
     ],
