@@ -1,3 +1,42 @@
+# Timely
+
+This page contains the setup guide and reference information for the Asana source connector.
+
+## Prerequisites
+
+Please follow these [steps](https://dev.timelyapp.com/#authorization) to obtain Bearer Token for your account.
+
+## Setup guide
+## Step 1: Set up the Asana connector in Airbyte
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the Asana connector and select **Asana** from the Source type dropdown.
+4. Select `Authenticate your account`.
+5. Log in and Authorize to the Asana account and click `Set up source`.
+
+### For Airbyte OSS:
+
+1. Navigate to the Airbyte Open Source dashboard
+2. Set the name for your source 
+3. Enter your `personal_access_token`
+4. Click **Set up source**
+
+## Supported sync modes
+
+The Asana source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | No         |
+| Namespaces        | No         |
+
+
+
+
 ---
 description: 'This connector extracts "events" from Timely'
 ---
