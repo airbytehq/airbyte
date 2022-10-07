@@ -41,12 +41,13 @@ public class BitDotIoDestination extends SpecModifyingDestination implements Des
       ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.PORT_LIST_KEY);
       ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
       ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.HOST_KEY);
-      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.TCP_PORT_KEY);
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.PORT_KEY);
       ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.JDBC_URL_PARAMS_KEY);
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_MODE_KEY);
       ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.SSL_KEY, "true");
       ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.HOST_KEY, "db.bit.io");
-      ((ObjectNode) spec.getConnectionSpecification().get("properties")).put("sslmode", "require");
-      ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.TCP_PORT_KEY, "5432");
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.SSL_MODE_KEY, "require");
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.PORT_KEY, "5432");
     } catch (JsonProcessingException e) {
       e.printStackTrace();
     } catch (URISyntaxException e) {
