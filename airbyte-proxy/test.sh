@@ -8,7 +8,7 @@ BASIC_AUTH_UPDATED_PASSWORD=pa55w0rd
 
 function start_container () {
   docker run -d -p $PORT:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --name $NAME airbyte/proxy:dev
-  sleep 3
+  sleep 10
 }
 
 function stop_container () {
