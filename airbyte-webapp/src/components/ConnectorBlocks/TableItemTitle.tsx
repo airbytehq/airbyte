@@ -59,6 +59,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           <FormattedMessage id="tables.connections" />
         </Heading>
         <DropdownMenu
+          testId={`select-${type}`}
           label={<FormattedMessage id={`tables.${type}Add`} />}
           options={options}
           onChange={onSelect}

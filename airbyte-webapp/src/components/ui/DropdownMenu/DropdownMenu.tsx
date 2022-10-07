@@ -19,12 +19,15 @@ export const DropdownMenu: React.FC<
     options: DropdownMenuItemType[];
     onChange: (item: DropdownMenuItemType) => void;
     disabled: boolean;
+    testId: string;
   }>
-> = ({ options, label, disabled, onChange }) => {
+> = ({ options, label, disabled, onChange, testId }) => {
   return (
     <Menu className={styles.dropDownMenu} as="div">
       <Menu.Button as={React.Fragment}>
-        <Button disabled={disabled}>{label}</Button>
+        <Button data-testid={testId} disabled={disabled}>
+          {label}
+        </Button>
       </Menu.Button>
       <Menu.Items className={styles.items}>
         {options?.map((item, index) => (
@@ -34,6 +37,7 @@ export const DropdownMenu: React.FC<
                 className={classNames(styles.item, { [styles.active]: active, [styles.primary]: item.primary })}
                 title={item.label}
                 onClick={() => onChange(item)}
+                data-testid={item.label}
               >
                 <Text className={styles.text} size="lg">
                   {item.label}
