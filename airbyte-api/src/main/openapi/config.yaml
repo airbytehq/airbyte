@@ -2040,8 +2040,7 @@ paths:
     post:
       tags:
         - web_backend
-      description:
-        Returns all available geographies in which a data sync can run.
+      description: Returns all available geographies in which a data sync can run.
       summary: |
         Returns available geographies can be selected to run data syncs in a particular geography. 
         The 'auto' entry indicates that the sync will be automatically assigned to a geography according 
