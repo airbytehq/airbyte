@@ -1,5 +1,5 @@
 import { uniqueId } from "lodash";
-import { KeyboardEventHandler, useState } from "react";
+import { KeyboardEventHandler, useMemo, useState } from "react";
 import { ActionMeta, MultiValue, OnChangeValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
@@ -8,63 +8,88 @@ const components = {
 };
 
 interface Tag {
-  readonly id: string;
   readonly label: string;
+  readonly value: string;
 }
 
 interface NewTagInputProps {
   name: string;
-  value: MultiValue<Tag>;
-  onChange: (value: MultiValue<Tag>) => void;
+  fieldValue: string[];
+  onChange: (value: string[]) => void;
   error?: boolean;
   disabled?: boolean;
 }
 
-// TODO: defaultValue, child component doing crummy stuff with keys
-export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, value: fieldValue, name, disabled }) => {
-  const generateTag = (inputValue: string) => ({ id: uniqueId(`tag_`), label: inputValue });
-  // give each tag a unique id
-  const tags = fieldValue;
+const generateTagFromString = (inputValue: string): Tag => ({
+  label: inputValue,
+  value: uniqueId(`tag_value_`),
+});
+
+const generateStringFromTag = (tag: Tag): string => tag.label;
+
+const delimiters = [",", ";", "\\n"];
+
+export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, fieldValue, name, disabled }) => {
+  const tags = useMemo(() => fieldValue.map(generateTagFromString), [fieldValue]);
+
   // input value is a tag draft
   const [inputValue, setInputValue] = useState("");
 
-  // handle when an item is created
-  const handleChange = (value: OnChangeValue<Tag, true>, actionMeta: ActionMeta<Tag>) => {
-    // the value should always contain just the value, not the id
-    let newTags: MultiValue<Tag> = tags;
+  const handleDelete = (_value: OnChangeValue<Tag, true>, actionMeta: ActionMeta<Tag>) => {
+    let updatedTags: MultiValue<Tag> = tags;
+    /**
+     * remove-value: user clicked x to remove tag
+     * clear: user clicked big x to clear all tags
+     * pop-value: user clicked backspace to remove tag
+     */
+
+    // TODO: handle deletes by selecting tag and hitting space/enter/delete
     if (actionMeta.action === "remove-value") {
-      newTags = tags.filter((tag) => tag.id !== actionMeta.removedValue.id);
+      updatedTags = updatedTags.filter((tag) => tag.value !== actionMeta.removedValue.value);
     } else if (actionMeta.action === "clear") {
-      newTags = [];
+      updatedTags = [];
+    } else if (actionMeta.action === "pop-value") {
+      updatedTags = updatedTags.slice(0, updatedTags.length - 1);
+      console.log({ updatedTags });
     }
-    onChange(newTags);
-    // todo: should also handle splitting up pasted strings by delimiters
-    //
+    onChange(updatedTags.map((tag) => generateStringFromTag(tag)));
   };
 
-  // handle when a user types OR pastes in a value
+  // handle when a user types OR pastes in the input
   const handleInputChange = (inputValue: string) => {
     setInputValue(inputValue);
+
+    delimiters.map((delimiter) => {
+      if (inputValue.includes(delimiter)) {
+        const newTagStrings = inputValue
+          .split(delimiter)
+          .map((tag) => tag.trim())
+          .filter(Boolean);
+
+        inputValue.trim().length > 1 && onChange([...fieldValue, ...newTagStrings]);
+        setInputValue("");
+      }
+    });
   };
 
-  // handle when user types in the input
+  // handle when user presses keyboard keys in the input
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
-    if (!inputValue) {
+    if (!inputValue || !inputValue.length) {
       return;
     }
 
     switch (event.key) {
       case "Enter":
+      case ",":
       case "Tab":
-        const newTag = generateTag(inputValue);
-        onChange([...fieldValue, newTag]);
-        // todo: do i need to manually clear the input
+        inputValue.trim().length > 1 && onChange([...fieldValue, inputValue.trim()]);
+
         event.preventDefault();
         setInputValue("");
     }
   };
 
-  // todo: helpful placeholder!
+  // todo: helper text? tootlip?
   return (
     <CreatableSelect
       name={name}
@@ -72,10 +97,9 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, value: field
       inputValue={inputValue}
       isClearable
       isMulti
-      // todo: is this actually what we want on blur?
-      onBlur={() => handleChange}
+      onBlur={() => handleDelete}
       menuIsOpen={false}
-      onChange={handleChange}
+      onChange={handleDelete}
       onInputChange={handleInputChange}
       onKeyDown={handleKeyDown}
       placeholder=""
