@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.2.5
-Fix a bug when a state is evaluated once before used in a loop of `test_read_sequential_slices` [#00000](https://github.com/airbytehq/airbyte/pull/00000/)
+Fix a bug when a state is evaluated once before used in a loop of `test_read_sequential_slices` [#17757](https://github.com/airbytehq/airbyte/pull/17757/)
 
 ## 0.2.4
 Make incremental tests compatible with per stream states.[#16686](https://github.com/airbytehq/airbyte/pull/16686/)
