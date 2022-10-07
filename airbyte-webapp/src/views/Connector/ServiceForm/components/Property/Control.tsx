@@ -35,17 +35,15 @@ export const Control: React.FC<ControlProps> = ({
   const [field, meta, helpers] = useField(name);
 
   if (property.type === "array" && !property.enum) {
-    // console.log(field.value);
     return (
-      // check how to use field array with new component
       <Field
         name={name}
-        defaultValue={[]}
+        defaultValue={property.default || []}
         render={() => (
           <NewTagInput
             name={name}
-            value={field.value || []}
-            onChange={(values) => helpers.setValue(values)}
+            fieldValue={field.value || []}
+            onChange={(tagLabels) => helpers.setValue(tagLabels)}
             // error={!!meta.error}
             disabled={disabled}
           />
