@@ -2,7 +2,7 @@ import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
 import { ConnectorSpecification } from "core/domain/connector";

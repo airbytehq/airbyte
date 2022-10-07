@@ -4,8 +4,8 @@ import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { LoadingPage, MainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
 
-import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
+import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService, useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useGetConnection } from "hooks/services/useConnectionHook";
@@ -38,7 +38,7 @@ export const ConnectionItemPage: React.FC = () => {
       connector_source_definition_id: source.sourceDefinitionId,
       connector_destination: destination.destinationName,
       connector_destination_definition_id: destination.destinationDefinitionId,
-      frequency: getFrequencyType(connection.scheduleData?.basicSchedule),
+      frequency: getFrequencyFromScheduleData(connection.scheduleData),
     });
   };
 

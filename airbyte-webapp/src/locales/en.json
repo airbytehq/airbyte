@@ -493,6 +493,7 @@
   "settings.newsletter": "Newsletter with feature updates.",
   "settings.account": "Account",
   "settings.accountSettings.updateEmailSuccess": "Email updated",
+  "settings.cookiePreferences": "Cookie Preferences",
 
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
@@ -547,6 +548,7 @@
   "ui.keyValuePairV2": "{key} ({value})",
   "ui.keyValuePairV3": "{key}, {value}",
   "ui.learnMore": "Learn more",
+  "ui.secretTextArea.hidden": "Contents hidden. Click to show.",
 
   "airbyte.datatype.string": "String",
   "airbyte.datatype.date": "Date",

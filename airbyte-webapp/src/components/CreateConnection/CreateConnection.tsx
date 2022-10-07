@@ -4,9 +4,10 @@ import React, { Suspense, useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { Button, Card } from "components";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
+import { Button } from "components/ui/Button";
+import { Card } from "components/ui/Card";
 
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectionFormServiceProvider } from "hooks/services/ConnectionForm/ConnectionFormService";

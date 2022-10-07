@@ -180,7 +180,7 @@ public class DockerProcessFactory implements ProcessFactory {
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
-      WorkerUtils.gentleClose(workerConfigs, process, 10, TimeUnit.MINUTES);
+      WorkerUtils.gentleClose(process, 10, TimeUnit.MINUTES);
 
       if (process.isAlive()) {
         throw new WorkerException("Process to check if image exists is stuck. Exiting.");
