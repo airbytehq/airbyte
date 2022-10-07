@@ -599,9 +599,9 @@ public class DefaultJobPersistence implements JobPersistence {
 
     return jobDatabase.query(ctx -> ctx
         .fetch("SELECT DISTINCT ON (scope) * FROM jobs "
-                + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
-                + AND + scopeInList(connectionIds)
-                + "ORDER BY scope, created_at DESC",
+            + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
+            + AND + scopeInList(connectionIds)
+            + "ORDER BY scope, created_at DESC",
             Sqls.toSqlName(ConfigType.SYNC))
         .stream()
         .flatMap(r -> getJobOptional(ctx, r.get("id", Long.class)).stream())
@@ -620,10 +620,10 @@ public class DefaultJobPersistence implements JobPersistence {
 
     return jobDatabase.query(ctx -> ctx
         .fetch("SELECT DISTINCT ON (scope) * FROM jobs "
-                + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
-                + AND + scopeInList(connectionIds)
-                + AND + JOB_STATUS_IS_NON_TERMINAL
-                + "ORDER BY scope, created_at DESC",
+            + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
+            + AND + scopeInList(connectionIds)
+            + AND + JOB_STATUS_IS_NON_TERMINAL
+            + "ORDER BY scope, created_at DESC",
             Sqls.toSqlName(ConfigType.SYNC))
         .stream()
         .flatMap(r -> getJobOptional(ctx, r.get("id", Long.class)).stream())

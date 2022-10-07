@@ -829,8 +829,10 @@ public class ConfigRepository {
     return result;
   }
 
-  // Data-carrier records to hold combined result of query for a Source or Destination and its corresponding Definition. This enables the API layer to
-  // process combined information about a Source/Destination/Definition pair without requiring two separate queries and in-memory join operation,
+  // Data-carrier records to hold combined result of query for a Source or Destination and its
+  // corresponding Definition. This enables the API layer to
+  // process combined information about a Source/Destination/Definition pair without requiring two
+  // separate queries and in-memory join operation,
   // because the config models are grouped immediately in the repository layer.
   public record SourceAndDefinition(SourceConnection source, StandardSourceDefinition definition) {
 

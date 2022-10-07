@@ -148,8 +148,8 @@ public class WebBackendConnectionsHandler {
   private Map<UUID, DestinationRead> getDestinationReadById(final List<UUID> destinationIds) throws IOException {
     final List<DestinationRead> destinationReads = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds)
         .stream()
-        .map(destinationAndDefinition ->
-            DestinationHandler.toDestinationRead(destinationAndDefinition.destination(), destinationAndDefinition.definition()))
+        .map(destinationAndDefinition -> DestinationHandler.toDestinationRead(destinationAndDefinition.destination(),
+            destinationAndDefinition.definition()))
         .toList();
 
     return destinationReads.stream().collect(Collectors.toMap(DestinationRead::getDestinationId, Function.identity()));
