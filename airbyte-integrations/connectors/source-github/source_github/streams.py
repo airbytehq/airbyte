@@ -11,6 +11,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests.exceptions import HTTPError
 
 from .graphql import CursorStorage, QueryReactions, get_query_pull_requests, get_query_reviews
@@ -95,7 +96,7 @@ class GithubStream(HttpStream, ABC):
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
 
-        if response.status_code == requests.codes.SERVER_ERROR:
+        if response.status_code in (requests.codes.SERVER_ERROR, requests.codes.BAD_GATEWAY):
             return None
 
         retry_after = int(response.headers.get("Retry-After", 0))
@@ -106,6 +107,16 @@ class GithubStream(HttpStream, ABC):
         backoff_time = float(reset_time) - time.time() if reset_time else 60
 
         return max(backoff_time, 60)  # This is a guarantee that no negative value will be returned.
+
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        if (
+            isinstance(exception, DefaultBackoffException)
+            and exception.response.status_code == requests.codes.BAD_GATEWAY
+            and self.large_stream
+            and self.page_size > 1
+        ):
+            return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
+        return super().get_error_display_message(exception)
 
     def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get out the stream_slice parts for later use.
@@ -597,6 +608,7 @@ class Comments(IncrementalMixin, GithubStream):
 
     use_cache = True
     large_stream = True
+    max_retries = 7
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
