@@ -8,7 +8,12 @@ BASIC_AUTH_UPDATED_PASSWORD=pa55w0rd
 
 function start_container () {
   docker run -d -p $PORT:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --name $NAME airbyte/proxy:dev
-  sleep 10
+  docker run --rm jwilder/dockerize -wait tcp://host.docker.internal:$PORT -timeout 30s
+  sleep 2
+  # while ! `nc -z -v -w30 localhost $PORT`; do
+  #   echo -n "."
+  #   sleep 1;
+  # done
 }
 
 function stop_container () {
@@ -26,7 +31,7 @@ echo "Starting $NAME"
 start_container $BASIC_AUTH_USERNAME $BASIC_AUTH_PASSWORD
 
 echo "Testing access without auth"
-RESPONSE=`curl "http://localhost:$PORT" -i`
+RESPONSE=`curl "http://localhost:$PORT" -i --silent`
 if [[ $RESPONSE == *"401 Unauthorized"* ]]; then
   echo "✔️  access without auth blocked"
 else
@@ -35,7 +40,7 @@ else
 fi
 
 echo "Testing access with auth"
-RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_PASSWORD@localhost:$PORT" -i`
+RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_PASSWORD@localhost:$PORT" -i --silent`
 if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access with auth worked"
 else
@@ -49,7 +54,7 @@ echo "Starting $NAME with updated password"
 start_container $BASIC_AUTH_USERNAME $BASIC_AUTH_UPDATED_PASSWORD
 
 echo "Testing access with orignial paassword"
-RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_PASSWORD@localhost:$PORT" -i`
+RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_PASSWORD@localhost:$PORT" -i --silent`
 if [[ $RESPONSE == *"401 Unauthorized"* ]]; then
   echo "✔️  access with original auth blocked"
 else
@@ -58,7 +63,7 @@ else
 fi
 
 echo "Testing access updated auth"
-RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_UPDATED_PASSWORD@localhost:$PORT" -i`
+RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_UPDATED_PASSWORD@localhost:$PORT" -i --silent`
 if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access with updated auth worked"
 else
