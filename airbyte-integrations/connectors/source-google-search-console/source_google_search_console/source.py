@@ -70,15 +70,14 @@ class SourceGoogleSearchConsole(AbstractSource):
             pendulum.parse(end_date)
         config["end_date"] = end_date or pendulum.now().to_date_string()
 
-        config["site_urls"] = [self.normalize_url(u) for u in config["site_urls"]]
+        config["site_urls"] = [self.normalize_url(url) for url in config["site_urls"]]
+        self.validate_site_urls(config["site_urls"], self.get_authenticator(config))
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        config = self._validate_and_transform(config)
         try:
+            config = self._validate_and_transform(config)
             stream_kwargs = self.get_stream_kwargs(config)
-            self.validate_site_urls(config, stream_kwargs)
-
             sites = Sites(**stream_kwargs)
             stream_slice = sites.stream_slices(SyncMode.full_refresh)
 
@@ -98,9 +97,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             )
 
     @staticmethod
-    def validate_site_urls(config, stream_kwargs):
-        auth = stream_kwargs["authenticator"]
-
+    def validate_site_urls(site_urls, auth):
         if isinstance(auth, ServiceAccountAuthenticator):
             request = auth(requests.Request(method="GET", url="https://www.googleapis.com/webmasters/v3/sites"))
             with requests.Session() as s:
@@ -109,10 +106,8 @@ class SourceGoogleSearchConsole(AbstractSource):
             response = requests.get("https://www.googleapis.com/webmasters/v3/sites", headers=auth.get_auth_header())
         response_data = response.json()
 
-        site_urls = set([s["siteUrl"] for s in response_data["siteEntry"]])
-        provided_by_client = set(config["site_urls"])
-
-        invalid_site_url = provided_by_client - site_urls
+        remote_site_urls = {s["siteUrl"] for s in response_data["siteEntry"]}
+        invalid_site_url = set(site_urls) - remote_site_urls
         if invalid_site_url:
             raise InvalidSiteURLValidationError(f'The following URLs are not permitted: {", ".join(invalid_site_url)}')
 
