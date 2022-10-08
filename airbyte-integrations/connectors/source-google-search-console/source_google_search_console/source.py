@@ -56,6 +56,11 @@ class SourceGoogleSearchConsole(AbstractSource):
                 raise Exception("custom_reports is not valid JSON")
             jsonschema.validate(config["custom_reports"], custom_reports_schema)
 
+        pendulum.parse(config["start_date"])
+        end_date = config.get("end_date")
+        if end_date:
+            pendulum.parse(end_date)
+        config["end_date"] = end_date or pendulum.now().to_date_string()
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -105,7 +110,7 @@ class SourceGoogleSearchConsole(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-
+        config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
 
         streams = [
@@ -131,9 +136,9 @@ class SourceGoogleSearchConsole(AbstractSource):
 
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
-            "site_urls": config.get("site_urls"),
-            "start_date": config.get("start_date"),
-            "end_date": config.get("end_date") or pendulum.now().to_date_string(),
+            "site_urls": config["site_urls"],
+            "start_date": config["start_date"],
+            "end_date": config["end_date"],
             "authenticator": self.get_authenticator(config),
         }
 
