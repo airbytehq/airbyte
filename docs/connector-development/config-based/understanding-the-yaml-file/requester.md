@@ -10,7 +10,7 @@ There is currently only one implementation, the `HttpRequester`, which is define
 5. [An authenticator](./authentication.md): Defines how to authenticate to the source
 6. [An error handler](./error-handling.md): Defines how to handle errors
 
-The schema of a request object is:
+The schema of a requester object is:
 
 ```yaml
 Requester:
