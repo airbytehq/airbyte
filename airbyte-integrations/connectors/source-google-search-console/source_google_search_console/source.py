@@ -88,7 +88,7 @@ class SourceGoogleSearchConsole(AbstractSource):
                 next(sites_gen)
             return True, None
 
-        except InvalidSiteURLValidationError as e:
+        except (InvalidSiteURLValidationError, jsonschema.ValidationError) as e:
             return False, repr(e)
         except Exception as error:
             return (

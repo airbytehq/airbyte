@@ -173,9 +173,21 @@ def test_check_connection(config_gen, mocker, requests_mock):
         message="\"Unable to connect to Google Search Console API with the provided credentials - ParserError('Unable to parse string [2022-99-99]')\"",
     )
 
+    # test custom_reports
+    assert command_check(source, config_gen(custom_reports="")) == AirbyteConnectionStatus(
+        status=Status.FAILED,
+        message="\"Unable to connect to Google Search Console API with the provided credentials - Exception('custom_reports is not valid JSON')\"",
+    )
+    assert command_check(source, config_gen(custom_reports="{}")) == AirbyteConnectionStatus(
+        status=Status.FAILED, message="'<ValidationError: \"{} is not of type \\'array\\'\">'"
+    )
 
-def test_streams(config):
-    streams = SourceGoogleSearchConsole().streams(config)
+
+def test_streams(config_gen):
+    source = SourceGoogleSearchConsole()
+    streams = source.streams(config_gen())
+    assert len(streams) == 9
+    streams = source.streams(config_gen(custom_reports=...))
     assert len(streams) == 8
 
 
