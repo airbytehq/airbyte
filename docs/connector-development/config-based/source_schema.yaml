@@ -16,7 +16,7 @@ definitions:
     additionalProperties: true
   ConnectionChecker:
     type: object
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/CheckStream"
   CheckStream:
     type: object
@@ -53,23 +53,16 @@ definitions:
       retriever:
         "$ref": "#/definitions/Retriever"
       stream_cursor_field:
-        type: object
-        oneOf:
-          - type: string
-          - type: array
-            items:
-              type: string
+        type: string
       transformations:
-        type: array
-        items:
-          "$ref": "#/definitions/RecordTransformation"
+        "$ref": "#/definitions/RecordTransformation"
       checkpoint_interval:
         type: integer
   PrimaryKey:
     type: string
   Retriever:
     type: object
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/SimpleRetriever"
   SimpleRetriever:
     type: object
@@ -95,7 +88,7 @@ definitions:
         "$ref": "#/definitions/StreamSlicer"
   Requester:
     type: object
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/HttpRequester"
   HttpRequester:
     type: object
@@ -131,7 +124,7 @@ definitions:
       - POST
   RequestOptionsProvider:
     type: object
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
   InterpolatedRequestOptionsProvider:
     type: object
@@ -153,7 +146,7 @@ definitions:
   Authenticator:
     type: object
     description: "Authenticator type"
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/OAuth"
       - "$ref": "#/definitions/ApiKeyAuthenticator"
       - "$ref": "#/definitions/BearerAuthenticator"
@@ -186,7 +179,6 @@ definitions:
     additionalProperties: true
     required:
       - username
-      - password
     properties:
       "$options":
         "$ref": "#/definitions/$options"
@@ -232,7 +224,7 @@ definitions:
         type: object
   Paginator:
     type: object
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/DefaultPaginator"
       - "$ref": "#/definitions/NoPaginator"
   DefaultPaginator:
@@ -278,11 +270,11 @@ definitions:
       - body_json
   PaginationStrategy:
     type: object
-    oneOf:
-      - "$ref": "#/definitions/CursorPagination"
+    anyOf:
+      - "$ref": "#/definitions/CursorPaginator"
       - "$ref": "#/definitions/OffsetIncrement"
       - "$ref": "#/definitions/PageIncrement"
-  CursorPaginationStrategy:
+  CursorPaginator:
     type: object
     additionalProperties: true
     required:
@@ -318,7 +310,7 @@ definitions:
         type: integer
   HttpSelector:
     type: object
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/RecordSelector"
   RecordSelector:
     type: object
@@ -333,7 +325,7 @@ definitions:
         "$ref": "#/definitions/RecordFilter"
   RecordExtractor:
     type: object
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/DpathExtractor"
   DpathExtractor:
     type: object
@@ -357,7 +349,7 @@ definitions:
         type: string
   StreamSlicer:
     type: object
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/DatetimeStreamSlicer"
       - "$ref": "#/definitions/ListStreamSlicer"
       - "$ref": "#/definitions/CartesianProductStreamSlicer"
@@ -476,7 +468,7 @@ definitions:
   ErrorHandler:
     type: object
     description: "Error handler"
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/DefaultErrorHandler"
       - "$ref": "#/definitions/CompositeErrorHandler"
   DefaultErrorHandler:
@@ -538,7 +530,7 @@ definitions:
       - RETRY
   BackoffStrategy:
     type: object
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/ExponentialBackoff"
       - "$ref": "#/definitions/ConstantBackoff"
       - "$ref": "#/definitions/WaitTimeFromHeader"
@@ -590,7 +582,7 @@ definitions:
         type: number
   RecordTransformation:
     type: object
-    oneOf:
+    anyOf:
       - "$ref": "#/definitions/AddFields"
       - "$ref": "#/definitions/RemoveFields"
   AddFields:
