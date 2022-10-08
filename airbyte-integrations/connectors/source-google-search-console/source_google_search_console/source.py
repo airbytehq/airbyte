@@ -4,6 +4,7 @@
 
 import json
 from typing import Any, List, Mapping, Optional, Tuple
+from urllib.parse import urlparse
 
 import jsonschema
 import pendulum
@@ -41,6 +42,13 @@ custom_reports_schema = {
 
 
 class SourceGoogleSearchConsole(AbstractSource):
+    @staticmethod
+    def normalize_url(url):
+        parse_result = urlparse(url)
+        if parse_result.path == "":
+            parse_result = parse_result._replace(path="/")
+        return parse_result.geturl()
+
     def _validate_and_transform(self, config: Mapping[str, Any]):
         authorization = config["authorization"]
         if authorization["auth_type"] == "Service":
@@ -61,6 +69,8 @@ class SourceGoogleSearchConsole(AbstractSource):
         if end_date:
             pendulum.parse(end_date)
         config["end_date"] = end_date or pendulum.now().to_date_string()
+
+        config["site_urls"] = [self.normalize_url(u) for u in config["site_urls"]]
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
