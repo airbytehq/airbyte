@@ -57,7 +57,7 @@ It is described by:
 1. [Requester](./requester.md): Describes how to submit requests to the API source
 2. [Paginator](./pagination.md): Describes how to navigate through the API's pages
 3. [Record selector](./record-selector.md): Describes how to extract records from a HTTP response
-4. [Stream Slicer](./stream-slicers.md): Describes how to partition the stream, enabling incremental syncs and checkpointing
+4. [Stream slicer](./stream-slicers.md): Describes how to partition the stream, enabling incremental syncs and checkpointing
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
