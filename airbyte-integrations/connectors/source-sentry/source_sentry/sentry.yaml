@@ -20,8 +20,7 @@ definitions:
   paginator:
     type: DefaultPaginator
     url_base: "*ref(definitions.requester.url_base)"
-    page_size: "*ref(definitions.page_size)"
-    limit_option:
+    page_size_option:
       inject_into: "request_parameter"
       field_name: ""
     page_token_option:
@@ -31,6 +30,7 @@ definitions:
       type: "CursorPagination"
       cursor_value: "{{ headers.link.next.cursor }}"
       stop_condition: "{{ headers.link.next.results != 'true' }}"
+      page_size: "*ref(definitions.page_size)"
   retriever:
     type: SimpleRetriever
     name: "{{ options['name'] }}"
