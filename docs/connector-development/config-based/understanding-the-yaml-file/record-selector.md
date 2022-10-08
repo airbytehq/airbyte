@@ -4,51 +4,39 @@ The record selector is responsible for translating an HTTP response into a list 
 Schema:
 
 ```yaml
-HttpSelector:
-  type: object
-  oneOf:
-    - "$ref": "#/definitions/RecordSelector"
-RecordSelector:
-  type: object
-  required:
-    - extractor
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    extractor:
-      "$ref": "#/definitions/RecordExtractor"
-    record_filter:
-      "$ref": "#/definitions/RecordFilter"
-RecordExtractor:
-  type: object
-  oneOf:
-    - "$ref": "#/definitions/DpathExtractor"
+  HttpSelector:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/RecordSelector"
+  RecordSelector:
+    type: object
+    required:
+      - extractor
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      extractor:
+        "$ref": "#/definitions/RecordExtractor"
+      record_filter:
+        "$ref": "#/definitions/RecordFilter"
 ```
 
 The current record extraction implementation uses [dpath](https://pypi.org/project/dpath/) to select records from the json-decoded HTTP response.
 Schema:
 
 ```yaml
-DpathExtractor:
-  type: object
-  additionalProperties: false
-  required:
-    - field_pointer
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    field_pointer:
-      type: array
-      items:
-        type: string
-  RecordFilter:
+  DpathExtractor:
     type: object
-    additionalProperties: false
+    additionalProperties: true
+    required:
+      - field_pointer
     properties:
       "$options":
         "$ref": "#/definitions/$options"
-      condition:
-        type: string
+      field_pointer:
+        type: array
+        items:
+          type: string
 ```
 
 ## Common recipes:
@@ -186,11 +174,11 @@ Fields can be added or removed from records by adding `Transformation`s to a str
 Schema:
 
 ```yaml
-RecordTransformation:
-  type: object
-  oneOf:
-    - "$ref": "#/definitions/AddFields"
-    - "$ref": "#/definitions/RemoveFields"
+  RecordTransformation:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/AddFields"
+      - "$ref": "#/definitions/RemoveFields"
 ```
 
 ### Adding fields
@@ -201,35 +189,35 @@ This example adds a top-level field "field1" with a value "static_value"
 Schema:
 
 ```yaml
-AddFields:
-  type: object
-  required:
-    - fields
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    fields:
-      type: array
-      items:
-        "$ref": "#/definitions/AddedFieldDefinition"
-AddedFieldDefinition:
-  type: object
-  required:
-    - path
-    - value
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    path:
-      "$ref": "#/definitions/FieldPointer"
-    value:
+  AddFields:
+    type: object
+    required:
+      - fields
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      fields:
+        type: array
+        items:
+          "$ref": "#/definitions/AddedFieldDefinition"
+  AddedFieldDefinition:
+    type: object
+    required:
+      - path
+      - value
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      path:
+        "$ref": "#/definitions/FieldPointer"
+      value:
+        type: string
+  FieldPointer:
+    type: array
+    items:
       type: string
-FieldPointer:
-  type: array
-  items:
-    type: string
 ```
 
 Example:
@@ -253,7 +241,7 @@ stream:
       - type: AddFields
         fields:
           - path: [ "start_date" ]
-            value: {{ stream_slice[ 'start_date' ] }}
+            value: { { stream_slice[ 'start_date' ] } }
 ```
 
 Fields can also be added in a nested object by writing the fields' path as a list.
@@ -302,18 +290,19 @@ Fields can be removed from records with the `RemoveFields` transformation.
 Schema:
 
 ```yaml
-RemoveFields:
-  type: object
-  required:
-    - field_pointers
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    field_pointers:
-      type: array
-      items:
-        "$ref": "#/definitions/FieldPointer"
+  RemoveFields:
+    type: object
+    required:
+      - field_pointers
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      field_pointers:
+        type: array
+        items:
+          "$ref": "#/definitions/FieldPointer"
+
 ```
 
 Given a record of the following shape:

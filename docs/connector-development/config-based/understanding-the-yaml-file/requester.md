@@ -13,45 +13,42 @@ There is currently only one implementation, the `HttpRequester`, which is define
 The schema of a requester object is:
 
 ```yaml
-Requester:
-  type: object
-  oneOf:
-    - "$ref": "#/definitions/HttpRequester"
-HttpRequester:
-  type: object
-  additionalProperties: false
-  required:
-    - name
-    - url_base
-    - path
-    - http_method
-    - request_options_provider
-    - authenticator
-    - error_handler
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    name:
-      type: string
-    url_base:
-      type: string
-      description: "base url"
-    path:
-      type: string
-      description: "path"
-    http_method:
-      "$ref": "#/definitions/HttpMethod"
-    request_options_provider:
-      "$ref": "#/definitions/RequestOptionsProvider"
-    authenticator:
-      "$ref": "#/definitions/Authenticator"
-    error_handler:
-      "$ref": "#/definitions/ErrorHandler"
-HttpMethod:
-  type: string
-  enum:
-    - GET
-    - POST
+  Requester:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/HttpRequester"
+  HttpRequester:
+    type: object
+    additionalProperties: true
+    required:
+      - name
+      - url_base
+      - path
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      name:
+        type: string
+      url_base:
+        type: string
+        description: "base url"
+      path:
+        type: string
+        description: "path"
+      http_method:
+        "$ref": "#/definitions/HttpMethod"
+        default: "GET"
+      request_options_provider:
+        "$ref": "#/definitions/RequestOptionsProvider"
+      authenticator:
+        "$ref": "#/definitions/Authenticator"
+      error_handler:
+        "$ref": "#/definitions/ErrorHandler"
+  HttpMethod:
+    type: string
+    enum:
+      - GET
+      - POST
 ```
 
 ## Configuring request parameters and headers

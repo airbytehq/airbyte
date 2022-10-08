@@ -13,27 +13,24 @@ The options can be configured as key value pairs:
 Schema:
 
 ```yaml
-RequestOptionsProvider:
-  type: object
-  oneOf:
-    - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
-InterpolatedRequestOptionsProvider:
-  type: object
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    request_parameters:
-      "$ref": "#/definitions/RequestInput"
-    request_headers:
-      "$ref": "#/definitions/RequestInput"
-    request_body_data:
-      "$ref": "#/definitions/RequestInput"
-    request_body_json:
-      "$ref": "#/definitions/RequestInput"
-RequestInput:
-  type: object
-  additionalProperties: true
+  RequestOptionsProvider:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+  InterpolatedRequestOptionsProvider:
+    type: object
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      request_parameters:
+        "$ref": "#/definitions/RequestInput"
+      request_headers:
+        "$ref": "#/definitions/RequestInput"
+      request_body_data:
+        "$ref": "#/definitions/RequestInput"
+      request_body_json:
+        "$ref": "#/definitions/RequestInput"
 ```
 
 Example:
@@ -73,24 +70,24 @@ Some components can add request options to the requests sent to the API endpoint
 Schema:
 
 ```yaml
-RequestOption:
-  type: object
-  additionalProperties: false
-  required:
-    - inject_into
-  properties:
-    inject_into:
-      "$ref": "#/definitions/RequestOptionType"
-    field_name:
-      type: string
-RequestOptionType:
-  type: string
-  enum:
-    - request_parameter
-    - header
-    - path
-    - body_data
-    - body_json
+  RequestOption:
+    type: object
+    additionalProperties: true
+    required:
+      - inject_into
+    properties:
+      inject_into:
+        "$ref": "#/definitions/RequestOptionType"
+      field_name:
+        type: string
+  RequestOptionType:
+    type: string
+    enum:
+      - request_parameter
+      - header
+      - path
+      - body_data
+      - body_json
 ```
 
 ## Authenticators

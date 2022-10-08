@@ -8,19 +8,12 @@ Other behaviors can be configured through the `Requester`'s `error_handler` fiel
 Schema:
 
 ```yaml
-ErrorHandler:
-  type: object
-  description: "Error handler"
-  oneOf:
-    - "$ref": "#/definitions/DefaultErrorHandler"
-    - "$ref": "#/definitions/CompositeErrorHandler"
-BackoffStrategy:
-  type: object
-  oneOf:
-    - "$ref": "#/definitions/ExponentialBackoff"
-    - "$ref": "#/definitions/ConstantBackoff"
-    - "$ref": "#/definitions/WaitTimeFromHeader"
-    - "$ref": "#/definitions/WaitUntilTimeFromHeader"
+  ErrorHandler:
+    type: object
+    description: "Error handler"
+    anyOf:
+      - "$ref": "#/definitions/DefaultErrorHandler"
+      - "$ref": "#/definitions/CompositeErrorHandler"
 ```
 
 ## Default error handler
@@ -28,26 +21,26 @@ BackoffStrategy:
 Schema:
 
 ```yaml
-DefaultErrorHandler:
-  type: object
-  required:
-    - max_retries
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    response_filters:
-      type: array
-      items:
-        "$ref": "#/definitions/HttpResponseFilter"
-    max_retries:
-      type: integer
-      default: 5
-    backoff_strategies:
-      type: array
-      items:
-        "$ref": "#/definitions/BackoffStrategy"
-      default: [ ]
+  DefaultErrorHandler:
+    type: object
+    required:
+      - max_retries
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      response_filters:
+        type: array
+        items:
+          "$ref": "#/definitions/HttpResponseFilter"
+      max_retries:
+        type: integer
+        default: 5
+      backoff_strategies:
+        type: array
+        items:
+          "$ref": "#/definitions/BackoffStrategy"
+        default: [ ]
 ```
 
 ## Defining errors
@@ -60,32 +53,32 @@ For instance, this example will configure the handler to also retry responses wi
 Schema:
 
 ```yaml
-HttpResponseFilter:
-  type: object
-  required:
-    - action
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    action:
-      "$ref": "#/definitions/ResponseAction"
-    http_codes:
-      type: array
-      items:
-        type: integer
-      default: [ ]
-    error_message_contains:
-      type: string
-    predicate:
-      type: string
-ResponseAction:
-  type: string
-  enum:
-    - SUCCESS
-    - FAIL
-    - IGNORE
-    - RETRY
+  HttpResponseFilter:
+    type: object
+    required:
+      - action
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      action:
+        "$ref": "#/definitions/ResponseAction"
+      http_codes:
+        type: array
+        items:
+          type: integer
+        default: [ ]
+      error_message_contains:
+        type: string
+      predicate:
+        type: string
+  ResponseAction:
+    type: string
+    enum:
+      - SUCCESS
+      - FAIL
+      - IGNORE
+      - RETRY
 ```
 
 Example:
@@ -150,13 +143,25 @@ requester:
     response_filters:
         - http_codes: [ 404 ]
           action: IGNORE
-        - http_codes: [ 429 ]
-          action: RETRY
+                    - http_codes: [ 429 ]
+                    action: RETRY
 ```
 
 ## Backoff Strategies
 
 The error handler supports a few backoff strategies, which are described in the following sections.
+
+Schema:
+
+```yaml
+  BackoffStrategy:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/ExponentialBackoff"
+      - "$ref": "#/definitions/ConstantBackoff"
+      - "$ref": "#/definitions/WaitTimeFromHeader"
+      - "$ref": "#/definitions/WaitUntilTimeFromHeader"
+```
 
 ### Exponential backoff
 
@@ -165,15 +170,15 @@ This is the default backoff strategy. The requester will backoff with an exponen
 Schema:
 
 ```yaml
-ExponentialBackoff:
-  type: object
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    factor:
-      type: integer
-      default: 5
+  ExponentialBackoff:
+    type: object
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      factor:
+        type: integer
+        default: 5
 ```
 
 ### Constant Backoff
@@ -183,16 +188,16 @@ When using the `ConstantBackoffStrategy`, the requester will backoff with a cons
 Schema:
 
 ```yaml
-ConstantBackoff:
-  type: object
-  additionalProperties: false
-  required:
-    - backoff_time_in_seconds
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    backoff_time_in_seconds:
-      type: number
+  ConstantBackoff:
+    type: object
+    additionalProperties: true
+    required:
+      - backoff_time_in_seconds
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      backoff_time_in_seconds:
+        type: number
 ```
 
 ### Wait time defined in header
@@ -203,18 +208,18 @@ In this example, the requester will backoff by the response's "wait_time" header
 Schema:
 
 ```yaml
-WaitTimeFromHeader:
-  type: object
-  additionalProperties: false
-  required:
-    - header
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    header:
-      type: string
-    regex:
-      type: string
+  WaitTimeFromHeader:
+    type: object
+    additionalProperties: true
+    required:
+      - header
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      header:
+        type: string
+      regex:
+        type: string
 ```
 
 Example:
@@ -252,20 +257,20 @@ In this example, the requester will wait until the time specified in the "wait_u
 Schema:
 
 ```yaml
-WaitUntilTimeFromHeaderBackoffStrategy:
-  type: object
-  additionalProperties: false
-  required:
-    - header
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    header:
-      type: string
-    regex:
-      type: string
-    min_wait:
-      type: float
+  WaitUntilTimeFromHeader:
+    type: object
+    additionalProperties: true
+    required:
+      - header
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      header:
+        type: string
+      regex:
+        type: string
+      min_wait:
+        type: number
 ```
 
 Example:
@@ -310,17 +315,17 @@ In this example, a constant backoff of 5 seconds, will be applied if the respons
 Schema:
 
 ```yaml
-CompositeErrorHandler:
-  type: object
-  required:
-    - error_handlers
-  additionalProperties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    error_handlers:
-      type: array
-      items:
-        "$ref": "#/definitions/ErrorHandler"
+  CompositeErrorHandler:
+    type: object
+    required:
+      - error_handlers
+    additionalProperties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      error_handlers:
+        type: array
+        items:
+          "$ref": "#/definitions/ErrorHandler"
 ```
 
 Example:

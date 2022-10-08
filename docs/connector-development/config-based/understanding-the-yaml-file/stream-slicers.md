@@ -14,14 +14,14 @@ More information about stream slicing can be found in the [stream-slices section
 Schema:
 
 ```yaml
-StreamSlicer:
-  type: object
-  oneOf:
-    - "$ref": "#/definitions/DatetimeStreamSlicer"
-    - "$ref": "#/definitions/ListStreamSlicer"
-    - "$ref": "#/definitions/CartesianProductStreamSlicer"
-    - "$ref": "#/definitions/SubstreamSlicer"
-    - "$ref": "#/definitions/SingleSlice"
+  StreamSlicer:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/DatetimeStreamSlicer"
+      - "$ref": "#/definitions/ListStreamSlicer"
+      - "$ref": "#/definitions/CartesianProductStreamSlicer"
+      - "$ref": "#/definitions/SubstreamSlicer"
+      - "$ref": "#/definitions/SingleSlice"
 ```
 
 ### Single slice
@@ -31,9 +31,9 @@ The single slice only produces one slice for the whole stream.
 Schema:
 
 ```yaml
-SingleSlice:
-  type: object
-  additionalProperties: false
+  SingleSlice:
+    type: object
+    additionalProperties: true
 ```
 
 ### DatetimeStreamSlicer
@@ -47,54 +47,54 @@ For instance,
 Schema:
 
 ```yaml
-DatetimeStreamSlicer:
-  type: object
-  required:
-    - start_datetime
-    - end_datetime
-    - step
-    - cursor_field
-    - datetime_format
-  additional_properties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    start_datetime:
-      "$ref": "#/definitions/MinMaxDatetime"
-    end_datetime:
-      "$ref": "#/definitions/MinMaxDatetime"
-    step:
-      type: string
-    cursor_field:
-      type: string
-    datetime_format:
-      type: string
-    start_time_option:
-      "$ref": "#/definitions/RequestOption"
-    end_time_option:
-      "$ref": "#/definitions/RequestOption"
-    stream_state_field_start:
-      type: string
-    stream_state_field_end:
-      type: string
-    lookback_window:
-      type: string
-MinMaxDatetime:
-  type: object
-  required:
-    - datetime
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    datetime:
-      type: string
-    datetime_format:
-      type: string
-    min_datetime:
-      type: string
-    max_datetime:
-      type: string
+  DatetimeStreamSlicer:
+    type: object
+    required:
+      - start_datetime
+      - end_datetime
+      - step
+      - cursor_field
+      - datetime_format
+    additional_properties: false
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      start_datetime:
+        "$ref": "#/definitions/MinMaxDatetime"
+      end_datetime:
+        "$ref": "#/definitions/MinMaxDatetime"
+      step:
+        type: string
+      cursor_field:
+        type: string
+      datetime_format:
+        type: string
+      start_time_option:
+        "$ref": "#/definitions/RequestOption"
+      end_time_option:
+        "$ref": "#/definitions/RequestOption"
+      stream_state_field_start:
+        type: string
+      stream_state_field_end:
+        type: string
+      lookback_window:
+        type: string
+  MinMaxDatetime:
+    type: object
+    required:
+      - datetime
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      datetime:
+        type: string
+      datetime_format:
+        type: string
+      min_datetime:
+        type: string
+      max_datetime:
+        type: string
 ```
 
 Example:
@@ -165,23 +165,23 @@ It is defined by
 Schema:
 
 ```yaml
-ListStreamSlicer:
-  type: object
-  required:
-    - slice_values
-    - cursor_field
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    slice_values:
-      type: array
-      items:
+  ListStreamSlicer:
+    type: object
+    required:
+      - slice_values
+      - cursor_field
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      slice_values:
+        type: array
+        items:
+          type: string
+      cursor_field:
         type: string
-    cursor_field:
-      type: string
-    request_option:
-      "$ref": "#/definitions/RequestOption"
+      request_option:
+        "$ref": "#/definitions/RequestOption"
 ```
 
 As an example, this stream slicer will iterate over the 2 repositories ("airbyte" and "airbyte-secret") and will set a request_parameter on outgoing HTTP requests.
@@ -205,18 +205,18 @@ stream_slicer:
 Schema:
 
 ```yaml
-CartesianProductStreamSlicer:
-  type: object
-  required:
-    - stream_slicers
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    stream_slicers:
-      type: array
-      items:
-        "$ref": "#/definitions/StreamSlicer"
+  CartesianProductStreamSlicer:
+    type: object
+    required:
+      - stream_slicers
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      stream_slicers:
+        type: array
+        items:
+          "$ref": "#/definitions/StreamSlicer"
 ```
 
 Given 2 stream slicers with the following slices:
@@ -252,36 +252,36 @@ We might for instance want to read all the commits for a given repository (paren
 Schema:
 
 ```yaml
-SubstreamSlicer:
-  type: object
-  required:
-    - parent_stream_configs
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    parent_stream_configs:
-      type: array
-      items:
-        "$ref": "#/definitions/ParentStreamConfig"
-ParentStreamConfig:
-  type: object
-  required:
-    - stream
-    - parent_key
-    - stream_slice_field
-  additionalProperties: false
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    stream:
-      "$ref": "#/definitions/Stream"
-    parent_key:
-      type: string
-    stream_slice_field:
-      type: string
-    request_option:
-      "$ref": "#/definitions/RequestOption"
+  SubstreamSlicer:
+    type: object
+    required:
+      - parent_stream_configs
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      parent_stream_configs:
+        type: array
+        items:
+          "$ref": "#/definitions/ParentStreamConfig"
+  ParentStreamConfig:
+    type: object
+    required:
+      - stream
+      - parent_key
+      - stream_slice_field
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      stream:
+        "$ref": "#/definitions/Stream"
+      parent_key:
+        type: string
+      stream_slice_field:
+        type: string
+      request_option:
+        "$ref": "#/definitions/RequestOption"
 ```
 
 Example:

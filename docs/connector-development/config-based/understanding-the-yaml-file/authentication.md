@@ -5,14 +5,14 @@ The `Authenticator` defines how to configure outgoing HTTP requests to authentic
 Schema:
 
 ```yaml
-Authenticator:
-  type: object
-  description: "Authenticator type"
-  oneOf:
-    - "$ref": "#/definitions/OAuth"
-    - "$ref": "#/definitions/ApiKeyAuthenticator"
-    - "$ref": "#/definitions/BearerAuthenticator"
-    - "$ref": "#/definitions/BasicHttpAuthenticator"
+  Authenticator:
+    type: object
+    description: "Authenticator type"
+    anyOf:
+      - "$ref": "#/definitions/OAuth"
+      - "$ref": "#/definitions/ApiKeyAuthenticator"
+      - "$ref": "#/definitions/BearerAuthenticator"
+      - "$ref": "#/definitions/BasicHttpAuthenticator"
 ```
 
 ## Authenticators
@@ -25,19 +25,19 @@ The following definition will set the header "Authorization" with a value "Beare
 Schema:
 
 ```yaml
-ApiKeyAuthenticator:
-  type: object
-  additionalProperties: false
-  required:
-    - header
-    - api_token
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    header:
-      type: string
-    api_token:
-      type: string
+  ApiKeyAuthenticator:
+    type: object
+    additionalProperties: true
+    required:
+      - header
+      - api_token
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      header:
+        type: string
+      api_token:
+        type: string
 ```
 
 Example:
@@ -57,16 +57,16 @@ The following definition will set the header "Authorization" with a value "Beare
 Schema:
 
 ```yaml
-BearerAuthenticator:
-  type: object
-  additionalProperties: false
-  required:
-    - api_token
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    api_token:
-      type: string
+  BearerAuthenticator:
+    type: object
+    additionalProperties: true
+    required:
+      - api_token
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      api_token:
+        type: string
 ```
 
 Example:
@@ -87,19 +87,18 @@ The following definition will set the header "Authorization" with a value "Basic
 Schema:
 
 ```yaml
-BasicHttpAuthenticator:
-  type: object
-  additionalProperties: false
-  required:
-    - username
-    - password
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    username:
-      type: string
-    password:
-      type: string
+  BasicHttpAuthenticator:
+    type: object
+    additionalProperties: true
+    required:
+      - username
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      username:
+        type: string
+      password:
+        type: string
 ```
 
 Example:
@@ -138,42 +137,42 @@ OAuth authentication is supported through the `OAuthAuthenticator`, which requir
 Schema:
 
 ```yaml
-OAuth:
-  type: object
-  additionalProperties: false
-  required:
-    - token_refresh_endpoint
-    - client_id
-    - client_secret
-    - refresh_token
-    - access_token_name
-    - expires_in_name
-  properties:
-    "$options":
-      "$ref": "#/definitions/$options"
-    token_refresh_endpoint:
-      type: string
-    client_id:
-      type: string
-    client_secret:
-      type: string
-    refresh_token:
-      type: string
-    scopes:
-      type: array
-      items:
+  OAuth:
+    type: object
+    additionalProperties: true
+    required:
+      - token_refresh_endpoint
+      - client_id
+      - client_secret
+      - refresh_token
+      - access_token_name
+      - expires_in_name
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      token_refresh_endpoint:
         type: string
-      default: [ ]
-    token_expiry_date:
-      type: string
-    access_token_name:
-      type: string
-      default: "access_token"
-    expires_in_name:
-      type: string
-      default: "expires_in"
-    refresh_request_body:
-      type: object
+      client_id:
+        type: string
+      client_secret:
+        type: string
+      refresh_token:
+        type: string
+      scopes:
+        type: array
+        items:
+          type: string
+        default: [ ]
+      token_expiry_date:
+        type: string
+      access_token_name:
+        type: string
+        default: "access_token"
+      expires_in_name:
+        type: string
+        default: "expires_in"
+      refresh_request_body:
+        type: object
 ```
 
 Example:
