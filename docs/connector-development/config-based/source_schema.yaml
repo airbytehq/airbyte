@@ -65,18 +65,8 @@ definitions:
           "$ref": "#/definitions/RecordTransformation"
       checkpoint_interval:
         type: integer
-    PrimaryKey:
-      type: object
-      oneOf:
-        - string
-        - type: array
-          items:
-            type: string
-        - type: array
-          items:
-            type: array
-            items:
-              type: string
+  PrimaryKey:
+    type: string
   Retriever:
     type: object
     oneOf:
@@ -114,7 +104,6 @@ definitions:
       - name
       - url_base
       - path
-      - http_method
     properties:
       "$options":
         "$ref": "#/definitions/$options"
