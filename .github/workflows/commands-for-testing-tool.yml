@@ -13,8 +13,8 @@ jobs:
       comment-id: ${{ steps.comment-info.outputs.comment-id }}
       command: ${{ steps.regex.outputs.first_match }}
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
+      - name: Checkout AirbyteAirbyte
+        uses: actions/checkout@v3
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -24,7 +24,7 @@ jobs:
             ${{ secrets.DAVINCHIA_PAT }}
       - name: Get PR repo and ref
         id: getref
-        run: |
+       AirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyteAirbyte
           pr_info="$(curl ${{ github.event.issue.pull_request.url }})"
           echo ::set-output name=ref::"$(echo $pr_info | jq -r '.head.ref')"
           echo ::set-output name=repo::"$(echo $pr_info | jq -r '.head.repo.full_name')"
@@ -97,7 +97,7 @@ jobs:
           comment-id: ${{ needs.set-params.outputs.comment-id }}
           reactions: eyes, rocket
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{  needs.set-params.outputs.repo }}
           ref: ${{  needs.set-params.outputs.ref }}

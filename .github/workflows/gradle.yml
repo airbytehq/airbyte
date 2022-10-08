@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh all
@@ -39,7 +39,7 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -73,7 +73,7 @@ jobs:
       pat: ${{ steps.variables.outputs.pat }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Check PAT rate limits
         id: variables
         run: |
@@ -89,7 +89,7 @@ jobs:
   #    needs: changes
   #    runs-on: ubuntu-latest
   #    steps:
-  #      - uses: actions/checkout@v2
+  #      - uses: actions/checkout@v3
   #      - run: |
   #          echo '${{ toJSON(needs) }}'
 
@@ -103,7 +103,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -166,7 +166,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -183,7 +183,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -288,7 +288,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -304,7 +304,7 @@ jobs:
     runs-on: ${{ needs.start-frontend-runner.outputs.label }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -357,7 +357,7 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -439,7 +439,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -455,7 +455,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -574,7 +574,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -593,7 +593,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -721,7 +721,7 @@ jobs:
   #     ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
   #   steps:
   #     - name: Checkout Airbyte
-  #       uses: actions/checkout@v2
+  #       uses: actions/checkout@v3
   #     - name: Start AWS Runner
   #       id: start-ec2-runner
   #       uses: ./.github/actions/start-aws-runner
@@ -743,7 +743,7 @@ jobs:
 #    timeout-minutes: 90
 #    steps:
 #      - name: Checkout Airbyte
-#        uses: actions/checkout@v2
+#        uses: actions/checkout@v3
 #
 #      - name: Cache Build Artifacts
 #        uses: ./.github/actions/cache-build-artifacts

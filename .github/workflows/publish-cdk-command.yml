@@ -31,7 +31,7 @@ jobs:
         with:
           java-version: "17"
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
@@ -64,7 +64,7 @@ jobs:
           echo ${{ github.event.inputs.dry-run }}
           echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
