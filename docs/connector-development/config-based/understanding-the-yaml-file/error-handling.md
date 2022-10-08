@@ -252,7 +252,7 @@ In this example, the requester will wait until the time specified in the "wait_u
 Schema:
 
 ```yaml
-WaitUntilTimeFromHeader:
+WaitUntilTimeFromHeaderBackoffStrategy:
   type: object
   additionalProperties: false
   required:
