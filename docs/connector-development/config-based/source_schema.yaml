@@ -271,10 +271,10 @@ definitions:
   PaginationStrategy:
     type: object
     anyOf:
-      - "$ref": "#/definitions/CursorPaginator"
+      - "$ref": "#/definitions/CursorPagination"
       - "$ref": "#/definitions/OffsetIncrement"
       - "$ref": "#/definitions/PageIncrement"
-  CursorPaginator:
+  CursorPagination:
     type: object
     additionalProperties: true
     required:
