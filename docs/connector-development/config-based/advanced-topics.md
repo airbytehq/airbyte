@@ -295,7 +295,7 @@ pagination_strategy:
 
 ## How the framework works
 
-1. Given the connection config and the current stream state, the `StreamSlicer` computes the stream slices to read.
+1. Given the connection config and an optional stream state, the `StreamSlicer` computes the stream slices to read.
 2. Iterate over all the stream slices defined by the stream slicer.
 3. For each stream slice,
     1. Submit a request to the partner API as defined by the requester
