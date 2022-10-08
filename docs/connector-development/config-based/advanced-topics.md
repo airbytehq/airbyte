@@ -298,7 +298,7 @@ pagination_strategy:
 1. Given the connection config and the current stream state, the `StreamSlicer` computes the stream slices to read.
 2. Iterate over all the stream slices defined by the stream slicer.
 3. For each stream slice,
-    1. Submit a request as defined by the requester
+    1. Submit a request to the partner API as defined by the requester
     2. Select the records from the response
     3. Repeat for as long as the paginator points to a next page
 
