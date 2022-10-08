@@ -2,7 +2,7 @@
 
 Airbyte’s low-code framework enables you to build source connectors for REST APIs by modifying boilerplate YAML files.
 
-:::warning 
+:::warning
 The low-code framework is in [alpha](https://docs.airbyte.com/project-overview/product-release-stages/#alpha), which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
 :::
 
@@ -11,29 +11,29 @@ The low-code framework is in [alpha](https://docs.airbyte.com/project-overview/p
 Refer to the REST API documentation for the source you want to build the connector for and answer the following questions:
 
 - Does the REST API documentation show which HTTP method to use to retrieve data, and that the response is a JSON object?
-- Do the queries either return data synchronously or trigger a bulk workflow?
+- Do the queries return data synchronously?
 - Does the API support any of the following pagination mechanisms:
-    - Offset count passed either by query params or request header 
-    - Page count passed either by query params or request header 
-    - Cursor field pointing to the URL of the next page of records 
+    - Offset count passed either by query params or request header
+    - Page count passed either by query params or request header
+    - Cursor field pointing to the URL of the next page of records
 - Does the API support any of the following authentication mechanisms:
     - [A query param or a HTTP header](https://docs.airbyte.com/connector-development/config-based/authentication#apikeyauthenticator)
     - [Basic Auth over HTTPS](https://docs.airbyte.com/connector-development/config-based/authentication#basichttpauthenticator)
     - [OAuth 2.0](https://docs.airbyte.com/connector-development/config-based/authentication#oauth)
 - Does the API support static schema?
 - Does the endpoint have a strict rate limit?
-    Throttling is not supported, but the connector can use exponential backoff to avoid API bans in case it gets rate limited. This can work for APIs with high rate limits, but not for those that have strict limits on a small time-window.
+  Throttling is not supported, but the connector can use exponential backoff to avoid API bans in case it gets rate limited. This can work for APIs with high rate limits, but not for those that have strict limits on a small time-window.
 - Are the following features sufficient:
 
-    | Feature                                                      | Support                                                                                                                                                                                                                                       |
-    |--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | Resource type                                                | Collections<br/>[Sub-collection](understanding-the-yaml-file/stream-slicers.md#substreams)                                                                                                                                                      |
-    | Sync mode                                                    | Full refresh<br/>Incremental                                                                                                                                             |
-    | Schema discovery                                             | Static schemas                                                                                                                                                  |
-    | [Stream slicing](understanding-the-yaml-file/stream-slicers.md)                        | [Datetime](understanding-the-yaml-file/stream-slicers.md#Datetime), [lists](understanding-the-yaml-file/stream-slicers.md#list-stream-slicer), [parent-resource id](understanding-the-yaml-file/stream-slicers.md#Substream-slicer)                                                                                                                                     |
-    | [Record transformation](understanding-the-yaml-file/record-selector.md)                | [Field selection](understanding-the-yaml-file/record-selector.md#selecting-a-field)<br/>[Adding fields](understanding-the-yaml-file/record-selector.md#adding-fields)<br/>[Removing fields](understanding-the-yaml-file/record-selector.md#removing-fields)<br/>[Filtering records](understanding-the-yaml-file/record-selector.md#filtering-records) |
-    | [Error detection](understanding-the-yaml-file/error-handling.md)                       | [From HTTP status  code](understanding-the-yaml-file/error-handling.md#from-status-code)<br/>[From error message](understanding-the-yaml-file/error-handling.md#from-error-message)                                                                                                               |
-    | [Backoff strategies](understanding-the-yaml-file/error-handling.md#Backoff-Strategies) | [Exponential](understanding-the-yaml-file/error-handling.md#Exponential-backoff)<br/>[Constant](understanding-the-yaml-file/error-handling.md#Constant-Backoff)<br/>[Derived from headers](understanding-the-yaml-file/error-handling.md#Wait-time-defined-in-header)                                                       |
+  | Feature                                                      | Support                                                                                                                                                                                                                                       |
+              |--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+  | Resource type                                                | Collections<br/>[Sub-collection](understanding-the-yaml-file/stream-slicers.md#substreams)                                                                                                                                                      |
+  | Sync mode                                                    | Full refresh<br/>Incremental                                                                                                                                             |
+  | Schema discovery                                             | Static schemas                                                                                                                                                  |
+  | [Stream slicing](understanding-the-yaml-file/stream-slicers.md)                        | [Datetime](understanding-the-yaml-file/stream-slicers.md#Datetime), [lists](understanding-the-yaml-file/stream-slicers.md#list-stream-slicer), [parent-resource id](understanding-the-yaml-file/stream-slicers.md#Substream-slicer)                                                                                                                                     |
+  | [Record transformation](understanding-the-yaml-file/record-selector.md)                | [Field selection](understanding-the-yaml-file/record-selector.md#selecting-a-field)<br/>[Adding fields](understanding-the-yaml-file/record-selector.md#adding-fields)<br/>[Removing fields](understanding-the-yaml-file/record-selector.md#removing-fields)<br/>[Filtering records](understanding-the-yaml-file/record-selector.md#filtering-records) |
+  | [Error detection](understanding-the-yaml-file/error-handling.md)                       | [From HTTP status  code](understanding-the-yaml-file/error-handling.md#from-status-code)<br/>[From error message](understanding-the-yaml-file/error-handling.md#from-error-message)                                                                                                               |
+  | [Backoff strategies](understanding-the-yaml-file/error-handling.md#Backoff-Strategies) | [Exponential](understanding-the-yaml-file/error-handling.md#Exponential-backoff)<br/>[Constant](understanding-the-yaml-file/error-handling.md#Constant-Backoff)<br/>[Derived from headers](understanding-the-yaml-file/error-handling.md#Wait-time-defined-in-header)                                                       |
 
 If the answer to all questions is yes, you can use the low-code framework to build a connector for the source. If not, use the [Python CDK](../cdk-python/README.md).
 
@@ -101,7 +101,19 @@ For each stream, configure the following components:
 | Transformations        |                 | A set of transformations to be applied on the records read from the source before emitting them to the destination                                                                                                                    |
 | Checkpoint interval    |                 | Defines the interval, in number of records, at which incremental syncs should be checkpointed                                                                                                                                         |
 
-For a deep dive into each of the components, refer to Understanding the YAML file
+For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/yaml-overview.md) or the [full YAML Schema definition](./source_schema.yaml)
+
+## Tutorial
+
+This section a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
+
+0. [Getting started](tutorial/0-getting-started.md)
+1. [Creating a source](tutorial/1-create-source.md)
+2. [Installing dependencies](tutorial/2-install-dependencies.md)
+3. [Connecting to the API](tutorial/3-connecting-to-the-API-source.md)
+4. [Reading data](tutorial/4-reading-data.md)
+5. [Incremental reads](tutorial/5-incremental-reads.md)
+6. [Testing](tutorial/6-testing.md)
 
 ## Sample connectors
 
