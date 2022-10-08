@@ -11,7 +11,7 @@ The low-code framework is in [alpha](https://docs.airbyte.com/project-overview/p
 Refer to the REST API documentation for the source you want to build the connector for and answer the following questions:
 
 - Does the REST API documentation show which HTTP method to use to retrieve data, and that the response is a JSON object?
-- Do the queries either return data synchronously?
+- Do the queries return data synchronously?
 - Does the API support any of the following pagination mechanisms:
     - Offset count passed either by query params or request header
     - Page count passed either by query params or request header
