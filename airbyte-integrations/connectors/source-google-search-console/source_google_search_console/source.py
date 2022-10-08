@@ -71,13 +71,13 @@ class SourceGoogleSearchConsole(AbstractSource):
         config["end_date"] = end_date or pendulum.now().to_date_string()
 
         config["site_urls"] = [self.normalize_url(url) for url in config["site_urls"]]
-        self.validate_site_urls(config["site_urls"], self.get_authenticator(config))
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             config = self._validate_and_transform(config)
             stream_kwargs = self.get_stream_kwargs(config)
+            self.validate_site_urls(config["site_urls"], stream_kwargs["authenticator"])
             sites = Sites(**stream_kwargs)
             stream_slice = sites.stream_slices(SyncMode.full_refresh)
 
