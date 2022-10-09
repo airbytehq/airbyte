@@ -259,62 +259,63 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     // overrides test with a no-op until we handle full UTF-8 in the destination
   }
 
-    private String retrieveTableCharset(final String schemaName, final String tableName) throws SQLException {
-        try (final DSLContext dslContext = DSLContextFactory.create(
-                db.getUsername(),
-                db.getPassword(),
-                db.getDriverClassName(),
-                String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-                        db.getHost(),
-                        db.getFirstMappedPort(),
-                        db.getDatabaseName()),
-                SQLDialect.MYSQL)) {
-            return new Database(dslContext).query(
-                    ctx -> ctx
-                            .fetch(String.format("SELECT CCSA.character_set_name \n" +
-                                    "FROM information_schema.`TABLES` T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA\n" +
-                                    "WHERE CCSA.collation_name = T.table_collation\n" +
-                                    "AND T.table_schema = \"%s\" AND T.table_name = \"%s\";", schemaName, tableName))
-                            .stream().map(this::getJsonFromRecord).toList().get(0).get("CHARACTER_SET_NAME").asText());
-        }
-    }
+  private String retrieveTableCharset(final String schemaName, final String tableName) throws SQLException {
+      try (final DSLContext dslContext = DSLContextFactory.create(
+              db.getUsername(),
+              db.getPassword(),
+              db.getDriverClassName(),
+              String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+                      db.getHost(),
+                      db.getFirstMappedPort(),
+                      db.getDatabaseName()),
+              SQLDialect.MYSQL)) {
+          return new Database(dslContext).query(
+                  ctx -> ctx
+                          .fetch(String.format("SELECT CCSA.character_set_name \n" +
+                                  "FROM information_schema.`TABLES` T,information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA\n" +
+                                  "WHERE CCSA.collation_name = T.table_collation\n" +
+                                  "AND T.table_schema = \"%s\" AND T.table_name = \"%s\";", schemaName, tableName))
+                          .stream().map(this::getJsonFromRecord).toList().get(0).get("CHARACTER_SET_NAME").asText());
+      }
+  }
 
 
-    @Test
-    public void testUTF8() throws Exception {
-      // create table
-      String streamName = "mysql_utf8_test_table";
-      String testCreateTableName = namingResolver.getRawTableName(streamName);
+  @Test
+  public void testUTF8() throws Exception {
+    // create table
+    String databaseName = "test";
+    String streamName = "mysql_utf8_test_table";
+    String testCreateTableName = namingResolver.getRawTableName(streamName);
 
-      String createSQL = String.format(
-              "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-                      + "%s VARCHAR(256) PRIMARY KEY,\n"
-                      + "%s JSON,\n"
-                      + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
-                      + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; \n",
-              db.getDatabaseName(), testCreateTableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    String createSQL = String.format(
+            "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+                    + "%s VARCHAR(256) PRIMARY KEY,\n"
+                    + "%s JSON,\n"
+                    + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
+                    + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; \n",
+            databaseName, testCreateTableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
 
-      executeQuery(createSQL);
+    executeQuery(createSQL);
 
-      // check charset
-      String utf8mb4Charset = "utf8mb4";
-      assertEquals(utf8mb4Charset, retrieveTableCharset(db.getDatabaseName(), testCreateTableName));
+    // check charset
+    String utf8mb4Charset = "utf8mb4";
+    assertEquals(utf8mb4Charset, retrieveTableCharset(db.getDatabaseName(), testCreateTableName));
 
-      // load data
-      String data = "{\"content\":\"你好\uD83E\uDD73\"}"; // 你好🥳
-      String resourceFile = "load_data_test.csv";
-      URL resource = getClass().getClassLoader().getResource(resourceFile);
-      File file = Paths.get(resource.toURI()).toFile();
+    // load data
+    String data = "{\"content\":\"你好\uD83E\uDD73\"}"; // 你好🥳
+    String resourceFile = "load_data_test.csv";
+    URL resource = getClass().getClassLoader().getResource(resourceFile);
+    File file = Paths.get(resource.toURI()).toFile();
 
-      String absoluteFile = "'" + file.getAbsolutePath() + "'";
-      String loadDataSQL = String.format("LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s CHARACTER SET utf8mb4 FIELDS " +
-              "TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
-              absoluteFile, db.getDatabaseName(), testCreateTableName);
-      executeQuery(loadDataSQL);
+    String absoluteFile = "'" + file.getAbsolutePath() + "'";
+    String loadDataSQL = String.format("LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s CHARACTER SET utf8mb4 FIELDS " +
+            "TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
+            absoluteFile, databaseName, testCreateTableName);
+    executeQuery(loadDataSQL);
 
-      List<JsonNode> records = retrieveRecords(this.testEnv,streamName,db.getDatabaseName(),null);
-      assertEquals(data, records.get(0).toString());
-    }
+    List<JsonNode> records = retrieveRecords(this.testEnv,streamName,databaseName,null);
+    assertEquals(data, records.get(0).toString());
+  }
 
   protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue.isBoolean()) {
