@@ -194,6 +194,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
           onChange={handleSelect}
           onMenuOpen={() => trackMenuOpen()}
           noOptionsMessage={getNoOptionsMessage}
+          data-testid="serviceType"
         />
       </ControlLabels>
       {selectedService &&
