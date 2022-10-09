@@ -37,14 +37,16 @@
   * The `namespace_type` column configures whether the namespace for the connection should use that defined by the source, the destination, or a user-defined format (`custom`). If `custom` the `namespace_format` column defines the string that will be used as the namespace.
   * The `status` column describes the activity level of the connector: `active` - current schedule is respected, `inactive` - current schedule is ignored (the connection does not run) but it could be switched back to active, and `deprecated` - the connection is permanently off (cannot be moved to active or inactive).
 * `state`
-  * The `state` table represents the current (last) state for a connection. For a connection with `stream` state, there will be a record per stream. For a connection with `global` state, there will be a record per stream and an additional record to whole the shared (global) state. For a connection with `legacy` state, there will be one record per connection.
+  * The `state` table represents the current (last) state for a connection. For a connection with `stream` state, there will be a record per stream. For a connection with `global` state, there will be a record per stream and an additional record to store the shared (global) state. For a connection with `legacy` state, there will be one record per connection.
   * In the `stream` and `global` state cases, the `stream_name` and `namespace` columns contains the name of the stream whose state is represented by that record. For the shared state in global `stream_name` and `namespace` will be null.
   * The `state` column contains the state JSON blob. Depending on the type of the connection, the schema of the blob will be different.
-    * `stream` - this column is a JSON blob that is a blackbox to the platform and known only to the connector that generated it.
-    * `global` - this column is a JSON blob that is a blackbox to the platform and known only to the connector that generated it. This is true for both the states for each stream and the shared state.
-    * `legacy` - this column is a JSON blob with a top-level key called `state`. Within that `state` is a blackbox to the platform and known only to the connector that generated it.
+    * `stream` - for this type, this column is a JSON blob that is a blackbox to the platform and known only to the connector that generated it.
+    * `global` - for this type, this column is a JSON blob that is a blackbox to the platform and known only to the connector that generated it. This is true for both the states for each stream and the shared state.
+    * `legacy` - for this type, this column is a JSON blob with a top-level key called `state`. Within that `state` is a blackbox to the platform and known only to the connector that generated it.
+  * The `type` column describes the type of the state of the row. type can be `STREAM`, `GLOBAL` or `LEGACY`.
+  * The connection_id is a foreign key to the connection for which we are tracking state.
 * `stream_reset`
-  * Each record in this table represents a stream in a connection that is enqueued to be reset. It can be thought of as a queue. Once the stream is reset, the record is removed from the table.
+  * Each record in this table represents a stream in a connection that is enqueued to be reset or is currently being reset. It can be thought of as a queue. Once the stream is reset, the record is removed from the table.
 * `operation`
   * The `operation` table transformations for a connection beyond the raw output produced by the destination. The two options are: `normalization`, which outputs Airbyte's basic normalization. The second is `dbt`, which allows a user to configure their own custom dbt transformation. A connection can have multiple operations (e.g. it can do `normalization` and `dbt`).
   * If the `operation` is `dbt`, then the `operator_dbt` column will be populated with a JSON blob with the schema from [OperatorDbt](airbyte-config/config-models/src/main/resources/types/OperatorDbt.yaml).
@@ -53,7 +55,7 @@
 * `connection_operation`
   * This table joins the `operation` table to the `connection` for which it is configured. 
 * `workspace_service_account`
-  * I don't know what this is. Should we drop it?
+  * This table is a WIP for an unfinished feature.
 * `actor_oauth_parameter`
   * The name of this table is misleading. It refers to parameters to be used for any instance of an `actor_definition` (not an `actor`) within a given workspace. For OAuth, the model is that a user is provisioning access to their data to a third party tool (in this case the Airbyte Platform). Each record represents information (e.g. client id, client secret) for that third party that is getting access. 
   * These parameters can be scoped by workspace. If `workspace_id` is not present, then the scope of the parameters is to the whole deployment of the platform (e.g. all workspaces).
@@ -63,7 +65,7 @@
   * This table is used to store secrets in open-source versions of the platform that have not set some other secrets store. This table allows us to use the same code path for secrets handling regardless of whether an external secrets store is set or not. This table is used by default for the open-source product.
 * `airbyte_configs_migrations` is metadata table used by Flyway (our database migration tool). It is not used for any application use cases.
 * `airbyte_configs`
-  * I don't know what this is. Should we drop it?
+  * Legacy table for config storage. Should be dropped.
 
 # Jobs Database
 * `jobs`
