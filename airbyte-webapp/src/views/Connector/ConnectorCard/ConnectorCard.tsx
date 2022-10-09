@@ -49,7 +49,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
 }) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
-
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [advancedMode] = useAdvancedModeSetting();
 
   const { testConnector, isTestConnectionInProgress, onStopTesting, error, reset } = useTestConnector(props);
@@ -64,6 +64,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
 
   const onHandleSubmit = async (values: ServiceFormValues) => {
     setErrorStatusRequest(null);
+    setIsFormSubmitting(true);
 
     const connector = props.availableServices.find((item) => Connector.id(item) === values.serviceType);
 
@@ -84,6 +85,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
       setSaved(true);
     } catch (e) {
       setErrorStatusRequest(e);
+      setIsFormSubmitting(false);
     }
   };
 
@@ -103,6 +105,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
             availableServices={availableServices}
             isEditMode={isEditMode}
             selectedServiceId={selectedConnectorDefinitionSpecificationId}
+            disabled={isFormSubmitting}
           />
           {additionalDropdownComponent}
         </div>
