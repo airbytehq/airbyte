@@ -10,8 +10,8 @@
       "start_date": {
         "type": "string",
         "title": "Start Date",
-        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to 2020-07-28.",
-        "examples": ["2020-07-28"]
+        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (914 days from today).",
+        "examples": ["2022-07-28"]
       },
       "credentials": {
         "title": "Authorization Method",

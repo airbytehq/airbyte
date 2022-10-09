@@ -102,6 +102,7 @@ regardless of how many AttachedItems were actually changed or synced in a partic
 
 | Version | Date       | Pull Request | Subject                                                                                             |
 |:--------|:-----------| :--- |:----------------------------------------------------------------------------------------------------|
+| 0.1.15  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                  |
 | 0.1.14  | 2022-09-23 | [17056](https://github.com/airbytehq/airbyte/pull/17056) | Add "custom fields" to the relevant Chargebee source data streams                                   |
 | 0.1.13  | 2022-08-18 | [15743](https://github.com/airbytehq/airbyte/pull/15743) | Fix transaction `exchange_rate` field type                                                          |
 | 0.1.12  | 2022-07-13 | [14672](https://github.com/airbytehq/airbyte/pull/14672) | Fix transaction sort by                                                                             |

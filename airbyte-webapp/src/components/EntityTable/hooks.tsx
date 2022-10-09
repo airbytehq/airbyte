@@ -1,13 +1,13 @@
 import { useSyncConnection } from "hooks/services/useConnectionHook";
 
-import { WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 
 const useSyncActions = (): {
-  syncManualConnection: (connection: WebBackendConnectionRead) => Promise<void>;
+  syncManualConnection: (connection: WebBackendConnectionListItem) => Promise<void>;
 } => {
   const { mutateAsync: syncConnection } = useSyncConnection();
 
-  const syncManualConnection = async (connection: WebBackendConnectionRead) => {
+  const syncManualConnection = async (connection: WebBackendConnectionListItem) => {
     await syncConnection(connection);
   };
 

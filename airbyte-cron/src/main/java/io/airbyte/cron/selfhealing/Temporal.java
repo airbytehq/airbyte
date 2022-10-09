@@ -4,19 +4,27 @@
 
 package io.airbyte.cron.selfhealing;
 
+import io.airbyte.commons.temporal.TemporalClient;
 import io.micronaut.scheduling.annotation.Scheduled;
-import javax.inject.Singleton;
+import io.temporal.api.enums.v1.WorkflowExecutionStatus;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
 @Slf4j
 public class Temporal {
 
-  public Temporal() {
-    log.info("Creating temporal self-healing");
+  private final TemporalClient temporalClient;
+
+  public Temporal(@Named("temporalClient") final TemporalClient temporalClient) {
+    log.debug("Creating temporal self-healing");
+    this.temporalClient = temporalClient;
   }
 
   @Scheduled(fixedRate = "10s")
-  void cleanTemporal() {}
+  void cleanTemporal() {
+    temporalClient.restartClosedWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
+  }
 
 }

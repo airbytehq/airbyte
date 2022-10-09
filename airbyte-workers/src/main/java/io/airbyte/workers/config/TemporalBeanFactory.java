@@ -4,18 +4,23 @@
 
 package io.airbyte.workers.config;
 
+import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.temporal.TemporalUtils;
+import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs.DeploymentMode;
+import io.airbyte.config.Configs.TrackingStrategy;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.DefaultJobCreator;
+import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.factory.DefaultSyncJobFactory;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.factory.SyncJobFactory;
 import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.temporal.TemporalWorkflowUtils;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
@@ -23,8 +28,10 @@ import io.micronaut.context.annotation.Value;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.WorkerFactory;
+import jakarta.inject.Singleton;
+import java.io.IOException;
 import java.nio.file.Path;
-import javax.inject.Singleton;
+import java.util.Optional;
 
 /**
  * Micronaut bean factory for Temporal-related singletons.
@@ -33,15 +40,29 @@ import javax.inject.Singleton;
 public class TemporalBeanFactory {
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
-  public TrackingClient trackingClient() {
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  public TrackingClient trackingClient(final Optional<TrackingStrategy> trackingStrategy,
+                                       final DeploymentMode deploymentMode,
+                                       Optional<JobPersistence> jobPersistence,
+                                       WorkerEnvironment workerEnvironment,
+                                       @Value("${airbyte.role}") String airbyteRole,
+                                       AirbyteVersion airbyteVersion,
+                                       Optional<ConfigRepository> configRepository)
+      throws IOException {
+
+    TrackingClientSingleton.initialize(
+        trackingStrategy.orElseThrow(),
+        new Deployment(deploymentMode, jobPersistence.orElseThrow().getDeployment().orElseThrow(),
+            workerEnvironment),
+        airbyteRole,
+        airbyteVersion,
+        configRepository.orElseThrow());
+
     return TrackingClientSingleton.get();
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public SyncJobFactory jobFactory(
                                    final ConfigRepository configRepository,
                                    @Property(name = "airbyte.connector.specific-resource-defaults-enabled",
@@ -56,20 +77,7 @@ public class TemporalBeanFactory {
   }
 
   @Singleton
-  public WorkflowServiceStubs temporalService(final TemporalUtils temporalUtils) {
-    return temporalUtils.createTemporalService();
-  }
-
-  @Singleton
-  public WorkflowClient workflowClient(
-                                       final TemporalUtils temporalUtils,
-                                       final WorkflowServiceStubs temporalService) {
-    return TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace());
-  }
-
-  @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public TemporalWorkerRunFactory temporalWorkerRunFactory(
                                                            @Value("${airbyte.version}") final String airbyteVersion,
                                                            final FeatureFlags featureFlags,

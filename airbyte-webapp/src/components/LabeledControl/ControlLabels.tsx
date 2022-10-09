@@ -2,9 +2,9 @@ import className from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Text } from "components/base/Text";
-import { InfoTooltip } from "components/base/Tooltip";
 import Label from "components/Label";
+import { Text } from "components/ui/Text";
+import { InfoTooltip } from "components/ui/Tooltip";
 
 import styles from "./ControlLabels.module.scss";
 

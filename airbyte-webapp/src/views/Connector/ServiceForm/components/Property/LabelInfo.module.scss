@@ -1,5 +1,11 @@
 @use "../../../../../scss/colors";
 
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .descriptionHeader {
   margin-top: 0;
   margin-bottom: 5px;
@@ -12,7 +18,7 @@
 }
 
 .exampleHeader {
-  margin-top: 10px;
+  margin-block-start: 0;
   margin-bottom: 5px;
 }
 

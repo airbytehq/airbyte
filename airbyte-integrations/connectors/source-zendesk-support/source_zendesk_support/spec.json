@@ -20,7 +20,7 @@
         "description": "This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain."
       },
       "credentials": {
-        "title": "Authentication *",
+        "title": "Authentication",
         "type": "object",
         "description": "Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.",
         "oneOf": [

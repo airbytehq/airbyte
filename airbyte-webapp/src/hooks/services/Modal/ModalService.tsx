@@ -1,7 +1,7 @@
 import React, { useContext, useMemo, useRef, useState } from "react";
 import { firstValueFrom, Subject } from "rxjs";
 
-import { Modal } from "components";
+import { Modal } from "components/ui/Modal";
 
 import { ModalOptions, ModalResult, ModalServiceContext } from "./types";
 

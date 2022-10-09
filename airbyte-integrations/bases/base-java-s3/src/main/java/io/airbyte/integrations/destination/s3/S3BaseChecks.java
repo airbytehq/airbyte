@@ -77,6 +77,20 @@ public final class S3BaseChecks {
     LOGGER.info("Finished verification for multipart upload mode");
   }
 
+  /**
+   * Checks that S3 custom endpoint uses a variant that only uses HTTPS
+   *
+   * @param endpoint URL string representing an accessible S3 bucket
+   */
+  public static boolean testCustomEndpointSecured(final String endpoint) {
+    // if user does not use a custom endpoint, do not fail
+    if (endpoint == null || endpoint.length() == 0) {
+      return true;
+    } else {
+      return endpoint.startsWith("https://");
+    }
+  }
+
   @VisibleForTesting
   static void attemptS3WriteAndDelete(final S3StorageOperations storageOperations,
                                       final S3DestinationConfig s3Config,

@@ -72,4 +72,4 @@ def test_streams_disabled_402(requests_mock, config_raw):
     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(402, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(402, {}))
     streams = SourceMixpanel().streams(config_raw)
-    assert {s.name for s in streams} == {"cohort_members", "funnels", "revenue", "annotations", "cohorts"}
+    assert {s.name for s in streams} == {"funnels", "revenue", "annotations", "cohorts"}

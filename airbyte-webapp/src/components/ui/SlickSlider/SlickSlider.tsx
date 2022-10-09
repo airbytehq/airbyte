@@ -4,7 +4,7 @@ import classnames from "classnames";
 import React, { useMemo } from "react";
 import Slider, { CustomArrowProps, Settings as SliderProps } from "react-slick";
 
-import { Text } from "components/base/Text";
+import { Text } from "components/ui/Text";
 
 import styles from "./SlickSlider.module.scss";
 

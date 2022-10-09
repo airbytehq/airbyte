@@ -122,6 +122,7 @@ To read more please check official [Snowflake documentation](https://docs.snowfl
 
 | Version   | Date | Pull Request | Subject |
 |:----------| :--- | :--- | :--- |
+| 0.1.24    | 2022-09-26 | [17144](https://github.com/airbytehq/airbyte/pull/17144) | Fixed bug with incorrect date-time datatypes handling  |
 | 0.1.23    | 2022-09-26 | [17116](https://github.com/airbytehq/airbyte/pull/17116) | added connection string identifier  |
 | 0.1.22    | 2022-09-21 | [16766](https://github.com/airbytehq/airbyte/pull/16766) | Update JDBC Driver version to 3.13.22  |
 | 0.1.21    | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage  |

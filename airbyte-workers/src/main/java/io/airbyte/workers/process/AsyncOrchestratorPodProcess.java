@@ -136,6 +136,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         return 0;
       } else {
         // otherwise, the actual pod is terminal when the doc store says it shouldn't be.
+        log.info("The current non terminal state is {}", secondDocStoreStatus);
         log.warn("State Store missing status, however orchestrator pod {} in terminal. Assume failure.", getInfo().name());
         return 1;
       }

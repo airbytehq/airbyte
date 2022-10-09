@@ -83,13 +83,8 @@ class AutoDisableConnectionActivityTest {
     Mockito.when(mJobPersistence.getLastReplicationJob(CONNECTION_ID)).thenReturn(Optional.of(mJob));
     Mockito.when(mJobPersistence.getFirstReplicationJob(CONNECTION_ID)).thenReturn(Optional.of(mJob));
 
-    autoDisableActivity = new AutoDisableConnectionActivityImpl();
-    autoDisableActivity.setConfigRepository(mConfigRepository);
-    autoDisableActivity.setJobPersistence(mJobPersistence);
-    autoDisableActivity.setFeatureFlags(mFeatureFlags);
-    autoDisableActivity.setMaxDaysOfOnlyFailedJobsBeforeConnectionDisable(MAX_DAYS_OF_ONLY_FAILED_JOBS);
-    autoDisableActivity.setMaxFailedJobsInARowBeforeConnectionDisable(MAX_FAILURE_JOBS_IN_A_ROW);
-    autoDisableActivity.setJobNotifier(mJobNotifier);
+    autoDisableActivity = new AutoDisableConnectionActivityImpl(mConfigRepository, mJobPersistence, mFeatureFlags, MAX_DAYS_OF_ONLY_FAILED_JOBS,
+        MAX_FAILURE_JOBS_IN_A_ROW, mJobNotifier);
   }
 
   // test warnings

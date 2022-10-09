@@ -8,10 +8,12 @@ import com.google.common.base.Stopwatch;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.config.WorkerConfigurationBeanFactory;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
@@ -19,7 +21,6 @@ import io.airbyte.workers.process.KubeContainerInfo;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.process.KubePodResourceHelper;
 import io.airbyte.workers.process.KubeProcessFactory;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -101,6 +102,9 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         final Map<String, String> envMap = System.getenv().entrySet().stream()
             .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        // Manually add the worker environment to the env var map
+        envMap.put(WorkerConfigurationBeanFactory.WORKER_ENVIRONMENT, containerOrchestratorConfig.workerEnvironment().name());
 
         final Map<String, String> fileMap = new HashMap<>(additionalFileMap);
         fileMap.putAll(Map.of(

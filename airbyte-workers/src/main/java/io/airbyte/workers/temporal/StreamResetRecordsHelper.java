@@ -10,29 +10,26 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.temporal.exception.RetryableException;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Helper class that provides methods for dealing with stream reset records.
  */
 @Singleton
-@AllArgsConstructor
-@NoArgsConstructor
 @Slf4j
 public class StreamResetRecordsHelper {
 
-  @Inject
-  private JobPersistence jobPersistence;
+  private final JobPersistence jobPersistence;
+  private final StreamResetPersistence streamResetPersistence;
 
-  @Inject
-  private StreamResetPersistence streamResetPersistence;
+  public StreamResetRecordsHelper(final JobPersistence jobPersistence, final StreamResetPersistence streamResetPersistence) {
+    this.jobPersistence = jobPersistence;
+    this.streamResetPersistence = streamResetPersistence;
+  }
 
   /**
    * Deletes all stream reset records related to the provided job and connection.

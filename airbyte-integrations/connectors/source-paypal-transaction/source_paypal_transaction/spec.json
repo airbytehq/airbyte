@@ -21,7 +21,7 @@
       },
       "refresh_token": {
         "type": "string",
-        "title": "Refresh token (Optional)",
+        "title": "Refresh token",
         "description": "The key to refresh the expired access token.",
         "airbyte_secret": true
       },

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-import { Card } from "components/base/Card";
+import { Card } from "components/ui/Card";
 
 export const SettingsCard = styled(Card)`
   width: 100%;

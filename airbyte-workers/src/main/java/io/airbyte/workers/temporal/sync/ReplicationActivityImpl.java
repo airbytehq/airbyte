@@ -10,6 +10,8 @@ import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.CancellationHandler;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -28,7 +30,6 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -42,19 +43,16 @@ import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,37 +60,46 @@ import org.slf4j.LoggerFactory;
 public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
+  private static final int MAX_TEMPORAL_MESSAGE_SIZE = 2 * 1024 * 1024;
 
-  @Inject
-  @Named("containerOrchestratorConfig")
-  private Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
-  @Inject
-  @Named("replicationWorkerConfigs")
-  private WorkerConfigs workerConfigs;
-  @Inject
-  @Named("replicationProcessFactory")
-  private ProcessFactory processFactory;
-  @Inject
-  private SecretsHydrator secretsHydrator;
-  @Inject
-  @Named("workspaceRoot")
-  private Path workspaceRoot;
-  @Inject
-  private WorkerEnvironment workerEnvironment;
-  @Inject
-  private LogConfigs logConfigs;
-  @Value("${airbyte.version}")
-  private String airbyteVersion;
-  @Inject
-  private FeatureFlags featureFlags;
-  @Value("${micronaut.server.port}")
-  private Integer serverPort;
-  @Inject
-  private AirbyteConfigValidator airbyteConfigValidator;
-  @Inject
-  private TemporalUtils temporalUtils;
-  @Inject
-  private AirbyteApiClient airbyteApiClient;
+  private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
+  private final ProcessFactory processFactory;
+  private final SecretsHydrator secretsHydrator;
+  private final Path workspaceRoot;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+  private final String airbyteVersion;
+  private final FeatureFlags featureFlags;
+  private final Integer serverPort;
+  private final AirbyteConfigValidator airbyteConfigValidator;
+  private final TemporalUtils temporalUtils;
+  private final AirbyteApiClient airbyteApiClient;
+
+  public ReplicationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
+                                 @Named("replicationProcessFactory") final ProcessFactory processFactory,
+                                 final SecretsHydrator secretsHydrator,
+                                 @Named("workspaceRoot") final Path workspaceRoot,
+                                 final WorkerEnvironment workerEnvironment,
+                                 final LogConfigs logConfigs,
+                                 @Value("${airbyte.version}") final String airbyteVersion,
+                                 final FeatureFlags featureFlags,
+                                 @Value("${micronaut.server.port}") final Integer serverPort,
+                                 final AirbyteConfigValidator airbyteConfigValidator,
+                                 final TemporalUtils temporalUtils,
+                                 final AirbyteApiClient airbyteApiClient) {
+    this.containerOrchestratorConfig = containerOrchestratorConfig;
+    this.processFactory = processFactory;
+    this.secretsHydrator = secretsHydrator;
+    this.workspaceRoot = workspaceRoot;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.airbyteVersion = airbyteVersion;
+    this.featureFlags = featureFlags;
+    this.serverPort = serverPort;
+    this.airbyteConfigValidator = airbyteConfigValidator;
+    this.temporalUtils = temporalUtils;
+    this.airbyteApiClient = airbyteApiClient;
+  }
 
   @Override
   public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
@@ -146,7 +153,14 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           final ReplicationOutput attemptOutput = temporalAttempt.get();
           final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
 
-          LOGGER.info("sync summary: {}", standardSyncOutput);
+          final String standardSyncOutputString = standardSyncOutput.toString();
+          LOGGER.info("sync summary: {}", standardSyncOutputString);
+          if (standardSyncOutputString.length() > MAX_TEMPORAL_MESSAGE_SIZE) {
+            LOGGER.error("Sync ouput exceeds the max temporal message size of {}, actual is {}.", MAX_TEMPORAL_MESSAGE_SIZE,
+                standardSyncOutputString.length());
+          } else {
+            LOGGER.info("Sync summary length: {}", standardSyncOutputString.length());
+          }
 
           return standardSyncOutput;
         },
@@ -197,7 +211,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       final AirbyteSource airbyteSource =
           WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage())
               ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
-              : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
+              : new DefaultAirbyteSource(sourceLauncher);
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
@@ -207,7 +221,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           Math.toIntExact(jobRunConfig.getAttemptId()),
           airbyteSource,
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-          new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
+          new DefaultAirbyteDestination(destinationLauncher),
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
           metricReporter);
