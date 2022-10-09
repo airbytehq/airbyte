@@ -4,7 +4,8 @@ import { FormattedMessage } from "react-intl";
 import DeleteBlock from "components/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
@@ -16,7 +17,7 @@ import styles from "./SourceSettings.module.scss";
 
 interface SourceSettingsProps {
   currentSource: SourceRead;
-  connectionsWithSource: WebBackendConnectionRead[];
+  connectionsWithSource: WebBackendConnectionListItem[];
 }
 
 const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connectionsWithSource }) => {
@@ -26,6 +27,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
   const formId = useUniqueFormId();
   const { clearFormChange } = useFormChangeTrackerService();
 
+  useTrackPage(PageTrackingCodes.SOURCE_ITEM_SETTINGS);
   useEffect(() => {
     return () => {
       setDocumentationPanelOpen(false);
@@ -40,11 +42,12 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
-  }) =>
+  }) => {
     await updateSource({
       values,
       sourceId: currentSource.sourceId,
     });
+  };
 
   const onDelete = async () => {
     clearFormChange(formId);

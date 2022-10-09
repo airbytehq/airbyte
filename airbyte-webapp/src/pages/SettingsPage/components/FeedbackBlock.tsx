@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import Spinner from "components/Spinner";
+import { Spinner } from "components/ui/Spinner";
 
 export interface FeedbackBlockProps {
   isLoading?: boolean;

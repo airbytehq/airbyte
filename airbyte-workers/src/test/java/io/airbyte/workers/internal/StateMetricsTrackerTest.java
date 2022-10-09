@@ -26,6 +26,7 @@ class StateMetricsTrackerTest {
   private static final String SECOND_ONE = "2022-01-01 12:00:01";
   private static final String SECOND_TWO = "2022-01-01 12:00:02";
   private static final String SECOND_FIVE = "2022-01-01 12:00:05";
+  private static final String SECOND_SIX = "2022-01-01 12:00:06";
 
   @BeforeEach
   void setup() {
@@ -135,6 +136,29 @@ class StateMetricsTrackerTest {
     // hashes
     assertThrows(StateMetricsTrackerNoStateMatchException.class,
         () -> stateMetricsTracker.updateStates(s3.getState(), 4, LocalDateTime.parse(SECOND_FIVE, FORMATTER)));
+  }
+
+  @Test
+  void testStreamMaxandMeanSecondsBeforeStateMessageEmitted() {
+    // first record received at second 0
+    stateMetricsTracker.setFirstRecordReceivedAt(LocalDateTime.parse(SECOND_ZERO, FORMATTER));
+
+    // receive state at second 2
+    stateMetricsTracker.incrementTotalSourceEmittedStateMessages();
+    stateMetricsTracker.updateMaxAndMeanSecondsToReceiveStateMessage(LocalDateTime.parse(SECOND_TWO, FORMATTER));
+    stateMetricsTracker.setLastStateMessageReceivedAt(LocalDateTime.parse(SECOND_TWO, FORMATTER));
+    // max and mean seconds to receive state message are both 2 seconds
+    assertEquals(2L, stateMetricsTracker.getMaxSecondsToReceiveSourceStateMessage());
+    assertEquals(2L, stateMetricsTracker.getMeanSecondsToReceiveSourceStateMessage());
+
+    // another state message received after 4 more seconds
+    stateMetricsTracker.incrementTotalSourceEmittedStateMessages();
+    stateMetricsTracker.updateMaxAndMeanSecondsToReceiveStateMessage(LocalDateTime.parse(SECOND_SIX, FORMATTER));
+    stateMetricsTracker.setLastStateMessageReceivedAt(LocalDateTime.parse(SECOND_SIX, FORMATTER));
+
+    // max and mean seconds to receive state message are both 2 seconds
+    assertEquals(4L, stateMetricsTracker.getMaxSecondsToReceiveSourceStateMessage());
+    assertEquals(3L, stateMetricsTracker.getMeanSecondsToReceiveSourceStateMessage());
   }
 
 }

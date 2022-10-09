@@ -76,12 +76,13 @@ def test_email_stream(catalog, time_mock):
     "catalog, days_duration, days_per_minute_rate",
     [
         ("email_send", 10, 200),
+        # tests are commented because they take a lot of time for completion
         # ("email_send", 100, 200000),
         # ("email_send", 10000, 200000),
         # ("email_click", 1000, 20),
         # ("email_open", 1000, 1),
-        ("email_open", 1, 1000),
-        ("email_open", 0, 1000000),
+        # ("email_open", 1, 1000),
+        # ("email_open", 0, 1000000),
     ],
     indirect=["catalog"],
 )
@@ -109,22 +110,3 @@ def test_email_stream_chunked_encoding(catalog, days_duration, days_per_minute_r
     assert sum(ranges) == days_duration
     assert len(ranges) == len(records)
     assert len(responses.calls) == 3 * len(ranges)
-
-
-@responses.activate
-@pytest.mark.parametrize("catalog", (["email_send"]), indirect=True)
-def test_email_stream_chunked_encoding_exception(catalog, time_mock):
-    TEST_START_DATE = "2020"
-    DAYS_DURATION = 100
-
-    time_mock.move_to(pendulum.parse(TEST_START_DATE) + pendulum.Duration(days=DAYS_DURATION))
-
-    responses.add(
-        "GET",
-        "https://api.iterable.com/api/export/data.json",
-        body=ChunkedEncodingError(),
-    )
-
-    with pytest.raises(Exception, match="ChunkedEncodingError: Reached maximum number of retires: 3"):
-        read_from_source(catalog)
-    assert len(responses.calls) == 15

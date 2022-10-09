@@ -24,6 +24,7 @@ import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings({"PMD.AvoidLiteralsInIfCondition", "PMD.CompareObjectsWithEquals"})
 public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_40_001__MigrateFailureReasonEnumValues.class);

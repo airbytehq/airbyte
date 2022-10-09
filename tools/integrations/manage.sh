@@ -48,12 +48,13 @@ cmd_build() {
   # Note that we are only building (and testing) once on this build machine's architecture
   # Learn more @ https://github.com/airbytehq/airbyte/pull/13004
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
 
   if [ "$run_tests" = false ] ; then
-    echo "Skipping integration tests..."
+    echo "Building and skipping unit tests + integration tests..."
+    ./gradlew --no-daemon "$(_to_gradle_path "$path" build)" -x test
   else
-    echo "Running integration tests..."
+    echo "Building and running unit tests + integration tests..."
+    ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
 
     if test "$path" == "airbyte-integrations/bases/base-normalization"; then
       ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:airbyteDocker

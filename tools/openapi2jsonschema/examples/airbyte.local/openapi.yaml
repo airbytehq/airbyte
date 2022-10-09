@@ -2071,6 +2071,9 @@ components:
           items:
             $ref: "#/components/schemas/JobConfigType"
           type: array
+        includingJobId:
+          description: If the job with this ID exists for the specified connection, returns all jobs created after and including this job, or the full pagination pagesize if that list is smaller than a page. Otherwise, this field is ignored.
+          $ref: "#/components/schemas/JobId"
         pagination:
           $ref: "#/components/schemas/Pagination"
           type: object
@@ -2108,8 +2111,13 @@ components:
           items:
             $ref: "#/components/schemas/JobWithAttemptsRead"
           type: array
+        totalJobCount:
+          description: the total count of jobs for the specified connection
+          type: integer
+          format: int64
       required:
         - jobs
+        - totalCount
       type: object
     JobStatus:
       enum:

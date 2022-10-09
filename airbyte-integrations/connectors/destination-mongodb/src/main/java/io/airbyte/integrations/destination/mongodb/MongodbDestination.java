@@ -5,18 +5,24 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import static com.mongodb.client.model.Projections.excludeId;
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.MongoCommandException;
+import com.mongodb.MongoException;
+import com.mongodb.MongoSecurityException;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.mongodb.exception.MongodbDatabaseException;
@@ -69,13 +75,19 @@ public class MongodbDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final var database = getDatabase(config);
+      final MongoDatabase database = getDatabase(config);
       final var databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-      final Set<String> databaseNames = MoreIterators.toSet(database.getDatabaseNames().iterator());
+      final Set<String> databaseNames = getDatabaseNames(database);
       if (!databaseNames.contains(databaseName) && !databaseName.equals(database.getName())) {
         throw new MongodbDatabaseException(databaseName);
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+    } catch (final ConnectionErrorException e) {
+      final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage(message);
     } catch (final RuntimeException e) {
       LOGGER.error("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -83,11 +95,22 @@ public class MongodbDestination extends BaseConnector implements Destination {
     }
   }
 
+  private Set<String> getDatabaseNames(final MongoDatabase mongoDatabase) {
+    try {
+      return MoreIterators.toSet(mongoDatabase.getDatabaseNames().iterator());
+    } catch (final MongoSecurityException e) {
+      final MongoCommandException exception = (MongoCommandException) e.getCause();
+      throw new ConnectionErrorException(String.valueOf(exception.getCode()), e);
+    } catch (final MongoException e) {
+      throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
+    }
+  }
+
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    final var database = getDatabase(config);
+    final MongoDatabase database = getDatabase(config);
 
     final Map<AirbyteStreamNameNamespacePair, MongodbWriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {

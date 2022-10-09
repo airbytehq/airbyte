@@ -21,7 +21,7 @@
         "order": 1
       },
       "start_datetime": {
-        "title": "Start Datetime (Optional)",
+        "title": "Start Datetime",
         "type": "string",
         "examples": ["2000-01-01T13:00:00", "2000-01-01T13:00:00-07:00"],
         "description": "Only rows modified after this date/time will be replicated. This should be an ISO 8601 string, for instance: `2000-01-01T13:00:00`",

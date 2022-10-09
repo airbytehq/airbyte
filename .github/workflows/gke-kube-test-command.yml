@@ -1,7 +1,7 @@
 name: GKE Kube Acceptance Test
 on:
   schedule:
-    - cron '0 0 * * 0' # runs at midnight UTC every Sunday
+    - cron: '0 0 * * 0' # runs at midnight UTC every Sunday
   workflow_dispatch:
     inputs:
       repo:

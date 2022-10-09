@@ -24,8 +24,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests that the Redshift spec passes JsonSchema validation. While this may seem like overkill, we are doing it because there are some gotchas in
- * correctly configuring the oneOf.
+ * Tests that the Redshift spec passes JsonSchema validation. While this may seem like overkill, we
+ * are doing it because there are some gotchas in correctly configuring the oneOf.
  */
 public class RedshiftSpecTest {
 
@@ -44,7 +44,7 @@ public class RedshiftSpecTest {
   }
 
   @BeforeEach
-  void beforeEach()  {
+  void beforeEach() {
     config = Jsons.deserialize(configText);
   }
 

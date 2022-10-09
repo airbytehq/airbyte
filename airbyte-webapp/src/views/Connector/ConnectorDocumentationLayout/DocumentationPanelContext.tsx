@@ -31,7 +31,7 @@ export const documentationPanelContext = createContext<DocumentationPanelContext
 
 export const useDocumentationPanelContext = () => useContext(documentationPanelContext);
 
-export const DocumentationPanelProvider: React.FC = ({ children }) => {
+export const DocumentationPanelProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   return (
     <documentationPanelContext.Provider value={useDocumentationPanelState()}>
       {children}

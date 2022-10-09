@@ -1,49 +1,49 @@
 # August 2022
-## Airbyte [v0.39.27-alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.27-alpha) to [v0.39.41.alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.41-alpha) 
+## Airbyte [v0.39.42-alpha](https://github.com/airbytehq/airbyte/releases/tag/v0.39.42-alpha) to [v0.40.3](https://github.com/airbytehq/airbyte/releases/tag/v0.40.3)
 
-This page includes new features and improvements to the Airbyte Cloud and Airbyte Open Source platforms. 
+This page includes new features and improvements to the Airbyte Cloud and Airbyte Open Source platforms.
 
 ### New features
-* Added per-stream state to the Airbyte Cloud and OSS platforms. Per-stream state currently includes per-stream resets and connection states, and it lays the groundwork for auto-detecting schema changes, parallel syncs, and more.  
+* Added reserved keywords for schema names by fixing the quotation logic in normalization. [#14683](https://github.com/airbytehq/airbyte/pull/14683)
 
-    * The [new flow](https://docs.airbyte.com/cloud/managing-airbyte-cloud#edit-stream-configuration) gives you the option to refresh streams when saving changes to a connection. [#14634](https://github.com/airbytehq/airbyte/pull/14634)  
+* Added [documentation](https://docs.airbyte.com/cloud/managing-airbyte-cloud/#view-the-sync-log-summary) about the data displayed in sync log summaries. [#15181](https://github.com/airbytehq/airbyte/pull/15181)
 
-    * Per-stream reset functionality is now available for connections with a Postgres source. Per-stream resets allow you to reset only the affected streams when saving an edited connection, instead of resetting all streams in a connection. [#14634](https://github.com/airbytehq/airbyte/pull/14634)  
+* Added OAuth login to Airbyte Cloud, which allows you to sign in using your Google login credentials. [#15414](https://github.com/airbytehq/airbyte/pull/15414)
 
-    * For connections with a Postgres source, the state of the connection to the source is displayed in the Connection State. [#15020](https://github.com/airbytehq/airbyte/pull/15020)  
+    * You can use your Google login credentials to sign in to your Airbyte account if they share the same email address.  
 
-    * For Airbyte Open Source users:
-        * If you are using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, upgrade your Airbyte platform to version v0.40.0-alpha or newer and [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your AzureBlobStorage connector to version 0.1.6 or newer. [#15008](https://github.com/airbytehq/airbyte/pull/15008)  
+    * You can create a new Airbyte account with OAuth using your Google login credentials. 
 
-* Added `airbyte_type` to normalization. This displays whether `timestamp` and `time` have an associated time zone. [#13591](https://github.com/airbytehq/airbyte/pull/13591)  
-
-* Airbyte is currently developing a low-code connector builder, which allows you to easily create new source and destination connectors in your workspace. [#14402](https://github.com/airbytehq/airbyte/pull/14402) [#14317](https://github.com/airbytehq/airbyte/pull/14317) [#14288](https://github.com/airbytehq/airbyte/pull/14288) [#14004](https://github.com/airbytehq/airbyte/pull/14004)  
-
-* Added [documentation](https://docs.airbyte.com/cloud/managing-airbyte-cloud#single-workspace-vs-multiple-workspaces) about the benefits and considerations of having a single workspace vs. multiple workspaces in Airbyte Cloud. [#14608](https://github.com/airbytehq/airbyte/pull/14608)
+    * You cannot use OAuth to log in if you are invited to join a workspace.
 
 ### Improvements
-* Improved platform security by using Docker images from the latest version of OpenJDK (openjdk:19-slim-bullseye). [#14971](https://github.com/airbytehq/airbyte/pull/14971)  
+* Improved the Airbyte version naming conventions by removing the `-alpha` tag. The Airbyte platform is used successfully by thousands of users, so the `-alpha` tag is no longer necessary. [#15766](https://github.com/airbytehq/airbyte/pull/15766)
 
-* Improved Airbyte Open Source self-hosting by refactoring and publishing Helm charts according to best practices as we prepare to formally support Helm deployments. [#14794](https://github.com/airbytehq/airbyte/pull/14794)  
+* Improved the `loadBalancerIP` in the web app by making it configurable. [#14992](https://github.com/airbytehq/airbyte/pull/14992)
 
-* Improved Airbyte Open Source by supporting the [OpenTelemetry (OTEL) Collector](https://docs.airbyte.com/operator-guides/collecting-metrics/). Airbyte Open Source now sends telemetry data to the OTEL collector, and we included a set of [recommended metrics](https://docs.airbyte.com/operator-guides/scaling-airbyte/#metrics) to export to OTEL when running Airbyte Open Source at scale. [#12908](https://github.com/airbytehq/airbyte/issues/12908)  
+* Datadog:
 
-* Improved the [Airbyte Connector Development Kit (CDK)](https://airbyte.com/connector-development-kit) by enabling detailed bug logs from the command line. In addition to the preset CDK debug logs, you can also create custom debug statements and display custom debug logs in the command line. [#14521](https://github.com/airbytehq/airbyte/pull/14521)  
+    * Improved the Airbyte platform by supporting StatsD, which sends Temporal metrics to Datadog. [#14842](https://github.com/airbytehq/airbyte/pull/14842)
 
-* Improved CDK by supporting a schema generator tool. [#13518](https://github.com/airbytehq/airbyte/pull/13518)  
+    * Added Datadog tags to help you identify metrics between Airbyte instances. [#15213](https://github.com/airbytehq/airbyte/pull/15213) 
 
-* Improved [documentation](https://docs.airbyte.com/contributing-to-airbyte/developing-locally#connector) about contributing locally by adding information on formatting connectors. [#14661](https://github.com/airbytehq/airbyte/pull/14661)  
+    * Added metric client tracking to record schema validation errors. [#13393](https://github.com/airbytehq/airbyte/pull/13393)
 
-* Improved [Octavia CLI](https://github.com/airbytehq/airbyte/tree/master/octavia-cli#-octavia-cli) so you can now:
+### Bugs
+* Fixed an issue where data types did not display correctly in the UI. The correct data types are now displayed in the streams of your connections. [#15558](https://github.com/airbytehq/airbyte/pull/15558)
 
-    * Switch between Airbyte instances and deploy the same configurations on multiple instances. [#13070](https://github.com/airbytehq/airbyte/pull/13070) [#13748](https://github.com/airbytehq/airbyte/issues/13748)  
+* Fixed an issue where requests would fail during a release by adding a shutdown hook to the Airbyte server. This ensures the requests will be gracefully terminated before they can fail. [#15934](https://github.com/airbytehq/airbyte/pull/15934)
 
-    * Enable normalization or custom DBT transformation from YAML configurations. [#10973](https://github.com/airbytehq/airbyte/issues/10973)  
+* Helm charts:
 
-    * Set custom HTTP headers on requests made to the Airbyte server. You can use CLI If you have instances secured with basic access authentication or identity-aware proxy (IAP). This lays the groundwork for making the CLI compatible with Airbyte Cloud once we release the public API. [#13770](https://github.com/airbytehq/airbyte/issues/13770)  
+    * Fixed the deployment problems of the Helm chart with FluxCD by removing unconditional resource assignment in the chart for Temporal. [#15374](https://github.com/airbytehq/airbyte/pull/15374)
 
-     * Import existing remote resources to a local Octavia project with `octavia import`. [#14291](https://github.com/airbytehq/airbyte/issues/14291)  
+    * Fixed the following issues in [#15199](https://github.com/airbytehq/airbyte/pull/15199):
 
-     * Use the `get` command to get existing configurations for sources, destinations, and connections. [#13254](https://github.com/airbytehq/airbyte/pull/13254)  
+        * Fixed an issue where `toyaml` was being used instead of `toYaml`, which caused Helm chart installation to fail.
 
-     * Retrieve the JSON configuration using `octavia get`, which is useful for some scripting and orchestration use cases. [#13254](https://github.com/airbytehq/airbyte/pull/13254)
+        * Fixed incorrect `extraContainers` indentation, which caused Helm chart installation to fail if the value was supplied.
+
+        * Fixed incorrect Postgres secret reference and made it more user friendly.
+
+        * Updated the method of looking up secrets and included an override feature to protect users from common mistakes.

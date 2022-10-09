@@ -1,4 +1,6 @@
-name: performance-test
+# runs ./tools/bin/ci_performance_test.sh
+# which is more or less ./gradlew performanceTest limited to connectors with changes
+name: Run Performance Test
 on:
   workflow_dispatch:
     inputs:

@@ -251,7 +251,17 @@ spec:
 
 
 # Datadog
-TBD
+The set up for Datadog is pretty straightforward. 
+
+Set two env vars:
+
+1) `METRIC_CLIENT` to `datadog`.
+2) `PUBLISH_METRICS` to `true`.
+
+Configure two additional env vars to the Datadog endpoint:
+
+1) Set `DD_AGENT_HOST` to the IP where the Datadog agent is running.
+2) Set `DD_DOGSTATSD_PORT` to the port the Datadog agent is using.
 
 ## Metrics
 Visit [OssMetricsRegistry.java](https://github.com/airbytehq/airbyte/blob/master/airbyte-metrics/metrics-lib/src/main/java/io/airbyte/metrics/lib/OssMetricsRegistry.java) to get a complete list of metrics Airbyte is sending.

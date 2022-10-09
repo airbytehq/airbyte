@@ -34,10 +34,6 @@ GAP_DAYS = 14
 
 
 def test_incremental_sync(config, configured_catalog):
-    today = pendulum.now().date()
-    start_date = today.subtract(months=2)
-    config["start_date"] = start_date.to_date_string()
-
     google_ads_client = SourceGoogleAds()
     records = list(google_ads_client.read(logging.getLogger("airbyte"), config, ConfiguredAirbyteCatalog.parse_obj(configured_catalog)))
     latest_state = None
@@ -51,7 +47,7 @@ def test_incremental_sync(config, configured_catalog):
             continue
         cursor_value = message.record.data["segments.date"]
         assert cursor_value <= latest_state
-        assert cursor_value >= start_date.subtract(days=GAP_DAYS).to_date_string()
+        assert cursor_value >= pendulum.parse(config["start_date"]).subtract(days=GAP_DAYS).to_date_string()
 
     #  next sync
     records = list(

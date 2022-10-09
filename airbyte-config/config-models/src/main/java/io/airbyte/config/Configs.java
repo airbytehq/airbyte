@@ -5,11 +5,14 @@
 package io.airbyte.config;
 
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -41,6 +44,16 @@ public interface Configs {
    */
   AirbyteVersion getAirbyteVersion();
 
+  /**
+   * Defines the max supported Airbyte Protocol Version
+   */
+  Version getAirbyteProtocolVersionMax();
+
+  /**
+   * Defines the min supported Airbyte Protocol Version
+   */
+  Version getAirbyteProtocolVersionMin();
+
   String getAirbyteVersionOrWarning();
 
   /**
@@ -70,6 +83,13 @@ public interface Configs {
    * backward compatibility.
    */
   Path getWorkspaceRoot();
+
+  /**
+   * Defines the URL to pull the remote connector catalog from.
+   *
+   * @return
+   */
+  Optional<URI> getRemoteConnectorCatalogUrl();
 
   // Docker Only
 
@@ -559,15 +579,6 @@ public interface Configs {
    */
   boolean shouldRunConnectionManagerWorkflows();
 
-  /**
-   * Define if the worker is operating within Airbyte's Control Plane, or within an external Data
-   * Plane. - Workers in the Control Plane process tasks related to control-flow, like scheduling and
-   * routing, as well as data syncing tasks that are enqueued for the Control Plane's default task
-   * queue. - Workers in a Data Plane process only tasks related to data syncing that are specifically
-   * enqueued for that worker's particular Data Plane.
-   */
-  WorkerPlane getWorkerPlane();
-
   // Worker - Control Plane configs
 
   /**
@@ -706,11 +717,6 @@ public interface Configs {
     TESTING_CONFIG_DB_TABLE,
     GOOGLE_SECRET_MANAGER,
     VAULT
-  }
-
-  enum WorkerPlane {
-    CONTROL_PLANE,
-    DATA_PLANE
   }
 
 }

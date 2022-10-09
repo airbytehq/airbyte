@@ -3,6 +3,7 @@
 #
 
 import json
+import re
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
@@ -96,20 +97,28 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     # (Service limits section)
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "YYYYMMDD"
-    CONFIG_DATE_FORMAT = "YYYY-MM-DD"
     cursor_field = "reportDate"
+
+    ERRORS = [
+        (400, "KDP authors do not have access to Sponsored Brands functionality"),
+        (401, re.compile(r"^Not authorized to access scope \d+$")),
+        # Check if the connector received an error like: 'Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3.'
+        # https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
+        (400, re.compile(r"^Tactic T00020 is not supported for report API in marketplace [A-Z\d]+\.$")),
+        # Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
+        # In theory, it does not have to get such an error because the connector correctly calculates the start date,
+        # but from practice, we can still catch such errors from time to time.
+        (406, "Report date is too far in the past."),
+    ]
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
         self._state = {}
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
-        self.report_wait_timeout = config.get("report_wait_timeout", 30)
+        self.report_wait_timeout = config.get("report_wait_timeout", 60)
         self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
-        # Set start date from config file
-        self._start_date = config.get("start_date")
-        if self._start_date:
-            self._start_date = pendulum.from_format(self._start_date, self.CONFIG_DATE_FORMAT).date()
+        self._start_date: Optional[Date] = config.get("start_date")
         super().__init__(config, profiles)
 
     @property
@@ -363,7 +372,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             )
             if response.status_code != HTTPStatus.ACCEPTED:
                 error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
-                if self._check_report_date_error(response) or self._check_report_tactic_error(response):
+                if self._skip_known_errors(response):
                     self.logger.warning(error_msg)
                     break
                 raise ReportInitFailure(error_msg)
@@ -401,34 +410,24 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return f'Report(s) generation time took more than {self.report_wait_timeout} minutes, please increase the "report_wait_timeout" parameter in configuration.'
         return super().get_error_display_message(exception)
 
-    def _check_report_date_error(self, response) -> bool:
+    def _get_response_error_details(self, response) -> Optional[str]:
+        try:
+            response_json = response.json()
+        except ValueError:
+            return
+        return response_json.get("details")
+
+    def _skip_known_errors(self, response) -> bool:
         """
-        Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
-
-        In theory, it does not have to get such an error because the connector correctly calculates the start date,
-        but from practice, we can still catch such errors from time to time.
+        return True if we get known error which we need to skip
         """
-
-        if response.status_code == 406:
-            try:
-                response_json = response.json()
-            except ValueError:
-                return False
-            return response_json.get("details", "").startswith("Report date is too far in the past.")
-        return False
-
-    def _check_report_tactic_error(self, response) -> bool:
-        """
-        Check if the connector received an error: 'Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3.'
-
-        A1C3SOZRARQ6R3 - Poland Marketplace
-        https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
-        """
-
-        if response.status_code == 400:
-            try:
-                response_json = response.json()
-            except ValueError:
-                return False
-            return response_json.get("details", "") == "Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3."
+        response_details = self._get_response_error_details(response)
+        if response_details:
+            for status_code, details in self.ERRORS:
+                if response.status_code == status_code:
+                    if isinstance(details, re.Pattern):
+                        if details.match(response_details):
+                            return True
+                    elif details == response_details:
+                        return True
         return False

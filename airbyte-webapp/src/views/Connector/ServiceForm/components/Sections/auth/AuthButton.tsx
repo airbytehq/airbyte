@@ -2,8 +2,8 @@ import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components";
-import { Text } from "components/base/Text";
+import { Button } from "components/ui/Button";
+import { Text } from "components/ui/Text";
 
 import { ConnectorSpecification } from "core/domain/connector";
 
@@ -43,7 +43,7 @@ export const AuthButton: React.FC = () => {
   const hasAuthError = Object.values(authErrors).includes("form.empty.error");
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { loading, done, run } = useFormikOauthAdapter(selectedConnector!);
+  const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnector!);
 
   if (!selectedConnector) {
     console.error("Entered non-auth flow while no connector is selected");
@@ -57,16 +57,17 @@ export const AuthButton: React.FC = () => {
     [styles.error]: hasAuthError,
     [styles.success]: !hasAuthError,
   });
+  const buttonLabel = done ? (
+    <FormattedMessage id="connectorForm.reauthenticate" />
+  ) : (
+    <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
+  );
   return (
     <div className={styles.authSectionRow}>
-      <Component isLoading={loading} type="button" onClick={() => run()}>
-        {done ? (
-          <FormattedMessage id="connectorForm.reauthenticate" />
-        ) : (
-          <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
-        )}
+      <Component isLoading={loading} type="button" onClick={run}>
+        {buttonLabel}
       </Component>
-      {done && (
+      {done && hasRun && (
         <Text as="div" size="lg" className={messageStyle}>
           <FormattedMessage id="connectorForm.authenticate.succeeded" />
         </Text>
