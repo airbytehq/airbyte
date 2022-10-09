@@ -49,7 +49,10 @@ const config = {
                             from: '/operator-guides/securing-airbyte',
                             to: '/operator-guides/security',
                         },
-
+                        {
+                            from: '/connector-development/config-based/',
+                            to: '/connector-development/config-based/low-code-cdk-overview',
+                        },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',
