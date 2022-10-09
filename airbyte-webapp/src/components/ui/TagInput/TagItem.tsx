@@ -50,7 +50,7 @@ export interface IItemProps {
   id: string;
 }
 
-const TagItem: React.FC<IProps> = ({ item, onDeleteTag, isSelected, disabled }) => {
+export const TagItem: React.FC<IProps> = ({ item, onDeleteTag, isSelected, disabled }) => {
   const clickOnDeleteButton = () => onDeleteTag(item.id);
 
   return (
@@ -60,5 +60,3 @@ const TagItem: React.FC<IProps> = ({ item, onDeleteTag, isSelected, disabled }) 
     </Tag>
   );
 };
-
-export default TagItem;

@@ -60,7 +60,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = pendulum.parse(start_date)
+        self._start_date = pendulum.parse(start_date) if isinstance(start_date, str) else start_date
 
     @property
     @abstractmethod
@@ -131,6 +131,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
                     "end": self._get_end_date(start_datetime).strftime(self.date_template),
                 }
             )
+
         return params
 
 
@@ -177,6 +178,7 @@ class Events(IncrementalAmplitudeStream):
                 }
             )
             start = start.add(**self.time_interval)
+
         return slices
 
     def read_records(

@@ -17,6 +17,8 @@ This Source is capable of syncing the following core Streams:
 - [Transactions](https://developer.bigcommerce.com/api-reference/store-management/order-transactions/transactions/gettransactions)
 - [Pages](https://developer.bigcommerce.com/api-reference/store-management/store-content/pages/getallpages)
 - [Products](https://developer.bigcommerce.com/api-reference/store-management/catalog/products/getproducts)
+- [Channels](https://developer.bigcommerce.com/api-reference/d2298071793d6-get-all-channels)
+- [Store](https://developer.bigcommerce.com/api-reference/bb1daaaeccae0-get-store-information)
 
 ### Data type mapping
 
@@ -52,6 +54,7 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.1.7   | 2022-09-13 | [16647](https://github.com/airbytehq/airbyte/pull/16647) | Add channel and store stream goes beyond                    |
 | 0.1.6   | 2022-07-27 | [14940](https://github.com/airbytehq/airbyte/pull/14940) | Fix infinite loop when the page stream goes beyond one page |
 | 0.1.5   | 2022-01-31 | [9935](https://github.com/airbytehq/airbyte/pull/9935)   | Correct date-time columns for `orders` (v2 stream)          |
 | 0.1.4   | 2022-01-13 | [9516](https://github.com/airbytehq/airbyte/pull/9516)   | Add Catalog Products Stream and fix date-time parsing       |

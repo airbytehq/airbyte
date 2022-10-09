@@ -11,6 +11,7 @@ import { CreditsIcon } from "components/icons/CreditsIcon";
 import { Text } from "components/ui/Text";
 
 import { useConfig } from "config";
+import { useExperiment } from "hooks/services/Experiment";
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
@@ -40,11 +41,16 @@ const SideBar: React.FC = () => {
   const config = useConfig();
   const { show } = useIntercom();
   const handleChatUs = () => show();
+  const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
 
   return (
     <nav className={styles.nav}>
       <div>
-        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
+        <Link
+          to={
+            workspace.displaySetupWizard && !hideOnboardingExperiment ? RoutePaths.Onboarding : RoutePaths.Connections
+          }
+        >
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <WorkspacePopout>
@@ -55,7 +61,7 @@ const SideBar: React.FC = () => {
           )}
         </WorkspacePopout>
         <ul className={styles.menu}>
-          {workspace.displaySetupWizard ? (
+          {workspace.displaySetupWizard && !hideOnboardingExperiment ? (
             <li>
               <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
