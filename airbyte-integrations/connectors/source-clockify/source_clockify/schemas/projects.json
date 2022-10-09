@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "archived": {
+      "type": "boolean"
+    },
+    "billable": {
+      "type": "boolean"
+    },
+    "budgetEstimate": {
+      "type": "null"
+    },
+    "clientId": {
+      "type": "string"
+    },
+    "clientName": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "costRate": {
+      "type": "null"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "estimate": {
+      "properties": {
+        "estimate": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "hourlyRate": {
+      "properties": {
+        "amount": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "memberships": {
+      "items": {
+        "properties": {
+          "costRate": {
+            "type": "null"
+          },
+          "hourlyRate": {
+            "type": "null"
+          },
+          "membershipStatus": {
+            "type": "string"
+          },
+          "membershipType": {
+            "type": "string"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "public": {
+      "type": "boolean"
+    },
+    "template": {
+      "type": "boolean"
+    },
+    "timeEstimate": {
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "estimate": {
+          "type": "string"
+        },
+        "includeNonBillable": {
+          "type": "boolean"
+        },
+        "resetOption": {
+          "type": "null"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "workspaceId": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

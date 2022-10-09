@@ -1,0 +1,65 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "billable": {
+        "type": "boolean"
+      },
+      "customFieldValues": {
+        "type": "array"
+      },
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "isLocked": {
+        "type": "boolean"
+      },
+      "kioskId": {
+        "type": "null"
+      },
+      "projectId": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "tagIds": {
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "taskId": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "timeInterval": {
+        "properties": {
+          "duration": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      },
+      "userId": {
+        "type": "string"
+      },
+      "workspaceId": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }
