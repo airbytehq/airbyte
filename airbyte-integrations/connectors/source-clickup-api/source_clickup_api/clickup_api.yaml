@@ -14,12 +14,13 @@ definitions:
     name: "{{ options['name'] }}"
     http_method: "GET"
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['api_key'] }}"
+      type: ApiKeyAuthenticator
+      header: "Authorization"
+      api_token: "{{ config['api_token'] }}"
   retriever:
     type: SimpleRetriever
     $options:
-      url_base: TODO "your_api_base_url"
+      url_base: "https://api.clickup.com/api/v2"
     name: "{{ options['name'] }}"
     primary_key: "{{ options['primary_key'] }}"
     record_selector:
@@ -30,15 +31,24 @@ definitions:
 streams:
   - type: DeclarativeStream
     $options:
-      name: "customers"
-    primary_key: "id"
+      name: "user"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        path: TODO "your_endpoint_path"
+        path: "/user"
+  - type: DeclarativeStream
+    $options:
+      name: "team"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/team"
 check:
   type: CheckStream
-  stream_names: ["customers"]
+  stream_names: ["user", "team"]

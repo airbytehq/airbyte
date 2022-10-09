@@ -4,10 +4,13 @@ connectionSpecification:
   title: ClickUp Api Spec
   type: object
   required:
-    - TODO
+    - api_token
   additionalProperties: true
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    api_token:
       type: string
-      description: describe me
+      description: >-
+        Every ClickUp API call required authentication. This field is your personal API token. See <a
+        href="https://clickup.com/api/developer-portal/authentication/#personal-token">here</a>.
+      airbyte_secret: true
