@@ -4,8 +4,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { NavigateOptions, To, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { LabeledInput, Link, Button } from "components";
+import { LabeledInput, Link } from "components";
 import HeadTitle from "components/HeadTitle";
+import { Button } from "components/ui/Button";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useQuery } from "hooks/useQuery";

@@ -17,7 +17,7 @@ If your dataset is small and you just want a snapshot of your table in the desti
 
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer
 - Use Postgres v9.3.x or above for non-CDC workflows and Postgres v10 or above for CDC workflows
-- Allowlist one of our IP addresses to enable access to Airbyte:
+- Allowlist our IP addresses to enable access to Airbyte:
   - 34.106.109.131
   - 34.106.196.165
   - 34.106.60.246
@@ -382,10 +382,24 @@ Possible solutions include:
 - [Recommended] Sync data when there is no update running in the primary server, or sync data from the primary server.
 - [Not Recommended] Increase [`max_standby_archive_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-ARCHIVE-DELAY) and [`max_standby_streaming_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-STREAMING-DELAY) to be larger than the amount of time needed to complete the data sync. However, it is usually hard to tell how much time it will take to sync all the data. This approach is not very practical.
 
+### Under CDC incremental mode, there are still full refresh syncs
+
+Normally under the CDC mode, the Postgres source will first run a full refresh sync to read the snapshot of all the existing data, and all subsequent runs will only be incremental syncs reading from the write-ahead logs (WAL). However, occasionally, you may see full refresh syncs after the initial run. When this happens, you will see the following log:
+
+> Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch
+
+The root causes is that the WALs needed for the incremental sync has been removed by Postgres. This can occur under the following scenarios:
+- When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
+  - Sync the data source more frequently. The downside is that more computation resources will be consumed, leading to a higher Airbyte bill.
+  - Set a higher `wal_keep_size`. If no unit is provided, it is in megabytes, and the default is `0`. See detailed documentation [here](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-WAL-KEEP-SIZE). The downside of this approach is that more disk space will be needed.
+- When the Postgres connector successfully reads the WAL and acknowledges it to Postgres, but the destination connector fails to consume the data, the Postgres connector will try to read the same WAL again, which may have been removed by Postgres, since the WAL record is already acknowledged. This scenario is rare, because it can happen, and currently there is no way to prevent it. The correct behavior is to perform a full refresh.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.14  | 2022-10-03 | [17515](https://github.com/airbytehq/airbyte/pull/17515) | Fix an issue preventing connection using client certificate                                                                                                                |
+| 1.0.13  | 2022-10-01 | [17459](https://github.com/airbytehq/airbyte/pull/17459) | Upgrade debezium version to 1.9.6 from 1.9.2                                                                                                                               |
 | 1.0.12  | 2022-09-27 | [17299](https://github.com/airbytehq/airbyte/pull/17299) | Improve error handling for strict-encrypt postgres source                                                                                                                  |
 | 1.0.11  | 2022-09-26 | [17131](https://github.com/airbytehq/airbyte/pull/17131) | Allow nullable columns to be used as cursor                                                                                                                                |
 | 1.0.10  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                                             |

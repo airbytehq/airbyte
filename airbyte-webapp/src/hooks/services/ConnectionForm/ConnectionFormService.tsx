@@ -1,112 +1,82 @@
-import { FormikHelpers } from "formik";
-import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 import { useIntl } from "react-intl";
 
-import { ConnectionScheduleType, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionScheduleType, OperationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
-import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
-import { generateMessageFromError } from "utils/errorStatusMessage";
-import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
+import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
-  useFrequencyDropdownData,
   useInitialValues,
 } from "views/Connection/ConnectionForm/formConfig";
 
-import { useFormChangeTrackerService } from "../FormChangeTracker";
-import { ModalCancel } from "../Modal";
+import { useUniqueFormId } from "../FormChangeTracker";
 import { ValuesProps } from "../useConnectionHook";
+import { SchemaError } from "../useSourceHook";
+
+export type ConnectionFormMode = "create" | "edit" | "readonly";
 
 export type ConnectionOrPartialConnection =
   | WebBackendConnectionRead
   | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">);
 
-export interface ConnectionServiceProps {
+interface ConnectionServiceProps {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
-  formId: string;
-  onSubmit: (values: ValuesProps) => Promise<void>;
-  onAfterSubmit?: () => void;
-  onCancel?: () => void;
-  formDirty: boolean;
+  schemaError?: SchemaError | null;
+  refreshSchema: () => Promise<void>;
 }
 
-const useConnectionForm = ({
-  connection,
-  mode,
-  formId,
-  onSubmit,
-  onAfterSubmit,
-  onCancel,
-  formDirty,
-}: ConnectionServiceProps) => {
-  const [submitError, setSubmitError] = useState<Error | null>(null);
-  const workspaceId = useCurrentWorkspaceId();
-  const { clearFormChange } = useFormChangeTrackerService();
-  const { formatMessage } = useIntl();
+export const tidyConnectionFormValues = (
+  values: FormikConnectionFormValues,
+  workspaceId: string,
+  mode: ConnectionFormMode,
+  operations?: OperationRead[]
+): ValuesProps => {
+  // TODO (https://github.com/airbytehq/airbyte/issues/17279): We should try to fix the types so we don't need the casting.
+  const formValues: ConnectionFormValues = connectionValidationSchema(mode).cast(values, {
+    context: { isRequest: true },
+  }) as unknown as ConnectionFormValues;
 
+  formValues.operations = mapFormPropsToOperation(values, operations, workspaceId);
+
+  if (formValues.scheduleType === ConnectionScheduleType.manual) {
+    // Have to set this to undefined to override the existing scheduleData
+    formValues.scheduleData = undefined;
+  }
+
+  return formValues;
+};
+
+const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: ConnectionServiceProps) => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
+  const { formatMessage } = useIntl();
+  const [submitError, setSubmitError] = useState<FormError | null>(null);
+  const formId = useUniqueFormId();
 
-  const onFormSubmit = useCallback(
-    async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      // TODO: We should align these types
-      // With the PATCH-style endpoint available we might be able to forego this pattern
-      const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
-        context: { isRequest: true },
-      }) as unknown as ConnectionFormValues;
-
-      formValues.operations = mapFormPropsToOperation(values, connection.operations, workspaceId);
-
-      if (formValues.scheduleType === ConnectionScheduleType.manual) {
-        // Have to set this to undefined to override the existing scheduleData
-        formValues.scheduleData = undefined;
-      }
-
-      setSubmitError(null);
-      try {
-        // This onSubmit comes from either ReplicationView.tsx (Connection Edit), or CreateConnectionContent.tsx (Connection Create).
-        await onSubmit(formValues);
-
-        formikHelpers.resetForm({ values });
-        // We need to clear the form changes otherwise the dirty form intercept service will prevent navigation
-        clearFormChange(formId);
-
-        onAfterSubmit?.();
-      } catch (e) {
-        if (!(e instanceof ModalCancel)) {
-          setSubmitError(e);
-        }
-      }
-    },
-    [connection.operations, workspaceId, onSubmit, clearFormChange, formId, onAfterSubmit]
-  );
-
-  const errorMessage = useMemo(
-    () =>
+  const getErrorMessage = useCallback(
+    (formValid: boolean, connectionDirty: boolean) =>
       submitError
         ? generateMessageFromError(submitError)
-        : formDirty
+        : connectionDirty && !formValid
         ? formatMessage({ id: "connectionForm.validation.error" })
         : null,
-    [formDirty, formatMessage, submitError]
+    [formatMessage, submitError]
   );
-  const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
   return {
-    initialValues,
-    destDefinition,
     connection,
     mode,
-    errorMessage,
-    frequencies,
+    destDefinition,
+    initialValues,
+    schemaError,
     formId,
-    onFormSubmit,
-    onAfterSubmit,
-    onCancel,
+    setSubmitError,
+    getErrorMessage,
+    refreshSchema,
   };
 };
 

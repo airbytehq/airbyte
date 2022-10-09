@@ -5,13 +5,13 @@ import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
 
 import Link from "components/Link";
-import { Button } from "components/ui";
+import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
+import { JobStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
+import { RoutePaths } from "pages/routePaths";
 
-import { JobStatus, WebBackendConnectionRead } from "../../../core/request/AirbyteClient";
-import { RoutePaths } from "../../routePaths";
 import styles from "./ProgressBlock.module.scss";
 
 const run = keyframes`

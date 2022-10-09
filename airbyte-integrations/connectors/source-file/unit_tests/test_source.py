@@ -128,6 +128,12 @@ def test_check_invalid_config(source, invalid_config):
     assert actual.status == expected.status
 
 
+def test_check_non_direct_url_provided_config(source, non_direct_url_provided_config):
+    expected = AirbyteConnectionStatus(status=Status.FAILED)
+    actual = source.check(logger=logger, config=non_direct_url_provided_config)
+    assert actual.status == expected.status
+
+
 def test_discover(source, config, client):
     catalog = source.discover(logger=logger, config=config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)

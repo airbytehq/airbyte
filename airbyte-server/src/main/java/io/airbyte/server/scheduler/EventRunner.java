@@ -18,9 +18,7 @@ public interface EventRunner {
 
   ManualOperationResult startNewCancellation(final UUID connectionId);
 
-  ManualOperationResult resetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset);
-
-  ManualOperationResult synchronousResetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset);
+  ManualOperationResult resetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset, final boolean runSyncImmediately);
 
   void deleteConnection(final UUID connectionId);
 
