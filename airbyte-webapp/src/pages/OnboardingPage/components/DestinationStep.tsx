@@ -87,6 +87,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
       errorMessage={errorMessage}
       selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
       isLoading={isLoading}
+      formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
     />
   );
 };

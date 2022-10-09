@@ -90,6 +90,7 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
       errorMessage={errorMessage}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       isLoading={isLoading}
+      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId } : undefined}
     />
   );
 };
