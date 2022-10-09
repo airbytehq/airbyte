@@ -18,6 +18,9 @@ definitions:
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_{{snakeCase name}}/schemas/\{{ options['name'] }}.json"
     retriever:
       $ref: "*ref(definitions.retriever)"
   customers_stream:

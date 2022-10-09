@@ -155,6 +155,9 @@ definitions:
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_exchange_rates_tutorial_2/schemas/{{ options['name'] }}.json"
     retriever:
       $ref: "*ref(definitions.retriever)"
   rates_stream:
