@@ -1,11 +1,12 @@
+import classnames from "classnames";
 import { Form, useFormikContext } from "formik";
 import React from "react";
 
 import { Spinner } from "components/ui/Spinner";
 
+import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 
-import { ConnectorDefinitionSpecification } from "../../../core/domain/connector";
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
@@ -41,7 +42,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
   const { resetServiceForm, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
-    <Form className={styles.formContainer}>
+    <Form className={classnames(styles.formContainer, { [styles.emptyContainer]: !selectedConnector })}>
       <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
         <div className={styles.loaderContainer}>
