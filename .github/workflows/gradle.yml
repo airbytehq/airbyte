@@ -530,6 +530,16 @@ jobs:
           path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml'
           reporter: java-junit
 
+      - name: Upload test results to BuildPulse for flaky test detection
+        if: '!cancelled()' # Run this step even when the tests fail. Skip if the workflow is cancelled.
+        uses: Workshop64/buildpulse-action@main
+        with:
+          account: 59758427
+          repository: 283046497
+          path: '/actions-runner/_work/airbyte/airbyte/*'
+          key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
+          secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
@@ -668,6 +678,16 @@ jobs:
           name: Platform Kubernetes E2E Test Report
           path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml'
           reporter: java-junit
+
+      - name: Upload test results to BuildPulse for flaky test detection
+        if: '!cancelled()' # Run this step even when the tests fail. Skip if the workflow is cancelled.
+        uses: Workshop64/buildpulse-action@main
+        with:
+          account: 59758427
+          repository: 283046497
+          path: '/actions-runner/_work/airbyte/airbyte/*'
+          key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
+          secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
 
       - uses: actions/upload-artifact@v2
         if: failure()
