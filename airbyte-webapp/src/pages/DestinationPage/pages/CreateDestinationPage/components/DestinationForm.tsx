@@ -62,9 +62,6 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
 
   const errorMessage = error ? generateMessageFromError(error) : null;
 
-  // FIXME: need to fix bugs:
-  //  - after opening the create form and go back - the UnsavedChanges Modal appear
-  //  - need to disable select service type dropdown on formSubmit
   const frequentlyUsedDestinationsComponent = !isLoading && !destinationDefinitionId && (
     <FrequentlyUsedDestinations onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
   );

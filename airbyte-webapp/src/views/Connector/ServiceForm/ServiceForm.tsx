@@ -261,17 +261,15 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           <FormikPatch />
           <FormChangeTracker changed={dirty} formId={formId} />
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
-          {selectedConnectorDefinitionSpecification && (
-            <FormRoot
-              {...props}
-              errorMessage={errorMessage}
-              isTestConnectionInProgress={isTestConnectionInProgress}
-              onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
-              onRetest={testConnector ? async () => await testConnector() : undefined}
-              formFields={formFields}
-              selectedConnector={selectedConnectorDefinitionSpecification}
-            />
-          )}
+          <FormRoot
+            {...props}
+            errorMessage={errorMessage}
+            isTestConnectionInProgress={isTestConnectionInProgress}
+            onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
+            onRetest={testConnector ? async () => await testConnector() : undefined}
+            formFields={formFields}
+            selectedConnector={selectedConnectorDefinitionSpecification}
+          />
         </ServiceFormContextProvider>
       )}
     </Formik>
