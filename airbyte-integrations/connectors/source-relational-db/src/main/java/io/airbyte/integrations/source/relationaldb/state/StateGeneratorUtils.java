@@ -124,7 +124,8 @@ public class StateGeneratorUtils {
         .withStreamName(airbyteStreamNameNamespacePair.getName())
         .withStreamNamespace(airbyteStreamNameNamespacePair.getNamespace())
         .withCursorField(cursorInfo.getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(cursorInfo.getCursorField()))
-        .withCursor(cursorInfo.getCursor());
+        .withCursor(cursorInfo.getCursor())
+        .withCursorRecordCount((long) cursorInfo.getCursorRecordCount());
   }
 
   /**
