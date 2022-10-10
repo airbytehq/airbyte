@@ -1,11 +1,39 @@
 # Request Options
 
-There are a few ways to set request parameters, headers, and body on ongoing HTTP requests.
+The primary way to set request parameters and headers is to define them as key-value pairs using a `RequestOptionsProvider`.
+Other components, such as an `Authenticator` can also set additional request params or headers as needed.
+
+Additionally, some stateful components use a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](./pagination.md) and [Stream slicers](./stream-slicers.md).
 
 ## Request Options Provider
 
 The primary way to set request options is through the `Requester`'s `RequestOptionsProvider`.
 The options can be configured as key value pairs:
+
+Schema:
+
+```yaml
+  RequestOptionsProvider:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+  InterpolatedRequestOptionsProvider:
+    type: object
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      request_parameters:
+        "$ref": "#/definitions/RequestInput"
+      request_headers:
+        "$ref": "#/definitions/RequestInput"
+      request_body_data:
+        "$ref": "#/definitions/RequestInput"
+      request_body_json:
+        "$ref": "#/definitions/RequestInput"
+```
+
+Example:
 
 ```yaml
 requester:
@@ -33,6 +61,33 @@ requester:
   request_options_provider:
     request_body_json:
       key: value
+```
+
+### Request Options
+
+Some components can add request options to the requests sent to the API endpoint.
+
+Schema:
+
+```yaml
+  RequestOption:
+    type: object
+    additionalProperties: true
+    required:
+      - inject_into
+    properties:
+      inject_into:
+        "$ref": "#/definitions/RequestOptionType"
+      field_name:
+        type: string
+  RequestOptionType:
+    type: string
+    enum:
+      - request_parameter
+      - header
+      - path
+      - body_data
+      - body_json
 ```
 
 ## Authenticators
@@ -63,7 +118,7 @@ paginator:
     field_name: "page"
 ```
 
-More details on paginators can be found in the [pagination section](pagination.md).
+More details on paginators can be found in the [pagination section](./pagination.md).
 
 ## Stream slicers
 
@@ -85,4 +140,10 @@ stream_slicer:
     inject_into: "request_parameter"
 ```
 
-More details on the stream slicers can be found in the [stream-slicers section](stream-slicers.md).
+More details on the stream slicers can be found in the [stream-slicers section](./stream-slicers.md).
+
+## More readings
+
+- [Requester](./requester.md)
+- [Pagination](./pagination.md)
+- [Stream slicers](./stream-slicers.md)

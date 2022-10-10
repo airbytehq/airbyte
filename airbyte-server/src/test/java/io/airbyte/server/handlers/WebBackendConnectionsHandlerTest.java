@@ -36,6 +36,7 @@ import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationSyncMode;
+import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobRead;
@@ -72,6 +73,8 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -148,19 +151,24 @@ class WebBackendConnectionsHandlerTest {
         eventRunner,
         configRepository);
 
-    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
-    standardSourceDefinition.setIcon(SOURCE_ICON);
-    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
-    sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
+    final StandardSourceDefinition sourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
+    sourceDefinition.setIcon(SOURCE_ICON);
+    final SourceConnection source = SourceHelpers.generateSource(sourceDefinition.getSourceDefinitionId());
+    sourceRead = SourceHelpers.getSourceRead(source, sourceDefinition);
 
     final StandardDestinationDefinition destinationDefinition = DestinationDefinitionHelpers.generateDestination();
     destinationDefinition.setIcon(DESTINATION_ICON);
-    final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
+    final DestinationConnection destination = DestinationHelpers.generateDestination(destinationDefinition.getDestinationDefinitionId());
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
-    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId());
     when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
         .thenReturn(Collections.singletonList(standardSync));
+    when(configRepository.getSourceAndDefinitionsFromSourceIds(Collections.singletonList(source.getSourceId())))
+        .thenReturn(Collections.singletonList(new SourceAndDefinition(source, sourceDefinition)));
+    when(configRepository.getDestinationAndDefinitionsFromDestinationIds(Collections.singletonList(destination.getDestinationId())))
+        .thenReturn(Collections.singletonList(new DestinationAndDefinition(destination, destinationDefinition)));
+
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
     operationReadList = new OperationReadList()
         .operations(List.of(new OperationRead()
@@ -194,6 +202,9 @@ class WebBackendConnectionsHandlerTest {
             .endedAt(now.getEpochSecond())));
 
     when(jobHistoryHandler.getLatestSyncJob(connectionRead.getConnectionId())).thenReturn(Optional.of(jobRead.getJob()));
+
+    when(jobHistoryHandler.getLatestSyncJobsForConnections(Collections.singletonList(connectionRead.getConnectionId())))
+        .thenReturn(Collections.singletonList(jobRead.getJob()));
 
     expectedListItem = ConnectionHelpers.generateExpectedWebBackendConnectionListItem(
         standardSync,
@@ -300,8 +311,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testWebBackendListConnectionsForWorkspace() throws ConfigNotFoundException, IOException,
-      JsonValidationException {
+  void testWebBackendListConnectionsForWorkspace() throws IOException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
 
@@ -394,7 +404,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .syncCatalog(catalog)
-        .sourceCatalogId(sourceCatalogId);
+        .sourceCatalogId(sourceCatalogId)
+        .geography(Geography.US);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -409,7 +420,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .syncCatalog(catalog)
-        .sourceCatalogId(sourceCatalogId);
+        .sourceCatalogId(sourceCatalogId)
+        .geography(Geography.US);
 
     final ConnectionCreate actual = WebBackendConnectionsHandler.toConnectionCreate(input, operationIds);
 
@@ -417,7 +429,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testToConnectionUpdate() throws IOException {
+  void testToConnectionPatch() throws IOException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
 
@@ -436,7 +448,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .name(standardSync.getName())
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .geography(Geography.US);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -449,7 +462,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .name(standardSync.getName())
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .geography(Geography.US);
 
     final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionPatch(input, operationIds);
 
@@ -459,8 +473,9 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testForConnectionCreateCompleteness() {
     final Set<String> handledMethods =
-        Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds", "addOperationIdsItem",
-            "removeOperationIdsItem", "syncCatalog", "schedule", "scheduleType", "scheduleData", "status", "resourceRequirements", "sourceCatalogId");
+        Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds",
+            "addOperationIdsItem", "removeOperationIdsItem", "syncCatalog", "schedule", "scheduleType", "scheduleData",
+            "status", "resourceRequirements", "sourceCatalogId", "geography");
 
     final Set<String> methods = Arrays.stream(ConnectionCreate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionCreate.class)
@@ -478,10 +493,11 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testForConnectionUpdateCompleteness() {
+  void testForConnectionPatchCompleteness() {
     final Set<String> handledMethods =
-        Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds",
-            "addOperationIdsItem", "removeOperationIdsItem", "resourceRequirements", "name", "sourceCatalogId", "scheduleType", "scheduleData");
+        Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status",
+            "operationIds", "addOperationIdsItem", "removeOperationIdsItem", "resourceRequirements", "name",
+            "sourceCatalogId", "scheduleType", "scheduleData", "geography");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
@@ -492,8 +508,8 @@ class WebBackendConnectionsHandlerTest {
         """
         If this test is failing, it means you added a field to ConnectionUpdate!
         Congratulations, but you're not done yet..
-        \tYou should update WebBackendConnectionsHandler::toConnectionUpdate
-        \tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionUpdate
+        \tYou should update WebBackendConnectionsHandler::toConnectionPatch
+        \tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionPatch
         Then you can add the field name here to make this test pass. Cheers!""";
     assertEquals(handledMethods, methods, message);
   }
