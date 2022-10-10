@@ -29,6 +29,8 @@ class ShopifyStream(HttpStream, ABC):
     primary_key = "id"
     order_field = "updated_at"
     filter_field = "updated_at_min"
+    
+    raise_on_http_errors = True
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
@@ -81,6 +83,12 @@ class ShopifyStream(HttpStream, ABC):
                 # add shop_url to the record to make querying easy
                 record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
+                
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 404:
+            self.logger.warn(f"Stream `{self.name}` is not available, skipping.")
+            setattr(self, "raise_on_http_errors", False)
+        return super().should_retry(response)
 
     @property
     @abstractmethod
@@ -125,11 +133,16 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     # Parse the `stream_slice` with respect to `stream_state` for `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
-    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
+    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping] = None) -> Iterable:
         # Getting records >= state
         if stream_state:
             for record in records_slice:
-                if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field):
+                if self.cursor_field in record:
+                    if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field):
+                        yield record
+                else:
+                    # old entities could miss the cursor field
+                    self.logger.warn(f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor: {self.cursor_field}")
                     yield record
         else:
             yield from records_slice
@@ -338,7 +351,7 @@ class BalanceTransactions(IncrementalShopifyStream):
     filter_field = "since_id"
 
     def path(self, **kwargs) -> str:
-        return f"shopify_payments/balance/{self.data_field}.json"
+        return f"shopify_payments/balanc/{self.data_field}.json"
 
 
 class OrderRefunds(ShopifySubstream):
