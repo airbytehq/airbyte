@@ -68,11 +68,11 @@ export const YamlEditor: React.FC = () => {
       base: "vs-dark",
       inherit: true,
       rules: [
-        { token: "type", foreground: "7f7eff" },
-        { token: "string", foreground: "ffffff" },
-        { token: "number", foreground: "fe866c" },
-        { token: "delimiter", foreground: "f8d54e" },
-        { token: "keyword", foreground: "00cbd6" },
+        { token: "string", foreground: styles.tokenString },
+        { token: "type", foreground: styles.tokenType },
+        { token: "number", foreground: styles.tokenNumber },
+        { token: "delimiter", foreground: styles.tokenDelimiter },
+        { token: "keyword", foreground: styles.tokenKeyword },
       ],
       colors: {
         "editor.background": "#0d0d2d",

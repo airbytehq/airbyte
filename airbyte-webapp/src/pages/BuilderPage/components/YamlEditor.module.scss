@@ -22,3 +22,12 @@
   // margin-top: 10px;
   margin-left: auto;
 }
+
+:export {
+  // Export colors to be used in monaco editor
+  tokenString: colors.$white;
+  tokenType: colors.$blue-300;
+  tokenNumber: colors.$orange-300;
+  tokenDelimiter: colors.$yellow-300;
+  tokenKeyword: colors.$green-300;
+}
