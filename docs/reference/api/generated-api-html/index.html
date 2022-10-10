@@ -369,6 +369,7 @@ font-style: italic;
   <li><a href="#webBackendGetConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/get</code></a></li>
   <li><a href="#webBackendGetWorkspaceState"><code><span class="http-method">post</span> /v1/web_backend/workspace/state</code></a></li>
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
+  <li><a href="#webBackendListGeographies"><code><span class="http-method">post</span> /v1/web_backend/geographies/list</code></a></li>
   <li><a href="#webBackendUpdateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/update</code></a></li>
   </ul>
   <h4><a href="#Workspace">Workspace</a></h4>
@@ -8831,6 +8832,49 @@ containing the updated stream needs to be sent.</div>
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="webBackendListGeographies"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/geographies/list</code></pre></div>
+    <div class="method-summary">Returns available geographies can be selected to run data syncs in a particular geography.
+The 'auto' entry indicates that the sync will be automatically assigned to a geography according
+to the platform default behavior. Entries other than 'auto' are two-letter country codes that
+follow the ISO 3166-1 alpha-2 standard. (<span class="nickname">webBackendListGeographies</span>)</div>
+    <div class="method-notes">Returns all available geographies in which a data sync can run.</div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WebBackendGeographiesListResult">WebBackendGeographiesListResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "geographies" : [ null, null ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WebBackendGeographiesListResult">WebBackendGeographiesListResult</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="webBackendUpdateConnection"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -9729,6 +9773,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#FieldRemove"><code>FieldRemove</code> - </a></li>
     <li><a href="#FieldSchemaUpdate"><code>FieldSchemaUpdate</code> - </a></li>
     <li><a href="#FieldTransform"><code>FieldTransform</code> - </a></li>
+    <li><a href="#Geography"><code>Geography</code> - </a></li>
     <li><a href="#GlobalState"><code>GlobalState</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
@@ -9814,6 +9859,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
     <li><a href="#WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a></li>
+    <li><a href="#WebBackendGeographiesListResult"><code>WebBackendGeographiesListResult</code> - </a></li>
     <li><a href="#WebBackendOperationCreateOrUpdate"><code>WebBackendOperationCreateOrUpdate</code> - </a></li>
     <li><a href="#WebBackendWorkspaceState"><code>WebBackendWorkspaceState</code> - </a></li>
     <li><a href="#WebBackendWorkspaceStateResult"><code>WebBackendWorkspaceStateResult</code> - </a></li>
@@ -10045,6 +10091,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10073,6 +10120,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10191,6 +10239,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10479,6 +10528,12 @@ containing the updated stream needs to be sent.</div>
 <div class="param">removeField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldRemove">FieldRemove</a></span>  </div>
 <div class="param">updateFieldSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldSchemaUpdate">FieldSchemaUpdate</a></span>  </div>
     </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Geography"><code>Geography</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="GlobalState"><code>GlobalState</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -11185,6 +11240,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11231,6 +11287,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">catalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">catalogDiff (optional)</div><div class="param-desc"><span class="param-type"><a href="#CatalogDiff">CatalogDiff</a></span>  </div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11266,6 +11323,14 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">skipReset (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendGeographiesListResult"><code>WebBackendGeographiesListResult</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">geographies </div><div class="param-desc"><span class="param-type"><a href="#Geography">array[Geography]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11305,6 +11370,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
 <div class="param">displaySetupWizard (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">defaultGeography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11338,6 +11404,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
 <div class="param">firstCompletedSync (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">feedbackDone (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">defaultGeography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11359,6 +11426,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">news (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
+<div class="param">defaultGeography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

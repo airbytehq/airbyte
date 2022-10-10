@@ -21,6 +21,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
@@ -222,7 +223,8 @@ class BootloaderAppTest {
           .withSlug("wSlug")
           .withEmail("email@mail.com")
           .withTombstone(false)
-          .withInitialSetupComplete(false));
+          .withInitialSetupComplete(false)
+          .withDefaultGeography(Geography.AUTO));
       final UUID sourceId = UUID.randomUUID();
       configRepository.writeSourceConnectionNoSecrets(new SourceConnection()
           .withSourceDefinitionId(UUID.fromString("e7778cfc-e97c-4458-9ecb-b4f2bba8946c")) // Facebook Marketing
