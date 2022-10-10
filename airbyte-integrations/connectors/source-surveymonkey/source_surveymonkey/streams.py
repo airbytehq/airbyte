@@ -56,9 +56,15 @@ class SurveymonkeyStream(HttpStream, ABC):
         We use the "new_episodes" record mode to save and reuse all requests in slices, details, etc..
         """
         with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json", decode_compressed_response=True):
-            yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
+            try:
+                yield from super().read_records(
+                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                )
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 404:
+                    yield from []
+                else:
+                    raise e
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """

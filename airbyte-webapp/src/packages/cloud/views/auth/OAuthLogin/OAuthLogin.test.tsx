@@ -1,10 +1,10 @@
 import { render } from "@testing-library/react";
 import userEvents from "@testing-library/user-event";
 import { EMPTY } from "rxjs";
+import { TestWrapper } from "test-utils/testutils";
 
 import type { useExperiment } from "hooks/services/Experiment";
 import type { Experiments } from "hooks/services/Experiment/experiments";
-import { TestWrapper } from "utils/testutils";
 
 const mockUseExperiment = jest.fn<ReturnType<typeof useExperiment>, Parameters<typeof useExperiment>>();
 jest.doMock("hooks/services/Experiment", () => ({

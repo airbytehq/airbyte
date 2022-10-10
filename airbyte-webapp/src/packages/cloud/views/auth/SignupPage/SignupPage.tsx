@@ -1,8 +1,8 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Text } from "components/base/Text";
 import HeadTitle from "components/HeadTitle";
+import { Text } from "components/ui/Text";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 

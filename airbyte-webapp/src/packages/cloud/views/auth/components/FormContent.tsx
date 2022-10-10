@@ -23,7 +23,7 @@ interface FormContentProps {
   toLogin?: boolean;
 }
 
-const FormContent: React.FC<FormContentProps> = ({ toLogin, children }) => {
+const FormContent: React.FC<React.PropsWithChildren<FormContentProps>> = ({ toLogin, children }) => {
   const hideSelfHostedCTA = useExperiment("authPage.hideSelfHostedCTA", false);
 
   return (

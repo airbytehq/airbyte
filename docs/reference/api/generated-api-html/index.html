@@ -290,6 +290,7 @@ font-style: italic;
   <li><a href="#cancelJob"><code><span class="http-method">post</span> /v1/jobs/cancel</code></a></li>
   <li><a href="#getJobDebugInfo"><code><span class="http-method">post</span> /v1/jobs/get_debug_info</code></a></li>
   <li><a href="#getJobInfo"><code><span class="http-method">post</span> /v1/jobs/get</code></a></li>
+  <li><a href="#getJobInfoLight"><code><span class="http-method">post</span> /v1/jobs/get_light</code></a></li>
   <li><a href="#listJobsFor"><code><span class="http-method">post</span> /v1/jobs/list</code></a></li>
   </ul>
   <h4><a href="#Logs">Logs</a></h4>
@@ -367,9 +368,7 @@ font-style: italic;
   <li><a href="#webBackendCreateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/create</code></a></li>
   <li><a href="#webBackendGetConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/get</code></a></li>
   <li><a href="#webBackendGetWorkspaceState"><code><span class="http-method">post</span> /v1/web_backend/workspace/state</code></a></li>
-  <li><a href="#webBackendListAllConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list_all</code></a></li>
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
-  <li><a href="#webBackendSearchConnections"><code><span class="http-method">post</span> /v1/web_backend/connections/search</code></a></li>
   <li><a href="#webBackendUpdateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/update</code></a></li>
   </ul>
   <h4><a href="#Workspace">Workspace</a></h4>
@@ -1837,7 +1836,10 @@ font-style: italic;
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connections/update</code></pre></div>
     <div class="method-summary">Update a connection (<span class="nickname">updateConnection</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+with the catalog from the request. This means that to modify a single stream, the entire new catalog
+containing the updated stream needs to be sent.</div>
 
 
     <h3 class="field-label">Consumes</h3>
@@ -2274,6 +2276,7 @@ font-style: italic;
   },
   "destinationName" : "destinationName",
   "name" : "name",
+  "icon" : "icon",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -2339,6 +2342,7 @@ font-style: italic;
   },
   "destinationName" : "destinationName",
   "name" : "name",
+  "icon" : "icon",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -2449,6 +2453,7 @@ font-style: italic;
   },
   "destinationName" : "destinationName",
   "name" : "name",
+  "icon" : "icon",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -2515,6 +2520,7 @@ font-style: italic;
     },
     "destinationName" : "destinationName",
     "name" : "name",
+    "icon" : "icon",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -2524,6 +2530,7 @@ font-style: italic;
     },
     "destinationName" : "destinationName",
     "name" : "name",
+    "icon" : "icon",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -2591,6 +2598,7 @@ font-style: italic;
     },
     "destinationName" : "destinationName",
     "name" : "name",
+    "icon" : "icon",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -2600,6 +2608,7 @@ font-style: italic;
     },
     "destinationName" : "destinationName",
     "name" : "name",
+    "icon" : "icon",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -2663,6 +2672,7 @@ font-style: italic;
   },
   "destinationName" : "destinationName",
   "name" : "name",
+  "icon" : "icon",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -2750,6 +2760,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -2834,6 +2845,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -3014,6 +3026,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -3101,6 +3114,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -3189,6 +3203,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   },
   "granted" : true
@@ -3267,6 +3282,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "resourceRequirements" : {
@@ -3298,6 +3314,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
 }</code></pre>
@@ -3381,6 +3398,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "resourceRequirements" : {
@@ -3412,6 +3430,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
 }</code></pre>
@@ -3483,6 +3502,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "resourceRequirements" : {
@@ -3514,6 +3534,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
 }</code></pre>
@@ -3598,6 +3619,7 @@ font-style: italic;
       "dockerRepository" : "dockerRepository",
       "name" : "name",
       "icon" : "icon",
+      "protocolVersion" : "protocolVersion",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "granted" : true
@@ -3632,6 +3654,7 @@ font-style: italic;
       "dockerRepository" : "dockerRepository",
       "name" : "name",
       "icon" : "icon",
+      "protocolVersion" : "protocolVersion",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "granted" : true
@@ -3764,6 +3787,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -3851,6 +3875,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -4386,6 +4411,7 @@ font-style: italic;
       "dockerRepository" : "dockerRepository",
       "name" : "name",
       "icon" : "icon",
+      "protocolVersion" : "protocolVersion",
       "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "airbyteVersion" : "airbyteVersion",
@@ -4420,6 +4446,7 @@ font-style: italic;
       "dockerRepository" : "dockerRepository",
       "name" : "name",
       "icon" : "icon",
+      "protocolVersion" : "protocolVersion",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     }
   },
@@ -4722,6 +4749,78 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="getJobInfoLight"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/jobs/get_light</code></pre></div>
+    <div class="method-summary">Get information about a job excluding attempt info and logs (<span class="nickname">getJobInfoLight</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">JobIdRequestBody <a href="#JobIdRequestBody">JobIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#JobInfoLightRead">JobInfoLightRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "job" : {
+    "createdAt" : 6,
+    "configId" : "configId",
+    "id" : 0,
+    "resetConfig" : {
+      "streamsToReset" : [ {
+        "name" : "name",
+        "namespace" : "namespace"
+      }, {
+        "name" : "name",
+        "namespace" : "namespace"
+      } ]
+    },
+    "updatedAt" : 1
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#JobInfoLightRead">JobInfoLightRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="listJobsFor"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -4758,6 +4857,7 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "totalJobCount" : 0,
   "jobs" : [ {
     "job" : {
       "createdAt" : 6,
@@ -6279,6 +6379,7 @@ font-style: italic;
     "user" : "charles"
   },
   "name" : "name",
+  "icon" : "icon",
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "sourceName" : "sourceName",
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -6344,6 +6445,7 @@ font-style: italic;
     "user" : "charles"
   },
   "name" : "name",
+  "icon" : "icon",
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "sourceName" : "sourceName",
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -6555,6 +6657,7 @@ font-style: italic;
     "user" : "charles"
   },
   "name" : "name",
+  "icon" : "icon",
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "sourceName" : "sourceName",
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -6621,6 +6724,7 @@ font-style: italic;
       "user" : "charles"
     },
     "name" : "name",
+    "icon" : "icon",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "sourceName" : "sourceName",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -6630,6 +6734,7 @@ font-style: italic;
       "user" : "charles"
     },
     "name" : "name",
+    "icon" : "icon",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "sourceName" : "sourceName",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -6697,6 +6802,7 @@ font-style: italic;
       "user" : "charles"
     },
     "name" : "name",
+    "icon" : "icon",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "sourceName" : "sourceName",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -6706,6 +6812,7 @@ font-style: italic;
       "user" : "charles"
     },
     "name" : "name",
+    "icon" : "icon",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "sourceName" : "sourceName",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -6769,6 +6876,7 @@ font-style: italic;
     "user" : "charles"
   },
   "name" : "name",
+  "icon" : "icon",
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "sourceName" : "sourceName",
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -6860,6 +6968,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -6945,6 +7054,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -7126,6 +7236,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -7214,6 +7325,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -7303,6 +7415,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   },
   "granted" : true
@@ -7382,6 +7495,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "resourceRequirements" : {
@@ -7414,6 +7528,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
 }</code></pre>
@@ -7499,6 +7614,7 @@ font-style: italic;
       "dockerRepository" : "dockerRepository",
       "name" : "name",
       "icon" : "icon",
+      "protocolVersion" : "protocolVersion",
       "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "granted" : true
@@ -7534,6 +7650,7 @@ font-style: italic;
       "dockerRepository" : "dockerRepository",
       "name" : "name",
       "icon" : "icon",
+      "protocolVersion" : "protocolVersion",
       "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "granted" : true
@@ -7608,6 +7725,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "resourceRequirements" : {
@@ -7640,6 +7758,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
 }</code></pre>
@@ -7724,6 +7843,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "resourceRequirements" : {
@@ -7756,6 +7876,7 @@ font-style: italic;
     "dockerRepository" : "dockerRepository",
     "name" : "name",
     "icon" : "icon",
+    "protocolVersion" : "protocolVersion",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
 }</code></pre>
@@ -7887,6 +8008,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -7975,6 +8097,7 @@ font-style: italic;
   "dockerRepository" : "dockerRepository",
   "name" : "name",
   "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -8132,6 +8255,7 @@ font-style: italic;
     },
     "destinationName" : "destinationName",
     "name" : "name",
+    "icon" : "icon",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -8143,6 +8267,7 @@ font-style: italic;
       "user" : "charles"
     },
     "name" : "name",
+    "icon" : "icon",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "sourceName" : "sourceName",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -8341,6 +8466,7 @@ font-style: italic;
     },
     "destinationName" : "destinationName",
     "name" : "name",
+    "icon" : "icon",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -8352,6 +8478,7 @@ font-style: italic;
       "user" : "charles"
     },
     "name" : "name",
+    "icon" : "icon",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "sourceName" : "sourceName",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -8568,376 +8695,6 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="webBackendListAllConnectionsForWorkspace"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/list_all</code></pre></div>
-    <div class="method-summary">Returns all connections for a workspace. (<span class="nickname">webBackendListAllConnectionsForWorkspace</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "connections" : [ {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "latestSyncJobCreatedAt" : 0,
-    "prefix" : "prefix",
-    "destination" : {
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
-      "destinationName" : "destinationName",
-      "name" : "name",
-      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    },
-    "isSyncing" : true,
-    "source" : {
-      "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
-      "name" : "name",
-      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "sourceName" : "sourceName",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    },
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "catalogDiff" : {
-      "transforms" : [ {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      }, {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      } ]
-    },
-    "resourceRequirements" : {
-      "cpu_limit" : "cpu_limit",
-      "memory_request" : "memory_request",
-      "memory_limit" : "memory_limit",
-      "cpu_request" : "cpu_request"
-    },
-    "schedule" : {
-      "units" : 0,
-      "timeUnit" : "minutes"
-    },
-    "operations" : [ {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    }, {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    } ],
-    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "syncCatalog" : {
-      "streams" : [ {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      }, {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      } ]
-    },
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
-    "scheduleData" : {
-      "cron" : {
-        "cronExpression" : "cronExpression",
-        "cronTimeZone" : "cronTimeZone"
-      },
-      "basicSchedule" : {
-        "units" : 6,
-        "timeUnit" : "minutes"
-      }
-    }
-  }, {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "latestSyncJobCreatedAt" : 0,
-    "prefix" : "prefix",
-    "destination" : {
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
-      "destinationName" : "destinationName",
-      "name" : "name",
-      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    },
-    "isSyncing" : true,
-    "source" : {
-      "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
-      "name" : "name",
-      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "sourceName" : "sourceName",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    },
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "catalogDiff" : {
-      "transforms" : [ {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      }, {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      } ]
-    },
-    "resourceRequirements" : {
-      "cpu_limit" : "cpu_limit",
-      "memory_request" : "memory_request",
-      "memory_limit" : "memory_limit",
-      "cpu_request" : "cpu_request"
-    },
-    "schedule" : {
-      "units" : 0,
-      "timeUnit" : "minutes"
-    },
-    "operations" : [ {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    }, {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    } ],
-    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "syncCatalog" : {
-      "streams" : [ {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      }, {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      } ]
-    },
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
-    "scheduleData" : {
-      "cron" : {
-        "cronExpression" : "cronExpression",
-        "cronTimeZone" : "cronTimeZone"
-      },
-      "basicSchedule" : {
-        "units" : 6,
-        "timeUnit" : "minutes"
-      }
-    }
-  } ]
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
-    <h4 class="field-label">404</h4>
-    Object with given id was not found.
-        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
   <div class="method"><a name="webBackendListConnectionsForWorkspace"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -8977,17 +8734,19 @@ font-style: italic;
   "connections" : [ {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
-    "prefix" : "prefix",
+    "name" : "name",
     "destination" : {
       "connectionConfiguration" : {
         "user" : "charles"
       },
       "destinationName" : "destinationName",
       "name" : "name",
+      "icon" : "icon",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -8995,131 +8754,12 @@ font-style: italic;
         "user" : "charles"
       },
       "name" : "name",
+      "icon" : "icon",
       "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "sourceName" : "sourceName",
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "catalogDiff" : {
-      "transforms" : [ {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      }, {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      } ]
-    },
-    "resourceRequirements" : {
-      "cpu_limit" : "cpu_limit",
-      "memory_request" : "memory_request",
-      "memory_limit" : "memory_limit",
-      "cpu_request" : "cpu_request"
-    },
-    "schedule" : {
-      "units" : 0,
-      "timeUnit" : "minutes"
-    },
-    "operations" : [ {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    }, {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    } ],
-    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "syncCatalog" : {
-      "streams" : [ {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      }, {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      } ]
-    },
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
     "scheduleData" : {
       "cron" : {
         "cronExpression" : "cronExpression",
@@ -9133,17 +8773,19 @@ font-style: italic;
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
-    "prefix" : "prefix",
+    "name" : "name",
     "destination" : {
       "connectionConfiguration" : {
         "user" : "charles"
       },
       "destinationName" : "destinationName",
       "name" : "name",
+      "icon" : "icon",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -9151,131 +8793,12 @@ font-style: italic;
         "user" : "charles"
       },
       "name" : "name",
+      "icon" : "icon",
       "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "sourceName" : "sourceName",
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "catalogDiff" : {
-      "transforms" : [ {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      }, {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      } ]
-    },
-    "resourceRequirements" : {
-      "cpu_limit" : "cpu_limit",
-      "memory_request" : "memory_request",
-      "memory_limit" : "memory_limit",
-      "cpu_request" : "cpu_request"
-    },
-    "schedule" : {
-      "units" : 0,
-      "timeUnit" : "minutes"
-    },
-    "operations" : [ {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    }, {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    } ],
-    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "syncCatalog" : {
-      "streams" : [ {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      }, {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      } ]
-    },
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
     "scheduleData" : {
       "cron" : {
         "cronExpression" : "cronExpression",
@@ -9308,379 +8831,18 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="webBackendSearchConnections"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/search</code></pre></div>
-    <div class="method-summary">Search connections (<span class="nickname">webBackendSearchConnections</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">WebBackendConnectionSearch <a href="#WebBackendConnectionSearch">WebBackendConnectionSearch</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "connections" : [ {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "latestSyncJobCreatedAt" : 0,
-    "prefix" : "prefix",
-    "destination" : {
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
-      "destinationName" : "destinationName",
-      "name" : "name",
-      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    },
-    "isSyncing" : true,
-    "source" : {
-      "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
-      "name" : "name",
-      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "sourceName" : "sourceName",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    },
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "catalogDiff" : {
-      "transforms" : [ {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      }, {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      } ]
-    },
-    "resourceRequirements" : {
-      "cpu_limit" : "cpu_limit",
-      "memory_request" : "memory_request",
-      "memory_limit" : "memory_limit",
-      "cpu_request" : "cpu_request"
-    },
-    "schedule" : {
-      "units" : 0,
-      "timeUnit" : "minutes"
-    },
-    "operations" : [ {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    }, {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    } ],
-    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "syncCatalog" : {
-      "streams" : [ {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      }, {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      } ]
-    },
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
-    "scheduleData" : {
-      "cron" : {
-        "cronExpression" : "cronExpression",
-        "cronTimeZone" : "cronTimeZone"
-      },
-      "basicSchedule" : {
-        "units" : 6,
-        "timeUnit" : "minutes"
-      }
-    }
-  }, {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "latestSyncJobCreatedAt" : 0,
-    "prefix" : "prefix",
-    "destination" : {
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
-      "destinationName" : "destinationName",
-      "name" : "name",
-      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    },
-    "isSyncing" : true,
-    "source" : {
-      "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
-      "name" : "name",
-      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "sourceName" : "sourceName",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    },
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "catalogDiff" : {
-      "transforms" : [ {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      }, {
-        "streamDescriptor" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
-        "transformType" : "add_stream",
-        "updateStream" : [ {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        }, {
-          "updateFieldSchema" : { },
-          "fieldName" : [ "fieldName", "fieldName" ],
-          "addField" : { },
-          "transformType" : "add_field",
-          "removeField" : { }
-        } ]
-      } ]
-    },
-    "resourceRequirements" : {
-      "cpu_limit" : "cpu_limit",
-      "memory_request" : "memory_request",
-      "memory_limit" : "memory_limit",
-      "cpu_request" : "cpu_request"
-    },
-    "schedule" : {
-      "units" : 0,
-      "timeUnit" : "minutes"
-    },
-    "operations" : [ {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    }, {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
-      },
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-    } ],
-    "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "syncCatalog" : {
-      "streams" : [ {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      }, {
-        "stream" : {
-          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
-          "supportedSyncModes" : [ null, null ],
-          "sourceDefinedCursor" : true,
-          "name" : "name",
-          "namespace" : "namespace",
-          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
-        },
-        "config" : {
-          "aliasName" : "aliasName",
-          "cursorField" : [ "cursorField", "cursorField" ],
-          "selected" : true,
-          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
-        }
-      } ]
-    },
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "namespaceFormat" : "${SOURCE_NAMESPACE}",
-    "operationIds" : [ null, null ],
-    "scheduleData" : {
-      "cron" : {
-        "cronExpression" : "cronExpression",
-        "cronTimeZone" : "cronTimeZone"
-      },
-      "basicSchedule" : {
-        "units" : 6,
-        "timeUnit" : "minutes"
-      }
-    }
-  } ]
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
   <div class="method"><a name="webBackendUpdateConnection"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/update</code></pre></div>
     <div class="method-summary">Update a connection (<span class="nickname">webBackendUpdateConnection</span>)</div>
-    <div class="method-notes"></div>
+    <div class="method-notes">Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+Any operations that lack an ID will be created. Then, the newly created operationId will be applied to the
+connection along with the rest of the operationIds in the request body.
+Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+with the catalog from the request. This means that to modify a single stream, the entire new catalog
+containing the updated stream needs to be sent.</div>
 
 
     <h3 class="field-label">Consumes</h3>
@@ -9720,6 +8882,7 @@ font-style: italic;
     },
     "destinationName" : "destinationName",
     "name" : "name",
+    "icon" : "icon",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -9731,6 +8894,7 @@ font-style: italic;
       "user" : "charles"
     },
     "name" : "name",
+    "icon" : "icon",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "sourceName" : "sourceName",
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
@@ -10576,6 +9740,7 @@ font-style: italic;
     <li><a href="#JobDebugInfoRead"><code>JobDebugInfoRead</code> - </a></li>
     <li><a href="#JobDebugRead"><code>JobDebugRead</code> - </a></li>
     <li><a href="#JobIdRequestBody"><code>JobIdRequestBody</code> - </a></li>
+    <li><a href="#JobInfoLightRead"><code>JobInfoLightRead</code> - </a></li>
     <li><a href="#JobInfoRead"><code>JobInfoRead</code> - </a></li>
     <li><a href="#JobListRequestBody"><code>JobListRequestBody</code> - </a></li>
     <li><a href="#JobRead"><code>JobRead</code> - </a></li>
@@ -10644,10 +9809,10 @@ font-style: italic;
     <li><a href="#SynchronousJobRead"><code>SynchronousJobRead</code> - </a></li>
     <li><a href="#UploadRead"><code>UploadRead</code> - </a></li>
     <li><a href="#WebBackendConnectionCreate"><code>WebBackendConnectionCreate</code> - </a></li>
+    <li><a href="#WebBackendConnectionListItem"><code>WebBackendConnectionListItem</code> - </a></li>
     <li><a href="#WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a></li>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
-    <li><a href="#WebBackendConnectionSearch"><code>WebBackendConnectionSearch</code> - </a></li>
     <li><a href="#WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a></li>
     <li><a href="#WebBackendOperationCreateOrUpdate"><code>WebBackendOperationCreateOrUpdate</code> - </a></li>
     <li><a href="#WebBackendWorkspaceState"><code>WebBackendWorkspaceState</code> - </a></li>
@@ -11011,7 +10176,7 @@ font-style: italic;
   </div>
   <div class="model">
     <h3><a name="ConnectionUpdate"><code>ConnectionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
+    <div class='model-description'>Used to apply a patch-style update to a connection, which means that null properties remain unchanged</div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
@@ -11019,11 +10184,11 @@ font-style: italic;
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Name that will be set to this connection </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
-<div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
+<div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
 <div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
-<div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
@@ -11179,6 +10344,7 @@ font-style: italic;
 <div class="param">dockerImageTag </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">documentationUrl </div><div class="param-desc"><span class="param-type"><a href="#URI">URI</a></span>  format: uri</div>
 <div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">protocolVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The Airbyte Protocol version supported by the connector </div>
 <div class="param">releaseStage (optional)</div><div class="param-desc"><span class="param-type"><a href="#ReleaseStage">ReleaseStage</a></span>  </div>
 <div class="param">releaseDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when this connector was first released, in yyyy-mm-dd format. format: date</div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ActorDefinitionResourceRequirements">ActorDefinitionResourceRequirements</a></span>  </div>
@@ -11242,6 +10408,7 @@ font-style: italic;
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">destinationName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11407,6 +10574,13 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="JobInfoLightRead"><code>JobInfoLightRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">job </div><div class="param-desc"><span class="param-type"><a href="#JobRead">JobRead</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="JobInfoRead"><code>JobInfoRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11420,6 +10594,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">configTypes </div><div class="param-desc"><span class="param-type"><a href="#JobConfigType">array[JobConfigType]</a></span>  </div>
 <div class="param">configId </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">includingJobId (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">pagination (optional)</div><div class="param-desc"><span class="param-type"><a href="#Pagination">Pagination</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -11441,6 +10616,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">jobs </div><div class="param-desc"><span class="param-type"><a href="#JobWithAttemptsRead">array[JobWithAttemptsRead]</a></span>  </div>
+<div class="param">totalJobCount </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> the total count of jobs for the specified connection format: int64</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11822,6 +10998,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">dockerImageTag </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">documentationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#URI">URI</a></span>  format: uri</div>
 <div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">protocolVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The Airbyte Protocol version supported by the connector </div>
 <div class="param">releaseStage (optional)</div><div class="param-desc"><span class="param-type"><a href="#ReleaseStage">ReleaseStage</a></span>  </div>
 <div class="param">releaseDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when this connector was first released, in yyyy-mm-dd format. format: date</div>
 <div class="param">sourceType (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
@@ -11902,6 +11079,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">sourceName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -12010,6 +11188,24 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="WebBackendConnectionListItem"><code>WebBackendConnectionListItem</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>Information about a connection that shows up in the connection list view.</div>
+    <div class="field-items">
+      <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
+<div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
+<div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceRead">SourceRead</a></span>  </div>
+<div class="param">destination </div><div class="param-desc"><span class="param-type"><a href="#DestinationRead">DestinationRead</a></span>  </div>
+<div class="param">latestSyncJobCreatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> epoch time of the latest sync job. null if no sync job has taken place. format: int64</div>
+<div class="param">latestSyncJobStatus (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
+<div class="param">isSyncing </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -12041,7 +11237,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <h3><a name="WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">connections </div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionRead">array[WebBackendConnectionRead]</a></span>  </div>
+      <div class="param">connections </div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionListItem">array[WebBackendConnectionListItem]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -12053,39 +11249,19 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="WebBackendConnectionSearch"><code>WebBackendConnectionSearch</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">connectionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
-<div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
-<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
-<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
-<div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
-<div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
-<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
-<div class="param">source (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceSearch">SourceSearch</a></span>  </div>
-<div class="param">destination (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSearch">DestinationSearch</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
     <h3><a name="WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
+    <div class='model-description'>Used to apply a patch-style update to a connection, which means that null properties remain unchanged</div>
     <div class="field-items">
       <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Name that will be set to the connection </div>
 <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
 <div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
-<div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
-<div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
+<div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
 <div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
-<div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">skipReset (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
@@ -12173,15 +11349,15 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
   </div>
   <div class="model">
     <h3><a name="WorkspaceUpdate"><code>WorkspaceUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
+    <div class='model-description'>Used to apply a patch-style update to a workspace, which means that null properties remain unchanged</div>
     <div class="field-items">
       <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  format: email</div>
-<div class="param">initialSetupComplete </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">initialSetupComplete (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">displaySetupWizard (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">anonymousDataCollection </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">news </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">securityUpdates </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">anonymousDataCollection (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">news (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>

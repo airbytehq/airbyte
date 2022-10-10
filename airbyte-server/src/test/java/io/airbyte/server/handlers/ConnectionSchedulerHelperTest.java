@@ -16,6 +16,7 @@ import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule.TimeUn
 import io.airbyte.api.model.generated.ConnectionScheduleDataCron;
 import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.config.BasicSchedule.TimeUnit;
+import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.server.handlers.helpers.ConnectionScheduleHelper;
@@ -50,7 +51,9 @@ class ConnectionSchedulerHelperTest {
     assertEquals(ScheduleType.BASIC_SCHEDULE, actual.getScheduleType());
     assertEquals(TimeUnit.HOURS, actual.getScheduleData().getBasicSchedule().getTimeUnit());
     assertEquals(1L, actual.getScheduleData().getBasicSchedule().getUnits());
-    assertNull(actual.getSchedule());
+    // We expect the old format to be dual-written.
+    assertEquals(Schedule.TimeUnit.HOURS, actual.getSchedule().getTimeUnit());
+    assertEquals(1L, actual.getSchedule().getUnits());
   }
 
   @Test
@@ -646,7 +649,6 @@ class ConnectionSchedulerHelperTest {
       "US/Michigan",
       "US/Mountain",
       "US/Pacific",
-      "US/Pacific-New",
       "US/Samoa",
       "UTC",
       "Universal",

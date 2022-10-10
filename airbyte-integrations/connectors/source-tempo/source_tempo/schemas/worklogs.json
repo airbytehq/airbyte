@@ -21,10 +21,6 @@
     "issue": {
       "type": "object",
       "description": "Details of the issue",
-      "additionalProperties": {
-        "type": ["string", "integer"],
-        "readOnly": true
-      },
       "readOnly": true
     },
     "timeSpentSeconds": {
@@ -60,22 +56,16 @@
     "author": {
       "type": "object",
       "description": "Author of the worklog",
-      "readOnly": true,
-      "additionalProperties": {
-        "type": "string",
-        "readOnly": true
-      }
+      "readOnly": true
     },
     "attributes": {
       "type": "object",
       "description": "Additional attribute of the worklog",
-      "readOnly": true,
-      "additionalProperties": true
+      "readOnly": true
     },
     "billableSeconds": {
       "type": ["null", "integer"],
       "description": "Billable time spent working"
     }
-  },
-  "additionalProperties": false
+  }
 }

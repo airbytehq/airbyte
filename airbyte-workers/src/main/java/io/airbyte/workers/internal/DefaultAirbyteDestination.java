@@ -15,7 +15,6 @@ import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
@@ -38,7 +37,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
       .setLogPrefix("destination")
       .setPrefixColor(Color.YELLOW_BACKGROUND);
 
-  private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
@@ -49,15 +47,13 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private Iterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
 
-  public DefaultAirbyteDestination(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
-    this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
+  public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
 
   }
 
-  public DefaultAirbyteDestination(final WorkerConfigs workerConfigs,
-                                   final IntegrationLauncher integrationLauncher,
+  public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher,
                                    final AirbyteStreamFactory streamFactory) {
-    this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
@@ -112,7 +108,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     }
 
     LOGGER.debug("Closing destination process");
-    WorkerUtils.gentleClose(workerConfigs, destinationProcess, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES);
     if (destinationProcess.isAlive() || getExitValue() != 0) {
       final String message =
           destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + getExitValue();

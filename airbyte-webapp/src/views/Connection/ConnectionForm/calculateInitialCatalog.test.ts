@@ -24,7 +24,7 @@ const mockSyncSchemaStream: SyncSchemaStream = {
 };
 
 describe("calculateInitialCatalog", () => {
-  test("should assign ids to all streams", () => {
+  it("should assign ids to all streams", () => {
     const { id, ...restProps } = mockSyncSchemaStream;
 
     const values = calculateInitialCatalog(
@@ -40,7 +40,7 @@ describe("calculateInitialCatalog", () => {
     });
   });
 
-  test("should set default 'FullRefresh' if 'supportedSyncModes' in stream is empty(or null)", () => {
+  it("should set default 'FullRefresh' if 'supportedSyncModes' in stream is empty(or null)", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
 
     const values = calculateInitialCatalog(
@@ -65,7 +65,7 @@ describe("calculateInitialCatalog", () => {
     });
   });
 
-  test("should select 'Incremental(cursor defined) => Append Dedup'", () => {
+  it("should select 'Incremental(cursor defined) => Append Dedup'", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
 
     const values = calculateInitialCatalog(
@@ -128,7 +128,7 @@ describe("calculateInitialCatalog", () => {
     });
   });
 
-  test("should select 'Full Refresh => Overwrite'", () => {
+  it("should select 'Full Refresh => Overwrite'", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
 
     const values = calculateInitialCatalog(
@@ -185,7 +185,7 @@ describe("calculateInitialCatalog", () => {
     });
   });
 
-  test("should select 'Incremental => Append'", () => {
+  it("should select 'Incremental => Append'", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
 
     const values = calculateInitialCatalog(
@@ -242,7 +242,7 @@ describe("calculateInitialCatalog", () => {
     });
   });
 
-  test("should select 'Full Refresh => Append'", () => {
+  it("should select 'Full Refresh => Append'", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
 
     const values = calculateInitialCatalog(
@@ -299,7 +299,7 @@ describe("calculateInitialCatalog", () => {
     });
   });
 
-  test("should not change syncMode, destinationSyncMode in EditMode", () => {
+  it("should not change syncMode, destinationSyncMode in EditMode", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
 
     const { streams: calculatedStreams } = calculateInitialCatalog(
@@ -330,7 +330,7 @@ describe("calculateInitialCatalog", () => {
     expect(calculatedStreams[0]).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.append);
   });
 
-  test("should set the default cursorField value when it's available and no cursorField is selected", () => {
+  it("should set the default cursorField value when it's available and no cursorField is selected", () => {
     const { stream: sourceDefinedStream, config } = mockSyncSchemaStream;
 
     const { streams: calculatedStreams } = calculateInitialCatalog(
@@ -389,7 +389,7 @@ describe("calculateInitialCatalog", () => {
     expect(calculatedStreams[2]).toHaveProperty("config.cursorField", []);
   });
 
-  test("source defined properties should override the saved properties", () => {
+  it("source defined properties should override the saved properties", () => {
     const { stream: sourceDefinedStream, config } = mockSyncSchemaStream;
 
     const { streams: calculatedStreams } = calculateInitialCatalog(
@@ -421,7 +421,7 @@ describe("calculateInitialCatalog", () => {
     expect(calculatedStreams[0].stream?.defaultCursorField).toEqual(sourceDefinedStream?.defaultCursorField);
     expect(calculatedStreams[0].config?.cursorField).toEqual(calculatedStreams[0].stream?.defaultCursorField);
   });
-  test("should keep original configured primary key if no source-defined primary key", () => {
+  it("should keep original configured primary key if no source-defined primary key", () => {
     const { stream: sourceDefinedStream, config } = mockSyncSchemaStream;
 
     const { streams: calculatedStreams } = calculateInitialCatalog(
@@ -451,7 +451,7 @@ describe("calculateInitialCatalog", () => {
 
     expect(calculatedStreams[0].config?.primaryKey).toEqual(config?.primaryKey);
   });
-  test("should not override config cursor if sourceDefinedCursor is false", () => {
+  it("should not override config cursor if sourceDefinedCursor is false", () => {
     const { stream: sourceDefinedStream, config } = mockSyncSchemaStream;
 
     const { streams: calculatedStreams } = calculateInitialCatalog(
@@ -478,7 +478,7 @@ describe("calculateInitialCatalog", () => {
 
     expect(calculatedStreams[0].config?.cursorField).toEqual(config?.cursorField);
   });
-  test("should keep its original config if source-defined primary key matches config primary key", () => {
+  it("should keep its original config if source-defined primary key matches config primary key", () => {
     const { stream: sourceDefinedStream, config } = mockSyncSchemaStream;
 
     const { streams: calculatedStreams } = calculateInitialCatalog(
@@ -506,7 +506,7 @@ describe("calculateInitialCatalog", () => {
     expect(calculatedStreams[0].config?.primaryKey).toEqual(calculatedStreams[0].stream?.sourceDefinedPrimaryKey);
   });
 
-  test("should not change primary key or cursor if isEditMode is false", () => {
+  it("should not change primary key or cursor if isEditMode is false", () => {
     const { stream: sourceDefinedStream, config } = mockSyncSchemaStream;
 
     const { streams: calculatedStreams } = calculateInitialCatalog(

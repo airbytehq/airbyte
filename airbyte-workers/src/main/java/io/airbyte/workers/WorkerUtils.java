@@ -5,7 +5,6 @@
 package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
@@ -13,10 +12,10 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
-import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
@@ -39,14 +38,14 @@ public class WorkerUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
 
-  public static void gentleClose(final WorkerConfigs workerConfigs, final Process process, final long timeout, final TimeUnit timeUnit) {
+  public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {
 
     if (process == null) {
       return;
     }
 
-    if (workerConfigs.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
-      LOGGER.debug("Gently closing process {}", process.info().commandLine().get());
+    if (process.info() != null) {
+      process.info().commandLine().ifPresent(commandLine -> LOGGER.debug("Gently closing process {}", commandLine));
     }
 
     try {
@@ -126,7 +125,7 @@ public class WorkerUtils {
       final ConnectorCommand connectorCommand = switch (outputType) {
         case SPEC -> ConnectorCommand.SPEC;
         case CHECK_CONNECTION -> ConnectorCommand.CHECK;
-        case DISCOVER_CATALOG -> ConnectorCommand.DISCOVER;
+        case DISCOVER_CATALOG_ID -> ConnectorCommand.DISCOVER;
       };
 
       final FailureReason failureReason = FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand);

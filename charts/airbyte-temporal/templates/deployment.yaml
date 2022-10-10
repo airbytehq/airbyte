@@ -4,21 +4,16 @@ kind: Deployment
 metadata:
   name: {{ include "common.names.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "airbyte.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    helm.sh/chart: {{ include "airbyte.chart" . }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
+    {{- include "airbyte.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      airbyte: temporal
+      {{- include "airbyte.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        airbyte: temporal
+        {{- include "airbyte.selectorLabels" . | nindent 8 }}
       {{- if .Values.podAnnotations }}
       annotations:
         {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
@@ -49,7 +44,14 @@ spec:
           - name: DB # The DB engine to use
             value: "postgresql"
           - name: DB_PORT
+            {{- if .Values.global.database.port }}
             value: {{ .Values.global.database.port | int | quote }}
+            {{- else }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.global.configMapName | default (printf "%s-airbyte-env" .Release.Name) }}
+                key: DATABASE_PORT
+            {{- end }}
           - name: POSTGRES_USER
             valueFrom:
               secretKeyRef:
@@ -58,8 +60,8 @@ spec:
           - name: POSTGRES_PWD
             valueFrom:
               secretKeyRef:
-                name: {{ .Values.global.database.secretName | default (printf "%s-postgresql" .Release.Name ) }}
-                key: {{ .Values.global.database.secretValue | default "postgresql-password" }}
+                name: {{ .Values.global.database.secretName | default (printf "%s-airbyte-secrets" .Release.Name ) }}
+                key: {{ .Values.global.database.secretValue | default "DATABASE_PASSWORD" }}
           - name: POSTGRES_SEEDS
             valueFrom:
               configMapKeyRef:
@@ -71,6 +73,24 @@ spec:
         {{- if .Values.extraEnv }}
         {{ .Values.extraEnv | toYaml | nindent 10 }}
         {{- end }}
+        # Values from secret
+        {{- if .Values.secrets }}
+        {{- range $k, $v := .Values.secrets }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: temporal-secrets
+              key: {{ $k }}
+        {{- end }}
+        {{- end }}
+
+        # Values from env
+        {{- if .Values.env_vars }}
+        {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
+        {{- end }}
         ports:
         - containerPort: 7233
         {{- if .Values.containerSecurityContext }}
@@ -79,11 +99,11 @@ spec:
         volumeMounts:
         - name: airbyte-temporal-dynamicconfig
           mountPath: "/etc/temporal/config/dynamicconfig/"
-        {{- if .Values.resources }}
-        resources: {{- toYaml .Values.resources | nindent 10 }}
-        {{- end }}
         {{- if .Values.extraVolumeMounts }}
   {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
+        {{- end }}
+        {{- if .Values.resources }}
+        resources: {{- toYaml .Values.resources | nindent 10 }}
         {{- end }}
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
@@ -112,10 +132,10 @@ spec:
           failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
         {{- end }}
         {{- if .Values.extraContainers }}
-        {{ toYaml .Values.extraContainers | indent 8 }}
+        {{ toYaml .Values.extraContainers | nindent 6 }}
         {{- end }}
-        {{- if .Values.global.extraConrainers }}
-        {{ toYaml .Values.global.extraContainers | indent 8 }}
+        {{- if .Values.global.extraContainers }}
+        {{ toYaml .Values.global.extraContainers | nindent 6 }}
         {{- end }}
       volumes:
       - name: airbyte-temporal-dynamicconfig
@@ -125,5 +145,5 @@ spec:
           - key: development.yaml
             path: development.yaml
       {{- if .Values.extraVolumes }}
-{{ toYaml .Values.extraVolumes | nindent 6 }}
+      {{ toYaml .Values.extraVolumes | nindent 6 }}
       {{- end }}

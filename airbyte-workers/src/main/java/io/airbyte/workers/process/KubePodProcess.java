@@ -346,6 +346,7 @@ public class KubePodProcess extends Process implements KubePod {
         .toArray(Toleration[]::new);
   }
 
+  @SuppressWarnings("PMD.InvalidLogMessageFormat")
   public KubePodProcess(final boolean isOrchestrator,
                         final String processRunnerHost,
                         final KubernetesClient fabricClient,
