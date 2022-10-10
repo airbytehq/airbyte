@@ -7,10 +7,12 @@ tests:
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
+      timeout_seconds: 60
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+      timeout_seconds: 60
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

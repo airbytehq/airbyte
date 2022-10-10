@@ -26,6 +26,8 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
@@ -56,6 +58,7 @@ import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,7 +88,7 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @BeforeEach
-  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException {
+  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException, InterruptedException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
     flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
@@ -200,16 +203,18 @@ class ConfigRepositoryE2EReadWriteTest {
 
   @Test
   void testListWorkspaceStandardSyncAll() throws IOException {
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
 
-    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
-    assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
+    assertSyncsMatch(expectedSyncs, actualSyncs);
   }
 
   @Test
   void testListWorkspaceStandardSyncExcludeDeleted() throws IOException {
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3);
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), false);
 
-    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), false);
-    assertThat(MockData.standardSyncs().subList(0, 3)).hasSameElementsAs(syncs);
+    assertSyncsMatch(expectedSyncs, actualSyncs);
   }
 
   @Test
@@ -412,12 +417,35 @@ class ConfigRepositoryE2EReadWriteTest {
   @Test
   void testGetStandardSyncUsingOperation() throws IOException {
     final UUID operationId = MockData.standardSyncOperations().get(0).getOperationId();
-    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3);
+    final List<StandardSync> actualSyncs = configRepository.listStandardSyncsUsingOperation(operationId);
 
-    final List<StandardSync> syncs = configRepository.listStandardSyncsUsingOperation(operationId);
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
 
-    assertThat(syncs).hasSameElementsAs(expectedSyncs);
+  private void assertSyncsMatch(final List<StandardSync> expectedSyncs, final List<StandardSync> actualSyncs) {
+    assertEquals(expectedSyncs.size(), actualSyncs.size());
 
+    for (final StandardSync expected : expectedSyncs) {
+
+      final Optional<StandardSync> maybeActual = actualSyncs.stream().filter(s -> s.getConnectionId().equals(expected.getConnectionId())).findFirst();
+      if (maybeActual.isEmpty()) {
+        Assertions.fail(String.format("Expected to find connectionId %s in result, but actual connectionIds are %s",
+            expected.getConnectionId(),
+            actualSyncs.stream().map(StandardSync::getConnectionId).collect(Collectors.toList())));
+      }
+      final StandardSync actual = maybeActual.get();
+
+      // operationIds can be ordered differently in the query result than in the mock data, so they need
+      // to be verified separately
+      // from the rest of the sync.
+      assertThat(actual.getOperationIds()).hasSameElementsAs(expected.getOperationIds());
+
+      // now, clear operationIds so the rest of the sync can be compared
+      expected.setOperationIds(null);
+      actual.setOperationIds(null);
+      assertEquals(expected, actual);
+    }
   }
 
   @Test
@@ -437,6 +465,30 @@ class ConfigRepositoryE2EReadWriteTest {
         }
       }
     }
+  }
+
+  @Test
+  void testGetSourceAndDefinitionsFromSourceIds() throws IOException {
+    final List<UUID> sourceIds = MockData.sourceConnections().subList(0, 2).stream().map(SourceConnection::getSourceId).toList();
+
+    final List<SourceAndDefinition> expected = List.of(
+        new SourceAndDefinition(MockData.sourceConnections().get(0), MockData.standardSourceDefinitions().get(0)),
+        new SourceAndDefinition(MockData.sourceConnections().get(1), MockData.standardSourceDefinitions().get(1)));
+
+    final List<SourceAndDefinition> actual = configRepository.getSourceAndDefinitionsFromSourceIds(sourceIds);
+    assertThat(actual).hasSameElementsAs(expected);
+  }
+
+  @Test
+  void testGetDestinationAndDefinitionsFromDestinationIds() throws IOException {
+    final List<UUID> destinationIds = MockData.destinationConnections().subList(0, 2).stream().map(DestinationConnection::getDestinationId).toList();
+
+    final List<DestinationAndDefinition> expected = List.of(
+        new DestinationAndDefinition(MockData.destinationConnections().get(0), MockData.standardDestinationDefinitions().get(0)),
+        new DestinationAndDefinition(MockData.destinationConnections().get(1), MockData.standardDestinationDefinitions().get(1)));
+
+    final List<DestinationAndDefinition> actual = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds);
+    assertThat(actual).hasSameElementsAs(expected);
   }
 
 }
