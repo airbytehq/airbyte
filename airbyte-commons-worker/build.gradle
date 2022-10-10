@@ -32,12 +32,17 @@ dependencies {
     implementation project(':airbyte-persistence:job-persistence')
     implementation project(':airbyte-protocol:protocol-models')
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
-}
+    testAnnotationProcessor platform(libs.micronaut.bom)
+    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
 
-test {
-    useJUnitPlatform()
+    testImplementation libs.bundles.micronaut.test
+    testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
+    testImplementation 'org.mockito:mockito-inline:4.7.0'
+    testImplementation libs.postgresql
+    testImplementation libs.platform.testcontainers
+    testImplementation libs.platform.testcontainers.postgresql
+
+    testImplementation project(':airbyte-commons-docker')
 }
 
 jsonSchema2Pojo {
@@ -53,5 +58,8 @@ jsonSchema2Pojo {
     includeConstructors = false
     includeSetters = true
 }
+
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
