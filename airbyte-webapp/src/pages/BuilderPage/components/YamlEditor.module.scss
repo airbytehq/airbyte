@@ -21,9 +21,11 @@
   margin-left: auto;
 }
 
+// Export colors to be used in monaco editor
 :export {
-  // Export colors to be used in monaco editor
-  tokenString: colors.$white;
+  // Monaco editor requires 6-character hex values for theme colors
+  /* stylelint-disable-next-line color-hex-length, color-no-hex */
+  tokenString: #ffffff;
   tokenType: colors.$blue-300;
   tokenNumber: colors.$orange-300;
   tokenDelimiter: colors.$yellow-300;
