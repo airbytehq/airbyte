@@ -2,8 +2,7 @@ import Editor, { Monaco } from "@monaco-editor/react";
 import { useState } from "react";
 import { useDebounce, useLocalStorage } from "react-use";
 
-import { Button } from "components/ui/Button";
-
+import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
 import { template } from "./YamlTemplate";
 
@@ -12,7 +11,7 @@ export const YamlEditor: React.FC = () => {
     "connectorBuilderEditorContent",
     template
   );
-  const [editorValue, setEditorValue] = useState(locallyStoredEditorValue);
+  const [editorValue, setEditorValue] = useState(locallyStoredEditorValue ?? "");
   useDebounce(() => setLocallyStoredEditorValue(editorValue), 500, [editorValue]);
 
   const handleEditorChange = (value: string | undefined) => {
@@ -41,7 +40,7 @@ export const YamlEditor: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.control}>
-        <Button className={styles.exportButton}>Download YAML</Button>
+        <DownloadYamlButton className={styles.downloadButton} yaml={editorValue} />
       </div>
       <div className={styles.editorContainer}>
         <Editor
