@@ -13,7 +13,6 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ yaml, cl
   const { formatMessage } = useIntl();
 
   const downloadYaml = () => {
-    console.log(yaml);
     const file = new Blob([yaml], { type: "text/plain;charset=utf-8" });
     downloadFile(file, "connector_builder.yaml");
   };
