@@ -147,7 +147,7 @@ public interface StateManager<T, S> {
     final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
     Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
     cursorInfo.get().setCursor(cursor);
-    if (cursorRecordCount != 0) {
+    if (cursorRecordCount > 0) {
       cursorInfo.get().setCursorRecordCount(cursorRecordCount);
     }
     LOGGER.debug("Updating cursor value for {} to {} (count {})...", pair, cursor, cursorRecordCount);

@@ -707,7 +707,8 @@ public abstract class JdbcSourceAcceptanceTest {
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
         .withCursorField(List.of(COL_ID))
-        .withCursor("5");
+        .withCursor("5")
+        .withCursorRecordCount(1L);
     expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
   }
@@ -763,7 +764,8 @@ public abstract class JdbcSourceAcceptanceTest {
             .withStreamName(streamName)
             .withStreamNamespace(namespace)
             .withCursorField(List.of(COL_ID))
-            .withCursor("3"),
+            .withCursor("3")
+            .withCursorRecordCount(1L),
         new DbStreamState()
             .withStreamName(streamName2)
             .withStreamNamespace(namespace)
@@ -775,12 +777,14 @@ public abstract class JdbcSourceAcceptanceTest {
             .withStreamName(streamName)
             .withStreamNamespace(namespace)
             .withCursorField(List.of(COL_ID))
-            .withCursor("3"),
+            .withCursor("3")
+            .withCursorRecordCount(1L),
         new DbStreamState()
             .withStreamName(streamName2)
             .withStreamNamespace(namespace)
             .withCursorField(List.of(COL_ID))
-            .withCursor("3"));
+            .withCursor("3")
+            .withCursorRecordCount(1L));
 
     final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages());
     expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams1.get(0), expectedStateStreams1));
@@ -789,6 +793,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessagesFirstSync);
 
+    assertEquals(expectedMessagesFirstSync, actualMessagesFirstSync);
     assertEquals(expectedMessagesFirstSync.size(), actualMessagesFirstSync.size());
     assertTrue(expectedMessagesFirstSync.containsAll(actualMessagesFirstSync));
     assertTrue(actualMessagesFirstSync.containsAll(expectedMessagesFirstSync));
