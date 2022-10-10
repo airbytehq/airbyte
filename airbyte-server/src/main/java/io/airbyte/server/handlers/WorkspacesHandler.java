@@ -4,6 +4,8 @@
 
 package io.airbyte.server.handlers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.slugify.Slugify;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -25,10 +27,14 @@ import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.WebhookOperationConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.server.converters.NotificationConverter;
+import io.airbyte.server.converters.WebhookOperationConfigsConverter;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.errors.ValueConflictKnownException;
@@ -46,6 +52,8 @@ public class WorkspacesHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkspacesHandler.class);
   private final ConfigRepository configRepository;
+  private final SecretsRepositoryReader secretsRepositoryReader;
+  private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final ConnectionsHandler connectionsHandler;
   private final DestinationHandler destinationHandler;
   private final SourceHandler sourceHandler;
@@ -53,18 +61,24 @@ public class WorkspacesHandler {
   private final Slugify slugify;
 
   public WorkspacesHandler(final ConfigRepository configRepository,
+                           final SecretsRepositoryReader secretsRepositoryReader,
+                           final SecretsRepositoryWriter secretsRepositoryWriter,
                            final ConnectionsHandler connectionsHandler,
                            final DestinationHandler destinationHandler,
                            final SourceHandler sourceHandler) {
-    this(configRepository, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
+    this(configRepository, secretsRepositoryReader, secretsRepositoryWriter, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
   }
 
   public WorkspacesHandler(final ConfigRepository configRepository,
+                           final SecretsRepositoryReader secretsRepositoryReader,
+                           final SecretsRepositoryWriter secretsRepositoryWriter,
                            final ConnectionsHandler connectionsHandler,
                            final DestinationHandler destinationHandler,
                            final SourceHandler sourceHandler,
                            final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
+    this.secretsRepositoryReader = secretsRepositoryReader;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.connectionsHandler = connectionsHandler;
     this.destinationHandler = destinationHandler;
     this.sourceHandler = sourceHandler;
@@ -98,21 +112,20 @@ public class WorkspacesHandler {
         .withDisplaySetupWizard(displaySetupWizard != null ? displaySetupWizard : false)
         .withTombstone(false)
         .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()))
-        .withDefaultGeography(defaultGeography);
+        .withDefaultGeography(defaultGeography)
+        .withWebhookOperationConfigs(WebhookOperationConfigsConverter.toPersistenceWrite(workspaceCreate.getWebhookConfigs()));
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
     }
 
-    configRepository.writeStandardWorkspace(workspace);
-
-    return buildWorkspaceRead(workspace);
+    return persistStandardWorkspace(workspace);
   }
 
   public void deleteWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing implementation
-    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceIdRequestBody.getWorkspaceId(), false);
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspaceNoSecrets(workspaceIdRequestBody.getWorkspaceId(), false);
 
     // disable all connections associated with this workspace
     for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
@@ -130,7 +143,7 @@ public class WorkspacesHandler {
     }
 
     persistedWorkspace.withTombstone(true);
-    configRepository.writeStandardWorkspace(persistedWorkspace);
+    configRepository.writeStandardWorkspaceNoSecrets(persistedWorkspace);
   }
 
   public WorkspaceReadList listWorkspaces() throws JsonValidationException, IOException {
@@ -143,7 +156,7 @@ public class WorkspacesHandler {
   public WorkspaceRead getWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID workspaceId = workspaceIdRequestBody.getWorkspaceId();
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
+    final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, false);
     return buildWorkspaceRead(workspace);
   }
 
@@ -161,7 +174,7 @@ public class WorkspacesHandler {
     LOGGER.debug("Starting updateWorkspace for workspaceId {}...", workspaceId);
     LOGGER.debug("Incoming workspacePatch: {}", workspacePatch);
 
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
+    final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, false);
     LOGGER.debug("Initial workspace: {}", workspace);
 
     validateWorkspacePatch(workspace, workspacePatch);
@@ -171,7 +184,7 @@ public class WorkspacesHandler {
     applyPatchToStandardWorkspace(workspace, workspacePatch);
 
     LOGGER.debug("Patched Workspace before persisting: {}", workspace);
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     // after updating email or tracking info, we need to re-identify the instance.
     TrackingClientSingleton.get().identify(workspaceId);
@@ -183,13 +196,13 @@ public class WorkspacesHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID workspaceId = workspaceUpdateName.getWorkspaceId();
 
-    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId, false);
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, false);
 
     persistedWorkspace
         .withName(workspaceUpdateName.getName())
         .withSlug(generateUniqueSlug(workspaceUpdateName.getName()));
 
-    configRepository.writeStandardWorkspace(persistedWorkspace);
+    configRepository.writeStandardWorkspaceNoSecrets(persistedWorkspace);
 
     return buildWorkspaceReadFromId(workspaceId);
   }
@@ -217,7 +230,7 @@ public class WorkspacesHandler {
   }
 
   private WorkspaceRead buildWorkspaceReadFromId(final UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
+    final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, false);
     return buildWorkspaceRead(workspace);
   }
 
@@ -246,7 +259,7 @@ public class WorkspacesHandler {
   }
 
   private static WorkspaceRead buildWorkspaceRead(final StandardWorkspace workspace) {
-    return new WorkspaceRead()
+    final WorkspaceRead result = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
         .email(workspace.getEmail())
@@ -259,6 +272,18 @@ public class WorkspacesHandler {
         .securityUpdates(workspace.getSecurityUpdates())
         .notifications(NotificationConverter.toApiList(workspace.getNotifications()))
         .defaultGeography(Enums.convertTo(workspace.getDefaultGeography(), Geography.class));
+    // Add read-only webhook configs.
+    try {
+      final WebhookOperationConfigs persistedConfigs = new ObjectMapper().treeToValue(
+          workspace.getWebhookOperationConfigs(), WebhookOperationConfigs.class);
+      if (persistedConfigs != null) {
+        result.setWebhookConfigs(WebhookOperationConfigsConverter.toApiReads(
+            persistedConfigs.getWebhookConfigs()));
+      }
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("Failed to read webhook configs: {}", e);
+    }
+    return result;
   }
 
   private void validateWorkspacePatch(final StandardWorkspace persistedWorkspace, final WorkspaceUpdate workspacePatch) {
@@ -291,6 +316,14 @@ public class WorkspacesHandler {
       workspace.setDefaultGeography(
           Enums.convertTo(workspacePatch.getDefaultGeography(), io.airbyte.config.Geography.class));
     }
+  }
+
+  private WorkspaceRead persistStandardWorkspace(final StandardWorkspace workspace) throws JsonValidationException, IOException {
+    secretsRepositoryWriter.writeWorkspace(workspace);
+    if (secretsRepositoryReader != null) {
+      LOGGER.info("hello");
+    }
+    return buildWorkspaceRead(workspace);
   }
 
 }

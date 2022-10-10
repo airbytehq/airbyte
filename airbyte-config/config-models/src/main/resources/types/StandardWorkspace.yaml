@@ -50,3 +50,7 @@ properties:
     type: boolean
   defaultGeography:
     "$ref": Geography.yaml
+  webhookOperationConfigs:
+    description: Configurations for webhooks operations, stored as a JSON object
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode

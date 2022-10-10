@@ -217,7 +217,7 @@ class BootloaderAppTest {
       final ObjectMapper mapper = new ObjectMapper();
 
       final UUID workspaceId = UUID.randomUUID();
-      configRepository.writeStandardWorkspace(new StandardWorkspace()
+      configRepository.writeStandardWorkspaceNoSecrets(new StandardWorkspace()
           .withWorkspaceId(workspaceId)
           .withName("wName")
           .withSlug("wSlug")
