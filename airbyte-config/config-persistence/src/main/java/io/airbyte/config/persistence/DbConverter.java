@@ -4,6 +4,7 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
@@ -15,12 +16,14 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.ScheduleData;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -32,15 +35,18 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.jooq.Record;
 
+/**
+ * Provides static methods for converting from repository layer results (often in the form of a jooq
+ * {@link Record}) to config models.
+ */
 public class DbConverter {
 
-  public static StandardSync buildStandardSync(final Record record, final List<UUID> connectionOperationId) throws IOException {
+  public static StandardSync buildStandardSync(final Record record, final List<UUID> connectionOperationId) {
     return new StandardSync()
         .withConnectionId(record.get(CONNECTION.ID))
         .withNamespaceDefinition(
@@ -87,6 +93,26 @@ public class DbConverter {
         .withNotifications(notificationList)
         .withFirstCompletedSync(record.get(WORKSPACE.FIRST_SYNC_COMPLETE))
         .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE));
+  }
+
+  public static SourceConnection buildSourceConnection(final Record record) {
+    return new SourceConnection()
+        .withSourceId(record.get(ACTOR.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
+        .withSourceDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
+        .withTombstone(record.get(ACTOR.TOMBSTONE))
+        .withName(record.get(ACTOR.NAME));
+  }
+
+  public static DestinationConnection buildDestinationConnection(final Record record) {
+    return new DestinationConnection()
+        .withDestinationId(record.get(ACTOR.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
+        .withDestinationDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
+        .withTombstone(record.get(ACTOR.TOMBSTONE))
+        .withName(record.get(ACTOR.NAME));
   }
 
   public static StandardSourceDefinition buildStandardSourceDefinition(final Record record) {

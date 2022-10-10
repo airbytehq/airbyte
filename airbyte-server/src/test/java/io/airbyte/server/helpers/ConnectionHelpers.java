@@ -54,6 +54,8 @@ public class ConnectionHelpers {
   private static final String BASIC_SCHEDULE_DATA_TIME_UNITS = "days";
   private static final long BASIC_SCHEDULE_DATA_UNITS = 1L;
   private static final String ONE_HUNDRED_G = "100g";
+  private static final String STANDARD_SYNC_NAME = "presto to hudi";
+  private static final String STANDARD_SYNC_PREFIX = "presto_to_hudi";
 
   public static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName(STREAM_NAME);
 
@@ -70,10 +72,10 @@ public class ConnectionHelpers {
 
     return new StandardSync()
         .withConnectionId(connectionId)
-        .withName("presto to hudi")
+        .withName(STANDARD_SYNC_NAME)
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withNamespaceFormat(null)
-        .withPrefix("presto_to_hudi")
+        .withPrefix(STANDARD_SYNC_PREFIX)
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(sourceId)
@@ -89,13 +91,30 @@ public class ConnectionHelpers {
 
     return new StandardSync()
         .withConnectionId(connectionId)
-        .withName("presto to hudi")
+        .withName(STANDARD_SYNC_NAME)
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withNamespaceFormat(null)
-        .withPrefix("presto_to_hudi")
+        .withPrefix(STANDARD_SYNC_PREFIX)
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(UUID.randomUUID())
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(UUID.randomUUID()))
+        .withManual(true);
+  }
+
+  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId) {
+    final UUID connectionId = UUID.randomUUID();
+
+    return new StandardSync()
+        .withConnectionId(connectionId)
+        .withName(STANDARD_SYNC_NAME)
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
+        .withPrefix(STANDARD_SYNC_PREFIX)
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withCatalog(generateBasicConfiguredAirbyteCatalog())
+        .withSourceId(sourceId)
         .withDestinationId(destinationId)
         .withOperationIds(List.of(UUID.randomUUID()))
         .withManual(true);
