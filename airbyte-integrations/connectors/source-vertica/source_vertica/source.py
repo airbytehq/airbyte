@@ -37,14 +37,7 @@ class SourceVertica(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            vertica_python.connect(
-                host=config['host'],
-                port=config['port'],
-                user=config['user'],
-                password=config['password'],
-                database=config['database'],
-                schema_name=config['schema_name']
-            )
+            self.create_connection(config)
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
@@ -69,14 +62,7 @@ class SourceVertica(Source):
         """
         streams = []
 
-        connection = vertica_python.connect(
-            host=config['host'],
-            port=config['port'],
-            user=config['user'],
-            password=config['password'],
-            database=config['database'],
-            schema_name=config['schema_name']
-        )
+        connection = self.create_connection(config)
 
         tables = self.get_tables(logger, config, connection)
 
@@ -102,41 +88,6 @@ class SourceVertica(Source):
 
         return AirbyteCatalog(streams=streams)
 
-    def get_tables(self, logger: AirbyteLogger, config: json, connection):
-        query = f'''
-            SELECT 
-                TABLE_NAME
-            FROM v_catalog.tables 
-            WHERE table_schema='{config['schema_name']}' 
-            ORDER BY table_name;
-        '''
-
-        results = self.query(logger, config, connection, query)
-
-        return [result[0] for result in results]
-
-    def get_columns(self, logger: AirbyteLogger, config: json, connection, table_name: str):
-        query = f'''
-            SELECT 
-                column_name , 
-                data_type 
-            FROM v_catalog.columns 
-            WHERE table_name='{table_name}';'''
-
-        results = self.query(logger, config, connection, query)
-
-        return results
-
-    def query(self, logger: AirbyteLogger, config: json, connection, query):
-        with connection.cursor() as cursor:
-            try:
-                cursor.execute(query)
-                results = cursor.fetchall()
-            except Exception as e:
-                logger.error(f'Error running query: {query} on {config["database"]}!')
-
-        return results
-
     def read(
         self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
@@ -159,12 +110,64 @@ class SourceVertica(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = "TableName"  # Example
-        data = {"columnName": "Hello World"}  # Example
+        connection = self.create_connection(config)
 
-        # Not Implemented
+        for stream in catalog.streams:
+            stream_name = stream.stream.name
 
-        yield AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+            query = f"SELECT * FROM {stream_name}"
+            results, columns = self.query(logger, config, connection, query)
+
+            for row in results:
+                data = dict(zip(columns, row))
+
+                yield AirbyteMessage(
+                    type=Type.RECORD,
+                    record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                )
+
+    def create_connection(self, config: json):
+        return vertica_python.connect(
+            host=config['host'],
+            port=config['port'],
+            user=config['user'],
+            password=config['password'],
+            database=config['database'],
+            schema_name=config['schema_name']
         )
+
+    def get_tables(self, logger: AirbyteLogger, config: json, connection):
+        query = f'''
+            SELECT 
+                TABLE_NAME
+            FROM v_catalog.tables 
+            WHERE table_schema='{config['schema_name']}' 
+            ORDER BY table_name;
+        '''
+
+        results, columns = self.query(logger, config, connection, query)
+
+        return [result[0] for result in results]
+
+    def get_columns(self, logger: AirbyteLogger, config: json, connection, table_name: str):
+        query = f'''
+            SELECT 
+                column_name , 
+                data_type 
+            FROM v_catalog.columns 
+            WHERE table_name='{table_name}';'''
+
+        results, columns = self.query(logger, config, connection, query)
+
+        return results
+
+    def query(self, logger: AirbyteLogger, config: json, connection, query):
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute(query)
+                results = cursor.fetchall()
+                columns = [column[0] for column in cursor.description]
+            except Exception as e:
+                logger.error(f'Error running query: {query} on {config["database"]}!')
+
+        return results, columns
