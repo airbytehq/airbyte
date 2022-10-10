@@ -29,6 +29,7 @@ import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
+import { scheduleFieldValidationSchema } from "./ScheduleField";
 
 export interface FormikConnectionFormValues {
   name?: string;
@@ -82,29 +83,7 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
       scheduleType: yup
         .string()
         .oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic, ConnectionScheduleType.cron]),
-      scheduleData: yup.mixed().when("scheduleType", (scheduleType) => {
-        if (scheduleType === ConnectionScheduleType.basic) {
-          return yup.object({
-            basicSchedule: yup
-              .object({
-                units: yup.number().required("form.empty.error"),
-                timeUnit: yup.string().required("form.empty.error"),
-              })
-              .defined("form.empty.error"),
-          });
-        } else if (scheduleType === ConnectionScheduleType.manual) {
-          return yup.mixed().notRequired();
-        }
-
-        return yup.object({
-          cron: yup
-            .object({
-              cronExpression: yup.string().required("form.empty.error"),
-              cronTimeZone: yup.string().required("form.empty.error"),
-            })
-            .defined("form.empty.error"),
-        });
-      }),
+      scheduleData: scheduleFieldValidationSchema,
       namespaceDefinition: yup
         .string()
         .oneOf([
