@@ -588,8 +588,8 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * For each connection ID in the input, find that connection's latest sync job and return it in an
-   * Optional if one exists.
+   * For each connection ID in the input, find that connection's latest sync job and return it if one
+   * exists.
    */
   @Override
   public List<Job> getLastSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
@@ -610,7 +610,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   /**
    * For each connection ID in the input, find that connection's most recent non-terminal sync job and
-   * return it in an Optional if one exists.
+   * return it if one exists.
    */
   @Override
   public List<Job> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {

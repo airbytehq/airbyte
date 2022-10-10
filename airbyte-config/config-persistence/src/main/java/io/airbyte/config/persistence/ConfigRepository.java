@@ -20,6 +20,7 @@ import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.select;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
@@ -839,10 +840,12 @@ public class ConfigRepository {
   // process combined information about a Source/Destination/Definition pair without requiring two
   // separate queries and in-memory join operation,
   // because the config models are grouped immediately in the repository layer.
+  @VisibleForTesting
   public record SourceAndDefinition(SourceConnection source, StandardSourceDefinition definition) {
 
   }
 
+  @VisibleForTesting
   public record DestinationAndDefinition(DestinationConnection destination, StandardDestinationDefinition definition) {
 
   }
