@@ -1,4 +1,4 @@
-import { render, mockConnection } from "test-utils/testutils";
+import { render } from "test-utils/testutils";
 
 import { ConnectionSettingsTab } from "./ConnectionSettingsTab";
 
@@ -40,11 +40,11 @@ describe("<SettingsView />", () => {
     let container: HTMLElement;
 
     setMockIsAdvancedMode(false);
-    ({ container } = await render(<ConnectionSettingsTab connection={mockConnection} />));
+    ({ container } = await render(<ConnectionSettingsTab />));
     expect(container.textContent).not.toContain("Connection State");
 
     setMockIsAdvancedMode(true);
-    ({ container } = await render(<ConnectionSettingsTab connection={mockConnection} />));
+    ({ container } = await render(<ConnectionSettingsTab />));
     expect(container.textContent).toContain("Connection State");
   });
 });
