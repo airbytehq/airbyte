@@ -52,6 +52,11 @@ public class StateGeneratorUtils {
     }
   };
 
+  public static final Function<AirbyteStreamState, Integer> CURSOR_RECORD_COUNT_FUNCTION = stream -> {
+    final Optional<DbStreamState> dbStreamState = StateGeneratorUtils.extractState(stream);
+    return dbStreamState.map(DbStreamState::getCursorRecordCount).orElse(0L).intValue();
+  };
+
   /**
    * {@link Function} that creates an {@link AirbyteStreamNameNamespacePair} from the stream state.
    */

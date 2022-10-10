@@ -4,11 +4,9 @@
 
 package io.airbyte.integrations.source.relationaldb.state;
 
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -44,6 +42,8 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
    */
   private static final Function<DbStreamState, List<String>> CURSOR_FIELD_FUNCTION = DbStreamState::getCursorField;
 
+  private static final Function<DbStreamState, Integer> CURSOR_RECORD_COUNT_FUNCTION = stream -> stream.getCursorRecordCount().intValue();
+
   /**
    * {@link Function} that creates an {@link AirbyteStreamNameNamespacePair} from the stream state.
    */
@@ -70,9 +70,10 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
    */
   public LegacyStateManager(final DbState dbState, final ConfiguredAirbyteCatalog catalog) {
     super(catalog,
-        () -> dbState.getStreams(),
+        dbState::getStreams,
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
+        CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
 
     this.cdcStateManager = new CdcStateManager(dbState.getCdcState(), AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog));
