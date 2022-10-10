@@ -1,0 +1,24 @@
+@use "../../../scss/colors";
+
+.container {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+.control {
+  padding: 10px;
+  flex: 0 0 auto;
+  background-color: colors.$dark-blue;
+  display: flex;
+  // padding-right: 10px;
+}
+
+.editorContainer {
+  flex: 1 1 0;
+}
+
+.exportButton {
+  // margin-top: 10px;
+  margin-left: auto;
+}
