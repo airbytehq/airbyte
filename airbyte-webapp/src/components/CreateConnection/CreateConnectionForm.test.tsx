@@ -17,6 +17,8 @@ jest.mock("services/workspaces/WorkspacesService", () => ({
   useCurrentWorkspace: () => ({}),
   useCurrentWorkspaceId: () => "workspace-id",
 }));
+
+// exp-speedy-connection
 jest.mock("components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection", () => ({
   useExperimentSpeedyConnection: () => ({ isExperimentVariant: false }),
 }));
