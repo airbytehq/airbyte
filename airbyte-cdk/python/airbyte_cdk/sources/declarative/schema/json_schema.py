@@ -4,10 +4,10 @@
 
 import json
 import pkgutil
+import sys
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, Union
 
-import __main__
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config
@@ -15,8 +15,12 @@ from dataclasses_jsonschema import JsonSchemaMixin
 
 
 def _default_file_path() -> str:
-    main_file = __main__.__file__
-    module = main_file.split("/")[-2].replace("-", "_")
+    # schema files are always in "source_<connector_name>/schemas/<stream_name>.json
+    # the connector's module name can be inferred by looking at the modules loaded and look for the one starting with source_
+    source_modules = [
+        k for k, v in sys.modules.items() if "source_" in k
+    ]  # example: ['source_exchange_rates', 'source_exchange_rates_tutorial.source']
+    module = source_modules[0].split(".")[0]
     return f"./{module}/schemas/{{{{options['name']}}}}.json"
 
 
