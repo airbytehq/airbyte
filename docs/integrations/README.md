@@ -138,7 +138,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Recurly](sources/recurly.md)                                                               | Alpha                | Yes                 |
 | [Redshift](sources/redshift.md)                                                             | Alpha                | Yes                 |
 | [Retently](sources/retently.md)                                                             | Alpha                | Yes                 |
-| [S3](sources/s3.md)                                                                         | Generally Available  | Yes                 |
+| [S3](sources/s3.md)                                                                         | Generally Available  | No                  |
 | [Salesforce](sources/salesforce.md)                                                         | Generally Available  | Yes                 |
 | [Salesloft](sources/salesloft.md)                                                           | Alpha                | No                  |
 | [SAP Business One](sources/sap-business-one.md)                                             | Alpha                | No                  |
@@ -219,7 +219,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Redis](destinations/redis.md)                             | Alpha                | No                  |
 | [Redshift](destinations/redshift.md)                       | Beta                 | Yes                 |
 | [Rockset](destinations/rockset.md)                         | Alpha                | No                  |
-| [S3](destinations/s3.md)                                   | Generally Available  | No                  |
+| [S3](destinations/s3.md)                                   | Generally Available  | Yes                 |
 | [Scylla](destinations/scylla.md)                           | Alpha                | No                  |
 | [SFTP JSON](destinations/sftp-json.md)                     | Alpha                | Yes                 |
 | [Snowflake](destinations/snowflake.md)                     | Generally Available  | Yes                 |
