@@ -149,7 +149,7 @@ public class DateTimeConverter {
         return LocalTime.ofNanoOfDay(value).format(TIME_FORMATTER);
       } else {
         final long updatedValue = Math.min(Math.abs(value), LocalTime.MAX.toNanoOfDay());
-        LOGGER.debug("Time values must use number of milliseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
+        LOGGER.debug("Time values must use number of nanoseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
             updatedValue);
         return LocalTime.ofNanoOfDay(updatedValue).format(TIME_FORMATTER);
       }
