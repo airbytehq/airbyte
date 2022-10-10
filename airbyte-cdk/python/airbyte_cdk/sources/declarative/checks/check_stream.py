@@ -35,20 +35,23 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
         for stream_name in self.stream_names:
             if stream_name in stream_name_to_stream.keys():
                 stream = stream_name_to_stream[stream_name]
-                # Some streams need a stream slice to read records (eg if they have a SubstreamSlicer)
                 try:
-                    slices = stream.stream_slices(
-                        cursor_field=stream.cursor_field,
-                        sync_mode=SyncMode.full_refresh,
-                    )
-                    try:
-                        _slice = next(slices)
-                    except StopIteration:
-                        _slice = {}
-                    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice)
+                    # Some streams need a stream slice to read records (eg if they have a SubstreamSlicer)
+                    stream_slice = self._get_stream_slice(stream)
+                    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
                     next(records)
                 except Exception as error:
                     return False, f"Unable to connect to stream {stream_name} - {error}"
             else:
                 raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}")
         return True, None
+
+    def _get_stream_slice(self, stream):
+        slices = stream.stream_slices(
+            cursor_field=stream.cursor_field,
+            sync_mode=SyncMode.full_refresh,
+        )
+        try:
+            return next(slices)
+        except StopIteration:
+            return {}
