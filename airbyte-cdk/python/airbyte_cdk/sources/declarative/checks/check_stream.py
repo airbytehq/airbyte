@@ -35,8 +35,17 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
         for stream_name in self.stream_names:
             if stream_name in stream_name_to_stream.keys():
                 stream = stream_name_to_stream[stream_name]
+                # Some streams need a stream slice to read records (eg if they have a SubstreamSlicer)
                 try:
-                    records = stream.read_records(sync_mode=SyncMode.full_refresh)
+                    slices = stream.stream_slices(
+                        cursor_field=stream.cursor_field,
+                        sync_mode=SyncMode.full_refresh,
+                    )
+                    try:
+                        _slice = next(slices)
+                    except StopIteration:
+                        _slice = {}
+                    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice)
                     next(records)
                 except Exception as error:
                     return False, f"Unable to connect to stream {stream_name} - {error}"
