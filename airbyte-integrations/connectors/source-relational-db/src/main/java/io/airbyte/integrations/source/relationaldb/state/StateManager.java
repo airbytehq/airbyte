@@ -146,7 +146,10 @@ public interface StateManager<T, S> {
   default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final int cursorRecordCount) {
     final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
     Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
-    cursorInfo.get().setCursor(cursor).setCursorRecordCount(cursorRecordCount);
+    cursorInfo.get().setCursor(cursor);
+    if (cursorRecordCount != 0) {
+      cursorInfo.get().setCursorRecordCount(cursorRecordCount);
+    }
     LOGGER.debug("Updating cursor value for {} to {} (count {})...", pair, cursor, cursorRecordCount);
     return emit(Optional.ofNullable(pair));
   }
