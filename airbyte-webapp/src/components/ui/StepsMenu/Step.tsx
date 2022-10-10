@@ -51,7 +51,7 @@ const Num = styled.div<{ isActive?: boolean }>`
   box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
 `;
 
-const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, lightMode, icon }) => {
+export const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, lightMode, icon }) => {
   const onItemClickItem = () => {
     if (onClick) {
       onClick(id);
@@ -72,5 +72,3 @@ const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, lightMode
     </StepView>
   );
 };
-
-export default Step;

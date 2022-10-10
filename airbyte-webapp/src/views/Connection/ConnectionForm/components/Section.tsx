@@ -1,4 +1,4 @@
-import { Card } from "components/ui";
+import { Card } from "components/ui/Card";
 import { Text } from "components/ui/Text";
 
 import styles from "./Section.module.scss";

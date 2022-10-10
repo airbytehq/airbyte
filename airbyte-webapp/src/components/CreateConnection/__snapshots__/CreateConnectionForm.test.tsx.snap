@@ -1,0 +1,1006 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CreateConnectionForm should render 1`] = `
+<div>
+  <div
+    class="connectionFormContainer"
+  >
+    <form
+      action="#"
+    >
+      <div
+        class="container"
+      >
+        <div
+          class="section"
+        >
+          <div
+            class="flexRow"
+          >
+            <div
+              class="leftFieldCol"
+            >
+              <div
+                class="controlContainer connectionLabel"
+              >
+                <label
+                  class="sc-eCYdqJ cgRkWU"
+                >
+                  <h5
+                    class="heading md labelHeading"
+                  >
+                    Connection name*
+                  </h5>
+                  <span>
+                    <br />
+                    <span
+                      class="sc-jSMfEi dkwDTm"
+                    >
+                      Pick a name to help you identify this connection
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div
+              class="rightFieldCol"
+            >
+              <div
+                class="container"
+                data-testid="input-container"
+              >
+                <input
+                  class="input"
+                  data-testid="connectionName"
+                  name="name"
+                  placeholder="Name"
+                  value="Scrafty <> Heroku Postgres"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="formContainer"
+      >
+        <div
+          class="container"
+        >
+          <div
+            class="section"
+          >
+            <h5
+              class="heading sm"
+            >
+              Transfer
+            </h5>
+            <div
+              class="flexRow"
+            >
+              <div
+                class="leftFieldCol"
+              >
+                <div
+                  class="controlContainer connectorLabel"
+                >
+                  <label
+                    class="sc-eCYdqJ cgRkWU"
+                  >
+                    Replication frequency*
+                    <span>
+                      <br />
+                      <span
+                        class="sc-jSMfEi dkwDTm"
+                      >
+                        Set how often data should sync to the destination
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div
+                class="rightFieldCol"
+                style="pointer-events: auto;"
+              >
+                <div
+                  class="sc-cOFTSb bBiOrV react-select-container css-b62m3t-container"
+                  data-testid="scheduleData"
+                  role="combobox"
+                >
+                  <span
+                    class="css-1f43avz-a11yText-A11yText"
+                    id="react-select-2-live-region"
+                  />
+                  <span
+                    aria-atomic="false"
+                    aria-live="polite"
+                    aria-relevant="additions text"
+                    class="css-1f43avz-a11yText-A11yText"
+                  />
+                  <div
+                    class="react-select__control css-1s2u09g-control"
+                  >
+                    <div
+                      class="react-select__value-container react-select__value-container--has-value css-dlobye-Component"
+                    >
+                      <div
+                        class="sc-cTQhss haoKjh"
+                      >
+                        <div
+                          class="sc-iAvgwm fQiUpU"
+                        >
+                          <div
+                            class="react-select__single-value css-qc6sy-singleValue"
+                          >
+                            Every 24 hours
+                          </div>
+                        </div>
+                      </div>
+                      <input
+                        aria-autocomplete="list"
+                        aria-expanded="false"
+                        aria-haspopup="true"
+                        aria-readonly="true"
+                        class="css-mohuvp-dummyInput-DummyInput"
+                        id="react-select-2-input"
+                        inputmode="none"
+                        role="combobox"
+                        tabindex="0"
+                        value=""
+                      />
+                    </div>
+                    <div
+                      class="react-select__indicators css-ny0e4k-Component"
+                    >
+                      <div
+                        aria-hidden="true"
+                        class="react-select__indicator react-select__dropdown-indicator css-tlfecz-indicatorContainer"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="svg-inline--fa fa-sort-down sc-dPyBCJ eGVczJ"
+                          data-icon="sort-down"
+                          data-prefix="fas"
+                          focusable="false"
+                          role="img"
+                          viewBox="0 0 320 512"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M311.9 335.1l-132.4 136.8C174.1 477.3 167.1 480 160 480c-7.055 0-14.12-2.702-19.47-8.109l-132.4-136.8C-9.229 317.8 3.055 288 27.66 288h264.7C316.9 288 329.2 317.8 311.9 335.1z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <input
+                    name="scheduleData"
+                    type="hidden"
+                    value="[object Object]"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="container"
+        >
+          <div
+            class="section"
+          >
+            <h5
+              class="heading md"
+            >
+              Streams
+            </h5>
+            <span
+              class=""
+            >
+              <div
+                class="flexRow"
+              >
+                <div
+                  class="leftFieldCol"
+                >
+                  <div
+                    class="controlContainer"
+                  >
+                    <label
+                      class="sc-eCYdqJ iCvyIv"
+                    >
+                      Destination Namespace*
+                      <span>
+                        <br />
+                        <span
+                          class="sc-jSMfEi dkwDTm"
+                        >
+                          Define the location where the data will be stored in the destination
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <div
+                  class="rightFieldCol"
+                >
+                  <div
+                    class="sc-cOFTSb bBiOrV react-select-container css-b62m3t-container"
+                    data-testid="namespaceDefinition"
+                    role="combobox"
+                  >
+                    <span
+                      class="css-1f43avz-a11yText-A11yText"
+                      id="react-select-3-live-region"
+                    />
+                    <span
+                      aria-atomic="false"
+                      aria-live="polite"
+                      aria-relevant="additions text"
+                      class="css-1f43avz-a11yText-A11yText"
+                    />
+                    <div
+                      class="react-select__control css-1s2u09g-control"
+                    >
+                      <div
+                        class="react-select__value-container react-select__value-container--has-value css-dlobye-Component"
+                      >
+                        <div
+                          class="sc-cTQhss haoKjh"
+                        >
+                          <div
+                            class="sc-iAvgwm fQiUpU"
+                          >
+                            <div
+                              class="react-select__single-value css-qc6sy-singleValue"
+                            >
+                              Mirror source structure
+                            </div>
+                          </div>
+                        </div>
+                        <input
+                          aria-autocomplete="list"
+                          aria-expanded="false"
+                          aria-haspopup="true"
+                          aria-readonly="true"
+                          class="css-mohuvp-dummyInput-DummyInput"
+                          id="react-select-3-input"
+                          inputmode="none"
+                          role="combobox"
+                          tabindex="0"
+                          value=""
+                        />
+                      </div>
+                      <div
+                        class="react-select__indicators css-ny0e4k-Component"
+                      >
+                        <div
+                          aria-hidden="true"
+                          class="react-select__indicator react-select__dropdown-indicator css-tlfecz-indicatorContainer"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="svg-inline--fa fa-sort-down sc-dPyBCJ eGVczJ"
+                            data-icon="sort-down"
+                            data-prefix="fas"
+                            focusable="false"
+                            role="img"
+                            viewBox="0 0 320 512"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M311.9 335.1l-132.4 136.8C174.1 477.3 167.1 480 160 480c-7.055 0-14.12-2.702-19.47-8.109l-132.4-136.8C-9.229 317.8 3.055 288 27.66 288h264.7C316.9 288 329.2 317.8 311.9 335.1z"
+                              fill="currentColor"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                    <input
+                      name="namespaceDefinition"
+                      type="hidden"
+                      value="source"
+                    />
+                  </div>
+                </div>
+              </div>
+            </span>
+            <div
+              class="flexRow"
+            >
+              <div
+                class="leftFieldCol"
+              >
+                <div
+                  class="controlContainer"
+                >
+                  <label
+                    class="sc-eCYdqJ cgRkWU"
+                  >
+                    Destination Stream Prefix (Optional)
+                    <span>
+                      <br />
+                      <span
+                        class="sc-jSMfEi dkwDTm"
+                      >
+                        Add a prefix to stream names (ex. “airbyte_” causes “projects” =&gt; “airbyte_projects”)
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div
+                class="rightFieldCol"
+              >
+                <div
+                  class="container"
+                  data-testid="input-container"
+                >
+                  <input
+                    class="input"
+                    data-testid="prefixInput"
+                    name="prefix"
+                    placeholder="prefix"
+                    style="pointer-events: auto;"
+                    type="text"
+                    value=""
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="container"
+        >
+          <div
+            class="section"
+          >
+            <div
+              class="loadingBackdropContainer"
+            >
+              <div
+                class="sc-bUbCnL keYsWp"
+              >
+                <h5
+                  class="sc-bczRLJ sc-dkzDqf UeZWt ebWyjL"
+                >
+                  Activate the streams you want to sync
+                </h5>
+                <button
+                  class="button sizeXS typeSecondary"
+                  type="button"
+                >
+                  <div
+                    class="childrenContainer"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="svg-inline--fa fa-rotate tryArrow"
+                      data-icon="rotate"
+                      data-prefix="fas"
+                      focusable="false"
+                      role="img"
+                      viewBox="0 0 512 512"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M449.9 39.96l-48.5 48.53C362.5 53.19 311.4 32 256 32C161.5 32 78.59 92.34 49.58 182.2c-5.438 16.81 3.797 34.88 20.61 40.28c16.97 5.5 34.86-3.812 40.3-20.59C130.9 138.5 189.4 96 256 96c37.96 0 73 14.18 100.2 37.8L311.1 178C295.1 194.8 306.8 223.4 330.4 224h146.9C487.7 223.7 496 215.3 496 204.9V59.04C496 34.99 466.9 22.95 449.9 39.96zM441.8 289.6c-16.94-5.438-34.88 3.812-40.3 20.59C381.1 373.5 322.6 416 256 416c-37.96 0-73-14.18-100.2-37.8L200 334C216.9 317.2 205.2 288.6 181.6 288H34.66C24.32 288.3 16 296.7 16 307.1v145.9c0 24.04 29.07 36.08 46.07 19.07l48.5-48.53C149.5 458.8 200.6 480 255.1 480c94.45 0 177.4-60.34 206.4-150.2C467.9 313 458.6 294.1 441.8 289.6z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    Refresh source schema
+                  </div>
+                </button>
+              </div>
+              <div
+                class="sc-ZyCDH gpzrdJ"
+              >
+                <div
+                  class="container"
+                  data-testid="input-container"
+                >
+                  <input
+                    class="input sc-jIAOiI bxGgcg"
+                    data-testid="input"
+                    placeholder="Search stream name"
+                  />
+                </div>
+              </div>
+              <div
+                class="sc-ksZaOG sc-hAZoDl fmKtaK jIJKIB catalogHeader"
+              >
+                <div
+                  class="sc-fnykZs imOUQR checkboxCell"
+                >
+                  <label
+                    class="sc-crXcEl iWbiAC"
+                  >
+                    <input
+                      class="sc-iqcoie djcshM"
+                      type="checkbox"
+                    />
+                  </label>
+                </div>
+                <div
+                  class="sc-fnykZs jUKmJs"
+                />
+                <div
+                  class="sc-fnykZs bOivtp"
+                >
+                  Sync
+                </div>
+                <div
+                  class="sc-fnykZs VApCG"
+                >
+                  Source
+                  <div
+                    class="container"
+                  >
+                    <div
+                      class="container"
+                    >
+                      <div
+                        class="icon"
+                      >
+                        <svg
+                          fill="none"
+                          height="14"
+                          viewBox="0 0 14 14"
+                          width="14"
+                        >
+                          <path
+                            d="M7.00016 13.6663C3.31816 13.6663 0.333496 10.6817 0.333496 6.99967C0.333496 3.31767 3.31816 0.333008 7.00016 0.333008C10.6822 0.333008 13.6668 3.31767 13.6668 6.99967C13.6668 10.6817 10.6822 13.6663 7.00016 13.6663ZM7.00016 12.333C8.41465 12.333 9.77121 11.7711 10.7714 10.7709C11.7716 9.77072 12.3335 8.41416 12.3335 6.99967C12.3335 5.58519 11.7716 4.22863 10.7714 3.22844C9.77121 2.22824 8.41465 1.66634 7.00016 1.66634C5.58567 1.66634 4.22912 2.22824 3.22893 3.22844C2.22873 4.22863 1.66683 5.58519 1.66683 6.99967C1.66683 8.41416 2.22873 9.77072 3.22893 10.7709C4.22912 11.7711 5.58567 12.333 7.00016 12.333ZM6.3335 3.66634H7.66683V4.99967H6.3335V3.66634ZM6.3335 6.33301H7.66683V10.333H6.3335V6.33301Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="sc-fnykZs imOUQR"
+                />
+                <div
+                  class="sc-fnykZs ciVNhF"
+                >
+                  Sync mode
+                  <div
+                    class="container"
+                  >
+                    <div
+                      class="container"
+                    >
+                      <div
+                        class="icon"
+                      >
+                        <svg
+                          fill="none"
+                          height="14"
+                          viewBox="0 0 14 14"
+                          width="14"
+                        >
+                          <path
+                            d="M7.00016 13.6663C3.31816 13.6663 0.333496 10.6817 0.333496 6.99967C0.333496 3.31767 3.31816 0.333008 7.00016 0.333008C10.6822 0.333008 13.6668 3.31767 13.6668 6.99967C13.6668 10.6817 10.6822 13.6663 7.00016 13.6663ZM7.00016 12.333C8.41465 12.333 9.77121 11.7711 10.7714 10.7709C11.7716 9.77072 12.3335 8.41416 12.3335 6.99967C12.3335 5.58519 11.7716 4.22863 10.7714 3.22844C9.77121 2.22824 8.41465 1.66634 7.00016 1.66634C5.58567 1.66634 4.22912 2.22824 3.22893 3.22844C2.22873 4.22863 1.66683 5.58519 1.66683 6.99967C1.66683 8.41416 2.22873 9.77072 3.22893 10.7709C4.22912 11.7711 5.58567 12.333 7.00016 12.333ZM6.3335 3.66634H7.66683V4.99967H6.3335V3.66634ZM6.3335 6.33301H7.66683V10.333H6.3335V6.33301Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="sc-fnykZs VApCG"
+                >
+                  Cursor field
+                  <div
+                    class="container"
+                  >
+                    <div
+                      class="container"
+                    >
+                      <div
+                        class="icon"
+                      >
+                        <svg
+                          fill="none"
+                          height="14"
+                          viewBox="0 0 14 14"
+                          width="14"
+                        >
+                          <path
+                            d="M7.00016 13.6663C3.31816 13.6663 0.333496 10.6817 0.333496 6.99967C0.333496 3.31767 3.31816 0.333008 7.00016 0.333008C10.6822 0.333008 13.6668 3.31767 13.6668 6.99967C13.6668 10.6817 10.6822 13.6663 7.00016 13.6663ZM7.00016 12.333C8.41465 12.333 9.77121 11.7711 10.7714 10.7709C11.7716 9.77072 12.3335 8.41416 12.3335 6.99967C12.3335 5.58519 11.7716 4.22863 10.7714 3.22844C9.77121 2.22824 8.41465 1.66634 7.00016 1.66634C5.58567 1.66634 4.22912 2.22824 3.22893 3.22844C2.22873 4.22863 1.66683 5.58519 1.66683 6.99967C1.66683 8.41416 2.22873 9.77072 3.22893 10.7709C4.22912 11.7711 5.58567 12.333 7.00016 12.333ZM6.3335 3.66634H7.66683V4.99967H6.3335V3.66634ZM6.3335 6.33301H7.66683V10.333H6.3335V6.33301Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="sc-fnykZs VApCG"
+                >
+                  Primary key
+                  <div
+                    class="container"
+                  >
+                    <div
+                      class="container"
+                    >
+                      <div
+                        class="icon"
+                      >
+                        <svg
+                          fill="none"
+                          height="14"
+                          viewBox="0 0 14 14"
+                          width="14"
+                        >
+                          <path
+                            d="M7.00016 13.6663C3.31816 13.6663 0.333496 10.6817 0.333496 6.99967C0.333496 3.31767 3.31816 0.333008 7.00016 0.333008C10.6822 0.333008 13.6668 3.31767 13.6668 6.99967C13.6668 10.6817 10.6822 13.6663 7.00016 13.6663ZM7.00016 12.333C8.41465 12.333 9.77121 11.7711 10.7714 10.7709C11.7716 9.77072 12.3335 8.41416 12.3335 6.99967C12.3335 5.58519 11.7716 4.22863 10.7714 3.22844C9.77121 2.22824 8.41465 1.66634 7.00016 1.66634C5.58567 1.66634 4.22912 2.22824 3.22893 3.22844C2.22873 4.22863 1.66683 5.58519 1.66683 6.99967C1.66683 8.41416 2.22873 9.77072 3.22893 10.7709C4.22912 11.7711 5.58567 12.333 7.00016 12.333ZM6.3335 3.66634H7.66683V4.99967H6.3335V3.66634ZM6.3335 6.33301H7.66683V10.333H6.3335V6.33301Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="sc-fnykZs VApCG"
+                >
+                  Destination
+                  <div
+                    class="container"
+                  >
+                    <div
+                      class="container"
+                    >
+                      <div
+                        class="icon"
+                      >
+                        <svg
+                          fill="none"
+                          height="14"
+                          viewBox="0 0 14 14"
+                          width="14"
+                        >
+                          <path
+                            d="M7.00016 13.6663C3.31816 13.6663 0.333496 10.6817 0.333496 6.99967C0.333496 3.31767 3.31816 0.333008 7.00016 0.333008C10.6822 0.333008 13.6668 3.31767 13.6668 6.99967C13.6668 10.6817 10.6822 13.6663 7.00016 13.6663ZM7.00016 12.333C8.41465 12.333 9.77121 11.7711 10.7714 10.7709C11.7716 9.77072 12.3335 8.41416 12.3335 6.99967C12.3335 5.58519 11.7716 4.22863 10.7714 3.22844C9.77121 2.22824 8.41465 1.66634 7.00016 1.66634C5.58567 1.66634 4.22912 2.22824 3.22893 3.22844C2.22873 4.22863 1.66683 5.58519 1.66683 6.99967C1.66683 8.41416 2.22873 9.77072 3.22893 10.7709C4.22912 11.7711 5.58567 12.333 7.00016 12.333ZM6.3335 3.66634H7.66683V4.99967H6.3335V3.66634ZM6.3335 6.33301H7.66683V10.333H6.3335V6.33301Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="sc-fnykZs imOUQR"
+                />
+              </div>
+              <div
+                class="sc-ksZaOG sc-hAZoDl fmKtaK jIJKIB catalogSubheader"
+              >
+                <div
+                  class="sc-fnykZs sc-hlnMnd VApCG ezaSgM"
+                >
+                  Namespace
+                </div>
+                <div
+                  class="sc-fnykZs sc-hlnMnd VApCG ezaSgM"
+                >
+                  Stream name
+                </div>
+                <div
+                  class="sc-fnykZs sc-hlnMnd ciVNhF ezaSgM"
+                >
+                  Source | Destination
+                </div>
+                <div
+                  class="sc-fnykZs sc-hlnMnd sc-eKBdFk VApCG ezaSgM iBiQnB"
+                />
+                <div
+                  class="sc-fnykZs sc-hlnMnd sc-eKBdFk VApCG ezaSgM iBiQnB"
+                />
+                <div
+                  class="sc-fnykZs sc-hlnMnd VApCG ezaSgM"
+                >
+                  Namespace
+                </div>
+                <div
+                  class="sc-fnykZs sc-hlnMnd VApCG ezaSgM"
+                >
+                  Stream name
+                </div>
+              </div>
+              <div
+                class="sc-jOhDuK iHjNjo"
+              >
+                <div
+                  class="catalogSection"
+                >
+                  <div
+                    class="sc-ksZaOG fmKtaK catalogSectionRow"
+                  >
+                    <div
+                      class="checkboxCell streamRowCheckboxCell"
+                    >
+                      <label
+                        class="sc-crXcEl iWbiAC"
+                      >
+                        <input
+                          class="sc-iqcoie djcshM"
+                          type="checkbox"
+                        />
+                      </label>
+                    </div>
+                    <div
+                      class="sc-fnykZs sc-jgbSNz sc-lbxAil imOUQR dkANJX bHBjjw"
+                    >
+                      <span
+                        class="sc-hiMGwR kmDbQS"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="svg-inline--fa fa-chevron-right sc-ehmTmK eOIlNv"
+                          data-icon="chevron-right"
+                          data-prefix="fas"
+                          focusable="false"
+                          role="img"
+                          viewBox="0 0 320 512"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                    <div
+                      class="streamHeaderContent"
+                    >
+                      <div
+                        class="sc-fnykZs sc-jgbSNz hgpwyO dkANJX"
+                      >
+                        <label
+                          class="switch small"
+                        >
+                          <input
+                            checked=""
+                            class="switchInput"
+                            type="checkbox"
+                            value=""
+                          />
+                          <span
+                            class="slider small"
+                          />
+                        </label>
+                      </div>
+                      <div
+                        class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
+                        title=""
+                      >
+                        <span
+                          class="sc-fXynhf sAcSt"
+                        >
+                          No namespace
+                        </span>
+                      </div>
+                      <div
+                        class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
+                        title="pokemon"
+                      >
+                        pokemon
+                      </div>
+                      <div
+                        class="sc-fnykZs bKHgDK"
+                      >
+                        <div
+                          class="sc-cOFTSb jqsVWu react-select-container css-b62m3t-container"
+                          data-testid="syncSettingsDropdown"
+                          role="combobox"
+                        >
+                          <span
+                            class="css-1f43avz-a11yText-A11yText"
+                            id="react-select-4-live-region"
+                          />
+                          <span
+                            aria-atomic="false"
+                            aria-live="polite"
+                            aria-relevant="additions text"
+                            class="css-1f43avz-a11yText-A11yText"
+                          />
+                          <div
+                            class="sc-GVOUr ldWtuj react-select__control css-1s2u09g-control"
+                          >
+                            <div
+                              class="react-select__value-container react-select__value-container--has-value css-dlobye-Component"
+                            >
+                              <div
+                                class="sc-iAvgwm fQiUpU"
+                              >
+                                <div
+                                  class="sc-lbOyJj cHLvYg react-select__single-value css-qc6sy-singleValue"
+                                >
+                                  <div>
+                                    Full refresh
+                                  </div>
+                                  <div
+                                    class="sc-gFGZVQ ijSWZb"
+                                  >
+                                    |
+                                  </div>
+                                  <div>
+                                    Overwrite
+                                  </div>
+                                </div>
+                              </div>
+                              <input
+                                aria-autocomplete="list"
+                                aria-expanded="false"
+                                aria-haspopup="true"
+                                aria-readonly="true"
+                                class="css-mohuvp-dummyInput-DummyInput"
+                                id="react-select-4-input"
+                                inputmode="none"
+                                role="combobox"
+                                tabindex="0"
+                                value=""
+                              />
+                            </div>
+                            <div
+                              class="react-select__indicators css-ny0e4k-Component"
+                            >
+                              <div
+                                aria-hidden="true"
+                                class="react-select__indicator react-select__dropdown-indicator css-tlfecz-indicatorContainer"
+                              >
+                                <svg
+                                  aria-hidden="true"
+                                  class="svg-inline--fa fa-sort-down sc-dPyBCJ eGVczJ"
+                                  data-icon="sort-down"
+                                  data-prefix="fas"
+                                  focusable="false"
+                                  role="img"
+                                  viewBox="0 0 320 512"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M311.9 335.1l-132.4 136.8C174.1 477.3 167.1 480 160 480c-7.055 0-14.12-2.702-19.47-8.109l-132.4-136.8C-9.229 317.8 3.055 288 27.66 288h264.7C316.9 288 329.2 317.8 311.9 335.1z"
+                                    fill="currentColor"
+                                  />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        class="sc-fnykZs sc-jgbSNz imOUQR dkANJX"
+                      />
+                      <div
+                        class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
+                      />
+                      <div
+                        class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
+                        title="'<source schema>"
+                      >
+                        '&lt;source schema&gt;
+                      </div>
+                      <div
+                        class="sc-fnykZs sc-jgbSNz kjjuyS dkANJX"
+                        title="pokemon"
+                      >
+                        pokemon
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="container"
+      >
+        <div
+          class="container"
+        >
+          <div
+            class="section"
+          >
+            <h5
+              class="heading md"
+            >
+              Normalization & Transformation
+            </h5>
+            <div
+              class="sc-iTONeN jVBGIe"
+            >
+              <div
+                class="sc-papXJ jBZEjH"
+              >
+                <label
+                  class="sc-ftvSup eAaJEM"
+                >
+                  <div
+                    class="sc-iBkjds btSpQj"
+                  />
+                  <input
+                    class="sc-gKXOVf iqfEmu"
+                    id="radiobutton-normalization.raw"
+                    label="[object Object]"
+                    name="normalization"
+                    type="radio"
+                    value="raw"
+                  />
+                </label>
+                <label
+                  class="sc-jqUVSM jYhteM"
+                  for="radiobutton-normalization.raw"
+                >
+                  Raw data (JSON)
+                  <span
+                    class="sc-kDDrLX iVZNpR"
+                  />
+                </label>
+              </div>
+              <div
+                class="sc-papXJ jBZEjH"
+              >
+                <label
+                  class="sc-ftvSup eAaJEM"
+                >
+                  <div
+                    class="sc-iBkjds btSpQj"
+                  />
+                  <input
+                    checked=""
+                    class="sc-gKXOVf iqfEmu"
+                    id="radiobutton-normalization.basic"
+                    label="[object Object]"
+                    name="normalization"
+                    type="radio"
+                    value="basic"
+                  />
+                </label>
+                <label
+                  class="sc-jqUVSM jYhteM"
+                  for="radiobutton-normalization.basic"
+                >
+                  Normalized tabular data
+                  <span
+                    class="sc-kDDrLX iVZNpR"
+                  >
+                    Map the JSON object to the types and format native to the destination. 
+                    <a
+                      class="sc-evZas hBbGvM"
+                      href="https://docs.airbyte.com/understanding-airbyte/connections#airbyte-basic-normalization"
+                      target="_blank"
+                    >
+                      Learn more
+                    </a>
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div
+              class="container"
+            >
+              <div
+                class="sc-hKMtZM bXwcwi"
+              >
+                No custom transformation
+                <button
+                  class="button sizeXS typeSecondary"
+                  data-testid="addItemButton"
+                  type="button"
+                >
+                  <div
+                    class="childrenContainer"
+                  >
+                    + Add transformation
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="sc-jIZahH gCZAUv"
+      >
+        <div />
+        <div>
+          <button
+            class="button sizeXS typePrimary"
+            type="submit"
+          >
+            <div
+              class="childrenContainer"
+            >
+              Set up connection
+            </div>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+`;
+
+exports[`CreateConnectionForm should render when loading 1`] = `
+<div>
+  <div
+    class="sc-kLLXSd deahmE"
+  >
+    <div
+      class="sc-gicCDI jGzLnQ"
+    >
+      <div
+        class="sc-ezWOiH effmVN"
+      />
+      <div
+        class="sc-bZkfAO bFYxgQ"
+      >
+        Please wait a little bit more…
+      </div>
+    </div>
+    <div
+      class="sc-ikZpkk fsbYKM"
+    >
+      We are fetching the schema of your data source. 
+This should take less than a minute, but may take a few minutes on slow internet connections or data sources with a large amount of tables.
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CreateConnectionForm should render with an error 1`] = `
+<div>
+  <div
+    class="container"
+  >
+    <div
+      class="container"
+    >
+      <div
+        class="sc-fEOsli sc-bjUoiL dDTmSV kvEXJM"
+      >
+        <svg
+          aria-hidden="true"
+          class="svg-inline--fa fa-xmark "
+          data-icon="xmark"
+          data-prefix="fas"
+          focusable="false"
+          role="img"
+          viewBox="0 0 320 512"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M310.6 361.4c12.5 12.5 12.5 32.75 0 45.25C304.4 412.9 296.2 416 288 416s-16.38-3.125-22.62-9.375L160 301.3L54.63 406.6C48.38 412.9 40.19 416 32 416S15.63 412.9 9.375 406.6c-12.5-12.5-12.5-32.75 0-45.25l105.4-105.4L9.375 150.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L160 210.8l105.4-105.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-105.4 105.4L310.6 361.4z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+      <p
+        class="text lg centered message"
+      >
+        Failed to fetch schema. Please try again
+      </p>
+      <button
+        class="button retryButton sizeXS typeDanger"
+      >
+        <div
+          class="childrenContainer"
+        >
+          Try again
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+`;

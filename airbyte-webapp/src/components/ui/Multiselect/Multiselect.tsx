@@ -3,13 +3,13 @@ import { MultiselectProps as WidgetMultiselectProps } from "react-widgets/lib/Mu
 import styled from "styled-components";
 import "react-widgets/dist/css/react-widgets.css";
 
-type MultiselectProps = {
+export interface MultiselectProps extends WidgetMultiselectProps {
   disabled?: boolean;
   error?: boolean;
   name?: string;
-} & WidgetMultiselectProps;
+}
 
-const Multiselect = styled(ReactMultiselect)<MultiselectProps>`
+export const Multiselect = styled(ReactMultiselect)<MultiselectProps>`
   box-shadow: none;
   padding: 0;
   margin: 0;
@@ -129,6 +129,3 @@ const Multiselect = styled(ReactMultiselect)<MultiselectProps>`
     }
   }
 `;
-
-export { Multiselect };
-export type { MultiselectProps };
