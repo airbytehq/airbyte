@@ -41,5 +41,6 @@ We add some metadata columns for CDC sources:
 
 ## Additional information
 
-* Read our article: [Understanding Change Data Capture (CDC): Definition, Methods and Benefits](https://airbyte.com/blog/change-data-capture-definition-methods-and-benefits)
+* [An overview of Airbyte’s replication modes](https://airbyte.com/blog/understanding-data-replication-modes).
+* [Understanding Change Data Capture (CDC): Definition, Methods and Benefits](https://airbyte.com/blog/change-data-capture-definition-methods-and-benefits)
 
