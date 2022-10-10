@@ -311,17 +311,16 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     // this is where the bifurcation between full refresh and incremental
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
-      final Optional<CursorInfo> cursorInfoOptional = stateManager.getCursorInfo(pair);
+      final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
 
       final AutoCloseableIterator<AirbyteMessage> airbyteMessageIterator;
-      if (cursorInfoOptional.isPresent()) {
-        final CursorInfo cursorInfo = cursorInfoOptional.get();
+      if (cursorInfo.isPresent()) {
         airbyteMessageIterator = getIncrementalStream(
             database,
             airbyteStream,
             selectedDatabaseFields,
             table,
-            cursorInfo,
+            cursorInfo.get(),
             emittedAt);
       } else {
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
@@ -335,7 +334,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           stateManager,
           pair,
           cursorField,
-          cursorInfoOptional.map(CursorInfo::getCursor).orElse(null),
+          cursorInfo.map(CursorInfo::getCursor).orElse(null),
           cursorType,
           getStateEmissionFrequency()),
           airbyteMessageIterator);

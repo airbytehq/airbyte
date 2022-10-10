@@ -861,6 +861,7 @@ public abstract class JdbcSourceAcceptanceTest {
             .withStreamName(airbyteStream.getStream().getName())
             .withStreamNamespace(airbyteStream.getStream().getNamespace())
             .withCursorField(List.of(cursorField))
+            .withCursorRecordCount(1L)
             .withCursor(endCursorValue));
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(expectedRecordMessages);
     expectedMessages.addAll(createExpectedTestMessages(expectedStreams));

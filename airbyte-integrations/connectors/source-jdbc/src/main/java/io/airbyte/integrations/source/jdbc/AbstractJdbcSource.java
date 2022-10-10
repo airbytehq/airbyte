@@ -343,10 +343,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
               final String operator;
               if (cursorInfo.getCursorRecordCount() == 0) {
-                operator = ">=";
+                operator = ">";
               } else {
                 final int actualRecordCount = getActualCursorRecordCount(
                     connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
+                LOGGER.info("Table {} cursor count: expected {}, actual {}", tableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
                 if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
                   operator = ">";
                 } else {
@@ -384,12 +385,21 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                                          final Datatype cursorFieldType,
                                          final String cursor) throws SQLException {
     final String columnName = "record_count";
-    final String cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s = ?",
-        columnName,
-        fullTableName,
-        quotedCursorField);
-    final PreparedStatement cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);;
-    sourceOperations.setStatementField(cursorRecordStatement, 1, cursorFieldType, cursor);
+    final PreparedStatement cursorRecordStatement;
+    if (cursor == null) {
+      final String cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s IS NULL",
+          columnName,
+          fullTableName,
+          quotedCursorField);
+      cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);
+    } else {
+      final String cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s = ?",
+          columnName,
+          fullTableName,
+          quotedCursorField);
+      cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);;
+      sourceOperations.setStatementField(cursorRecordStatement, 1, cursorFieldType, cursor);
+    }
     final ResultSet resultSet = cursorRecordStatement.executeQuery();
     return resultSet.getInt(columnName);
   }
