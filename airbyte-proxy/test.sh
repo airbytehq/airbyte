@@ -96,7 +96,7 @@ start_container_with_proxy $BASIC_AUTH_USERNAME $BASIC_AUTH_UPDATED_PASSWORD "ht
 
 RESPONSE=`curl "http://localhost:$PORT" -i --silent`
 if [[ $RESPONSE == *"google.com"* ]]; then
-  echo "✔️  access without auth allowed when configured"
+  echo "✔️  proxy backends can be changed"
 else
   echo "Proxy update not working"
   echo $RESPONSE
