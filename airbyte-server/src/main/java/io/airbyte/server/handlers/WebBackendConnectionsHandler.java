@@ -24,6 +24,7 @@ import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.OperationCreate;
 import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
+import io.airbyte.api.model.generated.SchemaChange;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
@@ -33,6 +34,7 @@ import io.airbyte.api.model.generated.StreamTransform;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
+import io.airbyte.api.model.generated.WebBackendConnectionRead.SchemaChangeEnum;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
@@ -164,7 +166,7 @@ public class WebBackendConnectionsHandler {
     final Optional<JobRead> latestRunningSyncJob = jobHistoryHandler.getLatestRunningSyncJob(connectionRead.getConnectionId());
 
     final WebBackendConnectionRead webBackendConnectionRead = getWebBackendConnectionRead(connectionRead, source, destination, operations)
-        .catalogId(connectionRead.getSourceCatalogId());
+        .catalogId(connectionRead.getSourceCatalogId()).schemaChange(connectionRead.getSchemaChange());
 
     webBackendConnectionRead.setIsSyncing(latestRunningSyncJob.isPresent());
 
@@ -283,6 +285,7 @@ public class WebBackendConnectionsHandler {
 
     final CatalogDiff diff;
     final AirbyteCatalog syncCatalog;
+    final SchemaChange schemaChange;
     if (refreshedCatalog.isPresent()) {
       connection.setSourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
@@ -298,21 +301,31 @@ public class WebBackendConnectionsHandler {
        * but was present at time of configuration will appear in the diff as an added stream which is
        * confusing. We need to figure out why source_catalog_id is not always populated in the db.
        */
-      diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog(),
-          CatalogConverter.toProtocol(configuredCatalog));
+      diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog(), CatalogConverter.toProtocol(configuredCatalog));
+      if(diff.getTransforms().isEmpty()) {
+        schemaChange = SchemaChange.NO_CHANGE;
+      } else if(breakingChangePresent(diff)) {
+        schemaChange = SchemaChange.BREAKING;
+      } else {
+        schemaChange = SchemaChange.NON_BREAKING;
+      }
+
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
       syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
       // diff not relevant if there was no refresh.
       diff = null;
+      schemaChange = SchemaChange.NO_CHANGE;
     } else {
       // fallback. over time this should be rarely used because source_catalog_id should always be set.
       syncCatalog = configuredCatalog;
       // diff not relevant if there was no refresh.
       diff = null;
+      schemaChange = SchemaChange.NO_CHANGE;
     }
 
     connection.setSyncCatalog(syncCatalog);
+    connection.setSchemaChange(schemaChange);
     return buildWebBackendConnectionRead(connection).catalogDiff(diff);
   }
 
