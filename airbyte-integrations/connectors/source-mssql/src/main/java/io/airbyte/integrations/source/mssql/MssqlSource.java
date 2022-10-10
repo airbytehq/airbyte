@@ -28,6 +28,7 @@ import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -96,9 +97,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                final List<String> columnNames,
                                                                final String schemaName,
                                                                final String tableName,
-                                                               final String cursorField,
-                                                               final JDBCType cursorFieldType,
-                                                               final String cursorValue) {
+                                                               final CursorInfo cursorInfo,
+                                                               final JDBCType cursorFieldType) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -112,11 +112,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
                   String.join(",", newColumnNames),
                   sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  sourceOperations.enquoteIdentifier(connection, cursorField));
+                  sourceOperations.enquoteIdentifier(connection, cursorInfo.getCursorField()));
               LOGGER.info("Prepared SQL query for queryTableIncremental is: " + sql);
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorValue);
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
@@ -245,15 +245,15 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
     final List<TableInfo<CommonField<JDBCType>>> internals = super.discoverInternal(database);
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly filtered (from UI) schemas
-      List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
+      final List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
           .stream()
           .filter(this::isTableInRequestedSchema)
           .toList();
-      for (TableInfo<CommonField<JDBCType>> info : resultInternals) {
+      for (final TableInfo<CommonField<JDBCType>> info : resultInternals) {
         LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
       }
       return resultInternals;
@@ -263,7 +263,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
   }
 
-  private boolean isTableInRequestedSchema(TableInfo<CommonField<JDBCType>> tableInfo) {
+  private boolean isTableInRequestedSchema(final TableInfo<CommonField<JDBCType>> tableInfo) {
     return schemas
         .stream()
         .anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
