@@ -4,8 +4,8 @@
 
 package io.airbyte.container_orchestrator;
 
-import io.airbyte.workers.process.AsyncKubePodStatus;
-import io.airbyte.workers.process.KubePodInfo;
+import io.airbyte.commons.worker.process.AsyncKubePodStatus;
+import io.airbyte.commons.worker.process.KubePodInfo;
 
 /**
  * The state manager writes the "truth" for states of the async pod process. If the store isn't

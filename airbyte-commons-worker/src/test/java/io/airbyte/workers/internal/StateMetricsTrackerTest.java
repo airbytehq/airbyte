@@ -7,11 +7,12 @@ package io.airbyte.workers.internal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.airbyte.commons.worker.internal.StateMetricsTracker;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
-import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerOomException;
-import io.airbyte.workers.test_utils.AirbyteMessageUtils;
+import io.airbyte.commons.worker.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
+import io.airbyte.commons.worker.internal.StateMetricsTracker.StateMetricsTrackerOomException;
+import io.airbyte.commons.worker.test_utils.AirbyteMessageUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.BeforeEach;

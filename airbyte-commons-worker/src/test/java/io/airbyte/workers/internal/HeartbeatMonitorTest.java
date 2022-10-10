@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.commons.worker.internal.HeartbeatMonitor;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

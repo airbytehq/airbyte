@@ -4,22 +4,24 @@
 
 package io.airbyte.workers.process;
 
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.CHECK_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.DISCOVER_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.JOB_TYPE;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.READ_STEP;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SPEC_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SYNC_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SYNC_STEP;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.WRITE_STEP;
+import static io.airbyte.commons.worker.process.AirbyteIntegrationLauncher.CHECK_JOB;
+import static io.airbyte.commons.worker.process.AirbyteIntegrationLauncher.DISCOVER_JOB;
+import static io.airbyte.commons.worker.process.AirbyteIntegrationLauncher.JOB_TYPE;
+import static io.airbyte.commons.worker.process.AirbyteIntegrationLauncher.READ_STEP;
+import static io.airbyte.commons.worker.process.AirbyteIntegrationLauncher.SPEC_JOB;
+import static io.airbyte.commons.worker.process.AirbyteIntegrationLauncher.SYNC_JOB;
+import static io.airbyte.commons.worker.process.AirbyteIntegrationLauncher.SYNC_STEP;
+import static io.airbyte.commons.worker.process.AirbyteIntegrationLauncher.WRITE_STEP;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.worker.process.AirbyteIntegrationLauncher;
+import io.airbyte.commons.worker.process.ProcessFactory;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerEnvConstants;
-import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.commons.worker.WorkerConfigs;
+import io.airbyte.commons.worker.exception.WorkerException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;

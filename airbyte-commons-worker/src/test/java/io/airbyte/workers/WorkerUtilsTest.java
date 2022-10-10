@@ -12,12 +12,14 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.worker.WorkerConfigs;
+import io.airbyte.commons.worker.WorkerUtils;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.workers.internal.HeartbeatMonitor;
-import io.airbyte.workers.test_utils.TestConfigHelpers;
+import io.airbyte.commons.worker.internal.HeartbeatMonitor;
+import io.airbyte.commons.worker.test_utils.TestConfigHelpers;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;

@@ -6,6 +6,6 @@ package io.airbyte.workers.general;
 
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.workers.Worker;
+import io.airbyte.commons.worker.Worker;
 
 public interface DiscoverCatalogWorker extends Worker<StandardDiscoverCatalogInput, ConnectorJobOutput> {}

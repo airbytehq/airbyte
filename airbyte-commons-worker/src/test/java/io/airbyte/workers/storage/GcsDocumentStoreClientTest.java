@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import io.airbyte.commons.worker.storage.GcsDocumentStoreClient;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;

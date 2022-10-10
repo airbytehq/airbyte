@@ -12,13 +12,15 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.worker.process.DockerProcessFactory;
+import io.airbyte.commons.worker.process.ProcessFactory;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.commons.worker.WorkerConfigs;
+import io.airbyte.commons.worker.WorkerUtils;
+import io.airbyte.commons.worker.exception.WorkerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

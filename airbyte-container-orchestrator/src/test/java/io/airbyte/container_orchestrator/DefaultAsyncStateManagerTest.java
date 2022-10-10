@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.workers.process.AsyncKubePodStatus;
-import io.airbyte.workers.process.KubeContainerInfo;
-import io.airbyte.workers.process.KubePodInfo;
-import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.commons.worker.process.AsyncKubePodStatus;
+import io.airbyte.commons.worker.process.KubeContainerInfo;
+import io.airbyte.commons.worker.process.KubePodInfo;
+import io.airbyte.commons.worker.storage.DocumentStoreClient;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

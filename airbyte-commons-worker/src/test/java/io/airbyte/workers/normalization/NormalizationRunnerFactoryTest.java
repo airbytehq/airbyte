@@ -8,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
-import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.commons.worker.normalization.DefaultNormalizationRunner;
+import io.airbyte.commons.worker.normalization.DefaultNormalizationRunner.DestinationType;
+import io.airbyte.commons.worker.normalization.NormalizationRunnerFactory;
+import io.airbyte.commons.worker.process.ProcessFactory;
 import java.util.Map.Entry;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;

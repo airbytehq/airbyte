@@ -4,7 +4,7 @@
 
 package io.airbyte.container_orchestrator;
 
-import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
+import io.airbyte.commons.worker.process.AsyncOrchestratorPodProcess;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 

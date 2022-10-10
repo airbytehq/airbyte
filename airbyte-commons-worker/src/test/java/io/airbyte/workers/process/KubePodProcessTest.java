@@ -7,6 +7,7 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.airbyte.commons.worker.process.KubePodProcess;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.string.Strings;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;

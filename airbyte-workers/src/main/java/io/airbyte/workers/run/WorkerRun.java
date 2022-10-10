@@ -7,7 +7,7 @@ package io.airbyte.workers.run;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.JobOutput;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.commons.worker.WorkerUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;

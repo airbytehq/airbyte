@@ -6,6 +6,7 @@ package io.airbyte.workers.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.worker.internal.EmptyAirbyteSource;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.State;

@@ -6,6 +6,6 @@ package io.airbyte.workers.general;
 
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.workers.Worker;
+import io.airbyte.commons.worker.Worker;
 
 public interface CheckConnectionWorker extends Worker<StandardCheckConnectionInput, ConnectorJobOutput> {}

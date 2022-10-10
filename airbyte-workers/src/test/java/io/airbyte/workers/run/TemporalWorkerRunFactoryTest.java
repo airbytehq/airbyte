@@ -21,7 +21,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.workers.WorkerConstants;
+import io.airbyte.commons.worker.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;

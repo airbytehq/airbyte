@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.general;
 
-import io.airbyte.workers.Worker;
+import io.airbyte.commons.worker.Worker;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

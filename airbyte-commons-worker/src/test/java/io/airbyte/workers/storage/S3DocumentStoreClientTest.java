@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.commons.worker.storage.S3DocumentStoreClient;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;

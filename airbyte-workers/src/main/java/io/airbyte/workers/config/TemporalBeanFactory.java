@@ -7,6 +7,7 @@ package io.airbyte.workers.config;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.worker.config.WorkerMode;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.version.AirbyteVersion;

@@ -6,7 +6,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.config.WorkerMode;
+import io.airbyte.commons.worker.config.WorkerMode;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;

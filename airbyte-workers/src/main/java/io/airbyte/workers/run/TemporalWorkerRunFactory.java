@@ -17,7 +17,7 @@ import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.WorkerConstants;
+import io.airbyte.commons.worker.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.nio.file.Path;

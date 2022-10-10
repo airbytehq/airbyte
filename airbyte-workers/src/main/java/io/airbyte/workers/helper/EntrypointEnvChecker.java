@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.helper;
 
-import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.commons.worker.exception.WorkerException;
+import io.airbyte.commons.worker.process.ProcessFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

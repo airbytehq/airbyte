@@ -9,6 +9,8 @@ import static io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType.LE
 import static io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType.STREAM;
 
 import com.google.common.collect.Lists;
+import io.airbyte.commons.worker.internal.state_aggregator.DefaultStateAggregator;
+import io.airbyte.commons.worker.internal.state_aggregator.StateAggregator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteGlobalState;

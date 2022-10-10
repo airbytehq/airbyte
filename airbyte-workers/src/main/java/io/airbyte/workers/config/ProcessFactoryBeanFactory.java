@@ -4,10 +4,11 @@
 
 package io.airbyte.workers.config;
 
-import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.process.DockerProcessFactory;
-import io.airbyte.workers.process.KubeProcessFactory;
-import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.commons.worker.WorkerConfigs;
+import io.airbyte.commons.worker.config.WorkerMode;
+import io.airbyte.commons.worker.process.DockerProcessFactory;
+import io.airbyte.commons.worker.process.KubeProcessFactory;
+import io.airbyte.commons.worker.process.ProcessFactory;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.micronaut.context.annotation.Factory;

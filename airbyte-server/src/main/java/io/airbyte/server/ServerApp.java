@@ -55,7 +55,7 @@ import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.airbyte.commons.worker.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.temporal.ConnectionManagerUtils;
 import io.airbyte.workers.temporal.StreamResetRecordsHelper;
 import io.airbyte.workers.temporal.TemporalClient;

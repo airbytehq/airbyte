@@ -6,12 +6,14 @@ package io.airbyte.workers;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.airbyte.commons.worker.RecordSchemaValidator;
+import io.airbyte.commons.worker.WorkerUtils;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.exception.RecordSchemaValidationException;
-import io.airbyte.workers.test_utils.AirbyteMessageUtils;
-import io.airbyte.workers.test_utils.TestConfigHelpers;
+import io.airbyte.commons.worker.exception.RecordSchemaValidationException;
+import io.airbyte.commons.worker.test_utils.AirbyteMessageUtils;
+import io.airbyte.commons.worker.test_utils.TestConfigHelpers;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -4,6 +4,9 @@
 
 package io.airbyte.workers.process;
 
+import io.airbyte.commons.worker.process.AirbyteIntegrationLauncher;
+import io.airbyte.commons.worker.process.KubeProcessFactory;
+import io.airbyte.commons.worker.process.ProcessFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -4,8 +4,9 @@
 
 package io.airbyte.workers.config;
 
+import io.airbyte.commons.worker.config.WorkerMode;
 import io.airbyte.commons.temporal.TemporalUtils;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.commons.worker.exception.WorkerException;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;

@@ -4,9 +4,9 @@
 
 package io.airbyte.container_orchestrator;
 
-import io.airbyte.workers.process.AsyncKubePodStatus;
-import io.airbyte.workers.process.KubePodInfo;
-import io.airbyte.workers.storage.DocumentStoreClient;
+import io.airbyte.commons.worker.process.AsyncKubePodStatus;
+import io.airbyte.commons.worker.process.KubePodInfo;
+import io.airbyte.commons.worker.storage.DocumentStoreClient;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 

@@ -19,7 +19,7 @@ import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.persistence.job.models.JobWithStatusAndTimestamp;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.config.WorkerMode;
+import io.airbyte.commons.worker.config.WorkerMode;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;

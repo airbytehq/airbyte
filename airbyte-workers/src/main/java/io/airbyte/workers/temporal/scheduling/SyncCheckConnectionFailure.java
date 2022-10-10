@@ -12,7 +12,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.models.JobRunConfig;
-import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.commons.worker.helper.FailureHelper;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 

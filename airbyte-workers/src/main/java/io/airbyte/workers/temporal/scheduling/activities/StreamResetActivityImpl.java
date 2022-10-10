@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.workers.config.WorkerMode;
+import io.airbyte.commons.worker.config.WorkerMode;
 import io.airbyte.workers.temporal.StreamResetRecordsHelper;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;

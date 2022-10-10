@@ -7,14 +7,15 @@ package io.airbyte.workers.helper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import io.airbyte.commons.worker.helper.FailureHelper;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.Metadata;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
-import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
-import io.airbyte.workers.test_utils.AirbyteMessageUtils;
+import io.airbyte.commons.worker.helper.FailureHelper.ConnectorCommand;
+import io.airbyte.commons.worker.test_utils.AirbyteMessageUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

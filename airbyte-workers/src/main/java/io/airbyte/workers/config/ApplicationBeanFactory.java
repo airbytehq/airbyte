@@ -5,6 +5,7 @@
 package io.airbyte.workers.config;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.worker.config.WorkerMode;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -24,7 +25,7 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.persistence.job.tracker.JobTracker;
-import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.commons.worker.WorkerConfigs;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
