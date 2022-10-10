@@ -6,7 +6,7 @@ import { prettyDOM } from "@testing-library/react";
  */
 const traverseAndRedactClasses = (node) => {
   if (node.className && typeof node.className === "string") {
-    node.className = `<${node.className.split(" ").length} classnames>`;
+    node.className = `<removed-for-snapshot-test>`;
   }
   node.childNodes.forEach(traverseAndRedactClasses);
 };
