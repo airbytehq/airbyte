@@ -326,12 +326,10 @@ public class CatalogHelpers {
           final AirbyteStream streamOld = descriptorToStreamOld.get(descriptor);
           final AirbyteStream streamNew = descriptorToStreamNew.get(descriptor);
 
-          final List<ConfiguredAirbyteStream> streamList = configuredCatalog.getStreams().stream()
+          final ConfiguredAirbyteStream stream = configuredCatalog.getStreams().stream()
               .filter(s -> Objects.equals(s.getStream().getNamespace(), descriptor.getNamespace())
                   && s.getStream().getName().equals(descriptor.getName()))
-              .toList();
-
-          final ConfiguredAirbyteStream stream = streamList.get(0);
+              .findFirst().get();
 
           if (!streamOld.equals(streamNew)) {
             streamTransforms.add(StreamTransform.createUpdateStreamTransform(descriptor, getStreamDiff(streamOld, streamNew, stream)));
@@ -360,16 +358,10 @@ public class CatalogHelpers {
 
     Sets.difference(fieldNameToTypeOld.keySet(), fieldNameToTypeNew.keySet())
         .forEach(fieldName -> {
-          if (transformBreaksConnection(configuredStream, fieldName)) {
-            fieldTransforms.add(FieldTransform.createRemoveFieldTransform(fieldName, fieldNameToTypeOld.get(fieldName), true));
-          } else {
-            fieldTransforms.add(FieldTransform.createRemoveFieldTransform(fieldName, fieldNameToTypeOld.get(fieldName), false));
-          }
+          fieldTransforms.add(FieldTransform.createRemoveFieldTransform(fieldName, fieldNameToTypeOld.get(fieldName), transformBreaksConnection(configuredStream, fieldName)));
         });
     Sets.difference(fieldNameToTypeNew.keySet(), fieldNameToTypeOld.keySet())
-        .forEach(fieldName -> {
-          fieldTransforms.add(FieldTransform.createAddFieldTransform(fieldName, fieldNameToTypeNew.get(fieldName)));
-        });
+        .forEach(fieldName -> fieldTransforms.add(FieldTransform.createAddFieldTransform(fieldName, fieldNameToTypeNew.get(fieldName))));
     Sets.intersection(fieldNameToTypeOld.keySet(), fieldNameToTypeNew.keySet()).forEach(fieldName -> {
       final JsonNode oldType = fieldNameToTypeOld.get(fieldName);
       final JsonNode newType = fieldNameToTypeNew.get(fieldName);
@@ -405,7 +397,7 @@ public class CatalogHelpers {
     });
   }
 
-  static Boolean transformBreaksConnection(final ConfiguredAirbyteStream configuredStream, final List<String> fieldName) {
+  static boolean transformBreaksConnection(final ConfiguredAirbyteStream configuredStream, final List<String> fieldName) {
     final SyncMode syncMode = configuredStream.getSyncMode();
     if (SyncMode.INCREMENTAL == syncMode && configuredStream.getCursorField().equals(fieldName)) {
       return true;

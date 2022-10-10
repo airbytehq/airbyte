@@ -23,7 +23,7 @@ public final class FieldTransform {
   private final AddFieldTransform addFieldTransform;
   private final RemoveFieldTransform removeFieldTransform;
   private final UpdateFieldSchemaTransform updateFieldTransform;
-  private final Boolean isBreaking;
+  private final boolean breaking;
 
   public static FieldTransform createAddFieldTransform(final List<String> fieldName, final JsonNode schema) {
     return createAddFieldTransform(fieldName, new AddFieldTransform(schema));
@@ -33,14 +33,14 @@ public final class FieldTransform {
     return new FieldTransform(FieldTransformType.ADD_FIELD, fieldName, addFieldTransform, null, null, false);
   }
 
-  public static FieldTransform createRemoveFieldTransform(final List<String> fieldName, final JsonNode schema, final Boolean isBreaking) {
-    return createRemoveFieldTransform(fieldName, new RemoveFieldTransform(fieldName, schema), isBreaking);
+  public static FieldTransform createRemoveFieldTransform(final List<String> fieldName, final JsonNode schema, final Boolean breaking) {
+    return createRemoveFieldTransform(fieldName, new RemoveFieldTransform(fieldName, schema), breaking);
   }
 
   public static FieldTransform createRemoveFieldTransform(final List<String> fieldName,
                                                           final RemoveFieldTransform removeFieldTransform,
-                                                          final Boolean isBreaking) {
-    return new FieldTransform(FieldTransformType.REMOVE_FIELD, fieldName, null, removeFieldTransform, null, isBreaking);
+                                                          final Boolean breaking) {
+    return new FieldTransform(FieldTransformType.REMOVE_FIELD, fieldName, null, removeFieldTransform, null, breaking);
   }
 
   public static FieldTransform createUpdateFieldTransform(final List<String> fieldName, final UpdateFieldSchemaTransform updateFieldTransform) {
@@ -67,8 +67,8 @@ public final class FieldTransform {
     return updateFieldTransform;
   }
 
-  public Boolean getIsBreaking() {
-    return isBreaking;
+  public boolean breaking() {
+    return breaking;
   }
 
 }
