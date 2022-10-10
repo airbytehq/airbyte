@@ -19,7 +19,7 @@ def _default_file_path() -> str:
     # the connector's module name can be inferred by looking at the modules loaded and look for the one starting with source_
     source_modules = [
         k for k, v in sys.modules.items() if "source_" in k
-    ]  # example: ['source_exchange_rates', 'source_exchange_rates_tutorial.source']
+    ]  # example: ['source_exchange_rates', 'source_exchange_rates.source']
     module = source_modules[0].split(".")[0]
     return f"./{module}/schemas/{{{{options['name']}}}}.json"
 
