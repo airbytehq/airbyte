@@ -1,4 +1,8 @@
-package io.airbyte.db.instance.configs.migrations;
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.db.instance.jobs.migrations;
 
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
@@ -9,10 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO: update migration description in the class name
-public class V0_40_11_002__AddProcessingTaskQueueToAttempts extends BaseJavaMigration {
+public class V0_40_14_001__AddProcessingTaskQueueInAttempts extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(
-      V0_40_11_002__AddProcessingTaskQueueToAttempts.class);
+      V0_40_14_001__AddProcessingTaskQueueInAttempts.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
