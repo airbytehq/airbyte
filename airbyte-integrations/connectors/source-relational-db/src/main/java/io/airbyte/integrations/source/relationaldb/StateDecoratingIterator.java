@@ -202,7 +202,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     if (isFinalState) {
       hasEmittedFinalState = true;
       if (stateManager.getCursor(pair).isEmpty()) {
-        LOGGER.warn("Cursor was for stream {} was null. This stream will replicate all records on the next run", pair);
+        LOGGER.warn("Cursor for stream {} was null. This stream will replicate all records on the next run", pair);
       }
     }
 
