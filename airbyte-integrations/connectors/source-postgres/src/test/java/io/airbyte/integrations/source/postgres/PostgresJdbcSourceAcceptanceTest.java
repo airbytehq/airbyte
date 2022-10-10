@@ -416,11 +416,6 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             getTestMessages().get(2)));
   }
 
-//  @Override
-//  protected JdbcSourceOperations getSourceOperations() {
-//    return new PostgresSourceOperations();
-//  }
-
   @Override
   protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
