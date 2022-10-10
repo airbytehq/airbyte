@@ -314,7 +314,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
 
       final AutoCloseableIterator<AirbyteMessage> airbyteMessageIterator;
-      if (cursorInfo.isPresent()) {
+      if (cursorInfo.map(CursorInfo::getCursor).isPresent()) {
         airbyteMessageIterator = getIncrementalStream(
             database,
             airbyteStream,
