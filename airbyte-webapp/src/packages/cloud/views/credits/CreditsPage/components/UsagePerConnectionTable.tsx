@@ -1,11 +1,10 @@
 import queryString from "query-string";
 import React, { useCallback } from "react";
-import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
-import SortIcon from "components/EntityTable/components/SortIcon";
+import { ColumnSortButton } from "components/ColumnSortButton";
 import { SortOrderEnum } from "components/EntityTable/types";
 import { Table } from "components/ui/Table";
 
@@ -16,7 +15,6 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 
 import ConnectionCell from "./ConnectionCell";
 import UsageCell from "./UsageCell";
-import styles from "./UsagePerConnectionTable.module.scss";
 
 const Content = styled.div`
   padding: 0 60px 0 15px;
@@ -112,10 +110,12 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     () => [
       {
         Header: (
-          <button className={styles.tableHeaderButton} onClick={() => onSortClick("connection")}>
-            <FormattedMessage id="credits.connection" />
-            <SortIcon wasActive={sortBy === "connection"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
-          </button>
+          <ColumnSortButton
+            onClick={() => onSortClick("connection")}
+            formattedMessageId="credits.connection"
+            wasActive={sortBy === "connection"}
+            lowToLarge={sortOrder === SortOrderEnum.ASC}
+          />
         ),
         customWidth: 30,
         accessor: "sourceDefinitionName",
@@ -130,10 +130,12 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
       },
       {
         Header: (
-          <button className={styles.tableHeaderButton} onClick={() => onSortClick("usage")}>
-            <FormattedMessage id="credits.usage" />
-            <SortIcon wasActive={sortBy === "usage"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
-          </button>
+          <ColumnSortButton
+            onClick={() => onSortClick("usage")}
+            formattedMessageId="credits.usage"
+            wasActive={sortBy === "usage"}
+            lowToLarge={sortOrder === SortOrderEnum.ASC}
+          />
         ),
         accessor: "creditsConsumed",
         collapse: true,
