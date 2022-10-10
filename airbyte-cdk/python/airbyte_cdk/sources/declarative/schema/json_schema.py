@@ -17,12 +17,9 @@ from dataclasses_jsonschema import JsonSchemaMixin
 def _default_file_path() -> str:
     # schema files are always in "source_<connector_name>/schemas/<stream_name>.json
     # the connector's module name can be inferred by looking at the modules loaded and look for the one starting with source_
-    all_modules = sys.modules.keys()
-    print(f"all_modules: {all_modules}")
     source_modules = [
         k for k, v in sys.modules.items() if "source_" in k  # example: ['source_exchange_rates', 'source_exchange_rates.source']
     ]
-    print(f"source_modules: {source_modules}")
     if not source_modules:
         raise RuntimeError("Expected at least one module starting with 'source_'")
     module = source_modules[0].split(".")[0]
