@@ -342,7 +342,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
               final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorInfo.getCursorField());
 
               final String operator;
-              if (cursorInfo.getCursorRecordCount() == 0) {
+              if (cursorInfo.getCursorRecordCount() <= 0) {
                 operator = ">";
               } else {
                 final int actualRecordCount = getActualCursorRecordCount(
@@ -401,7 +401,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
       sourceOperations.setStatementField(cursorRecordStatement, 1, cursorFieldType, cursor);
     }
     final ResultSet resultSet = cursorRecordStatement.executeQuery();
-    return resultSet.getInt(columnName);
+    if (resultSet.next()) {
+      return resultSet.getInt(columnName);
+    } else {
+      return 0;
+    }
   }
 
   protected DataSource createDataSource(final JsonNode config) {
