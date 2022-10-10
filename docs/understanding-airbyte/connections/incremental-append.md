@@ -128,6 +128,7 @@ The current behavior of **Incremental** is not able to handle source schema chan
 
 If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](incremental-append.md)
 
-## Related tutorial
+## Related information
 
-For an in-depth hands-on deep-dive into incremental sync, see: [Explore Airbyte’s incremental data synchronization](https://airbyte.com/tutorials/incremental-data-synchronization).
+- [Explore Airbyte’s incremental data synchronization](https://airbyte.com/tutorials/incremental-data-synchronization).
+- [An overview of Airbyte’s replication modes](https://airbyte.com/blog/understanding-data-replication-modes).
