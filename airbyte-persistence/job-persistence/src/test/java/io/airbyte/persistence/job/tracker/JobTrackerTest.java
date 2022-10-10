@@ -124,6 +124,14 @@ class JobTrackerTest {
       .put("mean_seconds_before_source_state_message_emitted", 4L)
       .put("max_seconds_between_state_message_emit_and_commit", 7L)
       .put("mean_seconds_between_state_message_emit_and_commit", 6L)
+      .put("replication_start_time", 7L)
+      .put("replication_end_time", 8L)
+      .put("source_read_start_time", 9L)
+      .put("source_read_end_time", 10L)
+      .put("destination_write_start_time", 11L)
+      .put("destination_write_end_time", 12L)
+      .put("normalization_start_time", 13L)
+      .put("normalization_end_time", 14L)
       .build();
   private static final ImmutableMap<String, Object> SYNC_CONFIG_METADATA = ImmutableMap.<String, Object>builder()
       .put(JobTracker.CONFIG + ".source.key", JobTracker.SET)
@@ -582,6 +590,15 @@ class JobTrackerTest {
     when(syncStats.getMeanSecondsBeforeSourceStateMessageEmitted()).thenReturn(4L);
     when(syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(7L);
     when(syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(6L);
+    when(syncSummary.getReplicationStartTime()).thenReturn(7L);
+    when(syncSummary.getReplicationEndTime()).thenReturn(8L);
+    when(syncSummary.getSourceReadStartTime()).thenReturn(9L);
+    when(syncSummary.getSourceReadEndTime()).thenReturn(10L);
+    when(syncSummary.getDestinationWriteStartTime()).thenReturn(11L);
+    when(syncSummary.getDestinationWriteEndTime()).thenReturn(12L);
+    when(syncSummary.getNormalizationStartTime()).thenReturn(13L);
+    when(syncSummary.getNormalizationEndTime()).thenReturn(14L);
+
     return attempt;
   }
 
