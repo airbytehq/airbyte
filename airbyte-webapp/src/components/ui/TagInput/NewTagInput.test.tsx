@@ -52,16 +52,3 @@ it("correctly removes a tag when user clicks its Remove button", () => {
   const tag3again = screen.getByText("tag3");
   expect(tag3again).toBeInTheDocument();
 });
-
-it.skip("correctly clears when a user clicks the clear button", () => {
-  // this part isn't accessible... it's aria-ignored and not focusable
-  render(<TagInputWithWrapper />);
-  const tag1 = screen.getByText("tag1");
-  expect(tag1).toBeInTheDocument();
-
-  const tag2 = screen.getByText("tag2");
-  expect(tag2).toBeInTheDocument();
-
-  // const dclearButton = screen.getByRole("banana");
-  const clearButton = screen.getByRole("img");
-});
