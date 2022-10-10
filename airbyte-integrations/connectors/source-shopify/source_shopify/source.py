@@ -138,7 +138,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         if stream_state:
             for record in records_slice:
                 if self.cursor_field in record:
-                    if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field):
+                    if record.get(self.cursor_field, self.default_state_comparison_value) >= stream_state.get(self.cursor_field):
                         yield record
                 else:
                     # old entities could miss the cursor field
@@ -219,9 +219,11 @@ class ShopifySubstream(IncrementalShopifyStream):
                 {slice_key: 999
             ]
         """
+        sorted_substream_slices = []
 
         # reading parent nested stream_state from child stream state
         parent_stream_state = stream_state.get(self.parent_stream.name) if stream_state else {}
+        
         # reading the parent stream
         for record in self.parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
             # updating the `stream_state` with the state of it's parent stream
@@ -232,9 +234,24 @@ class ShopifySubstream(IncrementalShopifyStream):
             # and corresponds to the data of child_substream we need.
             if self.nested_substream:
                 if record.get(self.nested_substream):
-                    yield {self.slice_key: record[self.nested_record]}
+                    sorted_substream_slices.append(
+                        {
+                            self.slice_key: record[self.nested_record], 
+                            self.cursor_field: record[self.nested_substream][0].get(
+                                self.cursor_field, self.default_state_comparison_value
+                            ),
+                        }
+                    )
             else:
                 yield {self.slice_key: record[self.nested_record]}
+        
+        # output slice from sorted list to avoid filtering older records
+        if self.nested_substream:
+            if len(sorted_substream_slices) > 0:
+                # sort by cursor_field
+                sorted_substream_slices.sort(key=lambda x: x.get(self.cursor_field))
+                for sorted_slice in sorted_substream_slices:
+                    yield {self.slice_key: sorted_slice[self.slice_key]}
 
     def read_records(
         self,
@@ -253,6 +270,7 @@ class ShopifySubstream(IncrementalShopifyStream):
         self.logger.info(f"Reading {self.name} for {self.slice_key}: {slice_data}")
         records = super().read_records(stream_slice=stream_slice, **kwargs)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=records)
+
 
 
 class Customers(IncrementalShopifyStream):
