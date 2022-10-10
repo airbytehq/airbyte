@@ -481,7 +481,7 @@ public class MockData {
         .withSchedule(schedule);
 
     final StandardSync standardSync4 = new StandardSync()
-        .withOperationIds(Arrays.asList(OPERATION_ID_1, OPERATION_ID_2))
+        .withOperationIds(Collections.emptyList())
         .withConnectionId(CONNECTION_ID_4)
         .withSourceId(SOURCE_ID_2)
         .withDestinationId(DESTINATION_ID_2)
