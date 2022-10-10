@@ -18,6 +18,7 @@ import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.ResourceRequirements;
@@ -60,16 +61,20 @@ public class DbConverter {
         .withCatalog(
             Jsons.deserialize(record.get(CONNECTION.CATALOG).data(), ConfiguredAirbyteCatalog.class))
         .withStatus(
-            record.get(CONNECTION.STATUS) == null ? null : Enums.toEnum(record.get(CONNECTION.STATUS, String.class), Status.class).orElseThrow())
+            record.get(CONNECTION.STATUS) == null ? null
+                : Enums.toEnum(record.get(CONNECTION.STATUS, String.class), Status.class).orElseThrow())
         .withSchedule(Jsons.deserialize(record.get(CONNECTION.SCHEDULE).data(), Schedule.class))
         .withManual(record.get(CONNECTION.MANUAL))
         .withScheduleType(record.get(CONNECTION.SCHEDULE_TYPE) == null ? null
             : Enums.toEnum(record.get(CONNECTION.SCHEDULE_TYPE, String.class), ScheduleType.class).orElseThrow())
         .withScheduleData(
-            record.get(CONNECTION.SCHEDULE_DATA) == null ? null : Jsons.deserialize(record.get(CONNECTION.SCHEDULE_DATA).data(), ScheduleData.class))
+            record.get(CONNECTION.SCHEDULE_DATA) == null ? null
+                : Jsons.deserialize(record.get(CONNECTION.SCHEDULE_DATA).data(), ScheduleData.class))
         .withOperationIds(connectionOperationId)
-        .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
-        .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID));
+        .withResourceRequirements(
+            Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
+        .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID))
+        .withGeography(Enums.toEnum(record.get(CONNECTION.GEOGRAPHY, String.class), Geography.class).orElseThrow());
   }
 
   public static StandardWorkspace buildStandardWorkspace(final Record record) {
@@ -92,7 +97,9 @@ public class DbConverter {
         .withTombstone(record.get(WORKSPACE.TOMBSTONE))
         .withNotifications(notificationList)
         .withFirstCompletedSync(record.get(WORKSPACE.FIRST_SYNC_COMPLETE))
-        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE));
+        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE))
+        .withDefaultGeography(
+            Enums.toEnum(record.get(WORKSPACE.GEOGRAPHY, String.class), Geography.class).orElseThrow());
   }
 
   public static SourceConnection buildSourceConnection(final Record record) {

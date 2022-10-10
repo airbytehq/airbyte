@@ -36,6 +36,7 @@ import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationSyncMode;
+import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobRead;
@@ -403,7 +404,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .syncCatalog(catalog)
-        .sourceCatalogId(sourceCatalogId);
+        .sourceCatalogId(sourceCatalogId)
+        .geography(Geography.US);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -418,7 +420,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .syncCatalog(catalog)
-        .sourceCatalogId(sourceCatalogId);
+        .sourceCatalogId(sourceCatalogId)
+        .geography(Geography.US);
 
     final ConnectionCreate actual = WebBackendConnectionsHandler.toConnectionCreate(input, operationIds);
 
@@ -426,7 +429,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testToConnectionUpdate() throws IOException {
+  void testToConnectionPatch() throws IOException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
 
@@ -445,7 +448,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .name(standardSync.getName())
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .geography(Geography.US);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -458,7 +462,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .name(standardSync.getName())
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .geography(Geography.US);
 
     final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionPatch(input, operationIds);
 
@@ -468,8 +473,9 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testForConnectionCreateCompleteness() {
     final Set<String> handledMethods =
-        Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds", "addOperationIdsItem",
-            "removeOperationIdsItem", "syncCatalog", "schedule", "scheduleType", "scheduleData", "status", "resourceRequirements", "sourceCatalogId");
+        Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds",
+            "addOperationIdsItem", "removeOperationIdsItem", "syncCatalog", "schedule", "scheduleType", "scheduleData",
+            "status", "resourceRequirements", "sourceCatalogId", "geography");
 
     final Set<String> methods = Arrays.stream(ConnectionCreate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionCreate.class)
@@ -487,10 +493,11 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testForConnectionUpdateCompleteness() {
+  void testForConnectionPatchCompleteness() {
     final Set<String> handledMethods =
-        Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds",
-            "addOperationIdsItem", "removeOperationIdsItem", "resourceRequirements", "name", "sourceCatalogId", "scheduleType", "scheduleData");
+        Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status",
+            "operationIds", "addOperationIdsItem", "removeOperationIdsItem", "resourceRequirements", "name",
+            "sourceCatalogId", "scheduleType", "scheduleData", "geography");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
@@ -501,8 +508,8 @@ class WebBackendConnectionsHandlerTest {
         """
         If this test is failing, it means you added a field to ConnectionUpdate!
         Congratulations, but you're not done yet..
-        \tYou should update WebBackendConnectionsHandler::toConnectionUpdate
-        \tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionUpdate
+        \tYou should update WebBackendConnectionsHandler::toConnectionPatch
+        \tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionPatch
         Then you can add the field name here to make this test pass. Cheers!""";
     assertEquals(handledMethods, methods, message);
   }
