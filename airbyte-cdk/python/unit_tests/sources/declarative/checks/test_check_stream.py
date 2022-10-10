@@ -27,7 +27,7 @@ def test_check_stream(test_name, record, streams_to_check, stream_slice, expecta
     stream = MagicMock()
     stream.name = "s1"
     stream.stream_slices.return_value = iter([stream_slice])
-    stream.read_records.side_effect = mock_responses({frozenset(stream_slice): iter([record])})
+    stream.read_records.side_effect = mock_read_records({frozenset(stream_slice): iter([record])})
 
     source = MagicMock()
     source.streams.return_value = [stream]
@@ -42,5 +42,5 @@ def test_check_stream(test_name, record, streams_to_check, stream_slice, expecta
             check_stream.check_connection(source, logger, config)
 
 
-def mock_responses(responses, default_response=None, **kwargs):
+def mock_read_records(responses, default_response=None, **kwargs):
     return lambda stream_slice, sync_mode: responses[frozenset(stream_slice)] if frozenset(stream_slice) in responses else default_response
