@@ -358,7 +358,8 @@ public class CatalogHelpers {
 
     Sets.difference(fieldNameToTypeOld.keySet(), fieldNameToTypeNew.keySet())
         .forEach(fieldName -> {
-          fieldTransforms.add(FieldTransform.createRemoveFieldTransform(fieldName, fieldNameToTypeOld.get(fieldName), transformBreaksConnection(configuredStream, fieldName)));
+          fieldTransforms.add(FieldTransform.createRemoveFieldTransform(fieldName, fieldNameToTypeOld.get(fieldName),
+              transformBreaksConnection(configuredStream, fieldName)));
         });
     Sets.difference(fieldNameToTypeNew.keySet(), fieldNameToTypeOld.keySet())
         .forEach(fieldName -> fieldTransforms.add(FieldTransform.createAddFieldTransform(fieldName, fieldNameToTypeNew.get(fieldName))));
