@@ -57,26 +57,6 @@ public class JsonSchemaType {
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
           .withAirbyteType("big_integer")
           .build();
-  public static final JsonSchemaType VARCHAR_ARRAY =
-      JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
-          .withAirbyteType("varchar_array")
-          .build();
-  public static final JsonSchemaType INTEGER_ARRAY =
-      JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
-          .withAirbyteType("integer_array")
-          .build();
-  public static final JsonSchemaType TEXT_ARRAY =
-      JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
-          .withAirbyteType("text_array")
-          .build();;
-  public static final JsonSchemaType NUMERIC_ARRAY =
-      JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
-          .withAirbyteType("number_array")
-          .build();;
 
   private final Map<String, Object> jsonSchemaTypeMap;
 
@@ -113,14 +93,6 @@ public class JsonSchemaType {
 
     public Builder withAirbyteType(final String value) {
       typeMapBuilder.put(AIRBYTE_TYPE, value);
-      return this;
-    }
-
-    public Builder withItems(final String value) {
-      ImmutableMap.Builder<String, Object> itemsMapBuilder = new ImmutableMap.Builder<>();
-      itemsMapBuilder.put(TYPE, value);
-      ImmutableMap<String, Object> nestedType = itemsMapBuilder.build();
-      typeMapBuilder.put(ITEMS, nestedType);
       return this;
     }
 
