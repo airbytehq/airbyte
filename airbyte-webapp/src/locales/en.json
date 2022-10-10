@@ -356,9 +356,9 @@
   "connection.updateSchema.namespace": "Namespace",
   "connection.updateSchema.dataType": "Data type",
 
-  "connection.catalogTree.sourceDefined": "<source defined>",
-  "connection.catalogTree.sourceSchema": "<source schema>",
-  "connection.catalogTree.destinationSchema": "<destination schema>",
+  "connection.catalogTree.sourceDefined": "'<source defined>",
+  "connection.catalogTree.sourceSchema": "'<source schema>",
+  "connection.catalogTree.destinationSchema": "'<destination schema>",
 
   "connection.newConnection": "New connection",
   "connection.newConnectionTitle": "New connection",
