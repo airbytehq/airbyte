@@ -25,9 +25,6 @@ dependencies {
     testAnnotationProcessor platform(libs.micronaut.bom)
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
 
-//    integrationTestJavaAnnotationProcessor platform(libs.micronaut.bom)
-//    integrationTestJavaAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
-
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.bundles.micronaut.test
     testImplementation libs.postgresql
