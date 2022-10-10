@@ -9,24 +9,36 @@
           "type": "object",
           "properties": {
             "CompletionDate": {
-              "type": ["null", "string"],
+              "type": [
+                "null",
+                "string"
+              ],
               "format": "date-time"
             },
             "name": {
-              "type": ["null", "string"]
+              "type": [
+                "null",
+                "string"
+              ]
             },
             "age": {
-              "type": ["null", "string"]
+              "type": [
+                "null",
+                "string"
+              ]
             },
             "KEY": {
-              "type": ["null", "string"]
+              "type": [
+                "null",
+                "string"
+              ]
             }
           },
           "required": [
             "KEY"
           ]
         }
-      ]              
+      ]
     }
-  }  
+  }
 }
