@@ -20,7 +20,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   middleTitleBlock,
   endComponent,
 }) => (
-  <div className={classNames(styles.container)} data-withLine={withLine}>
+  <div className={classNames(styles.container)} data-withline={withLine}>
     <Text
       as="h1"
       size="md"

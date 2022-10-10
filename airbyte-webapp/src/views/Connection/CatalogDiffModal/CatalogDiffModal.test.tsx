@@ -9,6 +9,7 @@ import {
   StreamTransform,
   SyncMode,
 } from "core/request/AirbyteClient";
+import { ModalServiceProvider } from "hooks/services/Modal";
 
 import messages from "../../../locales/en.json";
 import { CatalogDiffModal } from "./CatalogDiffModal";
@@ -151,13 +152,15 @@ describe("catalog diff modal", () => {
 
     render(
       <IntlProvider messages={messages} locale="en">
-        <CatalogDiffModal
-          catalogDiff={mockCatalogDiff}
-          catalog={mockCatalog}
-          onClose={() => {
-            return null;
-          }}
-        />
+        <ModalServiceProvider>
+          <CatalogDiffModal
+            catalogDiff={mockCatalogDiff}
+            catalog={mockCatalog}
+            onClose={() => {
+              return null;
+            }}
+          />
+        </ModalServiceProvider>
       </IntlProvider>
     );
 
@@ -198,13 +201,15 @@ describe("catalog diff modal", () => {
 
     render(
       <IntlProvider messages={messages} locale="en">
-        <CatalogDiffModal
-          catalogDiff={mockCatalogDiff}
-          catalog={mockCatalog}
-          onClose={() => {
-            return null;
-          }}
-        />
+        <ModalServiceProvider>
+          <CatalogDiffModal
+            catalogDiff={mockCatalogDiff}
+            catalog={mockCatalog}
+            onClose={() => {
+              return null;
+            }}
+          />
+        </ModalServiceProvider>
       </IntlProvider>
     );
 
@@ -217,13 +222,15 @@ describe("catalog diff modal", () => {
 
     render(
       <IntlProvider messages={messages} locale="en">
-        <CatalogDiffModal
-          catalogDiff={mockCatalogDiff}
-          catalog={mockCatalog}
-          onClose={() => {
-            return null;
-          }}
-        />
+        <ModalServiceProvider>
+          <CatalogDiffModal
+            catalogDiff={mockCatalogDiff}
+            catalog={mockCatalog}
+            onClose={() => {
+              return null;
+            }}
+          />
+        </ModalServiceProvider>
       </IntlProvider>
     );
 
@@ -236,13 +243,15 @@ describe("catalog diff modal", () => {
 
     render(
       <IntlProvider messages={messages} locale="en">
-        <CatalogDiffModal
-          catalogDiff={mockCatalogDiff}
-          catalog={mockCatalog}
-          onClose={() => {
-            return null;
-          }}
-        />
+        <ModalServiceProvider>
+          <CatalogDiffModal
+            catalogDiff={mockCatalogDiff}
+            catalog={mockCatalog}
+            onClose={() => {
+              return null;
+            }}
+          />
+        </ModalServiceProvider>
       </IntlProvider>
     );
 
