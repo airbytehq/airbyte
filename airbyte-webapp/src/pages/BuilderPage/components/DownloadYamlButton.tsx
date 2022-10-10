@@ -14,6 +14,7 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ yaml, cl
 
   const downloadYaml = () => {
     const file = new Blob([yaml], { type: "text/plain;charset=utf-8" });
+    // TODO: pull name from connector name input or generate from yaml contents
     downloadFile(file, "connector_builder.yaml");
   };
 
