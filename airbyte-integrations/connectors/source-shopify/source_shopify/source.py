@@ -29,7 +29,7 @@ class ShopifyStream(HttpStream, ABC):
     primary_key = "id"
     order_field = "updated_at"
     filter_field = "updated_at_min"
-    
+
     raise_on_http_errors = True
 
     def __init__(self, config: Dict):
@@ -83,7 +83,7 @@ class ShopifyStream(HttpStream, ABC):
                 # add shop_url to the record to make querying easy
                 record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
-                
+
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 404:
             self.logger.warn(f"Stream `{self.name}` is not available, skipping.")
@@ -142,7 +142,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                         yield record
                 else:
                     # old entities could miss the cursor field
-                    self.logger.warn(f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor: {self.cursor_field}")
+                    self.logger.warn(
+                        f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor: {self.cursor_field}"
+                    )
                     yield record
         else:
             yield from records_slice
