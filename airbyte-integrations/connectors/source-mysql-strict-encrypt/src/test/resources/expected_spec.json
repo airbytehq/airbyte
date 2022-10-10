@@ -119,7 +119,7 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
+                "title": "Client key password",
                 "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
@@ -164,7 +164,7 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
+                "title": "Client key password",
                 "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
