@@ -38,7 +38,7 @@ You can secure access to Airbyte using the following methods:
 
 - Deploy Airbyte in a private network or use a firewall to filter which IP is allowed to access your host.
 - Deploy Airbyte behind a reverse proxy and handle the access control on the reverse proxy side.
-- Update the default username and password.
+- Update the default username and password in your environment's `.env` file.
 - If you deployed Airbyte on a cloud provider:
   - GCP: use the [Identity-Aware proxy](https://cloud.google.com/iap) service
   - AWS: use the [AWS Systems Manager Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html) service

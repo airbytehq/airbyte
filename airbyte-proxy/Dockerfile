@@ -9,14 +9,15 @@ ENV VERSION ${VERSION}
 
 RUN apt-get update -y && apt-get install -y apache2-utils && rm -rf /var/lib/apt/lists/*
 
-# Basic auth credentials
-ENV BASIC_AUTH_USERNAME ""
-ENV BASIC_AUTH_PASSWORD ""
+# This variable can be used to update the destintion containers that Nginx proxies to.
+ENV PROXY_PASS_WEB "http://airbyte-webapp:80"
+ENV PROXY_PASS_API "http://airbyte-server:8001"
 
 # Nginx config file
 WORKDIR /
-COPY nginx-auth.conf /etc/nginx/nginx-auth.conf
-COPY nginx-no-auth.conf /etc/nginx/nginx-no-auth.conf
+RUN mkdir -p /etc/nginx/templates
+COPY nginx-auth.conf.template /etc/nginx/templates/nginx-auth.conf.template
+COPY nginx-no-auth.conf.template /etc/nginx/templates/nginx-no-auth.conf.template
 COPY 401.html /etc/nginx/401.html
 
 # Startup script

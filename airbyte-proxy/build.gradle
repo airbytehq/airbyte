@@ -1,9 +1,9 @@
-plugins {
-    id 'application'
-}
-
 task prepareBuild(type: Copy) {
-    from layout.projectDirectory.file("nginx-auth.conf"), layout.projectDirectory.file("nginx-no-auth.conf"), layout.projectDirectory.file("run.sh"), layout.projectDirectory.file("401.html")
+    from layout.projectDirectory.file("nginx-auth.conf.template")
+    from layout.projectDirectory.file("nginx-no-auth.conf.template")
+    from layout.projectDirectory.file("run.sh")
+    from layout.projectDirectory.file("401.html")
+
     into layout.buildDirectory.dir("docker")
 }
 

@@ -12,7 +12,7 @@ http {
       auth_basic "Welcome to Airbyte";
       auth_basic_user_file /etc/nginx/.htpasswd;
 
-      proxy_pass http://airbyte-webapp:80;
+      proxy_pass ${PROXY_PASS_WEB};
 
       error_page 401 /etc/nginx/401.html;
       location ~ (401.html)$ {
@@ -33,7 +33,7 @@ http {
       auth_basic "Welcome to Airbyte";
       auth_basic_user_file /etc/nginx/.htpasswd;
 
-      proxy_pass http://airbyte-server:8001;
+      proxy_pass ${PROXY_PASS_API};
 
       error_page 401 /etc/nginx/401.html;
       location ~ (401.html)$ {

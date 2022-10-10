@@ -9,11 +9,11 @@ BASIC_AUTH_UPDATED_PASSWORD=pa55w0rd
 function start_container () {
   docker run -d -p $PORT:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --name $NAME airbyte/proxy:dev
   docker run --rm jwilder/dockerize -wait tcp://host.docker.internal:$PORT -timeout 30s
-  sleep 2
-  # while ! `nc -z -v -w30 localhost $PORT`; do
-  #   echo -n "."
-  #   sleep 1;
-  # done
+}
+
+function start_container_with_proxy () {
+  docker run -d -p $PORT:8000 --env PROXY_PASS_WEB=$3 --name $NAME airbyte/proxy:dev
+  docker run --rm jwilder/dockerize -wait tcp://host.docker.internal:$PORT -timeout 30s
 }
 
 function stop_container () {
@@ -22,10 +22,9 @@ function stop_container () {
   docker rm $NAME
 }
 
-# a local version of airbyte/proxy:dev should already have been
 echo "Testing airbyte proxy..."
 
-stop_container;
+stop_container; # just in case there was a failure of a previous test run
 
 echo "Starting $NAME"
 start_container $BASIC_AUTH_USERNAME $BASIC_AUTH_PASSWORD
@@ -36,6 +35,7 @@ if [[ $RESPONSE == *"401 Unauthorized"* ]]; then
   echo "✔️  access without auth blocked"
 else
   echo "Auth not working"
+  echo $RESPONSE
   exit 1
 fi
 
@@ -45,6 +45,7 @@ if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access with auth worked"
 else
   echo "Auth not working"
+  echo $RESPONSE
   exit 1
 fi
 
@@ -59,6 +60,7 @@ if [[ $RESPONSE == *"401 Unauthorized"* ]]; then
   echo "✔️  access with original auth blocked"
 else
   echo "Auth not working"
+  echo $RESPONSE
   exit 1
 fi
 
@@ -68,6 +70,7 @@ if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access with updated auth worked"
 else
   echo "Auth not working"
+  echo $RESPONSE
   exit 1
 fi
 
@@ -77,11 +80,26 @@ echo "Starting $NAME with no password"
 start_container "" ""
 
 echo "Testing access without auth"
-RESPONSE=`curl "http://localhost:$PORT" -i`
+RESPONSE=`curl "http://localhost:$PORT" -i --silent`
 if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access without auth allowed when configured"
 else
   echo "Auth not working"
+  echo $RESPONSE
+  exit 1
+fi
+
+stop_container;
+
+echo "Testing that PROXY_PASS can be used to change the backend"
+start_container_with_proxy $BASIC_AUTH_USERNAME $BASIC_AUTH_UPDATED_PASSWORD "https://www.google.com"
+
+RESPONSE=`curl "http://localhost:$PORT" -i --silent`
+if [[ $RESPONSE == *"google.com"* ]]; then
+  echo "✔️  access without auth allowed when configured"
+else
+  echo "Proxy update not working"
+  echo $RESPONSE
   exit 1
 fi
 
