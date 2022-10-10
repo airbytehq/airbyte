@@ -16,17 +16,17 @@ fi
 
 function start_container () {
   docker run -d -p $PORT:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --name $NAME airbyte/proxy:dev
-  docker run --rm jwilder/dockerize -wait tcp://$SAMPLE_HOST:$PORT -timeout 30s
+  docker run --rm jwilder/dockerize -wait tcp://$SAMPLE_HOST:$PORT -timeout 15s
 }
 
 function start_container_with_proxy () {
-  docker run -d -p $PORT:8000 --env PROXY_PASS_WEB=$3 --name $NAME airbyte/proxy:dev
-  docker run --rm jwilder/dockerize -wait tcp://$SAMPLE_HOST:$PORT -timeout 30s
+  docker run -d -p $PORT:8000 --env PROXY_PASS_WEB=$1 --env PROXY_PASS_RESOLVER=$2 --name $NAME airbyte/proxy:dev
+  docker run --rm jwilder/dockerize -wait tcp://$SAMPLE_HOST:$PORT -timeout 15s
 }
 
 function stop_container () {
   echo "Stopping $NAME"
-  docker stop $NAME
+  docker kill $NAME
   docker rm $NAME
 }
 
@@ -100,7 +100,7 @@ fi
 stop_container;
 
 echo "Testing that PROXY_PASS can be used to change the backend"
-start_container_with_proxy $BASIC_AUTH_USERNAME $BASIC_AUTH_UPDATED_PASSWORD "https://www.google.com"
+start_container_with_proxy "https://www.google.com" "8.8.8.8"
 
 RESPONSE=`curl "http://$TEST_HOST:$PORT" -i --silent`
 if [[ $RESPONSE == *"google.com"* ]]; then

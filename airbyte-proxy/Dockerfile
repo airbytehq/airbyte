@@ -12,6 +12,8 @@ RUN apt-get update -y && apt-get install -y apache2-utils && rm -rf /var/lib/apt
 # This variable can be used to update the destintion containers that Nginx proxies to.
 ENV PROXY_PASS_WEB "http://airbyte-webapp:80"
 ENV PROXY_PASS_API "http://airbyte-server:8001"
+# The default Docker resolver
+ENV PROXY_PASS_RESOLVER "127.0.0.11"
 
 # Nginx config file
 WORKDIR /

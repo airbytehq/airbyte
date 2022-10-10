@@ -3,7 +3,7 @@ events {}
 http {
   server {
     listen 8000 default_server;
-    resolver 127.0.0.11;
+    resolver ${PROXY_PASS_RESOLVER};
 
     location / {
       proxy_set_header Host $host;
