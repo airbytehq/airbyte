@@ -40,5 +40,3 @@ application {
 tasks.named("buildDockerImage") {
     dependsOn copyGeneratedTar
 }
-
-//test.dependsOn(project.tasks.copySeed)
