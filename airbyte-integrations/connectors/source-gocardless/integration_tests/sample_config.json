@@ -1,0 +1,7 @@
+{
+  "access_token": "sandbox_token",
+  "gocardless_environment": "sandbox",
+  "gocardless_version": "2015-07-06",
+  "start_date": "2022-01-01T00:00:00Z",
+  "lookback_window_days": 0
+}
