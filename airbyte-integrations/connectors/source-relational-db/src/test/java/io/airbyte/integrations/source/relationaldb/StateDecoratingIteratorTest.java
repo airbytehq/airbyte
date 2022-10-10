@@ -73,7 +73,7 @@ class StateDecoratingIteratorTest {
   }
 
   private Iterator<AirbyteMessage> createExceptionIterator() {
-    return new Iterator<AirbyteMessage>() {
+    return new Iterator<>() {
 
       final Iterator<AirbyteMessage> internalMessageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2,
           RECORD_MESSAGE_2, RECORD_MESSAGE_3);
@@ -111,10 +111,7 @@ class StateDecoratingIteratorTest {
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_4, 1)).thenReturn(STATE_MESSAGE_4.getState());
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 1)).thenReturn(STATE_MESSAGE_5.getState());
 
-    when(stateManager.getOriginalCursorField(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
-    when(stateManager.getOriginalCursor(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
-    when(stateManager.getCursorField(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
-    when(stateManager.getCursor(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
+    when(stateManager.getCursorInfo(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
   }
 
   @Test
@@ -180,6 +177,12 @@ class StateDecoratingIteratorTest {
   @Test
   void testIteratorCatchesExceptionWhenEmissionFrequencyNonZero() {
     final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
+
+    // The mock record count matches the number of records returned by the exception iterator.
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_1, 1)).thenReturn(STATE_MESSAGE_1.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2, 2)).thenReturn(STATE_MESSAGE_2.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3, 1)).thenReturn(STATE_MESSAGE_3.getState());
+
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         exceptionIterator,
         stateManager,
@@ -367,7 +370,7 @@ class StateDecoratingIteratorTest {
    * start with `F1 > 16` and skip record 3.
    * <p/>
    * So intermediate state emission should only happen when all records with the same cursor value has
-   * been synced to destination. Reference: https://github.com/airbytehq/airbyte/issues/15427
+   * been synced to destination. Reference: <a href="https://github.com/airbytehq/airbyte/issues/15427">link</a>
    */
   @Test
   @DisplayName("When there are multiple records with the same cursor value")
