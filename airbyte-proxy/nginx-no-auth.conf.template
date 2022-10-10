@@ -3,13 +3,15 @@ events {}
 http {
   server {
     listen 8000 default_server;
+    resolver 127.0.0.11;
 
     location / {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-      proxy_pass ${PROXY_PASS_WEB};
+      set $upstream "${PROXY_PASS_WEB}";
+      proxy_pass $upstream;
     }
   }
 
@@ -21,7 +23,8 @@ http {
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-      proxy_pass ${PROXY_PASS_API};
+      set $upstream "${PROXY_PASS_API}";
+      proxy_pass $upstream;
     }
   }
 }

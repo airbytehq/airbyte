@@ -49,7 +49,7 @@ fi
 
 echo "Testing access with auth"
 RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_PASSWORD@$TEST_HOST:$PORT" -i --silent`
-if [[ $RESPONSE == *"200 OK"* ]]; then
+if [[ $RESPONSE == *"502 Bad Gateway"* ]]; then
   echo "✔️  access with auth worked"
 else
   echo "Auth not working"
@@ -74,7 +74,7 @@ fi
 
 echo "Testing access updated auth"
 RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_UPDATED_PASSWORD@$TEST_HOST:$PORT" -i --silent`
-if [[ $RESPONSE == *"200 OK"* ]]; then
+if [[ $RESPONSE == *"502 Bad Gateway"* ]]; then
   echo "✔️  access with updated auth worked"
 else
   echo "Auth not working"
@@ -89,7 +89,7 @@ start_container "" ""
 
 echo "Testing access without auth"
 RESPONSE=`curl "http://$TEST_HOST:$PORT" -i --silent`
-if [[ $RESPONSE == *"200 OK"* ]]; then
+if [[ $RESPONSE == *"502 Bad Gateway"* ]]; then
   echo "✔️  access without auth allowed when configured"
 else
   echo "Auth not working"
