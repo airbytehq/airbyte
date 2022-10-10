@@ -11,6 +11,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
 import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerOomException;
+import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.BeforeEach;

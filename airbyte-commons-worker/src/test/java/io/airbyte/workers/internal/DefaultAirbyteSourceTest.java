@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
