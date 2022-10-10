@@ -353,7 +353,7 @@ class BalanceTransactions(IncrementalShopifyStream):
     filter_field = "since_id"
 
     def path(self, **kwargs) -> str:
-        return f"shopify_payments/balanc/{self.data_field}.json"
+        return f"shopify_payments/balance/{self.data_field}.json"
 
 
 class OrderRefunds(ShopifySubstream):
