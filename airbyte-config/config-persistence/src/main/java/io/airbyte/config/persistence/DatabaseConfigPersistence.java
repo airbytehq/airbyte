@@ -456,7 +456,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<SourceConnection>> sourceConnections = new ArrayList<>();
     for (final Record record : result) {
-      final SourceConnection sourceConnection = buildSourceConnection(record);
+      final SourceConnection sourceConnection = DbConverter.buildSourceConnection(record);
       sourceConnections.add(new ConfigWithMetadata<>(
           record.get(ACTOR.ID).toString(),
           ConfigSchema.SOURCE_CONNECTION.name(),
@@ -465,16 +465,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           sourceConnection));
     }
     return sourceConnections;
-  }
-
-  private SourceConnection buildSourceConnection(final Record record) {
-    return new SourceConnection()
-        .withSourceId(record.get(ACTOR.ID))
-        .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
-        .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
-        .withSourceDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
-        .withTombstone(record.get(ACTOR.TOMBSTONE))
-        .withName(record.get(ACTOR.NAME));
   }
 
   private List<ConfigWithMetadata<DestinationConnection>> listDestinationConnectionWithMetadata() throws IOException {
@@ -492,7 +482,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<DestinationConnection>> destinationConnections = new ArrayList<>();
     for (final Record record : result) {
-      final DestinationConnection destinationConnection = buildDestinationConnection(record);
+      final DestinationConnection destinationConnection = DbConverter.buildDestinationConnection(record);
       destinationConnections.add(new ConfigWithMetadata<>(
           record.get(ACTOR.ID).toString(),
           ConfigSchema.DESTINATION_CONNECTION.name(),
@@ -501,16 +491,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           destinationConnection));
     }
     return destinationConnections;
-  }
-
-  private DestinationConnection buildDestinationConnection(final Record record) {
-    return new DestinationConnection()
-        .withDestinationId(record.get(ACTOR.ID))
-        .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
-        .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
-        .withDestinationDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
-        .withTombstone(record.get(ACTOR.TOMBSTONE))
-        .withName(record.get(ACTOR.NAME));
   }
 
   private List<ConfigWithMetadata<SourceOAuthParameter>> listSourceOauthParamWithMetadata() throws IOException {
