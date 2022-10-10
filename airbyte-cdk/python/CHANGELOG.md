@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.98
+
+- Low-code: Expose WaitUntilTimeFromHeader strategy and WaitTimeFromHeader as component type
+
 ## 0.1.97
 
 - Revert 0.1.96
