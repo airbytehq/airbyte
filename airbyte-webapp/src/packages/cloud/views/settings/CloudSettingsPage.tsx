@@ -13,6 +13,7 @@ import {
 // import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
 import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
 import { PageConfig, SettingsRoute } from "pages/SettingsPage/SettingsPage";
+import { isOsanoActive, showOsanoDrawer } from "utils/dataPrivacy";
 
 const CloudSettingsRoutes = {
   Configuration: SettingsRoute.Configuration,
@@ -40,6 +41,15 @@ export const CloudSettingsPage: React.FC = () => {
               name: <FormattedMessage id="settings.account" />,
               component: AccountSettingsView,
             },
+            ...(isOsanoActive()
+              ? [
+                  {
+                    name: <FormattedMessage id="settings.cookiePreferences" />,
+                    path: "__COOKIE_PREFERENCES__", // Special path with no meaning, since the onClick will be triggered
+                    onClick: () => showOsanoDrawer(),
+                  },
+                ]
+              : []),
           ],
         },
         {

@@ -126,7 +126,7 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
+                "title": "Client key password",
                 "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
@@ -171,7 +171,7 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
+                "title": "Client key password",
                 "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
@@ -187,7 +187,7 @@
         "order": 8,
         "oneOf": [
           {
-            "title": "STANDARD",
+            "title": "Standard",
             "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
             "required": ["method"],
             "properties": {
@@ -211,6 +211,15 @@
                 "enum": ["CDC"],
                 "default": "CDC",
                 "order": 0
+              },
+              "initial_waiting_seconds": {
+                "type": "integer",
+                "title": "Initial Waiting Time in Seconds (Advanced)",
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">initial waiting time</a>.",
+                "default": 300,
+                "order": 4,
+                "min": 120,
+                "max": 1200
               }
             }
           }

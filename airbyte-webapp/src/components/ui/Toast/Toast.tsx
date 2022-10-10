@@ -6,8 +6,8 @@ import styled, { keyframes } from "styled-components";
 import { H5 } from "components/base/Titles";
 
 import { Button } from "../Button";
-import ErrorSign from "./ErrorSign";
-import styles from "./SingletonCard.module.scss";
+import { ErrorSign } from "./ErrorSign";
+import styles from "./Toast.module.scss";
 
 interface ToastProps {
   title: string | React.ReactNode;
@@ -84,5 +84,3 @@ export const Toast: React.FC<ToastProps> = (props) => (
     )}
   </Singleton>
 );
-
-export default Toast;

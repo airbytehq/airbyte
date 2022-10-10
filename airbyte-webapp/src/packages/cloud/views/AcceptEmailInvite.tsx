@@ -4,6 +4,8 @@ import * as yup from "yup";
 
 import HeadTitle from "components/HeadTitle";
 
+import { isGdprCountry } from "utils/dataPrivacy";
+
 import { FieldError } from "../lib/errors/FieldError";
 import { useAuthService } from "../services/auth/AuthService";
 import { EmailLinkErrorCodes } from "../services/auth/types";
@@ -35,7 +37,7 @@ export const AcceptEmailInvite: React.FC = () => {
         name: "",
         email: "",
         password: "",
-        news: true,
+        news: !isGdprCountry(),
       }}
       validationSchema={ValidationSchema}
       onSubmit={async ({ name, email, password, news }, { setFieldError, setStatus }) => {

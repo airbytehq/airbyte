@@ -151,7 +151,7 @@
               "file_name_pattern": {
                 "type": "string",
                 "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
-                "title": "S3 Filename pattern (Optional)",
+                "title": "S3 Filename pattern",
                 "examples": [
                   "{date}",
                   "{date:yyyy_MM}",

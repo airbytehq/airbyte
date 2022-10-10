@@ -14,7 +14,6 @@ import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.normalization.NormalizationRunner;
@@ -38,15 +37,12 @@ public class DbtTransformationRunner implements AutoCloseable {
       .setLogPrefix("dbt")
       .setPrefixColor(Color.PURPLE_BACKGROUND);
 
-  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final NormalizationRunner normalizationRunner;
   private Process process = null;
 
-  public DbtTransformationRunner(final WorkerConfigs workerConfigs,
-                                 final ProcessFactory processFactory,
+  public DbtTransformationRunner(final ProcessFactory processFactory,
                                  final NormalizationRunner normalizationRunner) {
-    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.normalizationRunner = normalizationRunner;
   }
@@ -135,7 +131,7 @@ public class DbtTransformationRunner implements AutoCloseable {
     }
 
     LOGGER.debug("Closing dbt transformation process");
-    WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
       throw new WorkerException("Dbt transformation process wasn't successful");
     }
