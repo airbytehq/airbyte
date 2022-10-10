@@ -30,7 +30,7 @@
       },
       "credentials": {
         "type": "object",
-        "title": "Authentication *",
+        "title": "Authentication",
         "description": "The server authentication method",
         "order": 3,
         "oneOf": [
@@ -84,7 +84,7 @@
         "examples": ["csv,json", "csv"]
       },
       "folder_path": {
-        "title": "Folder Path (Optional)",
+        "title": "Folder Path",
         "description": "The directory to search files for sync",
         "type": "string",
         "default": "",
@@ -92,7 +92,7 @@
         "order": 5
       },
       "file_pattern": {
-        "title": "File Pattern (Optional)",
+        "title": "File Pattern",
         "description": "The regular expression to specify files for sync in a chosen Folder Path",
         "type": "string",
         "default": "",

@@ -5,7 +5,7 @@
 package io.airbyte.commons.protocol.migrations;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.AirbyteMessage;
 
 /**
@@ -32,13 +32,13 @@ public class AirbyteMessageMigrationV0
   }
 
   @Override
-  public AirbyteVersion getPreviousVersion() {
-    return new AirbyteVersion("0.2.0");
+  public Version getPreviousVersion() {
+    return new Version("0.2.0");
   }
 
   @Override
-  public AirbyteVersion getCurrentVersion() {
-    return new AirbyteVersion("0.2.0");
+  public Version getCurrentVersion() {
+    return new Version("0.2.0");
   }
 
 }

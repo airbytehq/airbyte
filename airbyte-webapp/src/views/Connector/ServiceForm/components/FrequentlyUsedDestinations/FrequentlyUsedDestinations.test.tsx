@@ -18,13 +18,13 @@ const renderFrequentlyUsedDestinationsComponent = (props: FrequentlyUsedDestinat
 
 describe("<FrequentlyUsedDestinations />", () => {
   it("should renders with mock data without crash", () => {
-    const { asFragment } = renderFrequentlyUsedDestinationsComponent({
+    const component = renderFrequentlyUsedDestinationsComponent({
       destinations: mockData,
       onDestinationSelect: jest.fn(),
       propertyPath: "serviceType",
     });
 
-    expect(asFragment()).toMatchSnapshot();
+    expect(component).toMatchSnapshot();
   });
 
   it("should call provided handler with right param", async () => {
@@ -38,7 +38,10 @@ describe("<FrequentlyUsedDestinations />", () => {
 
     await waitFor(() => {
       expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler).toHaveBeenCalledWith("2");
+      expect(handler).toHaveBeenCalledWith("2", {
+        actionDescription: "Suggested destination connector type selected",
+        connector_destination_suggested: true,
+      });
     });
   });
 });

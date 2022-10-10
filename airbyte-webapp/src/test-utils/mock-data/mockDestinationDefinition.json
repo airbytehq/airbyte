@@ -146,12 +146,7 @@
           },
           {
             "title": "verify-full",
-            "required": [
-              "mode",
-              "ca_certificate",
-              "client_certificate",
-              "client_key"
-            ],
+            "required": ["mode", "ca_certificate", "client_certificate", "client_key"],
             "properties": {
               "mode": {
                 "enum": ["verify-full"],
@@ -223,13 +218,7 @@
           },
           {
             "title": "SSH Key Authentication",
-            "required": [
-              "tunnel_method",
-              "tunnel_host",
-              "tunnel_port",
-              "tunnel_user",
-              "ssh_key"
-            ],
+            "required": ["tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "ssh_key"],
             "properties": {
               "ssh_key": {
                 "type": "string",
@@ -271,13 +260,7 @@
           },
           {
             "title": "Password Authentication",
-            "required": [
-              "tunnel_method",
-              "tunnel_host",
-              "tunnel_port",
-              "tunnel_user",
-              "tunnel_user_password"
-            ],
+            "required": ["tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "tunnel_user_password"],
             "properties": {
               "tunnel_host": {
                 "type": "string",

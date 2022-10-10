@@ -66,5 +66,5 @@ Next, we'll [enhance the connector to read data for a given date, which will ena
 
 ## More readings
 
-- [Record selector](../record-selector.md)
+- [Record selector](../understanding-the-yaml-file/record-selector.md)
 - [Catalog guide](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog)

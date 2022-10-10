@@ -14,12 +14,11 @@ import { useConfig } from "config";
 import { SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode } from "core/request/AirbyteClient";
 import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
-import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { ConnectionFormMode, useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
 import CatalogTree from "views/Connection/CatalogTree";
 
 import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
-import { ConnectionFormMode } from "../ConnectionForm";
 import Search from "./Search";
 import styles from "./SyncCatalogField.module.scss";
 
