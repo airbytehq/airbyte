@@ -326,10 +326,10 @@ public class CatalogHelpers {
           final AirbyteStream streamOld = descriptorToStreamOld.get(descriptor);
           final AirbyteStream streamNew = descriptorToStreamNew.get(descriptor);
 
-          final ConfiguredAirbyteStream stream = configuredCatalog.getStreams().stream()
+          final Optional<ConfiguredAirbyteStream> stream = configuredCatalog.getStreams().stream()
               .filter(s -> Objects.equals(s.getStream().getNamespace(), descriptor.getNamespace())
                   && s.getStream().getName().equals(descriptor.getName()))
-              .findFirst().get();
+              .findFirst();
 
           if (!streamOld.equals(streamNew)) {
             streamTransforms.add(StreamTransform.createUpdateStreamTransform(descriptor, getStreamDiff(streamOld, streamNew, stream)));
@@ -341,7 +341,7 @@ public class CatalogHelpers {
 
   private static UpdateStreamTransform getStreamDiff(final AirbyteStream streamOld,
                                                      final AirbyteStream streamNew,
-                                                     final ConfiguredAirbyteStream configuredStream) {
+                                                     final Optional<ConfiguredAirbyteStream> configuredStream) {
     final Set<FieldTransform> fieldTransforms = new HashSet<>();
     final Map<List<String>, JsonNode> fieldNameToTypeOld = getFullyQualifiedFieldNamesWithTypes(streamOld.getJsonSchema())
         .stream()
@@ -398,14 +398,20 @@ public class CatalogHelpers {
     });
   }
 
-  static boolean transformBreaksConnection(final ConfiguredAirbyteStream configuredStream, final List<String> fieldName) {
-    final SyncMode syncMode = configuredStream.getSyncMode();
-    if (SyncMode.INCREMENTAL == syncMode && configuredStream.getCursorField().equals(fieldName)) {
+  static boolean transformBreaksConnection(final Optional<ConfiguredAirbyteStream> configuredStream, final List<String> fieldName) {
+    if (configuredStream.isEmpty()) {
+      return false;
+    }
+
+    final ConfiguredAirbyteStream streamConfig = configuredStream.get();
+
+    final SyncMode syncMode = streamConfig.getSyncMode();
+    if (SyncMode.INCREMENTAL == syncMode && streamConfig.getCursorField().equals(fieldName)) {
       return true;
     }
 
-    final DestinationSyncMode destinationSyncMode = configuredStream.getDestinationSyncMode();
-    if (DestinationSyncMode.APPEND_DEDUP == destinationSyncMode && configuredStream.getPrimaryKey().contains(fieldName)) {
+    final DestinationSyncMode destinationSyncMode = streamConfig.getDestinationSyncMode();
+    if (DestinationSyncMode.APPEND_DEDUP == destinationSyncMode && streamConfig.getPrimaryKey().contains(fieldName)) {
       return true;
     }
     return false;
