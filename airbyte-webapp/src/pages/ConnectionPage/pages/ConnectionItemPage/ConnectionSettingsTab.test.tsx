@@ -1,4 +1,4 @@
-import { render } from "test-utils/testutils";
+import { mockConnection, render } from "test-utils/testutils";
 
 import { ConnectionSettingsTab } from "./ConnectionSettingsTab";
 
@@ -23,13 +23,10 @@ jest.mock("hooks/services/Analytics/useAnalyticsService", () => {
   return analyticsService;
 });
 
-// Mocking the DeleteBlock component is a bit ugly, but it's simpler and less
-// brittle than mocking the providers it depends on; at least it's a direct,
-// visible dependency of the component under test here.
-//
-// This mock is intentionally trivial; if anything to do with this component is
-// to be tested, we'll have to bite the bullet and render it properly, within
-// the necessary providers.
+jest.mock("hooks/services/ConnectionEdit/ConnectionEditService", () => ({
+  useConnectionEditService: () => ({ connection: mockConnection }),
+}));
+
 jest.mock("components/DeleteBlock", () => () => {
   const MockDeleteBlock = () => <div>Does not actually delete anything</div>;
   return <MockDeleteBlock />;
