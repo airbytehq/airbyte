@@ -148,7 +148,7 @@ public class DateTimeConverter {
       if (value >= 0 && value < TimeUnit.DAYS.toNanos(1)) {
         return LocalTime.ofNanoOfDay(value).format(TIME_FORMATTER);
       } else {
-        final long updatedValue = Math.min(Math.abs(value), TimeUnit.DAYS.toNanos(1) - 1);
+        final long updatedValue = Math.min(Math.abs(value), LocalTime.MAX.toNanoOfDay());
         LOGGER.debug("Time values must use number of milliseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
             updatedValue);
         return LocalTime.ofNanoOfDay(updatedValue).format(TIME_FORMATTER);
@@ -162,7 +162,7 @@ public class DateTimeConverter {
       final String valueAsString = time.toString();
       if (valueAsString.startsWith("24")) {
         LOGGER.debug("Time value {} is above range, converting to 23:59:59", valueAsString);
-        return LocalTime.parse("23:59:59.999999").format(TIME_FORMATTER);
+        return LocalTime.MAX.format(TIME_FORMATTER);
       }
       return LocalTime.parse(valueAsString).format(TIME_FORMATTER);
     }
