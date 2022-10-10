@@ -205,7 +205,7 @@
         ]
       },
       "schema": {
-        "title": "Manually enforced data schema (Optional)",
+        "title": "Manually enforced data schema",
         "description": "Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of <strong>{ \"column\" : \"type\" }</strong>, where types are valid <a href=\"https://json-schema.org/understanding-json-schema/reference/type.html\" target=\"_blank\">JSON Schema datatypes</a>. Leave as {} to auto-infer the schema.",
         "default": "{}",
         "examples": [

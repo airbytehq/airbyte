@@ -9,6 +9,7 @@ import { getConnectionTableData } from "components/EntityTable/utils";
 import { RoutePaths } from "pages/routePaths";
 
 import { WebBackendConnectionListItem } from "../../../../../core/request/AirbyteClient";
+import styles from "./SourceConnectionTable.module.scss";
 
 interface IProps {
   connections: WebBackendConnectionListItem[];
@@ -32,7 +33,11 @@ const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
 
   const clickRow = (source: ITableDataItem) => navigate(`../../../${RoutePaths.Connections}/${source.connectionId}`);
 
-  return <ConnectionTable data={data} onClickRow={clickRow} entity="source" onSync={onSync} />;
+  return (
+    <div className={styles.content}>
+      <ConnectionTable data={data} onClickRow={clickRow} entity="source" onSync={onSync} />
+    </div>
+  );
 };
 
 export default SourceConnectionTable;

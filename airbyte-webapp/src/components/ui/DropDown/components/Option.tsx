@@ -5,13 +5,13 @@ import styled from "styled-components";
 import { CheckBox } from "components/ui/CheckBox";
 
 import { OptionType } from "../DropDown";
-import Text from "./Text";
+import { DropDownText } from "./DropDownText";
 
-export type IProps = {
-  data: { disabled: boolean; index: number; fullText?: boolean } & IDataItem;
+export type DropDownOptionProps = {
+  data: { disabled: boolean; index: number; fullText?: boolean } & DropDownOptionDataItem;
 } & OptionProps<OptionType, boolean>;
 
-export interface IDataItem {
+export interface DropDownOptionDataItem {
   label?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value?: any;
@@ -45,7 +45,7 @@ export const OptionView = styled.div<{
   }
 `;
 
-const Option: React.FC<IProps> = (props) => {
+export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
   const dataTestId = props.data.testId
     ? props.data.testId
     : !["object", "array"].includes(typeof props.data.label)
@@ -59,18 +59,16 @@ const Option: React.FC<IProps> = (props) => {
         isSelected={props.isSelected && !props.isMulti}
         isDisabled={props.isDisabled}
       >
-        <Text primary={props.data.primary} secondary={props.data.secondary} fullText={props.data.fullText}>
+        <DropDownText primary={props.data.primary} secondary={props.data.secondary} fullText={props.data.fullText}>
           {props.isMulti && (
             <>
               <CheckBox checked={props.isSelected} onChange={() => props.selectOption(props.data)} />{" "}
             </>
           )}
           {props.label}
-        </Text>
+        </DropDownText>
         {props.data.img || null}
       </OptionView>
     </components.Option>
   );
 };
-
-export default Option;

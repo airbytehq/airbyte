@@ -556,7 +556,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         # declare additional variables
         authenticator = self.get_authenticator(config)
         config["authenticator"] = authenticator
-        config["metrics"] = ["ga:14dayUsers"]
+        config["metrics"] = ["ga:hits"]
         config["dimensions"] = ["ga:date"]
 
         try:

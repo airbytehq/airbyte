@@ -5,12 +5,83 @@ Other HTTP errors will result in a failed read.
 
 Other behaviors can be configured through the `Requester`'s `error_handler` field.
 
+Schema:
+
+```yaml
+  ErrorHandler:
+    type: object
+    description: "Error handler"
+    anyOf:
+      - "$ref": "#/definitions/DefaultErrorHandler"
+      - "$ref": "#/definitions/CompositeErrorHandler"
+```
+
+## Default error handler
+
+Schema:
+
+```yaml
+  DefaultErrorHandler:
+    type: object
+    required:
+      - max_retries
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      response_filters:
+        type: array
+        items:
+          "$ref": "#/definitions/HttpResponseFilter"
+      max_retries:
+        type: integer
+        default: 5
+      backoff_strategies:
+        type: array
+        items:
+          "$ref": "#/definitions/BackoffStrategy"
+        default: [ ]
+```
+
 ## Defining errors
 
 ### From status code
 
 Response filters can be used to define how to handle requests resulting in responses with a specific HTTP status code.
 For instance, this example will configure the handler to also retry responses with 404 error:
+
+Schema:
+
+```yaml
+  HttpResponseFilter:
+    type: object
+    required:
+      - action
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      action:
+        "$ref": "#/definitions/ResponseAction"
+      http_codes:
+        type: array
+        items:
+          type: integer
+        default: [ ]
+      error_message_contains:
+        type: string
+      predicate:
+        type: string
+  ResponseAction:
+    type: string
+    enum:
+      - SUCCESS
+      - FAIL
+      - IGNORE
+      - RETRY
+```
+
+Example:
 
 ```yaml
 requester:
@@ -72,26 +143,86 @@ requester:
     response_filters:
         - http_codes: [ 404 ]
           action: IGNORE
-            - http_codes: [ 429 ]
-              action: RETRY
+                    - http_codes: [ 429 ]
+                    action: RETRY
 ```
 
 ## Backoff Strategies
 
 The error handler supports a few backoff strategies, which are described in the following sections.
 
+Schema:
+
+```yaml
+  BackoffStrategy:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/ExponentialBackoff"
+      - "$ref": "#/definitions/ConstantBackoff"
+      - "$ref": "#/definitions/WaitTimeFromHeader"
+      - "$ref": "#/definitions/WaitUntilTimeFromHeader"
+```
+
 ### Exponential backoff
 
 This is the default backoff strategy. The requester will backoff with an exponential backoff interval
+
+Schema:
+
+```yaml
+  ExponentialBackoff:
+    type: object
+    additionalProperties: true
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      factor:
+        type: integer
+        default: 5
+```
 
 ### Constant Backoff
 
 When using the `ConstantBackoffStrategy`, the requester will backoff with a constant interval.
 
+Schema:
+
+```yaml
+  ConstantBackoff:
+    type: object
+    additionalProperties: true
+    required:
+      - backoff_time_in_seconds
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      backoff_time_in_seconds:
+        type: number
+```
+
 ### Wait time defined in header
 
 When using the `WaitTimeFromHeaderBackoffStrategy`, the requester will backoff by an interval specified in the response header.
 In this example, the requester will backoff by the response's "wait_time" header value:
+
+Schema:
+
+```yaml
+  WaitTimeFromHeader:
+    type: object
+    additionalProperties: true
+    required:
+      - header
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      header:
+        type: string
+      regex:
+        type: string
+```
+
+Example:
 
 ```yaml
 requester:
@@ -104,6 +235,8 @@ requester:
 ```
 
 Optionally, a regular expression can be configured to extract the wait time from the header value.
+
+Example:
 
 ```yaml
 requester:
@@ -120,6 +253,27 @@ requester:
 
 When using the `WaitUntilTimeFromHeaderBackoffStrategy`, the requester will backoff until the time specified in the response header.
 In this example, the requester will wait until the time specified in the "wait_until" header value:
+
+Schema:
+
+```yaml
+  WaitUntilTimeFromHeader:
+    type: object
+    additionalProperties: true
+    required:
+      - header
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      header:
+        type: string
+      regex:
+        type: string
+      min_wait:
+        type: number
+```
+
+Example:
 
 ```yaml
 requester:
@@ -140,6 +294,8 @@ The strategy accepts an optional regular expression to extract the time from the
 The error handler can have multiple backoff strategies, allowing it to fallback if a strategy cannot be evaluated.
 For instance, the following defines an error handler that will read the backoff time from a header, and default to a constant backoff if the wait time could not be extracted from the response:
 
+Example:
+
 ```yaml
 requester:
   <...>
@@ -150,12 +306,29 @@ requester:
           header: "wait_time"
             - type: "ConstantBackoffStrategy"
               backoff_time_in_seconds: 5
-
 ```
 
 The `requester` can be configured to use a `CompositeErrorHandler`, which sequentially iterates over a list of error handlers, enabling different retry mechanisms for different types of errors.
 
 In this example, a constant backoff of 5 seconds, will be applied if the response contains a "code" field, and an exponential backoff will be applied if the error code is 403:
+
+Schema:
+
+```yaml
+  CompositeErrorHandler:
+    type: object
+    required:
+      - error_handlers
+    additionalProperties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      error_handlers:
+        type: array
+        items:
+          "$ref": "#/definitions/ErrorHandler"
+```
+
+Example:
 
 ```yaml
 requester:
@@ -175,3 +348,7 @@ requester:
         backoff_strategies:
           - type: "ExponentialBackoffStrategy"
 ```
+
+## More readings
+
+- [Requester](./requester.md)
