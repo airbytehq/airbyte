@@ -105,6 +105,9 @@ create table "public"."connection"(
   "schedule_type" schedule_type null,
   "schedule_data" jsonb null,
   "geography" geography_type not null default null,
+  "notify_schema_changes" bool not null default true,
+  "non_breaking_change_preference" varchar(7) not null default '''ignore''::character varying',
+  "breaking_change" bool not null default false,
   constraint "connection_pkey"
     primary key ("id")
 );
@@ -131,6 +134,7 @@ create table "public"."operation"(
   "tombstone" bool not null default false,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
+  "operator_webhook" jsonb null,
   constraint "operation_pkey"
     primary key ("id")
 );
@@ -175,6 +179,7 @@ create table "public"."workspace"(
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
   "geography" geography_type not null default null,
+  "webhook_operation_configs" jsonb null,
   constraint "workspace_pkey"
     primary key ("id")
 );
