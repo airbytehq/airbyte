@@ -8,9 +8,12 @@ import styles from "./YamlEditor.module.scss";
 import { template } from "./YamlTemplate";
 
 export const YamlEditor: React.FC = () => {
-  const [editorValue, setEditorValue] = useState(template);
-  const [, setStoredEditorContent] = useLocalStorage<string>("connectorBuilderEditorContent", template);
-  useDebounce(() => setStoredEditorContent(editorValue), 500, [editorValue]);
+  const [locallyStoredEditorValue, setLocallyStoredEditorValue] = useLocalStorage<string>(
+    "connectorBuilderEditorContent",
+    template
+  );
+  const [editorValue, setEditorValue] = useState(locallyStoredEditorValue);
+  useDebounce(() => setLocallyStoredEditorValue(editorValue), 500, [editorValue]);
 
   const handleEditorChange = (value: string | undefined) => {
     setEditorValue(value ?? "");
