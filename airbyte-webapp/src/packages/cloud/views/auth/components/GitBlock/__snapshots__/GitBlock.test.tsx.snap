@@ -4,16 +4,16 @@ exports[`<GitBlock /> should render with default props 1`] = `
 <body>
   <div>
     <div
-      class="<1 classnames>"
+      class="<removed-for-snapshot-test>"
     >
       <a
-        class="<1 classnames>"
+        class="<removed-for-snapshot-test>"
         href="https://docs.airbyte.com/quickstart/deploy-airbyte"
         rel="noreferrer"
         target="_blank"
       >
         <div
-          class="<1 classnames>"
+          class="<removed-for-snapshot-test>"
         >
           <svg
             aria-hidden="true"
@@ -32,12 +32,12 @@ exports[`<GitBlock /> should render with default props 1`] = `
           </svg>
           <div>
             <p
-              class="<1 classnames>"
+              class="<removed-for-snapshot-test>"
             >
               Interested in self-hosting?
             </p>
             <p
-              class="<1 classnames>"
+              class="<removed-for-snapshot-test>"
             >
               Deploy the open-source version on your own infrastructure
             </p>
@@ -53,16 +53,16 @@ exports[`<GitBlock /> should render with overwritten props 1`] = `
 <body>
   <div>
     <div
-      class="<1 classnames>"
+      class="<removed-for-snapshot-test>"
     >
       <a
-        class="<1 classnames>"
+        class="<removed-for-snapshot-test>"
         href="https://docs.airbyte.com/quickstart/deploy-airbyte"
         rel="noreferrer"
         target="_blank"
       >
         <div
-          class="<1 classnames>"
+          class="<removed-for-snapshot-test>"
         >
           <svg
             aria-hidden="true"
@@ -81,13 +81,13 @@ exports[`<GitBlock /> should render with overwritten props 1`] = `
           </svg>
           <div>
             <p
-              class="<1 classnames>"
+              class="<removed-for-snapshot-test>"
               style="font-size: 30px;"
             >
               Interested in self-hosting?
             </p>
             <p
-              class="<1 classnames>"
+              class="<removed-for-snapshot-test>"
               style="color: blue;"
             >
               Deploy the open-source version on your own infrastructure

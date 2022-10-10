@@ -4,7 +4,7 @@ exports[`<Spinner /> should render without crash 1`] = `
 <body>
   <div>
     <div
-      class="<1 classnames>"
+      class="<removed-for-snapshot-test>"
     />
   </div>
 </body>
