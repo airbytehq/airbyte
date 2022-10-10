@@ -76,8 +76,8 @@ public class SshTunnel implements AutoCloseable {
    *        the config remoteDatabasePort is found.
    * @param endPointKey - key that points to the endpoint URL (this is commonly used for REST-based
    *        services such as Elastic and MongoDB)
-   * @param remoteServiceUrl - URL of the remote endpoint (this is commonly used for REST-based
-   *    *        services such as Elastic and MongoDB)
+   * @param remoteServiceUrl - URL of the remote endpoint (this is commonly used for REST-based *
+   *        services such as Elastic and MongoDB)
    * @param tunnelMethod - the type of ssh method that should be used (includes not using SSH at all).
    * @param tunnelHost - host name of the machine to which we will establish an ssh connection (e.g.
    *        hostname of the bastion).
@@ -133,10 +133,10 @@ public class SshTunnel implements AutoCloseable {
       if (tunnelMethod.equals(TunnelMethod.SSH_PASSWORD_AUTH)) {
         Preconditions.checkNotNull(tunnelUserPassword);
       }
-      //must provide either host/port or endpoint
+      // must provide either host/port or endpoint
       Preconditions.checkArgument((hostKey != null && portKey != null) || endPointKey != null);
       Preconditions.checkArgument((remoteServiceHost != null && remoteServicePort > 0) || remoteServiceUrl != null);
-      if(remoteServiceUrl != null) {
+      if (remoteServiceUrl != null) {
         this.remoteServiceHost = remoteServiceUrl.getHost();
         this.remoteServicePort = remoteServiceUrl.getPort();
         this.remoteServiceProtocol = remoteServiceUrl.getProtocol();

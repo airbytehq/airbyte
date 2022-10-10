@@ -90,8 +90,9 @@ class SshTunnelTest {
           + "\",\"tunnel_host\":\"faketunnel.com\",\"tunnel_port\":22,\"tunnel_user\":\"ec2-user\",\"tunnel_method\":\"SSH_KEY_AUTH\"}}";
 
   /**
-   * This test verifies that OpenSsh correctly replaces values in connector configuration
-   * in a spec with host/port config and in a spec with endpoint URL config
+   * This test verifies that OpenSsh correctly replaces values in connector configuration in a spec
+   * with host/port config and in a spec with endpoint URL config
+   *
    * @param configString
    * @throws Exception
    */
@@ -114,15 +115,17 @@ class SshTunnelTest {
         "tunnelUserPassword",
         endPointURL == null ? "fakeHost.com" : null,
         endPointURL == null ? 5432 : 0) {
+
       @Override
       ClientSession openTunnel(final SshClient client) {
         tunnelLocalPort = 8080;
         return null; // Prevent tunnel from attempting to connect
       }
+
     };
 
     final JsonNode configInTunnel = sshTunnel.getConfigInTunnel();
-    if(endPointURL == null) {
+    if (endPointURL == null) {
       assertTrue(configInTunnel.has("port"));
       assertTrue(configInTunnel.has("host"));
       assertFalse(configInTunnel.has("endpoint"));
@@ -137,8 +140,9 @@ class SshTunnelTest {
   }
 
   /**
-   * This test verifies that SshTunnel correctly extracts private key pairs from
-   * keys formatted as EdDSA and OpenSSH
+   * This test verifies that SshTunnel correctly extracts private key pairs from keys formatted as
+   * EdDSA and OpenSSH
+   *
    * @param privateKey
    * @throws Exception
    */
@@ -160,10 +164,12 @@ class SshTunnelTest {
         "tunnelUserPassword",
         "fakeHost.com",
         5432) {
-            @Override
-            ClientSession openTunnel(final SshClient client) {
-              return null; // Prevent tunnel from attempting to connect
-            }
+
+      @Override
+      ClientSession openTunnel(final SshClient client) {
+        return null; // Prevent tunnel from attempting to connect
+      }
+
     };
 
     final KeyPair authKeyPair = sshTunnel.getPrivateKeyPair();

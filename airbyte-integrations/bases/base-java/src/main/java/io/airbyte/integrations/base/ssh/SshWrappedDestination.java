@@ -30,6 +30,7 @@ public class SshWrappedDestination implements Destination {
   private final Destination delegate;
   private final List<String> hostKey;
   private final List<String> portKey;
+  private final String endPointKey;
 
   public SshWrappedDestination(final Destination delegate,
                                final List<String> hostKey,
@@ -37,6 +38,15 @@ public class SshWrappedDestination implements Destination {
     this.delegate = delegate;
     this.hostKey = hostKey;
     this.portKey = portKey;
+    this.endPointKey = null;
+  }
+
+  public SshWrappedDestination(final Destination delegate,
+                               String endPointKey) {
+    this.delegate = delegate;
+    this.endPointKey = endPointKey;
+    this.portKey = null;
+    this.hostKey = null;
   }
 
   @Override
@@ -58,7 +68,8 @@ public class SshWrappedDestination implements Destination {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    final SshTunnel tunnel = SshTunnel.getInstance(config, hostKey, portKey);
+    final SshTunnel tunnel = (endPointKey != null) ? SshTunnel.getInstance(config, endPointKey) : SshTunnel.getInstance(config, hostKey, portKey);
+
     final AirbyteMessageConsumer delegateConsumer;
     try {
       delegateConsumer = delegate.getConsumer(tunnel.getConfigInTunnel(), catalog, outputRecordCollector);
