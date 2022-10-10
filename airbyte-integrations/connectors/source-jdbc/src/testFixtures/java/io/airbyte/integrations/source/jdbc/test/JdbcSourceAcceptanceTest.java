@@ -849,7 +849,8 @@ public abstract class JdbcSourceAcceptanceTest {
         .withStreamName(airbyteStream.getStream().getName())
         .withStreamNamespace(airbyteStream.getStream().getNamespace())
         .withCursorField(List.of(initialCursorField))
-        .withCursor(initialCursorValue);
+        .withCursor(initialCursorValue)
+        .withCursorRecordCount(1L);
 
     final List<AirbyteMessage> actualMessages = MoreIterators
         .toList(source.read(config, configuredCatalog, Jsons.jsonNode(createState(List.of(dbStreamState)))));
@@ -861,8 +862,8 @@ public abstract class JdbcSourceAcceptanceTest {
             .withStreamName(airbyteStream.getStream().getName())
             .withStreamNamespace(airbyteStream.getStream().getNamespace())
             .withCursorField(List.of(cursorField))
-            .withCursorRecordCount(1L)
-            .withCursor(endCursorValue));
+            .withCursor(endCursorValue)
+            .withCursorRecordCount(1L));
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(expectedRecordMessages);
     expectedMessages.addAll(createExpectedTestMessages(expectedStreams));
 
