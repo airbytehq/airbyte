@@ -50,33 +50,33 @@ public class JsonSchemaType {
           .withFormat(DATE_TIME)
           .withAirbyteType(TIMESTAMP_WITHOUT_TIMEZONE).build();
   public static final JsonSchemaType STRING_DATE =
-          JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-                  .withFormat(DATE)
-                  .build();
+      JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+          .withFormat(DATE)
+          .build();
   public static final JsonSchemaType NUMBER_BIGINT =
-          JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-                  .withAirbyteType("big_integer")
-                  .build();
+      JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+          .withAirbyteType("big_integer")
+          .build();
   public static final JsonSchemaType VARCHAR_ARRAY =
-          JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+      JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
           .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
           .withAirbyteType("varchar_array")
           .build();
   public static final JsonSchemaType INTEGER_ARRAY =
-          JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-                  .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
-                  .withAirbyteType("integer_array")
-                  .build();
+      JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+          .withItems(JsonSchemaPrimitive.INTEGER.name().toLowerCase())
+          .withAirbyteType("integer_array")
+          .build();
   public static final JsonSchemaType TEXT_ARRAY =
-          JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+      JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
           .withItems(JsonSchemaPrimitive.STRING.name().toLowerCase())
           .withAirbyteType("text_array")
           .build();;
   public static final JsonSchemaType NUMERIC_ARRAY =
-          JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-                  .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
-                  .withAirbyteType("number_array")
-                  .build();;
+      JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+          .withItems(JsonSchemaPrimitive.NUMBER.name().toLowerCase())
+          .withAirbyteType("number_array")
+          .build();;
 
   private final Map<String, Object> jsonSchemaTypeMap;
 
@@ -120,7 +120,7 @@ public class JsonSchemaType {
       ImmutableMap.Builder<String, Object> itemsMapBuilder = new ImmutableMap.Builder<>();
       itemsMapBuilder.put(TYPE, value);
       ImmutableMap<String, Object> nestedType = itemsMapBuilder.build();
-      typeMapBuilder.put(ITEMS,  nestedType);
+      typeMapBuilder.put(ITEMS, nestedType);
       return this;
     }
 
@@ -129,9 +129,10 @@ public class JsonSchemaType {
     }
 
     public Builder withItems(JsonSchemaType items) {
-      typeMapBuilder.put(ITEMS,  items.getJsonSchemaTypeMap());
+      typeMapBuilder.put(ITEMS, items.getJsonSchemaTypeMap());
       return this;
     }
+
   }
 
   @Override
