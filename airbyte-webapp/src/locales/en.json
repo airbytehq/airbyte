@@ -384,6 +384,7 @@
   "form.frequency": "Replication frequency*",
   "form.cronExpression": "Cron expression*",
   "form.cronExpression.placeholder": "Cron expression",
+  "form.cronExpression.error": "Invalid cron expression",
   "form.cronExpression.message": "Enter a <lnk>cron expression</lnk> for when syncs should run (ex. \"0 0 12 * * ?\" => Will sync at 12:00 PM every day)",
   "form.frequency.placeholder": "Select a frequency",
   "form.frequency.message": "Set how often data should sync to the destination",
