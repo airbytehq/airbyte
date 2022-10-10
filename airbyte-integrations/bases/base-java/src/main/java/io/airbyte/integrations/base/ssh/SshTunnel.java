@@ -13,9 +13,11 @@ import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
@@ -54,10 +56,13 @@ public class SshTunnel implements AutoCloseable {
   private final int tunnelPort;
   private final String tunnelUser;
   private final String sshKey;
+  private final String endPointKey;
+  private final String remoteServiceProtocol;
+  private final String remoteServicePath;
   private final String tunnelUserPassword;
-  private final String remoteDatabaseHost;
-  private final int remoteDatabasePort;
-  private int tunnelDatabasePort;
+  private final String remoteServiceHost;
+  private final int remoteServicePort;
+  protected int tunnelLocalPort;
 
   private SshClient sshclient;
   private ClientSession tunnelSession;
@@ -69,6 +74,10 @@ public class SshTunnel implements AutoCloseable {
    *        in the config remoteDatabaseHost is found.
    * @param portKey - a list of keys that point to the database port. should be pointing to where in
    *        the config remoteDatabasePort is found.
+   * @param endPointKey - key that points to the endpoint URL (this is commonly used for REST-based
+   *        services such as Elastic and MongoDB)
+   * @param remoteServiceUrl - URL of the remote endpoint (this is commonly used for REST-based
+   *    *        services such as Elastic and MongoDB)
    * @param tunnelMethod - the type of ssh method that should be used (includes not using SSH at all).
    * @param tunnelHost - host name of the machine to which we will establish an ssh connection (e.g.
    *        hostname of the bastion).
@@ -79,25 +88,28 @@ public class SshTunnel implements AutoCloseable {
    *        using tunnelUserPassword instead.
    * @param tunnelUserPassword - the password for the tunnelUser. can be null if we are using sshKey
    *        instead.
-   * @param remoteDatabaseHost - the actual host name of the database (as it is known to the tunnel
+   * @param remoteServiceHost - the actual host name of the remote service (as it is known to the
+   *        tunnel host).
+   * @param remoteServicePort - the actual port of the remote service (as it is known to the tunnel
    *        host).
-   * @param remoteDatabasePort - the actual port of the database (as it is known to the tunnel host).
    */
   public SshTunnel(final JsonNode config,
                    final List<String> hostKey,
                    final List<String> portKey,
+                   final String endPointKey,
+                   final URL remoteServiceUrl,
                    final TunnelMethod tunnelMethod,
                    final String tunnelHost,
                    final int tunnelPort,
                    final String tunnelUser,
                    final String sshKey,
                    final String tunnelUserPassword,
-                   final String remoteDatabaseHost,
-                   final int remoteDatabasePort) {
+                   final String remoteServiceHost,
+                   final int remoteServicePort) {
     this.config = config;
     this.hostKey = hostKey;
     this.portKey = portKey;
-
+    this.endPointKey = endPointKey;
     Preconditions.checkNotNull(tunnelMethod);
     this.tunnelMethod = tunnelMethod;
 
@@ -107,8 +119,10 @@ public class SshTunnel implements AutoCloseable {
       this.tunnelUser = null;
       this.sshKey = null;
       this.tunnelUserPassword = null;
-      this.remoteDatabaseHost = null;
-      this.remoteDatabasePort = 0;
+      this.remoteServiceHost = null;
+      this.remoteServicePort = 0;
+      this.remoteServiceProtocol = null;
+      this.remoteServicePath = null;
     } else {
       Preconditions.checkNotNull(tunnelHost);
       Preconditions.checkArgument(tunnelPort > 0);
@@ -119,17 +133,26 @@ public class SshTunnel implements AutoCloseable {
       if (tunnelMethod.equals(TunnelMethod.SSH_PASSWORD_AUTH)) {
         Preconditions.checkNotNull(tunnelUserPassword);
       }
-      Preconditions.checkNotNull(remoteDatabaseHost);
-      Preconditions.checkArgument(remoteDatabasePort > 0);
+      //must provide either host/port or endpoint
+      Preconditions.checkArgument((hostKey != null && portKey != null) || endPointKey != null);
+      Preconditions.checkArgument((remoteServiceHost != null && remoteServicePort > 0) || remoteServiceUrl != null);
+      if(remoteServiceUrl != null) {
+        this.remoteServiceHost = remoteServiceUrl.getHost();
+        this.remoteServicePort = remoteServiceUrl.getPort();
+        this.remoteServiceProtocol = remoteServiceUrl.getProtocol();
+        this.remoteServicePath = remoteServiceUrl.getPath();
+      } else {
+        this.remoteServiceProtocol = null;
+        this.remoteServicePath = null;
+        this.remoteServiceHost = remoteServiceHost;
+        this.remoteServicePort = remoteServicePort;
+      }
 
       this.tunnelHost = tunnelHost;
       this.tunnelPort = tunnelPort;
       this.tunnelUser = tunnelUser;
       this.sshKey = sshKey;
       this.tunnelUserPassword = tunnelUserPassword;
-      this.remoteDatabaseHost = remoteDatabaseHost;
-      this.remoteDatabasePort = remoteDatabasePort;
-
       this.sshclient = createClient();
       this.tunnelSession = openTunnel(sshclient);
     }
@@ -139,29 +162,24 @@ public class SshTunnel implements AutoCloseable {
     return config;
   }
 
-  public JsonNode getConfigInTunnel() {
+  public JsonNode getConfigInTunnel() throws Exception {
     if (tunnelMethod.equals(TunnelMethod.NO_TUNNEL)) {
       return getOriginalConfig();
     } else {
       final JsonNode clone = Jsons.clone(config);
-      Jsons.replaceNestedString(clone, hostKey, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName());
-      Jsons.replaceNestedInt(clone, portKey, tunnelDatabasePort);
+      if (hostKey != null) {
+        Jsons.replaceNestedString(clone, hostKey, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName());
+      }
+      if (portKey != null) {
+        Jsons.replaceNestedInt(clone, portKey, tunnelLocalPort);
+      }
+      if (endPointKey != null) {
+        URL tunnelEndPointURL = new URL(remoteServiceProtocol, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), tunnelLocalPort, remoteServicePath);
+        Jsons.replaceNestedString(clone, Arrays.asList(endPointKey), tunnelEndPointURL.toString());
+      }
       return clone;
     }
   }
-
-  // /**
-  // * Finds a free port on the machine. As soon as this method returns, it is possible for process to
-  // bind to this port. Thus it only gives a guarantee that at the time
-  // */
-  // private static int findFreePort() {
-  // // finds an available port.
-  // try (final var socket = new ServerSocket(0)) {
-  // return socket.getLocalPort();
-  // } catch (final IOException e) {
-  // throw new RuntimeException(e);
-  // }
-  // }
 
   public static SshTunnel getInstance(final JsonNode config, final List<String> hostKey, final List<String> portKey) {
     final TunnelMethod tunnelMethod = Jsons.getOptional(config, "tunnel_method", "tunnel_method")
@@ -169,12 +187,12 @@ public class SshTunnel implements AutoCloseable {
         .orElse(TunnelMethod.NO_TUNNEL);
     LOGGER.info("Starting connection with method: {}", tunnelMethod);
 
-    // final int localPort = findFreePort();
-
     return new SshTunnel(
         config,
         hostKey,
         portKey,
+        null,
+        null,
         tunnelMethod,
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
         Jsons.getIntOrZero(config, "tunnel_method", "tunnel_port"),
@@ -183,6 +201,32 @@ public class SshTunnel implements AutoCloseable {
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
         Strings.safeTrim(Jsons.getStringOrNull(config, hostKey)),
         Jsons.getIntOrZero(config, portKey));
+  }
+
+  public static SshTunnel getInstance(final JsonNode config, final String endPointKey) throws Exception {
+    final TunnelMethod tunnelMethod = Jsons.getOptional(config, "tunnel_method", "tunnel_method")
+        .map(method -> TunnelMethod.valueOf(method.asText().trim()))
+        .orElse(TunnelMethod.NO_TUNNEL);
+    LOGGER.info("Starting connection with method: {}", tunnelMethod);
+    String remoteServiceHost = null;
+    int remoteServicePort = 0;
+    String remoteServiceProtocol = null;
+    String remoteServicePath = null;
+    final URL originaServicelUrl = new URL(Jsons.getStringOrNull(config, endPointKey));
+
+    return new SshTunnel(
+        config,
+        null,
+        null,
+        endPointKey,
+        originaServicelUrl,
+        tunnelMethod,
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
+        Jsons.getIntOrZero(config, "tunnel_method", "tunnel_port"),
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
+        remoteServiceHost, remoteServicePort);
   }
 
   public static void sshWrap(final JsonNode config,
@@ -196,12 +240,31 @@ public class SshTunnel implements AutoCloseable {
     });
   }
 
+  public static void sshWrap(final JsonNode config,
+                             final String endPointKey,
+                             final CheckedConsumer<JsonNode, Exception> wrapped)
+      throws Exception {
+    sshWrap(config, endPointKey, (configInTunnel) -> {
+      wrapped.accept(configInTunnel);
+      return null;
+    });
+  }
+
   public static <T> T sshWrap(final JsonNode config,
                               final List<String> hostKey,
                               final List<String> portKey,
                               final CheckedFunction<JsonNode, T, Exception> wrapped)
       throws Exception {
     try (final SshTunnel sshTunnel = SshTunnel.getInstance(config, hostKey, portKey)) {
+      return wrapped.apply(sshTunnel.getConfigInTunnel());
+    }
+  }
+
+  public static <T> T sshWrap(final JsonNode config,
+                              final String endPointKey,
+                              final CheckedFunction<JsonNode, T, Exception> wrapped)
+      throws Exception {
+    try (final SshTunnel sshTunnel = SshTunnel.getInstance(config, endPointKey)) {
       return wrapped.apply(sshTunnel.getConfigInTunnel());
     }
   }
@@ -281,11 +344,11 @@ public class SshTunnel implements AutoCloseable {
       final SshdSocketAddress address = session.startLocalPortForwarding(
           // entering 0 lets the OS pick a free port for us.
           new SshdSocketAddress(InetSocketAddress.createUnresolved(SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), 0)),
-          new SshdSocketAddress(remoteDatabaseHost, remoteDatabasePort));
+          new SshdSocketAddress(remoteServiceHost, remoteServicePort));
 
       // discover the port that the OS picked and remember it so that we can use it when we try to connect
       // later.
-      tunnelDatabasePort = address.getPort();
+      tunnelLocalPort = address.getPort();
 
       LOGGER.info("Established tunneling session.  Port forwarding started on " + address.toInetSocketAddress());
       return session;
@@ -303,9 +366,9 @@ public class SshTunnel implements AutoCloseable {
         ", tunnelHost='" + tunnelHost + '\'' +
         ", tunnelPort=" + tunnelPort +
         ", tunnelUser='" + tunnelUser + '\'' +
-        ", remoteDatabaseHost='" + remoteDatabaseHost + '\'' +
-        ", remoteDatabasePort=" + remoteDatabasePort +
-        ", tunnelDatabasePort=" + tunnelDatabasePort +
+        ", remoteServiceHost='" + remoteServiceHost + '\'' +
+        ", remoteServicePort=" + remoteServicePort +
+        ", tunnelLocalPort=" + tunnelLocalPort +
         '}';
   }
 
