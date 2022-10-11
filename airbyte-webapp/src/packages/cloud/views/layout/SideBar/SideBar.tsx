@@ -10,7 +10,6 @@ import { Link } from "components";
 import { CreditsIcon } from "components/icons/CreditsIcon";
 import { Text } from "components/ui/Text";
 
-import { useConfig } from "config";
 import { useExperiment } from "hooks/services/Experiment";
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -18,6 +17,7 @@ import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
+import { links } from "utils/links";
 import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
@@ -38,7 +38,6 @@ const SideBar: React.FC = () => {
   const navLinkClassName = useCalculateSidebarStyles();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
-  const config = useConfig();
   const { show } = useIntercom();
   const handleChatUs = () => show();
   const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
@@ -112,25 +111,25 @@ const SideBar: React.FC = () => {
             options={[
               {
                 type: SidebarDropdownMenuItemType.LINK,
-                href: config.links.docsLink,
+                href: links.docsLink,
                 icon: <DocsIcon />,
                 displayName: <FormattedMessage id="sidebar.documentation" />,
               },
               {
                 type: SidebarDropdownMenuItemType.LINK,
-                href: config.links.slackLink,
+                href: links.slackLink,
                 icon: <FontAwesomeIcon icon={faSlack} />,
                 displayName: <FormattedMessage id="sidebar.joinSlack" />,
               },
               {
                 type: SidebarDropdownMenuItemType.LINK,
-                href: config.links.statusLink,
+                href: links.statusLink,
                 icon: <StatusIcon />,
                 displayName: <FormattedMessage id="sidebar.status" />,
               },
               {
                 type: SidebarDropdownMenuItemType.LINK,
-                href: config.links.recipesLink,
+                href: links.recipesLink,
                 icon: <RecipesIcon />,
                 displayName: <FormattedMessage id="sidebar.recipes" />,
               },
@@ -146,7 +145,7 @@ const SideBar: React.FC = () => {
             options={[
               {
                 type: SidebarDropdownMenuItemType.LINK,
-                href: config.links.supportTicketLink,
+                href: links.supportTicketLink,
                 icon: <FontAwesomeIcon icon={faEnvelope} />,
                 displayName: <FormattedMessage id="sidebar.supportTicket" />,
               },
