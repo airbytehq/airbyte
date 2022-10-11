@@ -72,6 +72,7 @@ def test_internal_server_error_retry(time_mock):
     [
         (HTTPStatus.BAD_GATEWAY, {}, None),
         (HTTPStatus.INTERNAL_SERVER_ERROR, {}, None),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, None),
         (HTTPStatus.FORBIDDEN, {"Retry-After": 120}, 120),
         (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": 1655804724}, 300.0),
     ],
