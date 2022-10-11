@@ -19,7 +19,7 @@ import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalResponse;
+import io.airbyte.commons.temporal.TemporalResponse;
 import java.nio.file.Path;
 import java.util.UUID;
 import lombok.AllArgsConstructor;

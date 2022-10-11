@@ -4,6 +4,7 @@
 
 package io.airbyte.server.scheduler;
 
+import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;

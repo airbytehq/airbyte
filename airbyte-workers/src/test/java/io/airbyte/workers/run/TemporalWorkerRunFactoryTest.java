@@ -23,7 +23,7 @@ import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalResponse;
+import io.airbyte.commons.temporal.TemporalResponse;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

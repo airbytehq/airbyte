@@ -24,7 +24,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -130,6 +132,16 @@ public class TemporalClient {
     return Optional.ofNullable(StringUtils.removeStart(workflowId, "connection_manager_"))
         .map(
             stringUUID -> UUID.fromString(stringUUID));
+  }
+
+  @Value
+  @Builder
+  public static class ManualOperationResult {
+
+    final Optional<String> failingReason;
+    final Optional<Long> jobId;
+    final Optional<ErrorCode> errorCode;
+
   }
 
 }

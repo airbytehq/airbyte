@@ -8,7 +8,11 @@ import static io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowIm
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
+import io.airbyte.commons.temporal.ErrorCode;
+import io.airbyte.commons.temporal.JobMetadata;
+import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
 import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.config.ConnectorJobOutput;
@@ -58,8 +62,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import lombok.Builder;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -305,15 +307,6 @@ public class TemporalClient {
     connectionManagerWorkflow.connectionUpdated();
   }
 
-  @Value
-  @Builder
-  public static class ManualOperationResult {
-
-    final Optional<String> failingReason;
-    final Optional<Long> jobId;
-    final Optional<ErrorCode> errorCode;
-
-  }
 
   public ManualOperationResult startNewManualSync(final UUID connectionId) {
     log.info("Manual sync request");
