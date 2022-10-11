@@ -830,7 +830,7 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testIncrementalWithConcurrentInsertion() throws Exception {
     final String namespace = getDefaultNamespace();
-    final String tableName = "name_and_timestamp";
+    final String tableName = getConcurrentTestTableName();
     final String fullyQualifiedTableName = getFullyQualifiedTableName(tableName);
 
     // 1st sync
