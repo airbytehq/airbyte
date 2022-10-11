@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -308,7 +309,9 @@ public class CatalogHelpers {
    * @param newCatalog - new catalog
    * @return difference between old and new catalogs
    */
-  public static Set<StreamTransform> getCatalogDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
+  public static Set<StreamTransform> getCatalogDiff(final AirbyteCatalog oldCatalog,
+                                                    final AirbyteCatalog newCatalog,
+                                                    final ConfiguredAirbyteCatalog configuredCatalog) {
     final Set<StreamTransform> streamTransforms = new HashSet<>();
 
     final Map<StreamDescriptor, AirbyteStream> descriptorToStreamOld = streamDescriptorToMap(oldCatalog);
@@ -322,8 +325,14 @@ public class CatalogHelpers {
         .forEach(descriptor -> {
           final AirbyteStream streamOld = descriptorToStreamOld.get(descriptor);
           final AirbyteStream streamNew = descriptorToStreamNew.get(descriptor);
+
+          final Optional<ConfiguredAirbyteStream> stream = configuredCatalog.getStreams().stream()
+              .filter(s -> Objects.equals(s.getStream().getNamespace(), descriptor.getNamespace())
+                  && s.getStream().getName().equals(descriptor.getName()))
+              .findFirst();
+
           if (!streamOld.equals(streamNew)) {
-            streamTransforms.add(StreamTransform.createUpdateStreamTransform(descriptor, getStreamDiff(streamOld, streamNew)));
+            streamTransforms.add(StreamTransform.createUpdateStreamTransform(descriptor, getStreamDiff(streamOld, streamNew, stream)));
           }
         });
 
@@ -331,7 +340,8 @@ public class CatalogHelpers {
   }
 
   private static UpdateStreamTransform getStreamDiff(final AirbyteStream streamOld,
-                                                     final AirbyteStream streamNew) {
+                                                     final AirbyteStream streamNew,
+                                                     final Optional<ConfiguredAirbyteStream> configuredStream) {
     final Set<FieldTransform> fieldTransforms = new HashSet<>();
     final Map<List<String>, JsonNode> fieldNameToTypeOld = getFullyQualifiedFieldNamesWithTypes(streamOld.getJsonSchema())
         .stream()
@@ -347,7 +357,10 @@ public class CatalogHelpers {
             CatalogHelpers::combineAccumulator);
 
     Sets.difference(fieldNameToTypeOld.keySet(), fieldNameToTypeNew.keySet())
-        .forEach(fieldName -> fieldTransforms.add(FieldTransform.createRemoveFieldTransform(fieldName, fieldNameToTypeOld.get(fieldName))));
+        .forEach(fieldName -> {
+          fieldTransforms.add(FieldTransform.createRemoveFieldTransform(fieldName, fieldNameToTypeOld.get(fieldName),
+              transformBreaksConnection(configuredStream, fieldName)));
+        });
     Sets.difference(fieldNameToTypeNew.keySet(), fieldNameToTypeOld.keySet())
         .forEach(fieldName -> fieldTransforms.add(FieldTransform.createAddFieldTransform(fieldName, fieldNameToTypeNew.get(fieldName))));
     Sets.intersection(fieldNameToTypeOld.keySet(), fieldNameToTypeNew.keySet()).forEach(fieldName -> {
@@ -358,6 +371,7 @@ public class CatalogHelpers {
         fieldTransforms.add(FieldTransform.createUpdateFieldTransform(fieldName, new UpdateFieldSchemaTransform(oldType, newType)));
       }
     });
+
     return new UpdateStreamTransform(fieldTransforms);
   }
 
@@ -382,6 +396,25 @@ public class CatalogHelpers {
         accumulatorLeft.put(key, value);
       }
     });
+  }
+
+  static boolean transformBreaksConnection(final Optional<ConfiguredAirbyteStream> configuredStream, final List<String> fieldName) {
+    if (configuredStream.isEmpty()) {
+      return false;
+    }
+
+    final ConfiguredAirbyteStream streamConfig = configuredStream.get();
+
+    final SyncMode syncMode = streamConfig.getSyncMode();
+    if (SyncMode.INCREMENTAL == syncMode && streamConfig.getCursorField().equals(fieldName)) {
+      return true;
+    }
+
+    final DestinationSyncMode destinationSyncMode = streamConfig.getDestinationSyncMode();
+    if (DestinationSyncMode.APPEND_DEDUP == destinationSyncMode && streamConfig.getPrimaryKey().contains(fieldName)) {
+      return true;
+    }
+    return false;
   }
 
 }
