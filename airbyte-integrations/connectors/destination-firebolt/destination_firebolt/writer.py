@@ -39,7 +39,7 @@ class FireboltWriter:
         :param name: table name to delete.
         """
         cursor = self.connection.cursor()
-        cursor.execute(f"DROP TABLE IF EXISTS _airbyte_raw_{name}")
+        cursor.execute(f"DROP TABLE IF EXISTS _airbyte_raw_{name} CASCADE")
 
     def create_raw_table(self, name: str):
         """

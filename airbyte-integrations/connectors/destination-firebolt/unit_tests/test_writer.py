@@ -101,7 +101,7 @@ def test_s3_default(s3_writer: FireboltS3Writer) -> None:
 
 
 def test_s3_delete_tables(connection: MagicMock, s3_writer: FireboltS3Writer) -> None:
-    expected_sql = "DROP TABLE IF EXISTS _airbyte_raw_dummy"
+    expected_sql = "DROP TABLE IF EXISTS _airbyte_raw_dummy CASCADE"
     s3_writer.delete_table("dummy")
     connection.cursor.return_value.execute.assert_called_once_with(expected_sql)
 
