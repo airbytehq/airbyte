@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.workers.temporal.exception.RetryableException;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.util.UUID;

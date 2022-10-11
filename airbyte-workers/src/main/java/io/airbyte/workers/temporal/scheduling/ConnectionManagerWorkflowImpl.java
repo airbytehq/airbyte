@@ -7,6 +7,7 @@ package io.airbyte.workers.temporal.scheduling;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowInternalState;
@@ -31,7 +32,6 @@ import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
-import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionOutput;
@@ -88,9 +88,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow {
-
-  public static final long NON_RUNNING_JOB_ID = -1;
-  public static final int NON_RUNNING_ATTEMPT_ID = -1;
 
   private static final int TASK_QUEUE_CHANGE_CURRENT_VERSION = 1;
   private static final int AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION = 1;

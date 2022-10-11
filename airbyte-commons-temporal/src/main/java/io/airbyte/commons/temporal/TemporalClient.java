@@ -4,9 +4,15 @@
 
 package io.airbyte.commons.temporal;
 
+import static io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.NON_RUNNING_JOB_ID;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
+import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.commons.temporal.exception.DeletedWorkflowException;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.micronaut.context.annotation.Requires;
 import io.temporal.api.common.v1.WorkflowType;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
@@ -16,36 +22,53 @@ import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Slf4j
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          notEquals = "DATA_PLANE")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class TemporalClient {
 
-  @Inject
-  private WorkflowClient client;
-  @Inject
-  private WorkflowServiceStubs service;
-  @Inject
-  private ConnectionManagerUtils connectionManagerUtils;
+  /**
+   * This is used to sleep between 2 temporal queries. The query is needed to ensure that the cancel
+   * and start manual sync methods wait before returning. Since temporal signals are async, we need to
+   * use the queries to make sure that we are in a state in which we want to continue with.
+   */
+  private static final int DELAY_BETWEEN_QUERY_MS = 10;
+
+  private final Path workspaceRoot;
+  private final WorkflowClient client;
+  private final WorkflowServiceStubs service;
+  private final StreamResetPersistence streamResetPersistence;
+  private final ConnectionManagerUtils connectionManagerUtils;
+  private final StreamResetRecordsHelper streamResetRecordsHelper;
+
+  public TemporalClient(@Named("workspaceRoot") final Path workspaceRoot,
+                        final WorkflowClient client,
+                        final WorkflowServiceStubs service,
+                        final StreamResetPersistence streamResetPersistence,
+                        final ConnectionManagerUtils connectionManagerUtils,
+                        final StreamResetRecordsHelper streamResetRecordsHelper) {
+    this.workspaceRoot = workspaceRoot;
+    this.client = client;
+    this.service = service;
+    this.streamResetPersistence = streamResetPersistence;
+    this.connectionManagerUtils = connectionManagerUtils;
+    this.streamResetRecordsHelper = streamResetRecordsHelper;
+  }
 
   private final Set<String> workflowNames = new HashSet<>();
 
@@ -266,4 +289,14 @@ public class TemporalClient {
         Optional.empty(),
         newJobId, Optional.empty());
   }
+
+  private Optional<Long> getNewJobId(final UUID connectionId, final long oldJobId) {
+    final long currentJobId = connectionManagerUtils.getCurrentJobId(client, connectionId);
+    if (currentJobId == NON_RUNNING_JOB_ID || currentJobId == oldJobId) {
+      return Optional.empty();
+    } else {
+      return Optional.of(currentJobId);
+    }
+  }
+
 }
