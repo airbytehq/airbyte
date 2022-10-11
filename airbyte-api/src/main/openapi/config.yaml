@@ -4204,6 +4204,7 @@ components:
       required:
         - transformType
         - fieldName
+        - breaking
       properties:
         transformType:
           type: string
@@ -4213,6 +4214,8 @@ components:
             - update_field_schema
         fieldName:
           $ref: "#/components/schemas/FieldName"
+        breaking:
+          type: boolean
         addField:
           $ref: "#/components/schemas/FieldAdd"
         removeField:
