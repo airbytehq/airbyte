@@ -9,6 +9,7 @@ import { initSentry } from "utils/sentry";
 
 import "./globals";
 
+// We do not follow default config approach since we want to init sentry/datadog asap
 initSentry();
 initDatadogRum();
 
