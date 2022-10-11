@@ -5,13 +5,6 @@ plugins {
     id 'com.github.eirnym.js2p' version '1.0'
 }
 
-group 'io.airbyte...'
-version '0.40.14'
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor
@@ -58,8 +51,5 @@ jsonSchema2Pojo {
     includeConstructors = false
     includeSetters = true
 }
-
-Properties env = new Properties()
-rootProject.file('.env.dev').withInputStream { env.load(it) }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
