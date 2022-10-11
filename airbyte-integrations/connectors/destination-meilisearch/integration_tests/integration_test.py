@@ -19,8 +19,9 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_kvdb import DestinationKvdb
-from destination_kvdb.client import KvDbClient
+from destination_meilisearch.destination import DestinationMeilisearch, get_client
+
+from meilisearch import Client
 
 
 @pytest.fixture(name="config")
@@ -48,25 +49,25 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     return ConfiguredAirbyteCatalog(streams=[append_stream, overwrite_stream])
 
 
-@pytest.fixture(autouse=True)
-def teardown(config: Mapping):
-    yield
-    client = KvDbClient(**config)
-    client.delete(list(client.list_keys()))
+# @pytest.fixture(autouse=True)
+# def teardown(config: Mapping):
+#     yield
+#     client = get_client(**config)
+#     client.delete(list(client.list_keys()))
 
 
 @pytest.fixture(name="client")
-def client_fixture(config) -> KvDbClient:
-    return KvDbClient(**config)
+def client_fixture(config) -> Client:
+    return get_client(config=config)
 
 
 # def test_check_valid_config(config: Mapping):
-#     outcome = DestinationKvdb().check(AirbyteLogger(), config)
+#     outcome = DestinationMeilisearch().check(AirbyteLogger(), config)
 #     assert outcome.status == Status.SUCCEEDED
 
 
 # def test_check_invalid_config():
-#     outcome = DestinationKvdb().check(AirbyteLogger(), {"bucket_id": "not_a_real_id"})
+#     outcome = DestinationMeilisearch().check(AirbyteLogger(), {"api_key": "not_a_real_key", "host": "https://www.meilisearch.com"})
 #     assert outcome.status == Status.FAILED
 
 
@@ -80,19 +81,20 @@ def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     )
 
 
-def retrieve_all_records(client: KvDbClient) -> List[AirbyteRecordMessage]:
+def retrieve_all_records(client: Client) -> List[AirbyteRecordMessage]:
     """retrieves and formats all records in kvdb as Airbyte messages"""
-    all_records = client.list_keys(list_values=True)
-    out = []
-    for record in all_records:
-        key = record[0]
-        stream = key.split("__ab__")[0]
-        value = record[1]
-        out.append(_record(stream, value["str_col"], value["int_col"]))
-    return out
+    # all_records = client.list_keys(list_values=True)
+    # out = []
+    # for record in all_records:
+        # key = record[0]
+        # stream = key.split("__ab__")[0]
+        # value = record[1]
+        # out.append(_record(stream, value["str_col"], value["int_col"]))
+    # return out
+    return []
 
 
-def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: KvDbClient):
+def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
     """
     This test verifies that:
         1. writing a stream in "overwrite" mode overwrites any existing data for that stream
@@ -108,7 +110,7 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
         _record(overwrite_stream, str(i), i) for i in range(5, 10)
     ]
 
-    destination = DestinationKvdb()
+    destination = DestinationMeilisearch()
 
     expected_states = [first_state_message, second_state_message]
     output_states = list(

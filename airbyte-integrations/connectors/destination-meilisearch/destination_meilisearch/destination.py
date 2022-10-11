@@ -21,21 +21,6 @@ class DestinationMeilisearch(Destination):
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
-        """
-        TODO
-        Reads the input stream of messages, config, and catalog to write data to the destination.
-
-        This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
-        in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
-        successfully persisted to the destination. This is used to ensure fault tolerance in the case that a sync fails before fully completing,
-        then the source is given the last state message output from this method as the starting point of the next sync.
-
-        :param config: dict of JSON configuration matching the configuration declared in spec.json
-        :param configured_catalog: The Configured Catalog describing the schema of the data being received and how it should be persisted in the
-                                    destination
-        :param input_messages: The stream of input messages received from the source
-        :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
-        """
         client = get_client(config=config)
 
         for configured_stream in configured_catalog.streams:
@@ -48,15 +33,13 @@ class DestinationMeilisearch(Destination):
                 yield message
             elif message.type == Type.RECORD:
                 record = message.record
-                print(message)
                 client.index(record.stream).add_documents([record.data])
             else:
-                # ignore other message types for now
                 continue
-        # pass
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
+            # Verify write access by attempting to create an index, add a document and then delete the index
             client = get_client(config=config)
             client.create_index('_airbyte', {'primaryKey': 'id'})
             client.index('_airbyte').add_documents([{
