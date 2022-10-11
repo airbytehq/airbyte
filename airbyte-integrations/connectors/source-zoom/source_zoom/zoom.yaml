@@ -1,0 +1,246 @@
+version: "0.1.0"
+
+definitions:
+  requester:
+    url_base: "https://api.zoom.us/v2/"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['jwt_token'] }}"
+
+  zoom_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response.next_page_token }}"
+      stop_condition: "{{ response.next_page_token == '' }}"
+      page_size: 10 # TODO: make it 30
+    page_size_option:
+      field_name: "page_size"
+      inject_into: "request_parameter"
+    page_token_option:
+      field_name: "next_page_token"
+      inject_into: "request_parameter"
+    url_base: "*ref(definitions.requester.url_base)"
+
+
+  retriever:
+    requester:
+      $ref: "*ref(definitions.requester)"
+
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_zoom/schemas/{{ options['name'] }}.json"
+    
+
+  users_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"  
+    retriever:
+      paginator:
+        $ref: "*ref(definitions.zoom_paginator)"
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["users"]
+      $ref: "*ref(definitions.retriever)"
+    $options:
+      name: "users"
+      primary_key: "id"
+      path: "/users"
+
+
+  meetings_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "meetings"
+      primary_key: "id"
+    retriever:
+      paginator:
+        $ref: "*ref(definitions.zoom_paginator)"    
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["meetings"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/users/{{ stream_slice.parent_id }}/meetings"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.users_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+
+
+  meeting_registrants_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "meeting_registrants"
+      primary_key: "id"
+    retriever:
+      paginator:
+        $ref: "*ref(definitions.zoom_paginator)"    
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["registrants"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/meetings/{{ stream_slice.parent_id }}/registrants"
+        error_handler:
+          type: CompositeErrorHandler
+          # ignore 400 error; We get this error if registration is not enabled for the meeting
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                # - http_codes: [400]
+                - predicate: "{{ response.code == 300 }}"
+                  action: IGNORE
+            - type: DefaultErrorHandler        
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.meetings_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["meeting_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+  meeting_polls_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "meeting_polls"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["polls"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/meetings/{{ stream_slice.parent_id }}/polls"
+        error_handler:
+          type: CompositeErrorHandler
+          # ignore 400 error; We get this error if Meeting poll is not enabled for the meeting
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400] # TODO: fix this error
+                  action: IGNORE
+            - type: DefaultErrorHandler        
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.meetings_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["meeting_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+  meeting_poll_results_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "meeting_poll_results"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["questions"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/past_meetings/{{ stream_slice.parent_id }}/polls"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400, 404] # code 3001 gives HTTP 404
+                  action: IGNORE
+            - type: DefaultErrorHandler        
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.meetings_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["meeting_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+  meeting_registration_questions_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "meeting_registration_questions"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: []        
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/meetings/{{ stream_slice.parent_id }}/registrants/questions"
+        error_handler:
+          type: CompositeErrorHandler
+          # ignore 400 error; We get this error if Meeting is more than created an year ago
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400]
+                  action: IGNORE
+            - type: DefaultErrorHandler        
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.meetings_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["meeting_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+ 
+
+streams:
+  - "*ref(definitions.users_stream)"
+  - "*ref(definitions.meetings_stream)"
+  - "*ref(definitions.meeting_registrants_stream)"
+  - "*ref(definitions.meeting_polls_stream)"
+  - "*ref(definitions.meeting_poll_results_stream)"
+  - "*ref(definitions.meeting_registration_questions_stream)"
+
+
+check:
+  stream_names:
+    - "users"
