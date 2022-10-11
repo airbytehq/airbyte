@@ -379,12 +379,16 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     });
   }
 
+  protected String getCountColumnName() {
+    return "record_count";
+  }
+
   private long getActualCursorRecordCount(final Connection connection,
                                          final String fullTableName,
                                          final String quotedCursorField,
                                          final Datatype cursorFieldType,
                                          final String cursor) throws SQLException {
-    final String columnName = "record_count";
+    final String columnName = getCountColumnName();
     final PreparedStatement cursorRecordStatement;
     if (cursor == null) {
       final String cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s IS NULL",
