@@ -7,6 +7,7 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -102,14 +103,31 @@ public class KubePodProcessIntegrationTest {
     final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
     when(workerConfigs.getEnvMap()).thenReturn(Map.of("ENV_VAR_1", "ENV_VALUE_1"));
 
-    processFactory =
-        new KubeProcessFactory(
-            workerConfigs,
-            "default",
-            fabricClient,
-            heartbeatUrl,
-            getHost(),
-            false);
+    processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, heartbeatUrl, getHost(), false);
+  }
+
+  @RetryingTest(3)
+  public void testInitKubePortManagerSingletonTwice() throws Exception {
+    /**
+     * Test init KubePortManagerSingleton twice: 1. with same ports should succeed 2. with different
+     * port should fail
+     *
+     * Every test has been init once in BeforeAll with getOpenPorts(30)
+     */
+
+    KubePortManagerSingleton originalKubePortManager = KubePortManagerSingleton.getInstance();
+
+    // init the second time with the same ports
+    final List<Integer> theSameOpenPorts = new ArrayList<>(getOpenPorts(30));
+    KubePortManagerSingleton.init(new HashSet<>(theSameOpenPorts.subList(1, theSameOpenPorts.size() - 1)));
+    assertEquals(originalKubePortManager, KubePortManagerSingleton.getInstance());
+
+    // init the second time with different ports
+    final List<Integer> differentOpenPorts = new ArrayList<>(getOpenPorts(32));
+    Exception exception = assertThrows(RuntimeException.class, () -> {
+      KubePortManagerSingleton.init(new HashSet<>(differentOpenPorts.subList(1, differentOpenPorts.size() - 1)));
+    });
+    assertTrue(exception.getMessage().contains("Cannot initialize twice with different ports!"));
   }
 
   /**
@@ -283,21 +301,14 @@ public class KubePodProcessIntegrationTest {
     final var uuid = UUID.randomUUID();
     final Process process = getProcess(Map.of("uuid", uuid.toString()), "sleep 1 && exit 10");
 
-    final var pod = fabricClient.pods().list().getItems().stream()
-        .filter(p -> p.getMetadata() != null && p.getMetadata().getLabels() != null)
+    final var pod = fabricClient.pods().list().getItems().stream().filter(p -> p.getMetadata() != null && p.getMetadata().getLabels() != null)
         .filter(p -> p.getMetadata().getLabels().containsKey("uuid") && p.getMetadata().getLabels().get("uuid").equals(uuid.toString()))
         .collect(Collectors.toList()).get(0);
-    final SharedIndexInformer<Pod> podInformer = fabricClient.pods()
-        .inNamespace(pod.getMetadata().getNamespace())
-        .withName(pod.getMetadata().getName())
-        .inform();
-    podInformer.addEventHandler(new ExitCodeWatcher(
-        pod.getMetadata().getName(),
-        pod.getMetadata().getNamespace(),
-        exitCode -> {
-          fabricClient.pods().delete(pod);
-        },
-        () -> {}));
+    final SharedIndexInformer<Pod> podInformer =
+        fabricClient.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).inform();
+    podInformer.addEventHandler(new ExitCodeWatcher(pod.getMetadata().getName(), pod.getMetadata().getNamespace(), exitCode -> {
+      fabricClient.pods().delete(pod);
+    }, () -> {}));
 
     process.waitFor();
 
@@ -342,14 +353,7 @@ public class KubePodProcessIntegrationTest {
     final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
     when(workerConfigs.getEnvMap()).thenReturn(Map.of("ENV_VAR_1", "ENV_VALUE_1"));
 
-    processFactory =
-        new KubeProcessFactory(
-            workerConfigs,
-            "default",
-            fabricClient,
-            heartbeatUrl,
-            getHost(),
-            false);
+    processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, heartbeatUrl, getHost(), false);
 
     // start an infinite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -412,11 +416,7 @@ public class KubePodProcessIntegrationTest {
 
   private Process getProcess(final String entrypoint) throws WorkerException {
     // these files aren't used for anything, it's just to check for exceptions when uploading
-    final var files = ImmutableMap.of(
-        "file0", "fixed str",
-        "file1", getRandomFile(1),
-        "file2", getRandomFile(100),
-        "file3", getRandomFile(1000));
+    final var files = ImmutableMap.of("file0", "fixed str", "file1", getRandomFile(1), "file2", getRandomFile(100), "file3", getRandomFile(1000));
 
     return getProcess(entrypoint, files);
   }
@@ -431,19 +431,8 @@ public class KubePodProcessIntegrationTest {
 
   private Process getProcess(final Map<String, String> customLabels, final String entrypoint, final Map<String, String> files)
       throws WorkerException {
-    return processFactory.create(
-        "tester",
-        "some-id",
-        0,
-        Path.of("/tmp/job-root"),
-        "busybox:latest",
-        false,
-        files,
-        entrypoint,
-        DEFAULT_RESOURCE_REQUIREMENTS,
-        customLabels,
-        Collections.emptyMap(),
-        Collections.emptyMap());
+    return processFactory.create("tester", "some-id", 0, Path.of("/tmp/job-root"), "busybox:latest", false, files, entrypoint,
+        DEFAULT_RESOURCE_REQUIREMENTS, customLabels, Collections.emptyMap(), Collections.emptyMap());
   }
 
   private static Set<Integer> getOpenPorts(final int count) {

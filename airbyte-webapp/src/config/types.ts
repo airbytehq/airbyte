@@ -1,5 +1,3 @@
-import { OutboundLinks } from "./links";
-
 declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
@@ -17,7 +15,6 @@ declare global {
 }
 
 export interface Config {
-  links: OutboundLinks;
   segment: { token: string; enabled: boolean };
   apiUrl: string;
   oauthRedirectUrl: string;
