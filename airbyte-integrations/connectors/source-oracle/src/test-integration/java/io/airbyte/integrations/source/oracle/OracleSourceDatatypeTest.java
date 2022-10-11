@@ -25,7 +25,6 @@ import java.util.TimeZone;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.OracleContainer;
 
 public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
@@ -37,8 +36,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withEnv("RELAX_SECURITY", "1");
+    container = new OracleContainer().withEnv("RELAX_SECURITY", "1");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
