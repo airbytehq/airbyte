@@ -9,7 +9,7 @@ export const loadDatadog = async (): Promise<void> => {
   const clientToken = process.env.REACT_APP_DATADOG_CLIENT_TOKEN ?? window.REACT_APP_DATADOG_CLIENT_TOKEN;
   const site = process.env.REACT_APP_DATADOG_SITE ?? window.REACT_APP_DATADOG_SITE;
   const service = process.env.REACT_APP_DATADOG_SERVICE ?? window.REACT_APP_DATADOG_SERVICE;
-  const version = window.AIRBYTE_VERSION;
+  const version = process.env.REACT_APP_WEBAPP_TAG ?? window.REACT_APP_WEBAPP_TAG ?? "dev";
 
   datadogRum.init({
     applicationId,
