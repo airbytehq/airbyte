@@ -5,6 +5,7 @@ import ReactDOM from "react-dom";
 
 import "react-reflex/styles.css";
 import { isCloudApp } from "utils/app";
+import { loadDatadogRum } from "utils/datadog";
 import { loadOsano } from "utils/dataPrivacy";
 
 import "./globals";
@@ -16,6 +17,8 @@ Sentry.init({
   integrations: [new Integrations.BrowserTracing()],
   tracesSampleRate: 1.0, // may need to adjust this in the future
 });
+
+loadDatadogRum();
 
 // In Cloud load the Osano script (GDPR consent tool before anything else)
 if (isCloudApp()) {
