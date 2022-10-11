@@ -6,7 +6,10 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+from airbyte_cdk.models import SyncMode
+
 import requests
+import asyncio
 import base64
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -20,11 +23,10 @@ class SurveyctoStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
         self.server_name = config['server_name']
-        self.form_id = config['form_id']
+        self.form_id = config.get("form_id", [])
         #base64 encode username and password as auth token
         user_name_password = f"{config['username']}:{config['password']}"
         self.auth_token = self._base64_encode(user_name_password)
-        
         
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -34,12 +36,21 @@ class SurveyctoStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.server_name}.surveycto.com/api/v2/forms/data/wide/json/"
+         return f"https://{self.server_name}.surveycto.com/api/v2/forms/data/wide/json/"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+         return f"{stream_slice['id']}"
+
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+       yield from [{"id": id} for id in self.form_id]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {'date': 0}
+         return {'date': "Jan 09, 2022 00:00:00 AM"}
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -55,21 +66,16 @@ class SurveyctoStream(HttpStream, ABC):
     ) -> Iterable[Mapping]:
         response_json = response.json()
 
+        stream_slice = stream_slice.get('id')
         for data in response_json:
             try:
+                data["form_id"] = stream_slice
+
                 yield data
             except Exception as e:
                 msg = f"""Encountered an exception parsing schema"""
                 self.logger.exception(msg)
                 raise e
-    # @TODO: Refactor this path method into a separate FormClass for cleaner
-    def path(
-        self, 
-        stream_state: Mapping[str, Any] = None, 
-        stream_slice: Mapping[str, Any] = None, 
-        next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.form_id
 
 # class Forms(SurveyctoStream):
 

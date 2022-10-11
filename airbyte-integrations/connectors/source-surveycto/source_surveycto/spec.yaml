@@ -26,7 +26,7 @@ connectionSpecification:
       airbyte_secret: true
       order: 2
     form_id:
-      type: string
-      title: Form ID
+      type: array
+      title: Form's Id
       description: Unique identifier for one of your forms
       order: 3
