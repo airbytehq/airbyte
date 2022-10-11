@@ -66,8 +66,9 @@ class GithubStream(HttpStream, ABC):
         return False
 
     def should_retry(self, response: requests.Response) -> bool:
-        # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
-        # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
+        if super().should_retry(response):
+            return True
+
         retry_flag = (
             # The GitHub GraphQL API has limitations
             # https://docs.github.com/en/graphql/overview/resource-limitations
@@ -78,12 +79,6 @@ class GithubStream(HttpStream, ABC):
             # Secondary rate limits
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
             or "Retry-After" in response.headers
-            or response.status_code
-            in (
-                requests.codes.SERVER_ERROR,
-                requests.codes.BAD_GATEWAY,
-                requests.codes.SERVICE_UNAVAILABLE,
-            )
         )
         if retry_flag:
             self.logger.info(
