@@ -120,7 +120,7 @@ class WorkspacesHandlerTest {
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
 
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name("new workspace")
@@ -159,7 +159,7 @@ class WorkspacesHandlerTest {
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
 
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name(workspace.getName())
@@ -362,7 +362,7 @@ class WorkspacesHandlerTest {
         .notifications(List.of(expectedNotificationRead))
         .defaultGeography(GEOGRAPHY_US);
 
-    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+    verify(configRepository).writeStandardWorkspaceNoSecrets(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
@@ -409,7 +409,7 @@ class WorkspacesHandlerTest {
         .notifications(List.of(generateApiNotification()))
         .defaultGeography(GEOGRAPHY_AUTO);
 
-    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+    verify(configRepository).writeStandardWorkspaceNoSecrets(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
@@ -443,7 +443,7 @@ class WorkspacesHandlerTest {
         .defaultGeography(GEOGRAPHY_AUTO);
 
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
-    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+    verify(configRepository).writeStandardWorkspaceNoSecrets(expectedWorkspace);
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
 

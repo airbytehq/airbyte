@@ -289,7 +289,7 @@ public class BootloaderApp {
         .withDisplaySetupWizard(true)
         .withTombstone(false)
         .withDefaultGeography(Geography.AUTO);
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
   }
 
   private static void assertNonBreakingMigration(final JobPersistence jobPersistence, final AirbyteVersion airbyteVersion)

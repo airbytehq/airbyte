@@ -104,7 +104,7 @@ public class WorkspacesHandler {
       workspace.withEmail(email);
     }
 
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     return buildWorkspaceRead(workspace);
   }
@@ -130,7 +130,7 @@ public class WorkspacesHandler {
     }
 
     persistedWorkspace.withTombstone(true);
-    configRepository.writeStandardWorkspace(persistedWorkspace);
+    configRepository.writeStandardWorkspaceNoSecrets(persistedWorkspace);
   }
 
   public WorkspaceReadList listWorkspaces() throws JsonValidationException, IOException {
@@ -171,7 +171,7 @@ public class WorkspacesHandler {
     applyPatchToStandardWorkspace(workspace, workspacePatch);
 
     LOGGER.debug("Patched Workspace before persisting: {}", workspace);
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     // after updating email or tracking info, we need to re-identify the instance.
     TrackingClientSingleton.get().identify(workspaceId);
@@ -189,7 +189,7 @@ public class WorkspacesHandler {
         .withName(workspaceUpdateName.getName())
         .withSlug(generateUniqueSlug(workspaceUpdateName.getName()));
 
-    configRepository.writeStandardWorkspace(persistedWorkspace);
+    configRepository.writeStandardWorkspaceNoSecrets(persistedWorkspace);
 
     return buildWorkspaceReadFromId(workspaceId);
   }
