@@ -15,7 +15,7 @@ To release a new version of this base image, use the following steps:
      --tag airbyte/airbyte-base-java-image:<new_version> \
      --platform linux/amd64,linux/arm64 .
    ```
-   To see existing versions, [view the image on Dockerhub](https://hub.docker.com/r/airbyte/java-datadog-tracer-base).
+   To see existing versions, [view the image on Dockerhub](https://hub.docker.com/r/airbyte/airbyte-base-java-image).
 4. Update base Docker image tag to the new version in all Dockerfiles that depend on the base image:
    ```bash
    FROM airbyte/java-datadog-tracer-base:<NEW VERSION>
