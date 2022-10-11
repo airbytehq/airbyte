@@ -1,5 +1,4 @@
-ARG JDK_VERSION=17.0.4
-ARG JDK_IMAGE=amazoncorretto:${JDK_VERSION}
+ARG JDK_IMAGE=airbyte/java-datadog-tracer-base:3.2
 FROM ${JDK_IMAGE} AS metrics-reporter
 
 ARG VERSION=0.40.14
