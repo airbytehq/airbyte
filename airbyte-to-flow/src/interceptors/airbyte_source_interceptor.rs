@@ -29,6 +29,8 @@ use std::fs::File;
 use std::io::Write;
 use tempfile::{Builder, TempDir};
 
+use super::fix_document_schema::fix_document_schema_keys;
+
 const CONFIG_FILE_NAME: &str = "config.json";
 const CATALOG_FILE_NAME: &str = "catalog.json";
 const STATE_FILE_NAME: &str = "state.json";
@@ -115,20 +117,17 @@ impl AirbyteSourceInterceptor {
                     cursor_field: stream.default_cursor_field,
                 };
 
-                let key_ptrs = match stream.source_defined_primary_key {
-                    None => Vec::new(),
-                    Some(keys) => keys
-                        .iter()
+                let source_defined_primary_key = stream.source_defined_primary_key.unwrap_or(Vec::new());
+                let key_ptrs = source_defined_primary_key.iter()
                         .map(|k| doc::Pointer::from_vec(k).to_string())
-                        .collect(),
-                };
+                        .collect();
                 let recommended_name = stream_to_recommended_name(&stream.name);
 
                 resp.bindings.push(discover_response::Binding {
                     recommended_name,
                     resource_spec_json: serde_json::to_string(&resource_spec)?,
                     key_ptrs,
-                    document_schema_json: stream.json_schema.to_string(),
+                    document_schema_json: fix_document_schema_keys(&stream.json_schema, source_defined_primary_key)?.to_string(),
                 })
             }
 
