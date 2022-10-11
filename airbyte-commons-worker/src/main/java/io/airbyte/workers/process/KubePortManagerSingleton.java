@@ -56,7 +56,7 @@ public class KubePortManagerSingleton {
   public static synchronized void init(final Set<Integer> ports) {
     if (instance == null) {
       instance = new KubePortManagerSingleton(ports);
-    } else if (Sets.intersection(instance.getAllPorts(), ports).size() != ports.size()) {
+    } else if (Sets.intersection(instance.getAllPorts(), ports).size() == ports.size()) {
       LOGGER.info("Skipping initializing KubePortManagerSingleton since ports specified are the same.");
     } else {
       throw new RuntimeException("Cannot initialize twice with different ports!");

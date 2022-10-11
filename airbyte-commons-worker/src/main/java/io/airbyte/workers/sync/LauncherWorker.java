@@ -14,7 +14,7 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.config.WorkerConfigurationBeanFactory;
+import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
@@ -105,7 +105,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         // Manually add the worker environment to the env var map
-        envMap.put(WorkerConfigurationBeanFactory.WORKER_ENVIRONMENT, containerOrchestratorConfig.workerEnvironment().name());
+        envMap.put(WorkerConstants.WORKER_ENVIRONMENT, containerOrchestratorConfig.workerEnvironment().name());
 
         final Map<String, String> fileMap = new HashMap<>(additionalFileMap);
         fileMap.putAll(Map.of(

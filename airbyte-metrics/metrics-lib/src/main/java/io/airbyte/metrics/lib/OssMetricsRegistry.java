@@ -9,15 +9,15 @@ import com.google.api.client.util.Preconditions;
 /**
  * Enum source of truth of all Airbyte metrics. Each enum value represent a metric and is linked to
  * an application and contains a description to make it easier to understand.
- *
+ * <p>
  * Each object of the enum actually represent a metric, so the Registry name is misleading. The
  * reason 'Registry' is in the name is to emphasize this enum's purpose as a source of truth for all
  * metrics. This also helps code readability i.e. AirbyteMetricsRegistry.metricA.
- *
+ * <p>
  * Metric Name Convention (adapted from
  * https://docs.datadoghq.com/developers/guide/what-best-practices-are-recommended-for-naming-metrics-and-tags/):
  * <p>
- * - Use lowercase. Metric names are case sensitive.
+ * - Use lowercase. Metric names are case-sensitive.
  * <p>
  * - Use underscore to delimit names with multiple words.
  * <p>

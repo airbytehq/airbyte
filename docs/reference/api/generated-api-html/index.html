@@ -8286,13 +8286,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     }, {
       "streamDescriptor" : {
@@ -8305,13 +8307,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     } ]
   },
@@ -8497,13 +8501,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     }, {
       "streamDescriptor" : {
@@ -8516,13 +8522,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     } ]
   },
@@ -8956,13 +8964,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     }, {
       "streamDescriptor" : {
@@ -8975,13 +8985,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     } ]
   },
@@ -10344,6 +10356,7 @@ containing the updated stream needs to be sent.</div>
     <div class="field-items">
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10524,6 +10537,7 @@ containing the updated stream needs to be sent.</div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">add_field</div><div class="param-enum">remove_field</div><div class="param-enum">update_field_schema</div>
 <div class="param">fieldName </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> A field name is a list of strings that form the path to the field. </div>
+<div class="param">breaking </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">addField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldAdd">FieldAdd</a></span>  </div>
 <div class="param">removeField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldRemove">FieldRemove</a></span>  </div>
 <div class="param">updateFieldSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldSchemaUpdate">FieldSchemaUpdate</a></span>  </div>
@@ -11004,6 +11018,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class="field-items">
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
