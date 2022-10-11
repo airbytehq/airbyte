@@ -52,9 +52,9 @@ public class StateGeneratorUtils {
     }
   };
 
-  public static final Function<AirbyteStreamState, Integer> CURSOR_RECORD_COUNT_FUNCTION = stream -> {
+  public static final Function<AirbyteStreamState, Long> CURSOR_RECORD_COUNT_FUNCTION = stream -> {
     final Optional<DbStreamState> dbStreamState = StateGeneratorUtils.extractState(stream);
-    return dbStreamState.map(DbStreamState::getCursorRecordCount).orElse(0L).intValue();
+    return dbStreamState.map(DbStreamState::getCursorRecordCount).orElse(0L);
   };
 
   /**
@@ -131,7 +131,7 @@ public class StateGeneratorUtils {
         .withCursorField(cursorInfo.getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(cursorInfo.getCursorField()))
         .withCursor(cursorInfo.getCursor());
     if (cursorInfo.getCursorRecordCount() > 0L) {
-      state.setCursorRecordCount((long) cursorInfo.getCursorRecordCount());
+      state.setCursorRecordCount(cursorInfo.getCursorRecordCount());
     }
     return state;
   }

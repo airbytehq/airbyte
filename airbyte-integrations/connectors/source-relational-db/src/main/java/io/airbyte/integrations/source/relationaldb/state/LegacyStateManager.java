@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -42,8 +43,8 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
    */
   private static final Function<DbStreamState, List<String>> CURSOR_FIELD_FUNCTION = DbStreamState::getCursorField;
 
-  private static final Function<DbStreamState, Integer> CURSOR_RECORD_COUNT_FUNCTION = stream ->
-      stream.getCursorRecordCount() == null ? 0 : stream.getCursorRecordCount().intValue();
+  private static final Function<DbStreamState, Long> CURSOR_RECORD_COUNT_FUNCTION = stream ->
+      Objects.requireNonNullElse(stream.getCursorRecordCount(), 0L);
 
   /**
    * {@link Function} that creates an {@link AirbyteStreamNameNamespacePair} from the stream state.

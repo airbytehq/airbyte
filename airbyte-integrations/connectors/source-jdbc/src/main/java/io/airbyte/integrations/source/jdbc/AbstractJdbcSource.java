@@ -345,7 +345,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
               if (cursorInfo.getCursorRecordCount() <= 0) {
                 operator = ">";
               } else {
-                final int actualRecordCount = getActualCursorRecordCount(
+                final long actualRecordCount = getActualCursorRecordCount(
                     connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
                 LOGGER.info("Table {} cursor count: expected {}, actual {}", tableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
                 if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
@@ -379,7 +379,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     });
   }
 
-  private int getActualCursorRecordCount(final Connection connection,
+  private long getActualCursorRecordCount(final Connection connection,
                                          final String fullTableName,
                                          final String quotedCursorField,
                                          final Datatype cursorFieldType,
@@ -402,9 +402,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     }
     final ResultSet resultSet = cursorRecordStatement.executeQuery();
     if (resultSet.next()) {
-      return resultSet.getInt(columnName);
+      return resultSet.getLong(columnName);
     } else {
-      return 0;
+      return 0L;
     }
   }
 

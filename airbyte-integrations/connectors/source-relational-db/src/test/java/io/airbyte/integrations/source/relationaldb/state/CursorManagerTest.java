@@ -28,11 +28,11 @@ import org.junit.jupiter.api.Test;
  */
 public class CursorManagerTest {
 
-  private static final Function<DbStreamState, Integer> CURSOR_RECORD_COUNT_FUNCTION = stream -> {
+  private static final Function<DbStreamState, Long> CURSOR_RECORD_COUNT_FUNCTION = stream -> {
     if (stream.getCursorRecordCount() != null) {
-      return stream.getCursorRecordCount().intValue();
+      return stream.getCursorRecordCount();
     } else {
-      return 0;
+      return 0L;
     }
   };
 

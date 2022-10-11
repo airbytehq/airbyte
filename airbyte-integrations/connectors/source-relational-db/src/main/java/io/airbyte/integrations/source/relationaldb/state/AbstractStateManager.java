@@ -50,7 +50,7 @@ public abstract class AbstractStateManager<T, S> implements StateManager<T, S> {
                               final Supplier<Collection<S>> streamSupplier,
                               final Function<S, String> cursorFunction,
                               final Function<S, List<String>> cursorFieldFunction,
-                              final Function<S, Integer> cursorRecordCountFunction,
+                              final Function<S, Long> cursorRecordCountFunction,
                               final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction) {
     cursorManager = new CursorManager(catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction);
   }

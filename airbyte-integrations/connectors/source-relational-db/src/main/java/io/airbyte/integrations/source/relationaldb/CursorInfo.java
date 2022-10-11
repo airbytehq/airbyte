@@ -10,25 +10,25 @@ public class CursorInfo {
 
   private final String originalCursorField;
   private final String originalCursor;
-  private final int originalCursorRecordCount;
+  private final long originalCursorRecordCount;
 
   private final String cursorField;
   private String cursor;
-  private int cursorRecordCount;
+  private long cursorRecordCount;
 
   public CursorInfo(final String originalCursorField,
                     final String originalCursor,
                     final String cursorField,
                     final String cursor) {
-    this(originalCursorField, originalCursor, 0, cursorField, cursor, 0);
+    this(originalCursorField, originalCursor, 0L, cursorField, cursor, 0L);
   }
 
   public CursorInfo(final String originalCursorField,
                     final String originalCursor,
-                    final int originalCursorRecordCount,
+                    final long originalCursorRecordCount,
                     final String cursorField,
                     final String cursor,
-                    final int cursorRecordCount) {
+                    final long cursorRecordCount) {
     this.originalCursorField = originalCursorField;
     this.originalCursor = originalCursor;
     this.originalCursorRecordCount = originalCursorRecordCount;
@@ -45,7 +45,7 @@ public class CursorInfo {
     return originalCursor;
   }
 
-  public int getOriginalCursorRecordCount() {
+  public long getOriginalCursorRecordCount() {
     return originalCursorRecordCount;
   }
 
@@ -57,7 +57,7 @@ public class CursorInfo {
     return cursor;
   }
 
-  public int getCursorRecordCount() {
+  public long getCursorRecordCount() {
     return cursorRecordCount;
   }
 
