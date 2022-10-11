@@ -16,5 +16,5 @@ ENV APPLICATION destination-bitdotio
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.3.21
+LABEL io.airbyte.version=0.1.0
 LABEL io.airbyte.name=airbyte/destination-bitdotio
