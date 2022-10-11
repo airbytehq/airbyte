@@ -76,7 +76,7 @@ public class CdcConfigurationHelper {
     return Optional.empty();
   }
 
-  public static Optional<String> getCdcServerTimezone(final JsonNode config) {
+  private static Optional<String> getCdcServerTimezone(final JsonNode config) {
     final JsonNode replicationMethod = config.get("replication_method");
     if (replicationMethod != null && replicationMethod.has("server_time_zone")) {
       final String serverTimeZone = config.get("replication_method").get("server_time_zone").asText();
