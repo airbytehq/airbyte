@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/keen",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/keen",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
