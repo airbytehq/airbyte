@@ -18,7 +18,9 @@
       "type": "string"
     },
     "created": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "maxValue": {
       "type": "null"
@@ -62,7 +64,9 @@
       "type": "boolean"
     },
     "updated": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "isActive": {
       "type": "boolean"

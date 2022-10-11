@@ -281,7 +281,9 @@
       "type": "integer"
     },
     "updated": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "allowSMSSignup": {
       "type": "boolean"
@@ -299,7 +301,9 @@
       "type": "boolean"
     },
     "lastBookingUpdate": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "id": {
       "type": "string"

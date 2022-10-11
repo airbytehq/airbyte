@@ -21,10 +21,14 @@
       "type": "string"
     },
     "completedTime": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "serveTime": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "phone": {
       "type": "string"
@@ -54,7 +58,9 @@
       "type": "array"
     },
     "bookingTime": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "isBlock": {
       "type": "boolean"
@@ -77,13 +83,17 @@
       "type": "string"
     },
     "waitlistTime": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "resources": {
       "type": "object"
     },
     "created": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "numVisits": {
       "type": "integer"
@@ -104,7 +114,9 @@
       "type": "string"
     },
     "updated": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "serviceIds": {
       "type": "array"
@@ -119,7 +131,9 @@
       "type": "integer"
     },
     "removedTime": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "createdBy": {
       "type": "string"

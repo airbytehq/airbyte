@@ -42,10 +42,14 @@
       "type": "string"
     },
     "created": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "updated": {
-      "type": "date-time"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "city": {
       "type": "string"
