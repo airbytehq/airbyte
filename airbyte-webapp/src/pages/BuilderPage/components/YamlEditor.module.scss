@@ -26,7 +26,7 @@
 :export {
   // Monaco editor requires 6-character hex values for theme colors
   /* stylelint-disable-next-line color-hex-length, color-no-hex */
-  tokenString: #ffffff;
+  tokenString: colors.$white;
   tokenType: colors.$blue-300;
   tokenNumber: colors.$orange-300;
   tokenDelimiter: colors.$yellow-300;
