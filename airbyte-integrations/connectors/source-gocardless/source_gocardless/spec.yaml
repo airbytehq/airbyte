@@ -18,10 +18,11 @@ connectionSpecification:
     gocardless_environment:
       title: Gocardless API Environment
       type: string
-      pattern: "^(live|sandbox)$"
-      description: |
-        Environment you are trying to connect to. Should be either `live` or
-        `sandbox`.
+      enum:
+        - sandbox
+        - live
+      default: sandbox
+      description: Environment you are trying to connect to.
     gocardless_version:
       title: GoCardless API Version
       type: string
