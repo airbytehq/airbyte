@@ -48,6 +48,7 @@ class HttpStream(Stream, ABC):
             self.cache_file = self.request_cache()
             # we need this attr to get metadata about cassettes, such as record play count, all records played, etc.
             self.cassete = None
+        self.current_page = 0
 
     @property
     def cache_filename(self):
@@ -286,17 +287,10 @@ class HttpStream(Stream, ABC):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
-        self.logger.debug(
-            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
-        )
+        self.log_request(request)
         response: requests.Response = self._session.send(request, **request_kwargs)
 
-        # Evaluation of response.text can be heavy, for example, if streaming a large response
-        # Do it only in debug mode
-        if self.logger.isEnabledFor(logging.DEBUG):
-            self.logger.debug(
-                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
-            )
+        self.log_response(response)
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
             if custom_backoff_time:
@@ -404,6 +398,7 @@ class HttpStream(Stream, ABC):
         pagination_complete = False
 
         next_page_token = None
+        self.current_page = 0
         while not pagination_complete:
             request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             request = self._create_prepared_request(
@@ -426,13 +421,26 @@ class HttpStream(Stream, ABC):
             else:
                 response = self._send_request(request, request_kwargs)
             yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
-
+            self.current_page += 1
             next_page_token = self.next_page_token(response)
             if not next_page_token:
                 pagination_complete = True
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
+
+    def log_request(self, request):
+        self.logger.debug(
+            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
+        )
+
+    def log_response(self, response):
+        # Evaluation of response.text can be heavy, for example, if streaming a large response
+        # Do it only in debug mode
+        if self.logger.isEnabledFor(logging.DEBUG):
+            self.logger.debug(
+                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+            )
 
 
 class HttpSubStream(HttpStream, ABC):

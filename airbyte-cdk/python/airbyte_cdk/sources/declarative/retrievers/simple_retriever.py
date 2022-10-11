@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -59,6 +58,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
         self._last_records = None
+        self._request = None
 
     @property
     def name(self) -> str:
@@ -312,6 +312,9 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
         )
         self._last_records = records
+        for r in records:
+            r["_ab_response"] = response.content
+            r["_ab_request"] = self._request
         return records
 
     @property
@@ -352,6 +355,12 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
             last_record = self._last_records[-1] if self._last_records else None
             self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
             yield from []
+
+    def log_request(self, request: requests.PreparedRequest):
+        self._request = {"url": request.url, "body": request.body, "headers": dict(request.headers)}
+
+    def log_response(self, response):
+        pass
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
