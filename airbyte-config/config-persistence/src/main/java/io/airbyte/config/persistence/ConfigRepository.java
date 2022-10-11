@@ -165,7 +165,16 @@ public class ConfigRepository {
 
     return workspaces;
   }
-  
+
+  /**
+   * MUST NOT ACCEPT SECRETS - Should only be called from { @link SecretsRepositoryWriter }
+   *
+   * Write a StandardWorkspace to the database.
+   *
+   * @param workspace - The configuration of the workspace
+   * @throws JsonValidationException - throws is the workspace is invalid
+   * @throws IOException - you never know when you IO
+   */
   public void writeStandardWorkspaceNoSecrets(final StandardWorkspace workspace) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }

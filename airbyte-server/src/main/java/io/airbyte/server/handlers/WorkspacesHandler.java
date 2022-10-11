@@ -27,6 +27,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.server.errors.IdNotFoundKnownException;
@@ -46,6 +47,7 @@ public class WorkspacesHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkspacesHandler.class);
   private final ConfigRepository configRepository;
+  private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final ConnectionsHandler connectionsHandler;
   private final DestinationHandler destinationHandler;
   private final SourceHandler sourceHandler;
@@ -53,18 +55,21 @@ public class WorkspacesHandler {
   private final Slugify slugify;
 
   public WorkspacesHandler(final ConfigRepository configRepository,
+                           final SecretsRepositoryWriter secretsRepositoryWriter,
                            final ConnectionsHandler connectionsHandler,
                            final DestinationHandler destinationHandler,
                            final SourceHandler sourceHandler) {
-    this(configRepository, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
+    this(configRepository, secretsRepositoryWriter, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
   }
 
   public WorkspacesHandler(final ConfigRepository configRepository,
+                           final SecretsRepositoryWriter secretsRepositoryWriter,
                            final ConnectionsHandler connectionsHandler,
                            final DestinationHandler destinationHandler,
                            final SourceHandler sourceHandler,
                            final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.connectionsHandler = connectionsHandler;
     this.destinationHandler = destinationHandler;
     this.sourceHandler = sourceHandler;
@@ -104,9 +109,7 @@ public class WorkspacesHandler {
       workspace.withEmail(email);
     }
 
-    configRepository.writeStandardWorkspaceNoSecrets(workspace);
-
-    return buildWorkspaceRead(workspace);
+    return persistStandardWorkspace(workspace);
   }
 
   public void deleteWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -130,7 +133,7 @@ public class WorkspacesHandler {
     }
 
     persistedWorkspace.withTombstone(true);
-    configRepository.writeStandardWorkspaceNoSecrets(persistedWorkspace);
+    persistStandardWorkspace(persistedWorkspace);
   }
 
   public WorkspaceReadList listWorkspaces() throws JsonValidationException, IOException {
@@ -171,7 +174,8 @@ public class WorkspacesHandler {
     applyPatchToStandardWorkspace(workspace, workspacePatch);
 
     LOGGER.debug("Patched Workspace before persisting: {}", workspace);
-    configRepository.writeStandardWorkspaceNoSecrets(workspace);
+
+    persistStandardWorkspace(workspace);
 
     // after updating email or tracking info, we need to re-identify the instance.
     TrackingClientSingleton.get().identify(workspaceId);
@@ -189,7 +193,7 @@ public class WorkspacesHandler {
         .withName(workspaceUpdateName.getName())
         .withSlug(generateUniqueSlug(workspaceUpdateName.getName()));
 
-    configRepository.writeStandardWorkspaceNoSecrets(persistedWorkspace);
+    persistStandardWorkspace(persistedWorkspace);
 
     return buildWorkspaceReadFromId(workspaceId);
   }
@@ -291,6 +295,11 @@ public class WorkspacesHandler {
       workspace.setDefaultGeography(
           Enums.convertTo(workspacePatch.getDefaultGeography(), io.airbyte.config.Geography.class));
     }
+  }
+
+  private WorkspaceRead persistStandardWorkspace(final StandardWorkspace workspace) throws JsonValidationException, IOException {
+    secretsRepositoryWriter.writeWorkspace(workspace);
+    return buildWorkspaceRead(workspace);
   }
 
 }
