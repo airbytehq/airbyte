@@ -10,7 +10,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.JobMetadata;
-import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
@@ -305,128 +304,6 @@ public class TemporalClient {
     }
 
     connectionManagerWorkflow.connectionUpdated();
-  }
-
-
-  public ManualOperationResult startNewManualSync(final UUID connectionId) {
-    log.info("Manual sync request");
-
-    if (connectionManagerUtils.isWorkflowStateRunning(client, connectionId)) {
-      // TODO Bmoric: Error is running
-      return new ManualOperationResult(
-          Optional.of("A sync is already running for: " + connectionId),
-          Optional.empty(), Optional.of(ErrorCode.WORKFLOW_RUNNING));
-    }
-
-    try {
-      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::submitManualSync);
-    } catch (final DeletedWorkflowException e) {
-      log.error("Can't sync a deleted connection.", e);
-      return new ManualOperationResult(
-          Optional.of(e.getMessage()),
-          Optional.empty(), Optional.of(ErrorCode.WORKFLOW_DELETED));
-    }
-
-    do {
-      try {
-        Thread.sleep(DELAY_BETWEEN_QUERY_MS);
-      } catch (final InterruptedException e) {
-        return new ManualOperationResult(
-            Optional.of("Didn't managed to start a sync for: " + connectionId),
-            Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
-      }
-    } while (!connectionManagerUtils.isWorkflowStateRunning(client, connectionId));
-
-    log.info("end of manual schedule");
-
-    final long jobId = connectionManagerUtils.getCurrentJobId(client, connectionId);
-
-    return new ManualOperationResult(
-        Optional.empty(),
-        Optional.of(jobId), Optional.empty());
-  }
-
-  public ManualOperationResult startNewCancellation(final UUID connectionId) {
-    log.info("Manual cancellation request");
-
-    final long jobId = connectionManagerUtils.getCurrentJobId(client, connectionId);
-
-    try {
-      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::cancelJob);
-    } catch (final DeletedWorkflowException e) {
-      log.error("Can't cancel a deleted workflow", e);
-      return new ManualOperationResult(
-          Optional.of(e.getMessage()),
-          Optional.empty(), Optional.of(ErrorCode.WORKFLOW_DELETED));
-    }
-
-    do {
-      try {
-        Thread.sleep(DELAY_BETWEEN_QUERY_MS);
-      } catch (final InterruptedException e) {
-        return new ManualOperationResult(
-            Optional.of("Didn't manage to cancel a sync for: " + connectionId),
-            Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
-      }
-    } while (connectionManagerUtils.isWorkflowStateRunning(client, connectionId));
-
-    streamResetRecordsHelper.deleteStreamResetRecordsForJob(jobId, connectionId);
-
-    log.info("end of manual cancellation");
-
-    return new ManualOperationResult(
-        Optional.empty(),
-        Optional.of(jobId), Optional.empty());
-  }
-
-  public ManualOperationResult resetConnection(final UUID connectionId,
-                                               final List<StreamDescriptor> streamsToReset,
-                                               final boolean syncImmediatelyAfter) {
-    log.info("reset sync request");
-
-    try {
-      streamResetPersistence.createStreamResets(connectionId, streamsToReset);
-    } catch (final IOException e) {
-      log.error("Could not persist streams to reset.", e);
-      return new ManualOperationResult(
-          Optional.of(e.getMessage()),
-          Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
-    }
-
-    // get the job ID before the reset, defaulting to NON_RUNNING_JOB_ID if workflow is unreachable
-    final long oldJobId = connectionManagerUtils.getCurrentJobId(client, connectionId);
-
-    try {
-      if (syncImmediatelyAfter) {
-        connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnectionAndSkipNextScheduling);
-      } else {
-        connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnection);
-      }
-    } catch (final DeletedWorkflowException e) {
-      log.error("Can't reset a deleted workflow", e);
-      return new ManualOperationResult(
-          Optional.of(e.getMessage()),
-          Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
-    }
-
-    Optional<Long> newJobId;
-
-    do {
-      try {
-        Thread.sleep(DELAY_BETWEEN_QUERY_MS);
-      } catch (final InterruptedException e) {
-        return new ManualOperationResult(
-            Optional.of("Didn't manage to reset a sync for: " + connectionId),
-            Optional.empty(), Optional.of(ErrorCode.UNKNOWN));
-      }
-      newJobId = getNewJobId(connectionId, oldJobId);
-    } while (newJobId.isEmpty());
-
-    log.info("end of reset submission");
-
-    return new ManualOperationResult(
-        Optional.empty(),
-        newJobId, Optional.empty());
   }
 
   private Optional<Long> getNewJobId(final UUID connectionId, final long oldJobId) {
