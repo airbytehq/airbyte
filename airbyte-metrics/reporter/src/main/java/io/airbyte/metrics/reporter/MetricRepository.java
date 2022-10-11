@@ -144,7 +144,7 @@ class MetricRepository {
     final var query = """
                       SELECT status, extract(epoch from age(updated_at, created_at)) AS sec FROM jobs
                       WHERE updated_at >= NOW() - INTERVAL '1 HOUR'
-                        AND (jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled');
+                        AND jobs.status IN ('failed', 'succeeded', 'cancelled');
                       """;
     final var statuses = ctx.fetch(query).getValues("status", JobStatus.class);
     final var times = ctx.fetch(query).getValues("sec", double.class);
@@ -161,7 +161,7 @@ class MetricRepository {
     final var query = """
                       SELECT id, EXTRACT(EPOCH FROM (current_timestamp - created_at)) AS run_duration_seconds
                       FROM jobs WHERE status = ?::job_status
-                      ORDER BY created_at ASC limit 1
+                      ORDER BY created_at ASC limit 1;
                       """;
     final var result = ctx.fetchOne(query, status.getLiteral());
     if (result == null) {
