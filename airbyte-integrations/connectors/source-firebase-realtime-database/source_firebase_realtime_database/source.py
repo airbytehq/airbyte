@@ -78,14 +78,15 @@ class SourceFirebaseRealtimeDatabase(Source):
         """
         streams = []
 
-        stream_name = "TableName"  # Example
-        json_schema = {  # Example
+        stream_name = config["path"].rstrip(" ").rstrip("/").split("/")[-1]
+        json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "properties": {"columnName": {"type": "string"}},
+            "properties": {
+                "key": {"type": "string"},
+                "value": {"type": ["null", "string"]},
+            },
         }
-
-        # Not Implemented
 
         streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
         return AirbyteCatalog(streams=streams)
