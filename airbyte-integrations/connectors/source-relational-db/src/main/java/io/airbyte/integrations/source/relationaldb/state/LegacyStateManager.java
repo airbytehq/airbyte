@@ -42,7 +42,8 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
    */
   private static final Function<DbStreamState, List<String>> CURSOR_FIELD_FUNCTION = DbStreamState::getCursorField;
 
-  private static final Function<DbStreamState, Integer> CURSOR_RECORD_COUNT_FUNCTION = stream -> stream.getCursorRecordCount().intValue();
+  private static final Function<DbStreamState, Integer> CURSOR_RECORD_COUNT_FUNCTION = stream ->
+      stream.getCursorRecordCount() == null ? 0 : stream.getCursorRecordCount().intValue();
 
   /**
    * {@link Function} that creates an {@link AirbyteStreamNameNamespacePair} from the stream state.
