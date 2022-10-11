@@ -259,6 +259,7 @@ def test_credits_ledger_entries_enriches_selected_property_keys(
     # Does not enrich, but still passes back, irrelevant (for enrichment purposes) ledger entry
     assert enriched_entries[1] == original_entry_1
 
+
 @responses.activate
 def test_credits_ledger_entries_enriches_with_multiple_entries_per_event(mocker):
     stream = CreditsLedgerEntries(string_event_properties_keys=["ping"])
@@ -283,7 +284,6 @@ def test_credits_ledger_entries_enriches_with_multiple_entries_per_event(mocker)
         {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement"},
         {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement"},
     ]
-
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
