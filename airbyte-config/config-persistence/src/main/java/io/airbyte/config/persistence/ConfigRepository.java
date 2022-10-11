@@ -15,9 +15,12 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OP
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.groupConcat;
 import static org.jooq.impl.DSL.noCondition;
+import static org.jooq.impl.DSL.select;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
@@ -54,6 +57,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +87,8 @@ import org.slf4j.LoggerFactory;
 public class ConfigRepository {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
+  private static final String OPERATION_IDS_AGG_FIELD = "operation_ids_agg";
+  private static final String OPERATION_IDS_AGG_DELIMITER = ",";
 
   private final ConfigPersistence persistence;
   private final ExceptionWrappingDatabase database;
@@ -613,43 +620,73 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_SYNC, standardSync.getConnectionId().toString(), standardSync);
   }
 
-  public List<StandardSync> listStandardSyncs() throws ConfigNotFoundException, IOException, JsonValidationException {
+  public List<StandardSync> listStandardSyncs() throws IOException, JsonValidationException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
   }
 
   public List<StandardSync> listStandardSyncsUsingOperation(final UUID operationId)
       throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+
+    final Result<Record> connectionAndOperationIdsResult = database.query(ctx -> ctx
+        // SELECT connection.* plus the connection's associated operationIds as a concatenated list
+        .select(
+            CONNECTION.asterisk(),
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).separator(OPERATION_IDS_AGG_DELIMITER).as(OPERATION_IDS_AGG_FIELD))
         .from(CONNECTION)
-        .join(CONNECTION_OPERATION)
-        .on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
-        .where(CONNECTION_OPERATION.OPERATION_ID.eq(operationId))).fetch();
-    return getStandardSyncsFromResult(result);
+
+        // inner join with all connection_operation rows that match the connection's id
+        .join(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+
+        // only keep rows for connections that have an operationId that matches the input.
+        // needs to be a sub query because we want to keep all operationIds for matching connections
+        // in the main query
+        .where(CONNECTION.ID.in(
+            select(CONNECTION.ID).from(CONNECTION).join(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+                .where(CONNECTION_OPERATION.OPERATION_ID.eq(operationId))))
+
+        // group by connection.id so that the groupConcat above works
+        .groupBy(CONNECTION.ID)).fetch();
+
+    return getStandardSyncsFromResult(connectionAndOperationIdsResult);
   }
 
   public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId, final boolean includeDeleted) throws IOException {
-    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+    final Result<Record> connectionAndOperationIdsResult = database.query(ctx -> ctx
+        // SELECT connection.* plus the connection's associated operationIds as a concatenated list
+        .select(
+            CONNECTION.asterisk(),
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).separator(OPERATION_IDS_AGG_DELIMITER).as(OPERATION_IDS_AGG_FIELD))
         .from(CONNECTION)
+
+        // left join with all connection_operation rows that match the connection's id.
+        // left join includes connections that don't have any connection_operations
+        .leftJoin(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+
+        // join with source actors so that we can filter by workspaceId
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId)
-            .and(includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated))))
-        .fetch();
-    return getStandardSyncsFromResult(result);
+            .and(includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated)))
+
+        // group by connection.id so that the groupConcat above works
+        .groupBy(CONNECTION.ID)).fetch();
+
+    return getStandardSyncsFromResult(connectionAndOperationIdsResult);
   }
 
-  private List<StandardSync> getStandardSyncsFromResult(final Result<Record> result) throws IOException {
+  private List<StandardSync> getStandardSyncsFromResult(final Result<Record> connectionAndOperationIdsResult) {
     final List<StandardSync> standardSyncs = new ArrayList<>();
-    for (final Record record : result) {
-      final UUID connectionId = record.get(CONNECTION.ID);
-      final Result<Record> connectionOperationRecords = database.query(ctx -> ctx.select(asterisk())
-          .from(CONNECTION_OPERATION)
-          .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
-          .fetch());
 
-      final List<UUID> connectionOperationIds =
-          connectionOperationRecords.stream().map(r -> r.get(CONNECTION_OPERATION.OPERATION_ID)).collect(Collectors.toList());
-      standardSyncs.add(DbConverter.buildStandardSync(record, connectionOperationIds));
+    for (final Record record : connectionAndOperationIdsResult) {
+      final String operationIdsFromRecord = record.get(OPERATION_IDS_AGG_FIELD, String.class);
+
+      // can be null when connection has no connectionOperations
+      final List<UUID> operationIds = operationIdsFromRecord == null
+          ? Collections.emptyList()
+          : Arrays.stream(operationIdsFromRecord.split(OPERATION_IDS_AGG_DELIMITER)).map(UUID::fromString).toList();
+
+      standardSyncs.add(DbConverter.buildStandardSync(record, operationIds));
     }
+
     return standardSyncs;
   }
 
@@ -796,6 +833,61 @@ public class ConfigRepository {
       result.put(record.get(ACTOR_CATALOG.ID), catalog);
     }
     return result;
+  }
+
+  // Data-carrier records to hold combined result of query for a Source or Destination and its
+  // corresponding Definition. This enables the API layer to
+  // process combined information about a Source/Destination/Definition pair without requiring two
+  // separate queries and in-memory join operation,
+  // because the config models are grouped immediately in the repository layer.
+  @VisibleForTesting
+  public record SourceAndDefinition(SourceConnection source, StandardSourceDefinition definition) {
+
+  }
+
+  @VisibleForTesting
+  public record DestinationAndDefinition(DestinationConnection destination, StandardDestinationDefinition definition) {
+
+  }
+
+  public List<SourceAndDefinition> getSourceAndDefinitionsFromSourceIds(final List<UUID> sourceIds) throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx
+        .select(ACTOR.asterisk(), ACTOR_DEFINITION.asterisk())
+        .from(ACTOR)
+        .join(ACTOR_DEFINITION)
+        .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source), ACTOR.ID.in(sourceIds))
+        .fetch());
+
+    final List<SourceAndDefinition> sourceAndDefinitions = new ArrayList<>();
+
+    for (final Record record : records) {
+      final SourceConnection source = DbConverter.buildSourceConnection(record);
+      final StandardSourceDefinition definition = DbConverter.buildStandardSourceDefinition(record);
+      sourceAndDefinitions.add(new SourceAndDefinition(source, definition));
+    }
+
+    return sourceAndDefinitions;
+  }
+
+  public List<DestinationAndDefinition> getDestinationAndDefinitionsFromDestinationIds(final List<UUID> destinationIds) throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx
+        .select(ACTOR.asterisk(), ACTOR_DEFINITION.asterisk())
+        .from(ACTOR)
+        .join(ACTOR_DEFINITION)
+        .on(ACTOR.ACTOR_DEFINITION_ID.eq(ACTOR_DEFINITION.ID))
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination), ACTOR.ID.in(destinationIds))
+        .fetch());
+
+    final List<DestinationAndDefinition> destinationAndDefinitions = new ArrayList<>();
+
+    for (final Record record : records) {
+      final DestinationConnection destination = DbConverter.buildDestinationConnection(record);
+      final StandardDestinationDefinition definition = DbConverter.buildStandardDestinationDefinition(record);
+      destinationAndDefinitions.add(new DestinationAndDefinition(destination, definition));
+    }
+
+    return destinationAndDefinitions;
   }
 
   public ActorCatalog getActorCatalogById(final UUID actorCatalogId)
