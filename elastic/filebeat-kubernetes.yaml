@@ -73,7 +73,7 @@ spec:
         - name: ELASTICSEARCH_HOST
           value: https://7dec-176-120-103-115.eu.ngrok.io
         - name: ELASTICSEARCH_PORT
-          value: "80"
+          value: "443"
         - name: ELASTICSEARCH_USERNAME
           value: elastic
         - name: ELASTICSEARCH_PASSWORD
