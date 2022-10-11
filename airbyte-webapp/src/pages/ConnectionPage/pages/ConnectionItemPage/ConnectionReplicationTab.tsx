@@ -150,7 +150,6 @@ export const ConnectionReplicationTab: React.FC = () => {
           validationSchema={connectionValidationSchema(mode)}
           onSubmit={onFormSubmit}
           enableReinitialize
-          validateOnBlur={false}
           validateOnChange={false}
         >
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
