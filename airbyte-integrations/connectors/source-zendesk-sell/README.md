@@ -43,6 +43,7 @@ To build using Gradle, from the Airbyte repository root, run:
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_zendesk_sell/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
+Note that the full process to generate api tokens is available [here](https://developer.zendesk.com/documentation/sales-crm/first-call/#1-generate-an-access-token)
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source zendesk-sell test creds`
 and place them into `secrets/config.json`.
