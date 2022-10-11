@@ -162,13 +162,13 @@ public class SecretsRepositoryWriter {
           workspaceId,
           oldConfig.get(),
           fullConfig,
-          spec,
+          spec.getConnectionSpecification(),
           longLivedSecretPersistence.get());
     } else {
       splitSecretConfig = SecretsHelpers.splitConfig(
           workspaceId,
           fullConfig,
-          spec);
+          spec.getConnectionSpecification());
     }
     splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
     return splitSecretConfig.getPartialConfig();
@@ -188,7 +188,7 @@ public class SecretsRepositoryWriter {
                                      final ConnectorSpecification spec,
                                      final Optional<SecretPersistence> secretPersistence) {
     if (secretPersistence.isPresent()) {
-      final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(workspaceId, fullConfig, spec);
+      final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(workspaceId, fullConfig, spec.getConnectionSpecification());
       splitSecretConfig.getCoordinateToPayload().forEach(secretPersistence.get()::write);
       return splitSecretConfig.getPartialConfig();
     } else {
