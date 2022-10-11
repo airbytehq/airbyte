@@ -30,7 +30,7 @@ export const YamlEditor: React.FC = () => {
         { token: "keyword", foreground: styles.tokenKeyword },
       ],
       colors: {
-        "editor.background": "#00000000", // transparant
+        "editor.background": "#00000000", // transparent, so that parent background is shown instead
       },
     });
 
