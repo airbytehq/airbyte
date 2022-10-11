@@ -34,7 +34,6 @@ import io.airbyte.api.model.generated.StreamTransform;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
-import io.airbyte.api.model.generated.WebBackendConnectionRead.SchemaChangeEnum;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
@@ -301,14 +300,16 @@ public class WebBackendConnectionsHandler {
        * but was present at time of configuration will appear in the diff as an added stream which is
        * confusing. We need to figure out why source_catalog_id is not always populated in the db.
        */
-      diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog(), CatalogConverter.toProtocol(configuredCatalog));
-      if(diff.getTransforms().isEmpty()) {
-        schemaChange = SchemaChange.NO_CHANGE;
-      } else if(breakingChangePresent(diff)) {
-        schemaChange = SchemaChange.BREAKING;
-      } else {
-        schemaChange = SchemaChange.NON_BREAKING;
-      }
+      diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog(),
+          CatalogConverter.toProtocol(configuredCatalog));
+      // if (diff.getTransforms().isEmpty()) {
+      // schemaChange = SchemaChange.NO_CHANGE;
+      // } else if (breakingChangePresent(diff)) {
+      // schemaChange = SchemaChange.BREAKING;
+      // } else {
+      // schemaChange = SchemaChange.NON_BREAKING;
+      // }
+      schemaChange = SchemaChange.NON_BREAKING;
 
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
