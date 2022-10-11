@@ -29,3 +29,15 @@ properties:
     type: integer
   meanSecondsBetweenStateMessageEmittedandCommitted:
     type: integer
+  replicationStartTime:
+    type: integer
+  replicationEndTime:
+    type: integer
+  sourceReadStartTime:
+    type: integer
+  sourceReadEndTime:
+    type: integer
+  destinationWriteStartTime:
+    type: integer
+  destinationWriteEndTime:
+    type: integer

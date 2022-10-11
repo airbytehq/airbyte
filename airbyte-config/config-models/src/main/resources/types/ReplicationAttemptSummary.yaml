@@ -11,12 +11,6 @@ required:
   - endTime
   - totalStats
   - streamStats
-  - replicationStartTime
-  - replicationEndTime
-  - sourceReadStartTime
-  - sourceReadEndTime
-  - destinationWriteStartTime
-  - destinationWriteEndTime
 additionalProperties: false
 properties:
   status:
@@ -30,22 +24,6 @@ properties:
   startTime:
     type: integer
   endTime:
-    type: integer
-  replicationStartTime:
-    type: integer
-  replicationEndTime:
-    type: integer
-  normalizationStartTime:
-    type: integer
-  normalizationEndTime:
-    type: integer
-  sourceReadStartTime:
-    type: integer
-  sourceReadEndTime:
-    type: integer
-  destinationWriteStartTime:
-    type: integer
-  destinationWriteEndTime:
     type: integer
   totalStats:
     "$ref": SyncStats.yaml

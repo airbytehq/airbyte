@@ -204,11 +204,9 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    // we need to null-out timestamps for comparison
     assertEquals(
-        replicationSuccessOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary().withNormalizationStartTime(null)
-            .withNormalizationEndTime(null),
-        actualOutput.getStandardSyncSummary().withNormalizationStartTime(null).withNormalizationEndTime(null));
+        replicationSuccessOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
+        actualOutput.getStandardSyncSummary());
   }
 
   @Test
@@ -247,11 +245,9 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    // we need to null-out timestamps for comparison
     assertEquals(
-        replicationFailOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary().withNormalizationStartTime(null)
-            .withNormalizationEndTime(null),
-        actualOutput.getStandardSyncSummary().withNormalizationStartTime(null).withNormalizationEndTime(null));
+        replicationFailOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
+        actualOutput.getStandardSyncSummary());
   }
 
   @Test

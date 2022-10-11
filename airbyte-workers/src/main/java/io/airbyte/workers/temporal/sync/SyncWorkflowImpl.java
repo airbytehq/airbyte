@@ -63,7 +63,6 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
       for (final StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
         if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
-          syncOutput.getStandardSyncSummary().setNormalizationStartTime(System.currentTimeMillis());
           final int normalizationSummaryCheckVersion =
               Workflow.getVersion(NORMALIZATION_SUMMARY_CHECK_TAG, Workflow.DEFAULT_VERSION, NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION);
           if (normalizationSummaryCheckVersion >= NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION) {
@@ -86,16 +85,13 @@ public class SyncWorkflowImpl implements SyncWorkflow {
           final NormalizationInput normalizationInput = generateNormalizationInput(syncInput, syncOutput);
           final NormalizationSummary normalizationSummary =
               normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
-          syncOutput.getStandardSyncSummary().setNormalizationEndTime(System.currentTimeMillis());
           syncOutput = syncOutput.withNormalizationSummary(normalizationSummary);
         } else if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
-          syncOutput.getStandardSyncSummary().setNormalizationStartTime(System.currentTimeMillis());
           final OperatorDbtInput operatorDbtInput = new OperatorDbtInput()
               .withDestinationConfiguration(syncInput.getDestinationConfiguration())
               .withOperatorDbt(standardSyncOperation.getOperatorDbt());
 
           dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, syncInput.getResourceRequirements(), operatorDbtInput);
-          syncOutput.getStandardSyncSummary().setNormalizationEndTime(System.currentTimeMillis());
         } else {
           final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
           LOGGER.error(message);

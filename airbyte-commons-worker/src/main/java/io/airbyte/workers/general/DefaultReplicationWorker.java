@@ -222,7 +222,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withMaxSecondsBeforeSourceStateMessageEmitted(messageTracker.getMaxSecondsToReceiveSourceStateMessage())
           .withMeanSecondsBeforeSourceStateMessageEmitted(messageTracker.getMeanSecondsToReceiveSourceStateMessage())
           .withMaxSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
-          .withMeanSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted().orElse(null));
+          .withMeanSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
+          .withReplicationStartTime(replicationStartTime)
+          .withReplicationEndTime(replicationEndTime > 0 ? replicationEndTime : null)
+          .withSourceReadStartTime(sourceReadStartTime > 0 ? sourceReadStartTime : null)
+          .withSourceReadEndTime(timeHolder.getSourceReadEndTime() > 0 ? timeHolder.getSourceReadEndTime() : null)
+          .withDestinationWriteStartTime(destinationWriteStartTime > 0 ? destinationWriteStartTime : null)
+          .withDestinationWriteEndTime(timeHolder.getDestinationWriteEndTime() > 0 ? timeHolder.getDestinationWriteEndTime() : null);
 
       if (outputStatus == ReplicationStatus.COMPLETED) {
         totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
@@ -260,13 +266,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withTotalStats(totalSyncStats)
           .withStreamStats(streamSyncStats)
           .withStartTime(startTime)
-          .withEndTime(System.currentTimeMillis())
-          .withReplicationStartTime(replicationStartTime)
-          .withReplicationEndTime(replicationEndTime > 0 ? replicationEndTime : null)
-          .withSourceReadStartTime(sourceReadStartTime > 0 ? sourceReadStartTime : null)
-          .withSourceReadEndTime(timeHolder.getSourceReadEndTime() > 0 ? timeHolder.getSourceReadEndTime() : null)
-          .withDestinationWriteStartTime(destinationWriteStartTime > 0 ? destinationWriteStartTime : null)
-          .withDestinationWriteEndTime(timeHolder.getDestinationWriteEndTime() > 0 ? timeHolder.getDestinationWriteEndTime() : null);
+          .withEndTime(System.currentTimeMillis());
 
       final ReplicationOutput output = new ReplicationOutput()
           .withReplicationAttemptSummary(summary)
