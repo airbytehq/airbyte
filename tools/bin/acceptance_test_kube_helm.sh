@@ -23,8 +23,7 @@ fi
 
 echo "Deploying filebeat to collect logs"
 kubectl apply -f elastic/filebeat-kubernetes.yaml
-echo "Waiting for filebeat to be ready"
-kubectl wait --namespace=kube-system --for=condition=Available daemonset/filebeat --timeout=300s || (kubectl describe pods && exit 1)
+
 
 echo "Replacing default Chart.yaml and values.yaml with a test one"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old
