@@ -126,7 +126,7 @@ spec:
           type: DirectoryOrCreate
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: RoleBinding
 metadata:
   name: filebeat
 subjects:
@@ -134,12 +134,12 @@ subjects:
   name: filebeat
   
 roleRef:
-  kind: ClusterRole
+  kind: Role
   name: filebeat
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
   name: filebeat
   labels:
