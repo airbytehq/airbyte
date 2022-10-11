@@ -1,0 +1,38 @@
+{
+  "streams": [
+    {
+      "name": "counter_table",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "_creationTime": { "type": "number" },
+          "_id": { "type": "object", "properties": { "$id": "string" } },
+          "counter": { "type": "string" },
+          "name": { "type": "string" }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_ts"],
+      "source_defined_primary_key": [["_id"]]
+    },
+    {
+      "name": "opinions",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "_creationTime": { "type": "number" },
+          "_id": { "type": "object", "properties": { "$id": "string" } },
+          "agree": { "type": "number" },
+          "allVotes": { "type": "number" },
+          "disagree": { "type": "number" },
+          "opinion": { "type": "string" }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_ts"],
+      "source_defined_primary_key": [["_id"]]
+    }
+  ]
+}
