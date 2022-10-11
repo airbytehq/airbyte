@@ -69,7 +69,6 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     <StartWithDestination onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
   );
 
-  console.log(!destinationDefinitions.length && !isLoading && !destinationDefinitionId);
 
   return (
     <ConnectorCard
