@@ -42,7 +42,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
   const { resetServiceForm, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
-    <Form className={classnames(styles.formContainer, { [styles.emptyContainer]: !selectedConnector })}>
+    <Form className={classnames({ [styles.emptyContainer]: !selectedConnector })}>
       <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
         <div className={styles.loaderContainer}>

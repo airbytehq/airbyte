@@ -1,3 +1,4 @@
+import classnames from "classnames";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -97,35 +98,41 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
 
   return (
     <>
-      <Card title={title} fullWidth={full} className={styles.serviceTypeSelectCard}>
-        <div className={styles.dropdownContainer}>
-          <ConnectorServiceTypeControl
-            formType={props.formType}
-            onChangeServiceType={onServiceSelect}
-            availableServices={availableServices}
-            isEditMode={isEditMode}
-            selectedServiceId={selectedConnectorDefinitionSpecificationId}
-            disabled={isFormSubmitting}
-          />
+      <Card title={title} fullWidth={full}>
+        <div className={styles.cardForm}>
+          <div className={styles.connectorSelectControl}>
+            <ConnectorServiceTypeControl
+              formType={props.formType}
+              onChangeServiceType={onServiceSelect}
+              availableServices={availableServices}
+              isEditMode={isEditMode}
+              selectedServiceId={selectedConnectorDefinitionSpecificationId}
+              disabled={isFormSubmitting}
+            />
+          </div>
           {additionalDropdownComponent}
+          <div
+            className={classnames(styles.connectorForm, {
+              [styles.connectorFormEmpty]: !selectedConnectorDefinitionSpecificationId,
+            })}
+          >
+            <ServiceForm
+              {...props}
+              errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
+              isTestConnectionInProgress={isTestConnectionInProgress}
+              onStopTesting={onStopTesting}
+              testConnector={testConnector}
+              onSubmit={onHandleSubmit}
+              successMessage={
+                props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
+              }
+            />
+            {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
+            {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
+          </div>
         </div>
       </Card>
-      {intermediateComponent}
-      <Card fullWidth={full}>
-        <ServiceForm
-          {...props}
-          errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
-          isTestConnectionInProgress={isTestConnectionInProgress}
-          onStopTesting={onStopTesting}
-          testConnector={testConnector}
-          onSubmit={onHandleSubmit}
-          successMessage={
-            props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
-          }
-        />
-        {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
-        {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
-      </Card>
+      {intermediateComponent && <div className={styles.intermediateComponentContainer}>{intermediateComponent}</div>}
     </>
   );
 };
