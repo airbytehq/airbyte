@@ -15,14 +15,16 @@ connectionSpecification:
       pattern: "^(sandbox|live)_.+$"
       description: Gocardless API TOKEN
       airbyte_secret: true
+      order: 0
     gocardless_environment:
-      title: Gocardless API Environment
+      title: GoCardless API Environment
       type: string
       enum:
         - sandbox
         - live
       default: sandbox
       description: Environment you are trying to connect to.
+      order: 1
     gocardless_version:
       title: GoCardless API Version
       type: string
@@ -30,6 +32,7 @@ connectionSpecification:
       description: |
         GoCardless version. This is a date. You can find the latest here: 
         https://developer.gocardless.com/api-reference/#api-usage-making-requests
+      order: 2
     start_date:
       title: Start Date
       type: string
@@ -39,3 +42,4 @@ connectionSpecification:
         before this date will not be replicated.
       examples:
       - '2017-01-25T00:00:00Z'
+      order: 3
