@@ -6,7 +6,7 @@
       "type": "boolean"
     },
     "serviceDurationModifier": {
-      "type": "integer"
+      "type": "number"
     },
     "userId": {
       "type": "string"
@@ -32,7 +32,9 @@
       ]
     },
     "created": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "order": {
       "type": "integer"
@@ -71,7 +73,9 @@
       "type": "string"
     },
     "updated": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "parentId": {
       "type": "string"

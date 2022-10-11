@@ -3,7 +3,9 @@
   "type": "object",
   "properties": {
     "created": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "numVisits": {
       "type": "integer"
@@ -21,7 +23,9 @@
       "type": "string"
     },
     "updated": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "fields": {
       "type": "object"
