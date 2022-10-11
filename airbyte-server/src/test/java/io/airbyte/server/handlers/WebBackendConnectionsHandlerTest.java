@@ -47,6 +47,7 @@ import io.airbyte.api.model.generated.OperationRead;
 import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
 import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SchemaChange;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
@@ -236,6 +237,7 @@ class WebBackendConnectionsHandlerTest {
         .latestSyncJobCreatedAt(now.getEpochSecond())
         .latestSyncJobStatus(JobStatus.SUCCEEDED)
         .isSyncing(false)
+        .schemaChange(SchemaChange.NO_CHANGE)
         .resourceRequirements(new ResourceRequirements()
             .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
             .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
@@ -272,6 +274,7 @@ class WebBackendConnectionsHandlerTest {
         .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
         .latestSyncJobStatus(expected.getLatestSyncJobStatus())
         .isSyncing(expected.getIsSyncing())
+        .schemaChange(SchemaChange.NON_BREAKING)
         .catalogDiff(new CatalogDiff().transforms(List.of(
             new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
                 .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
