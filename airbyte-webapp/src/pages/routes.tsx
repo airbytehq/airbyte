@@ -5,6 +5,7 @@ import { useEffectOnce } from "react-use";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -36,6 +37,7 @@ const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
 };
 
 const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) => {
+  const allowBuilder = useFeature(FeatureItem.AllowBuilder);
   return (
     <MainView>
       <ApiErrorBoundary>
@@ -44,7 +46,7 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) =
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
-          <Route path={`${RoutePaths.Builder}/*`} element={<BuilderPage />} />
+          {allowBuilder && <Route path={`${RoutePaths.Builder}/*`} element={<BuilderPage />} />}
           {workspace.displaySetupWizard ? (
             <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
           ) : null}
