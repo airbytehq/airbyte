@@ -69,8 +69,12 @@ components:
           items:
             type: object
             required:
+              - sliceDescriptor
               - pages
             properties:
+              sliceDescriptor:
+                type: object
+                description: 'An object describing the current slice, e.g. {start_time: "2021-01-01", end_time: "2021-01-31"}'
               pages:
                 type: array
                 description: The pages returned from the read command
