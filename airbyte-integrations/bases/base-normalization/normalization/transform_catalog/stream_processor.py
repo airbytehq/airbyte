@@ -1019,11 +1019,14 @@ from dedup_data where {{ airbyte_row_num }} = 1
         if not self.cursor_field:
             cursor = self.name_transformer.normalize_column_name(self.get_cursor_field_property_name(column_names), in_jinja)
         elif len(self.cursor_field) == 1:
-            if not is_airbyte_column(self.cursor_field[0]):
-                cursor = column_names[self.cursor_field[0]][0]
+            cursor_field = self.cursor_field[0]
+            if not is_airbyte_column(cursor_field):
+                if cursor_field not in column_names:
+                    raise ValueError(f"cursor field: '{cursor_field}' missed in schema for stream '{self.stream_name}'")
+                cursor = column_names[cursor_field][0]
             else:
                 # using an airbyte generated column
-                cursor = self.cursor_field[0]
+                cursor = cursor_field
         else:
             raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
         return cursor

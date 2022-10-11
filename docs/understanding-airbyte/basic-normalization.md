@@ -353,6 +353,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date       | Pull Request                                                | Subject                                                                                                              |
 |:----------------|:----------------------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|
+|                 | 0.2.23                | 2022-10-04 | [\#17549](https://github.com/airbytehq/airbyte/pull/17549)  | Improve error msg if `cursor_field` missed in schema                                                                 |
 |                 | 0.2.22                | 2022-09-05 | [\#16339](https://github.com/airbytehq/airbyte/pull/16339)  | Update Clickhouse DBT to 1.1.8                                                                                       |
 |                 | 0.2.21                | 2022-09-09 | [\#15833](https://github.com/airbytehq/airbyte/pull/15833/) | SSH Tunnel: allow using OPENSSH key format (published in [\#16545](https://github.com/airbytehq/airbyte/pull/16545)) |
 |                 | 0.2.20                | 2022-08-30 | [\#15592](https://github.com/airbytehq/airbyte/pull/15592)  | Add TiDB support                                                                                                     |
