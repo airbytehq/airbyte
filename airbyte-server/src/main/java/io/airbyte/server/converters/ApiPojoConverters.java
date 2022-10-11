@@ -11,6 +11,7 @@ import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleDataCron;
 import io.airbyte.api.model.generated.ConnectionStatus;
+import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobType;
 import io.airbyte.api.model.generated.JobTypeResourceLimit;
 import io.airbyte.api.model.generated.ResourceRequirements;
@@ -91,7 +92,8 @@ public class ApiPojoConverters {
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
-        .sourceCatalogId(standardSync.getSourceCatalogId());
+        .sourceCatalogId(standardSync.getSourceCatalogId())
+        .geography(Enums.convertTo(standardSync.getGeography(), Geography.class));
 
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(resourceRequirementsToApi(standardSync.getResourceRequirements()));
@@ -125,6 +127,14 @@ public class ApiPojoConverters {
 
   public static StandardSync.Status toPersistenceStatus(final ConnectionStatus apiStatus) {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
+  }
+
+  public static Geography toApiGeography(final io.airbyte.config.Geography geography) {
+    return Enums.convertTo(geography, Geography.class);
+  }
+
+  public static io.airbyte.config.Geography toPersistenceGeography(final Geography apiGeography) {
+    return Enums.convertTo(apiGeography, io.airbyte.config.Geography.class);
   }
 
   public static Schedule.TimeUnit toPersistenceTimeUnit(final ConnectionSchedule.TimeUnitEnum apiTimeUnit) {

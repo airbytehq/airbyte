@@ -1,10 +1,8 @@
 {
   "type": "object",
   "properties": {
-    "id": { "type": "number" },
-    "date": { "type": "string", "format": "date-time" },
-    "CAD": { "type": ["null", "string"] },
-    "COD": { "type": ["null", "string"] },
+    "CAD": { "type": ["null", "number"] },
+    "HKD": { "type": ["null", "number"] },
     "ISK": { "type": ["null", "number"] },
     "PHP": { "type": ["null", "number"] },
     "DKK": { "type": ["null", "number"] },
@@ -26,12 +24,32 @@
         ".+": {}
       }
     },
+    "something2": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "oneOfOne": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "oneOfTwo": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
     "someArray": {
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
-          "newName": {
+          "oldName": {
             "type": ["string", "null"],
             "maxLength": 100
           }
