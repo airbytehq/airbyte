@@ -62,6 +62,7 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, fieldValue, 
      * pop-value: user clicked backspace to remove tag
      */
     // TODO: handle deletes by selecting tag and hitting space/enter/delete
+    // OR do not highlight the delete button when selecting a tag?
     if (actionMeta.action === "remove-value") {
       updatedTags = updatedTags.filter((tag) => tag.value !== actionMeta.removedValue.value);
     } else if (actionMeta.action === "clear") {
