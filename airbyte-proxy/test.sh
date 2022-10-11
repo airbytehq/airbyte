@@ -9,12 +9,16 @@ TEST_HOST=localhost
 
 
 function start_container () {
-  docker run -d -p $PORT:8000 -p 8000:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --name $NAME airbyte/proxy:dev
+  CMD="docker run -d -p $PORT:8000 -p 8000:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --name $NAME airbyte/proxy:dev"
+  echo $CMD
+  eval $CMD
   wait_for_docker;
 }
 
 function start_container_with_proxy () {
-  docker run -d -p $PORT:8000 -p 8000:8000 --env PROXY_PASS_WEB=$1 --env PROXY_PASS_RESOLVER=$2 --name $NAME airbyte/proxy:dev
+  CMD="docker run -d -p $PORT:8000 -p 8000:8000 --env PROXY_PASS_WEB=$1 --name $NAME airbyte/proxy:dev"
+  echo $CMD
+  eval $CMD
   wait_for_docker;
 }
 
@@ -50,7 +54,7 @@ fi
 
 echo "Testing access with auth"
 RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_PASSWORD@$TEST_HOST:$PORT" -i --silent`
-if [[ $RESPONSE == *"502 Bad Gateway"* ]]; then
+if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access with auth worked"
 else
   echo "Auth not working"
@@ -75,7 +79,7 @@ fi
 
 echo "Testing access updated auth"
 RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_UPDATED_PASSWORD@$TEST_HOST:$PORT" -i --silent`
-if [[ $RESPONSE == *"502 Bad Gateway"* ]]; then
+if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access with updated auth worked"
 else
   echo "Auth not working"
@@ -90,7 +94,7 @@ start_container "" ""
 
 echo "Testing access without auth"
 RESPONSE=`curl "http://$TEST_HOST:$PORT" -i --silent`
-if [[ $RESPONSE == *"502 Bad Gateway"* ]]; then
+if [[ $RESPONSE == *"200 OK"* ]]; then
   echo "✔️  access without auth allowed when configured"
 else
   echo "Auth not working"
@@ -101,7 +105,7 @@ fi
 stop_container;
 
 echo "Testing that PROXY_PASS can be used to change the backend"
-start_container_with_proxy "https://www.google.com" "8.8.8.8"
+start_container_with_proxy "https://www.google.com"
 
 RESPONSE=`curl "http://$TEST_HOST:$PORT" -i --silent`
 if [[ $RESPONSE == *"google.com"* ]]; then

@@ -3,7 +3,6 @@ events {}
 http {
   server {
     listen 8000 default_server;
-    resolver ${PROXY_PASS_RESOLVER};
 
     location / {
       proxy_set_header Host $host;
@@ -13,8 +12,7 @@ http {
       auth_basic "Welcome to Airbyte";
       auth_basic_user_file /etc/nginx/.htpasswd;
 
-      set $upstream "${PROXY_PASS_WEB}";
-      proxy_pass $upstream;
+      proxy_pass "${PROXY_PASS_WEB}";
 
       error_page 401 /etc/nginx/401.html;
       location ~ (401.html)$ {
@@ -35,8 +33,7 @@ http {
       auth_basic "Welcome to Airbyte";
       auth_basic_user_file /etc/nginx/.htpasswd;
 
-      set $upstream "${PROXY_PASS_API}";
-      proxy_pass $upstream;
+      proxy_pass "${PROXY_PASS_API}";
 
       error_page 401 /etc/nginx/401.html;
       location ~ (401.html)$ {

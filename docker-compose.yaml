@@ -222,6 +222,9 @@ services:
     networks:
       - airbyte_internal
       - airbyte_public
+    depends_on:
+      - webapp
+      - server
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
