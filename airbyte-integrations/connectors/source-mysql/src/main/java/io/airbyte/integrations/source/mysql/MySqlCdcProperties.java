@@ -17,8 +17,6 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Properties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MySqlCdcProperties {
 
