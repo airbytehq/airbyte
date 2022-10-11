@@ -16,7 +16,7 @@ import io.micronaut.runtime.Micronaut;
 public class Application {
 
   public static void main(final String[] args) {
-    MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER)
+    MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
     Micronaut.run(Application.class, args);
   }
 
