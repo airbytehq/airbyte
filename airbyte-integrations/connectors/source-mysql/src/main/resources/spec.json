@@ -223,7 +223,7 @@
               },
               "server_time_zone": {
                 "type": "string",
-                "title": "Configured server timezone for the source (Advanced)",
+                "title": "Configured server timezone for the MySQL source (Advanced)",
                 "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
                 "order": 2
               }
