@@ -1,13 +1,15 @@
 import React, { memo } from "react";
 import styled from "styled-components";
 
-import { Cell, CheckBox, RadioButton } from "components";
+import { Cell } from "components/SimpleTableComponents";
+import { CheckBox } from "components/ui/CheckBox";
+import { RadioButton } from "components/ui/RadioButton";
 
 import { SyncSchemaField } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { equal } from "utils/objects";
+import { useTranslateDataType } from "utils/useTranslateDataType";
 
-import { useTranslateDataType } from "../../../utils/useTranslateDataType";
 import DataTypeCell from "./components/DataTypeCell";
 import { pathDisplayName } from "./components/PathPopout";
 import { NameContainer } from "./styles";

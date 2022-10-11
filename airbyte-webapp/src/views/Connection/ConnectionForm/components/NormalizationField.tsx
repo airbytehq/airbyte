@@ -7,8 +7,7 @@ import { LabeledRadioButton, Link } from "components";
 
 import { useConfig } from "config";
 import { NormalizationType } from "core/domain/connection/operation";
-
-import { ConnectionFormMode } from "../ConnectionForm";
+import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 const Normalization = styled.div`
   margin: 16px 0;
