@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
+import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
 import io.temporal.activity.ActivityOptions;
@@ -24,12 +25,11 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class WorkflowReplayingTest {
 
-  private ActivityOptions activityOptions;
   private TemporalProxyHelper temporalProxyHelper;
 
   @BeforeEach
   void setUp() {
-    activityOptions = ActivityOptions.newBuilder()
+    ActivityOptions activityOptions = ActivityOptions.newBuilder()
         .setHeartbeatTimeout(Duration.ofSeconds(30))
         .setStartToCloseTimeout(Duration.ofSeconds(120))
         .setRetryOptions(RetryOptions.newBuilder()
@@ -39,25 +39,47 @@ class WorkflowReplayingTest {
             .build())
         .build();
 
-    final BeanIdentifier shortActivitiesBeanIdentifier = mock(BeanIdentifier.class);
-    final BeanRegistration shortActivityOptionsBeanRegistration = mock(BeanRegistration.class);
-    when(shortActivitiesBeanIdentifier.getName()).thenReturn("shortActivityOptions");
-    when(shortActivityOptionsBeanRegistration.getIdentifier()).thenReturn(shortActivitiesBeanIdentifier);
-    when(shortActivityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
-    temporalProxyHelper = new TemporalProxyHelper(List.of(shortActivityOptionsBeanRegistration));
+    final BeanRegistration shortActivityOptionsBeanRegistration = getActivityOptionBeanRegistration("shortActivityOptions", activityOptions);
+    final BeanRegistration longActivityOptionsBeanRegistration = getActivityOptionBeanRegistration("longRunActivityOptions", activityOptions);
+
+    temporalProxyHelper = new TemporalProxyHelper(List.of(shortActivityOptionsBeanRegistration, longActivityOptionsBeanRegistration));
   }
 
   @Test
-  void replaySimpleSuccessfulWorkflow() throws Exception {
+  void replaySimpleSuccessfulConnectionManagerWorkflow() throws Exception {
     // This test ensures that a new version of the workflow doesn't break an in-progress execution
     // This JSON file is exported from Temporal directly (e.g.
     // `http://${temporal-ui}/namespaces/default/workflows/connection_manager_-${uuid}/${uuid}/history`)
     // and export
-    final URL historyPath = getClass().getClassLoader().getResource("workflowHistory.json");
+    final URL historyPath = getClass().getClassLoader().getResource("connectionManagerWorkflowHistory.json");
 
     final File historyFile = new File(historyPath.toURI());
 
     WorkflowReplayer.replayWorkflowExecution(historyFile, temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
+  }
+
+  @Test
+  void replaySyncWorkflowWithNormalization() throws Exception {
+    // This test ensures that a new version of the workflow doesn't break an in-progress execution
+    // This JSON file is exported from Temporal directly (e.g.
+    // `http://${temporal-ui}/namespaces/default/workflows/connection_manager_-${uuid}/${uuid}/history`)
+    // and export
+
+    final URL historyPath = getClass().getClassLoader().getResource("syncWorkflowHistory.json");
+
+    final File historyFile = new File(historyPath.toURI());
+
+    WorkflowReplayer.replayWorkflowExecution(historyFile, temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
+  }
+
+  private BeanRegistration getActivityOptionBeanRegistration(String name, ActivityOptions activityOptions) {
+    final BeanIdentifier activitiesBeanIdentifier = mock(BeanIdentifier.class);
+    final BeanRegistration activityOptionsBeanRegistration = mock(BeanRegistration.class);
+    when(activitiesBeanIdentifier.getName()).thenReturn(name);
+    when(activityOptionsBeanRegistration.getIdentifier()).thenReturn(activitiesBeanIdentifier);
+    when(activityOptionsBeanRegistration.getBean()).thenReturn(activityOptions);
+
+    return activityOptionsBeanRegistration;
   }
 
 }

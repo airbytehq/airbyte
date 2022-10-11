@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { ButtonProps } from "components/base/Button/types";
+import { ButtonProps } from "components/ui/Button";
 
 const StyledButton = styled.button<ButtonProps>`
   align-items: center;

@@ -69,8 +69,8 @@ export const SourceForm: React.FC<SourceFormProps> = ({
     });
   };
 
-  const onSubmitForm = async (values: ServiceFormValues) => {
-    await onSubmit({
+  const onSubmitForm = (values: ServiceFormValues) => {
+    onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
     });

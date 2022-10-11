@@ -1,5 +1,6 @@
+{{- if .Values.minio.enabled }}
 apiVersion: apps/v1 #  for k8s versions before 1.9.0 use apps/v1beta2  and before 1.8.0 use extensions/v1beta1
-kind: Deployment
+kind: StatefulSet
 metadata:
   # This name uniquely identifies the Deployment
   name: airbyte-minio
@@ -12,8 +13,15 @@ spec:
   selector:
     matchLabels:
       {{ include "airbyte.minioSelectorLabels" . | nindent 6 }}
-  strategy:
-    type: Recreate
+  serviceName: airbyte-minio-svc
+  volumeClaimTemplates:
+      - metadata:
+          name: airbyte-minio-pv-claim
+        spec:
+          accessModes: [ "ReadWriteOnce" ]
+          resources:
+            requests:
+              storage: 500Mi
   template:
     metadata:
       labels:
@@ -47,26 +55,6 @@ spec:
               mountPath: "/data"
 ---
 apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  # This name uniquely identifies the PVC. Will be used in deployment below.
-  name: airbyte-minio-pv-claim
-  labels:
-    {{ include "airbyte.minioLabels" . | nindent 4 }}
-  annotations:
-    helm.sh/hook: pre-install,pre-upgrade
-    helm.sh/hook-weight: "-1"
-  finalizers: null
-spec:
-  # Read more about access modes here: http://kubernetes.io/docs/user-guide/persistent-volumes/#access-modes
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    # This is the request for storage. Should be available in the cluster.
-    requests:
-      storage: 200Mi
----
-apiVersion: v1
 kind: Service
 metadata:
   name: airbyte-minio-svc
@@ -82,3 +70,4 @@ spec:
       protocol: TCP
   selector:
     {{ include "airbyte.minioSelectorLabels" . | nindent 4 }}
+{{- end }}

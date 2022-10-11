@@ -13,7 +13,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

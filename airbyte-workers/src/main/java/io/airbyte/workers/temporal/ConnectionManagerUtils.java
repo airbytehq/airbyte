@@ -4,12 +4,14 @@
 
 package io.airbyte.workers.temporal;
 
+import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.exception.DeletedWorkflowException;
 import io.airbyte.workers.temporal.exception.UnreachableWorkflowException;
-import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
-import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
-import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
 import io.temporal.api.workflowservice.v1.DescribeWorkflowExecutionRequest;
@@ -19,10 +21,10 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.workflow.Functions.Proc;
 import io.temporal.workflow.Functions.Proc1;
 import io.temporal.workflow.Functions.TemporalFunctionalInterfaceMarker;
+import jakarta.inject.Singleton;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import javax.inject.Singleton;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       lastStateMessage = message;
       outputRecordCollector.accept(message);
     } else if (message.getType() == Type.RECORD) {
-      message.getRecord().setNamespace(datasetId);
+      if (StringUtils.isEmpty(message.getRecord().getNamespace())) {
+        message.getRecord().setNamespace(datasetId);
+      }
       processRecord(message);
     } else {
       LOGGER.warn("Unexpected message: {}", message.getType());

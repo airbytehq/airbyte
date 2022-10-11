@@ -37,4 +37,6 @@
 }
 ```
 ## For Airbyte employees
-Put the contents of the `Snowflake Insert Test Creds` secret on Lastpass into `secrets/config.json` to be able to run integration tests locally.
+To be able to run integration tests locally:
+1. Put the contents of the `Source snowflake test creds (secrets/config.json)` secret on Lastpass into `secrets/config.json`.
+1. Put the contents of the `SECRET_SOURCE-SNOWFLAKE_OAUTH__CREDS (secrets/config_auth.json)` secret on Lastpass into `secrets/config_auth.json`.

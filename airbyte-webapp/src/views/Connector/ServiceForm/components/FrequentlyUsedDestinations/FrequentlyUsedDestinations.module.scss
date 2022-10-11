@@ -14,9 +14,6 @@
   border-radius: variables.$border-radius-sm;
   min-height: 70px;
   width: 100%;
-  display: flex;
-  align-items: center;
-  margin: variables.$spacing-xs;
 
   &:active {
     background-color: colors.$grey-100;

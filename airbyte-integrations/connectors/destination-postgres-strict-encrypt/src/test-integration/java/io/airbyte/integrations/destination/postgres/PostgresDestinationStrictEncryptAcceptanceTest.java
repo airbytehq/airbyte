@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.postgres;
 import static io.airbyte.db.PostgresUtils.getCertificate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -181,7 +182,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
 
     final var actual = runCheck(config);
     assertEquals(Status.FAILED, actual.getStatus());
-    assertEquals("Unsecured connection not allowed", actual.getMessage());
+    assertTrue(actual.getMessage().contains("Unsecured connection not allowed"));
   }
 
   @Test

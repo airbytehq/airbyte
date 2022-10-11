@@ -3,9 +3,12 @@
 
 .mainView {
   cursor: pointer;
-  min-height: 75px;
+  height: unset !important;
+  min-height: 70px;
+  padding: variables.$spacing-lg 0;
 
   .titleCell {
+    width: 80%;
     display: flex;
     color: colors.$dark-blue;
     min-width: 0;
@@ -22,31 +25,13 @@
       }
     }
 
-    .lastAttempt {
-      font-size: 12px;
-      font-weight: bold;
-      color: colors.$grey;
-    }
-
     .justification {
+      width: 80%;
       display: flex;
       flex-grow: 1;
       flex-direction: column;
       justify-content: center;
       min-width: 0;
-    }
-  }
-
-  &.open {
-    .arrow {
-      transform: rotate(-0deg);
-    }
-  }
-
-  &.failed {
-    .arrow,
-    .lastAttempt {
-      color: colors.$red;
     }
   }
 
@@ -60,21 +45,6 @@
       line-height: 15px;
       color: colors.$red;
     }
-
-    .arrow {
-      transform: rotate(-90deg);
-      transition: variables.$transition;
-      opacity: 0;
-      color: colors.$dark-blue-50;
-      font-size: 22px;
-      margin: 0 30px 0 50px;
-
-      div:hover > &,
-      div:hover > div > &,
-      div:hover > div > div > & {
-        opacity: 1;
-      }
-    }
   }
 
   &.open:not(.failed) {
@@ -83,5 +53,28 @@
 
   &.open.failed {
     border-bottom: variables.$border-thin solid colors.$red-50;
+  }
+}
+
+.arrow {
+  transform: rotate(-90deg);
+  transition: variables.$transition;
+  opacity: 0;
+  color: colors.$dark-blue-50;
+  font-size: 22px;
+  margin: 0 30px 0 50px;
+
+  .open & {
+    transform: rotate(-0deg);
+  }
+
+  .failed & {
+    color: colors.$red;
+  }
+
+  div:hover > &,
+  div:hover > div > &,
+  div:hover > div > div > & {
+    opacity: 1;
   }
 }

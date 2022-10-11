@@ -3,7 +3,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 import { Subscription } from "rxjs";
 
-import { Spinner } from "components";
+import { Spinner } from "components/ui/Spinner";
 
 import { useExperiment } from "hooks/services/Experiment";
 import { OAuthProviders } from "packages/cloud/lib/auth/AuthProviders";

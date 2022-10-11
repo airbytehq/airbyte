@@ -2,8 +2,8 @@ import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
-import { Text } from "components/base/Text";
-import { Tooltip } from "components/base/Tooltip";
+import { Text } from "components/ui/Text";
+import { Tooltip } from "components/ui/Tooltip";
 
 import styles from "./PathPopoutButton.module.scss";
 

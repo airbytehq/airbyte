@@ -593,6 +593,42 @@ class TestIncrementalFileStream:
                 False,
                 False,
             ),
+            (  # int becomes str in case of type mismatch in different files
+                "{}",
+                datetime(2020, 5, 5, 13, 5, 5),
+                [
+                    FileInfo(last_modified=datetime(2022, 1, 1, 13, 5, 5), key="first", size=128),
+                    FileInfo(last_modified=datetime(2022, 6, 7, 8, 9, 10), key="second", size=128),
+                ],
+                [
+                    {
+                        "pk": "string",
+                        "full_name": "string",
+                        "street_address": "string",
+                        "customer_code": "integer",
+                        "email": "string",
+                        "dob": "string",
+                    },
+                    {
+                        "pk": "integer",
+                        "full_name": "string",
+                        "street_address": "string",
+                        "customer_code": "integer",
+                        "email": "string",
+                        "dob": "string",
+                    },
+                ],
+                {
+                    "pk": "string",
+                    "full_name": "string",
+                    "street_address": "string",
+                    "customer_code": "integer",
+                    "email": "string",
+                    "dob": "string",
+                },
+                True,
+                False,
+            ),
         ),
     )
     @patch("source_s3.stream.IncrementalFileStreamS3.storagefile_class", MagicMock())

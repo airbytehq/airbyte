@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
@@ -22,11 +23,13 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.config.SyncStats;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
@@ -41,13 +44,16 @@ import io.temporal.client.WorkflowOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings({"PMD.UnusedPrivateField", "PMD.UnusedPrivateMethod"})
 class SyncWorkflowTest {
 
   // TEMPORAL
@@ -59,6 +65,7 @@ class SyncWorkflowTest {
   private NormalizationActivityImpl normalizationActivity;
   private DbtTransformationActivityImpl dbtTransformationActivity;
   private PersistStateActivityImpl persistStateActivity;
+  private NormalizationSummaryCheckActivityImpl normalizationSummaryCheckActivity;
 
   private static final String SYNC_TASK_QUEUE = "SYNC_TASK_QUEUE";
 
@@ -84,13 +91,17 @@ class SyncWorkflowTest {
   private NormalizationInput normalizationInput;
   private OperatorDbtInput operatorDbtInput;
   private StandardSyncOutput replicationSuccessOutput;
+  private StandardSyncOutput replicationFailOutput;
+  private StandardSyncSummary standardSyncSummary;
+  private StandardSyncSummary failedSyncSummary;
+  private SyncStats syncStats;
   private NormalizationSummary normalizationSummary;
   private ActivityOptions longActivityOptions;
   private ActivityOptions shortActivityOptions;
   private TemporalProxyHelper temporalProxyHelper;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException {
     testEnv = TestWorkflowEnvironment.newInstance();
     syncWorker = testEnv.newWorker(SYNC_TASK_QUEUE);
     client = testEnv.getWorkflowClient();
@@ -98,7 +109,13 @@ class SyncWorkflowTest {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     sync = syncPair.getKey();
     syncInput = syncPair.getValue();
-    replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog());
+
+    syncStats = new SyncStats().withRecordsCommitted(10L);
+    standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
+    failedSyncSummary = new StandardSyncSummary().withStatus(ReplicationStatus.FAILED).withTotalStats(new SyncStats().withRecordsEmitted(0L));
+    replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog()).withStandardSyncSummary(standardSyncSummary);
+    replicationFailOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog()).withStandardSyncSummary(failedSyncSummary);
+
     normalizationSummary = new NormalizationSummary();
 
     normalizationInput = new NormalizationInput()
@@ -114,7 +131,10 @@ class SyncWorkflowTest {
     normalizationActivity = mock(NormalizationActivityImpl.class);
     dbtTransformationActivity = mock(DbtTransformationActivityImpl.class);
     persistStateActivity = mock(PersistStateActivityImpl.class);
+    normalizationSummaryCheckActivity = mock(NormalizationSummaryCheckActivityImpl.class);
+
     when(normalizationActivity.generateNormalizationInput(any(), any())).thenReturn(normalizationInput);
+    when(normalizationSummaryCheckActivity.shouldRunNormalization(any(), any(), any())).thenReturn(true);
 
     longActivityOptions = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofDays(3))
@@ -156,7 +176,7 @@ class SyncWorkflowTest {
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity,
-        persistStateActivity);
+        persistStateActivity, normalizationSummaryCheckActivity);
     testEnv.start();
     final SyncWorkflow workflow =
         client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(SYNC_TASK_QUEUE).build());
@@ -182,8 +202,10 @@ class SyncWorkflowTest {
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
-    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
-    assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary), actualOutput);
+    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
+        operatorDbtInput);
+    assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary),
+        actualOutput);
   }
 
   @Test
@@ -200,6 +222,30 @@ class SyncWorkflowTest {
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
     verifyNoInteractions(dbtTransformationActivity);
+  }
+
+  @Test
+  void testReplicationFailedGracefully() {
+    doReturn(replicationFailOutput).when(replicationActivity).replicate(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        syncInput);
+
+    doReturn(normalizationSummary).when(normalizationActivity).normalize(
+        JOB_RUN_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        normalizationInput);
+
+    final StandardSyncOutput actualOutput = execute();
+
+    verifyReplication(replicationActivity, syncInput);
+    verifyPersistState(persistStateActivity, sync, replicationFailOutput, syncInput.getCatalog());
+    verifyNormalize(normalizationActivity, normalizationInput);
+    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
+        operatorDbtInput);
+    assertEquals(replicationFailOutput.withNormalizationSummary(normalizationSummary),
+        actualOutput);
   }
 
   @Test
@@ -264,6 +310,30 @@ class SyncWorkflowTest {
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
+  }
+
+  @Test
+  @Disabled("This behavior has been disabled temporarily (OC Issue #741)")
+  void testSkipNormalization() throws IOException {
+    final SyncStats syncStats = new SyncStats().withRecordsCommitted(0L);
+    final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
+    final StandardSyncOutput replicationSuccessOutputNoRecordsCommitted =
+        new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog()).withStandardSyncSummary(standardSyncSummary);
+    when(normalizationSummaryCheckActivity.shouldRunNormalization(any(), any(), any())).thenReturn(false);
+
+    doReturn(replicationSuccessOutputNoRecordsCommitted).when(replicationActivity).replicate(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        syncInput);
+
+    execute();
+
+    verifyReplication(replicationActivity, syncInput);
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutputNoRecordsCommitted, syncInput.getCatalog());
+    verifyNoInteractions(normalizationActivity);
+    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
+        operatorDbtInput);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")

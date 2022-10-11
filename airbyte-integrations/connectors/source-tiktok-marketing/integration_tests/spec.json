@@ -1,6 +1,6 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
-  "changelogUrl": "https://docs.airbyte.io/integrations/sources/tiktok-marketing",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/tiktok-marketing",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/tiktok-marketing",
   "connectionSpecification": {
     "title": "TikTok Marketing Source Spec",
     "type": "object",
@@ -70,7 +70,7 @@
         ]
       },
       "start_date": {
-        "title": "Replication Start Date *",
+        "title": "Replication Start Date",
         "description": "The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. If this parameter is not set, all data will be replicated.",
         "default": "2016-09-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",

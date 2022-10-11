@@ -5,7 +5,7 @@
 package io.airbyte.container_orchestrator;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.process.KubePodProcess;
@@ -70,7 +70,7 @@ public interface JobOrchestrator<INPUT> {
    */
   Optional<String> runJob() throws Exception;
 
-  static <T> T readAndDeserializeFile(Path path, Class<T> type) throws IOException {
+  static <T> T readAndDeserializeFile(final Path path, final Class<T> type) throws IOException {
     return Jsons.deserialize(Files.readString(path), type);
   }
 

@@ -13,7 +13,7 @@ import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/Docum
 import { ServiceFormValues } from "./types";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
-jest.mock("components/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
+jest.mock("components/ui/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
 
 jest.mock("../../../hooks/services/useDestinationHook", () => ({
   useDestinationList: () => ({ destinations: [] }),
@@ -244,7 +244,9 @@ describe("Service Form", () => {
         <ServiceForm
           formType="source"
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
-          onSubmit={(values) => (result = values)}
+          onSubmit={(values) => {
+            result = values;
+          }}
           selectedConnectorDefinitionSpecification={
             // @ts-expect-error Partial objects for testing
             {
