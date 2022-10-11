@@ -3,15 +3,15 @@ import ReactDOM from "react-dom";
 
 import "react-reflex/styles.css";
 import { isCloudApp } from "utils/app";
-import { initDatadogRum } from "utils/datadog";
+import { loadDatadog } from "utils/datadog";
 import { loadOsano } from "utils/dataPrivacy";
-import { initSentry } from "utils/sentry";
+import { loadSentry } from "utils/sentry";
 
 import "./globals";
 
 // We do not follow default config approach since we want to init sentry/datadog asap
-initSentry();
-initDatadogRum();
+loadSentry();
+loadDatadog();
 
 // In Cloud load the Osano script (GDPR consent tool before anything else)
 if (isCloudApp()) {

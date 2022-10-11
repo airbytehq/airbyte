@@ -1,10 +1,10 @@
-import { datadogRum } from "@datadog/browser-rum";
-
-export const initDatadogRum = () => {
+export const loadDatadog = async (): Promise<void> => {
   const applicationId = process.env.REACT_APP_DATADOG_APPLICATION_ID ?? window.REACT_APP_DATADOG_APPLICATION_ID;
   if (!applicationId) {
     return;
   }
+
+  const { datadogRum } = await import("@datadog/browser-rum");
 
   const clientToken = process.env.REACT_APP_DATADOG_CLIENT_TOKEN ?? window.REACT_APP_DATADOG_CLIENT_TOKEN;
   const site = process.env.REACT_APP_DATADOG_SITE ?? window.REACT_APP_DATADOG_SITE;
