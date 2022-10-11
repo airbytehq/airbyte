@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trustpilot reviews",
+  "description": "Trustpilot reviews schema",
+  "type": "object",
+  "required": [
+    "user_id",
+    "message"
+  ],
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "ticket_id": {
+      "type": "string"
+    },
+    "score": {
+      "type": "integer"
+    },
+    "version": {
+      "type": "string"
+    },
+    "ds": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "string"
+    },
+    "lang": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    }
+  }
+}

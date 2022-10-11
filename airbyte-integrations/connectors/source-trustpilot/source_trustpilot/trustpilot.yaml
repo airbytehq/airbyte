@@ -1,0 +1,52 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://www.trustpilot.com"
+    http_method: "GET"
+    authenticator:
+      type: NoAuth
+    request_option_provider:
+      request_parameters:
+        languages: all
+        sort: recency
+  retriever:
+    record_selector:
+      extractor:
+        class_name: "source_trustpilot.source.MyExtractor"
+      record_filter:
+        condition: "{{ record['datePublished'] > config['start_time'] }}"
+    paginator:
+      type: DefaultPaginator
+      url_base: "*ref(definitions.requester.url_base)"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "page_size"
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 20
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  reviews_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "reviews"
+      primary_key: "@id"
+      stream_cursor_field: "datePublished"
+      path: "/review/{{ config['app_name'] }}"
+
+streams:
+  - "*ref(definitions.reviews_stream)"
+
+check:
+  stream_names:
+    - "reviews"
