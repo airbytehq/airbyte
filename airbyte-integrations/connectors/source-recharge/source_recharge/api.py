@@ -64,7 +64,7 @@ class RechargeStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         content_length = int(response.headers.get("Content-Length", 0))
         incomplete_data_response = response.status_code == 200 and content_length > len(response.content)
-        forbidden_error = isinstance(response.json(), dict) and response.status_code == requests.codes.FORBIDDEN
+        forbidden_error = response.status_code == requests.codes.FORBIDDEN
 
         if incomplete_data_response:
             return True

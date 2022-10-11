@@ -166,19 +166,22 @@ class TestCommon:
         assert expected == result
 
     @pytest.mark.parametrize(
-        ("http_status", "should_retry"),
+        ("http_status", "content", "headers", "should_retry"),
         [
-            (HTTPStatus.OK, True),
-            (HTTPStatus.BAD_REQUEST, False),
-            (HTTPStatus.TOO_MANY_REQUESTS, True),
-            (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+            (HTTPStatus.OK, b"", {"Content-Length": 256}, True),
+            (HTTPStatus.BAD_REQUEST, b"", {}, False),
+            (HTTPStatus.TOO_MANY_REQUESTS, b"", {}, True),
+            (HTTPStatus.INTERNAL_SERVER_ERROR, b"", {}, True),
+            (HTTPStatus.FORBIDDEN, b"", {}, False),
         ],
     )
-    def test_should_retry(patch_base_class, http_status, should_retry):
-        response_mock = MagicMock()
-        response_mock.status_code = http_status
+    def test_should_retry(self, http_status, content, headers, should_retry):
+        response = requests.Response()
+        response.status_code = http_status
+        response._content = b""
+        response.headers = headers
         stream = RechargeStream()
-        assert stream.should_retry(response_mock) == should_retry
+        assert stream.should_retry(response) == should_retry
 
 
 class TestFullRefreshStreams:
