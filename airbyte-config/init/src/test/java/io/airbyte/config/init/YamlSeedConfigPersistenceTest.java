@@ -41,9 +41,9 @@ class YamlSeedConfigPersistenceTest {
     assertEquals(mySqlSourceId, mysqlSource.getSourceDefinitionId().toString());
     assertEquals("MySQL", mysqlSource.getName());
     assertEquals("airbyte/source-mysql", mysqlSource.getDockerRepository());
-    assertEquals("https://docs.airbyte.io/integrations/sources/mysql", mysqlSource.getDocumentationUrl());
+    assertEquals("https://docs.airbyte.com/integrations/sources/mysql", mysqlSource.getDocumentationUrl());
     assertEquals("mysql.svg", mysqlSource.getIcon());
-    assertEquals(URI.create("https://docs.airbyte.io/integrations/sources/mysql"), mysqlSource.getSpec().getDocumentationUrl());
+    assertEquals(URI.create("https://docs.airbyte.com/integrations/sources/mysql"), mysqlSource.getSpec().getDocumentationUrl());
     assertEquals(true, mysqlSource.getPublic());
     assertEquals(false, mysqlSource.getCustom());
 
@@ -54,8 +54,8 @@ class YamlSeedConfigPersistenceTest {
     assertEquals(s3DestinationId, s3Destination.getDestinationDefinitionId().toString());
     assertEquals("S3", s3Destination.getName());
     assertEquals("airbyte/destination-s3", s3Destination.getDockerRepository());
-    assertEquals("https://docs.airbyte.io/integrations/destinations/s3", s3Destination.getDocumentationUrl());
-    assertEquals(URI.create("https://docs.airbyte.io/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
+    assertEquals("https://docs.airbyte.com/integrations/destinations/s3", s3Destination.getDocumentationUrl());
+    assertEquals(URI.create("https://docs.airbyte.com/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
     assertEquals(true, s3Destination.getPublic());
     assertEquals(false, s3Destination.getCustom());
   }

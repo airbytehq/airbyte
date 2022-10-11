@@ -90,6 +90,7 @@ import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
+import io.airbyte.api.model.generated.WebBackendGeographiesListResult;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
 import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
 import io.airbyte.api.model.generated.WorkspaceCreate;
@@ -128,6 +129,7 @@ import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.StateHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
+import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
@@ -156,6 +158,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final StateHandler stateHandler;
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
+  private final WebBackendGeographiesHandler webBackendGeographiesHandler;
   private final HealthCheckHandler healthCheckHandler;
   private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
@@ -236,6 +239,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         operationsHandler,
         eventRunner,
         configRepository);
+    webBackendGeographiesHandler = new WebBackendGeographiesHandler();
     healthCheckHandler = new HealthCheckHandler(configRepository);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
@@ -794,6 +798,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public WebBackendGeographiesListResult webBackendListGeographies() {
+    return execute(webBackendGeographiesHandler::listGeographiesOSS);
   }
 
   @Override
