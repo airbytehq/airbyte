@@ -823,6 +823,88 @@ public abstract class JdbcSourceAcceptanceTest {
         expectedRecordMessages);
   }
 
+  @Test
+  void testIncrementalWithConcurrentInsertion() throws Exception {
+    final String namespace = getDefaultNamespace();
+    final String tableName = "name_and_timestamp";
+    final String fullyQualifiedTableName = getFullyQualifiedTableName(tableName);
+
+    // 1st sync
+    database.execute(ctx -> {
+      ctx.createStatement().execute(createTableQuery(fullyQualifiedTableName, "name VARCHAR(200) NOT NULL, timestamp TIMESTAMP NOT NULL", ""));
+      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('a', '2021-01-01 00:00:00')", fullyQualifiedTableName));
+      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('b', '2021-01-01 00:00:00')", fullyQualifiedTableName));
+    });
+
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
+        new AirbyteCatalog().withStreams(List.of(
+            CatalogHelpers.createAirbyteStream(
+            tableName,
+            namespace,
+            Field.of("name", JsonSchemaType.STRING),
+            Field.of("timestamp", JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)))));
+    configuredCatalog.getStreams().forEach(airbyteStream -> {
+      airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
+      airbyteStream.setCursorField(List.of("timestamp"));
+      airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
+    });
+
+    final List<AirbyteMessage> firstSyncActualMessages = MoreIterators.toList(
+        source.read(config, configuredCatalog, createEmptyState(tableName, namespace)));
+
+    // cursor after 1st sync: 2021-01-01 00:00:00, count 2
+    final Optional<AirbyteMessage> firstSyncStateOptional = firstSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
+    assertTrue(firstSyncStateOptional.isPresent());
+    final JsonNode firstSyncState = getStateData(firstSyncStateOptional.get(), tableName);
+    assertTrue(firstSyncState.get("cursor").asText().contains("2021-01-01"));
+    assertTrue(firstSyncState.get("cursor").asText().contains("00:00:00"));
+    assertEquals(2, firstSyncState.get("cursor_record_count").asInt());
+
+    // 2nd sync
+    database.execute(ctx -> {
+      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('c', '2021-01-02 00:00:00')", fullyQualifiedTableName));
+    });
+
+    final List<AirbyteMessage> secondSyncActualMessages = MoreIterators.toList(
+        source.read(config, configuredCatalog, createState(tableName, namespace, firstSyncState)));
+
+    // cursor after 2nd sync: 2021-01-02 00:00:00, count 1
+    final Optional<AirbyteMessage> secondSyncStateOptional = secondSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
+    assertTrue(secondSyncStateOptional.isPresent());
+    final JsonNode secondSyncState = getStateData(secondSyncStateOptional.get(), tableName);
+    assertTrue(secondSyncState.get("cursor").asText().contains("2021-01-02"));
+    assertTrue(secondSyncState.get("cursor").asText().contains("00:00:00"));
+    assertEquals(1, secondSyncState.get("cursor_record_count").asInt());
+
+    // 3rd sync has records with duplicated cursors
+    database.execute(ctx -> {
+      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('d', '2021-01-02 00:00:00')", fullyQualifiedTableName));
+      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('e', '2021-01-02 00:00:00')", fullyQualifiedTableName));
+    });
+
+    final List<AirbyteMessage> thirdSyncActualMessages = MoreIterators.toList(
+        source.read(config, configuredCatalog, createState(tableName, namespace, secondSyncState)));
+
+    // Cursor after 3rd sync is: 2021-01-02 00:00:00, count 3.
+    // The count is 3 because records with the same cursor value has been inserted,
+    // and the incremental query will include all records with cursor field >= the cursor value.
+    final Optional<AirbyteMessage> thirdSyncStateOptional = thirdSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
+    assertTrue(thirdSyncStateOptional.isPresent());
+    final JsonNode thirdSyncState = getStateData(thirdSyncStateOptional.get(), tableName);
+    assertTrue(thirdSyncState.get("cursor").asText().contains("2021-01-02"));
+    assertTrue(thirdSyncState.get("cursor").asText().contains("00:00:00"));
+    assertEquals(3, thirdSyncState.get("cursor_record_count").asInt());
+  }
+
+  private JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
+    for (final JsonNode stream : airbyteMessage.getState().getData().get("streams")) {
+      if (stream.get("stream_name").asText().equals(streamName)) {
+        return stream;
+      }
+    }
+    throw new IllegalArgumentException("Stream not found in state message: " + streamName);
+  }
+
   private void incrementalCursorCheck(
                                       final String initialCursorField,
                                       final String cursorField,
@@ -1085,6 +1167,27 @@ public abstract class JdbcSourceAcceptanceTest {
     } else {
       final DbState dbState = new DbState()
           .withStreams(List.of(new DbStreamState().withStreamName(streamName).withStreamNamespace(streamNamespace)));
+      return Jsons.jsonNode(dbState);
+    }
+  }
+
+  protected JsonNode createState(final String streamName, final String streamNamespace, final JsonNode stateData) {
+    if (supportsPerStream()) {
+      final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
+          .withType(AirbyteStateType.STREAM)
+          .withStream(
+              new AirbyteStreamState()
+                  .withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace))
+                  .withStreamState(stateData));
+      return Jsons.jsonNode(List.of(airbyteStateMessage));
+    } else {
+      final DbState dbState = new DbState().withStreams(List.of(
+          new DbStreamState()
+              .withStreamName(streamName)
+              .withStreamNamespace(streamNamespace)
+              .withCursor(stateData.get("cursor").asText())
+              .withCursorField(List.of(stateData.get("cursor_field").asText()))
+              .withCursorRecordCount(stateData.get("cursor_record_count").asLong())));
       return Jsons.jsonNode(dbState);
     }
   }
