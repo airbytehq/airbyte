@@ -7,6 +7,25 @@ const components = {
   DropdownIndicator: null,
 };
 
+const customStyles = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- react-select's typing is lacking here
+  multiValue: (provided: any) => ({
+    ...provided,
+    maxWidth: "100%",
+    display: "flex",
+    background: "#262963", // colors.$dark-blue-800
+    color: "white", // colors.$white
+    borderRadius: "4px", // variables.$border-radius-sm
+    paddingLeft: "5px", // variables.$spacing-sm
+  }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same as above
+  multiValueLabel: (provided: any) => ({
+    ...provided,
+    color: "white",
+    fontWeight: 500,
+  }),
+};
+
 interface Tag {
   readonly label: string;
   readonly value: string;
@@ -27,7 +46,7 @@ const generateTagFromString = (inputValue: string): Tag => ({
 
 const generateStringFromTag = (tag: Tag): string => tag.label;
 
-const delimiters = [",", ";", "\\n"];
+const delimiters = [",", ";"];
 
 export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, fieldValue, name, disabled }) => {
   const tags = useMemo(() => fieldValue.map(generateTagFromString), [fieldValue]);
@@ -42,7 +61,6 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, fieldValue, 
      * clear: user clicked big x to clear all tags
      * pop-value: user clicked backspace to remove tag
      */
-
     // TODO: handle deletes by selecting tag and hitting space/enter/delete
     if (actionMeta.action === "remove-value") {
       updatedTags = updatedTags.filter((tag) => tag.value !== actionMeta.removedValue.value);
@@ -105,6 +123,7 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, fieldValue, 
       placeholder=""
       value={tags}
       isDisabled={disabled}
+      styles={customStyles}
     />
   );
 };
