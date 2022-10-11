@@ -5,9 +5,11 @@
 package io.airbyte.integrations.source.mysql.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import java.time.Duration;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -74,6 +76,33 @@ public class CdcConfigurationHelper {
     return Optional.empty();
   }
 
+  public static Optional<String> getCdcServerTimezone(final JsonNode config) {
+    final JsonNode replicationMethod = config.get("replication_method");
+    if (replicationMethod != null && replicationMethod.has("server_time_zone")) {
+      final String serverTimeZone = config.get("replication_method").get("server_time_zone").asText();
+      return Optional.of(serverTimeZone);
+    }
+    return Optional.empty();
+  }
+
+  public static void checkCdcReplicationMethodConfig(final JsonNode config) {
+    checkFirstRecordWaitTime(config);
+    checkServerTimeZoneConfig(config);
+  }
+
+  @VisibleForTesting
+  public static void checkServerTimeZoneConfig(final JsonNode config) {
+    final Optional<String> serverTimeZone = getCdcServerTimezone(config);
+    if (serverTimeZone.isPresent()) {
+      final String timeZone = serverTimeZone.get();
+      if (!timeZone.isEmpty() && !ZoneId.getAvailableZoneIds().contains((timeZone))) {
+        throw new IllegalArgumentException(String.format("Given timezone %s is not valid. The given timezone must conform to the IANNA standard. "
+            + "See https://www.iana.org/time-zones for more details", serverTimeZone.get()));
+      }
+    }
+  }
+
+  @VisibleForTesting
   public static void checkFirstRecordWaitTime(final JsonNode config) {
     // we need to skip the check because in tests, we set initial_waiting_seconds
     // to 5 seconds for performance reasons, which is shorter than the minimum
