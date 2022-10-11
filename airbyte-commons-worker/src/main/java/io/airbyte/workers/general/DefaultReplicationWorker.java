@@ -326,24 +326,24 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   }
 
-  private class ThreadedTimeHolder {
+  private static class ThreadedTimeHolder {
 
     private long sourceReadEndTime = -1;
     private long destinationWriteEndTime = -1;
 
-    public void trackSourceReadEndTime() {
+    public synchronized void trackSourceReadEndTime() {
       this.sourceReadEndTime = System.currentTimeMillis();
     }
 
-    public void trackDestinationWriteEndTime() {
+    public synchronized void trackDestinationWriteEndTime() {
       this.destinationWriteEndTime = System.currentTimeMillis();
     }
 
-    public long getSourceReadEndTime() {
+    public synchronized long getSourceReadEndTime() {
       return this.sourceReadEndTime;
     }
 
-    public long getDestinationWriteEndTime() {
+    public synchronized long getDestinationWriteEndTime() {
       return this.destinationWriteEndTime;
     }
 
