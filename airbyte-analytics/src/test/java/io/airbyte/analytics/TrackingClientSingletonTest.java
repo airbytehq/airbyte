@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.Geography;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -111,7 +112,8 @@ class TrackingClientSingletonTest {
         .withEmail(EMAIL)
         .withAnonymousDataCollection(false)
         .withNews(true)
-        .withSecurityUpdates(true);
+        .withSecurityUpdates(true)
+        .withDefaultGeography(Geography.AUTO);
 
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(workspace);
 
@@ -129,7 +131,8 @@ class TrackingClientSingletonTest {
         .withEmail("a@airbyte.io")
         .withAnonymousDataCollection(true)
         .withNews(true)
-        .withSecurityUpdates(true);
+        .withSecurityUpdates(true)
+        .withDefaultGeography(Geography.AUTO);
 
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(workspace);
 

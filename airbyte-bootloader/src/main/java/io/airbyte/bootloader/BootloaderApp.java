@@ -12,6 +12,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.Geography;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.DefinitionsProvider;
@@ -286,7 +287,8 @@ public class BootloaderApp {
         .withSlug(workspaceId.toString())
         .withInitialSetupComplete(false)
         .withDisplaySetupWizard(true)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withDefaultGeography(Geography.AUTO);
     configRepository.writeStandardWorkspace(workspace);
   }
 
