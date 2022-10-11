@@ -827,6 +827,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return "name_and_timestamp";
   }
 
+  // See https://github.com/airbytehq/airbyte/issues/14732 for rationale and details.
   @Test
   void testIncrementalWithConcurrentInsertion() throws Exception {
     final String namespace = getDefaultNamespace();
@@ -864,6 +865,12 @@ public abstract class JdbcSourceAcceptanceTest {
     assertTrue(firstSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(2L, firstSyncState.get("cursor_record_count").asLong());
 
+    final List<String> firstSyncNames = firstSyncActualMessages.stream()
+        .filter(r -> r.getType() == Type.RECORD)
+        .map(r -> r.getRecord().getData().get("name").asText())
+        .toList();
+    assertEquals(List.of("a", "b"), firstSyncNames);
+
     // 2nd sync
     database.execute(ctx -> {
       ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('c', '2021-01-02 00:00:00')", fullyQualifiedTableName));
@@ -880,24 +887,37 @@ public abstract class JdbcSourceAcceptanceTest {
     assertTrue(secondSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(1L, secondSyncState.get("cursor_record_count").asLong());
 
+    final List<String> secondSyncNames = secondSyncActualMessages.stream()
+        .filter(r -> r.getType() == Type.RECORD)
+        .map(r -> r.getRecord().getData().get("name").asText())
+        .toList();
+    assertEquals(List.of("c"), secondSyncNames);
+
     // 3rd sync has records with duplicated cursors
     database.execute(ctx -> {
       ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('d', '2021-01-02 00:00:00')", fullyQualifiedTableName));
       ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('e', '2021-01-02 00:00:00')", fullyQualifiedTableName));
+      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('f', '2021-01-03 00:00:00')", fullyQualifiedTableName));
     });
 
     final List<AirbyteMessage> thirdSyncActualMessages = MoreIterators.toList(
         source.read(config, configuredCatalog, createState(tableName, namespace, secondSyncState)));
 
-    // Cursor after 3rd sync is: 2021-01-02 00:00:00, count 3.
-    // The count is 3 because records with the same cursor value has been inserted,
-    // and the incremental query will include all records with cursor field >= the cursor value.
+    // Cursor after 3rd sync is: 2021-01-03 00:00:00, count 1.
     final Optional<AirbyteMessage> thirdSyncStateOptional = thirdSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(thirdSyncStateOptional.isPresent());
     final JsonNode thirdSyncState = getStateData(thirdSyncStateOptional.get(), tableName);
-    assertTrue(thirdSyncState.get("cursor").asText().contains("2021-01-02"));
+    assertTrue(thirdSyncState.get("cursor").asText().contains("2021-01-03"));
     assertTrue(thirdSyncState.get("cursor").asText().contains("00:00:00"));
-    assertEquals(3L, thirdSyncState.get("cursor_record_count").asLong());
+    assertEquals(1L, thirdSyncState.get("cursor_record_count").asLong());
+
+    // The c, d, e, f are duplicated records from this sync, because the cursor
+    // record count in the database is different from that in the state.
+    final List<String> thirdSyncExpectedNames = thirdSyncActualMessages.stream()
+        .filter(r -> r.getType() == Type.RECORD)
+        .map(r -> r.getRecord().getData().get("name").asText())
+        .toList();
+    assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
   }
 
   private JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
