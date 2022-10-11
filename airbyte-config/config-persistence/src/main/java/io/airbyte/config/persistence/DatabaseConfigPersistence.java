@@ -1087,12 +1087,16 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.SCHEDULE_TYPE,
                 standardSync.getScheduleType() == null ? null
-                    : Enums.toEnum(standardSync.getScheduleType().value(), io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
+                    : Enums.toEnum(standardSync.getScheduleType().value(),
+                        io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
                         .orElseThrow())
             .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
-            .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
+            .set(CONNECTION.RESOURCE_REQUIREMENTS,
+                JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
+            .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
+                io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
             .where(CONNECTION.ID.eq(standardSync.getConnectionId()))
             .execute();
 
@@ -1126,11 +1130,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.SCHEDULE_TYPE,
                 standardSync.getScheduleType() == null ? null
-                    : Enums.toEnum(standardSync.getScheduleType().value(), io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
+                    : Enums.toEnum(standardSync.getScheduleType().value(),
+                        io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
                         .orElseThrow())
             .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
-            .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
+            .set(CONNECTION.RESOURCE_REQUIREMENTS,
+                JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
+            .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
+                io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
             .set(CONNECTION.CREATED_AT, timestamp)
             .set(CONNECTION.UPDATED_AT, timestamp)
             .execute();
