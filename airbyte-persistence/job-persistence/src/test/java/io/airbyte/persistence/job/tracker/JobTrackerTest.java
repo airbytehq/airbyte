@@ -575,7 +575,7 @@ class JobTrackerTest {
     final JobOutput jobOutput = mock(JobOutput.class);
     final StandardSyncOutput syncOutput = mock(StandardSyncOutput.class);
     final StandardSyncSummary syncSummary = mock(StandardSyncSummary.class);
-    final NormalizationSummary normalizationSummary= mock(NormalizationSummary.class);
+    final NormalizationSummary normalizationSummary = mock(NormalizationSummary.class);
     final SyncStats syncStats = mock(SyncStats.class);
 
     when(syncSummary.getStartTime()).thenReturn(SYNC_START_TIME);
