@@ -21,8 +21,10 @@ if [ -n "$CI" ]; then
   wait
 fi
 
+echo "Deploying filebeat to collect logs"
+kubectl apply -f elastic/filebeat-kubernetes.yaml
 
-# echo "Replacing default Chart.yaml and values.yaml with a test one"
+echo "Replacing default Chart.yaml and values.yaml with a test one"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old
 mv charts/airbyte/Chart.yaml.test charts/airbyte/Chart.yaml 
 
