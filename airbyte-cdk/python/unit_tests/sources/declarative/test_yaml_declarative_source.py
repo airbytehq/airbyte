@@ -4,9 +4,10 @@
 
 import json
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
 # import pytest
 # from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 # import os
 # import tempfile
