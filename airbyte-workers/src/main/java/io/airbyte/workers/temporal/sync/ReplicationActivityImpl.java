@@ -21,6 +21,7 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.metrics.lib.MetricClient;
@@ -171,25 +172,28 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
     final StandardSyncOutput standardSyncOutput = new StandardSyncOutput();
-    final StandardSyncSummary syncSummary = new StandardSyncSummary();
+    final StandardSyncSummary syncSummary = new StandardSyncSummary().withTotalStats(new SyncStats());
     final ReplicationAttemptSummary replicationSummary = output.getReplicationAttemptSummary();
+    final SyncStats totalStats = new SyncStats();
 
     syncSummary.setBytesSynced(replicationSummary.getBytesSynced());
     syncSummary.setRecordsSynced(replicationSummary.getRecordsSynced());
     syncSummary.setStartTime(replicationSummary.getStartTime());
     syncSummary.setEndTime(replicationSummary.getEndTime());
-    syncSummary.getTotalStats().setReplicationStartTime(replicationSummary.getTotalStats().getReplicationStartTime());
-    syncSummary.getTotalStats().setReplicationEndTime(replicationSummary.getTotalStats().getReplicationEndTime());
-    syncSummary.getTotalStats().setSourceReadStartTime(replicationSummary.getTotalStats().getSourceReadStartTime());
-    syncSummary.getTotalStats().setSourceReadEndTime(replicationSummary.getTotalStats().getSourceReadEndTime());
-    syncSummary.getTotalStats().setDestinationWriteStartTime(replicationSummary.getTotalStats().getDestinationWriteStartTime());
-    syncSummary.getTotalStats().setDestinationWriteEndTime(replicationSummary.getTotalStats().getDestinationWriteEndTime());
     syncSummary.setStatus(replicationSummary.getStatus());
     syncSummary.setTotalStats(replicationSummary.getTotalStats());
     syncSummary.setStreamStats(replicationSummary.getStreamStats());
 
+    totalStats.setReplicationStartTime(syncSummary.getTotalStats().getReplicationStartTime());
+    totalStats.setReplicationEndTime(syncSummary.getTotalStats().getReplicationEndTime());
+    totalStats.setSourceReadStartTime(syncSummary.getTotalStats().getSourceReadStartTime());
+    totalStats.setSourceReadEndTime(syncSummary.getTotalStats().getSourceReadEndTime());
+    totalStats.setDestinationWriteStartTime(syncSummary.getTotalStats().getDestinationWriteStartTime());
+    totalStats.setDestinationWriteEndTime(syncSummary.getTotalStats().getDestinationWriteEndTime());
+
     standardSyncOutput.setState(output.getState());
     standardSyncOutput.setOutputCatalog(output.getOutputCatalog());
+    syncSummary.setTotalStats(totalStats);
     standardSyncOutput.setStandardSyncSummary(syncSummary);
     standardSyncOutput.setFailures(output.getFailures());
 
