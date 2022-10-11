@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "clicks": {
+      "type": ["null", "integer"]
+    },
+    "emailNotifications": {
+      "type": ["null", "integer"]
+    },
+    "messagesReceived": {
+      "type": ["null", "integer"]
+    },
+    "favoriteMarkings": {
+      "type": ["null", "integer"]
+    },
+    "pushNotifications": {
+      "type": ["null", "integer"]
+    },
+    "lastChanged": { 
+      "type": ["null", "string"]
+    },
+    "statisticsPageUrl": {
+      "type": ["null", "string"]
+    }
+  }
+}
