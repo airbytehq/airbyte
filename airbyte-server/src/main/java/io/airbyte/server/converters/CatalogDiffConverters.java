@@ -44,6 +44,7 @@ public class CatalogDiffConverters {
     return new FieldTransform()
         .transformType(Enums.convertTo(transform.getTransformType(), FieldTransform.TransformTypeEnum.class))
         .fieldName(transform.getFieldName())
+        .breaking(transform.breaking())
         .addField(addFieldToApi(transform).orElse(null))
         .removeField(removeFieldToApi(transform).orElse(null))
         .updateFieldSchema(updateFieldToApi(transform).orElse(null));
