@@ -14,8 +14,7 @@
     "scss/dollar-variable-pattern": null,
     "scss/percent-placeholder-pattern": null,
     "value-keyword-case": null,
-    "color-no-hex": true,
-    "color-hex-length": null
+    "color-no-hex": true
   },
   "ignoreFiles": ["**/build/**", "**/dist/**"]
 }
