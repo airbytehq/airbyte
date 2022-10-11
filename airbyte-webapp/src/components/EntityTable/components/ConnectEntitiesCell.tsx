@@ -31,7 +31,6 @@ const Connector = styled.div`
 `;
 
 const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
-  console.log(values.length);
   if (values.length === 1) {
     return (
       <Content enabled={enabled}>
