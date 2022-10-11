@@ -823,6 +823,10 @@ public abstract class JdbcSourceAcceptanceTest {
         expectedRecordMessages);
   }
 
+  protected String getConcurrentTestTableName() {
+    return "name_and_timestamp";
+  }
+
   @Test
   void testIncrementalWithConcurrentInsertion() throws Exception {
     final String namespace = getDefaultNamespace();

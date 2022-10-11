@@ -133,4 +133,9 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return new Db2Source();
   }
 
+  @Override
+  protected String getConcurrentTestTableName() {
+    return "NAME_AND_TIMESTAMP";
+  }
+
 }
