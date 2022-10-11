@@ -69,14 +69,13 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     <StartWithDestination onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
   );
 
-
   return (
     <ConnectorCard
       onServiceSelect={onDropDownSelect}
       fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
       onSubmit={onSubmitForm}
       formType="destination"
-      additionalDropdownComponent={frequentlyUsedDestinationsComponent}
+      additionalSelectorComponent={frequentlyUsedDestinationsComponent}
       intermediateComponent={startWithDestinationComponent}
       availableServices={destinationDefinitions}
       selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}

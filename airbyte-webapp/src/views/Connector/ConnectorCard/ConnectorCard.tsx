@@ -26,7 +26,7 @@ interface ConnectorCardBaseProps extends ConnectorCardProvidedProps {
   title?: React.ReactNode;
   full?: boolean;
   jobInfo?: SynchronousJobRead | null;
-  additionalDropdownComponent?: React.ReactNode;
+  additionalSelectorComponent?: React.ReactNode;
   intermediateComponent?: React.ReactNode;
 }
 
@@ -44,7 +44,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   full,
   jobInfo,
   onSubmit,
-  additionalDropdownComponent,
+  additionalSelectorComponent,
   intermediateComponent,
   ...props
 }) => {
@@ -110,7 +110,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
               disabled={isFormSubmitting}
             />
           </div>
-          {additionalDropdownComponent}
+          {additionalSelectorComponent}
           <div
             className={classnames(styles.connectorForm, {
               [styles.connectorFormEmpty]: !selectedConnectorDefinitionSpecificationId,
