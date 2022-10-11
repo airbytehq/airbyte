@@ -1,6 +1,7 @@
 {
   "type": "object",
   "properties": {
+    "id": { "type": "number" },
     "date": { "type": "string", "format": "date-time" },
     "CAD": { "type": ["null", "number"] },
     "HKD": { "type": ["null", "number"] },
