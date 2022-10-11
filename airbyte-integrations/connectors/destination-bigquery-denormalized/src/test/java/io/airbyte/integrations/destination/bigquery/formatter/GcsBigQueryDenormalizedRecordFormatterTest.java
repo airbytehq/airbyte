@@ -2,9 +2,23 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery;
+package io.airbyte.integrations.destination.bigquery.formatter;
 
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.*;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchema;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaArrays;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaWithDateTime;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaWithFormats;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaWithInvalidArrayType;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaWithNestedDatetimeInsideNullObject;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaWithReferenceDefinition;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchema;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaArrays;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithBigInteger;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithDateTime;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithFormats;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithInvalidArrayType;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithNestedDatetimeInsideNullObject;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithReferenceDefinition;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -18,9 +32,7 @@ import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.bigquery.formatter.GcsBigQueryDenormalizedRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.util.TestBigQueryDenormalizedRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.util.TestGcsBigQueryDenormalizedRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -29,12 +41,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
-public class BigQueryDenormalizedUtilsTest {
+class GcsBigQueryDenormalizedRecordFormatterTest {
 
   @ParameterizedTest
   @MethodSource("actualAndExpectedSchemasProvider")
   void testGcsSchema(final JsonNode schemaToProcess, final JsonNode expectedSchema) {
-    TestGcsBigQueryDenormalizedRecordFormatter rf = new TestGcsBigQueryDenormalizedRecordFormatter(
+    GcsBigQueryDenormalizedRecordFormatter rf = new GcsBigQueryDenormalizedRecordFormatter(
         schemaToProcess, new BigQuerySQLNameTransformer());
 
     assertEquals(expectedSchema, rf.formatJsonSchema(schemaToProcess));
@@ -238,8 +250,8 @@ public class BigQueryDenormalizedUtilsTest {
 
   @Test
   public void testEmittedAtTimeConversion() {
-    final TestBigQueryDenormalizedRecordFormatter mockedFormatter = Mockito.mock(
-        TestBigQueryDenormalizedRecordFormatter.class, Mockito.CALLS_REAL_METHODS);
+    final GcsBigQueryDenormalizedRecordFormatter mockedFormatter = Mockito.mock(
+        GcsBigQueryDenormalizedRecordFormatter.class, Mockito.CALLS_REAL_METHODS);
 
     final ObjectMapper mapper = new ObjectMapper();
     final ObjectNode objectNode = mapper.createObjectNode();
@@ -248,8 +260,8 @@ public class BigQueryDenormalizedUtilsTest {
     airbyteRecordMessage.setEmittedAt(1602637589000L);
     mockedFormatter.addAirbyteColumns(objectNode, airbyteRecordMessage);
 
-    assertEquals("2020-10-14 01:06:29.000000+00:00",
-        objectNode.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).textValue());
+    assertEquals("1602637589000",
+        objectNode.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asText());
   }
 
   private static Stream<Arguments> actualAndExpectedSchemasProvider() {
