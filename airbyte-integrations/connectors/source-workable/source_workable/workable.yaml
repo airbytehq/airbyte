@@ -24,8 +24,10 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "jobs"
-      primary_key: "shortcode"
+      primary_key: "id"
       path: "/jobs"
+      field_pointer: ["jobs"]
+
 
 streams:
   - "*ref(definitions.jobs_stream)"
