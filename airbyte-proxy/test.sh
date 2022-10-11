@@ -9,14 +9,14 @@ TEST_HOST=localhost
 
 
 function start_container () {
-  CMD="docker run -d -p $PORT:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --name $NAME airbyte/proxy:dev"
+  CMD="docker run -d -p $PORT:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --env PROXY_PASS_WEB=http://localhost --env PROXY_PASS_API=http://localhost --name $NAME airbyte/proxy:dev"
   echo $CMD
   eval $CMD
   wait_for_docker;
 }
 
 function start_container_with_proxy () {
-  CMD="docker run -d -p $PORT:8000 --env PROXY_PASS_WEB=$1 --name $NAME airbyte/proxy:dev"
+  CMD="docker run -d -p $PORT:8000 --env PROXY_PASS_WEB=$1 --env PROXY_PASS_API=$1 --name $NAME airbyte/proxy:dev"
   echo $CMD
   eval $CMD
   wait_for_docker;
@@ -54,7 +54,7 @@ fi
 
 echo "Testing access with auth"
 RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_PASSWORD@$TEST_HOST:$PORT" -i --silent`
-if [[ $RESPONSE == *"200 OK"* ]]; then
+if [[ $RESPONSE != *"401 Unauthorized"* ]]; then
   echo "✔️  access with auth worked"
 else
   echo "Auth not working"
@@ -79,7 +79,7 @@ fi
 
 echo "Testing access updated auth"
 RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_UPDATED_PASSWORD@$TEST_HOST:$PORT" -i --silent`
-if [[ $RESPONSE == *"200 OK"* ]]; then
+if [[ $RESPONSE != *"401 Unauthorized"* ]]; then
   echo "✔️  access with updated auth worked"
 else
   echo "Auth not working"
@@ -94,7 +94,7 @@ start_container "" ""
 
 echo "Testing access without auth"
 RESPONSE=`curl "http://$TEST_HOST:$PORT" -i --silent`
-if [[ $RESPONSE == *"200 OK"* ]]; then
+if [[ $RESPONSE != *"401 Unauthorized"* ]]; then
   echo "✔️  access without auth allowed when configured"
 else
   echo "Auth not working"
