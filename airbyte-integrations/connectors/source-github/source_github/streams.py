@@ -77,7 +77,7 @@ class GithubStream(HttpStream, ABC):
             or response.headers.get("X-RateLimit-Remaining") == "0"
             # Secondary rate limits
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-            or response.headers.get("Retry-After")
+            or "Retry-After" in response.headers
             or response.status_code
             in (
                 requests.codes.SERVER_ERROR,
