@@ -5,7 +5,7 @@ definitions:
     extractor:
       field_pointer: []
   requester:
-    url_base: "https://{{ config['account_subdomain'] }}.workable.com"
+    url_base: "https://{{ config['account_subdomain'] }}.workable.com/spi/v3"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -20,16 +20,16 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  customers_stream:
+  jobs_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "customers"
-      primary_key: "id"
-      path: "/example"
+      name: "jobs"
+      primary_key: "shortcode"
+      path: "/jobs"
 
 streams:
-  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.jobs_stream)"
 
 check:
   stream_names:
-    - "customers"
+    - "jobs"
