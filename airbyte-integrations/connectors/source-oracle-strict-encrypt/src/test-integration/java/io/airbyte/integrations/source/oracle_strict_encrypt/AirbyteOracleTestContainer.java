@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.oracle;
+package io.airbyte.integrations.source.oracle_strict_encrypt;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singleton;
@@ -17,11 +17,13 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-public class AirbyteOracteTestContainer extends JdbcDatabaseContainer<AirbyteOracteTestContainer> {
+public class AirbyteOracleTestContainer extends JdbcDatabaseContainer<AirbyteOracleTestContainer> {
 
+  public static final String NAME = "oracle";
   private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
 
   static final String DEFAULT_TAG = "18.4.0-slim";
+  static final String IMAGE = DEFAULT_IMAGE_NAME.getUnversionedPart();
 
   private static final int ORACLE_PORT = 1521;
   private static final int APEX_HTTP_PORT = 8080;
@@ -47,13 +49,22 @@ public class AirbyteOracteTestContainer extends JdbcDatabaseContainer<AirbyteOra
   private String password = APP_USER_PASSWORD;
   private boolean usingSid = false;
 
-  public AirbyteOracteTestContainer() {
+  public AirbyteOracleTestContainer() {
     this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
   }
 
-  public AirbyteOracteTestContainer(final DockerImageName dockerImageName) {
+  public AirbyteOracleTestContainer(final String dockerImageName) {
+    this(DockerImageName.parse(dockerImageName));
+  }
+
+  public AirbyteOracleTestContainer(final DockerImageName dockerImageName) {
     super(dockerImageName);
     dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+    preconfigure();
+  }
+
+  public AirbyteOracleTestContainer(final Future<String> dockerImageName) {
+    super(dockerImageName);
     preconfigure();
   }
 
@@ -109,7 +120,7 @@ public class AirbyteOracteTestContainer extends JdbcDatabaseContainer<AirbyteOra
   }
 
   @Override
-  public AirbyteOracteTestContainer withUsername(final String username) {
+  public AirbyteOracleTestContainer withUsername(final String username) {
     if (StringUtils.isEmpty(username)) {
       throw new IllegalArgumentException("Username cannot be null or empty");
     }
@@ -121,7 +132,7 @@ public class AirbyteOracteTestContainer extends JdbcDatabaseContainer<AirbyteOra
   }
 
   @Override
-  public AirbyteOracteTestContainer withPassword(final String password) {
+  public AirbyteOracleTestContainer withPassword(final String password) {
     if (StringUtils.isEmpty(password)) {
       throw new IllegalArgumentException("Password cannot be null or empty");
     }
@@ -130,7 +141,7 @@ public class AirbyteOracteTestContainer extends JdbcDatabaseContainer<AirbyteOra
   }
 
   @Override
-  public AirbyteOracteTestContainer withDatabaseName(final String databaseName) {
+  public AirbyteOracleTestContainer withDatabaseName(final String databaseName) {
     if (StringUtils.isEmpty(databaseName)) {
       throw new IllegalArgumentException("Database name cannot be null or empty");
     }
@@ -143,13 +154,13 @@ public class AirbyteOracteTestContainer extends JdbcDatabaseContainer<AirbyteOra
     return self();
   }
 
-  public AirbyteOracteTestContainer usingSid() {
+  public AirbyteOracleTestContainer usingSid() {
     this.usingSid = true;
     return self();
   }
 
   @Override
-  public AirbyteOracteTestContainer withUrlParam(final String paramName, final String paramValue) {
+  public AirbyteOracleTestContainer withUrlParam(final String paramName, final String paramValue) {
     throw new UnsupportedOperationException("The Oracle Database driver does not support this");
   }
 
@@ -186,4 +197,3 @@ public class AirbyteOracteTestContainer extends JdbcDatabaseContainer<AirbyteOra
   }
 
 }
-

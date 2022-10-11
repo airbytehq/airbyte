@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
-  private AirbyteOracteTestContainer container;
+  private AirbyteOracleTestContainer container;
   private JsonNode config;
   private DSLContext dslContext;
 
@@ -36,7 +36,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new AirbyteOracteTestContainer()
+    container = new AirbyteOracleTestContainer()
         .withUsername("TEST_ORA")
         .withPassword("oracle")
         .usingSid()

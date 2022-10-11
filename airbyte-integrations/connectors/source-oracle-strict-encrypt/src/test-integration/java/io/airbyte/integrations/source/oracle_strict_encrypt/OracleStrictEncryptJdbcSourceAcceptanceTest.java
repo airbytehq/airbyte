@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleStrictEncryptJdbcSourceAcceptanceTest.class);
-  private static AirbyteOracteTestContainer ORACLE_DB;
+  private static AirbyteOracleTestContainer ORACLE_DB;
 
   @BeforeAll
   static void init() {
@@ -85,7 +85,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s VARCHAR(20))";
     INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)')";
 
-    ORACLE_DB = new AirbyteOracteTestContainer()
+    ORACLE_DB = new AirbyteOracleTestContainer()
         .withUsername("test")
         .withPassword("oracle")
         .usingSid()

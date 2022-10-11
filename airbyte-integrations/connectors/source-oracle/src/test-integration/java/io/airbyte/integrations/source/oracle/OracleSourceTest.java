@@ -52,13 +52,13 @@ class OracleSourceTest {
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(createRecord(STREAM_NAME,
       map("ID", new BigDecimal("1.0"), "NAME", "user", "IMAGE", "last_summer.png".getBytes(StandardCharsets.UTF_8))));
 
-  private static AirbyteOracteTestContainer ORACLE_DB;
+  private static AirbyteOracleTestContainer ORACLE_DB;
 
   private static JsonNode config;
 
   @BeforeAll
   static void init() {
-    ORACLE_DB = new AirbyteOracteTestContainer()
+    ORACLE_DB = new AirbyteOracleTestContainer()
         .withUsername("TEST_ORA")
         .withPassword("oracle")
         .usingSid()
