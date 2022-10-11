@@ -4,10 +4,10 @@ import { useCallback } from "react";
 import { Action, Namespace } from "core/analytics";
 import { useAnalyticsService } from "hooks/services/Analytics";
 
-export const useAnalyticsTrackFunctions = (formType: "source" | "destination") => {
+export const useAnalyticsTrackFunctions = (connectorType: "source" | "destination") => {
   const analytics = useAnalyticsService();
 
-  const namespaceType = formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION;
+  const namespaceType = connectorType === "source" ? Namespace.SOURCE : Namespace.DESTINATION;
 
   const trackMenuOpen = useCallback(() => {
     analytics.track(namespaceType, Action.SELECTION_OPENED, {
@@ -28,12 +28,12 @@ export const useAnalyticsTrackFunctions = (formType: "source" | "destination") =
   const trackConnectorSelection = useCallback(
     (connectorId: string, connectorName: string) => {
       analytics.track(namespaceType, Action.SELECT, {
-        actionDescription: `${capitalize(formType)} connector type selected`,
-        [`connector_${formType}`]: connectorName,
-        [`connector_${formType}_definition_id`]: connectorId,
+        actionDescription: `${capitalize(connectorType)} connector type selected`,
+        [`connector_${connectorType}`]: connectorName,
+        [`connector_${connectorType}_definition_id`]: connectorId,
       });
     },
-    [analytics, formType, namespaceType]
+    [analytics, connectorType, namespaceType]
   );
 
   return { trackMenuOpen, trackNoOptionMessage, trackConnectorSelection };

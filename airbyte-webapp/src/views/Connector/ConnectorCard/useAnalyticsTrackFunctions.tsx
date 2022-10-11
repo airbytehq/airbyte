@@ -4,10 +4,10 @@ import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { useAnalyticsService } from "hooks/services/Analytics";
 
-export const useAnalyticsTrackFunctions = (formType: "source" | "destination") => {
+export const useAnalyticsTrackFunctions = (connectorType: "source" | "destination") => {
   const analytics = useAnalyticsService();
 
-  const namespaceType = formType === "source" ? Namespace.SOURCE : Namespace.DESTINATION;
+  const namespaceType = connectorType === "source" ? Namespace.SOURCE : Namespace.DESTINATION;
 
   const trackAction = useCallback(
     (connector: ConnectorDefinition | undefined, actionType: Action, actionDescription: string) => {
