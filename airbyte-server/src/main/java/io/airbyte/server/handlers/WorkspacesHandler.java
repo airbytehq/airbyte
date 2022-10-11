@@ -112,7 +112,7 @@ public class WorkspacesHandler {
   public void deleteWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing implementation
-    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceIdRequestBody.getWorkspaceId(), false);
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspaceNoSecrets(workspaceIdRequestBody.getWorkspaceId(), false);
 
     // disable all connections associated with this workspace
     for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
@@ -143,7 +143,7 @@ public class WorkspacesHandler {
   public WorkspaceRead getWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID workspaceId = workspaceIdRequestBody.getWorkspaceId();
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
+    final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, false);
     return buildWorkspaceRead(workspace);
   }
 
@@ -161,7 +161,7 @@ public class WorkspacesHandler {
     LOGGER.debug("Starting updateWorkspace for workspaceId {}...", workspaceId);
     LOGGER.debug("Incoming workspacePatch: {}", workspacePatch);
 
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
+    final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, false);
     LOGGER.debug("Initial workspace: {}", workspace);
 
     validateWorkspacePatch(workspace, workspacePatch);
@@ -183,7 +183,7 @@ public class WorkspacesHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID workspaceId = workspaceUpdateName.getWorkspaceId();
 
-    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId, false);
+    final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, false);
 
     persistedWorkspace
         .withName(workspaceUpdateName.getName())
@@ -217,7 +217,7 @@ public class WorkspacesHandler {
   }
 
   private WorkspaceRead buildWorkspaceReadFromId(final UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
+    final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, false);
     return buildWorkspaceRead(workspace);
   }
 

@@ -204,7 +204,7 @@ class WorkspacesHandlerTest {
     final DestinationRead destination = new DestinationRead();
     final SourceRead source = new SourceRead();
 
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false)).thenReturn(workspace);
 
     when(configRepository.listStandardWorkspaces(false)).thenReturn(Collections.singletonList(workspace));
 
@@ -266,7 +266,7 @@ class WorkspacesHandlerTest {
 
   @Test
   void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false)).thenReturn(workspace);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
 
@@ -340,7 +340,7 @@ class WorkspacesHandlerTest {
         .withNotifications(List.of(expectedNotification))
         .withDefaultGeography(Geography.US);
 
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false))
         .thenReturn(workspace)
         .thenReturn(expectedWorkspace);
 
@@ -389,7 +389,7 @@ class WorkspacesHandlerTest {
         .withNotifications(workspace.getNotifications())
         .withDefaultGeography(Geography.AUTO);
 
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false))
         .thenReturn(workspace)
         .thenReturn(expectedWorkspace);
 
@@ -424,7 +424,7 @@ class WorkspacesHandlerTest {
         .email(EXPECTED_NEW_EMAIL);
 
     final StandardWorkspace expectedWorkspace = Jsons.clone(workspace).withEmail(EXPECTED_NEW_EMAIL).withAnonymousDataCollection(true);
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false))
         .thenReturn(workspace)
         .thenReturn(expectedWorkspace);
     // The same as the original workspace, with only the email and data collection flags changed.
