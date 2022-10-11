@@ -1259,7 +1259,7 @@
   releaseStage: alpha
 - name: Zendesk Sell
   sourceDefinitionId: c41e4903-1000-4f2c-a768-979e45301e38
-  dockerRepository: airbyte/source-zendesk-sell:dev
+  dockerRepository: airbyte/source-zendesk-sell
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-sell
   sourceType: api
