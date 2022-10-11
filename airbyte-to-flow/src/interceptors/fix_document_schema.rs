@@ -16,6 +16,10 @@ pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<V
             match token {
                 // Add "minItems" to arrays to ensure the key is always available at that index
                 doc::ptr::Token::Index(idx) => {
+                    /* This code can have ambiguous results when encountering integer-like
+                     * properties, and as such has been disabled for now.
+                     * See https://github.com/estuary/airbyte/pull/46#discussion_r992250679
+                     *
                     let parent = doc.pointer_mut(&current.to_string()).unwrap();
                     let min_items_required = idx as u64 + 1;
                     let parent_map = parent.as_object_mut().ok_or(Error::InvalidAirbyteSchema("expected array schema specification to be an object".to_string()))?;
@@ -25,7 +29,8 @@ pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<V
                         }
                     }).or_insert(json!(min_items_required));
 
-                    current.push(Token::Property("items"));
+                    current.push(Token::Property("items"));*/
+                    return Err(Error::InvalidAirbyteSchema(format!("cannot use JSONPointer index pointer /{}/ in key pointer at {}", idx, current)))
                 },
                 // Add "required" and ensure the property and its parent's type do not include null
                 doc::ptr::Token::Property(prop) => {
@@ -169,6 +174,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn test_fix_document_schema_keys_array() {
         let doc_schema = r#"{
             "items": {
@@ -202,6 +208,7 @@ mod test {
 
     #[test]
     #[allow(non_snake_case)]
+    #[ignore]
     fn test_fix_document_schema_keys_array_existing_minItems() {
         let doc_schema = r#"{
             "items": {
