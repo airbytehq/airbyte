@@ -66,6 +66,7 @@ public class DataTypeUtils {
     return dateWithMilliseconds.substring(0, 23) + calculateMicrosecondsString(instant.getNano()) + dateWithMilliseconds.substring(23);
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static String calculateMicrosecondsString(final int nano) {
     final var microSeconds = (nano / 1000) % 1000;
     final String result;

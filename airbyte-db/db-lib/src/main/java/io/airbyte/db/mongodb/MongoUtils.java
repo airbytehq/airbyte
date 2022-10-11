@@ -55,7 +55,7 @@ public class MongoUtils {
 
   private static final String MISSING_TYPE = "missing";
   private static final String NULL_TYPE = "null";
-  private static final String AIRBYTE_SUFFIX = "_aibyte_transform";
+  public static final String AIRBYTE_SUFFIX = "_aibyte_transform";
   private static final int DISCOVER_LIMIT = 10000;
   private static final String ID = "_id";
 
@@ -136,11 +136,12 @@ public class MongoUtils {
     return jsonNodes;
   }
 
-  private static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
+  public static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
     if (columnNames.contains(fieldName + AIRBYTE_SUFFIX)) {
       final JsonNode data = jsonNodes.get(fieldName);
       if (data != null) {
-        jsonNodes.put(fieldName, data.asText());
+        jsonNodes.remove(fieldName);
+        jsonNodes.put(fieldName + AIRBYTE_SUFFIX, data.isTextual() ? data.asText() : data.toString());
       } else {
         LOGGER.debug("WARNING Field list out of sync, Document doesn't contain field: {}", fieldName);
       }
@@ -278,6 +279,7 @@ public class MongoUtils {
     return listOfTypes;
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static BsonType getUniqueType(final List<String> types) {
     if (types.size() != 1) {
       return BsonType.STRING;

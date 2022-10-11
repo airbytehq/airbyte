@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
@@ -455,7 +456,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<SourceConnection>> sourceConnections = new ArrayList<>();
     for (final Record record : result) {
-      final SourceConnection sourceConnection = buildSourceConnection(record);
+      final SourceConnection sourceConnection = DbConverter.buildSourceConnection(record);
       sourceConnections.add(new ConfigWithMetadata<>(
           record.get(ACTOR.ID).toString(),
           ConfigSchema.SOURCE_CONNECTION.name(),
@@ -464,16 +465,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           sourceConnection));
     }
     return sourceConnections;
-  }
-
-  private SourceConnection buildSourceConnection(final Record record) {
-    return new SourceConnection()
-        .withSourceId(record.get(ACTOR.ID))
-        .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
-        .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
-        .withSourceDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
-        .withTombstone(record.get(ACTOR.TOMBSTONE))
-        .withName(record.get(ACTOR.NAME));
   }
 
   private List<ConfigWithMetadata<DestinationConnection>> listDestinationConnectionWithMetadata() throws IOException {
@@ -491,7 +482,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<DestinationConnection>> destinationConnections = new ArrayList<>();
     for (final Record record : result) {
-      final DestinationConnection destinationConnection = buildDestinationConnection(record);
+      final DestinationConnection destinationConnection = DbConverter.buildDestinationConnection(record);
       destinationConnections.add(new ConfigWithMetadata<>(
           record.get(ACTOR.ID).toString(),
           ConfigSchema.DESTINATION_CONNECTION.name(),
@@ -500,16 +491,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           destinationConnection));
     }
     return destinationConnections;
-  }
-
-  private DestinationConnection buildDestinationConnection(final Record record) {
-    return new DestinationConnection()
-        .withDestinationId(record.get(ACTOR.ID))
-        .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
-        .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
-        .withDestinationDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
-        .withTombstone(record.get(ACTOR.TOMBSTONE))
-        .withName(record.get(ACTOR.NAME));
   }
 
   private List<ConfigWithMetadata<SourceOAuthParameter>> listSourceOauthParamWithMetadata() throws IOException {
@@ -1106,12 +1087,16 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.SCHEDULE_TYPE,
                 standardSync.getScheduleType() == null ? null
-                    : Enums.toEnum(standardSync.getScheduleType().value(), io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
+                    : Enums.toEnum(standardSync.getScheduleType().value(),
+                        io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
                         .orElseThrow())
             .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
-            .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
+            .set(CONNECTION.RESOURCE_REQUIREMENTS,
+                JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
+            .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
+                io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
             .where(CONNECTION.ID.eq(standardSync.getConnectionId()))
             .execute();
 
@@ -1145,11 +1130,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.SCHEDULE_TYPE,
                 standardSync.getScheduleType() == null ? null
-                    : Enums.toEnum(standardSync.getScheduleType().value(), io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
+                    : Enums.toEnum(standardSync.getScheduleType().value(),
+                        io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
                         .orElseThrow())
             .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
-            .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
+            .set(CONNECTION.RESOURCE_REQUIREMENTS,
+                JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
+            .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
+                io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
             .set(CONNECTION.CREATED_AT, timestamp)
             .set(CONNECTION.UPDATED_AT, timestamp)
             .execute();
@@ -1871,12 +1860,20 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                                                final AirbyteConfig configType,
                                                final JsonNode definition) {
     if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-      ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definition, StandardSourceDefinition.class)), ctx);
+      final StandardSourceDefinition sourceDef = Jsons.object(definition, StandardSourceDefinition.class);
+      sourceDef.withProtocolVersion(getProtocolVersion(sourceDef.getSpec()));
+      ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(sourceDef), ctx);
     } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-      ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definition, StandardDestinationDefinition.class)), ctx);
+      final StandardDestinationDefinition destDef = Jsons.object(definition, StandardDestinationDefinition.class);
+      destDef.withProtocolVersion(getProtocolVersion(destDef.getSpec()));
+      ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(destDef), ctx);
     } else {
       throw new IllegalArgumentException(UNKNOWN_CONFIG_TYPE + configType);
     }
+  }
+
+  private static String getProtocolVersion(final ConnectorSpecification spec) {
+    return AirbyteProtocolVersion.getWithDefault(spec != null ? spec.getProtocolVersion() : null).serialize();
   }
 
   @VisibleForTesting
@@ -1908,7 +1905,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @VisibleForTesting
   static boolean hasNewPatchVersion(final String currentVersion, final String latestVersion) {
-    return new AirbyteVersion(latestVersion).checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(currentVersion));
+    try {
+      return new AirbyteVersion(latestVersion).checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(currentVersion));
+    } catch (final Exception e) {
+      LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
+      return false;
+    }
   }
 
   static class ConnectorInfo {

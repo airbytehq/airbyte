@@ -18,6 +18,8 @@ from source_amazon_seller_partner.streams import (
     BrandAnalyticsMarketBasketReports,
     BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
+    FbaAfnInventoryByCountryReports,
+    FbaAfnInventoryReports,
     FbaCustomerReturnsReports,
     FbaInventoryReports,
     FbaOrdersReports,
@@ -35,9 +37,12 @@ from source_amazon_seller_partner.streams import (
     MerchantListingsReports,
     Orders,
     RestockInventoryReports,
+    SellerAnalyticsSalesAndTrafficReports,
     SellerFeedbackReports,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
+    VendorInventoryReports,
+    VendorSalesReports,
 )
 
 
@@ -96,7 +101,11 @@ class SourceAmazonSellerPartner(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
-        Check connection to Amazon SP API by requesting the list of reports as this endpoint should be available for any config.
+        Check connection to Amazon SP API by requesting the Orders endpoint
+        This endpoint is not available for vendor-only Seller accounts,
+        the Orders endpoint will then return a 403 error
+        Therefore made an exception for 403 errors (when vendor-only accounts).
+        When no access, a 401 error is given.
         Validate if response has the expected error code and body.
         Show error message in case of request exception or unexpected response.
         """
@@ -105,12 +114,18 @@ class SourceAmazonSellerPartner(AbstractSource):
             stream_kwargs = self._get_stream_kwargs(config)
             orders_stream = Orders(**stream_kwargs)
             next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
+
             return True, None
         except Exception as e:
             if isinstance(e, StopIteration):
                 logger.error(
                     "Could not check connection without data for Orders stream. Please change value for replication start date field."
                 )
+
+            # Additional check, since Vendor-ony accounts within Amazon Seller API will not pass the test without this exception
+            if "403 Client Error" in str(e):
+                return True, None
+
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -123,6 +138,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         return [
             FbaCustomerReturnsReports(**stream_kwargs),
             FbaInventoryReports(**stream_kwargs),
+            FbaAfnInventoryReports(**stream_kwargs),
+            FbaAfnInventoryByCountryReports(**stream_kwargs),
             FbaOrdersReports(**stream_kwargs),
             FbaShipmentsReports(**stream_kwargs),
             FbaReplacementsReports(**stream_kwargs),
@@ -136,7 +153,10 @@ class SourceAmazonSellerPartner(AbstractSource):
             MerchantListingsReports(**stream_kwargs),
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryHealthReports(**stream_kwargs),
+            VendorInventoryReports(**stream_kwargs),
+            VendorSalesReports(**stream_kwargs),
             Orders(**stream_kwargs),
+            SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
             SellerFeedbackReports(**stream_kwargs),
             BrandAnalyticsMarketBasketReports(**stream_kwargs),
             BrandAnalyticsSearchTermsReports(**stream_kwargs),

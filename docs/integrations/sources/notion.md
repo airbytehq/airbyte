@@ -3,7 +3,7 @@
 Notion is a productivity and project management software. It was designed to help organizations coordinate deadlines, objectives, and assignments.
 
 ## Prerequisites
-* Created Notion account with integration on [my integrations](https://www.notion.so/my-integrations) page. 
+* Created Notion account with integration on [my integrations](https://www.notion.so/my-integrations) page or an account that is the owner of a workspace. 
 
 ## Airbyte Open Source
 * Start Date
@@ -19,7 +19,7 @@ Notion is a productivity and project management software. It was designed to hel
 
 1. Create account on Notion by following link [signup](https://www.notion.so/signup)
 2. Login to your Notion account and go to [my integrations](https://www.notion.so/my-integrations) page.
-3. Create a **new integration**. Make sure to check the `Read content` capability.
+3. Create a **new integration**. You must be the owner of a workspace to create a new integration. Make sure to check the `Read content` capability.
 4. Check the appropriate user capability depending on your use case.
 5. Check the settings **Integration type** and select **Public** (OAuth2.0 authentication) or **Internal** (Token authorization) integration
 6. If you select Public integration you need to go to the opened section **OAuth Domain & URIs** and fill all fields of form you've received.
@@ -37,7 +37,7 @@ Notion is a productivity and project management software. It was designed to hel
 5. Choose the method of authentication
 6. If you select Token authentication - fill the field **token** with **access_token** in setup Notion step (8)
 7. If you select OAuth2.0 authorization - Click `Authenticate your Notion account`.
-8. Log in and Authorize to the Notion account
+8. Log in and Authorize the Notion account. Select the pages you wish to allow Airbyte to access.
 10. Click `Set up source`.
 
 ### For Airbyte Open Source:
@@ -61,7 +61,7 @@ The Notion source connector supports the following [sync modes](https://docs.air
 * [blocks](https://developers.notion.com/reference/retrieve-a-block)
 * [databases](https://developers.notion.com/reference/retrieve-a-database)
 * [pages](https://developers.notion.com/reference/retrieve-a-page)
-* [users](https://developers.notion.com/reference/retrieve-a-get-users) (this stream is not support **Incremental** - _Append Sync_ mode)
+* [users](https://developers.notion.com/reference/retrieve-a-get-users) (this stream does not support **Incremental** - _Append Sync_ mode)
 
 For more information, see the [Notion API](https://developers.notion.com/reference/intro).
 
@@ -73,13 +73,16 @@ The Notion connector should not run into Notion API limitations under normal usa
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------- |
+| 0.1.10  | 2022-09-28 | [17298](https://github.com/airbytehq/airbyte/pull/17298) | Use "Retry-After" header for backoff                            |
+| 0.1.9   | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                     |
+| 0.1.8   | 2022-09-05 | [16272](https://github.com/airbytehq/airbyte/pull/16272) | Update spec description to include working timestamp example    |
 | 0.1.7   | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from shared schemas |
-| 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and spec |
-| 0.1.5   | 2022-07-14 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                             |
-| 0.1.4   | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through           |
-| 0.1.3   | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream                            |
-| 0.1.2   | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084)   | Fix documentation URL                                     |
-| 0.1.1   | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207)   | Update connector fields title/description                 |
-| 0.1.0   | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092)   | Initial Release                                           |
+| 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and spec       |
+| 0.1.5   | 2022-07-14 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                                   |
+| 0.1.4   | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through                 |
+| 0.1.3   | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream                                  |
+| 0.1.2   | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084)   | Fix documentation URL                                           |
+| 0.1.1   | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207)   | Update connector fields title/description                       |
+| 0.1.0   | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092)   | Initial Release                                                 |

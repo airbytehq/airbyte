@@ -31,7 +31,10 @@ interface FeatureServiceProps {
  * features is: overwrite > user > workspace > globally, i.e. if a feature is disabled for a user
  * it will take precedence over the feature being enabled globally or for that workspace.
  */
-export const FeatureService: React.FC<FeatureServiceProps> = ({ features: defaultFeatures, children }) => {
+export const FeatureService: React.FC<React.PropsWithChildren<FeatureServiceProps>> = ({
+  features: defaultFeatures,
+  children,
+}) => {
   const [workspaceFeatures, setWorkspaceFeaturesState] = useState<FeatureSet>();
   const [userFeatures, setUserFeaturesState] = useState<FeatureSet>();
   const [overwrittenFeatures, setOverwrittenFeaturesState] = useState<FeatureSet>();
@@ -92,7 +95,10 @@ export const useFeature = (feature: FeatureItem): boolean => {
   return features.includes(feature);
 };
 
-export const IfFeatureEnabled: React.FC<{ feature: FeatureItem }> = ({ feature, children }) => {
+export const IfFeatureEnabled: React.FC<React.PropsWithChildren<{ feature: FeatureItem }>> = ({
+  feature,
+  children,
+}) => {
   const hasFeature = useFeature(feature);
   return hasFeature ? <>{children}</> : null;
 };

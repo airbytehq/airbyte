@@ -68,7 +68,7 @@ class SourceTwilio(AbstractSource):
         incremental_stream_kwargs = {
             "authenticator": auth,
             "start_date": config["start_date"],
-            "lookback_window": config["lookback_window"],
+            "lookback_window": config.get("lookback_window", 0),
         }
 
         # Fix for `Date range specified in query is partially or entirely outside of retention window of 400 days`

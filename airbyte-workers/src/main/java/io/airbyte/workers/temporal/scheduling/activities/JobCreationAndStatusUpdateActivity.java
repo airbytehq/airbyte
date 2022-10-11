@@ -96,6 +96,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptId;
+    private UUID connectionId;
     private StandardSyncOutput standardSyncOutput;
 
   }
@@ -113,6 +114,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptNumber;
+    private UUID connectionId;
     private StandardSyncOutput standardSyncOutput;
 
   }
@@ -129,6 +131,8 @@ public interface JobCreationAndStatusUpdateActivity {
   class JobFailureInput {
 
     private long jobId;
+    private UUID connectionId;
+    private int attemptNumber;
     private String reason;
 
   }
@@ -146,6 +150,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptId;
+    private UUID connectionId;
     private StandardSyncOutput standardSyncOutput;
     private AttemptFailureSummary attemptFailureSummary;
 
@@ -164,6 +169,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptNumber;
+    private UUID connectionId;
     private StandardSyncOutput standardSyncOutput;
     private AttemptFailureSummary attemptFailureSummary;
 
@@ -182,6 +188,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptId;
+    private UUID connectionId;
     private AttemptFailureSummary attemptFailureSummary;
 
   }
@@ -199,6 +206,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptNumber;
+    private UUID connectionId;
     private AttemptFailureSummary attemptFailureSummary;
 
   }
@@ -215,6 +223,7 @@ public interface JobCreationAndStatusUpdateActivity {
   class ReportJobStartInput {
 
     private long jobId;
+    private UUID connectionId;
 
   }
 

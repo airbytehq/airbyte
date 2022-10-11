@@ -1,6 +1,6 @@
 import { useIntl } from "react-intl";
 
-import { ImageBlock } from "components";
+import { ImageBlock } from "components/ui/ImageBlock";
 
 import styles from "./DiffIconBlock.module.scss";
 

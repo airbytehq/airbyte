@@ -1,4 +1,4 @@
-ARG ALPINE_IMAGE=alpine:3.4
+ARG ALPINE_IMAGE=alpine:3.13
 FROM ${ALPINE_IMAGE}
 
 RUN apk --no-cache add curl tar \

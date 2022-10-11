@@ -4,7 +4,10 @@
  */
 
 export interface Experiments {
+  "onboarding.hideOnboarding": boolean;
   "connector.orderOverwrite": Record<string, number>;
+  "connector.frequentlyUsedDestinationIds": string[];
+  "connector.startWithDestinationId": string;
   "authPage.rightSideUrl": string | undefined;
   "authPage.hideSelfHostedCTA": boolean;
   "authPage.signup.hideName": boolean;

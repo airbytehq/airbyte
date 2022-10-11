@@ -3,6 +3,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "common.names.fullname" . }}-sweep-pod-script
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
+
 data:
   sweep-pod.sh: |
   {{- (.Files.Get "files/sweep-pod.sh") | nindent 4 }}

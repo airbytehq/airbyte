@@ -5,38 +5,22 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "name": {
-      "type": ["string"]
-    },
+    "name": { "type": ["string"] },
     "permission-list": {
       "type": ["object"],
       "properties": {
         "big_query_array": {
-          "type": ["object"],
-          "properties": {
-            "big_query_array": {
-              "type": ["array"],
-              "items": {
+          "type": ["array"],
+          "items": {
+            "type": ["object"],
+            "properties": {
+              "domain": { "type": ["string"] },
+              "grants": {
                 "type": ["object"],
                 "properties": {
-                  "domain": {
-                    "type": ["string"]
-                  },
-                  "grants": {
-                    "type": ["object"],
-                    "properties": {
-                      "big_query_array": {
-                        "type": ["object"],
-                        "properties": {
-                          "big_query_array": {
-                            "type": ["array"],
-                            "items": {
-                              "type": ["string"]
-                            }
-                          }
-                        }
-                      }
-                    }
+                  "big_query_array": {
+                    "type": ["array"],
+                    "items": { "type": ["string"] }
                   }
                 }
               }

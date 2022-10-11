@@ -1,6 +1,7 @@
 import { render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffectOnce } from "react-use";
+import { useMockIntersectionObserver } from "test-utils/testutils";
 
 import { ModalServiceProvider, useModalService } from "./ModalService";
 import { ModalResult } from "./types";
@@ -37,6 +38,10 @@ const renderModal = (resultCallback?: (reason: unknown) => void) => {
 };
 
 describe("ModalService", () => {
+  beforeEach(() => {
+    // IntersectionObserver isn't available in test environment but is used by headless-ui dialog
+    useMockIntersectionObserver();
+  });
   it("should open a modal on openModal", () => {
     const rendered = renderModal();
 

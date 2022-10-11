@@ -5,7 +5,10 @@ This page contains the setup guide and reference information for the AlloyDB for
 ## Prerequisites
 
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer
-- Allowlist the IP address `34.106.109.131` to enable access to Airbyte
+- Allowlist one of our IP addresses to enable access to Airbyte:
+  - 34.106.109.131
+  - 34.106.196.165
+  - 34.106.60.246
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ## Setup guide
@@ -326,7 +329,14 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.0   | 2022-09-05 | [16323](https://github.com/airbytehq/airbyte/pull/16323)   | Initial commit. Based on source-postgres v.1.0.7
+| Version | Date       | Pull Request                                             | Subject                                          |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------|
+| 1.0.0   | 2022-09-15 | [16776](https://github.com/airbytehq/airbyte/pull/16776)   | Align with strict-encrypt version                |
+| 0.1.0   | 2022-09-05 | [16323](https://github.com/airbytehq/airbyte/pull/16323)   | Initial commit. Based on source-postgres v.1.0.7 |
 
+
+## Changelog (Strict Encrypt)
+
+| Version | Date       | Pull Request                                             | Subject                                                  |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------|
+| 1.0.0   | 2022-09-15 | [16776](https://github.com/airbytehq/airbyte/pull/16776)   | Initial commit. Based on source-postgres-strict-encrypt  |

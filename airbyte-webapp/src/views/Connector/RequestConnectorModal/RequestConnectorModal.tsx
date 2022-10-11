@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Modal } from "components";
+import { Modal } from "components/ui/Modal";
 
 import useRequestConnector from "hooks/services/useRequestConnector";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";

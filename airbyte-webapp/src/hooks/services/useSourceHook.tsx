@@ -10,7 +10,7 @@ import { JobInfo } from "core/domain/job";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-import { SourceRead, SynchronousJobRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { SourceRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
@@ -103,7 +103,7 @@ const useDeleteSource = () => {
   const removeConnectionsFromList = useRemoveConnectionsFromList();
 
   return useMutation(
-    (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionRead[] }) =>
+    (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionListItem[] }) =>
       service.delete(payload.source.sourceId),
     {
       onSuccess: (_data, ctx) => {
@@ -149,13 +149,15 @@ const useUpdateSource = () => {
   );
 };
 
+export type SchemaError = (Error & { status: number; response: JobInfo }) | null;
+
 const useDiscoverSchema = (
   sourceId: string,
   disableCache?: boolean
 ): {
   isLoading: boolean;
   schema: SyncSchema;
-  schemaErrorStatus: { status: number; response: SynchronousJobRead } | null;
+  schemaErrorStatus: SchemaError;
   catalogId: string | undefined;
   onDiscoverSchema: () => Promise<void>;
 } => {
@@ -163,10 +165,7 @@ const useDiscoverSchema = (
   const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
   const [catalogId, setCatalogId] = useState<string | undefined>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
-    status: number;
-    response: JobInfo;
-  } | null>(null);
+  const [schemaErrorStatus, setSchemaErrorStatus] = useState<SchemaError>(null);
 
   const onDiscoverSchema = useCallback(async () => {
     setIsLoading(true);
@@ -180,15 +179,12 @@ const useDiscoverSchema = (
     } finally {
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceId]);
+  }, [disableCache, service, sourceId]);
 
   useEffect(() => {
-    (async () => {
-      if (sourceId) {
-        await onDiscoverSchema();
-      }
-    })();
+    if (sourceId) {
+      onDiscoverSchema();
+    }
   }, [onDiscoverSchema, sourceId]);
 
   return { schemaErrorStatus, isLoading, schema, catalogId, onDiscoverSchema };

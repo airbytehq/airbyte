@@ -6,7 +6,10 @@ package io.airbyte.cron.selfhealing;
 
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.env.Environment;
 import io.micronaut.scheduling.annotation.Scheduled;
+import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,19 +18,21 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AgeFileFilter;
 
 @Singleton
 @Slf4j
+@Requires(notEnv = Environment.KUBERNETES)
 public class WorkspaceCleaner {
 
   private final Path workspaceRoot;
   private final long maxAgeFilesInDays;
 
   WorkspaceCleaner() {
+    log.info("Creating workspace cleaner");
+
     // TODO Configs should get injected through micronaut
     final Configs configs = new EnvConfigs();
 
