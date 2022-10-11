@@ -2,7 +2,6 @@ import { Form, Formik, FormikConfig, FormikHelpers } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
 import { useMutation } from "react-query";
-import styled from "styled-components";
 
 import { FormChangeTracker } from "components/FormChangeTracker";
 
@@ -11,7 +10,7 @@ import { generateMessageFromError } from "utils/errorStatusMessage";
 import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 
-const FormContainer = styled(Form)``;
+import styles from "./FormCard.module.scss";
 
 interface FormCardProps<T> extends CollapsibleCardProps {
   bottomSeparator?: boolean;
@@ -43,7 +42,7 @@ export const FormCard = <T extends object>({
     <Formik {...form} onSubmit={(values, formikHelpers) => mutateAsync({ values, formikHelpers })}>
       {({ resetForm, isSubmitting, dirty, isValid }) => (
         <CollapsibleCard {...props}>
-          <FormContainer>
+          <Form className={styles.formCard}>
             <FormChangeTracker changed={dirty} />
             {children}
             <div>
@@ -64,7 +63,7 @@ export const FormCard = <T extends object>({
                 />
               )}
             </div>
-          </FormContainer>
+          </Form>
         </CollapsibleCard>
       )}
     </Formik>

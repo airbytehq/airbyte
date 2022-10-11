@@ -2,7 +2,6 @@ import { Field, FieldArray } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
-import styled from "styled-components";
 
 import { Card } from "components/ui/Card";
 import { Text } from "components/ui/Text";
@@ -25,20 +24,7 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
-const Content = styled.div`
-  max-width: 1073px;
-  margin: 0 auto;
-  padding-bottom: 10px;
-`;
-
-const NoSupportedTransformationCard = styled(Card)`
-  max-width: 500px;
-  margin: 0 auto;
-  min-height: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
+import styles from "./ConnectionTransformationTab.module.scss";
 
 const CustomTransformationsCard: React.FC<{
   operations?: OperationCreate[];
@@ -100,7 +86,6 @@ const NormalizationCard: React.FC<{
       title={<FormattedMessage id="connection.normalization" />}
       collapsible
     >
-      {/* todo: can we avoid passing mode through? */}
       <Field name="normalization" component={NormalizationField} mode={mode} />
     </FormCard>
   );
@@ -130,7 +115,6 @@ export const ConnectionTransformationTab: React.FC = () => {
           (connection.operations ?? [])?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.dbt)
         );
 
-    // todo:  this
     await updateConnection({ connectionId: connection.connectionId, operations });
 
     const nextFormValues: typeof values = {};
@@ -143,7 +127,7 @@ export const ConnectionTransformationTab: React.FC = () => {
   };
 
   return (
-    <Content>
+    <div className={styles.content}>
       <fieldset
         disabled={mode === "readonly"}
         style={{ border: "0", pointerEvents: `${mode === "readonly" ? "none" : "auto"}` }}
@@ -151,13 +135,13 @@ export const ConnectionTransformationTab: React.FC = () => {
         {supportsNormalization && <NormalizationCard operations={connection.operations} onSubmit={onSubmit} />}
         {supportsDbt && <CustomTransformationsCard operations={connection.operations} onSubmit={onSubmit} />}
         {!supportsNormalization && !supportsDbt && (
-          <NoSupportedTransformationCard>
+          <Card className={styles.customCard}>
             <Text as="p" size="lg" centered>
               <FormattedMessage id="connectionForm.operations.notSupported" />
             </Text>
-          </NoSupportedTransformationCard>
+          </Card>
         )}
       </fieldset>
-    </Content>
+    </div>
   );
 };
