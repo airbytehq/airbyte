@@ -15,21 +15,67 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 # Basic full refresh stream
-class CommcareStream(HttpStream, IncrementalMixin, ABC):
+class CommcareStream(HttpStream, ABC):
     url_base = "https://www.commcarehq.org/a/sc-baseline/api/v0.5/"
-    forms = {}
-    dateformat = '%Y-%m-%dT%H:%M:%S.%f'
-    initial_date = datetime(2022,1,1,0,0,0)
-    last_form_date = initial_date
+
+    # These class variables save state 
+    # forms holds form ids and we filter cases which contain one of these form ids
+    # last_form_date stores the date of the last form read so the next cycle for forms and cases starts at the same timestamp
+    forms = set()
+    last_form_date = None
+
+    @property
+    def dateformat(self):
+        return '%Y-%m-%dT%H:%M:%S.%f'
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        
+        params = {'format': 'json'}
+        return params
+
+
+class Application(CommcareStream):
+    primary_key = "id"
+    def __init__(self, app_id, **kwargs):
+        super().__init__(**kwargs)
+        self.app_id = app_id
+
+    def path(
+    self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+) -> str:
+        return f"application/{self.app_id}/"
+    
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        
+        params = {
+            'format': 'json', 
+            'extras' : 'true'
+        }
+        return params
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield response.json()
+
+
+
+class IncrementalStream(CommcareStream, IncrementalMixin):
     cursor_field = 'indexed_on'
     _cursor_value = None
 
     @property
     def state(self) -> Mapping[str, Any]:
+        initial_date = datetime(2022,1,1,0,0,0)
         if self._cursor_value:
             return {self.cursor_field: self._cursor_value}
         else:
-            return {self.cursor_field: self.initial_date}
+            return {self.cursor_field: initial_date}
     
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -62,7 +108,10 @@ class CommcareStream(HttpStream, IncrementalMixin, ABC):
         return None
 
 
-class FormCase(CommcareStream):
+
+# Airbyte orders streams in alpha order but since we have dependent peers and we need to 
+# pull Form before Case, we call this stream FormCase so Airbyte pulls it after Form
+class FormCase(IncrementalStream):
     cursor_field = 'indexed_on'
     primary_key = "case_id"
 
@@ -76,10 +125,10 @@ class FormCase(CommcareStream):
     ) -> MutableMapping[str, Any]:
         
         # start date is what we saved for forms
-        ix = self.state[self.cursor_field] if self.cursor_field in self.state else super().last_form_date
+        ix = self.state[self.cursor_field] #if self.cursor_field in self.state else (CommcareStream.last_form_date or self.initial_date)
         params = {
             'format': 'json', 
-            'indexed_on_start': ix.strftime(super().dateformat), 
+            'indexed_on_start': ix.strftime(self.dateformat), 
             'order_by': 'indexed_on', 
             'limit': '5000'
         }
@@ -88,26 +137,34 @@ class FormCase(CommcareStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for o in iter(response.json()['objects']):
-            found = False
-            for f in o['xform_ids']:
-                if f in super().forms:
-                    found = True
-                    break
-            if found:
-                yield o
-        return None
+        # for o in iter(response.json()['objects']):
+        #     found = False
+        #     for f in o['xform_ids']:
+        #         if f in super().forms:
+        #             found = True
+        #             break
+        #     if found:
+        #         yield o
+        # return None
+        return response.json()['objects']
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            yield record
+            found = False
+            for f in record['xform_ids']:
+                if f in CommcareStream.forms:
+                    found = True
+                    break
+            if found:
+                yield record
 
-        super().forms.clear()
-        self._cursor_value = super().last_form_date
+        # This cycle of pull is complete so clear out the form ids we saved for this cycle
+        CommcareStream.forms.clear()
+        self._cursor_value = CommcareStream.last_form_date
         print(f'######============= CASE READ DONE {self.state[self.cursor_field]} ===============')
 
 
-class Form(CommcareStream):
+class Form(IncrementalStream):
     cursor_field = 'indexed_on'
     primary_key = "id"
     def __init__(self, app_id, **kwargs):
@@ -123,11 +180,11 @@ class Form(CommcareStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         
-        ix = self.state[self.cursor_field] if self.cursor_field in self.state else super().initial_date
+        ix = self.state[self.cursor_field] #if self.cursor_field in self.state else self.initial_date
         params = {
             'format': 'json', 
             'app_id': self.app_id, 
-            'indexed_on_start': ix.strftime(super().dateformat), 
+            'indexed_on_start': ix.strftime(self.dateformat), 
             'order_by': 'indexed_on', 
             'limit': '1000'
         }
@@ -136,18 +193,19 @@ class Form(CommcareStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for o in iter(response.json()['objects']):
-            super().forms[o['id']] = 1
-            yield o
-        return None
+        # for o in iter(response.json()['objects']):
+        #     CommcareStream.forms[o['id']] = 1
+        #     yield o
+        # return None
+        return response.json()['objects']
     
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             self._cursor_value = datetime.strptime(record[self.cursor_field], self.dateformat)
+            CommcareStream.forms.add(record['id'])
             yield record
 
         print(f'######============= FORM READ DONE {self.state[self.cursor_field]} ===============')
-        self._cursor_value += timedelta(microseconds=1)
         CommcareStream.last_form_date = self._cursor_value
 
 # Source
@@ -167,6 +225,7 @@ class SourceCommcare(AbstractSource):
         with_appid = { **args, 'app_id': config['app_id']}
 
         return [
+            Application(**with_appid),
             Form(**with_appid),       
             FormCase(**args)
         ]
