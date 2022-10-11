@@ -18,7 +18,7 @@
       "type": "string"
     },
     "created": {
-      "type": "string"
+      "type": "date-time"
     },
     "maxValue": {
       "type": "null"
@@ -62,7 +62,7 @@
       "type": "boolean"
     },
     "updated": {
-      "type": "string"
+      "type": "date-time"
     },
     "isActive": {
       "type": "boolean"

@@ -281,7 +281,7 @@
       "type": "integer"
     },
     "updated": {
-      "type": "string"
+      "type": "date-time"
     },
     "allowSMSSignup": {
       "type": "boolean"
@@ -299,7 +299,7 @@
       "type": "boolean"
     },
     "lastBookingUpdate": {
-      "type": "string"
+      "type": "date-time"
     },
     "id": {
       "type": "string"

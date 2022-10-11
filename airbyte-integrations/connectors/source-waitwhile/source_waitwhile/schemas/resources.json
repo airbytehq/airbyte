@@ -6,7 +6,7 @@
       "type": "boolean"
     },
     "serviceDurationModifier": {
-      "type": "integer"
+      "type": "number"
     },
     "userId": {
       "type": "string"
@@ -32,7 +32,7 @@
       ]
     },
     "created": {
-      "type": "string"
+      "type": "date-time"
     },
     "order": {
       "type": "integer"
@@ -71,7 +71,7 @@
       "type": "string"
     },
     "updated": {
-      "type": "string"
+      "type": "date-time"
     },
     "parentId": {
       "type": "string"

@@ -68,10 +68,10 @@
       "type": "string"
     },
     "created": {
-      "type": "string"
+      "type": "date-time"
     },
     "updated": {
-      "type": "string"
+      "type": "date-time"
     },
     "description": {
       "type": "string"

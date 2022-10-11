@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "created": {
-      "type": "string"
+      "type": "date-time"
     },
     "numVisits": {
       "type": "integer"
@@ -21,7 +21,7 @@
       "type": "string"
     },
     "updated": {
-      "type": "string"
+      "type": "date-time"
     },
     "fields": {
       "type": "object"

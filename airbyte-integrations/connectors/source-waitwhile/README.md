@@ -63,6 +63,12 @@ First, make sure you build the latest Docker image:
 docker build . -t airbyte/source-waitwhile:dev
 ```
 
+#### Push docker image
+```shell
+docker tag airbyte/source-waitwhile:tag askeladden/airbyte-waitwhile-source:tagname
+docker push askeladden/airbyte-waitwhile-source:tagname
+```
+
 You can also build the connector image via Gradle:
 ```
 ./gradlew :airbyte-integrations:connectors:source-waitwhile:airbyteDocker

@@ -21,10 +21,10 @@
       "type": "string"
     },
     "completedTime": {
-      "type": "string"
+      "type": "date-time"
     },
     "serveTime": {
-      "type": "string"
+      "type": "date-time"
     },
     "phone": {
       "type": "string"
@@ -54,7 +54,7 @@
       "type": "array"
     },
     "bookingTime": {
-      "type": "string"
+      "type": "date-time"
     },
     "isBlock": {
       "type": "boolean"
@@ -77,13 +77,13 @@
       "type": "string"
     },
     "waitlistTime": {
-      "type": "string"
+      "type": "date-time"
     },
     "resources": {
       "type": "object"
     },
     "created": {
-      "type": "string"
+      "type": "date-time"
     },
     "numVisits": {
       "type": "integer"
@@ -104,7 +104,7 @@
       "type": "string"
     },
     "updated": {
-      "type": "string"
+      "type": "date-time"
     },
     "serviceIds": {
       "type": "array"
@@ -119,7 +119,7 @@
       "type": "integer"
     },
     "removedTime": {
-      "type": "string"
+      "type": "date-time"
     },
     "createdBy": {
       "type": "string"
