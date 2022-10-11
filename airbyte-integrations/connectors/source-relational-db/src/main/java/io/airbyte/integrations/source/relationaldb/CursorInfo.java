@@ -67,7 +67,7 @@ public class CursorInfo {
     return this;
   }
 
-  public CursorInfo setCursorRecordCount(final int cursorRecordCount) {
+  public CursorInfo setCursorRecordCount(final long cursorRecordCount) {
     this.cursorRecordCount = cursorRecordCount;
     return this;
   }

@@ -102,11 +102,11 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
 
   @Override
   public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
-    return updateAndEmit(pair, cursor, 0);
+    return updateAndEmit(pair, cursor, 0L);
   }
 
   @Override
-  public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final int cursorRecordCount) {
+  public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final long cursorRecordCount) {
     // cdc file gets updated by debezium so the "update" part is a no op.
     if (!isCdc) {
       return super.updateAndEmit(pair, cursor, cursorRecordCount);

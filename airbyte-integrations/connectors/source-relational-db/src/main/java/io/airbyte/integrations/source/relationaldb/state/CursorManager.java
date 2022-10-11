@@ -167,7 +167,7 @@ public class CursorManager<S> {
           // if cursor field in catalog and state are different.
         } else {
           cursor = null;
-          cursorRecordCount = 0;
+          cursorRecordCount = 0L;
           LOGGER.info(
               "Found cursor field. Does not match previous cursor field. Stream: {}. Original Cursor Field: {} (count {}). New Cursor Field: {}. Resetting cursor value.",
               pair, originalCursorField, originalCursorRecordCount, cursorField);
@@ -177,7 +177,7 @@ public class CursorManager<S> {
         LOGGER.info("No cursor field set in catalog but not present in state. Stream: {}, New Cursor Field: {}. Resetting cursor value", pair,
             cursorField);
         cursor = null;
-        cursorRecordCount = 0;
+        cursorRecordCount = 0L;
       }
       // if cursor field is not set in catalog.
     } else {
@@ -186,7 +186,7 @@ public class CursorManager<S> {
           pair, originalCursorField, originalCursor);
       cursorField = null;
       cursor = null;
-      cursorRecordCount = 0;
+      cursorRecordCount = 0L;
     }
 
     return new CursorInfo(originalCursorField, originalCursor, originalCursorRecordCount, cursorField, cursor, cursorRecordCount);

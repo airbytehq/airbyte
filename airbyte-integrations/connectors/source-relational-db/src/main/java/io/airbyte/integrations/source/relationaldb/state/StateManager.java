@@ -140,14 +140,14 @@ public interface StateManager<T, S> {
    *         manager.
    */
   default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
-    return updateAndEmit(pair, cursor, 0);
+    return updateAndEmit(pair, cursor, 0L);
   }
 
-  default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final int cursorRecordCount) {
+  default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final long cursorRecordCount) {
     final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
     Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
     cursorInfo.get().setCursor(cursor);
-    if (cursorRecordCount > 0) {
+    if (cursorRecordCount > 0L) {
       cursorInfo.get().setCursorRecordCount(cursorRecordCount);
     }
     LOGGER.debug("Updating cursor value for {} to {} (count {})...", pair, cursor, cursorRecordCount);

@@ -858,7 +858,7 @@ public abstract class JdbcSourceAcceptanceTest {
     final JsonNode firstSyncState = getStateData(firstSyncStateOptional.get(), tableName);
     assertTrue(firstSyncState.get("cursor").asText().contains("2021-01-01"));
     assertTrue(firstSyncState.get("cursor").asText().contains("00:00:00"));
-    assertEquals(2, firstSyncState.get("cursor_record_count").asInt());
+    assertEquals(2L, firstSyncState.get("cursor_record_count").asLong());
 
     // 2nd sync
     database.execute(ctx -> {
@@ -874,7 +874,7 @@ public abstract class JdbcSourceAcceptanceTest {
     final JsonNode secondSyncState = getStateData(secondSyncStateOptional.get(), tableName);
     assertTrue(secondSyncState.get("cursor").asText().contains("2021-01-02"));
     assertTrue(secondSyncState.get("cursor").asText().contains("00:00:00"));
-    assertEquals(1, secondSyncState.get("cursor_record_count").asInt());
+    assertEquals(1L, secondSyncState.get("cursor_record_count").asLong());
 
     // 3rd sync has records with duplicated cursors
     database.execute(ctx -> {
@@ -893,7 +893,7 @@ public abstract class JdbcSourceAcceptanceTest {
     final JsonNode thirdSyncState = getStateData(thirdSyncStateOptional.get(), tableName);
     assertTrue(thirdSyncState.get("cursor").asText().contains("2021-01-02"));
     assertTrue(thirdSyncState.get("cursor").asText().contains("00:00:00"));
-    assertEquals(3, thirdSyncState.get("cursor_record_count").asInt());
+    assertEquals(3L, thirdSyncState.get("cursor_record_count").asLong());
   }
 
   private JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {

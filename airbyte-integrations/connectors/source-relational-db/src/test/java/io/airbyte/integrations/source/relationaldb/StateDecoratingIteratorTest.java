@@ -105,11 +105,11 @@ class StateDecoratingIteratorTest {
   void setup() {
     stateManager = mock(StateManager.class);
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, null, 0)).thenReturn(EMPTY_STATE_MESSAGE.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_1, 1)).thenReturn(STATE_MESSAGE_1.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2, 1)).thenReturn(STATE_MESSAGE_2.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3, 1)).thenReturn(STATE_MESSAGE_3.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_4, 1)).thenReturn(STATE_MESSAGE_4.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 1)).thenReturn(STATE_MESSAGE_5.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_1, 1L)).thenReturn(STATE_MESSAGE_1.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2, 1L)).thenReturn(STATE_MESSAGE_2.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3, 1L)).thenReturn(STATE_MESSAGE_3.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_4, 1L)).thenReturn(STATE_MESSAGE_4.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 1L)).thenReturn(STATE_MESSAGE_5.getState());
 
     when(stateManager.getCursorInfo(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
   }
@@ -135,7 +135,7 @@ class StateDecoratingIteratorTest {
   @Test
   void testWithInitialCursor() {
     // record 1 and 2 has smaller cursor value, so at the end, the initial cursor is emitted with 0 record count
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 0)).thenReturn(STATE_MESSAGE_5.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 0L)).thenReturn(STATE_MESSAGE_5.getState());
 
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
@@ -179,9 +179,9 @@ class StateDecoratingIteratorTest {
     final Iterator<AirbyteMessage> exceptionIterator = createExceptionIterator();
 
     // The mock record count matches the number of records returned by the exception iterator.
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_1, 1)).thenReturn(STATE_MESSAGE_1.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2, 2)).thenReturn(STATE_MESSAGE_2.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3, 1)).thenReturn(STATE_MESSAGE_3.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_1, 1L)).thenReturn(STATE_MESSAGE_1.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2, 2L)).thenReturn(STATE_MESSAGE_2.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3, 1L)).thenReturn(STATE_MESSAGE_3.getState());
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         exceptionIterator,
@@ -248,7 +248,7 @@ class StateDecoratingIteratorTest {
 
     // UTF8 null \u0000 is removed from the cursor value in the state message
     final AirbyteMessage stateMessageWithNull = STATE_MESSAGE_1;
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, recordValueWithNull, 1)).thenReturn(stateMessageWithNull.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, recordValueWithNull, 1L)).thenReturn(stateMessageWithNull.getState());
 
     messageIterator = MoreIterators.of(recordMessageWithNull);
 
@@ -375,10 +375,10 @@ class StateDecoratingIteratorTest {
   @Test
   @DisplayName("When there are multiple records with the same cursor value")
   void testStateEmissionForRecordsSharingSameCursorValue() {
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2, 2)).thenReturn(STATE_MESSAGE_2.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3, 3)).thenReturn(STATE_MESSAGE_3.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_4, 1)).thenReturn(STATE_MESSAGE_4.getState());
-    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 2)).thenReturn(STATE_MESSAGE_5.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_2, 2L)).thenReturn(STATE_MESSAGE_2.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_3, 3L)).thenReturn(STATE_MESSAGE_3.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_4, 1L)).thenReturn(STATE_MESSAGE_4.getState());
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 2L)).thenReturn(STATE_MESSAGE_5.getState());
 
     messageIterator = MoreIterators.of(
         RECORD_MESSAGE_2, RECORD_MESSAGE_2,

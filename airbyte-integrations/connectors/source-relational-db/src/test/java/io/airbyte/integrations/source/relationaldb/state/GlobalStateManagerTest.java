@@ -135,7 +135,7 @@ public class GlobalStateManagerTest {
         .withGlobal(expectedGlobalState)
         .withType(AirbyteStateType.GLOBAL);
 
-    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", 1);
+    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", 1L);
     assertEquals(expected, actualFirstEmission);
   }
 
@@ -205,7 +205,7 @@ public class GlobalStateManagerTest {
         .withGlobal(expectedGlobalState)
         .withType(AirbyteStateType.GLOBAL);
 
-    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", 1);
+    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a", 1L);
     assertEquals(expected, actualFirstEmission);
   }
 

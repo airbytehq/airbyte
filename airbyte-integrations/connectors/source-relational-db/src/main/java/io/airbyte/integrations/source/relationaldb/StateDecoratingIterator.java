@@ -30,7 +30,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
 
   private final String initialCursor;
   private String maxCursor;
-  private int maxCursorRecordCount = 0;
+  private long maxCursorRecordCount = 0L;
   private boolean hasEmittedFinalState;
 
   /**
@@ -134,7 +134,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
               intermediateStateMessage = createStateMessage(false);
             }
             maxCursor = cursorCandidate;
-            maxCursorRecordCount = 1;
+            maxCursorRecordCount = 1L;
           } else if (cursorComparison == 0) {
             maxCursorRecordCount++;
           }

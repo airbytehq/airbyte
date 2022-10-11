@@ -342,7 +342,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
               final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorInfo.getCursorField());
 
               final String operator;
-              if (cursorInfo.getCursorRecordCount() <= 0) {
+              if (cursorInfo.getCursorRecordCount() <= 0L) {
                 operator = ">";
               } else {
                 final long actualRecordCount = getActualCursorRecordCount(
