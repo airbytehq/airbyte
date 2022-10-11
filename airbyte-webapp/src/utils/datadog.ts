@@ -1,6 +1,6 @@
 import { datadogRum } from "@datadog/browser-rum";
 
-export const loadDatadogRum = () => {
+export const initDatadogRum = () => {
   const applicationId = process.env.REACT_APP_DATADOG_APPLICATION_ID ?? window.REACT_APP_DATADOG_APPLICATION_ID;
   if (!applicationId) {
     return;
