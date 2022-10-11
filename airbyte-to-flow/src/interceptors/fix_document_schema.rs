@@ -107,6 +107,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn test_fix_document_schema_keys_integer_prop() {
         let doc_schema = r#"{
             "properties": {
