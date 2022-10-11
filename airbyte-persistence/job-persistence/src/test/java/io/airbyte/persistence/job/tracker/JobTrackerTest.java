@@ -27,6 +27,7 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Metadata;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -574,6 +575,7 @@ class JobTrackerTest {
     final JobOutput jobOutput = mock(JobOutput.class);
     final StandardSyncOutput syncOutput = mock(StandardSyncOutput.class);
     final StandardSyncSummary syncSummary = mock(StandardSyncSummary.class);
+    final NormalizationSummary normalizationSummary= mock(NormalizationSummary.class);
     final SyncStats syncStats = mock(SyncStats.class);
 
     when(syncSummary.getStartTime()).thenReturn(SYNC_START_TIME);
@@ -581,6 +583,7 @@ class JobTrackerTest {
     when(syncSummary.getBytesSynced()).thenReturn(SYNC_BYTES_SYNC);
     when(syncSummary.getRecordsSynced()).thenReturn(SYNC_RECORDS_SYNC);
     when(syncOutput.getStandardSyncSummary()).thenReturn(syncSummary);
+    when(syncOutput.getNormalizationSummary()).thenReturn(normalizationSummary);
     when(syncSummary.getTotalStats()).thenReturn(syncStats);
     when(jobOutput.getSync()).thenReturn(syncOutput);
     when(attempt.getOutput()).thenReturn(java.util.Optional.of(jobOutput));
@@ -590,14 +593,14 @@ class JobTrackerTest {
     when(syncStats.getMeanSecondsBeforeSourceStateMessageEmitted()).thenReturn(4L);
     when(syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(7L);
     when(syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted()).thenReturn(6L);
-    when(syncSummary.getReplicationStartTime()).thenReturn(7L);
-    when(syncSummary.getReplicationEndTime()).thenReturn(8L);
-    when(syncSummary.getSourceReadStartTime()).thenReturn(9L);
-    when(syncSummary.getSourceReadEndTime()).thenReturn(10L);
-    when(syncSummary.getDestinationWriteStartTime()).thenReturn(11L);
-    when(syncSummary.getDestinationWriteEndTime()).thenReturn(12L);
-    when(syncSummary.getNormalizationStartTime()).thenReturn(13L);
-    when(syncSummary.getNormalizationEndTime()).thenReturn(14L);
+    when(syncStats.getReplicationStartTime()).thenReturn(7L);
+    when(syncStats.getReplicationEndTime()).thenReturn(8L);
+    when(syncStats.getSourceReadStartTime()).thenReturn(9L);
+    when(syncStats.getSourceReadEndTime()).thenReturn(10L);
+    when(syncStats.getDestinationWriteStartTime()).thenReturn(11L);
+    when(syncStats.getDestinationWriteEndTime()).thenReturn(12L);
+    when(normalizationSummary.getStartTime()).thenReturn(13L);
+    when(normalizationSummary.getEndTime()).thenReturn(14L);
 
     return attempt;
   }
