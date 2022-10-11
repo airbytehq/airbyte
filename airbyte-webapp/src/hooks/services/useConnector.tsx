@@ -120,6 +120,10 @@ export const useCheckConnector = (formType: "source" | "destination") => {
       payload.name = params.name;
     }
 
+    if ("workspaceId" in params) {
+      payload.workspaceId = params.workspaceId;
+    }
+
     if (formType === "destination") {
       if ("selectedConnectorId" in params) {
         payload.destinationId = params.selectedConnectorId;
@@ -140,10 +144,6 @@ export const useCheckConnector = (formType: "source" | "destination") => {
 
     if ("selectedConnectorDefinitionId" in params) {
       payload.sourceDefinitionId = params.selectedConnectorDefinitionId;
-    }
-
-    if ("workspaceId" in params) {
-      payload.workspaceId = params.workspaceId;
     }
 
     return await sourceService.check_connection(payload, {
