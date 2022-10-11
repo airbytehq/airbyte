@@ -335,3 +335,4 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/tidb
   icon: tidb.svg
+  releaseStage: alpha
