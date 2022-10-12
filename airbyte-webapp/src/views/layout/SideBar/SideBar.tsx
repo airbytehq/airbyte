@@ -14,10 +14,10 @@ import { useConfig } from "config";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { links } from "utils/links";
 
+import { DocsIcon } from "../../../components/icons/DocsIcon";
 import { RoutePaths } from "../../../pages/routePaths";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
-import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import RecipesIcon from "./components/RecipesIcon";
 import SettingsIcon from "./components/SettingsIcon";
