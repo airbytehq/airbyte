@@ -30,7 +30,7 @@ import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 import { WarningMessage } from "../../WarningMessage";
 import styles from "./ConnectorServiceTypeControl.module.scss";
 import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
-import { getSortedDropdownDataUsingExperiment } from "./utilityFunctions";
+import { getSortedDropdownDataUsingExperiment } from "./utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MenuWithRequestButtonProps = MenuListProps<DropDownOptionDataItem, false> & { selectProps: any };
