@@ -88,6 +88,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   private void sendRecord(final ProducerRecord<String, JsonNode> record) {
+    LOGGER.info("partitions are {}", producer.partitionsFor(record.topic()));
     producer.send(record, (recordMetadata, exception) -> {
       if (exception != null) {
         LOGGER.error("Error sending message to topic.", exception);

@@ -142,9 +142,41 @@
               },
               "truststore_certificates": {
                 "title": "SSL truststore certificates",
-                "description": "SSL certificates in PEM format with X.509 certificates.",
+                "description": "Trusted certificates, if not signed by well-known certificate authorities.",
                 "type": "string",
-                "default": "",
+                "airbyte_secret": "true",
+                "multiline": true
+              },
+              "truststore_type": {
+                "title": "SSL truststore type",
+                "description": "File format of the truststore. Only used if you provide any truststore certificates.",
+                "type": "string",
+                "default": "JKS",
+                "enum": ["JKS", "PKCS12", "PEM"]
+              },
+              "truststore_password": {
+                "title": "SSL truststore password",
+                "description": "Password for the truststore. If not set, the truststore will still be used, but integrity checking will be disabled. Cannot be used with PEM-format certificates.",
+                "type": "string",
+                "airbyte_secret": "true"
+              }
+            }
+          },
+          {
+            "title": "SSL",
+            "required": ["security_protocol"],
+            "properties": {
+              "security_protocol": {
+                "title": "Security protocol",
+                "description": "Security protocol for communication with brokers",
+                "type": "string",
+                "enum": ["SSL"],
+                "default": "SSL"
+              },
+              "truststore_certificates": {
+                "title": "SSL truststore certificates",
+                "description": "Trusted certificates, if your brokers' certificates aren't signed by well-known certificate authorities. Must be in PEM format.",
+                "type": "string",
                 "airbyte_secret": "true",
                 "multiline": true
               }

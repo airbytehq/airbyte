@@ -1,15 +1,13 @@
-/*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
- */
-
 package io.airbyte.integrations.destination.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -17,6 +15,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,11 +25,16 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.connect.json.JsonDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
-public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class KafkaSshDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(KafkaSshDestinationAcceptanceTest.class);
   private static final ObjectMapper mapper = MoreMappers.initMapper();
   private static final String TOPIC_NAME = "test.topic";
 
@@ -44,13 +48,27 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected JsonNode getConfig() {
-    final ObjectNode stubProtocolConfig = mapper.createObjectNode();
-    stubProtocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
+  protected JsonNode getConfig() throws IOException {
+    // kafka.producer.truststore.pem is just a PEM equivalent to kafka.producer.truststore.jks
+    // See https://www.baeldung.com/java-keystore-convert-to-pem-format for explanation.
+    // tl;dr run these commands:
+    // 1. cd destination-kafka/src/test-integration/resources/kafka_ssl
+    // 2. keytool -importkeystore -srckeystore kafka.producer.truststore.jks -destkeystore kafka.producer.truststore.p12 -srcstoretype jks -deststoretype pkcs12
+    // 3. openssl pkcs12 -in kafka.producer.truststore.p12 -out kafka.producer.truststore.pem
+    String truststoreCertificates = MoreResources.readResource("kafka_ssl/kafka.producer.truststore.pem");
+    final ObjectNode stubProtocolConfig = (ObjectNode)mapper.readTree(
+        """
+            {
+              "security_protocol": "SSL"
+            }
+            """
+    );
+    stubProtocolConfig.put("truststore_certificates", truststoreCertificates);
+
+    LOGGER.info("resolved bootstrap server was {}", HostPortResolver.resolveHost(KAFKA) + ":" + HostPortResolver.resolvePort(KAFKA));
 
     return Jsons.jsonNode(ImmutableMap.builder()
-//        .put("bootstrap_servers", KAFKA.getBootstrapServers())
-        .put("bootstrap_servers", "PLAINTEXT://" + HostPortResolver.resolveHost(KAFKA) + ":" + HostPortResolver.resolvePort(KAFKA))
+        .put("bootstrap_servers", HostPortResolver.resolveHost(KAFKA) + ":" + HostPortResolver.resolvePort(KAFKA))
         .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
         .put("sync_producer", true)
         .put("protocol", stubProtocolConfig)
@@ -169,7 +187,19 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"));
+    KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"))
+        // These certs were generated using https://github.com/confluentinc/cp-docker-images/blob/5.3.3-post/examples/kafka-cluster-ssl/secrets/create-certs.sh
+        .withClasspathResourceMapping("kafka_ssl", "/etc/kafka/secrets", BindMode.READ_ONLY)
+        .withEnv(Map.of(
+            "KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP", "CLIENT:SSL",
+            "KAFKA_ADVERTISED_LISTENERS", "CLIENT://localhost:9093",
+            "KAFKA_SSL_KEYSTORE_FILENAME", "/etc/kafka/secretskafka.broker1.keystore.jks",
+            "KAFKA_SSL_KEYSTORE_CREDENTIALS", "/etc/kafka/secretsbroker1_keystore_creds",
+            "KAFKA_SSL_KEY_CREDENTIALS", "/etc/kafka/secretsbroker1_sslkey_creds"
+//            ,
+//            "KAFKA_SECURITY_INTER_BROKER_PROTOCOL", "SSL"
+        ))
+    ;
     KAFKA.start();
   }
 
@@ -177,4 +207,5 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     KAFKA.close();
   }
+
 }
