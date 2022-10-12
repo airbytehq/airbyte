@@ -150,7 +150,8 @@ class ConnectionsHandlerTest {
         .withScheduleData(ConnectionHelpers.generateBasicScheduleData())
         .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
         .withSourceCatalogId(UUID.randomUUID())
-        .withGeography(Geography.AUTO);
+        .withGeography(Geography.AUTO)
+        .withIsBreaking(false);
     standardSyncDeleted = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi2")
@@ -382,13 +383,7 @@ class ConnectionsHandlerTest {
             .connectionId(standardSync.getConnectionId())
             .name("newName");
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .name("newName");
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync).withName("newName");
 
@@ -407,13 +402,7 @@ class ConnectionsHandlerTest {
             .connectionId(standardSync.getConnectionId())
             .scheduleType(ConnectionScheduleType.MANUAL);
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .schedule(null)
             .scheduleType(ConnectionScheduleType.MANUAL)
             .scheduleData(null);
@@ -444,13 +433,7 @@ class ConnectionsHandlerTest {
             .scheduleType(ConnectionScheduleType.CRON)
             .scheduleData(cronScheduleData);
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .schedule(null)
             .scheduleType(ConnectionScheduleType.CRON)
             .scheduleData(cronScheduleData);
@@ -481,13 +464,7 @@ class ConnectionsHandlerTest {
             .scheduleType(ConnectionScheduleType.BASIC) // update route requires this to be set even if it isn't changing
             .scheduleData(newScheduleData);
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .schedule(new ConnectionSchedule().timeUnit(ConnectionSchedule.TimeUnitEnum.DAYS).units(10L)) // still dual-writing to legacy field
             .scheduleType(ConnectionScheduleType.BASIC)
             .scheduleData(newScheduleData);
@@ -531,13 +508,7 @@ class ConnectionsHandlerTest {
             .connectionId(standardSync.getConnectionId())
             .syncCatalog(catalogForUpdate);
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .syncCatalog(catalogForUpdate);
 
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
@@ -574,13 +545,7 @@ class ConnectionsHandlerTest {
             .connectionId(standardSync.getConnectionId())
             .syncCatalog(catalogForUpdate);
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .syncCatalog(catalogForUpdate);
 
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
@@ -651,7 +616,7 @@ class ConnectionsHandlerTest {
             standardSync.getDestinationId(),
             standardSync.getOperationIds(),
             newSourceCatalogId,
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+            ApiPojoConverters.toApiGeography(standardSync.getGeography()), false)
             .status(ConnectionStatus.INACTIVE)
             .scheduleType(ConnectionScheduleType.MANUAL)
             .scheduleData(null)
@@ -745,7 +710,8 @@ class ConnectionsHandlerTest {
           .withOperationIds(List.of(operationId))
           .withManual(true)
           .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
-          .withGeography(Geography.US);
+          .withGeography(Geography.US)
+          .withIsBreaking(false);
       final ConnectionRead connectionRead2 = ConnectionHelpers.connectionReadFromStandardSync(standardSync2);
       final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
           .withName(SOURCE_TEST)

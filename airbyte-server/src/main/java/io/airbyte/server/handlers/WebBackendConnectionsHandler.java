@@ -44,6 +44,7 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -260,6 +261,7 @@ public class WebBackendConnectionsHandler {
         .connectionId(webBackendConnectionRequestBody.getConnectionId());
 
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
+
     /*
      * This variable contains all configuration but will be missing streams that were not selected.
      */
@@ -284,7 +286,7 @@ public class WebBackendConnectionsHandler {
 
     final CatalogDiff diff;
     final AirbyteCatalog syncCatalog;
-    final SchemaChange schemaChange;
+    SchemaChange schemaChange = SchemaChange.NO_CHANGE;
     if (refreshedCatalog.isPresent()) {
       connection.setSourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
@@ -302,27 +304,32 @@ public class WebBackendConnectionsHandler {
        */
       diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog(),
           CatalogConverter.toProtocol(configuredCatalog));
-      // if (diff.getTransforms().isEmpty()) {
-      // schemaChange = SchemaChange.NO_CHANGE;
-      // } else if (breakingChangePresent(diff)) {
-      // schemaChange = SchemaChange.BREAKING;
-      // } else {
-      // schemaChange = SchemaChange.NON_BREAKING;
-      // }
-      schemaChange = SchemaChange.NON_BREAKING;
 
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
       syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
       // diff not relevant if there was no refresh.
       diff = null;
-      schemaChange = SchemaChange.NO_CHANGE;
     } else {
       // fallback. over time this should be rarely used because source_catalog_id should always be set.
       syncCatalog = configuredCatalog;
       // diff not relevant if there was no refresh.
       diff = null;
-      schemaChange = SchemaChange.NO_CHANGE;
+    }
+
+    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
+        configRepository.getMostRecentActorCatalogFetchEventForSource(connection.getSourceCatalogId());
+    if (mostRecentFetchEvent.isPresent()) {
+      final Long mostRecentCatalogCreatedAt = mostRecentFetchEvent.get().getCreatedAt();
+      final Long currentCatalogCreatedAt = configRepository.getActorCatalogById(connection.getSourceCatalogId()).getCreatedAt();;
+      if (mostRecentCatalogCreatedAt > currentCatalogCreatedAt) {
+        log.info("connection object is: " + connection);
+        if (connection.getIsBreaking()) {
+          schemaChange = SchemaChange.BREAKING;
+        } else {
+          schemaChange = SchemaChange.NON_BREAKING;
+        }
+      }
     }
 
     connection.setSyncCatalog(syncCatalog);

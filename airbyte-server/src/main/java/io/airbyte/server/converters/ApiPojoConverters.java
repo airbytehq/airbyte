@@ -93,6 +93,7 @@ public class ApiPojoConverters {
         .prefix(standardSync.getPrefix())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
         .sourceCatalogId(standardSync.getSourceCatalogId())
+        .isBreaking(standardSync.getIsBreaking())
         .geography(Enums.convertTo(standardSync.getGeography(), Geography.class));
 
     if (standardSync.getResourceRequirements() != null) {
