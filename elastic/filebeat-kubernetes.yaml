@@ -69,7 +69,7 @@ spec:
         ]
         env:
         - name: ELASTICSEARCH_HOST
-          value: https://cold-keys-scream-176-120-103-115.loca.lt
+          value: https://loud-jeans-check-176-120-103-115.loca.lt
         - name: ELASTICSEARCH_PORT
           value: "443"
         - name: ELASTICSEARCH_USERNAME
