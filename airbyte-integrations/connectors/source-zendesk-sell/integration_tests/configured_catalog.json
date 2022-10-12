@@ -68,16 +68,6 @@
     },
     {
       "stream": {
-        "name": "custom_fields",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "deal_sources",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
@@ -89,16 +79,6 @@
     {
       "stream": {
         "name": "deal_unqualified_reasons",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "documents",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]

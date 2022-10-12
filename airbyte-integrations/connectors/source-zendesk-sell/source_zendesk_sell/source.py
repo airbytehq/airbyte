@@ -34,9 +34,9 @@ class ZendeskSellStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         if next_page_token != None:
-            return {'page': next_page_token['page'], 'per_page' : 100}
+            return {'page': next_page_token['page']}
         else:
-            return {'per_page' : 100}
+            return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
@@ -63,33 +63,29 @@ class Stages(ZendeskSellStream):
         return "stages"
 
 
-# # Basic incremental stream
-# class IncrementalZendeskSellStream(ZendeskSellStream, ABC):
-#     """
-#     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-#          if you do not need to implement incremental sync for any streams, remove this class.
-#     """
+# Basic incremental stream
+class IncrementalZendeskSellStream(ZendeskSellStream, ABC):
+    """
+    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
+         if you do not need to implement incremental sync for any streams, remove this class.
+    """
+    state_checkpoint_interval = 100
 
-#     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-#     state_checkpoint_interval = 100
+    @property
+    def cursor_field(self) -> str:
+        return "updated_at"
 
-#     @property
-#     def cursor_field(self) -> str:
-#         """
-#         TODO
-#         Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-#         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-#         :return str: The name of the cursor field.
-#         """
-#         return "updated_at"
-
-#     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-#         """
-#         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-#         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-#         """
-#         return {}
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        """
+        if current_stream_state is not None and self.cursor_field in current_stream_state:
+            current_updated_at = current_stream_state[self.cursor_field]
+            latest_updated_at = latest_record[self.cursor_field]
+            return {self.cursor_field: max(current_parsed_date, latest_record_date)}
+        else:
+            return {self.cursor_field: self.cursor_field_value}
 
 
 class Contacts(ZendeskSellStream):
@@ -163,15 +159,6 @@ class DealUnqualifiedReasons(ZendeskSellStream):
 
     def path(self, **kwargs) -> str:
         return "deal_unqualified_reasons"
-
-class Documents(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/documents/
-    """
-    primary_key = "id"
-
-    def path(self, **kwargs) -> str:
-        return "documents"
 
 class LeadConversions(ZendeskSellStream):
     """
@@ -306,4 +293,4 @@ class SourceZendeskSell(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config["api_token"])
-        return [Contacts(authenticator=auth), Deals(authenticator=auth), Leads(authenticator=auth), Pipelines(authenticator=auth), Stages(authenticator=auth),  CallOutcomes(authenticator=auth), Calls(authenticator=auth), Collaborations(authenticator=auth), DealSources(authenticator=auth), DealUnqualifiedReasons(authenticator=auth), Documents(authenticator=auth), LeadConversions(authenticator=auth), LeadSources(authenticator=auth), LeadUnqualifiedReasons(authenticator=auth), LossReasons(authenticator=auth), Notes(authenticator=auth), Orders(authenticator=auth), Products(authenticator=auth), Tags(authenticator=auth), Tasks(authenticator=auth), TextMessages(authenticator=auth), Users(authenticator=auth), VisitOutcomes(authenticator=auth), Visits(authenticator=auth)]
+        return [Contacts(authenticator=auth), Deals(authenticator=auth), Leads(authenticator=auth), Pipelines(authenticator=auth), Stages(authenticator=auth),  CallOutcomes(authenticator=auth), Calls(authenticator=auth), Collaborations(authenticator=auth), DealSources(authenticator=auth), DealUnqualifiedReasons(authenticator=auth), LeadConversions(authenticator=auth), LeadSources(authenticator=auth), LeadUnqualifiedReasons(authenticator=auth), LossReasons(authenticator=auth), Notes(authenticator=auth), Orders(authenticator=auth), Products(authenticator=auth), Tags(authenticator=auth), Tasks(authenticator=auth), TextMessages(authenticator=auth), Users(authenticator=auth), VisitOutcomes(authenticator=auth), Visits(authenticator=auth)]
