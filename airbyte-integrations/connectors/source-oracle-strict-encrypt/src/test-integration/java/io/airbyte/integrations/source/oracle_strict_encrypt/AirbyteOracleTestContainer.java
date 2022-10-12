@@ -17,7 +17,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
+public class AirbyteOracleTestContainer extends JdbcDatabaseContainer<AirbyteOracleTestContainer> {
 
   public static final String NAME = "oracle";
   private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("gvenzl/oracle-xe");
@@ -49,21 +49,21 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
   private String password = APP_USER_PASSWORD;
   private boolean usingSid = false;
 
-  public OracleContainer() {
+  public AirbyteOracleTestContainer() {
     this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
   }
 
-  public OracleContainer(final String dockerImageName) {
+  public AirbyteOracleTestContainer(final String dockerImageName) {
     this(DockerImageName.parse(dockerImageName));
   }
 
-  public OracleContainer(final DockerImageName dockerImageName) {
+  public AirbyteOracleTestContainer(final DockerImageName dockerImageName) {
     super(dockerImageName);
     dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
     preconfigure();
   }
 
-  public OracleContainer(final Future<String> dockerImageName) {
+  public AirbyteOracleTestContainer(final Future<String> dockerImageName) {
     super(dockerImageName);
     preconfigure();
   }
@@ -120,7 +120,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
   }
 
   @Override
-  public OracleContainer withUsername(final String username) {
+  public AirbyteOracleTestContainer withUsername(final String username) {
     if (StringUtils.isEmpty(username)) {
       throw new IllegalArgumentException("Username cannot be null or empty");
     }
@@ -132,7 +132,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
   }
 
   @Override
-  public OracleContainer withPassword(final String password) {
+  public AirbyteOracleTestContainer withPassword(final String password) {
     if (StringUtils.isEmpty(password)) {
       throw new IllegalArgumentException("Password cannot be null or empty");
     }
@@ -141,7 +141,7 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
   }
 
   @Override
-  public OracleContainer withDatabaseName(final String databaseName) {
+  public AirbyteOracleTestContainer withDatabaseName(final String databaseName) {
     if (StringUtils.isEmpty(databaseName)) {
       throw new IllegalArgumentException("Database name cannot be null or empty");
     }
@@ -154,13 +154,13 @@ public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
     return self();
   }
 
-  public OracleContainer usingSid() {
+  public AirbyteOracleTestContainer usingSid() {
     this.usingSid = true;
     return self();
   }
 
   @Override
-  public OracleContainer withUrlParam(final String paramName, final String paramValue) {
+  public AirbyteOracleTestContainer withUrlParam(final String paramName, final String paramValue) {
     throw new UnsupportedOperationException("The Oracle Database driver does not support this");
   }
 

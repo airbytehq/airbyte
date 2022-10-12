@@ -124,6 +124,17 @@ The connector waits for the default initial wait time of 5 minutes (300 seconds)
 
 If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
 
+**4. Set up server timezone\(Optional\)**
+
+:::warning
+This is an advanced feature. Use it if absolutely necessary.
+:::
+
+In CDC mode, the MySQl connector may need a timezone configured if the existing MySQL database been set up with a system timezone that is not recognized by the [IANA Timezone Database](https://www.iana.org/time-zones).
+
+In this case, you can configure the server timezone to the equivalent IANA timezone compliant timezone. (e.g. CEST -> Europe/Berlin).
+
+
 **Note**
 
 When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. Airbyte doesn't acquire any table locks \(for tables defined with MyISAM engine, the tables would still be locked\) while creating the snapshot to allow writes by other database clients. But in order for the sync to work without any error/unexpected behaviour, it is assumed that no schema changes are happening while the snapshot is running.
@@ -240,6 +251,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 ## Changelog
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.4   | 2022-10-11 | [17815](https://github.com/airbytehq/airbyte/pull/17815)   | Expose setting server timezone for CDC syncs                                                                                                  |
 | 1.0.3   | 2022-10-07 | [17236](https://github.com/airbytehq/airbyte/pull/17236)   | Fix large table issue by fetch size                                                                                                                                     |
 | 1.0.2   | 2022-10-03 | [17170](https://github.com/airbytehq/airbyte/pull/17170)   | Make initial CDC waiting time configurable                                                                                                                              |
 | 1.0.1   | 2022-10-01 | [17459](https://github.com/airbytehq/airbyte/pull/17459)   | Upgrade debezium version to 1.9.6 from 1.9.2                                                                                                                            |
