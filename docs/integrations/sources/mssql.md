@@ -302,6 +302,41 @@ MSSQL data types are mapped to the following data types when synchronizing data.
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
+## Upgrading from 0.4.17 and older versions to 0.4.18 and newer versions
+There is a backwards incompatible spec change between Microsoft SQL Source connector versions 0.4.17 and 0.4.18. As part of that spec change
+`replication_method` configuration parameter was changed to `object` from `string`.
+
+In Microsoft SQL source connector versions 0.4.17 and older, `replication_method` configuration parameter was saved in the configuration database as follows:
+
+```
+"replication_method": "STANDARD"
+```
+
+Starting with version 0.4.18, `replication_method` configuration parameter is saved as follows:
+```
+"replication_method": {
+    "method": "STANDARD"
+}
+```
+
+After upgrading Microsoft SQL Source connector from 0.4.17 or older version to 0.4.18 or newer version you need to fix source configurations in the `actor` table
+in Airbyte database. To do so, you need to run two SQL queries. Follow the instructions in [Airbyte documentation](https://docs.airbyte.com/operator-guides/configuring-airbyte-db/#accessing-the-default-database-located-in-docker-airbyte-db) to
+run SQL queries on Airbyte database.
+
+If you have connections with Microsoft SQL Source using _Standard_ replication method, run this SQL:
+
+```sql
+update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "STANDARD"}', true)  
+WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'STANDARD');
+```
+
+If you have connections with Microsoft SQL Source using _Logicai Replication (CDC)_ method,  run this SQL:
+
+```sql
+update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)  
+WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'CDC');
+```
+
 ## Changelog
 
 | Version | Date       | Pull Request | Subject                                                                                                |
@@ -357,3 +392,4 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 | 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172) | Support incremental sync                                                                               |  |
 | 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038) | Change JDBC sources to discover more than standard schemas                                             |  |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file                                                                |  |
+

@@ -9,15 +9,19 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.config.Configs.WorkerPlane;
+import io.micronaut.context.BeanProvider;
 import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Prototype;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.context.env.Environment;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.FileInputStream;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -33,7 +37,7 @@ public class ApiClientBeanFactory {
   public AirbyteApiClient airbyteApiClient(
                                            @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
                                            @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
-                                           @Named("internalApiAuthToken") final String internalApiAuthToken,
+                                           @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
                                            @Named("internalApiScheme") final String internalApiScheme) {
     return new AirbyteApiClient(
         new io.airbyte.api.client.invoker.generated.ApiClient()
@@ -41,44 +45,48 @@ public class ApiClientBeanFactory {
             .setHost(parseHostName(airbyteApiHost))
             .setPort(parsePort(airbyteApiHost))
             .setBasePath("/api")
+            .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
             .setRequestInterceptor(builder -> {
               builder.setHeader("User-Agent", "WorkerApp");
+              // internalApiAuthToken is in BeanProvider because we want to create a new token each
+              // time we send a request.
               if (!airbyteApiAuthHeaderName.isBlank()) {
-                builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken);
+                builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken.get());
               }
             }));
   }
 
   @Singleton
   @Named("internalApiScheme")
-  public String internalApiScheme(final WorkerPlane workerPlane) {
+  public String internalApiScheme(final Environment environment) {
     // control plane workers communicate with the Airbyte API within their internal network, so https
     // isn't needed
-    return WorkerPlane.CONTROL_PLANE.equals(workerPlane) ? "http" : "https";
+    return environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE) ? "http" : "https";
   }
 
   /**
    * Generate an auth token based on configs. This is called by the Api Client's requestInterceptor
-   * for each request.
+   * for each request. Using Prototype annotation here to make sure each time it's used it will
+   * generate a new JWT Signature if it's on data plane.
    * <p>
    * For Data Plane workers, generate a signed JWT as described here:
    * https://cloud.google.com/endpoints/docs/openapi/service-account-authentication
    * <p>
    * Otherwise, use the AIRBYTE_API_AUTH_HEADER_VALUE from EnvConfigs.
    */
-  @Singleton
+  @Prototype
   @Named("internalApiAuthToken")
   public String internalApiAuthToken(
                                      @Value("${airbyte.internal.api.auth-header.value}") final String airbyteApiAuthHeaderValue,
                                      @Value("${airbyte.control.plane.auth-endpoint}") final String controlPlaneAuthEndpoint,
                                      @Value("${airbyte.data.plane.service-account.email}") final String dataPlaneServiceAccountEmail,
                                      @Value("${airbyte.data.plane.service-account.credentials-path}") final String dataPlaneServiceAccountCredentialsPath,
-                                     final WorkerPlane workerPlane) {
-    if (WorkerPlane.CONTROL_PLANE.equals(workerPlane)) {
+                                     final Environment environment) {
+    if (environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
       // control plane workers communicate with the Airbyte API within their internal network, so a signed
       // JWT isn't needed
       return airbyteApiAuthHeaderValue;
-    } else if (WorkerPlane.DATA_PLANE.equals(workerPlane)) {
+    } else if (environment.getActiveNames().contains(WorkerMode.DATA_PLANE)) {
       try {
         final Date now = new Date();
         final Date expTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(JWT_TTL_MINUTES));

@@ -18,7 +18,7 @@ definitions:
       type: "BearerAuthenticator"
       api_token: "{{ config.auth_token }}"
   paginator:
-    type: LimitPaginator
+    type: DefaultPaginator
     url_base: "*ref(definitions.requester.url_base)"
     page_size: "*ref(definitions.page_size)"
     limit_option:

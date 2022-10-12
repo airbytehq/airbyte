@@ -25,10 +25,8 @@ export const DiffAccordionHeader: React.FC<DiffAccordionHeaderProps> = ({
   newCount,
   changedCount,
 }) => {
-  // eslint-disable-next-line css-modules/no-undef-class
   const nameCellStyle = classnames(styles.nameCell, styles.row);
 
-  // eslint-disable-next-line css-modules/no-undef-class
   const namespaceCellStyles = classnames(styles.nameCell, styles.row, styles.namespace);
 
   const { formatMessage } = useIntl();

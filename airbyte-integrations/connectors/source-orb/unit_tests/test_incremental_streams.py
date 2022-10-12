@@ -260,6 +260,32 @@ def test_credits_ledger_entries_enriches_selected_property_keys(
     assert enriched_entries[1] == original_entry_1
 
 
+@responses.activate
+def test_credits_ledger_entries_enriches_with_multiple_entries_per_event(mocker):
+    stream = CreditsLedgerEntries(string_event_properties_keys=["ping"])
+    ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, {"event_id": "foo-event-id", "entry_type": "decrement"}]
+    mock_response = {
+        "data": [
+            {
+                "customer_id": "foo-customer-id",
+                "event_name": "foo-name",
+                "id": "foo-event-id",
+                "properties": {"ping": "pong"},
+                "timestamp": "2022-02-21T07:00:00+00:00",
+            }
+        ],
+        "pagination_metadata": {"has_more": False, "next_cursor": None},
+    }
+    responses.add(responses.POST, f"{stream.url_base}events", json=mock_response, status=200)
+    enriched_entries = stream.enrich_ledger_entries_with_event_data(ledger_entries)
+
+    # We expect both events are enriched correctly
+    assert enriched_entries == [
+        {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement"},
+        {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement"},
+    ]
+
+
 def test_supports_incremental(patch_incremental_base_class, mocker):
     mocker.patch.object(IncrementalOrbStream, "cursor_field", "dummy_field")
     stream = IncrementalOrbStream()

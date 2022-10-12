@@ -20,7 +20,6 @@ import io.airbyte.api.client.model.generated.AttemptInfoRead;
 import io.airbyte.api.client.model.generated.ConnectionCreate;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
-import io.airbyte.api.client.model.generated.ConnectionSchedule;
 import io.airbyte.api.client.model.generated.ConnectionScheduleData;
 import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
@@ -58,14 +57,14 @@ import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.temporal.TemporalUtils;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.airbyte.workers.temporal.TemporalWorkflowUtils;
-import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
-import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.client.WorkflowClient;
@@ -479,22 +478,16 @@ public class AirbyteAcceptanceTestHarness {
     return connection;
   }
 
-  public ConnectionRead updateConnectionSchedule(final UUID connectionId, final ConnectionSchedule newSchedule) throws ApiException {
-    final ConnectionRead connectionRead = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    return apiClient.getConnectionApi().updateConnection(
+  public void updateConnectionSchedule(
+                                       final UUID connectionId,
+                                       final ConnectionScheduleType newScheduleType,
+                                       final ConnectionScheduleData newScheduleData)
+      throws ApiException {
+    apiClient.getConnectionApi().updateConnection(
         new ConnectionUpdate()
-            .namespaceDefinition(connectionRead.getNamespaceDefinition())
-            .namespaceFormat(connectionRead.getNamespaceFormat())
-            .prefix(connectionRead.getPrefix())
             .connectionId(connectionId)
-            .operationIds(connectionRead.getOperationIds())
-            .status(connectionRead.getStatus())
-            .syncCatalog(connectionRead.getSyncCatalog())
-            .name(connectionRead.getName())
-            .resourceRequirements(connectionRead.getResourceRequirements())
-            .schedule(newSchedule) // only field being updated
-    );
+            .scheduleType(newScheduleType)
+            .scheduleData(newScheduleData));
   }
 
   public DestinationRead createPostgresDestination(final boolean isLegacy) throws ApiException {
@@ -732,15 +725,8 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   private void disableConnection(final UUID connectionId) throws ApiException {
-    final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final ConnectionUpdate connectionUpdate =
-        new ConnectionUpdate()
-            .prefix(connection.getPrefix())
-            .connectionId(connectionId)
-            .operationIds(connection.getOperationIds())
-            .status(ConnectionStatus.DEPRECATED)
-            .schedule(connection.getSchedule())
-            .syncCatalog(connection.getSyncCatalog());
+        new ConnectionUpdate().connectionId(connectionId).status(ConnectionStatus.DEPRECATED);
     apiClient.getConnectionApi().updateConnection(connectionUpdate);
   }
 
@@ -867,7 +853,6 @@ public class AirbyteAcceptanceTestHarness {
     return new WebBackendConnectionUpdate()
         .connectionId(connection.getConnectionId())
         .name(connection.getName())
-        .operationIds(connection.getOperationIds())
         .operations(List.of(new WebBackendOperationCreateOrUpdate()
             .name(operation.getName())
             .operationId(operation.getOperationId())

@@ -6,8 +6,8 @@ package io.airbyte.container_orchestrator;
 
 import io.airbyte.config.Configs;
 import io.airbyte.config.OperatorDbtInput;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DbtTransformationRunner;
@@ -15,7 +15,7 @@ import io.airbyte.workers.general.DbtTransformationWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
+import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -58,9 +58,7 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
         Math.toIntExact(jobRunConfig.getAttemptId()),
         workerConfigs.getResourceRequirements(),
         new DbtTransformationRunner(
-            workerConfigs,
             processFactory, NormalizationRunnerFactory.create(
-                workerConfigs,
                 destinationLauncherConfig.getDockerImage(),
                 processFactory,
                 NormalizationRunnerFactory.NORMALIZATION_VERSION)));

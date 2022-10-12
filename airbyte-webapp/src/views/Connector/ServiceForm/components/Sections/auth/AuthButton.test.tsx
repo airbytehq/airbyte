@@ -46,7 +46,7 @@ describe("auth button", () => {
     jest.clearAllMocks();
   });
 
-  test("it initially renders with correct message and no status message", () => {
+  it("initially renders with correct message and no status message", () => {
     // no auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
       const authErrors = {};
@@ -82,7 +82,7 @@ describe("auth button", () => {
     expect(successMessage).not.toBeInTheDocument();
   });
 
-  test("after successful authentication, it renders with correct message and success message", () => {
+  it("after successful authentication, it renders with correct message and success message", () => {
     // no auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
       const authErrors = {};
@@ -114,7 +114,7 @@ describe("auth button", () => {
     expect(successMessage).toBeInTheDocument();
   });
 
-  test("if authError is true, it renders the correct message", () => {
+  it("if authError is true, it renders the correct message", () => {
     // auth errors
     mockUseServiceForm.mockImplementationOnce(() => {
       const authErrors = { field: "form.empty.error" };

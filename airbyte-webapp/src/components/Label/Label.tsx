@@ -9,6 +9,7 @@ interface IProps {
   additionLength?: number;
   className?: string;
   onClick?: (data: unknown) => void;
+  htmlFor?: string;
 }
 
 const Content = styled.label<{ additionLength?: number | string }>`
@@ -34,7 +35,12 @@ const MessageText = styled.span<Pick<IProps, "error" | "success">>`
 `;
 
 const Label: React.FC<React.PropsWithChildren<IProps>> = (props) => (
-  <Content additionLength={props.additionLength} className={props.className} onClick={props.onClick}>
+  <Content
+    additionLength={props.additionLength}
+    className={props.className}
+    onClick={props.onClick}
+    htmlFor={props.htmlFor}
+  >
     {props.children}
     {props.message && (
       <span>

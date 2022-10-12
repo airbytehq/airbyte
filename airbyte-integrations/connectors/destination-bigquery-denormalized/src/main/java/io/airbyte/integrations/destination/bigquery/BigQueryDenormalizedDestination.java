@@ -87,8 +87,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
                                           UploaderConfig uploaderConfig,
                                           Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
       throws IOException {
-    Table existingTable =
-        uploaderConfig.getBigQuery().getTable(uploaderConfig.getConfigStream().getStream().getNamespace(), uploaderConfig.getTargetTableName());
+    String datasetId = BigQueryUtils.sanitizeDatasetId(uploaderConfig.getConfigStream().getStream().getNamespace());
+    Table existingTable = uploaderConfig.getBigQuery().getTable(datasetId, uploaderConfig.getTargetTableName());
     BigQueryRecordFormatter formatter = uploaderConfig.getFormatter();
 
     if (existingTable != null) {

@@ -15,8 +15,7 @@ class WorkflowConfigActivityImplTest {
   @Test
   void testFetchingWorkflowRestartDelayInSeconds() {
     final Long workflowRestartDelaySeconds = 30L;
-    final WorkflowConfigActivityImpl activity = new WorkflowConfigActivityImpl();
-    activity.setWorkflowRestartDelaySeconds(workflowRestartDelaySeconds);
+    final WorkflowConfigActivityImpl activity = new WorkflowConfigActivityImpl(workflowRestartDelaySeconds);
     Assertions.assertEquals(workflowRestartDelaySeconds, activity.getWorkflowRestartDelaySeconds().getSeconds());
   }
 

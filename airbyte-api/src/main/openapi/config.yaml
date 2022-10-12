@@ -1294,6 +1294,11 @@ paths:
       tags:
         - connection
       summary: Update a connection
+      description: |
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        containing the updated stream needs to be sent.
       operationId: updateConnection
       requestBody:
         content:
@@ -1913,29 +1918,6 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/connections/list_all:
-    post:
-      tags:
-        - web_backend
-      summary: Returns all connections for a workspace.
-      operationId: webBackendListAllConnectionsForWorkspace
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WebBackendConnectionReadList"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/get:
     post:
       tags:
@@ -1985,6 +1967,14 @@ paths:
       tags:
         - web_backend
       summary: Update a connection
+      description: |
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Any operations that lack an ID will be created. Then, the newly created operationId will be applied to the
+        connection along with the rest of the operationIds in the request body.
+        Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
+        Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        containing the updated stream needs to be sent.
       operationId: webBackendUpdateConnection
       requestBody:
         content:
@@ -1999,27 +1989,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/connections/search:
-    post:
-      tags:
-        - web_backend
-      summary: Search connections
-      operationId: webBackendSearchConnections
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WebBackendConnectionSearch"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WebBackendConnectionReadList"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/state/get_type:
@@ -2067,6 +2036,24 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/geographies/list:
+    post:
+      tags:
+        - web_backend
+      description: Returns all available geographies in which a data sync can run.
+      summary: |
+        Returns available geographies can be selected to run data syncs in a particular geography. 
+        The 'auto' entry indicates that the sync will be automatically assigned to a geography according 
+        to the platform default behavior. Entries other than 'auto' are two-letter country codes that 
+        follow the ISO 3166-1 alpha-2 standard.
+      operationId: webBackendListGeographies
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendGeographiesListResult"
   /v1/jobs/list:
     post:
       tags:
@@ -2291,6 +2278,8 @@ components:
             $ref: "#/components/schemas/Notification"
         displaySetupWizard:
           type: boolean
+        defaultGeography:
+          $ref: "#/components/schemas/Geography"
     Notification:
       type: object
       required:
@@ -2393,6 +2382,8 @@ components:
           type: boolean
         feedbackDone:
           type: boolean
+        defaultGeography:
+          $ref: "#/components/schemas/Geography"
     WorkspaceUpdateName:
       type: object
       required:
@@ -2405,12 +2396,9 @@ components:
           type: string
     WorkspaceUpdate:
       type: object
+      description: Used to apply a patch-style update to a workspace, which means that null properties remain unchanged
       required:
         - workspaceId
-        - initialSetupComplete
-        - anonymousDataCollection
-        - news
-        - securityUpdates
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -2431,6 +2419,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+        defaultGeography:
+          $ref: "#/components/schemas/Geography"
     WorkspaceGiveFeedback:
       type: object
       required:
@@ -2458,6 +2448,15 @@ components:
           type: boolean
         hasDestinations:
           type: boolean
+    WebBackendGeographiesListResult:
+      type: object
+      required:
+        - geographies
+      properties:
+        geographies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Geography"
     # SLUG
     SlugRequestBody:
       type: object
@@ -2466,6 +2465,13 @@ components:
       properties:
         slug:
           type: string
+    # Geography
+    Geography:
+      type: string
+      enum:
+        - auto
+        - us
+        - eu
     # SourceDefinition
     SourceDefinitionId:
       type: string
@@ -2725,11 +2731,14 @@ components:
       required:
         - sourceDefinitionId
         - connectionConfiguration
+        - workspaceId
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     SourceCreate:
       type: object
       required:
@@ -2789,6 +2798,8 @@ components:
         name:
           type: string
         sourceName:
+          type: string
+        icon:
           type: string
     SourceReadList:
       type: object
@@ -3019,6 +3030,8 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     DestinationCreate:
       type: object
       required:
@@ -3086,6 +3099,8 @@ components:
         name:
           type: string
         destinationName:
+          type: string
+        icon:
           type: string
     DestinationReadList:
       type: object
@@ -3189,6 +3204,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     WebBackendConnectionCreate:
       type: object
       required:
@@ -3236,6 +3253,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     ConnectionStateCreateOrUpdate:
       type: object
       required:
@@ -3248,10 +3267,9 @@ components:
           $ref: "#/components/schemas/ConnectionState"
     ConnectionUpdate:
       type: object
+      description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
       required:
         - connectionId
-        - syncCatalog
-        - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -3287,12 +3305,13 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     WebBackendConnectionUpdate:
       type: object
+      description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
       required:
         - connectionId
-        - syncCatalog
-        - status
       properties:
         name:
           type: string
@@ -3309,10 +3328,6 @@ components:
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
-        operationIds:
-          type: array
-          items:
-            $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -3334,6 +3349,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     ConnectionRead:
       type: object
       required:
@@ -3381,40 +3398,9 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        geography:
+          $ref: "#/components/schemas/Geography"
     ConnectionSearch:
-      type: object
-      properties:
-        connectionId:
-          $ref: "#/components/schemas/ConnectionId"
-        name:
-          type: string
-        namespaceDefinition:
-          $ref: "#/components/schemas/NamespaceDefinitionType"
-        namespaceFormat:
-          type: string
-          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
-          default: null
-          example: "${SOURCE_NAMESPACE}"
-        prefix:
-          type: string
-          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
-        sourceId:
-          $ref: "#/components/schemas/SourceId"
-        destinationId:
-          $ref: "#/components/schemas/DestinationId"
-        schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
-        scheduleType:
-          $ref: "#/components/schemas/ConnectionScheduleType"
-        scheduleData:
-          $ref: "#/components/schemas/ConnectionScheduleData"
-        status:
-          $ref: "#/components/schemas/ConnectionStatus"
-        source:
-          $ref: "#/components/schemas/SourceSearch"
-        destination:
-          $ref: "#/components/schemas/DestinationSearch"
-    WebBackendConnectionSearch:
       type: object
       properties:
         connectionId:
@@ -3526,7 +3512,6 @@ components:
     NamespaceDefinitionType:
       type: string
       description: Method used for computing final namespace in destination
-      default: source
       enum:
         - source
         - destination
@@ -3887,6 +3872,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptRead"
+    JobCreatedAt:
+      description: epoch time of the latest sync job. null if no sync job has taken place.
+      type: integer
+      format: int64
     JobStatus:
       type: string
       enum:
@@ -4220,6 +4209,7 @@ components:
       required:
         - transformType
         - fieldName
+        - breaking
       properties:
         transformType:
           type: string
@@ -4229,6 +4219,8 @@ components:
             - update_field_schema
         fieldName:
           $ref: "#/components/schemas/FieldName"
+        breaking:
+          type: boolean
         addField:
           $ref: "#/components/schemas/FieldAdd"
         removeField:
@@ -4582,6 +4574,43 @@ components:
           type: object
           additionalProperties: true
     # Web Backend
+    WebBackendConnectionListItem:
+      type: object
+      description: Information about a connection that shows up in the connection list view.
+      required:
+        - connectionId
+        - name
+        - sourceId
+        - destinationId
+        - source
+        - destination
+        - status
+        - isSyncing
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        name:
+          type: string
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        scheduleType:
+          $ref: "#/components/schemas/ConnectionScheduleType"
+        scheduleData:
+          $ref: "#/components/schemas/ConnectionScheduleData"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        source:
+          $ref: "#/components/schemas/SourceRead"
+        destination:
+          $ref: "#/components/schemas/DestinationRead"
+        latestSyncJobCreatedAt:
+          $ref: "#/components/schemas/JobCreatedAt"
+        latestSyncJobStatus:
+          $ref: "#/components/schemas/JobStatus"
+        isSyncing:
+          type: boolean
     WebBackendConnectionRead:
       type: object
       required:
@@ -4636,9 +4665,7 @@ components:
           items:
             $ref: "#/components/schemas/OperationRead"
         latestSyncJobCreatedAt:
-          description: epoch time of the latest sync job. null if no sync job has taken place.
-          type: integer
-          format: int64
+          $ref: "#/components/schemas/JobCreatedAt"
         latestSyncJobStatus:
           $ref: "#/components/schemas/JobStatus"
         isSyncing:
@@ -4650,6 +4677,8 @@ components:
           format: uuid
         catalogDiff:
           $ref: "#/components/schemas/CatalogDiff"
+        geography:
+          $ref: "#/components/schemas/Geography"
     WebBackendConnectionReadList:
       type: object
       required:
@@ -4658,7 +4687,7 @@ components:
         connections:
           type: array
           items:
-            $ref: "#/components/schemas/WebBackendConnectionRead"
+            $ref: "#/components/schemas/WebBackendConnectionListItem"
     SyncMode:
       type: string
       enum:

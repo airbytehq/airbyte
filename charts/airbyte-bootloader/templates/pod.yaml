@@ -104,7 +104,7 @@ spec:
     {{ toYaml .Values.extraContainers | nindent 4 }}
     {{- end }}
     {{- if .Values.global.extraContainers }}
-    {{ toYaml .Values.global.extraContainers | indent 4 }}
+    {{ toYaml .Values.global.extraContainers | nindent 4 }}
     {{- end }}
   {{- if .Values.extraVolumes }}
   volumes:

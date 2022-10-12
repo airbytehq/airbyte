@@ -3,13 +3,13 @@ import { FormattedMessage } from "react-intl";
 import { useMutation } from "react-query";
 import styled from "styled-components";
 
-import { LoadingButton } from "components";
+import { Button } from "components/ui/Button";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
-import { EmailSection, PasswordSection, NameSection } from "./components";
+import { EmailSection, NameSection, PasswordSection } from "./components";
 
 const Header = styled.div`
   display: flex;
@@ -31,9 +31,9 @@ const AccountSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.accountSettings.logoutLabel" />
-            <LoadingButton danger onClick={() => logout()} isLoading={isLoggingOut} data-testid="button.signout">
+            <Button variant="danger" onClick={() => logout()} isLoading={isLoggingOut} data-testid="button.signout">
               <FormattedMessage id="settings.accountSettings.logoutText" />
-            </LoadingButton>
+            </Button>
           </Header>
         }
       />
