@@ -33,7 +33,6 @@ class ZenefitsStream(HttpStream, ABC):
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json", "Accept": "application/json"}
-        
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json().get("data")
@@ -44,7 +43,7 @@ class ZenefitsStream(HttpStream, ABC):
             return next_params
 
         return None
-    
+
     def parse_response(
         self,
         response: requests.Response,
@@ -66,7 +65,6 @@ class People(ZenefitsStream):
         return "core/people"
 
 
-
 # Employee Employment details
 class Employments(ZenefitsStream):
 
@@ -83,7 +81,6 @@ class Departments(ZenefitsStream):
 
     def path(self, **kwargs) -> str:
         return "core/departments"
-
 
 
 # locations
@@ -104,8 +101,6 @@ class Labor_groups(ZenefitsStream):
         return "core/labor_groups"
 
 
-
-
 # labor_groups_types
 class Labor_group_types(ZenefitsStream):
 
@@ -115,8 +110,6 @@ class Labor_group_types(ZenefitsStream):
         return "core/labor_group_types"
 
 
-
-
 # custom_fields
 class Custom_fields(ZenefitsStream):
 
@@ -124,7 +117,6 @@ class Custom_fields(ZenefitsStream):
 
     def path(self, **kwargs) -> str:
         return "core/custom_fields"
-
 
 
 # custom_field_values
@@ -152,14 +144,12 @@ class Vacation_types(ZenefitsStream):
         return "time_off/vacation_types"
 
 
-
 # Time Durations
 class Time_durations(ZenefitsStream):
     primary_key = None
 
     def path(self, **kwargs) -> str:
         return "time_attendance/time_durations"
-
 
 
 class SourceZenefits(AbstractSource):

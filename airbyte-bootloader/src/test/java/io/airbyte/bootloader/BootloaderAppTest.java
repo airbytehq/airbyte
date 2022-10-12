@@ -134,7 +134,7 @@ class BootloaderAppTest {
       bootloader.load();
 
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
-      assertEquals("0.40.4.002", jobsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.40.14.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
       // this line should change with every new migration
@@ -217,7 +217,7 @@ class BootloaderAppTest {
       final ObjectMapper mapper = new ObjectMapper();
 
       final UUID workspaceId = UUID.randomUUID();
-      configRepository.writeStandardWorkspace(new StandardWorkspace()
+      configRepository.writeStandardWorkspaceNoSecrets(new StandardWorkspace()
           .withWorkspaceId(workspaceId)
           .withName("wName")
           .withSlug("wSlug")
