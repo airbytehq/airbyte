@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Strava source can sync data from the [Whisky Hunter API](https://whiskyhunter.net/api/)
+The Whisky Hunter source can sync data from the [Whisky Hunter API](https://whiskyhunter.net/api/)
 
 #### Output schema
 
