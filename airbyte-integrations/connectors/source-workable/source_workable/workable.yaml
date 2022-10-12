@@ -1,6 +1,7 @@
 version: "0.1.0"
 
 definitions:
+  page_size: 100
   selector:
     extractor:
       field_pointer: []
@@ -13,10 +14,25 @@ definitions:
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
+    paginator:
+      type: DefaultPaginator
+      url_base: "*ref(definitions.requester.url_base)"
+      limit_option:
+        inject_into: "request_parameter"
+        field_name: ""
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "cursor"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ request.paging.next }}"
+        stop_condition: "{{ 'next' not in headers['paging'] }}"
+        page_size: "*ref(definitions.page_size)"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
