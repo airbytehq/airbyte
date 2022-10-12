@@ -6,6 +6,7 @@ package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
@@ -15,6 +16,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SER
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -74,6 +76,7 @@ public class DbConverter {
         .withResourceRequirements(
             Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
         .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID))
+        .withIsBreaking(record.get(CONNECTION.BREAKING_CHANGE))
         .withGeography(Enums.toEnum(record.get(CONNECTION.GEOGRAPHY, String.class), Geography.class).orElseThrow());
   }
 
@@ -190,7 +193,14 @@ public class DbConverter {
     return new ActorCatalog()
         .withId(record.get(ACTOR_CATALOG.ID))
         .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
-        .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
+        .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH))
+        .withCreatedAt(record.get(ACTOR_CATALOG.CREATED_AT).toInstant().toEpochMilli());
+  }
+
+  public static ActorCatalogFetchEvent buildActorCatalogFetchEvent(final Record record) {
+    return new ActorCatalogFetchEvent()
+        .withId(record.get(ACTOR_CATALOG.ID))
+        .withCreatedAt(record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT).toInstant().toEpochMilli());
   }
 
   public static WorkspaceServiceAccount buildWorkspaceServiceAccount(final Record record) {

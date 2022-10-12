@@ -3398,6 +3398,7 @@ components:
         - syncCatalog
         - status
         - schemaChange
+        - isBreaking
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -3440,6 +3441,8 @@ components:
           $ref: "#/components/schemas/Geography"
         schemaChange:
           $ref: "#/components/schemas/SchemaChange"
+        isBreaking:
+          type: boolean
     SchemaChange:
       enum:
         - no_change

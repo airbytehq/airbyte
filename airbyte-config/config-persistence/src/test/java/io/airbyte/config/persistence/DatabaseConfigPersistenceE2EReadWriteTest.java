@@ -292,12 +292,14 @@ class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersis
       configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
       final ActorCatalog retrievedActorCatalog = configPersistence.getConfig(
           ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), ActorCatalog.class);
-      assertEquals(actorCatalog, retrievedActorCatalog);
+      assertEquals(actorCatalog.getCatalog(), retrievedActorCatalog.getCatalog());
+      assertEquals(actorCatalog.getCatalogHash(), retrievedActorCatalog.getCatalogHash());
+      assertEquals(actorCatalog.getId(), retrievedActorCatalog.getId());
     }
     final List<ActorCatalog> actorCatalogs = configPersistence
         .listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class);
     assertEquals(MockData.actorCatalogs().size(), actorCatalogs.size());
-    assertThat(MockData.actorCatalogs()).hasSameElementsAs(actorCatalogs);
+    assertThat(MockData.actorCatalogs()).usingRecursiveFieldByFieldElementComparatorIgnoringFields("createdAt").hasSameElementsAs(actorCatalogs);
 
     for (final ActorCatalogFetchEvent actorCatalogFetchEvent : MockData.actorCatalogFetchEvents()) {
       configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
