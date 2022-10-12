@@ -1,14 +1,22 @@
 {
   "streams": [
     {
-      "name": "counter_table",
+      "name": "posts",
       "json_schema": {
         "type": "object",
         "properties": {
           "_creationTime": { "type": "number" },
-          "_id": { "type": "object", "properties": { "$id": "string" } },
-          "counter": { "type": "string" },
-          "name": { "type": "string" }
+          "_id": {
+            "type": "object",
+            "properties": { "$id": { "type": "string" } }
+          },
+          "author": {
+            "type": "object",
+            "properties": { "$id": { "type": "string" } }
+          },
+          "body": { "type": "string" },
+          "time": { "type": "number" },
+          "_ts": { "type": "number" }
         }
       },
       "supported_sync_modes": ["full_refresh", "incremental"],
@@ -17,16 +25,18 @@
       "source_defined_primary_key": [["_id"]]
     },
     {
-      "name": "opinions",
+      "name": "users",
       "json_schema": {
         "type": "object",
         "properties": {
           "_creationTime": { "type": "number" },
-          "_id": { "type": "object", "properties": { "$id": "string" } },
-          "agree": { "type": "number" },
-          "allVotes": { "type": "number" },
-          "disagree": { "type": "number" },
-          "opinion": { "type": "string" }
+          "_id": {
+            "type": "object",
+            "properties": { "$id": { "type": "string" } }
+          },
+          "name": { "type": "string" },
+          "tokenIdentifier": { "type": "string" },
+          "_ts": { "type": "number" }
         }
       },
       "supported_sync_modes": ["full_refresh", "incremental"],
