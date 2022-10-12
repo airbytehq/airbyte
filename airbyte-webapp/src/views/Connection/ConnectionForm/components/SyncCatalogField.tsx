@@ -4,23 +4,25 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { CheckBox, H5 } from "components";
+import { H5 } from "components/base/Titles";
 import { Cell, Header } from "components/SimpleTableComponents";
+import { CheckBox } from "components/ui/CheckBox";
+import { LoadingBackdrop } from "components/ui/LoadingBackdrop";
+import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
-import { useConfig } from "config";
 import { SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode } from "core/request/AirbyteClient";
 import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
+import { ConnectionFormMode, useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { links } from "utils/links";
 import { naturalComparatorBy } from "utils/objects";
 import CatalogTree from "views/Connection/CatalogTree";
 
 import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
-import { ConnectionFormMode } from "../ConnectionForm";
-import InformationToolTip from "./InformationToolTip";
 import Search from "./Search";
 import styles from "./SyncCatalogField.module.scss";
 
-const TreeViewContainer = styled.div<{ mode?: ConnectionFormMode }>`
+const TreeViewContainer = styled.div`
   margin-bottom: 29px;
   max-height: 600px;
   overflow-y: auto;
@@ -55,26 +57,15 @@ const NextLineText = styled.div`
   margin-top: 10px;
 `;
 
-const LearnMoreLink = styled.a`
-  opacity: 0.6;
-  display: block;
-  margin-top: 10px;
-  color: ${({ theme }) => theme.whiteColor};
-  text-decoration: none;
-
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
 interface SchemaViewProps extends FieldProps<SyncSchemaStream[]> {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
+  isSubmitting: boolean;
   mode?: ConnectionFormMode;
 }
 
-const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
-  const config = useConfig();
+const CatalogHeader: React.FC = () => {
+  const { mode } = useConnectionFormService();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEdit();
   const catalogHeaderStyle = classnames({
     [styles.catalogHeader]: mode !== "readonly",
@@ -98,47 +89,47 @@ const CatalogHeader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
       </Cell>
       <Cell lighter>
         <FormattedMessage id="sources.source" />
-        <InformationToolTip>
+        <InfoTooltip>
           <FormattedMessage id="connectionForm.source.info" />
-        </InformationToolTip>
+        </InfoTooltip>
       </Cell>
       <Cell />
       <Cell lighter flex={1.5}>
         <FormattedMessage id="form.syncMode" />
-        <InformationToolTip>
+        <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
-          <LearnMoreLink target="_blank" href={config.links.syncModeLink}>
-            <FormattedMessage id="form.entrypoint.docs" />
-          </LearnMoreLink>
-        </InformationToolTip>
+          <TooltipLearnMoreLink url={links.syncModeLink} />
+        </InfoTooltip>
       </Cell>
       <Cell lighter>
         <FormattedMessage id="form.cursorField" />
-        <InformationToolTip>
+        <InfoTooltip>
           <FormattedMessage id="connectionForm.cursor.info" />
-        </InformationToolTip>
+        </InfoTooltip>
       </Cell>
       <Cell lighter>
         <FormattedMessage id="form.primaryKey" />
-        <InformationToolTip>
+        <InfoTooltip>
           <FormattedMessage id="connectionForm.primaryKey.info" />
-        </InformationToolTip>
+        </InfoTooltip>
       </Cell>
       <Cell lighter>
         <FormattedMessage id="connector.destination" />
-        <InformationToolTip>
+        <InfoTooltip>
           <FormattedMessage id="connectionForm.destinationName.info" />
           <NextLineText>
             <FormattedMessage id="connectionForm.destinationStream.info" />
           </NextLineText>
-        </InformationToolTip>
+        </InfoTooltip>
       </Cell>
       <Cell />
     </Header>
   );
 };
 
-const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => {
+const CatalogSubheader: React.FC = () => {
+  const { mode } = useConnectionFormService();
+
   const catalogSubheaderStyle = classnames({
     [styles.catalogSubheader]: mode !== "readonly",
     [styles.readonlyCatalogSubheader]: mode === "readonly",
@@ -167,13 +158,9 @@ const CatalogSubheader: React.FC<{ mode?: ConnectionFormMode }> = ({ mode }) => 
   );
 };
 
-const SyncCatalogField: React.FC<SchemaViewProps> = ({
-  destinationSupportedSyncModes,
-  additionalControl,
-  field,
-  form,
-  mode,
-}) => {
+const SyncCatalogField: React.FC<SchemaViewProps> = ({ additionalControl, field, form, isSubmitting }) => {
+  const { mode } = useConnectionFormService();
+
   const { value: streams, name: fieldName } = field;
 
   const [searchString, setSearchString] = useState("");
@@ -209,7 +196,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
-      <div>
+      <LoadingBackdrop loading={isSubmitting}>
         <HeaderBlock>
           {mode !== "readonly" ? (
             <>
@@ -225,18 +212,13 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
           )}
         </HeaderBlock>
         {mode !== "readonly" && <Search onSearch={setSearchString} />}
-        <CatalogHeader mode={mode} />
-        <CatalogSubheader mode={mode} />
-        <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
-        <TreeViewContainer mode={mode}>
-          <CatalogTree
-            streams={filteredStreams}
-            onChangeStream={onChangeStream}
-            destinationSupportedSyncModes={destinationSupportedSyncModes}
-            mode={mode}
-          />
+        <CatalogHeader />
+        <CatalogSubheader />
+        <BulkHeader />
+        <TreeViewContainer>
+          <CatalogTree streams={filteredStreams} onChangeStream={onChangeStream} />
         </TreeViewContainer>
-      </div>
+      </LoadingBackdrop>
     </BatchEditProvider>
   );
 };

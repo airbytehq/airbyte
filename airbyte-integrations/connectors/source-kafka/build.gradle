@@ -9,13 +9,24 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://packages.confluent.io/maven"
+    }
+
+}
+
 dependencies {
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
+    implementation libs.connectors.testcontainers.kafka
 
-    implementation 'org.apache.kafka:kafka-clients:2.8.0'
-    implementation 'org.apache.kafka:connect-json:2.8.0'
+    implementation 'org.apache.kafka:kafka-clients:3.2.1'
+    implementation 'org.apache.kafka:connect-json:3.2.1'
+    implementation 'io.confluent:kafka-avro-serializer:7.2.1'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-kafka')

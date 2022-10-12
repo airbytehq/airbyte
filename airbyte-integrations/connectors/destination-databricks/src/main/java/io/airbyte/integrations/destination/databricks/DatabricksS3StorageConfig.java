@@ -16,13 +16,13 @@ public class DatabricksS3StorageConfig extends DatabricksStorageConfig {
 
   public DatabricksS3StorageConfig(JsonNode config) {
     final S3DestinationConfig.Builder builder = S3DestinationConfig.create(
-                    config.get(S3Constants.S_3_BUCKET_NAME).asText(),
-                    config.get(S3Constants.S_3_BUCKET_PATH).asText(),
-                    config.get(S3Constants.S_3_BUCKET_REGION).asText())
-            .withAccessKeyCredential(
-                    config.get(S3Constants.S_3_ACCESS_KEY_ID).asText(),
-                    config.get(S3Constants.S_3_SECRET_ACCESS_KEY).asText())
-            .withFormatConfig(new S3ParquetFormatConfig(new ObjectMapper().createObjectNode()));
+        config.get(S3Constants.S_3_BUCKET_NAME).asText(),
+        config.get(S3Constants.S_3_BUCKET_PATH).asText(),
+        config.get(S3Constants.S_3_BUCKET_REGION).asText())
+        .withAccessKeyCredential(
+            config.get(S3Constants.S_3_ACCESS_KEY_ID).asText(),
+            config.get(S3Constants.S_3_SECRET_ACCESS_KEY).asText())
+        .withFormatConfig(new S3ParquetFormatConfig(new ObjectMapper().createObjectNode()));
     if (config.has(S3Constants.FILE_NAME_PATTERN)) {
       builder.withFileNamePattern(config.get(S3Constants.FILE_NAME_PATTERN).asText());
     }

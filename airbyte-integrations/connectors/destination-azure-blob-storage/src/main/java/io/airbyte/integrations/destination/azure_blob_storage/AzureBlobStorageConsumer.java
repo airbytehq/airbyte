@@ -45,10 +45,10 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   private final Map<AirbyteStreamNameNamespacePair, AzureBlobStorageWriter> streamNameAndNamespaceToWriters;
 
   public AzureBlobStorageConsumer(
-      final AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig,
-      final ConfiguredAirbyteCatalog configuredCatalog,
-      final AzureBlobStorageWriterFactory writerFactory,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                  final AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig,
+                                  final ConfiguredAirbyteCatalog configuredCatalog,
+                                  final AzureBlobStorageWriterFactory writerFactory,
+                                  final Consumer<AirbyteMessage> outputRecordCollector) {
     this.azureBlobStorageDestinationConfig = azureBlobStorageDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.writerFactory = writerFactory;
@@ -91,8 +91,8 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   }
 
   private void createContainers(final SpecializedBlobClientBuilder specializedBlobClientBuilder,
-      final AppendBlobClient appendBlobClient,
-      final ConfiguredAirbyteStream configuredStream) {
+                                final AppendBlobClient appendBlobClient,
+                                final ConfiguredAirbyteStream configuredStream) {
     // create container if absent (aka SQl Schema)
     final BlobContainerClient containerClient = appendBlobClient.getContainerClient();
     if (!containerClient.exists()) {
@@ -101,7 +101,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
     if (DestinationSyncMode.OVERWRITE.equals(configuredStream.getDestinationSyncMode())) {
       LOGGER.info("Sync mode is selected to OVERRIDE mode. New container will be automatically"
           + " created or all data would be overridden (if any) for stream:" + configuredStream
-          .getStream().getName());
+              .getStream().getName());
       var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
           .collect(Collectors.toList());
       blobItemList.forEach(blob -> {

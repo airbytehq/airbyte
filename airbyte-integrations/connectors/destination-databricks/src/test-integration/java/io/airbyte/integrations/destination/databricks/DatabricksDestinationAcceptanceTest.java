@@ -53,7 +53,7 @@ public abstract class DatabricksDestinationAcceptanceTest extends DestinationAcc
     final String tableName = nameTransformer.getIdentifier(streamName);
     final String schemaName = StreamCopierFactory.getSchema(namespace, databricksConfig.getDatabaseSchema(), nameTransformer);
     final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
-    
+
     try (final DSLContext dslContext = getDslContext(databricksConfig)) {
       final Database database = new Database(dslContext);
       return database.query(ctx -> ctx.select(asterisk())

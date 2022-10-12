@@ -20,6 +20,8 @@ dependencies {
     implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.4'
     implementation 'com.vdurmont:semver4j:3.1.0'
 
+    testImplementation project(":airbyte-json-validation")
+
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mariadb-columnstore')
     integrationTestJavaImplementation libs.connectors.testcontainers.mariadb

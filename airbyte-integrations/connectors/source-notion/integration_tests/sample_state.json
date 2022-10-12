@@ -1,11 +1,35 @@
-{
-  "databases": {
-    "last_edited_time": "2021-10-10T04:40:00.000Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "last_edited_time": "2021-10-10T04:40:00.000Z"
+      },
+      "stream_descriptor": {
+        "name": "databases"
+      }
+    }
   },
-  "pages": {
-    "last_edited_time": "2021-10-10T04:40:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "last_edited_time": "2021-10-10T04:40:00.000Z"
+      },
+      "stream_descriptor": {
+        "name": "pages"
+      }
+    }
   },
-  "blocks": {
-    "last_edited_time": "2021-10-10T04:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "last_edited_time": "2021-10-10T04:00:00.000Z"
+      },
+      "stream_descriptor": {
+        "name": "blocks"
+      }
+    }
   }
-}
+]

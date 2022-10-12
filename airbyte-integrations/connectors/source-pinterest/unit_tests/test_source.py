@@ -36,3 +36,10 @@ def test_streams(test_config):
     streams = source.streams(test_config)
     expected_streams_number = 13
     assert len(streams) == expected_streams_number
+
+
+def test_get_authenticator(test_config):
+    source = SourcePinterest()
+    auth = source.get_authenticator(test_config)
+    expected = test_config.get("refresh_token")
+    assert auth.refresh_token == expected

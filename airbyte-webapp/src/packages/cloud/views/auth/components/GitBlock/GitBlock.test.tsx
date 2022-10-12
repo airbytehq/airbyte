@@ -16,18 +16,18 @@ const renderGitBlock = (props?: GitBlockProps) =>
   );
 
 describe("<GitBlock />", () => {
-  test("should render with default props", () => {
-    const { asFragment } = renderGitBlock();
+  it("should render with default props", () => {
+    const component = renderGitBlock();
 
-    expect(asFragment()).toMatchSnapshot();
+    expect(component).toMatchSnapshot();
   });
 
-  test("should render with overwritten props", () => {
-    const { asFragment } = renderGitBlock({
+  it("should render with overwritten props", () => {
+    const component = renderGitBlock({
       titleStyle: { fontSize: "30px" },
       messageStyle: { color: "blue" },
     });
 
-    expect(asFragment()).toMatchSnapshot();
+    expect(component).toMatchSnapshot();
   });
 });

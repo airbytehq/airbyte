@@ -21,7 +21,7 @@ const configProviders: ValueProvider<Config> = [
  * This Provider is responsible for injecting config in context and loading
  * all required subconfigs if necessary
  */
-const ConfigProvider: React.FC = ({ children }) => (
+const ConfigProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
     {children}
   </ConfigServiceProvider>

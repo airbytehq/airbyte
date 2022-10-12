@@ -24,13 +24,12 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from deepdiff import DeepDiff
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, SpecTestConfig
+from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, DiscoveryTestConfig, SpecTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
-from source_acceptance_test.utils.backward_compatibility import SpecDiffChecker, validate_previous_configs
+from source_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
@@ -45,15 +44,6 @@ class TestSpec(BaseTest):
 
     spec_cache: ConnectorSpecification = None
     previous_spec_cache: ConnectorSpecification = None
-
-    @staticmethod
-    def compute_spec_diff(actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification):
-        return DeepDiff(
-            previous_connector_spec.dict()["connectionSpecification"],
-            actual_connector_spec.dict()["connectionSpecification"],
-            view="tree",
-            ignore_order=True,
-        )
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(self, inputs: SpecTestConfig, previous_connector_docker_runner: ConnectorRunner) -> bool:
@@ -185,14 +175,10 @@ class TestSpec(BaseTest):
         previous_connector_spec: ConnectorSpecification,
         number_of_configs_to_generate: int = 100,
     ):
-        """Check if the current spec is backward_compatible:
-        1. Perform multiple hardcoded syntactic checks with SpecDiffChecker.
-        2. Validate fake generated previous configs against the actual connector specification with validate_previous_configs.
-        """
+        """Check if the current spec is backward_compatible with the previous one"""
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
-        spec_diff = self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
-        checker = SpecDiffChecker(spec_diff)
-        checker.assert_spec_is_backward_compatible()
+        checker = SpecDiffChecker(previous=previous_connector_spec.dict(), current=actual_connector_spec.dict())
+        checker.assert_is_backward_compatible()
         validate_previous_configs(previous_connector_spec, actual_connector_spec, number_of_configs_to_generate)
 
     def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):
@@ -235,6 +221,20 @@ class TestConnection(BaseTest):
 
 @pytest.mark.default_timeout(30)
 class TestDiscovery(BaseTest):
+    @pytest.fixture(name="skip_backward_compatibility_tests")
+    def skip_backward_compatibility_tests_fixture(
+        self, inputs: DiscoveryTestConfig, previous_connector_docker_runner: ConnectorRunner
+    ) -> bool:
+        if previous_connector_docker_runner is None:
+            pytest.skip("The previous connector image could not be retrieved.")
+
+        # Get the real connector version in case 'latest' is used in the config:
+        previous_connector_version = previous_connector_docker_runner._image.labels.get("io.airbyte.version")
+
+        if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
+            pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
+        return False
+
     def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         """Verify that discover produce correct schema."""
         output = docker_runner.call_discover(config=connector_config)
@@ -306,6 +306,19 @@ class TestDiscovery(BaseTest):
                 assert all(
                     [additional_properties_value is True for additional_properties_value in additional_properties_values]
                 ), "When set, additionalProperties field value must be true for backward compatibility."
+
+    @pytest.mark.default_timeout(60)
+    @pytest.mark.backward_compatibility
+    def test_backward_compatibility(
+        self,
+        skip_backward_compatibility_tests: bool,
+        discovered_catalog: MutableMapping[str, AirbyteStream],
+        previous_discovered_catalog: MutableMapping[str, AirbyteStream],
+    ):
+        """Check if the current catalog is backward_compatible with the previous one."""
+        assert isinstance(discovered_catalog, MutableMapping) and isinstance(previous_discovered_catalog, MutableMapping)
+        checker = CatalogDiffChecker(previous_discovered_catalog, discovered_catalog)
+        checker.assert_is_backward_compatible()
 
 
 def primary_keys_for_records(streams, records):

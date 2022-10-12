@@ -8,6 +8,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
@@ -39,10 +40,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html
 
     Attributes:
-        start_datetime (MinMaxDatetime): the datetime that determines the earliest record that should be synced
-        end_datetime (MinMaxDatetime): the datetime that determines the last record that should be synced
+        start_datetime (Union[MinMaxDatetime, str]): the datetime that determines the earliest record that should be synced
+        end_datetime (Union[MinMaxDatetime, str]): the datetime that determines the last record that should be synced
         step (str): size of the timewindow
-        cursor_field (InterpolatedString): record's cursor field
+        cursor_field (Union[InterpolatedString, str]): record's cursor field
         datetime_format (str): format of the datetime
         config (Config): connection config
         start_time_option (Optional[RequestOption]): request option for start time
@@ -52,10 +53,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for
     """
 
-    start_datetime: MinMaxDatetime
-    end_datetime: MinMaxDatetime
+    start_datetime: Union[MinMaxDatetime, str]
+    end_datetime: Union[MinMaxDatetime, str]
     step: str
-    cursor_field: InterpolatedString
+    cursor_field: Union[InterpolatedString, str]
     datetime_format: str
     config: Config
     options: InitVar[Mapping[str, Any]]
@@ -65,11 +66,16 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     end_time_option: Optional[RequestOption] = None
     stream_state_field_start: Optional[str] = None
     stream_state_field_end: Optional[str] = None
-    lookback_window: Optional[InterpolatedString] = None
+    lookback_window: Optional[Union[InterpolatedString, str]] = None
 
     timedelta_regex = re.compile(r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")
 
     def __post_init__(self, options: Mapping[str, Any]):
+        if not isinstance(self.start_datetime, MinMaxDatetime):
+            self.start_datetime = MinMaxDatetime(self.start_datetime, options)
+        if not isinstance(self.end_datetime, MinMaxDatetime):
+            self.end_datetime = MinMaxDatetime(self.end_datetime, options)
+
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
 
@@ -77,6 +83,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
         self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", options=options)
         self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", options=options)
+        self._parser = DatetimeParser()
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
         if not self.start_datetime.datetime_format:
@@ -142,7 +149,12 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
         start_datetime = max(cursor_datetime, start_datetime)
 
-        state_date = self.parse_date(stream_state.get(self.cursor_field.eval(self.config, stream_state=stream_state)))
+        state_cursor_value = stream_state.get(self.cursor_field.eval(self.config, stream_state=stream_state))
+
+        if state_cursor_value:
+            state_date = self.parse_date(state_cursor_value)
+        else:
+            state_date = None
         if state_date:
             # If the input_state's date is greater than start_datetime, the start of the time window is the state's next day
             next_date = state_date + datetime.timedelta(days=1)
@@ -151,13 +163,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return dates
 
     def _format_datetime(self, dt: datetime.datetime):
-        # strftime("%s") is unreliable because it ignores the time zone information and assumes the time zone of the system it's running on
-        # It's safer to use the timestamp() method than the %s directive
-        # See https://stackoverflow.com/a/4974930
-        if self.datetime_format == "%s":
-            return str(int(dt.timestamp()))
-        else:
-            return dt.strftime(self.datetime_format)
+        return self._parser.format(dt, self.datetime_format)
 
     def _partition_daterange(self, start, end, step: datetime.timedelta):
         start_field = self.stream_slice_field_start.eval(self.config)
@@ -170,14 +176,11 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return dates
 
     def _get_date(self, cursor_value, default_date: datetime.datetime, comparator) -> datetime.datetime:
-        cursor_date = self.parse_date(cursor_value or default_date)
+        cursor_date = cursor_value or default_date
         return comparator(cursor_date, default_date)
 
-    def parse_date(self, date: Union[str, datetime.datetime]) -> datetime.datetime:
-        if isinstance(date, str):
-            return datetime.datetime.strptime(str(date), self.datetime_format).replace(tzinfo=self._timezone)
-        else:
-            return date
+    def parse_date(self, date: str) -> datetime.datetime:
+        return self._parser.parse(date, self.datetime_format, self._timezone)
 
     @classmethod
     def _parse_timedelta(cls, time_str):

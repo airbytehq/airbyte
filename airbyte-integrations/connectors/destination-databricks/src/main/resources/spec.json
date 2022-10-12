@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/databricks",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/databricks",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -151,7 +151,7 @@
               "file_name_pattern": {
                 "type": "string",
                 "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
-                "title": "S3 Filename pattern (Optional)",
+                "title": "S3 Filename pattern",
                 "examples": [
                   "{date}",
                   "{date:yyyy_MM}",

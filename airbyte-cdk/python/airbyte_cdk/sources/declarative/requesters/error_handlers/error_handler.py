@@ -2,16 +2,17 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ErrorHandler(ABC):
+class ErrorHandler(JsonSchemaMixin):
     """
     Defines whether a request was successful and how to handle a failure.
     """

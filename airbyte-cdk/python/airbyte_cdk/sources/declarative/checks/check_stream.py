@@ -39,7 +39,7 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
                     records = stream.read_records(sync_mode=SyncMode.full_refresh)
                     next(records)
                 except Exception as error:
-                    return False, f"Unable to connect to stream {stream} - {error}"
+                    return False, f"Unable to connect to stream {stream_name} - {error}"
             else:
                 raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}")
         return True, None

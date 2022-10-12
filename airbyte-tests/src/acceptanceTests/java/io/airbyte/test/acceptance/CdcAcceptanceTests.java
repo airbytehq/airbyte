@@ -23,6 +23,7 @@ import io.airbyte.api.client.model.generated.AirbyteStream;
 import io.airbyte.api.client.model.generated.AirbyteStreamAndConfiguration;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
+import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStateType;
 import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
@@ -345,7 +346,7 @@ class CdcAcceptanceTests {
     final AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Refreshed catalog: {}", refreshedCatalog);
     final WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, refreshedCatalog, operationRead);
-    webBackendApi.webBackendUpdateConnectionNew(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Waiting for sync job after update to complete");
     final JobRead syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
@@ -392,7 +393,7 @@ class CdcAcceptanceTests {
     catalog.setStreams(updatedStreams);
     LOGGER.info("Updated catalog: {}", catalog);
     WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, catalog, operationRead);
-    webBackendApi.webBackendUpdateConnectionNew(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Waiting for sync job after update to start");
     JobRead syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
@@ -407,7 +408,7 @@ class CdcAcceptanceTests {
     catalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Updated catalog: {}", catalog);
     update = testHarness.getUpdateInput(connectionRead, catalog, operationRead);
-    webBackendApi.webBackendUpdateConnectionNew(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Waiting for sync job after update to start");
     syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
@@ -481,7 +482,8 @@ class CdcAcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(CONNECTION_NAME, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(CONNECTION_NAME, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.MANUAL, null)
+            .getConnectionId();
     return connectionId;
   }
 
@@ -505,6 +507,7 @@ class CdcAcceptanceTests {
         Jsons.jsonNode(sourceDbConfigMap));
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private void assertDestinationMatches(final String streamName, final List<DestinationCdcRecordMatcher> expectedDestRecordMatchers)
       throws Exception {
     final List<JsonNode> destRecords = testHarness.retrieveRawDestinationRecords(new SchemaTableNamePair(SCHEMA_NAME, streamName));

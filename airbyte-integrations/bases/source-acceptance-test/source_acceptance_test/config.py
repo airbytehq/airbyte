@@ -57,6 +57,9 @@ class ConnectionTestConfig(BaseConfig):
 class DiscoveryTestConfig(BaseConfig):
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
+    backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
+        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
+    )
 
 
 class ExpectedRecordsConfig(BaseModel):

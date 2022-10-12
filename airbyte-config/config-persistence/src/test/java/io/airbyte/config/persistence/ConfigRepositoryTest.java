@@ -18,6 +18,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -31,6 +32,7 @@ import io.airbyte.db.Database;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -86,7 +88,7 @@ class ConfigRepositoryTest {
   void assertReturnsWorkspace(final StandardWorkspace workspace) throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, WORKSPACE_ID.toString(), StandardWorkspace.class)).thenReturn(workspace);
 
-    assertEquals(workspace, configRepository.getStandardWorkspace(WORKSPACE_ID, true));
+    assertEquals(workspace, configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true));
   }
 
   @ParameterizedTest
@@ -109,11 +111,11 @@ class ConfigRepositoryTest {
         .getSourceConnection(sourceId);
     doReturn(mWorkflow)
         .when(configRepository)
-        .getStandardWorkspace(WORKSPACE_ID, isTombstone);
+        .getStandardWorkspaceNoSecrets(WORKSPACE_ID, isTombstone);
 
     configRepository.getStandardWorkspaceFromConnection(connectionId, isTombstone);
 
-    verify(configRepository).getStandardWorkspace(WORKSPACE_ID, isTombstone);
+    verify(configRepository).getStandardWorkspaceNoSecrets(WORKSPACE_ID, isTombstone);
   }
 
   @Test
@@ -223,6 +225,46 @@ class ConfigRepositoryTest {
 
     final List<StandardSourceDefinition> returnedSourceDefinitionsWithTombstone = configRepository.listStandardSourceDefinitions(true);
     assertEquals(allSourceDefinitions, returnedSourceDefinitionsWithTombstone);
+  }
+
+  @Test
+  void testListDestinationDefinitionsWithVersion() throws JsonValidationException, IOException {
+    final List<StandardDestinationDefinition> allSourceDefinitions = List.of(
+        new StandardDestinationDefinition(),
+        new StandardDestinationDefinition().withSpec(new ConnectorSpecification().withProtocolVersion("0.3.1")),
+        // We expect the protocol version to be in the ConnectorSpec, so we'll override regardless.
+        new StandardDestinationDefinition().withProtocolVersion("0.4.0").withSpec(new ConnectorSpecification().withProtocolVersion("0.4.1")),
+        new StandardDestinationDefinition().withProtocolVersion("0.5.0").withSpec(new ConnectorSpecification()));
+
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+        .thenReturn(allSourceDefinitions);
+
+    final List<StandardDestinationDefinition> destinationDefinitions = configRepository.listStandardDestinationDefinitions(false);
+    final List<String> protocolVersions = destinationDefinitions.stream().map(StandardDestinationDefinition::getProtocolVersion).toList();
+    assertEquals(
+        List.of(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION.serialize(), "0.3.1", "0.4.1",
+            AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION.serialize()),
+        protocolVersions);
+  }
+
+  @Test
+  void testListSourceDefinitionsWithVersion() throws JsonValidationException, IOException {
+    final List<StandardSourceDefinition> allSourceDefinitions = List.of(
+        new StandardSourceDefinition(),
+        new StandardSourceDefinition().withSpec(new ConnectorSpecification().withProtocolVersion("0.6.0")),
+        // We expect the protocol version to be in the ConnectorSpec, so we'll override regardless.
+        new StandardSourceDefinition().withProtocolVersion("0.7.0").withSpec(new ConnectorSpecification().withProtocolVersion("0.7.1")),
+        new StandardSourceDefinition().withProtocolVersion("0.8.0").withSpec(new ConnectorSpecification()));
+
+    when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+        .thenReturn(allSourceDefinitions);
+
+    final List<StandardSourceDefinition> sourceDefinitions = configRepository.listStandardSourceDefinitions(false);
+    final List<String> protocolVersions = sourceDefinitions.stream().map(StandardSourceDefinition::getProtocolVersion).toList();
+    assertEquals(
+        List.of(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION.serialize(), "0.6.0", "0.7.1",
+            AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION.serialize()),
+        protocolVersions);
   }
 
   @Test
@@ -410,7 +452,7 @@ class ConfigRepositoryTest {
     final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false);
     doReturn(workspace)
         .when(configRepository)
-        .getStandardWorkspace(WORKSPACE_ID, false);
+        .getStandardWorkspaceNoSecrets(WORKSPACE_ID, false);
 
     configRepository.setFeedback(WORKSPACE_ID);
 

@@ -28,10 +28,12 @@ const defaultOptions: Partial<AirbyteStreamConfiguration> = {
   selected: false,
 };
 
-const BatchEditProvider: React.FC<{
-  nodes: SyncSchemaStream[];
-  update: (streams: SyncSchemaStream[]) => void;
-}> = ({ children, nodes, update }) => {
+const BatchEditProvider: React.FC<
+  React.PropsWithChildren<{
+    nodes: SyncSchemaStream[];
+    update: (streams: SyncSchemaStream[]) => void;
+  }>
+> = ({ children, nodes, update }) => {
   const [selectedBatchNodes, { reset, toggle, add }] = useSet<string | undefined>(new Set());
   const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(defaultOptions);
 

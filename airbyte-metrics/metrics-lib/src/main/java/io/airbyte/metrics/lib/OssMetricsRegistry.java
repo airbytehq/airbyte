@@ -9,15 +9,15 @@ import com.google.api.client.util.Preconditions;
 /**
  * Enum source of truth of all Airbyte metrics. Each enum value represent a metric and is linked to
  * an application and contains a description to make it easier to understand.
- *
+ * <p>
  * Each object of the enum actually represent a metric, so the Registry name is misleading. The
  * reason 'Registry' is in the name is to emphasize this enum's purpose as a source of truth for all
  * metrics. This also helps code readability i.e. AirbyteMetricsRegistry.metricA.
- *
+ * <p>
  * Metric Name Convention (adapted from
  * https://docs.datadoghq.com/developers/guide/what-best-practices-are-recommended-for-naming-metrics-and-tags/):
  * <p>
- * - Use lowercase. Metric names are case sensitive.
+ * - Use lowercase. Metric names are case-sensitive.
  * <p>
  * - Use underscore to delimit names with multiple words.
  * <p>
@@ -87,10 +87,14 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.METRICS_REPORTER,
       "num_active_conn_per_workspace",
       "number of active connections per workspace"),
-  NUM_ABNORMAL_SCHEDULED_SYNCS(
+  NUM_ABNORMAL_SCHEDULED_SYNCS_IN_LAST_DAY(
       MetricEmittingApps.METRICS_REPORTER,
-      "num_abnormal_scheduled_syncs",
-      "number of abnormal syncs that have skipped at least 1 scheduled run recently."),
+      "num_abnormal_scheduled_syncs_last_day",
+      "number of abnormal syncs that have skipped at least 1 scheduled run in last day."),
+  NUM_TOTAL_SCHEDULED_SYNCS_IN_LAST_DAY(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_total_scheduled_syncs_last_day",
+      "number of total syncs runs in last day."),
   OLDEST_PENDING_JOB_AGE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "oldest_pending_job_age_secs",
       "oldest pending job in seconds"),
@@ -111,7 +115,10 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "count of the number of workflow failures"),
   NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS(MetricEmittingApps.WORKER,
       "record_schema_validation_error",
-      "number of record schema validation errors");
+      "number of record schema validation errors"),
+  STATE_METRIC_TRACKER_ERROR(MetricEmittingApps.WORKER,
+      "state_timestamp_metric_tracker_error",
+      "number of syncs where the state timestamp metric tracker ran out of memory or was unable to match destination state message to source state message");
 
   private final MetricEmittingApp application;
   private final String metricName;

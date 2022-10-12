@@ -454,13 +454,13 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
             "%Y-%m-%dT%H:%M:%S.%f%z",
             datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
         ),
-        ("test_parse_date_number", "20210101", "%Y%m%d", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)),
         (
-            "test_parse_date_datetime",
-            datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
-            "%Y%m%d",
+            "test_parse_timestamp",
+            "1609459200",
+            "%s",
             datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
         ),
+        ("test_parse_date_number", "20210101", "%Y%m%d", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)),
     ],
 )
 def test_parse_date(test_name, input_date, date_format, expected_output_date):
@@ -483,6 +483,7 @@ def test_parse_date(test_name, input_date, date_format, expected_output_date):
     [
         ("test_format_timestamp", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%s", "1609459200"),
         ("test_format_string", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%Y-%m-%d", "2021-01-01"),
+        ("test_format_to_number", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%Y%m%d", "20210101"),
     ],
 )
 def test_format_datetime(test_name, input_dt, datetimeformat, expected_output):

@@ -26,6 +26,14 @@ airbyte\_cdk.sources.declarative.requesters.paginators.strategies.page\_incremen
    :undoc-members:
    :show-inheritance:
 
+airbyte\_cdk.sources.declarative.requesters.paginators.strategies.pagination\_strategy module
+---------------------------------------------------------------------------------------------
+
+.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
