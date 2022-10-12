@@ -101,7 +101,7 @@ definitions:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
-      datetime: "{{ now_utc() }}"
+      datetime: "{{ now_local() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f"
     step: "1d"
     datetime_format: "%Y-%m-%d"
@@ -192,7 +192,7 @@ definitions:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
-      datetime: "{{ now_utc() }}"
+      datetime: "{{ now_local() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f"
     step: "1d"
     datetime_format: "%Y-%m-%d"
