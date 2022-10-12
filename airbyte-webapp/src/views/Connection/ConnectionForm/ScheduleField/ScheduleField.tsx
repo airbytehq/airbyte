@@ -10,6 +10,7 @@ import { Action, Namespace } from "core/analytics";
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { links } from "utils/links";
 import { PropertyError } from "views/Connector/ServiceForm/components/Property/PropertyError";
 
 import availableCronTimeZones from "../../../../config/availableCronTimeZones.json";
@@ -21,8 +22,6 @@ const CRON_DEFAULT_VALUE = {
   // Fire at 12:00 PM (noon) every day
   cronExpression: "0 0 12 * * ?",
 };
-
-const CRON_REFERENCE_LINK = "http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html";
 
 export const ScheduleField: React.FC = () => {
   const { formatMessage } = useIntl();
@@ -174,7 +173,7 @@ export const ScheduleField: React.FC = () => {
                     },
                     {
                       lnk: (lnk: React.ReactNode) => (
-                        <Link target="_blank" href={CRON_REFERENCE_LINK} as="a">
+                        <Link target="_blank" href={links.cronReferenceLink} as="a">
                           {lnk}
                         </Link>
                       ),
