@@ -24,6 +24,7 @@
     "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
   },
   "dependencies": {
+    "@datadog/browser-rum": "^4.21.2",
     "@floating-ui/react-dom": "^1.0.0",
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-brands-svg-icons": "^6.1.1",
@@ -162,7 +163,9 @@
   },
   "jest": {
     "transformIgnorePatterns": [],
-    "snapshotSerializers": ["./scripts/classname-serializer.js"],
+    "snapshotSerializers": [
+      "./scripts/classname-serializer.js"
+    ],
     "coveragePathIgnorePatterns": [
       ".stories.tsx"
     ]
