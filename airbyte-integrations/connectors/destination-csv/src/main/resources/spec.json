@@ -9,12 +9,73 @@
     "title": "CSV Destination Spec",
     "type": "object",
     "required": ["destination_path"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "destination_path": {
         "description": "Path to the directory where csv files will be written. The destination uses the local mount \"/local\" and any data files will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.com/integrations/destinations/local-csv\">docs</a>",
         "type": "string",
         "examples": ["/local"]
+      },
+      "delimiter": {
+        "type": "object",
+        "description": "The character delimiting individual cells in the CSV data.",
+        "oneOf": [
+          {
+            "title": "Comma",
+            "required": ["symbol"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "const": ",",
+                "default": ","
+              }
+            }
+          },
+          {
+            "title": "Semicolon",
+            "required": ["symbol"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "const": ";",
+                "default": ";"
+              }
+            }
+          },
+          {
+            "title": "Tab",
+            "required": ["symbol"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "const": "  ",
+                "default": "  "
+              }
+            }
+          },
+          {
+            "title": "Space",
+            "required": ["symbol"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "const": " ",
+                "default": " "
+              }
+            }
+          },
+          {
+            "title": "Pipe",
+            "required": ["symbol"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "const": "|",
+                "default": "|"
+              }
+            }
+          }
+        ]
       }
     }
   }
