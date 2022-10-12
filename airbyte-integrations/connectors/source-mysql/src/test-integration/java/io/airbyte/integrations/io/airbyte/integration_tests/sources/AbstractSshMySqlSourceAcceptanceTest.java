@@ -89,4 +89,5 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
   protected boolean supportsPerStream() {
     return true;
   }
+
 }
