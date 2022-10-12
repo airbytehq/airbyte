@@ -162,7 +162,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {"table_name": self.table_name}
+        params = {"tableName": self.table_name}
         if stream_state and self.cursor_field in stream_state:
             params["cursor"] = stream_state[self.cursor_field]
         if next_page_token and self.cursor_field in next_page_token:
