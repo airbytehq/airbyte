@@ -44,7 +44,7 @@ describe("CreateConnectionForm", () => {
   it("should render", async () => {
     jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => baseUseDiscoverSchema);
     const renderResult = await render();
-    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult).toMatchSnapshot();
     expect(renderResult.queryByText("Please wait a little bit more…")).toBeFalsy();
   });
 
@@ -54,7 +54,7 @@ describe("CreateConnectionForm", () => {
       .mockImplementationOnce(() => ({ ...baseUseDiscoverSchema, isLoading: true }));
 
     const renderResult = await render();
-    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult).toMatchSnapshot();
   });
 
   it("should render with an error", async () => {
@@ -64,6 +64,6 @@ describe("CreateConnectionForm", () => {
     }));
 
     const renderResult = await render();
-    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult).toMatchSnapshot();
   });
 });

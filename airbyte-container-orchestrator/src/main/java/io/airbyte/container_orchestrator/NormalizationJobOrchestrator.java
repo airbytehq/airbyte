@@ -16,7 +16,7 @@ import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.normalization.NormalizationWorker;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
+import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
