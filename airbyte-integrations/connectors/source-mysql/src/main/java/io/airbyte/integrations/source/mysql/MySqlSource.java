@@ -124,7 +124,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       checkOperations.addAll(CdcConfigurationHelper.getCheckOperations());
 
       checkOperations.add(database -> {
-        CdcConfigurationHelper.checkCdcReplicationMethodConfig(config);
+        CdcConfigurationHelper.checkFirstRecordWaitTime(config);
+        CdcConfigurationHelper.checkServerTimeZoneConfig(config);
       });
     }
     return checkOperations;
