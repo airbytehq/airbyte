@@ -90,4 +90,6 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
     // no op
   }
 
+  // TODO: add a test to check for delimeter
+
 }
