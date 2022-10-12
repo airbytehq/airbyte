@@ -115,21 +115,23 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
   };
 
   return (
-    <CreatableSelect
-      inputId={id}
-      name={name}
-      components={components}
-      inputValue={inputValue}
-      isClearable
-      isMulti
-      onBlur={() => handleDelete}
-      menuIsOpen={false}
-      onChange={handleDelete}
-      onInputChange={handleInputChange}
-      onKeyDown={handleKeyDown}
-      value={tags}
-      isDisabled={disabled}
-      styles={customStyles}
-    />
+    <div data-testid="tag-input">
+      <CreatableSelect
+        inputId={id}
+        name={name}
+        components={components}
+        inputValue={inputValue}
+        isClearable
+        isMulti
+        onBlur={() => handleDelete}
+        menuIsOpen={false}
+        onChange={handleDelete}
+        onInputChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        value={tags}
+        isDisabled={disabled}
+        styles={customStyles}
+      />
+    </div>
   );
 };
