@@ -144,7 +144,7 @@ class MetricRepository {
     final var query = """
                       SELECT status, extract(epoch from age(updated_at, created_at)) AS sec FROM jobs
                       WHERE updated_at >= NOW() - INTERVAL '1 HOUR'
-                        AND (jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled');
+                        AND jobs.status IN ('failed', 'succeeded', 'cancelled');
                       """;
     final var queryResults = ctx.fetch(query);
     final var statuses = queryResults.getValues("status", JobStatus.class);
@@ -159,32 +159,17 @@ class MetricRepository {
   }
 
   private long oldestJobAgeSecs(final JobStatus status) {
-    final var readableTimeField = "run_duration";
-    final var durationSecField = "run_duration_secs";
-    final var query = String.format("""
-                                    WITH
-                                    oldest_job AS (
-                                    SELECT id,
-                                           age(current_timestamp, created_at) AS %s
-                                    FROM jobs
-                                    WHERE status = '%s'
-                                    ORDER BY run_duration DESC
-                                    LIMIT 1)
-                                    SELECT id,
-                                           run_duration,
-                                           extract(epoch from run_duration) as %s
-                                    FROM oldest_job""", readableTimeField, status.getLiteral(), durationSecField);
-    final var res = ctx.fetch(query);
-    // unfortunately there are no good Jooq methods for retrieving a single record of a single column
-    // forcing the List cast.
-    final var duration = res.getValues(durationSecField, Double.class);
-
-    if (duration.size() == 0) {
+    final var query = """
+                      SELECT id, EXTRACT(EPOCH FROM (current_timestamp - created_at)) AS run_duration_seconds
+                      FROM jobs WHERE status = ?::job_status
+                      ORDER BY created_at ASC limit 1;
+                      """;
+    final var result = ctx.fetchOne(query, status.getLiteral());
+    if (result == null) {
       return 0L;
     }
-
     // as double can have rounding errors, round down to remove noise.
-    return duration.get(0).longValue();
+    return result.getValue("run_duration_seconds", Double.class).longValue();
   }
 
 }

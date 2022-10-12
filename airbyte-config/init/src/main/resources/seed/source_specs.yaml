@@ -1105,7 +1105,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.15"
+- dockerImage: "airbyte/source-amplitude:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -2948,7 +2948,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.1.7"
+- dockerImage: "airbyte/source-faker:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -6964,7 +6964,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.3"
+- dockerImage: "airbyte/source-mysql:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -7194,9 +7194,16 @@
                   \ <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"\
                   >initial waiting time</a>."
                 default: 300
-                order: 4
                 min: 120
                 max: 1200
+                order: 1
+              server_time_zone:
+                type: "string"
+                title: "Configured server timezone for the MySQL source (Advanced)"
+                description: "Enter the configured MySQL server timezone. This should\
+                  \ only be done if the configured timezone in your MySQL instance\
+                  \ does not conform to IANNA standard."
+                order: 2
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -9429,7 +9436,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.22"
+- dockerImage: "airbyte/source-s3:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -9707,18 +9714,6 @@
               default: ""
               order: 4
               type: "string"
-            use_ssl:
-              title: "Use TLS"
-              description: "Whether the remote server is using a secure SSL/TLS connection.\
-                \ Only relevant if using an S3-compatible, non-AWS server"
-              order: 5
-              type: "boolean"
-            verify_ssl_cert:
-              title: "Verify TLS Certificates"
-              description: "Set this to false to allow self signed certificates. Only\
-                \ relevant if using an S3-compatible, non-AWS server"
-              order: 6
-              type: "boolean"
           required:
           - "bucket"
           order: 11

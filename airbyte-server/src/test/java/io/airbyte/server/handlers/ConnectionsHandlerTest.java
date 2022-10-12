@@ -223,7 +223,7 @@ class ConnectionsHandlerTest {
         final StandardWorkspace workspace = new StandardWorkspace()
             .withWorkspaceId(workspaceId)
             .withDefaultGeography(Geography.EU);
-        when(configRepository.getStandardWorkspace(workspaceId, true)).thenReturn(workspace);
+        when(configRepository.getStandardWorkspaceNoSecrets(workspaceId, true)).thenReturn(workspace);
 
         final ConnectionCreate connectionCreate = new ConnectionCreate()
             .sourceId(standardSync.getSourceId())
@@ -290,7 +290,7 @@ class ConnectionsHandlerTest {
         final StandardWorkspace workspace = new StandardWorkspace()
             .withWorkspaceId(workspaceId)
             .withDefaultGeography(Geography.EU);
-        when(configRepository.getStandardWorkspace(workspaceId, true)).thenReturn(workspace);
+        when(configRepository.getStandardWorkspaceNoSecrets(workspaceId, true)).thenReturn(workspace);
 
         // the expected read and verified write is generated from the standardSync, so set this to EU as
         // well
