@@ -64,11 +64,6 @@ describe("validateCronExpression", () => {
     ${"* * * * *"}                                           | ${false}
     ${"0 0 0 0 0 0"}                                         | ${false}
   `("'$expression' is valid: $isValid", async ({ expression, isValid }) => {
-    expect(
-      // await scheduleFieldValidationSchema.isValid({
-      //   cron: { cronExpression: expression, cronTimeZone: "Some time zone" },
-      // })
-      validateCronExpression(expression)
-    ).toEqual(isValid);
+    expect(validateCronExpression(expression)).toEqual(isValid);
   });
 });
