@@ -4,10 +4,11 @@ connectionSpecification:
   title: Mailerlite Spec
   type: object
   required:
-    - api_key
+    - api_token
   additionalProperties: true
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    api_key:
+    api_token:
       type: string
-      description: API Key
+      description: Your API Token. See <a href="https://developers.mailerlite.com/docs/#authentication">here</a>.
+      airbyte_secret: true
