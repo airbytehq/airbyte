@@ -20,6 +20,7 @@ import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,6 +52,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private final Supplier<String> workflowIdProvider;
   private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
+  private final Optional<String> workflowTaskQueue;
 
   public TemporalAttemptExecution(final Path workspaceRoot,
                                   final WorkerEnvironment workerEnvironment,
@@ -71,7 +73,32 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         cancellationHandler,
         airbyteApiClient,
         () -> activityContext.get().getInfo().getWorkflowId(),
-        airbyteVersion);
+        airbyteVersion,
+        Optional.empty());
+  }
+
+  public TemporalAttemptExecution(final Path workspaceRoot,
+                                  final WorkerEnvironment workerEnvironment,
+                                  final LogConfigs logConfigs,
+                                  final JobRunConfig jobRunConfig,
+                                  final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+                                  final Supplier<INPUT> inputSupplier,
+                                  final CancellationHandler cancellationHandler,
+                                  final AirbyteApiClient airbyteApiClient,
+                                  final String airbyteVersion,
+                                  final Supplier<ActivityExecutionContext> activityContext,
+                                  final Optional<String> workflowTaskQueue) {
+    this(
+        workspaceRoot, workerEnvironment, logConfigs,
+        jobRunConfig,
+        workerSupplier,
+        inputSupplier,
+        (path -> LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, path)),
+        cancellationHandler,
+        airbyteApiClient,
+        () -> activityContext.get().getInfo().getWorkflowId(),
+        airbyteVersion,
+        workflowTaskQueue);
   }
 
   @VisibleForTesting
@@ -85,7 +112,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            final CancellationHandler cancellationHandler,
                            final AirbyteApiClient airbyteApiClient,
                            final Supplier<String> workflowIdProvider,
-                           final String airbyteVersion) {
+                           final String airbyteVersion,
+                           final Optional<String> workflowTaskQueue) {
     this.jobRunConfig = jobRunConfig;
 
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
@@ -97,6 +125,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
 
     this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
+    this.workflowTaskQueue = workflowTaskQueue;
   }
 
   @Override
@@ -149,6 +178,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       airbyteApiClient.getAttemptApi().setWorkflowInAttempt(new SetWorkflowInAttemptRequestBody()
           .jobId(Long.parseLong(jobRunConfig.getJobId()))
           .attemptNumber(jobRunConfig.getAttemptId().intValue())
+          .processingTaskQueue(workflowTaskQueue.orElse(""))
           .workflowId(workflowId));
     }
   }

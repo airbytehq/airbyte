@@ -106,7 +106,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
                                       final IntegrationLauncherConfig sourceLauncherConfig,
                                       final IntegrationLauncherConfig destinationLauncherConfig,
-                                      final StandardSyncInput syncInput) {
+                                      final StandardSyncInput syncInput,
+                                      final String taskQueue) {
     final ActivityExecutionContext context = Activity.getExecutionContext();
     return temporalUtils.withBackgroundHeartbeat(
         () -> {
@@ -149,7 +150,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   new CancellationHandler.TemporalCancellationHandler(context),
                   airbyteApiClient,
                   airbyteVersion,
-                  () -> context);
+                  () -> context,
+                  Optional.of(taskQueue));
 
           final ReplicationOutput attemptOutput = temporalAttempt.get();
           final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);

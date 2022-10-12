@@ -617,7 +617,7 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
-  class TemporalWorkflowId {
+  class TemporalWorkflowInfo {
 
     @Test
     void testSuccessfulGet() throws IOException, SQLException {
@@ -640,15 +640,21 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    void testSuccessfulSet() throws IOException {
+    void testSuccessfulSet() throws IOException, SQLException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final var attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
       final var temporalWorkflowId = "test-id-usually-uuid";
+      final var syncQueue = "SYNC";
 
-      jobPersistence.setAttemptTemporalWorkflowId(jobId, attemptNumber, temporalWorkflowId);
+      jobPersistence.setAttemptTemporalWorkflowInfo(jobId, attemptNumber, temporalWorkflowId, syncQueue);
 
       final var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
       assertEquals(workflowId, temporalWorkflowId);
+
+      final var taskQueue = jobDatabase.query(ctx -> ctx.fetch(
+          "SELECT processing_task_queue FROM attempts WHERE job_id = ? AND attempt_number =?", jobId,
+          attemptNumber)).stream().findFirst().get().get("processing_task_queue", String.class);
+      assertEquals(taskQueue, syncQueue);
     }
 
   }

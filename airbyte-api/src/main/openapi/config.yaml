@@ -4759,6 +4759,9 @@ components:
           $ref: "#/components/schemas/AttemptNumber"
         workflowId:
           $ref: "#/components/schemas/WorkflowId"
+        processingTaskQueue:
+          type: string
+          default: ""
     InternalOperationResult:
       type: object
       required:

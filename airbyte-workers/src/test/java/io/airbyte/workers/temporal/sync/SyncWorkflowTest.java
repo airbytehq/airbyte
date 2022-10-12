@@ -67,8 +67,6 @@ class SyncWorkflowTest {
   private PersistStateActivityImpl persistStateActivity;
   private NormalizationSummaryCheckActivityImpl normalizationSummaryCheckActivity;
 
-  private static final String SYNC_TASK_QUEUE = "SYNC_TASK_QUEUE";
-
   // AIRBYTE CONFIGURATION
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
@@ -85,6 +83,8 @@ class SyncWorkflowTest {
       .withJobId(String.valueOf(JOB_ID))
       .withAttemptId((long) ATTEMPT_ID)
       .withDockerImage(IMAGE_NAME2);
+
+  private static final String SYNC_QUEUE = "SYNC";
 
   private StandardSync sync;
   private StandardSyncInput syncInput;
@@ -103,7 +103,7 @@ class SyncWorkflowTest {
   @BeforeEach
   void setUp() throws IOException {
     testEnv = TestWorkflowEnvironment.newInstance();
-    syncWorker = testEnv.newWorker(SYNC_TASK_QUEUE);
+    syncWorker = testEnv.newWorker(SYNC_QUEUE);
     client = testEnv.getWorkflowClient();
 
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
@@ -179,7 +179,7 @@ class SyncWorkflowTest {
         persistStateActivity, normalizationSummaryCheckActivity);
     testEnv.start();
     final SyncWorkflow workflow =
-        client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(SYNC_TASK_QUEUE).build());
+        client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(SYNC_QUEUE).build());
 
     return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput, sync.getConnectionId());
   }
@@ -190,7 +190,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     doReturn(normalizationSummary).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
@@ -214,7 +214,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
@@ -230,7 +230,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     doReturn(normalizationSummary).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
@@ -254,7 +254,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     doThrow(new IllegalArgumentException("induced exception")).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
@@ -278,7 +278,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
@@ -294,7 +294,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     doAnswer(ignored -> {
       cancelWorkflow();
@@ -325,7 +325,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     execute();
 
@@ -358,7 +358,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
   }
 
   private static void verifyPersistState(final PersistStateActivity persistStateActivity,
