@@ -138,7 +138,6 @@ export const ScheduleField: React.FC = () => {
               <ControlLabels
                 className={styles.connectorLabel}
                 nextLine
-                error={!!meta.error && meta.touched}
                 label={formatMessage({
                   id: "form.frequency",
                 })}
@@ -150,7 +149,6 @@ export const ScheduleField: React.FC = () => {
             <div className={styles.rightFieldCol} style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
               <DropDown
                 {...field}
-                error={!!meta.error && meta.touched}
                 options={frequencies}
                 data-testid="schedule"
                 onChange={(item) => {
@@ -206,9 +204,9 @@ export const ScheduleField: React.FC = () => {
                     onChange={(item: DropDownOptionDataItem) => onCronChange(item, field, form, "cronTimeZone")}
                   />
                 </div>
-                {(meta.error as any)?.cron?.cronExpression && (
+                {(form.errors?.scheduleData as ConnectionScheduleData)?.cron?.cronExpression && (
                   <PropertyError data-testid="cronExpressionError">
-                    <FormattedMessage id={(meta.error as any).cron.cronExpression} />
+                    <FormattedMessage id={(form.errors.scheduleData as ConnectionScheduleData)?.cron?.cronExpression} />
                   </PropertyError>
                 )}
               </div>
