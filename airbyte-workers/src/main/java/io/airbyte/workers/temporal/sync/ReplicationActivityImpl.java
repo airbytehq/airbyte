@@ -172,9 +172,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
     final StandardSyncOutput standardSyncOutput = new StandardSyncOutput();
-    final StandardSyncSummary syncSummary = new StandardSyncSummary().withTotalStats(new SyncStats());
+    final StandardSyncSummary syncSummary = new StandardSyncSummary();
     final ReplicationAttemptSummary replicationSummary = output.getReplicationAttemptSummary();
-    final SyncStats totalStats = new SyncStats();
 
     syncSummary.setBytesSynced(replicationSummary.getBytesSynced());
     syncSummary.setRecordsSynced(replicationSummary.getRecordsSynced());
@@ -184,16 +183,16 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     syncSummary.setTotalStats(replicationSummary.getTotalStats());
     syncSummary.setStreamStats(replicationSummary.getStreamStats());
 
-    totalStats.setReplicationStartTime(syncSummary.getTotalStats().getReplicationStartTime());
-    totalStats.setReplicationEndTime(syncSummary.getTotalStats().getReplicationEndTime());
-    totalStats.setSourceReadStartTime(syncSummary.getTotalStats().getSourceReadStartTime());
-    totalStats.setSourceReadEndTime(syncSummary.getTotalStats().getSourceReadEndTime());
-    totalStats.setDestinationWriteStartTime(syncSummary.getTotalStats().getDestinationWriteStartTime());
-    totalStats.setDestinationWriteEndTime(syncSummary.getTotalStats().getDestinationWriteEndTime());
+    final SyncStats totalStats = syncSummary.getTotalStats();
+    totalStats.setReplicationStartTime(totalStats.getReplicationStartTime());
+    totalStats.setReplicationEndTime(totalStats.getReplicationEndTime());
+    totalStats.setSourceReadStartTime(totalStats.getSourceReadStartTime());
+    totalStats.setSourceReadEndTime(totalStats.getSourceReadEndTime());
+    totalStats.setDestinationWriteStartTime(totalStats.getDestinationWriteStartTime());
+    totalStats.setDestinationWriteEndTime(totalStats.getDestinationWriteEndTime());
 
     standardSyncOutput.setState(output.getState());
     standardSyncOutput.setOutputCatalog(output.getOutputCatalog());
-    syncSummary.setTotalStats(totalStats);
     standardSyncOutput.setStandardSyncSummary(syncSummary);
     standardSyncOutput.setFailures(output.getFailures());
 
