@@ -496,9 +496,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
             else:
                 query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            order_by_fields = [self.cursor_field]
-            if self.primary_key:
-                order_by_fields.append(self.primary_key)
+            order_by_fields = [self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field]
             query += f"ORDER BY {','.join(order_by_fields)} ASC LIMIT {self.page_size}"
         return {"q": query}
 
