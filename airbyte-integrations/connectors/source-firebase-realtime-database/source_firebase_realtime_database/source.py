@@ -26,6 +26,19 @@ from firebase_admin import db
 
 
 class SourceFirebaseRealtimeDatabase(Source):
+    @staticmethod
+    def _initialize_client(config: json):
+        database_name = config["database_name"]
+        database_url = f"https://{database_name}.firebaseio.com"
+        google_application_credentials = config["google_application_credentials"]
+        sa_key = json.loads(google_application_credentials)
+
+        cred = credentials.Certificate(sa_key)
+
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': database_url,
+        })
+
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
@@ -39,16 +52,7 @@ class SourceFirebaseRealtimeDatabase(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            database_name = config["database_name"]
-            database_url = f"https://{database_name}.firebaseio.com"
-            google_application_credentials = config["google_application_credentials"]
-            sa_key = json.loads(google_application_credentials)
-
-            cred = credentials.Certificate(sa_key)
-
-            firebase_admin.initialize_app(cred, {
-                'databaseURL': database_url,
-            })
+            self._initialize_client(config)
 
             ref = db.reference()
 
@@ -78,17 +82,28 @@ class SourceFirebaseRealtimeDatabase(Source):
         """
         streams = []
 
-        stream_name = config["path"].rstrip(" ").rstrip("/").split("/")[-1]
+        self._initialize_client(config)
+
+        path = config.get("path", "")
+        fetch_only_this_node = config["fetch_only_this_node"]
+
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
                 "key": {"type": "string"},
-                "value": {"type": ["null", "string"]},
+                "value": {"type": "string"},
             },
         }
 
-        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
+        node_name = path.rstrip("/").split("/")[-1]
+        if node_name:
+            stream_name = node_name
+        else:
+            stream_name = config["database_name"]
+
+        streams.append(AirbyteStream(name=stream_name.replace("-", "_"), json_schema=json_schema))
+
         return AirbyteCatalog(streams=streams)
 
     def read(
