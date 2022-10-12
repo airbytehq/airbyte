@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button } from "components/ui/Button";
@@ -27,6 +28,7 @@ const InviteUsersHintContent: React.VFC<InviteUsersHintProps> = ({ connectorType
     </a>
   ) : (
     <Button
+      className={styles.ctaButton}
       variant="secondary"
       data-testid="inviteUsersHint-cta"
       onClick={() => {
@@ -38,17 +40,19 @@ const InviteUsersHintContent: React.VFC<InviteUsersHintProps> = ({ connectorType
   );
 
   return (
-    <div className={styles.container} data-testid="inviteUsersHint">
-      <Text size="sm">
-        <FormattedMessage
-          id="inviteUsersHint.message"
-          values={{
-            connector: formatMessage({ id: `connector.${connectorType}` }).toLowerCase(),
-          }}
-        />
-      </Text>
+    <Text
+      size="sm"
+      className={classNames(styles.container, linkToUsersPage && styles.withLink)}
+      data-testid="inviteUsersHint"
+    >
+      <FormattedMessage
+        id="inviteUsersHint.message"
+        values={{
+          connector: formatMessage({ id: `connector.${connectorType}` }).toLowerCase(),
+        }}
+      />{" "}
       {inviteUsersCta}
-    </div>
+    </Text>
   );
 };
 
