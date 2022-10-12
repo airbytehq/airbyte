@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
-import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.util.Optional;

@@ -1,9 +1,9 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import Modal, { ModalProps } from "components/Modal";
+import { Modal, ModalProps } from "components/ui/Modal";
 
-import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
+import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import styles from "./ArrayOfObjectsEditor.module.scss";
 import { EditorHeader } from "./components/EditorHeader";

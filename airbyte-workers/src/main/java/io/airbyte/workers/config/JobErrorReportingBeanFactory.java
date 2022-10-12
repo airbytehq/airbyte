@@ -6,19 +6,19 @@ package io.airbyte.workers.config;
 
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.WebUrlHelper;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClient;
-import io.airbyte.scheduler.persistence.job_error_reporter.LoggingJobErrorReportingClient;
-import io.airbyte.scheduler.persistence.job_error_reporter.SentryExceptionHelper;
-import io.airbyte.scheduler.persistence.job_error_reporter.SentryJobErrorReportingClient;
+import io.airbyte.persistence.job.WebUrlHelper;
+import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
+import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
+import io.airbyte.persistence.job.errorreporter.LoggingJobErrorReportingClient;
+import io.airbyte.persistence.job.errorreporter.SentryExceptionHelper;
+import io.airbyte.persistence.job.errorreporter.SentryJobErrorReportingClient;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.util.Optional;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * Micronaut bean factory for job error reporting-related singletons.
@@ -30,8 +30,7 @@ public class JobErrorReportingBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
             pattern = "(?i)^sentry$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient sentryJobErrorReportingClient(
                                                                @Value("${airbyte.worker.job.error-reporting.sentry.dsn}") final String sentryDsn) {
@@ -41,16 +40,14 @@ public class JobErrorReportingBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.job.error-reporting.strategy",
             pattern = "(?i)^logging$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("jobErrorReportingClient")
   public JobErrorReportingClient loggingJobErrorReportingClient() {
     return new LoggingJobErrorReportingClient();
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public JobErrorReporter jobErrorReporter(
                                            @Value("${airbyte.version}") final String airbyteVersion,
                                            final ConfigRepository configRepository,

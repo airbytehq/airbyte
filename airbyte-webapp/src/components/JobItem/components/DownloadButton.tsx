@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 import { JobDebugInfoRead } from "core/request/AirbyteClient";
 import { useCurrentWorkspaceId, useGetWorkspace } from "services/workspaces/WorkspacesService";
@@ -28,13 +28,12 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ jobDebugInfo, fileName 
   return (
     <Button
       onClick={downloadFileWithLogs}
-      secondary
+      variant="secondary"
       title={formatMessage({
         id: "sources.downloadLogs",
       })}
-    >
-      <FontAwesomeIcon icon={faFileDownload} />
-    </Button>
+      icon={<FontAwesomeIcon icon={faFileDownload} />}
+    />
   );
 };
 

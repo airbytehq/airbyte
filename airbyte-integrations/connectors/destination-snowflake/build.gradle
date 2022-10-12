@@ -27,7 +27,9 @@ application {
 dependencies {
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
-    implementation 'net.snowflake:snowflake-jdbc:3.13.9'
+  // Updating to any newer version (e.g. 3.13.22) is causing a regression with normalization. 
+  // See: https://github.com/airbytehq/airbyte/actions/runs/3078146312
+    implementation 'net.snowflake:snowflake-jdbc:3.13.19'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation "io.aesy:datasize:1.0.0"
@@ -39,7 +41,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
-    implementation project(':airbyte-integrations:connectors:destination-s3')
+    implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation project(':airbyte-protocol:protocol-models')
 
 //    this is a configuration to make mockito work with final classes

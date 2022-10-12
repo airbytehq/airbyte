@@ -29,6 +29,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.ScheduleData;
@@ -37,13 +38,13 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.CatalogDiffConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
@@ -51,6 +52,7 @@ import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.ConnectionScheduleHelper;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
 import io.airbyte.server.handlers.helpers.SourceMatcher;
+import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.IOException;
@@ -121,18 +123,25 @@ public class ConnectionsHandler {
 
     final UUID connectionId = uuidGenerator.get();
 
+    // If not specified, default the NamespaceDefinition to 'source'
+    final NamespaceDefinitionType namespaceDefinitionType =
+        connectionCreate.getNamespaceDefinition() == null
+            ? NamespaceDefinitionType.SOURCE
+            : Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class);
+
     // persist sync
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : defaultName)
-        .withNamespaceDefinition(Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class))
+        .withNamespaceDefinition(namespaceDefinitionType)
         .withNamespaceFormat(connectionCreate.getNamespaceFormat())
         .withPrefix(connectionCreate.getPrefix())
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
         .withOperationIds(operationIds)
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()))
-        .withSourceCatalogId(connectionCreate.getSourceCatalogId());
+        .withSourceCatalogId(connectionCreate.getSourceCatalogId())
+        .withGeography(getGeographyFromConnectionCreateOrWorkspace(connectionCreate));
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
     }
@@ -169,6 +178,25 @@ public class ConnectionsHandler {
     }
 
     return buildConnectionRead(connectionId);
+  }
+
+  private Geography getGeographyFromConnectionCreateOrWorkspace(final ConnectionCreate connectionCreate)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+
+    if (connectionCreate.getGeography() != null) {
+      return ApiPojoConverters.toPersistenceGeography(connectionCreate.getGeography());
+    }
+
+    // connectionCreate didn't specify a geography, so use the workspace default geography if one exists
+    final UUID workspaceId = workspaceHelper.getWorkspaceForSourceId(connectionCreate.getSourceId());
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+
+    if (workspace.getDefaultGeography() != null) {
+      return workspace.getDefaultGeography();
+    }
+
+    // if the workspace doesn't have a default geography, default to 'auto'
+    return Geography.AUTO;
   }
 
   private void populateSyncFromLegacySchedule(final StandardSync standardSync, final ConnectionCreate connectionCreate) {
@@ -363,11 +391,7 @@ public class ConnectionsHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
-    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId())) {
-      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
-        continue;
-      }
-
+    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), includeDeleted)) {
       connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
@@ -392,10 +416,10 @@ public class ConnectionsHandler {
     return buildConnectionRead(connectionId);
   }
 
-  public CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
+  public CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog, final ConfiguredAirbyteCatalog configuredCatalog) {
     return new CatalogDiff().transforms(CatalogHelpers.getCatalogDiff(
         CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(oldCatalog)),
-        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)))
+        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)), configuredCatalog)
         .stream()
         .map(CatalogDiffConverters::streamTransformToApi)
         .toList());

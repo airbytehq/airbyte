@@ -17,8 +17,14 @@ import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ConnectionStatus;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.Geography;
+import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SyncMode;
+import io.airbyte.api.model.generated.WebBackendConnectionListItem;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -50,6 +56,8 @@ public class ConnectionHelpers {
   private static final String BASIC_SCHEDULE_DATA_TIME_UNITS = "days";
   private static final long BASIC_SCHEDULE_DATA_UNITS = 1L;
   private static final String ONE_HUNDRED_G = "100g";
+  private static final String STANDARD_SYNC_NAME = "presto to hudi";
+  private static final String STANDARD_SYNC_PREFIX = "presto_to_hudi";
 
   public static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName(STREAM_NAME);
 
@@ -66,10 +74,10 @@ public class ConnectionHelpers {
 
     return new StandardSync()
         .withConnectionId(connectionId)
-        .withName("presto to hudi")
+        .withName(STANDARD_SYNC_NAME)
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withNamespaceFormat(null)
-        .withPrefix("presto_to_hudi")
+        .withPrefix(STANDARD_SYNC_PREFIX)
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(sourceId)
@@ -85,13 +93,30 @@ public class ConnectionHelpers {
 
     return new StandardSync()
         .withConnectionId(connectionId)
-        .withName("presto to hudi")
+        .withName(STANDARD_SYNC_NAME)
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withNamespaceFormat(null)
-        .withPrefix("presto_to_hudi")
+        .withPrefix(STANDARD_SYNC_PREFIX)
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(UUID.randomUUID())
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(UUID.randomUUID()))
+        .withManual(true);
+  }
+
+  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId) {
+    final UUID connectionId = UUID.randomUUID();
+
+    return new StandardSync()
+        .withConnectionId(connectionId)
+        .withName(STANDARD_SYNC_NAME)
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
+        .withPrefix(STANDARD_SYNC_PREFIX)
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withCatalog(generateBasicConfiguredAirbyteCatalog())
+        .withSourceId(sourceId)
         .withDestinationId(destinationId)
         .withOperationIds(List.of(UUID.randomUUID()))
         .withManual(true);
@@ -124,7 +149,8 @@ public class ConnectionHelpers {
                                                               final UUID sourceId,
                                                               final UUID destinationId,
                                                               final List<UUID> operationIds,
-                                                              final UUID sourceCatalogId) {
+                                                              final UUID sourceCatalogId,
+                                                              final Geography geography) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
@@ -145,7 +171,8 @@ public class ConnectionHelpers {
             .cpuLimit(TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
             .memoryRequest(TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
             .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()))
-        .sourceCatalogId(sourceCatalogId);
+        .sourceCatalogId(sourceCatalogId)
+        .geography(geography);
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
@@ -154,7 +181,8 @@ public class ConnectionHelpers {
         standardSync.getSourceId(),
         standardSync.getDestinationId(),
         standardSync.getOperationIds(),
-        standardSync.getSourceCatalogId());
+        standardSync.getSourceCatalogId(),
+        Enums.convertTo(standardSync.getGeography(), Geography.class));
 
     if (standardSync.getSchedule() == null) {
       connectionRead.schedule(null);
@@ -177,7 +205,8 @@ public class ConnectionHelpers {
         .name(standardSync.getName())
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
-        .sourceCatalogId(standardSync.getSourceCatalogId());
+        .sourceCatalogId(standardSync.getSourceCatalogId())
+        .geography(ApiPojoConverters.toApiGeography(standardSync.getGeography()));
 
     if (standardSync.getNamespaceDefinition() != null) {
       connectionRead
@@ -199,6 +228,31 @@ public class ConnectionHelpers {
           .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest()));
     }
     return connectionRead;
+  }
+
+  public static WebBackendConnectionListItem generateExpectedWebBackendConnectionListItem(
+                                                                                          final StandardSync standardSync,
+                                                                                          final SourceRead source,
+                                                                                          final DestinationRead destination,
+                                                                                          final boolean isSyncing,
+                                                                                          final Long latestSyncJobCreatedAt,
+                                                                                          final JobStatus latestSynJobStatus) {
+
+    final WebBackendConnectionListItem connectionListItem = new WebBackendConnectionListItem()
+        .connectionId(standardSync.getConnectionId())
+        .name(standardSync.getName())
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .source(source)
+        .destination(destination)
+        .status(ApiPojoConverters.toApiStatus(standardSync.getStatus()))
+        .isSyncing(isSyncing)
+        .latestSyncJobCreatedAt(latestSyncJobCreatedAt)
+        .latestSyncJobStatus(latestSynJobStatus)
+        .scheduleType(ApiPojoConverters.toApiConnectionScheduleType(standardSync))
+        .scheduleData(ApiPojoConverters.toApiConnectionScheduleData(standardSync));
+
+    return connectionListItem;
   }
 
   public static JsonNode generateBasicJsonSchema() {

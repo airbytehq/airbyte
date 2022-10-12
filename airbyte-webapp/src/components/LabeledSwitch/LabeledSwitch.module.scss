@@ -12,6 +12,9 @@
   line-height: 16px;
   cursor: pointer;
   color: colors.$dark-blue;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 
   &.disabled {
     cursor: auto;

@@ -1,0 +1,31 @@
+@use "../../../scss/colors";
+
+%cover {
+  width: 100%;
+  height: 100%;
+}
+
+.loadingBackdropContainer {
+  @extend %cover;
+
+  position: relative;
+
+  .backdrop {
+    @extend %cover;
+
+    position: absolute;
+    background-color: colors.$white;
+    opacity: 0.6;
+    z-index: 1;
+  }
+
+  .spinnerContainer {
+    @extend %cover;
+
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+}
