@@ -1,0 +1,62 @@
+version: "0.1.0"
+
+definitions:
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_exchange_rates_api/schemas/{{ options['name'] }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: []
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "apikey"
+      api_token: "{{ config['access_key'] }}"
+    request_options_provider:
+      request_parameters:
+        base: "{{ config['base'] }}"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ now_local() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+    step: "1d"
+    datetime_format: "%Y-%m-%d"
+    cursor_field: "{{ options['stream_cursor_field'] }}"
+  retriever:
+    type: SimpleRetriever
+    $options:
+      url_base: "https://api.apilayer.com"
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
+
+streams:
+  - type: DeclarativeStream
+    $options:
+      name: "rates"
+      stream_cursor_field: "date"
+    primary_key: "rates"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/exchangerates_data/{{stream_slice['start_date'] or 'latest'}}"
+check:
+  type: CheckStream
+  stream_names: ["rates"]

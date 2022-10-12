@@ -1,0 +1,119 @@
+{
+  "type": "object",
+  "required": ["base", "date", "rates"],
+  "properties": {
+    "access_key": {
+      "type": "string"
+    },
+    "base": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "rates": {
+      "type": "object",
+      "properties": {
+        "CAD": {
+          "type": ["null", "number"]
+        },
+        "HKD": {
+          "type": ["null", "number"]
+        },
+        "ISK": {
+          "type": ["null", "number"]
+        },
+        "PHP": {
+          "type": ["null", "number"]
+        },
+        "DKK": {
+          "type": ["null", "number"]
+        },
+        "HUF": {
+          "type": ["null", "number"]
+        },
+        "CZK": {
+          "type": ["null", "number"]
+        },
+        "GBP": {
+          "type": ["null", "number"]
+        },
+        "RON": {
+          "type": ["null", "number"]
+        },
+        "SEK": {
+          "type": ["null", "number"]
+        },
+        "IDR": {
+          "type": ["null", "number"]
+        },
+        "INR": {
+          "type": ["null", "number"]
+        },
+        "BRL": {
+          "type": ["null", "number"]
+        },
+        "RUB": {
+          "type": ["null", "number"]
+        },
+        "HRK": {
+          "type": ["null", "number"]
+        },
+        "JPY": {
+          "type": ["null", "number"]
+        },
+        "THB": {
+          "type": ["null", "number"]
+        },
+        "CHF": {
+          "type": ["null", "number"]
+        },
+        "EUR": {
+          "type": ["null", "number"]
+        },
+        "MYR": {
+          "type": ["null", "number"]
+        },
+        "BGN": {
+          "type": ["null", "number"]
+        },
+        "TRY": {
+          "type": ["null", "number"]
+        },
+        "CNY": {
+          "type": ["null", "number"]
+        },
+        "NOK": {
+          "type": ["null", "number"]
+        },
+        "NZD": {
+          "type": ["null", "number"]
+        },
+        "ZAR": {
+          "type": ["null", "number"]
+        },
+        "USD": {
+          "type": ["null", "number"]
+        },
+        "MXN": {
+          "type": ["null", "number"]
+        },
+        "SGD": {
+          "type": ["null", "number"]
+        },
+        "AUD": {
+          "type": ["null", "number"]
+        },
+        "ILS": {
+          "type": ["null", "number"]
+        },
+        "KRW": {
+          "type": ["null", "number"]
+        },
+        "PLN": {
+          "type": ["null", "number"]
+        }
+      }
+    }
+  }
+}
