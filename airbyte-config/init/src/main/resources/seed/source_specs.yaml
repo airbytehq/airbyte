@@ -6964,7 +6964,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.3"
+- dockerImage: "airbyte/source-mysql:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -7194,9 +7194,16 @@
                   \ <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"\
                   >initial waiting time</a>."
                 default: 300
-                order: 4
                 min: 120
                 max: 1200
+                order: 1
+              server_time_zone:
+                type: "string"
+                title: "Configured server timezone for the MySQL source (Advanced)"
+                description: "Enter the configured MySQL server timezone. This should\
+                  \ only be done if the configured timezone in your MySQL instance\
+                  \ does not conform to IANNA standard."
+                order: 2
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
