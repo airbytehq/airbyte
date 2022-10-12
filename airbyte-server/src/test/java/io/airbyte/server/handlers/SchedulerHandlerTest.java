@@ -385,6 +385,7 @@ class SchedulerHandlerTest {
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
 
     assertNotNull(actual.getCatalog());
+    assertEquals(actual.getCatalogId(), discoverResponse.getOutput());
     assertNotNull(actual.getJobInfo());
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
@@ -422,6 +423,7 @@ class SchedulerHandlerTest {
 
     assertNotNull(actual.getCatalog());
     assertNotNull(actual.getJobInfo());
+    assertEquals(actual.getCatalogId(), discoverResponse.getOutput());
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
     verify(configRepository).getActorCatalog(eq(request.getSourceId()), any(), any());
@@ -528,6 +530,7 @@ class SchedulerHandlerTest {
 
     assertNotNull(actual.getCatalog());
     assertNotNull(actual.getJobInfo());
+    assertEquals(actual.getCatalogId(), discoverResponse.getOutput());
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG);
   }
