@@ -19,43 +19,49 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
+    expected_params = {"table_name": "messages"}
+    assert stream.request_params(**inputs) == expected_params
+    inputs = {"stream_slice": None, "stream_state": {"_ts": 1234}, "next_page_token": None}
+    expected_params = {"table_name": "messages", "cursor": 1234}
+    assert stream.request_params(**inputs) == expected_params
+    inputs = {"stream_slice": None, "stream_state": {"_ts": 1234}, "next_page_token": {"_ts": 2345}}
+    expected_params = {"table_name": "messages", "cursor": 2345}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
+    resp = MagicMock()
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1234}], "cursor": ""}
+    stream.parse_response(resp, {})
+    assert stream.next_page_token(resp) == {"_ts": 1234}
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1234}], "cursor": "custom_cursor"}
+    stream.parse_response(resp, {})
+    assert stream.next_page_token(resp) == {"_ts": "custom_cursor"}
+    resp.json = lambda: {"values": [], "cursor": ""}
+    stream.parse_response(resp, {})
+    assert stream.next_page_token(resp) is None
 
 
 def test_parse_response(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     resp = MagicMock()
-    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f"}]}
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1234}], "cursor": ""}
     inputs = {"response": resp, "stream_state": {}}
-    expected_parsed_objects = [{"_id": "my_id", "field": "f"}]
+    expected_parsed_objects = [{"_id": "my_id", "field": "f", "_ts": 1234}]
     assert stream.parse_response(**inputs) == expected_parsed_objects
 
 
 def test_request_headers(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
     expected_headers = {}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
-    # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
 

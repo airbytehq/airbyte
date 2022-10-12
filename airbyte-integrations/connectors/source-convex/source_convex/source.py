@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
@@ -88,11 +88,13 @@ def convex_shape_to_json(shape):
     return convex_shape_variant_to_json(shape["variant"])
 
 
-class ConvexStream(HttpStream):
+class ConvexStream(HttpStream, IncrementalMixin):
     def __init__(self, instance_name: str, access_key: str, table_name: str, shape: Any):
         self.instance_name = instance_name
         self.table_name = table_name
         self.shape = shape
+        self._cursor_value = None
+        self._has_more = True
         super().__init__(TokenAuthenticator(access_key, "Convex"))
 
     @property
@@ -111,12 +113,24 @@ class ConvexStream(HttpStream):
     primary_key = "_id"
     cursor_field = "_ts"
 
-    # Checkpoint stream reads after 1000 records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = 1000
+    # Checkpoint stream reads after this many records. This prevents re-reading of data if the stream fails for any reason.
+    state_checkpoint_interval = 128
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = value[self.cursor_field]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # TODO(lee) pagination
-        return None
+        # Inner level of pagination shares the same state as outer,
+        # and returns None to indicate that we're done.
+        return self.state if self._has_more else None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -131,7 +145,16 @@ class ConvexStream(HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         resp_json = response.json()
+        self._cursor_value = resp_json["cursor"] or self._cursor_from_values(resp_json["values"])
+        # TODO(lee) return has_more from API.
+        self._has_more = len(resp_json["values"]) > 0
         return resp_json["values"]
+
+    def _cursor_from_values(self, values):
+        # TODO(lee) update API to always return cursor, so we can delete this function.
+        if values:
+            return values[-1][self.cursor_field]
+        return None
 
     def request_params(
         self,
@@ -139,4 +162,15 @@ class ConvexStream(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        return {}
+        params = {"table_name": self.table_name}
+        if stream_state and self.cursor_field in stream_state:
+            params["cursor"] = stream_state[self.cursor_field]
+        if next_page_token and self.cursor_field in next_page_token:
+            params["cursor"] = next_page_token[self.cursor_field]
+        return params
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        """
+        This is supposedly deprecated, but it's still used by AbstractSource to update state between calls to `read_records`.
+        """
+        return self.state

@@ -1,5 +1,8 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "posts": {
+    "_ts": 2652635567679741986
+  },
+  "users": {
+    "_ts": 2660025892355943945
   }
 }

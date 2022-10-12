@@ -33,9 +33,7 @@ def test_get_updated_state(patch_incremental_base_class):
 
 def test_stream_slices(patch_incremental_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
-    # TODO: replace this with your input parameters
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    # TODO: replace this with your expected stream slices list
     expected_stream_slice = [None]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
@@ -53,5 +51,5 @@ def test_source_defined_cursor(patch_incremental_base_class):
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
-    expected_checkpoint_interval = 1000
+    expected_checkpoint_interval = 128
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
