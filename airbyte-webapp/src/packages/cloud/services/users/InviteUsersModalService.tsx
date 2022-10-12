@@ -25,9 +25,7 @@ export const InviteUsersModalServiceProvider: React.FC = ({ children }) => {
   const contextValue = useMemo<InviteUsersModalServiceContext>(
     () => ({
       isInviteUsersModalOpen: isOpen,
-      toggleInviteUsersModalOpen: (open) => {
-        toggleIsOpen(open);
-      },
+      toggleInviteUsersModalOpen: toggleIsOpen,
     }),
     [isOpen, toggleIsOpen]
   );
