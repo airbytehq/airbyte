@@ -45,6 +45,8 @@ public class CsvDestination extends BaseConnector implements Destination {
 
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
+  static final String DELIMETER_FIELD = "delimeter";
+
   private final StandardNameTransformer namingResolver;
 
   public CsvDestination() {
@@ -55,6 +57,7 @@ public class CsvDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       FileUtils.forceMkdir(getDestinationPath(config).toFile());
+      // Get delimeter?
     } catch (final Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
@@ -120,6 +123,26 @@ public class CsvDestination extends BaseConnector implements Destination {
     }
 
     return destinationPath;
+  }
+
+  /**
+   * Extract provided delimeter from csv config object.
+   *
+   * @param config - csv config object
+   * @return delimeter.
+   */
+  protected Delimeter getDelimeter(final JsonNode config) {
+    Delimeter delimeter = Paths.get(config.get(DELIMETER_FIELD).asText());
+    Preconditions.checkNotNull(delimeter);
+
+    if (!delimeter.startsWith("/local"))
+      delimeter = Path.of("/local", delimeter.toString());
+    final Path normalizePath = delimeter.normalize();
+    if (!normalizePath.startsWith("/local")) {
+      throw new IllegalArgumentException("Destination file should be inside the /local directory");
+    }
+
+    return delimeter;
   }
 
   /**

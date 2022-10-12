@@ -15,6 +15,12 @@
         "description": "Path to the directory where csv files will be written. The destination uses the local mount \"/local\" and any data files will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.com/integrations/destinations/local-csv\">docs</a>",
         "type": "string",
         "examples": ["/local"]
+      },
+      "delimiter": {
+        "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string.",
+        "type": "string",
+        "examples": [","],
+        "default":","
       }
     }
   }
