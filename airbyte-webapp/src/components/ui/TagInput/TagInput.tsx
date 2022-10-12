@@ -9,7 +9,6 @@ const components = {
   DropdownIndicator: null,
 };
 
-// export the variables from taginput.module.scss instead and import here
 const customStyles = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- react-select's typing is lacking here
   multiValue: (provided: any) => ({

@@ -18,12 +18,53 @@ describe("<TagInput />", () => {
     expect(tag2).toBeInTheDocument();
   });
 
-  it("adds a tag when user types a tag and hits enter", () => {
-    render(<TagInputWithWrapper />);
-    const input = screen.getByRole("combobox");
-    userEvent.type(input, "tag3{enter}");
-    const tag3 = screen.getByText("tag3");
-    expect(tag3).toBeInTheDocument();
+  describe("delimiters and keypress events create tags", () => {
+    it("adds a tag when user types a tag and hits enter", () => {
+      render(<TagInputWithWrapper />);
+      const input = screen.getByRole("combobox");
+      userEvent.type(input, "tag3{enter}");
+      const tag3 = screen.getByText("tag3");
+      expect(tag3).toBeInTheDocument();
+    });
+    it("adds a tag when user types a tag and hits tab", () => {
+      render(<TagInputWithWrapper />);
+      const input = screen.getByRole("combobox");
+      userEvent.type(input, "tag3{Tab}");
+      const tag3 = screen.getByText("tag3");
+      expect(tag3).toBeInTheDocument();
+    });
+
+    it("adds multiple tags when a user enters a string with commas", () => {
+      render(<TagInputWithWrapper />);
+      const input = screen.getByRole("combobox");
+      userEvent.type(input, "tag3, tag4,");
+      const tag3 = screen.getByText("tag3");
+      expect(tag3).toBeInTheDocument();
+      const tag4 = screen.getByText("tag4");
+      expect(tag4).toBeInTheDocument();
+    });
+    it("adds multiple tags when a user enters a string with semicolons", () => {
+      render(<TagInputWithWrapper />);
+      const input = screen.getByRole("combobox");
+      userEvent.type(input, "tag3; tag4;");
+      const tag3 = screen.getByText("tag3");
+      expect(tag3).toBeInTheDocument();
+      const tag4 = screen.getByText("tag4");
+      expect(tag4).toBeInTheDocument();
+    });
+    it("handles a combination of methods at once", () => {
+      render(<TagInputWithWrapper />);
+      const input = screen.getByRole("combobox");
+      userEvent.type(input, "tag3; tag4{Tab} tag5, tag6{enter}");
+      const tag3 = screen.getByText("tag3");
+      expect(tag3).toBeInTheDocument();
+      const tag4 = screen.getByText("tag4");
+      expect(tag4).toBeInTheDocument();
+      const tag5 = screen.getByText("tag5");
+      expect(tag5).toBeInTheDocument();
+      const tag6 = screen.getByText("tag6");
+      expect(tag6).toBeInTheDocument();
+    });
   });
 
   it("correctly removes a tag when user clicks its Remove button", () => {
