@@ -1,0 +1,46 @@
+@use "scss/colors";
+
+.content {
+  max-width: 1073px;
+  margin: 0 auto;
+  padding-bottom: 10px;
+}
+
+.customCard {
+  max-width: 500px;
+  margin: 0 auto;
+  min-height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+.cloudTransformationsListContainer {
+  padding: 25px 25px 22px;
+  background-color: colors.$grey-50;
+}
+
+.cloudTransformationsListTitle {
+  display: flex;
+  justify-content: space-between;
+}
+
+.emptyListContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  > img {
+    width: 111px;
+    height: 111px;
+    margin: 20px 0;
+  }
+}
+
+.contextExplanation {
+  color: colors.$grey-300;
+  width: 100%;
+
+  & a {
+    color: colors.$grey-300;
+  }
+}
