@@ -74,14 +74,20 @@ export const ServiceFormContextProvider: React.FC<React.PropsWithChildren<Servic
     [availableServices, serviceType]
   );
 
-  const isAuthFlowSelected = useMemo(
-    () =>
-      allowOAuthConnector &&
-      selectedConnector?.advancedAuth &&
-      selectedConnector?.advancedAuth.predicateValue ===
-        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey ?? [])),
-    [selectedConnector, allowOAuthConnector, values, getValues]
-  );
+  const isAuthFlowSelected = useMemo(() => {
+    if (allowOAuthConnector) {
+      if (
+        selectedConnector?.advancedAuth &&
+        selectedConnector?.advancedAuth.predicateValue ===
+          getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey ?? []))
+      ) {
+        return true;
+      } else if (selectedConnector?.authSpecification) {
+        return true;
+      }
+    }
+    return false;
+  }, [allowOAuthConnector, getValues, selectedConnector?.advancedAuth, selectedConnector?.authSpecification, values]);
 
   const authFieldsToHide = useMemo(
     () =>
