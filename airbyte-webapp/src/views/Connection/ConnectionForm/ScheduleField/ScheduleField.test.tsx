@@ -4,7 +4,8 @@ import userEvent from "@testing-library/user-event";
 import { Form, Formik } from "formik";
 import selectEvent from "react-select-event";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
-import { TestWrapper, render, mockConnection } from "test-utils/testutils";
+import { render, mockConnection } from "test-utils/testutils";
+import * as yup from "yup";
 
 import { ScheduleField } from "./ScheduleField";
 import { scheduleFieldValidationSchema } from "./validationSchema";
@@ -17,17 +18,15 @@ jest.mock("hooks/services/ConnectionForm/ConnectionFormService", () => ({
 }));
 
 const MockForm = () => (
-  <TestWrapper>
-    <Formik
-      initialValues={{ scheduleData: undefined }}
-      validationSchema={scheduleFieldValidationSchema}
-      onSubmit={jest.fn()}
-    >
-      <Form>
-        <ScheduleField />
-      </Form>
-    </Formik>
-  </TestWrapper>
+  <Formik
+    initialValues={{ scheduleData: undefined }}
+    validationSchema={yup.object({ scheduleData: scheduleFieldValidationSchema })}
+    onSubmit={jest.fn()}
+  >
+    <Form>
+      <ScheduleField />
+    </Form>
+  </Formik>
 );
 
 describe(`${ScheduleField.name}`, () => {
