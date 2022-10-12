@@ -261,6 +261,14 @@
   icon: exchangeratesapi.svg
   sourceType: api
   releaseStage: alpha
+- name: Exchange Rates Api Tutorial
+  sourceDefinitionId: 6c06359a-c171-4a19-a155-583f52f66ff2
+  dockerRepository: airbyte/source-exchange-rates-api
+  dockerImageTag: dev
+  documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+  icon: exchangeratesapi.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
