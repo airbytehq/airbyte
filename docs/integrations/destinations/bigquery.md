@@ -134,6 +134,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                  |
 |:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.2.4   | 2022-09-26 | [#16890](https://github.com/airbytehq/airbyte/pull/16890) | Add user-agent header                                                                                                    |
 | 1.2.3   | 2022-09-22 | [#17054](https://github.com/airbytehq/airbyte/pull/17054) | Respect stream namespace                                                                                                 |
 | 1.2.1   | 2022-09-14 | [#15668](https://github.com/airbytehq/airbyte/pull/15668) | (bugged, do not use) Wrap logs in AirbyteLogMessage                                                                      |
 | 1.2.0   | 2022-09-09 | [#14023](https://github.com/airbytehq/airbyte/pull/14023) | (bugged, do not use) Cover arrays only if they are nested                                                                |
@@ -183,6 +184,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                  |
 |:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.2.4   | 2022-09-26 | [#16890](https://github.com/airbytehq/airbyte/pull/16890) | Add user-agent header                                                                                                    |
 | 1.2.3   | 2022-09-22 | [#17054](https://github.com/airbytehq/airbyte/pull/17054) | Respect stream namespace                                                                                                 |
 | 1.2.2   | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668)  | (bugged, do not use) Wrap logs in AirbyteLogMessage                                                                      |
 | 1.2.1   | 2022-09-10 | [16401](https://github.com/airbytehq/airbyte/pull/16401)  | (bugged, do not use) Wrapping string objects with TextNode                                                               |

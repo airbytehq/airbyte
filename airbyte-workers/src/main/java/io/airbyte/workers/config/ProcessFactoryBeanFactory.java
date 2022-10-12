@@ -13,12 +13,13 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * Micronaut bean factory for process factory-related singletons.
@@ -28,10 +29,8 @@ import javax.inject.Singleton;
 public class ProcessFactoryBeanFactory {
 
   @Singleton
-  @Requires(property = "airbyte.worker.env",
-            pattern = "(?i)^(?!kubernetes$).*")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Requires(notEnv = Environment.KUBERNETES)
   @Named("checkProcessFactory")
   public ProcessFactory checkDockerProcessFactory(
                                                   @Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -50,10 +49,8 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.env",
-            pattern = "(?i)^kubernetes$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Requires(env = Environment.KUBERNETES)
   @Named("checkProcessFactory")
   public ProcessFactory checkKubernetesProcessFactory(
                                                       @Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -66,8 +63,7 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.env",
-            pattern = "(?i)^(?!kubernetes$).*")
+  @Requires(notEnv = Environment.KUBERNETES)
   @Named("defaultProcessFactory")
   public ProcessFactory defaultDockerProcessFactory(
                                                     @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -86,8 +82,7 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.env",
-            pattern = "(?i)^kubernetes$")
+  @Requires(env = Environment.KUBERNETES)
   @Named("defaultProcessFactory")
   public ProcessFactory defaultKubernetesProcessFactory(
                                                         @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -100,10 +95,8 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.env",
-            pattern = "(?i)^(?!kubernetes$).*")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Requires(notEnv = Environment.KUBERNETES)
   @Named("discoverProcessFactory")
   public ProcessFactory discoverDockerProcessFactory(
                                                      @Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -122,10 +115,8 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.env",
-            pattern = "(?i)^kubernetes$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Requires(env = Environment.KUBERNETES)
   @Named("discoverProcessFactory")
   public ProcessFactory discoverKubernetesProcessFactory(
                                                          @Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -138,8 +129,7 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.env",
-            pattern = "(?i)^(?!kubernetes$).*")
+  @Requires(notEnv = Environment.KUBERNETES)
   @Named("replicationProcessFactory")
   public ProcessFactory replicationDockerProcessFactory(
                                                         @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -158,8 +148,7 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.env",
-            pattern = "(?i)^kubernetes$")
+  @Requires(env = Environment.KUBERNETES)
   @Named("replicationProcessFactory")
   public ProcessFactory replicationKubernetesProcessFactory(
                                                             @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -172,10 +161,8 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.env",
-            pattern = "(?i)^(?!kubernetes$).*")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Requires(notEnv = Environment.KUBERNETES)
   @Named("specProcessFactory")
   public ProcessFactory specDockerProcessFactory(
                                                  @Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -194,10 +181,8 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.env",
-            pattern = "(?i)^kubernetes$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Requires(env = Environment.KUBERNETES)
   @Named("specProcessFactory")
   public ProcessFactory specKubernetesProcessFactory(
                                                      @Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -223,16 +208,15 @@ public class ProcessFactoryBeanFactory {
         dockerNetwork);
   }
 
-  private ProcessFactory createKubernetesProcessFactory(
-                                                        final WorkerConfigs workerConfigs,
-                                                        final String kuberenetesNamespace,
+  private ProcessFactory createKubernetesProcessFactory(final WorkerConfigs workerConfigs,
+                                                        final String kubernetesNamespace,
                                                         final Integer serverPort)
       throws UnknownHostException {
     final KubernetesClient fabricClient = new DefaultKubernetesClient();
     final String localIp = InetAddress.getLocalHost().getHostAddress();
     final String kubeHeartbeatUrl = localIp + ":" + serverPort;
     return new KubeProcessFactory(workerConfigs,
-        kuberenetesNamespace,
+        kubernetesNamespace,
         fabricClient,
         kubeHeartbeatUrl,
         false);

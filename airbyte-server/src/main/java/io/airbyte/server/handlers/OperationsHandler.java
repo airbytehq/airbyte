@@ -92,7 +92,7 @@ public class OperationsHandler {
     }
     if ((io.airbyte.api.model.generated.OperatorType.WEBHOOK).equals(operationCreate.getOperatorConfiguration().getOperatorType())) {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getWebhook() != null);
-      final StandardWorkspace workspaceRead = this.configRepository.getStandardWorkspace(operationCreate.getWorkspaceId(), true);
+      final StandardWorkspace workspaceRead = this.configRepository.getStandardWorkspaceNoSecrets(operationCreate.getWorkspaceId(), true);
       standardSyncOperation.withOperatorWebhook(new OperatorWebhook()
           .withExecutionUrl(operationCreate.getOperatorConfiguration().getWebhook().getExecutionUrl())
           .withExecutionBody(operationCreate.getOperatorConfiguration().getWebhook().getExecutionBody())

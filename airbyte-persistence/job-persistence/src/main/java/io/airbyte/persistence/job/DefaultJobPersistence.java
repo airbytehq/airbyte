@@ -23,7 +23,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobConfig;
@@ -53,6 +55,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -108,6 +112,13 @@ public class DefaultJobPersistence implements JobPersistence {
   private static final String AIRBYTE_METADATA_TABLE = "airbyte_metadata";
   public static final String ORDER_BY_JOB_TIME_ATTEMPT_TIME =
       "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC ";
+  public static final String ORDER_BY_JOB_CREATED_AT_DESC = "ORDER BY jobs.created_at DESC ";
+  public static final String LIMIT_1 = "LIMIT 1 ";
+  private static final String JOB_STATUS_IS_NON_TERMINAL = String.format("status IN (%s) ",
+      JobStatus.NON_TERMINAL_STATUSES.stream()
+          .map(Sqls::toSqlName)
+          .map(Names::singleQuote)
+          .collect(Collectors.joining(",")));
 
   private final ExceptionWrappingDatabase jobDatabase;
   private final Supplier<Instant> timeSupplier;
@@ -554,7 +565,7 @@ public class DefaultJobPersistence implements JobPersistence {
             "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + AND +
             SCOPE_CLAUSE +
             "CAST(jobs.status AS VARCHAR) <> ? " +
-            "ORDER BY jobs.created_at DESC LIMIT 1",
+            ORDER_BY_JOB_CREATED_AT_DESC + LIMIT_1,
             connectionId.toString(),
             Sqls.toSqlName(JobStatus.CANCELLED))
         .stream()
@@ -568,12 +579,63 @@ public class DefaultJobPersistence implements JobPersistence {
         .fetch(BASE_JOB_SELECT_AND_JOIN + WHERE +
             "CAST(jobs.config_type AS VARCHAR) = ? " + AND +
             "scope = ? " +
-            "ORDER BY jobs.created_at DESC LIMIT 1",
+            ORDER_BY_JOB_CREATED_AT_DESC + LIMIT_1,
             Sqls.toSqlName(ConfigType.SYNC),
             connectionId.toString())
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get(JOB_ID, Long.class))));
+  }
+
+  /**
+   * For each connection ID in the input, find that connection's latest sync job and return it if one
+   * exists.
+   */
+  @Override
+  public List<Job> getLastSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
+    if (connectionIds.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    return jobDatabase.query(ctx -> ctx
+        .fetch("SELECT DISTINCT ON (scope) * FROM jobs "
+            + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
+            + AND + scopeInList(connectionIds)
+            + "ORDER BY scope, created_at DESC",
+            Sqls.toSqlName(ConfigType.SYNC))
+        .stream()
+        .flatMap(r -> getJobOptional(ctx, r.get("id", Long.class)).stream())
+        .collect(Collectors.toList()));
+  }
+
+  /**
+   * For each connection ID in the input, find that connection's most recent non-terminal sync job and
+   * return it if one exists.
+   */
+  @Override
+  public List<Job> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
+    if (connectionIds.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    return jobDatabase.query(ctx -> ctx
+        .fetch("SELECT DISTINCT ON (scope) * FROM jobs "
+            + WHERE + "CAST(jobs.config_type AS VARCHAR) = ? "
+            + AND + scopeInList(connectionIds)
+            + AND + JOB_STATUS_IS_NON_TERMINAL
+            + "ORDER BY scope, created_at DESC",
+            Sqls.toSqlName(ConfigType.SYNC))
+        .stream()
+        .flatMap(r -> getJobOptional(ctx, r.get("id", Long.class)).stream())
+        .collect(Collectors.toList()));
+  }
+
+  private String scopeInList(final Collection<UUID> connectionIds) {
+    return String.format("scope IN (%s) ",
+        connectionIds.stream()
+            .map(UUID::toString)
+            .map(Names::singleQuote)
+            .collect(Collectors.joining(",")));
   }
 
   @Override
@@ -705,65 +767,35 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public boolean isSecretMigrated() throws IOException {
-    final Result<Record> result = jobDatabase.query(ctx -> ctx.select()
-        .from(AIRBYTE_METADATA_TABLE)
-        .where(DSL.field(METADATA_KEY_COL).eq(SECRET_MIGRATION_STATUS))
-        .fetch());
-
-    return result.stream().count() == 1;
+    return getMetadata(SECRET_MIGRATION_STATUS).count() == 1;
   }
 
   @Override
   public void setSecretMigrationDone() throws IOException {
-    jobDatabase.query(ctx -> ctx.execute(String.format(
-        "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
-        AIRBYTE_METADATA_TABLE,
-        METADATA_KEY_COL,
-        METADATA_VAL_COL,
-        SECRET_MIGRATION_STATUS,
-        true,
-        METADATA_KEY_COL,
-        METADATA_VAL_COL,
-        true)));
+    setMetadata(SECRET_MIGRATION_STATUS, "true");
   }
 
   private final String SCHEDULER_MIGRATION_STATUS = "schedulerMigration";
 
   @Override
   public boolean isSchedulerMigrated() throws IOException {
-    final Result<Record> result = jobDatabase.query(ctx -> ctx.select()
-        .from(AIRBYTE_METADATA_TABLE)
-        .where(DSL.field(METADATA_KEY_COL).eq(SCHEDULER_MIGRATION_STATUS))
-        .fetch());
-
-    return result.stream().count() == 1;
+    return getMetadata(SCHEDULER_MIGRATION_STATUS).count() == 1;
   }
 
   @Override
   public void setSchedulerMigrationDone() throws IOException {
-    jobDatabase.query(ctx -> ctx.execute(String.format(
-        "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
-        AIRBYTE_METADATA_TABLE,
-        METADATA_KEY_COL,
-        METADATA_VAL_COL,
-        SCHEDULER_MIGRATION_STATUS,
-        true,
-        METADATA_KEY_COL,
-        METADATA_VAL_COL,
-        true)));
+    setMetadata(SCHEDULER_MIGRATION_STATUS, "true");
   }
 
   @Override
   public Optional<String> getVersion() throws IOException {
-    final Result<Record> result = jobDatabase.query(ctx -> ctx.select()
-        .from(AIRBYTE_METADATA_TABLE)
-        .where(DSL.field(METADATA_KEY_COL).eq(AirbyteVersion.AIRBYTE_VERSION_KEY_NAME))
-        .fetch());
-    return result.stream().findFirst().map(r -> r.getValue(METADATA_VAL_COL, String.class));
+    return getMetadata(AirbyteVersion.AIRBYTE_VERSION_KEY_NAME).findFirst();
   }
 
   @Override
   public void setVersion(final String airbyteVersion) throws IOException {
+    // This is not using setMetadata due to the extra (<timestamp>s_init_db, airbyteVersion) that is
+    // added to the metadata table
     jobDatabase.query(ctx -> ctx.execute(String.format(
         "INSERT INTO %s(%s, %s) VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
         AIRBYTE_METADATA_TABLE,
@@ -776,6 +808,45 @@ public class DefaultJobPersistence implements JobPersistence {
         METADATA_KEY_COL,
         METADATA_VAL_COL,
         airbyteVersion)));
+
+  }
+
+  @Override
+  public Optional<Version> getAirbyteProtocolVersionMax() throws IOException {
+    return getMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MAX_KEY_NAME).findFirst().map(Version::new);
+  }
+
+  @Override
+  public void setAirbyteProtocolVersionMax(final Version version) throws IOException {
+    setMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MAX_KEY_NAME, version.serialize());
+  }
+
+  @Override
+  public Optional<Version> getAirbyteProtocolVersionMin() throws IOException {
+    return getMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MIN_KEY_NAME).findFirst().map(Version::new);
+  }
+
+  @Override
+  public void setAirbyteProtocolVersionMin(final Version version) throws IOException {
+    setMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MIN_KEY_NAME, version.serialize());
+  }
+
+  private Stream<String> getMetadata(final String keyName) throws IOException {
+    return jobDatabase.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(DSL.field(METADATA_KEY_COL).eq(keyName))
+        .fetch()).stream().map(r -> r.getValue(METADATA_VAL_COL, String.class));
+  }
+
+  private void setMetadata(final String keyName, final String value) throws IOException {
+    jobDatabase.query(ctx -> ctx
+        .insertInto(DSL.table(AIRBYTE_METADATA_TABLE))
+        .columns(DSL.field(METADATA_KEY_COL), DSL.field(METADATA_VAL_COL))
+        .values(keyName, value)
+        .onConflict(DSL.field(METADATA_KEY_COL))
+        .doUpdate()
+        .set(DSL.field(METADATA_VAL_COL), value)
+        .execute());
   }
 
   @Override

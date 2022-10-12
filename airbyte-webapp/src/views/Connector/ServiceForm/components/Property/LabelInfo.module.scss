@@ -1,0 +1,38 @@
+@use "../../../../../scss/colors";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.descriptionHeader {
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+
+.description ul {
+  padding-left: 25px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+
+.exampleHeader {
+  margin-block-start: 0;
+  margin-bottom: 5px;
+}
+
+.exampleContainer {
+  display: flex;
+  flex-flow: row wrap;
+  row-gap: 7px;
+  column-gap: 7px;
+}
+
+.exampleItem {
+  width: max-content;
+  max-width: 100%;
+  padding: 3px 6px;
+  background-color: colors.$dark-blue-400;
+  border-radius: 9px;
+}

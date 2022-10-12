@@ -4,7 +4,6 @@
 
 package io.airbyte.server.converters;
 
-import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ActorDefinitionResourceRequirements;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionSchedule;
@@ -12,6 +11,7 @@ import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleDataCron;
 import io.airbyte.api.model.generated.ConnectionStatus;
+import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobType;
 import io.airbyte.api.model.generated.JobTypeResourceLimit;
 import io.airbyte.api.model.generated.ResourceRequirements;
@@ -19,7 +19,6 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import java.util.stream.Collectors;
 
@@ -93,7 +92,8 @@ public class ApiPojoConverters {
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
-        .sourceCatalogId(standardSync.getSourceCatalogId());
+        .sourceCatalogId(standardSync.getSourceCatalogId())
+        .geography(Enums.convertTo(standardSync.getGeography(), Geography.class));
 
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(resourceRequirementsToApi(standardSync.getResourceRequirements()));
@@ -129,6 +129,14 @@ public class ApiPojoConverters {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
   }
 
+  public static Geography toApiGeography(final io.airbyte.config.Geography geography) {
+    return Enums.convertTo(geography, Geography.class);
+  }
+
+  public static io.airbyte.config.Geography toPersistenceGeography(final Geography apiGeography) {
+    return Enums.convertTo(apiGeography, io.airbyte.config.Geography.class);
+  }
+
   public static Schedule.TimeUnit toPersistenceTimeUnit(final ConnectionSchedule.TimeUnitEnum apiTimeUnit) {
     return Enums.convertTo(apiTimeUnit, Schedule.TimeUnit.class);
   }
@@ -153,63 +161,94 @@ public class ApiPojoConverters {
     return Enums.convertTo(timeUnit, ConnectionScheduleDataBasicSchedule.TimeUnitEnum.class);
   }
 
-  public static void populateConnectionReadSchedule(final StandardSync standardSync, final ConnectionRead connectionRead) {
-    // TODO(https://github.com/airbytehq/airbyte/issues/11432): only return new schema once frontend is
-    // ready.
+  public static io.airbyte.api.model.generated.ConnectionScheduleType toApiConnectionScheduleType(final StandardSync standardSync) {
     if (standardSync.getScheduleType() != null) {
-      // Populate everything based on the new schema.
       switch (standardSync.getScheduleType()) {
         case MANUAL -> {
-          connectionRead.scheduleType(io.airbyte.api.model.generated.ConnectionScheduleType.MANUAL);
+          return io.airbyte.api.model.generated.ConnectionScheduleType.MANUAL;
         }
         case BASIC_SCHEDULE -> {
-          connectionRead.scheduleType(io.airbyte.api.model.generated.ConnectionScheduleType.BASIC);
-          connectionRead.scheduleData(new ConnectionScheduleData()
-              .basicSchedule(new ConnectionScheduleDataBasicSchedule()
-                  .timeUnit(toApiBasicScheduleTimeUnit(standardSync.getScheduleData().getBasicSchedule().getTimeUnit()))
-                  .units(standardSync.getScheduleData().getBasicSchedule().getUnits())));
-          connectionRead.schedule(new ConnectionSchedule()
-              .timeUnit(toApiTimeUnit(standardSync.getScheduleData().getBasicSchedule().getTimeUnit()))
-              .units(standardSync.getScheduleData().getBasicSchedule().getUnits()));
+          return io.airbyte.api.model.generated.ConnectionScheduleType.BASIC;
         }
         case CRON -> {
-          // We don't populate any legacy data here.
-          connectionRead.scheduleType(io.airbyte.api.model.generated.ConnectionScheduleType.CRON);
-          connectionRead.scheduleData(new ConnectionScheduleData()
-              .cron(new ConnectionScheduleDataCron()
-                  .cronExpression(standardSync.getScheduleData().getCron().getCronExpression())
-                  .cronTimeZone(standardSync.getScheduleData().getCron().getCronTimeZone())));
+          return io.airbyte.api.model.generated.ConnectionScheduleType.CRON;
         }
+        default -> throw new RuntimeException("Unexpected scheduleType " + standardSync.getScheduleType());
       }
     } else if (standardSync.getManual()) {
       // Legacy schema, manual sync.
-      connectionRead.scheduleType(io.airbyte.api.model.generated.ConnectionScheduleType.MANUAL);
+      return io.airbyte.api.model.generated.ConnectionScheduleType.MANUAL;
     } else {
       // Legacy schema, basic schedule.
-      connectionRead.scheduleType(io.airbyte.api.model.generated.ConnectionScheduleType.BASIC);
-      connectionRead.schedule(new ConnectionSchedule()
-          .timeUnit(toApiTimeUnit(standardSync.getSchedule().getTimeUnit()))
-          .units(standardSync.getSchedule().getUnits()));
-      connectionRead.scheduleData(new ConnectionScheduleData()
-          .basicSchedule(new ConnectionScheduleDataBasicSchedule()
-              .timeUnit(toApiBasicScheduleTimeUnit(standardSync.getSchedule().getTimeUnit()))
-              .units(standardSync.getSchedule().getUnits())));
+      return io.airbyte.api.model.generated.ConnectionScheduleType.BASIC;
     }
   }
 
-  public static ConnectionScheduleType toApiScheduleType(final ScheduleType scheduleType) {
-    switch (scheduleType) {
-      case MANUAL -> {
-        return ConnectionScheduleType.MANUAL;
+  public static io.airbyte.api.model.generated.ConnectionScheduleData toApiConnectionScheduleData(final StandardSync standardSync) {
+    if (standardSync.getScheduleType() != null) {
+      switch (standardSync.getScheduleType()) {
+        case MANUAL -> {
+          return null;
+        }
+        case BASIC_SCHEDULE -> {
+          return new ConnectionScheduleData()
+              .basicSchedule(new ConnectionScheduleDataBasicSchedule()
+                  .timeUnit(toApiBasicScheduleTimeUnit(standardSync.getScheduleData().getBasicSchedule().getTimeUnit()))
+                  .units(standardSync.getScheduleData().getBasicSchedule().getUnits()));
+        }
+        case CRON -> {
+          return new ConnectionScheduleData()
+              .cron(new ConnectionScheduleDataCron()
+                  .cronExpression(standardSync.getScheduleData().getCron().getCronExpression())
+                  .cronTimeZone(standardSync.getScheduleData().getCron().getCronTimeZone()));
+        }
+        default -> throw new RuntimeException("Unexpected scheduleType " + standardSync.getScheduleType());
       }
-      case BASIC_SCHEDULE -> {
-        return ConnectionScheduleType.BASIC;
-      }
-      case CRON -> {
-        return ConnectionScheduleType.CRON;
-      }
+    } else if (standardSync.getManual()) {
+      // Legacy schema, manual sync.
+      return null;
+    } else {
+      // Legacy schema, basic schedule.
+      return new ConnectionScheduleData()
+          .basicSchedule(new ConnectionScheduleDataBasicSchedule()
+              .timeUnit(toApiBasicScheduleTimeUnit(standardSync.getSchedule().getTimeUnit()))
+              .units(standardSync.getSchedule().getUnits()));
     }
-    throw new RuntimeException("Unexpected schedule type");
+  }
+
+  public static ConnectionSchedule toLegacyConnectionSchedule(final StandardSync standardSync) {
+    if (standardSync.getScheduleType() != null) {
+      // Populate everything based on the new schema.
+      switch (standardSync.getScheduleType()) {
+        case MANUAL, CRON -> {
+          // We don't populate any legacy data here.
+          return null;
+        }
+        case BASIC_SCHEDULE -> {
+          return new ConnectionSchedule()
+              .timeUnit(toApiTimeUnit(standardSync.getScheduleData().getBasicSchedule().getTimeUnit()))
+              .units(standardSync.getScheduleData().getBasicSchedule().getUnits());
+        }
+        default -> throw new RuntimeException("Unexpected scheduleType " + standardSync.getScheduleType());
+      }
+    } else if (standardSync.getManual()) {
+      // Legacy schema, manual sync.
+      return null;
+    } else {
+      // Legacy schema, basic schedule.
+      return new ConnectionSchedule()
+          .timeUnit(toApiTimeUnit(standardSync.getSchedule().getTimeUnit()))
+          .units(standardSync.getSchedule().getUnits());
+    }
+  }
+
+  public static void populateConnectionReadSchedule(final StandardSync standardSync, final ConnectionRead connectionRead) {
+    connectionRead.scheduleType(toApiConnectionScheduleType(standardSync));
+    connectionRead.scheduleData(toApiConnectionScheduleData(standardSync));
+
+    // TODO(https://github.com/airbytehq/airbyte/issues/11432): only return new schema once frontend is
+    // ready.
+    connectionRead.schedule(toLegacyConnectionSchedule(standardSync));
   }
 
 }

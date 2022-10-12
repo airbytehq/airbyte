@@ -1,12 +1,13 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { useSearchParams } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
-import { Button, LoadingButton } from "components";
+import { Button } from "components/ui/Button";
 
-import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -16,6 +17,7 @@ import {
   useGetCloudWorkspace,
   useInvalidateCloudWorkspace,
 } from "packages/cloud/services/workspaces/CloudWorkspacesService";
+import { links } from "utils/links";
 
 interface Props {
   selfServiceCheckoutEnabled: boolean;
@@ -30,7 +32,7 @@ const Block = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 10px 0px;
+  margin: 10px 0;
 `;
 const CreditView = styled.div`
   text-transform: uppercase;
@@ -58,7 +60,6 @@ function hasRecentCreditIncrease(cloudWorkspace: CloudWorkspace): boolean {
 
 const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   const retryIntervalId = useRef<number>();
-  const config = useConfig();
   const currentWorkspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(currentWorkspace.workspaceId);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -107,7 +108,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
     });
-    await analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
+    analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
       actionDescription: "Checkout Start",
     });
     // Forward to stripe as soon as we created a checkout session successfully
@@ -123,15 +124,17 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         </Count>
       </CreditView>
       <Actions>
-        <LoadingButton
+        <Button
           disabled={!selfServiceCheckoutEnabled}
           type="button"
+          size="xs"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
+          icon={<FontAwesomeIcon icon={faPlus} />}
         >
           <FormattedMessage id="credits.buyCredits" />
-        </LoadingButton>
-        <Button as="a" target="_blank" href={config.links.contactSales}>
+        </Button>
+        <Button size="xs" onClick={() => window.open(links.contactSales, "_blank")}>
           <FormattedMessage id="credits.talkToSales" />
         </Button>
       </Actions>

@@ -197,6 +197,12 @@ VERY_NESTED_SCHEMA = {
             {"value1": "value2"},
             "Failed to transform value 'value2' of type 'string' to 'object', key path: '.value1'",
         ),
+        (
+            {"type": "object", "properties": {"value": {"type": "array", "items": {"type": "object"}}}},
+            {"value": ["one", "two"]},
+            {"value": ["one", "two"]},
+            "Failed to transform value 'one' of type 'string' to 'object', key path: '.value.0'",
+        ),
     ],
 )
 def test_transform(schema, actual, expected, expected_warns, caplog):

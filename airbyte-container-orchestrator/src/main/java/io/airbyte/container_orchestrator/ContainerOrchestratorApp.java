@@ -8,6 +8,7 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.temporal.sync.OrchestratorConstants;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -23,10 +24,9 @@ import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.storage.StateClients;
-import io.airbyte.workers.temporal.sync.DbtLauncherWorker;
-import io.airbyte.workers.temporal.sync.NormalizationLauncherWorker;
-import io.airbyte.workers.temporal.sync.OrchestratorConstants;
-import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
+import io.airbyte.workers.sync.DbtLauncherWorker;
+import io.airbyte.workers.sync.NormalizationLauncherWorker;
+import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
@@ -131,6 +131,7 @@ public class ContainerOrchestratorApp {
       // required to kill clients with thread pools
       System.exit(0);
     } catch (final Throwable t) {
+      log.error("Killing orchestrator because of an Exception", t);
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.FAILED);
       System.exit(1);
     }
@@ -202,8 +203,8 @@ public class ContainerOrchestratorApp {
                                                        final String application,
                                                        final FeatureFlags featureFlags) {
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, workerConfigs, processFactory, featureFlags);
-      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, workerConfigs, processFactory);
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, processFactory, featureFlags);
+      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, processFactory);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
       default -> null;

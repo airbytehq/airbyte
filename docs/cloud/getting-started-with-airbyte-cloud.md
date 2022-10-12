@@ -6,11 +6,15 @@ This page guides you through setting up your Airbyte Cloud account, setting up a
 
 To use Airbyte Cloud:
 
-1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide).
+1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide) using your email address, Google login, or GitHub login.
 
    Airbyte Cloud offers a 14-day free trial. For more information, see [Pricing](https://airbyte.com/pricing).
 
-2. Airbyte will send you an email with a verification link. On clicking the link, you'll be taken to your new workspace.
+   :::note
+   If you are invited to a workspace, you cannot use your Google login to create a new Airbyte account.
+   :::
+
+2. If you signed up using your email address, Airbyte will send you an email with a verification link. On clicking the link, you'll be taken to your new workspace.
 
    :::info
    A workspace lets you collaborate with team members and share resources across your team under a shared billing account.
@@ -100,6 +104,14 @@ For more information, see [Connections and Sync Modes](../understanding-airbyte/
 If you need to use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html):
 1. In the **Replication Frequency** dropdown, click **Cron**. 
 2. Enter a cron expression and choose a time zone to create a sync schedule.
+
+:::note
+
+* Only one sync per connection can run at a time. 
+* If cron schedules a sync to run before the last one finishes, the scheduled sync will start after the last sync completes.
+* Cloud does not allow schedules that sync more than once per hour. 
+
+:::
 
 To set up a connection:
 

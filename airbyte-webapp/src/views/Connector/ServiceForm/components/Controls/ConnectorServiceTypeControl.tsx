@@ -5,15 +5,18 @@ import { components } from "react-select";
 import { MenuListProps } from "react-select";
 import styled from "styled-components";
 
-import { ControlLabels, DropDown, DropDownRow } from "components";
-import { IDataItem, IProps as OptionProps, OptionView } from "components/base/DropDown/components/Option";
-import {
-  Icon as SingleValueIcon,
-  IProps as SingleValueProps,
-  ItemView as SingleValueView,
-} from "components/base/DropDown/components/SingleValue";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
+import { ControlLabels } from "components/LabeledControl";
+import {
+  DropDown,
+  DropDownOptionDataItem,
+  DropDownOptionProps,
+  OptionView,
+  SingleValueIcon,
+  SingleValueProps,
+  SingleValueView,
+} from "components/ui/DropDown";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
@@ -78,7 +81,7 @@ const SingleValueContent = styled(components.SingleValue)`
 `;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type MenuWithRequestButtonProps = MenuListProps<IDataItem, false> & { selectProps: any };
+type MenuWithRequestButtonProps = MenuListProps<DropDownOptionDataItem, false> & { selectProps: any };
 
 /**
  * Returns the order for a specific release stage label. This will define
@@ -124,10 +127,15 @@ const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage })
   );
 };
 
-const Option: React.FC<OptionProps> = (props) => {
+const Option: React.FC<DropDownOptionProps> = (props) => {
   return (
     <components.Option {...props}>
-      <OptionView data-testid={props.data.label} isSelected={props.isSelected} isDisabled={props.isDisabled}>
+      <OptionView
+        data-testid={props.data.label}
+        isSelected={props.isSelected}
+        isDisabled={props.isDisabled}
+        isFocused={props.isFocused}
+      >
         <Text>
           {props.data.img || null}
           <Label>{props.label}</Label>
@@ -224,7 +232,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
   );
 
   const handleSelect = useCallback(
-    (item: DropDownRow.IDataItem | null) => {
+    (item: DropDownOptionDataItem | null) => {
       if (item) {
         setValue(item.value);
         if (onChangeServiceType) {

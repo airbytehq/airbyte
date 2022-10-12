@@ -10,13 +10,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.config.OperatorWebhookInput;
 import io.airbyte.config.WebhookOperationConfig;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

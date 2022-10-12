@@ -4,21 +4,21 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { CheckBox, H5 } from "components";
-import { InfoTooltip, TooltipLearnMoreLink } from "components/base/Tooltip";
-import { LoadingBackdrop } from "components/LoadingBackdrop";
+import { H5 } from "components/base/Titles";
 import { Cell, Header } from "components/SimpleTableComponents";
+import { CheckBox } from "components/ui/CheckBox";
+import { LoadingBackdrop } from "components/ui/LoadingBackdrop";
+import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
-import { useConfig } from "config";
 import { SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode } from "core/request/AirbyteClient";
 import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { ConnectionFormMode, useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { links } from "utils/links";
 import { naturalComparatorBy } from "utils/objects";
 import CatalogTree from "views/Connection/CatalogTree";
 
 import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
-import { ConnectionFormMode } from "../ConnectionForm";
 import Search from "./Search";
 import styles from "./SyncCatalogField.module.scss";
 
@@ -66,7 +66,6 @@ interface SchemaViewProps extends FieldProps<SyncSchemaStream[]> {
 
 const CatalogHeader: React.FC = () => {
   const { mode } = useConnectionFormService();
-  const config = useConfig();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEdit();
   const catalogHeaderStyle = classnames({
     [styles.catalogHeader]: mode !== "readonly",
@@ -99,7 +98,7 @@ const CatalogHeader: React.FC = () => {
         <FormattedMessage id="form.syncMode" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
-          <TooltipLearnMoreLink url={config.links.syncModeLink} />
+          <TooltipLearnMoreLink url={links.syncModeLink} />
         </InfoTooltip>
       </Cell>
       <Cell lighter>

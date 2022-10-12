@@ -9,6 +9,7 @@ required:
   - name
   - slug
   - initialSetupComplete
+  - defaultGeography
 additionalProperties: false
 properties:
   workspaceId:
@@ -50,3 +51,5 @@ properties:
   webhookOperationConfigs:
     type: object
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  defaultGeography:
+    "$ref": Geography.yaml

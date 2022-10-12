@@ -23,4 +23,8 @@ $sidebar-workspace-font-weight: 400;
   text-overflow: ellipsis;
   text-align: center;
   outline: none;
+
+  &:focus-visible {
+    outline: 1px solid colors.$white;
+  }
 }

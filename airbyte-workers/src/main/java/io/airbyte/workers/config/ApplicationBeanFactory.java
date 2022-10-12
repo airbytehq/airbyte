@@ -12,8 +12,6 @@ import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.SecretPersistenceType;
 import io.airbyte.config.Configs.TrackingStrategy;
-import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.Configs.WorkerPlane;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -30,13 +28,13 @@ import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -69,16 +67,6 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  public WorkerEnvironment workerEnvironment(@Value("${airbyte.worker.env}") final String workerEnv) {
-    return convertToEnum(workerEnv, WorkerEnvironment::valueOf, WorkerEnvironment.DOCKER);
-  }
-
-  @Singleton
-  public WorkerPlane workerPlane(@Value("${airbyte.worker.plane}") final String workerPlane) {
-    return convertToEnum(workerPlane, WorkerPlane::valueOf, WorkerPlane.CONTROL_PLANE);
-  }
-
-  @Singleton
   @Named("workspaceRoot")
   public Path workspaceRoot(@Value("${airbyte.workspace.root}") final String workspaceRoot) {
     return Path.of(workspaceRoot);
@@ -106,8 +94,7 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public JobNotifier jobNotifier(
                                  final ConfigRepository configRepository,
                                  final TrackingClient trackingClient,
@@ -121,8 +108,7 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public JobTracker jobTracker(
                                final ConfigRepository configRepository,
                                final JobPersistence jobPersistence,
@@ -131,25 +117,21 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
     return JsonSecretsProcessor.builder()
-        .maskSecrets(!featureFlags.exposeSecretsInExport())
         .copySecrets(false)
         .build();
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public WebUrlHelper webUrlHelper(@Value("${airbyte.web-app.url}") final String webAppUrl) {
     return new WebUrlHelper(webAppUrl);
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public WorkspaceHelper workspaceHelper(
                                          final ConfigRepository configRepository,
                                          final JobPersistence jobPersistence) {

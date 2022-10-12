@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -26,10 +27,8 @@ import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSchedule;
 import io.airbyte.api.model.generated.ConnectionSchedule.TimeUnitEnum;
-import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionStatus;
@@ -37,6 +36,7 @@ import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationSyncMode;
+import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobRead;
@@ -57,10 +57,10 @@ import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
+import io.airbyte.api.model.generated.WebBackendConnectionListItem;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
-import io.airbyte.api.model.generated.WebBackendConnectionSearch;
 import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
@@ -73,9 +73,13 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
@@ -108,6 +112,7 @@ class WebBackendConnectionsHandlerTest {
 
   private SourceRead sourceRead;
   private ConnectionRead connectionRead;
+  private WebBackendConnectionListItem expectedListItem;
   private OperationReadList operationReadList;
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
@@ -120,6 +125,11 @@ class WebBackendConnectionsHandlerTest {
   private static final String FIELD2 = "field2";
   private static final String FIELD3 = "field3";
   private static final String FIELD5 = "field5";
+
+  // needs to match name of file in src/test/resources/icons
+  private static final String SOURCE_ICON = "test-source.svg";
+  private static final String DESTINATION_ICON = "test-destination.svg";
+  private static final String SVG = "<svg>";
 
   @BeforeEach
   void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
@@ -143,15 +153,24 @@ class WebBackendConnectionsHandlerTest {
         eventRunner,
         configRepository);
 
-    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
-    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
-    sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
+    final StandardSourceDefinition sourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
+    sourceDefinition.setIcon(SOURCE_ICON);
+    final SourceConnection source = SourceHelpers.generateSource(sourceDefinition.getSourceDefinitionId());
+    sourceRead = SourceHelpers.getSourceRead(source, sourceDefinition);
 
     final StandardDestinationDefinition destinationDefinition = DestinationDefinitionHelpers.generateDestination();
-    final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
+    destinationDefinition.setIcon(DESTINATION_ICON);
+    final DestinationConnection destination = DestinationHelpers.generateDestination(destinationDefinition.getDestinationDefinitionId());
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
-    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId());
+    when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
+        .thenReturn(Collections.singletonList(standardSync));
+    when(configRepository.getSourceAndDefinitionsFromSourceIds(Collections.singletonList(source.getSourceId())))
+        .thenReturn(Collections.singletonList(new SourceAndDefinition(source, sourceDefinition)));
+    when(configRepository.getDestinationAndDefinitionsFromDestinationIds(Collections.singletonList(destination.getDestinationId())))
+        .thenReturn(Collections.singletonList(new DestinationAndDefinition(destination, destinationDefinition)));
+
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
     operationReadList = new OperationReadList()
         .operations(List.of(new OperationRead()
@@ -185,6 +204,17 @@ class WebBackendConnectionsHandlerTest {
             .endedAt(now.getEpochSecond())));
 
     when(jobHistoryHandler.getLatestSyncJob(connectionRead.getConnectionId())).thenReturn(Optional.of(jobRead.getJob()));
+
+    when(jobHistoryHandler.getLatestSyncJobsForConnections(Collections.singletonList(connectionRead.getConnectionId())))
+        .thenReturn(Collections.singletonList(jobRead.getJob()));
+
+    expectedListItem = ConnectionHelpers.generateExpectedWebBackendConnectionListItem(
+        standardSync,
+        sourceRead,
+        destinationRead,
+        false,
+        jobRead.getJob().getCreatedAt(),
+        jobRead.getJob().getStatus());
 
     expected = new WebBackendConnectionRead()
         .connectionId(connectionRead.getConnectionId())
@@ -283,41 +313,19 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testWebBackendListConnectionsForWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testWebBackendListConnectionsForWorkspace() throws IOException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
 
-    final ConnectionReadList connectionReadList = new ConnectionReadList();
-    connectionReadList.setConnections(Collections.singletonList(connectionRead));
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
-    connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
-    when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
-    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
+    final WebBackendConnectionReadList WebBackendConnectionReadList =
+        wbHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
 
-    final WebBackendConnectionReadList WebBackendConnectionReadList = wbHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
     assertEquals(1, WebBackendConnectionReadList.getConnections().size());
-    assertEquals(expected, WebBackendConnectionReadList.getConnections().get(0));
-  }
+    assertEquals(expectedListItem, WebBackendConnectionReadList.getConnections().get(0));
 
-  @Test
-  void testWebBackendSearchConnections() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final ConnectionReadList connectionReadList = new ConnectionReadList();
-    connectionReadList.setConnections(Collections.singletonList(connectionRead));
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
-    connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
-
-    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
-    when(connectionsHandler.listConnections()).thenReturn(connectionReadList);
-    when(connectionsHandler.matchSearch(new ConnectionSearch(), connectionRead)).thenReturn(true);
-
-    final WebBackendConnectionSearch webBackendConnectionSearch = new WebBackendConnectionSearch();
-    WebBackendConnectionReadList webBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(1, webBackendConnectionReadList.getConnections().size());
-    assertEquals(expected, webBackendConnectionReadList.getConnections().get(0));
-
-    when(connectionsHandler.matchSearch(new ConnectionSearch(), connectionRead)).thenReturn(false);
-    webBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
-    assertEquals(0, webBackendConnectionReadList.getConnections().size());
+    // make sure the icons were loaded into actual svg content
+    assertTrue(expectedListItem.getSource().getIcon().startsWith(SVG));
+    assertTrue(expectedListItem.getDestination().getIcon().startsWith(SVG));
   }
 
   @Test
@@ -334,6 +342,10 @@ class WebBackendConnectionsHandlerTest {
     final WebBackendConnectionRead WebBackendConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionRequestBody);
 
     assertEquals(expected, WebBackendConnectionRead);
+
+    // make sure the icons were loaded into actual svg content
+    assertTrue(expected.getSource().getIcon().startsWith(SVG));
+    assertTrue(expected.getDestination().getIcon().startsWith(SVG));
   }
 
   WebBackendConnectionRead testWebBackendGetConnection(final boolean withCatalogRefresh)
@@ -355,7 +367,7 @@ class WebBackendConnectionsHandlerTest {
 
   @Test
   void testWebBackendGetConnectionWithDiscovery() throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(connectionsHandler.getDiff(any(), any())).thenReturn(expectedWithNewSchema.getCatalogDiff());
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(expectedWithNewSchema.getCatalogDiff());
     final WebBackendConnectionRead result = testWebBackendGetConnection(true);
     verify(schedulerHandler).discoverSchemaForSourceFromSourceId(any());
     assertEquals(expectedWithNewSchema, result);
@@ -394,7 +406,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .syncCatalog(catalog)
-        .sourceCatalogId(sourceCatalogId);
+        .sourceCatalogId(sourceCatalogId)
+        .geography(Geography.US);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -409,7 +422,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .syncCatalog(catalog)
-        .sourceCatalogId(sourceCatalogId);
+        .sourceCatalogId(sourceCatalogId)
+        .geography(Geography.US);
 
     final ConnectionCreate actual = WebBackendConnectionsHandler.toConnectionCreate(input, operationIds);
 
@@ -417,7 +431,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testToConnectionUpdate() throws IOException {
+  void testToConnectionPatch() throws IOException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
 
@@ -436,7 +450,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .name(standardSync.getName())
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .geography(Geography.US);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -449,7 +464,8 @@ class WebBackendConnectionsHandlerTest {
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .name(standardSync.getName())
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .geography(Geography.US);
 
     final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionPatch(input, operationIds);
 
@@ -459,8 +475,9 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testForConnectionCreateCompleteness() {
     final Set<String> handledMethods =
-        Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds", "addOperationIdsItem",
-            "removeOperationIdsItem", "syncCatalog", "schedule", "scheduleType", "scheduleData", "status", "resourceRequirements", "sourceCatalogId");
+        Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds",
+            "addOperationIdsItem", "removeOperationIdsItem", "syncCatalog", "schedule", "scheduleType", "scheduleData",
+            "status", "resourceRequirements", "sourceCatalogId", "geography");
 
     final Set<String> methods = Arrays.stream(ConnectionCreate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionCreate.class)
@@ -478,10 +495,11 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testForConnectionUpdateCompleteness() {
+  void testForConnectionPatchCompleteness() {
     final Set<String> handledMethods =
-        Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds",
-            "addOperationIdsItem", "removeOperationIdsItem", "resourceRequirements", "name", "sourceCatalogId", "scheduleType", "scheduleData");
+        Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status",
+            "operationIds", "addOperationIdsItem", "removeOperationIdsItem", "resourceRequirements", "name",
+            "sourceCatalogId", "scheduleType", "scheduleData", "geography");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
@@ -492,8 +510,8 @@ class WebBackendConnectionsHandlerTest {
         """
         If this test is failing, it means you added a field to ConnectionUpdate!
         Congratulations, but you're not done yet..
-        \tYou should update WebBackendConnectionsHandler::toConnectionUpdate
-        \tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionUpdate
+        \tYou should update WebBackendConnectionsHandler::toConnectionPatch
+        \tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionPatch
         Then you can add the field name here to make this test pass. Cheers!""";
     assertEquals(handledMethods, methods, message);
   }
@@ -514,7 +532,7 @@ class WebBackendConnectionsHandlerTest {
         .thenReturn(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog());
 
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of());
-    when(connectionsHandler.getDiff(any(), any())).thenReturn(catalogDiff);
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(expected.getConnectionId());
     when(stateHandler.getState(connectionIdRequestBody)).thenReturn(new ConnectionState().stateType(ConnectionStateType.LEGACY));
 
@@ -568,7 +586,7 @@ class WebBackendConnectionsHandlerTest {
         .thenReturn(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog());
 
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of());
-    when(connectionsHandler.getDiff(any(), any())).thenReturn(catalogDiff);
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(expected.getConnectionId());
     when(stateHandler.getState(connectionIdRequestBody)).thenReturn(new ConnectionState().stateType(ConnectionStateType.LEGACY));
 
@@ -620,7 +638,7 @@ class WebBackendConnectionsHandlerTest {
         new StreamTransform().streamDescriptor(streamDescriptorAdd).transformType(TransformTypeEnum.ADD_STREAM);
 
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of(streamTransformAdd));
-    when(connectionsHandler.getDiff(any(), any())).thenReturn(catalogDiff);
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
 
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
@@ -643,7 +661,7 @@ class WebBackendConnectionsHandlerTest {
     when(configRepository.getAllStreamsForConnection(expected.getConnectionId())).thenReturn(connectionStreams);
 
     final ManualOperationResult successfulResult = ManualOperationResult.builder().jobId(Optional.empty()).failingReason(Optional.empty()).build();
-    when(eventRunner.synchronousResetConnection(any(), any())).thenReturn(successfulResult);
+    when(eventRunner.resetConnection(any(), any(), anyBoolean())).thenReturn(successfulResult);
     when(eventRunner.startNewManualSync(any())).thenReturn(successfulResult);
 
     final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
@@ -655,8 +673,7 @@ class WebBackendConnectionsHandlerTest {
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
     verify(connectionsHandler, times(1)).updateConnection(any());
     final InOrder orderVerifier = inOrder(eventRunner);
-    orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId(), connectionStreams);
-    orderVerifier.verify(eventRunner, times(1)).startNewManualSync(connectionId.getConnectionId());
+    orderVerifier.verify(eventRunner, times(1)).resetConnection(connectionId.getConnectionId(), connectionStreams, true);
   }
 
   @Test
@@ -688,7 +705,7 @@ class WebBackendConnectionsHandlerTest {
         new StreamTransform().streamDescriptor(streamDescriptorUpdate).transformType(TransformTypeEnum.UPDATE_STREAM);
 
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of(streamTransformAdd, streamTransformRemove, streamTransformUpdate));
-    when(connectionsHandler.getDiff(any(), any())).thenReturn(catalogDiff);
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
     when(connectionsHandler.getConfigurationDiff(any(), any())).thenReturn(Set.of(new StreamDescriptor().name("configUpdateStream")));
 
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
@@ -709,7 +726,7 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
     final ManualOperationResult successfulResult = ManualOperationResult.builder().jobId(Optional.empty()).failingReason(Optional.empty()).build();
-    when(eventRunner.synchronousResetConnection(any(), any())).thenReturn(successfulResult);
+    when(eventRunner.resetConnection(any(), any(), anyBoolean())).thenReturn(successfulResult);
     when(eventRunner.startNewManualSync(any())).thenReturn(successfulResult);
 
     final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
@@ -721,12 +738,12 @@ class WebBackendConnectionsHandlerTest {
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
     verify(connectionsHandler, times(1)).updateConnection(any());
     final InOrder orderVerifier = inOrder(eventRunner);
-    orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId(),
+    orderVerifier.verify(eventRunner, times(1)).resetConnection(connectionId.getConnectionId(),
         List.of(new io.airbyte.protocol.models.StreamDescriptor().withName("addStream"),
             new io.airbyte.protocol.models.StreamDescriptor().withName("updateStream"),
             new io.airbyte.protocol.models.StreamDescriptor().withName("configUpdateStream"),
-            new io.airbyte.protocol.models.StreamDescriptor().withName("removeStream")));
-    orderVerifier.verify(eventRunner, times(1)).startNewManualSync(connectionId.getConnectionId());
+            new io.airbyte.protocol.models.StreamDescriptor().withName("removeStream")),
+        true);
   }
 
   @Test
@@ -742,12 +759,13 @@ class WebBackendConnectionsHandlerTest {
 
     // state is per-stream
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(expected.getConnectionId());
+    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
     when(stateHandler.getState(connectionIdRequestBody)).thenReturn(new ConnectionState().stateType(ConnectionStateType.STREAM));
     when(configRepository.getConfiguredCatalogForConnection(expected.getConnectionId()))
-        .thenReturn(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog());
+        .thenReturn(configuredAirbyteCatalog);
 
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of());
-    when(connectionsHandler.getDiff(any(), any())).thenReturn(catalogDiff);
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
 
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
@@ -771,13 +789,15 @@ class WebBackendConnectionsHandlerTest {
     assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
 
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(result.getConnectionId());
-    verify(connectionsHandler).getDiff(expected.getSyncCatalog(), expectedWithNewSchema.getSyncCatalog());
+
+    verify(connectionsHandler).getDiff(expected.getSyncCatalog(), expectedWithNewSchema.getSyncCatalog(),
+        CatalogConverter.toProtocol(result.getSyncCatalog()));
     verify(connectionsHandler).getConfigurationDiff(expected.getSyncCatalog(), expectedWithNewSchema.getSyncCatalog());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
     verify(connectionsHandler, times(1)).updateConnection(any());
     final InOrder orderVerifier = inOrder(eventRunner);
-    orderVerifier.verify(eventRunner, times(0)).synchronousResetConnection(eq(connectionId.getConnectionId()), any());
+    orderVerifier.verify(eventRunner, times(0)).resetConnection(eq(connectionId.getConnectionId()), any(), anyBoolean());
     orderVerifier.verify(eventRunner, times(0)).startNewManualSync(connectionId.getConnectionId());
   }
 
@@ -818,10 +838,9 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(result.getConnectionId());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
-    verify(connectionsHandler, times(0)).getDiff(any(), any());
+    verify(connectionsHandler, times(0)).getDiff(any(), any(), any());
     verify(connectionsHandler, times(1)).updateConnection(any());
-    verify(eventRunner, times(0)).synchronousResetConnection(any(), any());
-    verify(eventRunner, times(0)).startNewManualSync(any());
+    verify(eventRunner, times(0)).resetConnection(any(), any(), eq(true));
   }
 
   @Test

@@ -2,7 +2,7 @@ import { Menu } from "@headlessui/react";
 import classNames from "classnames";
 import React from "react";
 
-import { Text } from "components/base/Text";
+import { Text } from "components/ui/Text";
 
 import styles from "./SidebarDropdownMenu.module.scss";
 

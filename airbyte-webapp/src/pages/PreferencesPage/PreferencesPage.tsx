@@ -1,9 +1,9 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Text } from "components/base/Text";
 import { PageViewContainer } from "components/CenteredPageComponents";
 import HeadTitle from "components/HeadTitle";
+import { Text } from "components/ui/Text";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace from "hooks/services/useWorkspace";

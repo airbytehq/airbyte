@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.config;
 
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
@@ -31,10 +31,10 @@ import io.micronaut.context.annotation.Value;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.util.List;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * Micronaut bean factory for activity-related singletons.
@@ -44,8 +44,7 @@ import javax.inject.Singleton;
 public class ActivityBeanFactory {
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("checkConnectionActivities")
   public List<Object> checkConnectionActivities(
                                                 final CheckConnectionActivity checkConnectionActivity) {
@@ -53,8 +52,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("connectionManagerActivities")
   public List<Object> connectionManagerActivities(
                                                   final GenerateInputActivity generateInputActivity,
@@ -80,8 +78,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("discoverActivities")
   public List<Object> discoverActivities(
                                          final DiscoverCatalogActivity discoverCatalogActivity) {
@@ -89,8 +86,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("specActivities")
   public List<Object> specActivities(
                                      final SpecActivity specActivity) {
@@ -157,8 +153,7 @@ public class ActivityBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("specActivityOptions")
   public ActivityOptions specActivityOptions() {
     return ActivityOptions.newBuilder()

@@ -88,7 +88,8 @@ public class SecretsRepositoryWriter {
         source.getWorkspaceId(),
         previousSourceConnection,
         source.getConfiguration(),
-        connectorSpecification.getConnectionSpecification());
+        connectorSpecification.getConnectionSpecification(),
+        source.getTombstone() == null || !source.getTombstone());
     final SourceConnection partialSource = Jsons.clone(source).withConfiguration(partialConfig);
 
     configRepository.writeSourceConnectionNoSecrets(partialSource);
@@ -111,7 +112,8 @@ public class SecretsRepositoryWriter {
         destination.getWorkspaceId(),
         previousDestinationConnection,
         destination.getConfiguration(),
-        connectorSpecification.getConnectionSpecification());
+        connectorSpecification.getConnectionSpecification(),
+        destination.getTombstone() == null || !destination.getTombstone());
     final DestinationConnection partialDestination = Jsons.clone(destination).withConfiguration(partialConfig);
 
     configRepository.writeDestinationConnectionNoSecrets(partialDestination);
@@ -143,39 +145,39 @@ public class SecretsRepositoryWriter {
    * @param oldConfig old full config
    * @param fullConfig new full config
    * @param spec connector specification
+   * @param validate should the spec be validated, tombstone entries should not be validated
    * @return partial config
    */
   private JsonNode statefulUpdateSecrets(final UUID workspaceId,
                                          final Optional<JsonNode> oldConfig,
                                          final JsonNode fullConfig,
-                                         final JsonNode spec)
+                                         final JsonNode spec,
+                                         final boolean validate)
       throws JsonValidationException {
-    validator.ensure(spec, fullConfig);
+    if (validate) {
+      validator.ensure(spec, fullConfig);
+    }
 
-    if (longLivedSecretPersistence.isPresent()) {
-      if (oldConfig.isPresent()) {
-        final var splitSecretConfig = SecretsHelpers.splitAndUpdateConfig(
-            workspaceId,
-            oldConfig.get(),
-            fullConfig,
-            spec,
-            longLivedSecretPersistence.get());
-
-        splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
-        return splitSecretConfig.getPartialConfig();
-      } else {
-        final var splitSecretConfig = SecretsHelpers.splitConfig(
-            workspaceId,
-            fullConfig,
-            spec);
-
-        splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
-
-        return splitSecretConfig.getPartialConfig();
-      }
-    } else {
+    if (longLivedSecretPersistence.isEmpty()) {
       return fullConfig;
     }
+
+    final SplitSecretConfig splitSecretConfig;
+    if (oldConfig.isPresent()) {
+      splitSecretConfig = SecretsHelpers.splitAndUpdateConfig(
+          workspaceId,
+          oldConfig.get(),
+          fullConfig,
+          spec,
+          longLivedSecretPersistence.get());
+    } else {
+      splitSecretConfig = SecretsHelpers.splitConfig(
+          workspaceId,
+          fullConfig,
+          spec);
+    }
+    splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
+    return splitSecretConfig.getPartialConfig();
   }
 
   /**
@@ -295,7 +297,8 @@ public class SecretsRepositoryWriter {
             workspace.getWorkspaceId(),
             previousWebhookConfig,
             workspace.getWebhookOperationConfigs(),
-            webhookConfigSchema);
+            webhookConfigSchema,
+            workspace.getTombstone());
     LOGGER.info("partial config: {}", partialConfig);
     final StandardWorkspace partialWorkspace = Jsons.clone(workspace);
     if (partialConfig != null) {
@@ -307,7 +310,7 @@ public class SecretsRepositoryWriter {
 
   private Optional<StandardWorkspace> getWorkspaceIfExists(final UUID workspaceId) {
     try {
-      return Optional.of(configRepository.getStandardWorkspace(workspaceId, true));
+      return Optional.of(configRepository.getStandardWorkspaceNoSecrets(workspaceId, false));
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
       return Optional.empty();
     }
