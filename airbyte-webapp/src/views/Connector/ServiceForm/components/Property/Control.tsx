@@ -36,10 +36,8 @@ export const Control: React.FC<ControlProps> = ({
 
   if (property.type === "array" && !property.enum) {
     return (
-      <Field
-        name={name}
-        defaultValue={property.default || []}
-        render={() => (
+      <Field name={name} defaultValue={property.default || []}>
+        {() => (
           <TagInput
             name={name}
             fieldValue={field.value || []}
@@ -48,7 +46,7 @@ export const Control: React.FC<ControlProps> = ({
             disabled={disabled}
           />
         )}
-      />
+      </Field>
     );
   }
 

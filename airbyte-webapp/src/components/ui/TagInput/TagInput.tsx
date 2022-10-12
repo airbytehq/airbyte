@@ -3,26 +3,34 @@ import { KeyboardEventHandler, useMemo, useState } from "react";
 import { ActionMeta, MultiValue, OnChangeValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
+import styles from "./TagInput.module.scss";
+
 const components = {
   DropdownIndicator: null,
 };
 
+// export the variables from taginput.module.scss instead and import here
 const customStyles = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- react-select's typing is lacking here
   multiValue: (provided: any) => ({
     ...provided,
     maxWidth: "100%",
     display: "flex",
-    background: "#262963", // colors.$dark-blue-800
-    color: "#ffffff", // colors.$white
-    borderRadius: "4px", // variables.$border-radius-sm
-    paddingLeft: "5px", // variables.$spacing-sm
+    background: `${styles.backgroundColor}`,
+    color: `${styles.fontColor}`,
+    borderRadius: `${styles.borderRadius}`,
+    paddingLeft: `${styles.paddingLeft}`,
   }),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same as above
   multiValueLabel: (provided: any) => ({
     ...provided,
-    color: "white",
+    color: `${styles.fontColor}`,
     fontWeight: 500,
+  }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same as above
+  multiValueRemove: (provided: any) => ({
+    ...provided,
+    borderRadius: `${styles.borderRadius}`,
   }),
 };
 
@@ -37,6 +45,7 @@ interface TagInputProps {
   onChange: (value: string[]) => void;
   error?: boolean;
   disabled?: boolean;
+  id?: string;
 }
 
 const generateTagFromString = (inputValue: string): Tag => ({
@@ -48,7 +57,7 @@ const generateStringFromTag = (tag: Tag): string => tag.label;
 
 const delimiters = [",", ";"];
 
-export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, disabled }) => {
+export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, disabled, id }) => {
   const tags = useMemo(() => fieldValue.map(generateTagFromString), [fieldValue]);
 
   // input value is a tag draft
@@ -69,7 +78,6 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
       updatedTags = [];
     } else if (actionMeta.action === "pop-value") {
       updatedTags = updatedTags.slice(0, updatedTags.length - 1);
-      console.log({ updatedTags });
     }
     onChange(updatedTags.map((tag) => generateStringFromTag(tag)));
   };
@@ -98,8 +106,6 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
     }
     switch (event.key) {
       case "Enter":
-      case ",":
-      case ";":
       case "Tab":
         inputValue.trim().length > 1 && onChange([...fieldValue, inputValue.trim()]);
 
@@ -110,6 +116,7 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
 
   return (
     <CreatableSelect
+      inputId={id}
       name={name}
       components={components}
       inputValue={inputValue}
@@ -120,7 +127,6 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
       onChange={handleDelete}
       onInputChange={handleInputChange}
       onKeyDown={handleKeyDown}
-      placeholder=""
       value={tags}
       isDisabled={disabled}
       styles={customStyles}
