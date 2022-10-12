@@ -207,6 +207,9 @@ class Campaigns(BingAdsStream):
         " DynamicFeedSetting MaxConversionValueBiddingScheme MultimediaAdsBidAdjustment"
         " TargetImpressionShareBiddingScheme TargetSetting VerifiedTrackingSetting"
     )
+    campaign_types: str = (
+        "Audience DynamicSearchAds Search Shopping"
+    )
 
     def request_params(
         self,
@@ -215,6 +218,7 @@ class Campaigns(BingAdsStream):
     ) -> MutableMapping[str, Any]:
         return {
             "AccountId": stream_slice["account_id"],
+            "CampaignType": self.campaign_types,
             "ReturnAdditionalFields": self.additional_fields,
         }
 
