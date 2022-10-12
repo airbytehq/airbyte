@@ -202,14 +202,24 @@ class Campaigns(BingAdsStream):
     data_field: str = "Campaign"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetCampaignsByAccountId"
-    additional_fields: str = (
-        "AdScheduleUseSearcherTimeZone BidStrategyId CpvCpmBiddingScheme DynamicDescriptionSetting"
-        " DynamicFeedSetting MaxConversionValueBiddingScheme MultimediaAdsBidAdjustment"
-        " TargetImpressionShareBiddingScheme TargetSetting VerifiedTrackingSetting"
-    )
-    campaign_types: str = (
-        "Audience DynamicSearchAds Search Shopping"
-    )
+    additional_fields: Iterable[str] = [
+        "AdScheduleUseSearcherTimeZone",
+        "BidStrategyId",
+        "CpvCpmBiddingScheme",
+        "DynamicDescriptionSetting",
+        "DynamicFeedSetting",
+        "MaxConversionValueBiddingScheme",
+        "MultimediaAdsBidAdjustment",
+        "TargetImpressionShareBiddingScheme",
+        "TargetSetting",
+        "VerifiedTrackingSetting"
+    ]
+    campaign_types: Iterable[str] = [
+        "Audience",
+        "DynamicSearchAds",
+        "Search",
+        "Shopping"
+    ]
 
     def request_params(
         self,
@@ -218,8 +228,8 @@ class Campaigns(BingAdsStream):
     ) -> MutableMapping[str, Any]:
         return {
             "AccountId": stream_slice["account_id"],
-            "CampaignType": self.campaign_types,
-            "ReturnAdditionalFields": self.additional_fields,
+            "CampaignType": " ".join(self.campaign_types),
+            "ReturnAdditionalFields": " ".join(self.additional_fields),
         }
 
     def stream_slices(
