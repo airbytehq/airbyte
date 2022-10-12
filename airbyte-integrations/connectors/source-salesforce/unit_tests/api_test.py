@@ -531,20 +531,20 @@ def test_convert_to_standard_instance(stream_config, stream_api):
 
 
 def test_bulk_stream_paging(stream_config, stream_api_pk):
-    LastModifiedDate1 = "2022-10-01T00:00:00Z"
-    LastModifiedDate2 = "2022-10-02T00:00:00Z"
-    assert LastModifiedDate1 < LastModifiedDate2
+    last_modified_date1 = "2022-10-01T00:00:00Z"
+    last_modified_date2 = "2022-10-02T00:00:00Z"
+    assert last_modified_date1 < last_modified_date2
 
-    stream_config["start_date"] = LastModifiedDate1
+    stream_config["start_date"] = last_modified_date1
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api_pk)
     stream.page_size = 2
 
     csv_header = "Field1,LastModifiedDate,Id"
     pages = [
-        [f"test,{LastModifiedDate1},1", f"test,{LastModifiedDate1},3"],
-        [f"test,{LastModifiedDate1},5", f"test,{LastModifiedDate2},2"],
-        [f"test,{LastModifiedDate2},2", f"test,{LastModifiedDate2},4"],
-        [f"test,{LastModifiedDate2},6"],
+        [f"test,{last_modified_date1},1", f"test,{last_modified_date1},3"],
+        [f"test,{last_modified_date1},5", f"test,{last_modified_date2},2"],
+        [f"test,{last_modified_date2},2", f"test,{last_modified_date2},4"],
+        [f"test,{last_modified_date2},6"],
     ]
 
     with requests_mock.Mocker() as m:
@@ -560,13 +560,13 @@ def test_bulk_stream_paging(stream_config, stream_api_pk):
         records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
         assert records == [
-            {"Field1": "test", "Id": 1, "LastModifiedDate": LastModifiedDate1},
-            {"Field1": "test", "Id": 3, "LastModifiedDate": LastModifiedDate1},
-            {"Field1": "test", "Id": 5, "LastModifiedDate": LastModifiedDate1},
-            {"Field1": "test", "Id": 2, "LastModifiedDate": LastModifiedDate2},
-            {"Field1": "test", "Id": 2, "LastModifiedDate": LastModifiedDate2},  # duplicate record
-            {"Field1": "test", "Id": 4, "LastModifiedDate": LastModifiedDate2},
-            {"Field1": "test", "Id": 6, "LastModifiedDate": LastModifiedDate2},
+            {"Field1": "test", "Id": 1, "LastModifiedDate": last_modified_date1},
+            {"Field1": "test", "Id": 3, "LastModifiedDate": last_modified_date1},
+            {"Field1": "test", "Id": 5, "LastModifiedDate": last_modified_date1},
+            {"Field1": "test", "Id": 2, "LastModifiedDate": last_modified_date2},
+            {"Field1": "test", "Id": 2, "LastModifiedDate": last_modified_date2},  # duplicate record
+            {"Field1": "test", "Id": 4, "LastModifiedDate": last_modified_date2},
+            {"Field1": "test", "Id": 6, "LastModifiedDate": last_modified_date2},
         ]
 
         def req(i):
@@ -575,12 +575,12 @@ def test_bulk_stream_paging(stream_config, stream_api_pk):
         SELECT = "SELECT LastModifiedDate,Id FROM Account"
         ORDER_BY = "ORDER BY LastModifiedDate,Id ASC LIMIT 2"
 
-        assert req(0) == f"{SELECT} WHERE LastModifiedDate >= {LastModifiedDate1} {ORDER_BY}"
+        assert req(0) == f"{SELECT} WHERE LastModifiedDate >= {last_modified_date1} {ORDER_BY}"
 
-        q = f"{SELECT} WHERE (LastModifiedDate = {LastModifiedDate1} AND Id > '3') OR (LastModifiedDate > {LastModifiedDate1}) {ORDER_BY}"
+        q = f"{SELECT} WHERE (LastModifiedDate = {last_modified_date1} AND Id > '3') OR (LastModifiedDate > {last_modified_date1}) {ORDER_BY}"
         assert req(4) == q
 
-        assert req(8) == f"{SELECT} WHERE LastModifiedDate >= {LastModifiedDate2} {ORDER_BY}"
+        assert req(8) == f"{SELECT} WHERE LastModifiedDate >= {last_modified_date2} {ORDER_BY}"
 
-        q = f"{SELECT} WHERE (LastModifiedDate = {LastModifiedDate2} AND Id > '4') OR (LastModifiedDate > {LastModifiedDate2}) {ORDER_BY}"
+        q = f"{SELECT} WHERE (LastModifiedDate = {last_modified_date2} AND Id > '4') OR (LastModifiedDate > {last_modified_date2}) {ORDER_BY}"
         assert req(12) == q
