@@ -57,12 +57,10 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, fieldValue, 
   const handleDelete = (_value: OnChangeValue<Tag, true>, actionMeta: ActionMeta<Tag>) => {
     let updatedTags: MultiValue<Tag> = tags;
     /**
-     * remove-value: user clicked x to remove tag
+     * remove-value: user clicked x or used backspace/delete to remove tag
      * clear: user clicked big x to clear all tags
      * pop-value: user clicked backspace to remove tag
      */
-    // TODO: handle deletes by selecting tag and hitting space/enter/delete
-    // OR do not highlight the delete button when selecting a tag?
     if (actionMeta.action === "remove-value") {
       updatedTags = updatedTags.filter((tag) => tag.value !== actionMeta.removedValue.value);
     } else if (actionMeta.action === "clear") {
@@ -108,7 +106,6 @@ export const NewTagInput: React.FC<NewTagInputProps> = ({ onChange, fieldValue, 
     }
   };
 
-  // todo: helper text? tootlip?
   return (
     <CreatableSelect
       name={name}
