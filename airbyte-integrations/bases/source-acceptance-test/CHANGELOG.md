@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.2.5
-Backward compatibility hypothesis testing: disable "filtering too much" health check.
+Backward compatibility hypothesis testing: disable "filtering too much" health check. [#17871](https://github.com/airbytehq/airbyte/pull/17871)
 
 ## 0.2.4
 Make incremental tests compatible with per stream states.[#16686](https://github.com/airbytehq/airbyte/pull/16686/)
