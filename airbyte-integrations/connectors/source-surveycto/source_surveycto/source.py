@@ -70,7 +70,10 @@ class SurveyctoStream(HttpStream, ABC):
         for data in response_json:
             try:
                 data["form_id"] = stream_slice
-
+                key = data["KEY"]
+                o = key.replace('uuid:', '')
+                data["KEY"] = o
+               
                 yield data
             except Exception as e:
                 msg = f"""Encountered an exception parsing schema"""
