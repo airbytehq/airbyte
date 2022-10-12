@@ -455,99 +455,98 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       case ARRAY -> JsonSchemaType.ARRAY;
       case BIT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
+                      .withAirbyteType("bit")
                       .build())
-              .withAirbyteType("bit_array")
               .build();
       case BOOL_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
+                      .withAirbyteType("bool")
                       .build())
-              .withAirbyteType("bool_array")
               .build();
       case BYTEA_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .withAirbyteType("bytea")
                       .build())
-              .withAirbyteType("bytea_array")
               .build();
       case NAME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .withAirbyteType("name")
                       .build())
-              .withAirbyteType("name_array")
               .build();
       case VARCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .withAirbyteType("varchar")
                       .build())
-              .withAirbyteType("varchar_array")
               .build();
       case CHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .withAirbyteType("char")
                       .build())
-              .withAirbyteType("char_array")
               .build();
       case BPCHAR_ARRAY-> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .withAirbyteType("bpchar")
                       .build())
-              .withAirbyteType("bpchar_array")
               .build();
       case TEXT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                      .withAirbyteType("text")
                       .build())
-              .withAirbyteType("text_array")
               .build();
       case INT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(INTEGER)
-              .withAirbyteType("int4_array")
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .withAirbyteType("int4")
+                      .build())
               .build();
       case INT2_ARRAY-> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(INTEGER)
-              .withAirbyteType("int2_array")
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .withAirbyteType("int2")
+                      .build())
               .build();
       case INT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(INTEGER)
-              .withAirbyteType("int8_array")
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .withAirbyteType("int8")
+                      .build())
               .build();
       case MONEY_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .withAirbyteType("money")
                       .build())
-              .withAirbyteType("money_array")
               .build();
       case OID_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(INTEGER)
-              .withAirbyteType("oid_array")
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .withAirbyteType("oid")
+                      .build())
               .build();
       case NUMERIC_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .withAirbyteType("numeric")
                       .build())
-              .withAirbyteType("numeric_array")
               .build();
       case FLOAT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .withAirbyteType("float4")
                       .build())
-              .withAirbyteType("float4_array")
               .build();
       case FLOAT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .withAirbyteType("float8")
                       .build())
-              .withAirbyteType("float8_array")
               .build();
       case TIMESTAMPTZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
-              .withAirbyteType("timestamp_with_timezone_array")
               .build();
       case TIMESTAMP_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .withAirbyteType("timestamp_without_timezone_array")
               .build();
       case TIMETZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
-              .withAirbyteType("time_with_timezone_array")
               .build();
       case TIME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
-              .withAirbyteType("time_without_timezone_array")
               .build();
       case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
               .withItems(JsonSchemaType.STRING_DATE)
-              .withAirbyteType("date_array")
               .build();
 
       case DATE -> JsonSchemaType.STRING_DATE;
