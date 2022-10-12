@@ -1,8 +1,12 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import { Field, FieldArray } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 
+import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Text } from "components/ui/Text";
 
@@ -65,6 +69,40 @@ const CustomTransformationsCard: React.FC<{
   );
 };
 
+const CloudTransformationsCard = () => {
+  // TODO fetch list of transformations for real
+  const transformations = [];
+  /* const transformations = [1, 2, 3]; */
+
+  const TransformationList = ({ className }: { className: string }) =>
+    transformations.length ? (
+      <div className={className}>this is a list</div>
+    ) : (
+      <div className={classNames(className, styles.emptyListContent)}>
+        <div className={styles.contextExplanation}>
+          After an Airbyte sync job has completed, the following jobs will run.
+        </div>
+        <img src="/images/octavia/worker.png" alt="An octopus wearing a hard hat, tools at the ready" />
+        No transformations
+      </div>
+    );
+
+  return (
+    <Card
+      title={
+        <span className={styles.cloudTransformationsListTitle}>
+          Transformations
+          <Button variant="secondary" icon={<FontAwesomeIcon icon={faPlus} />}>
+            Add transformation
+          </Button>
+        </span>
+      }
+    >
+      <TransformationList className={styles.cloudTransformationsListContainer} />
+    </Card>
+  );
+};
+
 const NormalizationCard: React.FC<{
   operations?: OperationRead[];
   onSubmit: FormikOnSubmit<{ normalization?: NormalizationType }>;
@@ -100,6 +138,8 @@ export const ConnectionTransformationTab: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_TRANSFORMATION);
   const { supportsNormalization } = definition;
   const supportsDbt = useFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
+  const supportsCloudDbtIntegration = useFeature(FeatureItem.AllowDBTCloudIntegration) && definition.supportsDbt;
+  const noSupportedTransformations = !supportsNormalization && !supportsDbt && !supportsCloudDbtIntegration;
 
   const onSubmit: FormikOnSubmit<{ transformations?: OperationRead[]; normalization?: NormalizationType }> = async (
     values,
@@ -134,7 +174,8 @@ export const ConnectionTransformationTab: React.FC = () => {
       >
         {supportsNormalization && <NormalizationCard operations={connection.operations} onSubmit={onSubmit} />}
         {supportsDbt && <CustomTransformationsCard operations={connection.operations} onSubmit={onSubmit} />}
-        {!supportsNormalization && !supportsDbt && (
+        {supportsCloudDbtIntegration && <CloudTransformationsCard />}
+        {noSupportedTransformations && (
           <Card className={styles.customCard}>
             <Text as="p" size="lg" centered>
               <FormattedMessage id="connectionForm.operations.notSupported" />
