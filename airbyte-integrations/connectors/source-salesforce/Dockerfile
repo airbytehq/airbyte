@@ -13,6 +13,6 @@ RUN pip install .
 
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=1.0.20
+LABEL io.airbyte.version=1.0.21
 
 LABEL io.airbyte.name=airbyte/source-salesforce

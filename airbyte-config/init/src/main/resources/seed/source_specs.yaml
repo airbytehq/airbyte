@@ -198,7 +198,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.0"
+- dockerImage: "airbyte/source-alloydb:1.0.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -2561,7 +2561,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.67"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.68"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -2599,7 +2599,6 @@
           examples:
           - "2017-01-26T00:00:00Z"
           type: "string"
-          format: "date-time"
         access_token:
           title: "Access Token"
           description: "The value of the access token generated. See the <a href=\"\
@@ -2949,7 +2948,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.1.6"
+- dockerImage: "airbyte/source-faker:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -3503,7 +3502,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.3.5"
+- dockerImage: "airbyte/source-github:0.3.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -4354,7 +4353,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.19"
+- dockerImage: "airbyte/source-google-sheets:0.2.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-sheets"
     connectionSpecification:
@@ -8590,7 +8589,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.14"
+- dockerImage: "airbyte/source-postgres:1.0.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -9168,7 +9167,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.2.3"
+- dockerImage: "airbyte/source-recharge:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -9775,7 +9774,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.20"
+- dockerImage: "airbyte/source-salesforce:1.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -10011,7 +10010,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.37"
+- dockerImage: "airbyte/source-shopify:0.1.38"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
@@ -10035,31 +10034,6 @@
           type: "object"
           order: 2
           oneOf:
-          - type: "object"
-            title: "OAuth2.0"
-            description: "OAuth2.0"
-            required:
-            - "auth_method"
-            properties:
-              auth_method:
-                type: "string"
-                const: "oauth2.0"
-                order: 0
-              client_id:
-                type: "string"
-                title: "Client ID"
-                description: "The Client ID of the Shopify developer application."
-                airbyte_secret: true
-              client_secret:
-                type: "string"
-                title: "Client Secret"
-                description: "The Client Secret of the Shopify developer application."
-                airbyte_secret: true
-              access_token:
-                type: "string"
-                title: "Access Token"
-                description: "The Access Token for making authenticated requests."
-                airbyte_secret: true
           - title: "API Password"
             description: "API Password Auth"
             type: "object"
@@ -10077,6 +10051,35 @@
                 description: "The API Password for your private application in the\
                   \ `Shopify` store."
                 airbyte_secret: true
+                order: 1
+          - type: "object"
+            title: "OAuth2.0"
+            description: "OAuth2.0"
+            required:
+            - "auth_method"
+            properties:
+              auth_method:
+                type: "string"
+                const: "oauth2.0"
+                order: 0
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of the Shopify developer application."
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: "string"
+                title: "Client Secret"
+                description: "The Client Secret of the Shopify developer application."
+                airbyte_secret: true
+                order: 2
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "The Access Token for making authenticated requests."
+                airbyte_secret: true
+                order: 3
         start_date:
           type: "string"
           title: "Replication Start Date"

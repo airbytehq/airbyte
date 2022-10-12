@@ -195,7 +195,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .addExpectedValues((String) null)
             .build());
 
-
     for (final String type : Set.of("double precision", "float", "float8")) {
       addDataTypeTestData(
           TestDataHolder.builder()
@@ -404,9 +403,9 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // time column will ignore time zone
-              .addInsertValues("'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'")
+              .addInsertValues("'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'", "'24:00:00'")
               .addExpectedValues("13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
-                  "13:00:00.000000")
+                  "13:00:00.000000", "23:59:59.999999")
               .build());
     }
 

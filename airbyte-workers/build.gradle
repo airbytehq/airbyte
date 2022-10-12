@@ -1,8 +1,5 @@
-import org.jsonschema2pojo.SourceType
-
 plugins {
     id 'application'
-    id 'com.github.eirnym.js2p' version '1.0'
     id 'airbyte-integration-test-java'
 }
 
@@ -44,6 +41,7 @@ dependencies {
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
+    implementation project(':airbyte-commons-worker')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-config:init')
@@ -81,20 +79,6 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-workers')
     integrationTestJavaImplementation libs.bundles.micronaut.test
-}
-
-jsonSchema2Pojo {
-    sourceType = SourceType.YAMLSCHEMA
-    source = files("${sourceSets.main.output.resourcesDir}/workers_models")
-    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
-    removeOldOutput = true
-
-    targetPackage = 'io.airbyte.persistence.job.models'
-
-    useLongIntegers = true
-    generateBuilders = true
-    includeConstructors = false
-    includeSetters = true
 }
 
 mainClassName = 'io.airbyte.workers.Application'
