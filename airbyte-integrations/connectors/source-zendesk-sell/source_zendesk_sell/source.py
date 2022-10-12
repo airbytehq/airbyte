@@ -13,88 +13,33 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.models import SyncMode
 
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
-
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.yaml file.
-"""
-
-
 # Basic full refresh stream
 class ZendeskSellStream(HttpStream, ABC):
     """
-    TODO remove this comment
-
     This class represents a stream output by the connector.
     This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
     parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class ZendeskSellStream(HttpStream, ABC)` which is the current class
-    `class Customers(ZendeskSellStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(ZendeskSellStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalZendeskSellStream((ZendeskSellStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
     """
 
     url_base = "https://api.getbase.com/v2/"
     primary_key = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
         regex_page='[=?/]page[_=/-]?(\d{1,3})'
-        meta_links = response.json()['meta']['links']
-        if 'next_page' in meta_links.keys() :
-            {'page' : re.findall(regex_page, meta_links['next_page'])[0]}
-        else:
-            return None
+        meta_links = response.json().get('meta', {}).get('links')
+        if 'next_page' in meta_links.keys():
+            return {'page' : int(re.findall(regex_page, meta_links['next_page'])[0])}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {'page': next_page_token, 'per_page' : 100}
+        if next_page_token != None:
+            return {'page': next_page_token['page'], 'per_page' : 100}
+        else:
+            return {'per_page' : 100}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
+
         items = response.json()['items']
         return [item['data'] for item in items]
 
@@ -174,20 +119,190 @@ class Leads(ZendeskSellStream):
     def path(self, **kwargs) -> str:
         return "leads"
 
+class CallOutcomes(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/call-outcomes/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "call_outcomes"
+
+class Calls(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/calls/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "calls"
+
+class Collaborations(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/collaborations/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "collaborations"
+
+class CustomFields(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/custom-fields/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return ":resource_type/custom_fields"
+
+class DealSources(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deal-sources/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "deal_sources"
+
+class DealUnqualifiedReasons(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deal-unqualified-reasons/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "deal_unqualified_reasons"
+
+class Documents(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/documents/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "documents"
+
+class LeadConversions(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/lead-conversions/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "lead_conversions"
+
+class LeadSources(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/lead-sources/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "lead_sources"
+
+class LeadUnqualifiedReasons(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/lead-unqualified-reasons/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "lead_unqualified_reasons"
+
+class LossReasons(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/loss-reasons/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "loss_reasons"
+
+class Notes(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/notes/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "notes"
+
+class Orders(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/orders/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "orders"
+
+class Products(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/products/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "products"
+
+class Tags(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/tags/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "tags"
+
+class Tasks(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/tasks/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "tasks"
+
+class TextMessages(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/text-messages/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "text_messages"
+
+class Users(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/users/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "users"
+
+class VisitOutcomes(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/visit-outcomes/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "visit_outcomes"
+
+class Visits(ZendeskSellStream):
+    """
+    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/visits/
+    """
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "visits"
+
 
 # Source
 class SourceZendeskSell(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.yaml
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
         try:
             authenticator = TokenAuthenticator(token = config["api_token"])
             stream = Contacts(authenticator=authenticator)
@@ -199,11 +314,5 @@ class SourceZendeskSell(AbstractSource):
 
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
-
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token=config["api_token"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Contacts(authenticator=auth), Deals(authenticator=auth), Leads(authenticator=auth), Pipelines(authenticator=auth), Stages(authenticator=auth)]
+        auth = TokenAuthenticator(token=config["api_token"])
+        return [Contacts(authenticator=auth), Deals(authenticator=auth), Leads(authenticator=auth), Pipelines(authenticator=auth), Stages(authenticator=auth),  CallOutcomes(authenticator=auth), Calls(authenticator=auth), Collaborations(authenticator=auth), CustomFields(authenticator=auth), DealSources(authenticator=auth), DealUnqualifiedReasons(authenticator=auth), Documents(authenticator=auth), LeadConversions(authenticator=auth), LeadSources(authenticator=auth), LeadUnqualifiedReasons(authenticator=auth), LossReasons(authenticator=auth), Notes(authenticator=auth), Orders(authenticator=auth), Products(authenticator=auth), Tags(authenticator=auth), Tasks(authenticator=auth), TextMessages(authenticator=auth), Users(authenticator=auth), VisitOutcomes(authenticator=auth), Visits(authenticator=auth)]
