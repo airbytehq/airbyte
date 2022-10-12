@@ -10,11 +10,23 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_token'] }}"
+  increment_paginator:
+    type: "DefaultPaginator"
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "limit"
+    pagination_strategy:
+      type: "PageIncrement"
+      page_size: 25
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "page"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      type: NoPagination
+      $ref: "*ref(definitions.increment_paginator)"
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
