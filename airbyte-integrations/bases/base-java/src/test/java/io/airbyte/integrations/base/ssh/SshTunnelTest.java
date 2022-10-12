@@ -105,7 +105,7 @@ class SshTunnelTest {
         endPointURL == null ? Arrays.asList(new String[] {"host"}) : null,
         endPointURL == null ? Arrays.asList(new String[] {"port"}) : null,
         endPointURL == null ? null : "endpoint",
-        endPointURL == null ? null : endPointURL,
+        endPointURL,
         TunnelMethod.SSH_KEY_AUTH,
         "faketunnel.com",
         22,
