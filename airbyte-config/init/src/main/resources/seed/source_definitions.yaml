@@ -959,7 +959,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   icon: shopify.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Short.io
   sourceDefinitionId: 2fed2292-5586-480c-af92-9944e39fe12d
   dockerRepository: airbyte/source-shortio
