@@ -2,17 +2,17 @@
 # for more information about how to configure these tests
 connector_image: airbyte/source-whisky-hunter:dev
 tests:
-  # spec:
-  #   - spec_path: "source_whisky_hunter/spec.yaml"
+  spec:
+    - spec_path: "source_whisky_hunter/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
-  # discovery:
-  #   - config_path: "secrets/config.json"
-  # basic_read:
-  #   - config_path: "secrets/config.json"
-  #     configured_catalog_path: "integration_tests/configured_catalog.json"
-  #     empty_streams: []
-  # full_refresh:
-  #   - config_path: "secrets/config.json"
-  #     configured_catalog_path: "integration_tests/configured_catalog.json"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: []
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
