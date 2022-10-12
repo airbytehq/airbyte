@@ -10010,7 +10010,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.37"
+- dockerImage: "airbyte/source-shopify:0.1.38"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
@@ -10034,31 +10034,6 @@
           type: "object"
           order: 2
           oneOf:
-          - type: "object"
-            title: "OAuth2.0"
-            description: "OAuth2.0"
-            required:
-            - "auth_method"
-            properties:
-              auth_method:
-                type: "string"
-                const: "oauth2.0"
-                order: 0
-              client_id:
-                type: "string"
-                title: "Client ID"
-                description: "The Client ID of the Shopify developer application."
-                airbyte_secret: true
-              client_secret:
-                type: "string"
-                title: "Client Secret"
-                description: "The Client Secret of the Shopify developer application."
-                airbyte_secret: true
-              access_token:
-                type: "string"
-                title: "Access Token"
-                description: "The Access Token for making authenticated requests."
-                airbyte_secret: true
           - title: "API Password"
             description: "API Password Auth"
             type: "object"
@@ -10076,6 +10051,35 @@
                 description: "The API Password for your private application in the\
                   \ `Shopify` store."
                 airbyte_secret: true
+                order: 1
+          - type: "object"
+            title: "OAuth2.0"
+            description: "OAuth2.0"
+            required:
+            - "auth_method"
+            properties:
+              auth_method:
+                type: "string"
+                const: "oauth2.0"
+                order: 0
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of the Shopify developer application."
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: "string"
+                title: "Client Secret"
+                description: "The Client Secret of the Shopify developer application."
+                airbyte_secret: true
+                order: 2
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "The Access Token for making authenticated requests."
+                airbyte_secret: true
+                order: 3
         start_date:
           type: "string"
           title: "Replication Start Date"
