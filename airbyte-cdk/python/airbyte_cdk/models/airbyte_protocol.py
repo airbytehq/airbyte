@@ -21,6 +21,7 @@ class Type(Enum):
     CONNECTION_STATUS = "CONNECTION_STATUS"
     CATALOG = "CATALOG"
     TRACE = "TRACE"
+    CONFIG = "CONFIG"
 
 
 class AirbyteRecordMessage(BaseModel):
@@ -95,6 +96,14 @@ class AirbyteErrorTraceMessage(BaseModel):
     internal_message: Optional[str] = Field(None, description="The internal error that caused the failure")
     stack_trace: Optional[str] = Field(None, description="The full stack trace of the error")
     failure_type: Optional[FailureType] = Field(None, description="The type of error")
+
+
+class AirbyteConfigMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    emitted_at: float = Field(..., description="the time in ms that the message was emitted")
+    config: Dict[str, Any] = Field(..., description="the config items from this connector's spec to update")
 
 
 class Status(Enum):
@@ -332,6 +341,10 @@ class AirbyteMessage(BaseModel):
     trace: Optional[AirbyteTraceMessage] = Field(
         None,
         description="trace message: a message to communicate information about the status and performance of a connector",
+    )
+    config: Optional[AirbyteConfigMessage] = Field(
+        None,
+        description="config message: a message to communicate an updated configuration from a connector that should be persisted",
     )
 
 
