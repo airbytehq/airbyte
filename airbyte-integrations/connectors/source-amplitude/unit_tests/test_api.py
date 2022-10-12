@@ -75,15 +75,15 @@ class TestIncrementalStreams:
                 [{"date": "2021-01-01", "statistics": {0: 1}}, {"date": "2021-01-02", "statistics": {0: 5}}],
             ),
             (
-                    ActiveUsers,
-                    {
-                        "xValues": ["2021-01-01", "2021-01-02"],
-                        "series": [],
-                        "seriesCollapsed": [[0]],
-                        "seriesLabels": [0],
-                        "seriesMeta": [{"segmentIndex": 0}],
-                    },
-                    [],
+                ActiveUsers,
+                {
+                    "xValues": ["2021-01-01", "2021-01-02"],
+                    "series": [],
+                    "seriesCollapsed": [[0]],
+                    "seriesLabels": [0],
+                    "seriesMeta": [{"segmentIndex": 0}],
+                },
+                [],
             ),
             (
                 AverageSessionLength,
