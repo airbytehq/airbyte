@@ -146,7 +146,8 @@ public class SchedulerHandler {
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
-        .withConfiguration(partialConfig);
+        .withConfiguration(partialConfig)
+        .withWorkspaceId(sourceConfig.getWorkspaceId());
 
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
@@ -186,7 +187,8 @@ public class SchedulerHandler {
     // technically declared as required.
     final DestinationConnection destination = new DestinationConnection()
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
-        .withConfiguration(partialConfig);
+        .withConfiguration(partialConfig)
+        .withWorkspaceId(destinationConfig.getWorkspaceId());
 
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
     return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
@@ -250,7 +252,8 @@ public class SchedulerHandler {
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
-        .withConfiguration(partialConfig);
+        .withConfiguration(partialConfig)
+        .withWorkspaceId(sourceCreate.getWorkspaceId());
     final SynchronousResponse<UUID> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, sourceDef.getDockerImageTag());
     return retrieveDiscoveredSchema(response);
   }
@@ -377,7 +380,8 @@ public class SchedulerHandler {
   private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException, JsonValidationException, ConfigNotFoundException {
     final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(
         connectionId,
-        configRepository.getAllStreamsForConnection(connectionId));
+        configRepository.getAllStreamsForConnection(connectionId),
+        false);
 
     return readJobFromResult(resetConnectionResult);
   }

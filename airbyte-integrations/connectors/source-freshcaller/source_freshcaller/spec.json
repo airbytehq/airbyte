@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/freshcaller",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/freshcaller",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Freshcaller Spec",
@@ -16,7 +16,7 @@
       "api_key": {
         "type": "string",
         "title": "API Key",
-        "description": "Freshcaller API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/freshcaller\">docs</a> for more information on how to obtain this key.",
+        "description": "Freshcaller API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/freshcaller\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
       },
       "requests_per_minute": {
