@@ -118,8 +118,7 @@ public class KubePodProcessIntegrationTest {
     KubePortManagerSingleton originalKubePortManager = KubePortManagerSingleton.getInstance();
 
     // init the second time with the same ports
-    final List<Integer> theSameOpenPorts = new ArrayList<>(getOpenPorts(30));
-    KubePortManagerSingleton.init(new HashSet<>(theSameOpenPorts.subList(1, theSameOpenPorts.size() - 1)));
+    KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
     assertEquals(originalKubePortManager, KubePortManagerSingleton.getInstance());
 
     // init the second time with different ports
