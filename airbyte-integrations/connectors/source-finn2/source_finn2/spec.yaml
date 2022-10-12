@@ -1,7 +1,7 @@
 documentationUrl: https://schibsted.com/api-portal/73a598fc-e854-4cb7-bea6-a4c899c8cb73/finn-statistics-api/minor/1.0/console/security/%2332/
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Finn Statistics Spec
+  title: Finn2 Spec
   type: object
   required:
     - changedLastDays
