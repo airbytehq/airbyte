@@ -14,4 +14,4 @@ connectionSpecification:
       airbyte_secret: true
     account_subdomain:
       type: string
-      description: Your Workday account subdomain, e.g. https://<account_subdomain>.workable.com.
+      description: Your Workday account subdomain, e.g. https://your_account_subdomain.workable.com.

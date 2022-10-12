@@ -1,7 +1,7 @@
 version: "0.1.0"
 
 definitions:
-  page_size: 100
+  page_size: 2
   selector:
     extractor:
       field_pointer: []
@@ -23,15 +23,14 @@ definitions:
         inject_into: "request_parameter"
         field_name: ""
       page_token_option:
-        inject_into: "request_parameter"
-        field_name: "cursor"
+        inject_into: "path"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "limit"
       pagination_strategy:
         type: "CursorPagination"
-        cursor_value: "{{ request.paging.next }}"
-        stop_condition: "{{ 'next' not in headers['paging'] }}"
+        cursor_value: "{{ response.paging.next }}"
+        stop_condition: "{{ 'next' not in response['paging'] }}"
         page_size: "*ref(definitions.page_size)"
   base_stream:
     retriever:
