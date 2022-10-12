@@ -129,12 +129,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
     destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
+    final ThreadedTimeHolder timeHolder = new ThreadedTimeHolder();
     final long startTime = System.currentTimeMillis();
-    final long replicationStartTime = startTime;
-    long replicationEndTime;
+    final long replicationStartTime = System.currentTimeMillis();
     long sourceReadStartTime = -1;
     long destinationWriteStartTime = -1;
-    final ThreadedTimeHolder timeHolder = new ThreadedTimeHolder();
 
     final AtomicReference<FailureReason> replicationRunnableFailureRef = new AtomicReference<>();
     final AtomicReference<FailureReason> destinationRunnableFailureRef = new AtomicReference<>();
@@ -200,8 +199,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         executors.shutdownNow();
       }
 
-      replicationEndTime = System.currentTimeMillis();
-
       final ReplicationStatus outputStatus;
       // First check if the process was cancelled. Cancellation takes precedence over failures.
       if (cancelled.get()) {
@@ -213,6 +210,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       } else {
         outputStatus = ReplicationStatus.COMPLETED;
       }
+
+      final long replicationEndTime = System.currentTimeMillis();
 
       final SyncStats totalSyncStats = new SyncStats()
           .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
@@ -326,7 +325,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   }
 
-  private static class ThreadedTimeHolder {
+  private class ThreadedTimeHolder {
 
     private long sourceReadEndTime = -1;
     private long destinationWriteEndTime = -1;
