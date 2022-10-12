@@ -85,12 +85,6 @@ public class CdcConfigurationHelper {
     return Optional.empty();
   }
 
-  public static void checkCdcReplicationMethodConfig(final JsonNode config) {
-    checkFirstRecordWaitTime(config);
-    checkServerTimeZoneConfig(config);
-  }
-
-  @VisibleForTesting
   public static void checkServerTimeZoneConfig(final JsonNode config) {
     final Optional<String> serverTimeZone = getCdcServerTimezone(config);
     if (serverTimeZone.isPresent()) {
@@ -102,7 +96,6 @@ public class CdcConfigurationHelper {
     }
   }
 
-  @VisibleForTesting
   public static void checkFirstRecordWaitTime(final JsonNode config) {
     // we need to skip the check because in tests, we set initial_waiting_seconds
     // to 5 seconds for performance reasons, which is shorter than the minimum
