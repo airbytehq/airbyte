@@ -4,7 +4,7 @@
 title: AirbyteProtocol
 type: object
 description: AirbyteProtocol structs
-version: 0.3.0
+version: 0.3.1
 properties:
   airbyte_message:
     "$ref": "#/definitions/AirbyteMessage"
@@ -28,6 +28,7 @@ definitions:
           - CONNECTION_STATUS
           - CATALOG
           - TRACE
+          - CONFIG
       log:
         description: "log message: any kind of logging you want the platform to know about."
         "$ref": "#/definitions/AirbyteLogMessage"
@@ -48,6 +49,9 @@ definitions:
       trace:
         description: "trace message: a message to communicate information about the status and performance of a connector"
         "$ref": "#/definitions/AirbyteTraceMessage"
+      config:
+        description: "config message: a message to communicate an updated configuration from a connector that should be persisted"
+        "$ref": "#/definitions/AirbyteConfigMessage"
   AirbyteRecordMessage:
     type: object
     additionalProperties: true
@@ -197,6 +201,20 @@ definitions:
         enum:
           - system_error
           - config_error
+  AirbyteConfigMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - config
+      - emitted_at
+    properties:
+      emitted_at:
+        description: "the time in ms that the message was emitted"
+        type: number
+      config:
+        description: "the config items from this connector's spec to update"
+        type: object
+        additionalProperties: true
   AirbyteConnectionStatus:
     type: object
     description: Airbyte connection status
