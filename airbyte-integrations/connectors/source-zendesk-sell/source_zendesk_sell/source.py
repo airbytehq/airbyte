@@ -25,10 +25,13 @@ class ZendeskSellStream(HttpStream, ABC):
     primary_key = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        regex_page='[=?/]page[_=/-]?(\d{1,3})'
-        meta_links = response.json().get('meta', {}).get('links')
-        if 'next_page' in meta_links.keys():
-            return {'page' : int(re.findall(regex_page, meta_links['next_page'])[0])}
+        try:
+            regex_page='[=?/]page[_=/-]?(\d{1,3})'
+            meta_links = response.json().get('meta', {}).get('links')
+            if 'next_page' in meta_links.keys():
+                return {'page' : int(re.findall(regex_page, meta_links['next_page'])[0])}
+        except: 
+            return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -65,10 +68,6 @@ class Stages(ZendeskSellStream):
 
 # Basic incremental stream
 class IncrementalZendeskSellStream(ZendeskSellStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
     state_checkpoint_interval = 100
 
     @property
@@ -83,12 +82,12 @@ class IncrementalZendeskSellStream(ZendeskSellStream, ABC):
         if current_stream_state is not None and self.cursor_field in current_stream_state:
             current_updated_at = current_stream_state[self.cursor_field]
             latest_updated_at = latest_record[self.cursor_field]
-            return {self.cursor_field: max(current_parsed_date, latest_record_date)}
+            return {self.cursor_field: max(current_updated_at, latest_updated_at)}
         else:
-            return {self.cursor_field: self.cursor_field_value}
+            return {self.cursor_field: '1970-01-01T00:00:00Z'}
 
 
-class Contacts(ZendeskSellStream):
+class Contacts(IncrementalZendeskSellStream):
     """
     Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/contacts/
     """
@@ -97,7 +96,7 @@ class Contacts(ZendeskSellStream):
     def path(self, **kwargs) -> str:
         return "contacts"
 
-class Deals(ZendeskSellStream):
+class Deals(IncrementalZendeskSellStream):
     """
     Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deals/
     """
@@ -106,7 +105,7 @@ class Deals(ZendeskSellStream):
     def path(self, **kwargs) -> str:
         return "deals"
 
-class Leads(ZendeskSellStream):
+class Leads(IncrementalZendeskSellStream):
     """
     Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/leads/
     """
