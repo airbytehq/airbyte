@@ -247,7 +247,8 @@ public class WebBackendConnectionsHandler {
         .source(source)
         .destination(destination)
         .operations(operations.getOperations())
-        .resourceRequirements(connectionRead.getResourceRequirements());
+        .resourceRequirements(connectionRead.getResourceRequirements())
+        .geography(connectionRead.getGeography());
   }
 
   // todo (cgardens) - This logic is a headache to follow it stems from the internal data model not
@@ -297,7 +298,8 @@ public class WebBackendConnectionsHandler {
        * but was present at time of configuration will appear in the diff as an added stream which is
        * confusing. We need to figure out why source_catalog_id is not always populated in the db.
        */
-      diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog());
+      diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog(),
+          CatalogConverter.toProtocol(configuredCatalog));
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
       syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
@@ -456,7 +458,8 @@ public class WebBackendConnectionsHandler {
     if (!skipReset) {
       final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(oldConfiguredCatalog);
       final AirbyteCatalog upToDateAirbyteCatalog = updatedConnectionRead.getSyncCatalog();
-      final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog);
+      final CatalogDiff catalogDiff =
+          connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog, CatalogConverter.toProtocol(upToDateAirbyteCatalog));
       final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
       final Set<StreamDescriptor> changedConfigStreamDescriptors =
           connectionsHandler.getConfigurationDiff(apiExistingCatalog, upToDateAirbyteCatalog);
@@ -568,6 +571,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.status(webBackendConnectionCreate.getStatus());
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
     connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
+    connectionCreate.geography(webBackendConnectionCreate.getGeography());
 
     return connectionCreate;
   }
@@ -597,6 +601,7 @@ public class WebBackendConnectionsHandler {
     connectionPatch.status(webBackendConnectionPatch.getStatus());
     connectionPatch.resourceRequirements(webBackendConnectionPatch.getResourceRequirements());
     connectionPatch.sourceCatalogId(webBackendConnectionPatch.getSourceCatalogId());
+    connectionPatch.geography(webBackendConnectionPatch.getGeography());
 
     connectionPatch.operationIds(finalOperationIds);
 
