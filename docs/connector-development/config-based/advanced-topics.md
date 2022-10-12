@@ -65,10 +65,20 @@ TopLevel(param=ParamType(k="v"))
 
 More details on object instantiation can be found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=factory#airbyte_cdk.sources.declarative.parsers.factory.DeclarativeComponentFactory).
 
-### $options
+## $options
 
 Parameters can be passed down from a parent component to its subcomponents using the $options key.
 This can be used to avoid repetitions.
+
+Schema:
+
+```yaml
+  "$options":
+    type: object
+    additionalProperties: true
+```
+
+Example:
 
 ```yaml
 outer:
@@ -230,7 +240,7 @@ some_object:
 ```
 
 Some components also pass in additional arguments to the context.
-This is the case for the [record selector](understanding-the-yaml-file/record-selector.md), which passes in an additional `response` argument.
+This is the case for the [record selector](./understanding-the-yaml-file/record-selector.md), which passes in an additional `response` argument.
 
 Both dot notation and bracket notations (with single quotes ( `'`)) are interchangeable.
 This means that both these string templates will evaluate to the same string:
@@ -244,11 +254,11 @@ For example,
 
 The macros available can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/interpolation/macros.py).
 
-Additional information on jinja templating can be found at https://jinja.palletsprojects.com/en/3.1.x/templates/#
+Additional information on jinja templating can be found at [https://jinja.palletsprojects.com/en/3.1.x/templates/#](https://jinja.palletsprojects.com/en/3.1.x/templates/#)
 
 ## Component schema reference
 
-A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json).
+A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](./source_schema.yaml).
 
 ## Custom components
 
@@ -282,3 +292,20 @@ pagination_strategy:
   class_name: "my_connector_module.MyPaginationStrategy"
   my_field: "hello world"
 ```
+
+## How the framework works
+
+1. Given the connection config and an optional stream state, the `StreamSlicer` computes the stream slices to read.
+2. Iterate over all the stream slices defined by the stream slicer.
+3. For each stream slice,
+    1. Submit a request to the partner API as defined by the requester
+    2. Select the records from the response
+    3. Repeat for as long as the paginator points to a next page
+
+[connector-flow](./assets/connector-flow.png)
+
+## More readings
+
+- [Record selector](./understanding-the-yaml-file/record-selector.md)
+- [Stream slicers](./understanding-the-yaml-file/stream-slicers.md)
+- [Source schema](./source_schema.yaml)
