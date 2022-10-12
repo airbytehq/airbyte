@@ -569,7 +569,8 @@ def test_bulk_stream_paging(stream_config, stream_api_pk):
             {"Field1": "test", "Id": 6, "LastModifiedDate": LastModifiedDate2},
         ]
 
-        req = lambda i: m.request_history[i].json()["query"]
+        def req(i):
+            return m.request_history[i].json()["query"]
 
         SELECT = "SELECT LastModifiedDate,Id FROM Account"
         ORDER_BY = "ORDER BY LastModifiedDate,Id ASC LIMIT 2"
