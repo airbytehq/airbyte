@@ -1,18 +1,15 @@
 {
-  "type" : "array",
-  "items" : {
-    "type" : [
-      "null",
-      "object"
-    ],
-    "properties" : {
-      "slug" : {
-        "type" : "string"
+  "type": "array",
+  "items": {
+    "type": ["null", "object"],
+    "properties": {
+      "slug": {
+        "type": "string"
       },
-      "value" : {
-        "type" : "array",
-        "items" : {
-          "type" : "string"
+      "value": {
+        "type": "array",
+        "items": {
+          "type": "string"
         }
       }
     }
