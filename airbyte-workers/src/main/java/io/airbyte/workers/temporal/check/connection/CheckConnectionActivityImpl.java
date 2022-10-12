@@ -106,7 +106,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           processFactory,
           workerConfigs.getResourceRequirements());
 
-      return new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher);
+      return new DefaultCheckConnectionWorker(integrationLauncher);
     };
   }
 

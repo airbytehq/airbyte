@@ -29,8 +29,8 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
+import io.airbyte.workers.test_utils.TestConfigHelpers;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
 import io.temporal.activity.ActivityCancellationType;
@@ -50,6 +50,7 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.UnusedPrivateMethod"})
@@ -312,6 +313,7 @@ class SyncWorkflowTest {
   }
 
   @Test
+  @Disabled("This behavior has been disabled temporarily (OC Issue #741)")
   void testSkipNormalization() throws IOException {
     final SyncStats syncStats = new SyncStats().withRecordsCommitted(0L);
     final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);

@@ -12,7 +12,6 @@ import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
@@ -33,22 +32,19 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultGetSpecWorker.class);
 
-  private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
   private Process process;
 
-  public DefaultGetSpecWorker(final WorkerConfigs workerConfigs,
-                              final IntegrationLauncher integrationLauncher,
+  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher,
                               final AirbyteStreamFactory streamFactory) {
-    this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }
 
-  public DefaultGetSpecWorker(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
-    this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory());
+  public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
   @Override
@@ -67,7 +63,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         // this.
         // retrieving spec should generally be instantaneous, but since docker images might not be pulled
         // it could take a while longer depending on internet conditions as well.
-        WorkerUtils.gentleClose(workerConfigs, process, 30, TimeUnit.MINUTES);
+        WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
       }
 
       final Optional<ConnectorSpecification> spec = messagesByType

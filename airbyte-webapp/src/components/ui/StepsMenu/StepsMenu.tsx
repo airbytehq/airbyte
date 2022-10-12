@@ -1,17 +1,16 @@
 import React from "react";
 import styled from "styled-components";
 
-import Step from "./Step";
+import { Step } from "./Step";
 
-export interface StepMenuItem {
+interface StepMenuItem {
   id: string;
   name: string | React.ReactNode;
-  status?: string;
-  isPartialSuccess?: boolean;
+  icon?: React.ReactNode;
   onSelect?: () => void;
 }
 
-interface IProps {
+interface StepMenuProps {
   lightMode?: boolean;
   data: StepMenuItem[];
   activeStep?: string;
@@ -25,17 +24,17 @@ const Content = styled.div`
   font-family: ${({ theme }) => theme.regularFont};
 `;
 
-export const StepsMenu: React.FC<IProps> = ({ data, onSelect, activeStep, lightMode }) => {
+export const StepsMenu: React.FC<StepMenuProps> = ({ data, onSelect, activeStep, lightMode }) => {
   return (
     <Content>
       {data.map((item, key) => (
         <Step
-          status={item.status}
-          isPartialSuccess={item.isPartialSuccess}
+          icon={item.icon}
           lightMode={lightMode}
           key={item.id}
           num={key + 1}
-          {...item}
+          name={item.name}
+          id={item.id}
           onClick={item.onSelect || onSelect}
           isActive={activeStep === item.id}
         />

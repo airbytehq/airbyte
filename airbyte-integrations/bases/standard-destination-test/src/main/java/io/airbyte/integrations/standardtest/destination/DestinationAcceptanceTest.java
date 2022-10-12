@@ -507,7 +507,7 @@ public abstract class DestinationAcceptanceTest {
     if (normalizationFromSpec) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
-        NormalizationRunnerFactory.create(workerConfigs, getImageName(), processFactory, NORMALIZATION_VERSION);
+        NormalizationRunnerFactory.create(getImageName(), processFactory, NORMALIZATION_VERSION);
         normalizationRunnerFactorySupportsDestinationImage = true;
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
@@ -781,8 +781,7 @@ public abstract class DestinationAcceptanceTest {
     // this test successfully and that we are able to convert a destination 'config.json' into a dbt
     // 'profiles.yml'
     // (we don't actually rely on normalization running anything else here though)
-    final DbtTransformationRunner runner = new DbtTransformationRunner(workerConfigs, processFactory, NormalizationRunnerFactory.create(
-        workerConfigs,
+    final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
         processFactory,
         NORMALIZATION_VERSION));
@@ -857,8 +856,7 @@ public abstract class DestinationAcceptanceTest {
 
     final JsonNode config = getConfig();
 
-    final DbtTransformationRunner runner = new DbtTransformationRunner(workerConfigs, processFactory, NormalizationRunnerFactory.create(
-        workerConfigs,
+    final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
         processFactory,
         NORMALIZATION_VERSION));
@@ -1056,7 +1054,7 @@ public abstract class DestinationAcceptanceTest {
 
     // Run sync and verify that all message were written without failing
     runSyncAndVerifyStateOutput(config, secondSyncMessagesWithNewFields, configuredCatalog, false);
-    var destinationOutput = retrieveRecords(testEnv, stream.getName(), getDefaultSchema(config), stream.getJsonSchema());
+    final var destinationOutput = retrieveRecords(testEnv, stream.getName(), getDefaultSchema(config), stream.getJsonSchema());
     // Remove state message
     secondSyncMessagesWithNewFields.removeIf(airbyteMessage -> airbyteMessage.getType().equals(Type.STATE));
     assertEquals(secondSyncMessagesWithNewFields.size(), destinationOutput.size());
@@ -1090,20 +1088,20 @@ public abstract class DestinationAcceptanceTest {
 
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(
-        workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
             .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
-        workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection();
   }
 
   protected StandardCheckConnectionOutput.Status runCheckWithCatchedException(final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
-          workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection();
       return standardCheckConnectionOutput.getStatus();
     } catch (final Exception e) {
@@ -1114,7 +1112,7 @@ public abstract class DestinationAcceptanceTest {
 
   protected AirbyteDestination getDestination() {
     return new DefaultAirbyteDestination(
-        workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null));
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null));
   }
 
   protected void runSyncAndVerifyStateOutput(final JsonNode config,
@@ -1171,7 +1169,6 @@ public abstract class DestinationAcceptanceTest {
     }
 
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
-        workerConfigs,
         getImageName(),
         processFactory,
         NORMALIZATION_VERSION);
