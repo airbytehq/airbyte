@@ -4,8 +4,14 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import static io.airbyte.workers.temporal.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.TemporalTraceConstants.CONNECTION_ID_TAG_KEY;
+import static io.airbyte.workers.temporal.TemporalTraceConstants.JOB_ID_TAG_KEY;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricTags;
@@ -13,6 +19,7 @@ import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
@@ -37,8 +44,11 @@ public class RecordMetricActivityImpl implements RecordMetricActivity {
    *
    * @param metricInput The information about the metric to record.
    */
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public void recordWorkflowCountMetric(final RecordMetricInput metricInput) {
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_TAG_KEY, metricInput.getConnectionUpdaterInput().getConnectionId(), JOB_ID_TAG_KEY,
+        metricInput.getConnectionUpdaterInput().getJobId()));
     final List<MetricAttribute> baseMetricAttributes = generateMetricAttributes(metricInput.getConnectionUpdaterInput());
     if (metricInput.getMetricAttributes() != null) {
       baseMetricAttributes.addAll(Stream.of(metricInput.getMetricAttributes()).collect(Collectors.toList()));
