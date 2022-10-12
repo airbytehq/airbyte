@@ -1,12 +1,12 @@
 version: "0.1.0"
 
 definitions:
-  page_size: 2
+  page_size: 100
   selector:
     extractor:
       field_pointer: []
   requester:
-    url_base: "https://{{ config['account_subdomain'] }}.workable.com/spi/v3"
+    url_base: "https://{{ config['account_subdomain'] }}.workable.com"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -40,7 +40,7 @@ definitions:
     $options:
       name: "jobs"
       primary_key: "id"
-      path: "/jobs"
+      path: "/spi/v3/jobs"
       field_pointer: ["jobs"]
 
 
