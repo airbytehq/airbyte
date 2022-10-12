@@ -21,7 +21,6 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.metrics.lib.MetricClient;
@@ -182,14 +181,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     syncSummary.setStatus(replicationSummary.getStatus());
     syncSummary.setTotalStats(replicationSummary.getTotalStats());
     syncSummary.setStreamStats(replicationSummary.getStreamStats());
-
-    final SyncStats totalStats = syncSummary.getTotalStats();
-    totalStats.setReplicationStartTime(totalStats.getReplicationStartTime());
-    totalStats.setReplicationEndTime(totalStats.getReplicationEndTime());
-    totalStats.setSourceReadStartTime(totalStats.getSourceReadStartTime());
-    totalStats.setSourceReadEndTime(totalStats.getSourceReadEndTime());
-    totalStats.setDestinationWriteStartTime(totalStats.getDestinationWriteStartTime());
-    totalStats.setDestinationWriteEndTime(totalStats.getDestinationWriteEndTime());
 
     standardSyncOutput.setState(output.getState());
     standardSyncOutput.setOutputCatalog(output.getOutputCatalog());
