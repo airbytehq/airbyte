@@ -1156,6 +1156,13 @@
   icon: webflow.svg
   sourceType: api
   releaseStage: alpha
+- name: Whisky Hunter
+  sourceDefinitionId: e65f84c0-7598-458a-bfac-f770c381ff5d
+  dockerRepository: airbyte/source-whisky-hunter
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/whisky-hunter
+  sourceType: api
+  releaseStage: alpha
 - name: WooCommerce
   sourceDefinitionId: 2a2552ca-9f78-4c1c-9eb7-4d0dc66d72df
   dockerRepository: airbyte/source-woocommerce

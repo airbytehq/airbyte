@@ -170,6 +170,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [US Census](sources/us-census.md)                                                           | Alpha                | Yes                 |
 | [VictorOps](sources/victorops.md)                                                           | Alpha                | No                  |
 | [Webflow](sources/webflow.md        )                                                       | Alpha                | Yes                 |
+| [Whisky Hunter](sources/whisky-hunter.md        )                                           | Alpha                | No                  |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
 | [Wordpress](sources/wordpress.md)                                                           | Alpha                | No                  |
 | [Wrike](sources/wrike.md)                                                                   | Alpha                | No                  |
