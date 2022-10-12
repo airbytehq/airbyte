@@ -57,7 +57,7 @@ describe("ConnectionReplicationTab", () => {
     setupSpies();
 
     const renderResult = await render();
-    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult).toMatchSnapshot();
   });
 
   it("should show an error if there is a schemaError", async () => {
@@ -68,7 +68,7 @@ describe("ConnectionReplicationTab", () => {
     await act(async () => {
       renderResult.queryByText("Refresh source schema")?.click();
     });
-    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult).toMatchSnapshot();
   });
 
   it("should show loading if the schema is refreshing", async () => {
