@@ -11,7 +11,14 @@ import com.google.protobuf.ByteString;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.DeletedWorkflowException;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.micronaut.context.annotation.Requires;
 import io.temporal.api.common.v1.WorkflowType;
@@ -31,11 +38,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 
 @Slf4j
 @Singleton
@@ -297,6 +310,138 @@ public class TemporalClient {
     } else {
       return Optional.of(currentJobId);
     }
+  }
+
+  public TemporalResponse<StandardSyncOutput> submitSync(final long jobId, final int attempt, final JobSyncConfig config, final UUID connectionId) {
+    final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
+
+    final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
+        .withJobId(String.valueOf(jobId))
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getSourceDockerImage());
+
+    final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
+        .withJobId(String.valueOf(jobId))
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getDestinationDockerImage());
+
+    final StandardSyncInput input = new StandardSyncInput()
+        .withNamespaceDefinition(config.getNamespaceDefinition())
+        .withNamespaceFormat(config.getNamespaceFormat())
+        .withPrefix(config.getPrefix())
+        .withSourceConfiguration(config.getSourceConfiguration())
+        .withDestinationConfiguration(config.getDestinationConfiguration())
+        .withOperationSequence(config.getOperationSequence())
+        .withCatalog(config.getConfiguredAirbyteCatalog())
+        .withState(config.getState())
+        .withResourceRequirements(config.getResourceRequirements())
+        .withSourceResourceRequirements(config.getSourceResourceRequirements())
+        .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
+
+    return execute(jobRunConfig,
+        () -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
+            jobRunConfig,
+            sourceLauncherConfig,
+            destinationLauncherConfig,
+            input,
+            connectionId));
+  }
+
+  public void migrateSyncIfNeeded(final Set<UUID> connectionIds) {
+    final StopWatch globalMigrationWatch = new StopWatch();
+    globalMigrationWatch.start();
+    refreshRunningWorkflow();
+
+    connectionIds.forEach((connectionId) -> {
+      final StopWatch singleSyncMigrationWatch = new StopWatch();
+      singleSyncMigrationWatch.start();
+      if (!isInRunningWorkflowCache(connectionManagerUtils.getConnectionManagerName(connectionId))) {
+        log.info("Migrating: " + connectionId);
+        try {
+          submitConnectionUpdaterAsync(connectionId);
+        } catch (final Exception e) {
+          log.error("New workflow submission failed, retrying", e);
+          refreshRunningWorkflow();
+          submitConnectionUpdaterAsync(connectionId);
+        }
+      }
+      singleSyncMigrationWatch.stop();
+      log.info("Sync migration took: " + singleSyncMigrationWatch.formatTime());
+    });
+    globalMigrationWatch.stop();
+
+    log.info("The migration to the new scheduler took: " + globalMigrationWatch.formatTime());
+  }
+
+  @VisibleForTesting
+  <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+    final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
+    final Path logPath = WorkerUtils.getLogPath(jobRoot);
+
+    T operationOutput = null;
+    RuntimeException exception = null;
+
+    try {
+      operationOutput = executor.get();
+    } catch (final RuntimeException e) {
+      exception = e;
+    }
+
+    boolean succeeded = exception == null;
+    if (succeeded && operationOutput instanceof ConnectorJobOutput) {
+      succeeded = getConnectorJobSucceeded((ConnectorJobOutput) operationOutput);
+    }
+
+    final JobMetadata metadata = new JobMetadata(succeeded, logPath);
+    return new TemporalResponse<>(operationOutput, metadata);
+  }
+
+  private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
+    return client.newWorkflowStub(workflowClass, TemporalWorkflowUtils.buildWorkflowOptions(jobType));
+  }
+
+  public ConnectionManagerWorkflow submitConnectionUpdaterAsync(final UUID connectionId) {
+    log.info("Starting the scheduler temporal wf");
+    final ConnectionManagerWorkflow connectionManagerWorkflow =
+        connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
+    try {
+      CompletableFuture.supplyAsync(() -> {
+        try {
+          do {
+            Thread.sleep(DELAY_BETWEEN_QUERY_MS);
+          } while (!isWorkflowReachable(connectionId));
+        } catch (final InterruptedException e) {}
+        return null;
+      }).get(60, TimeUnit.SECONDS);
+    } catch (final InterruptedException | ExecutionException e) {
+      log.error("Failed to create a new connection manager workflow", e);
+    } catch (final TimeoutException e) {
+      log.error("Can't create a new connection manager workflow due to timeout", e);
+    }
+
+    return connectionManagerWorkflow;
+  }
+
+  private boolean getConnectorJobSucceeded(final ConnectorJobOutput output) {
+    return output.getFailureReason() == null;
+  }
+
+  /**
+   * Check if a workflow is reachable for signal calls by attempting to query for current state. If
+   * the query succeeds, and the workflow is not marked as deleted, the workflow is reachable.
+   */
+  @VisibleForTesting
+  boolean isWorkflowReachable(final UUID connectionId) {
+    try {
+      connectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
+      return true;
+    } catch (final Exception e) {
+      return false;
+    }
+  }
+
+  boolean isInRunningWorkflowCache(final String workflowName) {
+    return workflowNames.contains(workflowName);
   }
 
 }

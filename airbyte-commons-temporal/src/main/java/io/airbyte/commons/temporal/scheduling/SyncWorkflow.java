@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal.sync;
+package io.airbyte.commons.temporal.scheduling;
 
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
