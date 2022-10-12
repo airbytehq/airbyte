@@ -5,9 +5,9 @@ import styled from "styled-components";
 
 import { LabeledRadioButton, Link } from "components";
 
-import { useConfig } from "config";
 import { NormalizationType } from "core/domain/connection/operation";
 import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { links } from "utils/links";
 
 const Normalization = styled.div`
   margin: 16px 0;
@@ -18,7 +18,6 @@ type NormalizationBlockProps = FieldProps<string> & {
 };
 
 const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mode }) => {
-  const config = useConfig();
   return (
     <Normalization>
       <LabeledRadioButton
@@ -42,7 +41,7 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mo
               id="form.basicNormalization.message"
               values={{
                 lnk: (lnk: React.ReactNode) => (
-                  <Link target="_blank" href={config.links.normalizationLink} as="a">
+                  <Link target="_blank" href={links.normalizationLink} as="a">
                     {lnk}
                   </Link>
                 ),
