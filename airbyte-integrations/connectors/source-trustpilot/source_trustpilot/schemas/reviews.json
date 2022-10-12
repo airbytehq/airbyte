@@ -1,40 +1,82 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Trustpilot reviews",
-  "description": "Trustpilot reviews schema",
-  "type": "object",
-  "required": [
-    "user_id",
-    "message"
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "title" : "Trustpilot reviews",
+  "description" : "Trustpilot reviews schema",
+  "type" : "object",
+  "required" : [
+    "@type",
+    "@id",
+    "datePublished"
   ],
-  "properties": {
-    "user_id": {
-      "type": "string"
+  "properties" : {
+    "@type" : {
+      "const" : "Review"
     },
-    "message": {
-      "type": "string"
+    "@id" : {
+      "type" : "string"
     },
-    "ticket_id": {
-      "type": "string"
+    "itemReviewed" : {
+      "type" : "object",
+      "required" : [],
+      "properties" : {
+        "@id" : {
+          "type" : "string"
+        }
+      }
     },
-    "score": {
-      "type": "integer"
+    "author" : {
+      "type" : "object",
+      "required" : [],
+      "properties" : {
+        "@type" : {
+          "const" : "Person"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "url" : {
+          "type" : "string"
+        }
+      }
     },
-    "version": {
-      "type": "string"
+    "datePublished" : {
+      "type" : "string"
     },
-    "ds": {
-      "type": "string",
-      "format": "date-time"
+    "headline" : {
+      "type" : "string"
     },
-    "source": {
-      "type": "string"
+    "reviewBody" : {
+      "type" : "string"
     },
-    "lang": {
-      "type": "string"
+    "reviewRating" : {
+      "type" : "object",
+      "required" : [],
+      "properties" : {
+        "@type" : {
+          "const" : "Rating"
+        },
+        "bestRating" : {
+          "type" : "string"
+        },
+        "worstRating" : {
+          "type" : "string"
+        },
+        "ratingValue" : {
+          "type" : "string"
+        }
+      }
     },
-    "country": {
-      "type": "string"
+    "publisher" : {
+      "type" : "object",
+      "required" : [],
+      "properties" : {
+        "@id" : {
+          "type" : "string"
+        }
+      }
+    },
+    "inLanguage" : {
+      "type" : "string"
     }
   }
 }

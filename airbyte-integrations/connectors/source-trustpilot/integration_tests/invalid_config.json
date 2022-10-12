@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "app_name": "wrong-app.name",
+  "start_date": "2022-01-01",
+  "timeout_ms": 1000
 }

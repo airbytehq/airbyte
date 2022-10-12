@@ -9,19 +9,20 @@ definitions:
     http_method: "GET"
     authenticator:
       type: NoAuth
-    request_option_provider:
+    request_options_provider:
       request_parameters:
         languages: all
         sort: recency
   retriever:
     record_selector:
       extractor:
-        class_name: "source_trustpilot.source.MyExtractor"
+        class_name: "source_trustpilot.source.TrustpilotExtractor"
       record_filter:
-        condition: "{{ record['datePublished'] > config['start_time'] }}"
+        condition: "{{ record['datePublished'] > stream_state['old_datePublished'] }}"
     paginator:
-      type: DefaultPaginator
+      class_name: "source_trustpilot.source.TrustpilotPaginator"
       url_base: "*ref(definitions.requester.url_base)"
+      # `page_size_option` is dummy to support DefaultPaginator API
       page_size_option:
         inject_into: "request_parameter"
         field_name: "page_size"
@@ -31,6 +32,13 @@ definitions:
       page_token_option:
         inject_into: "request_parameter"
         field_name: "page"
+    stream_slicer:
+      class_name: "source_trustpilot.source.TrustpilotStreamSlicer"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      cursor_field: "{{ options['stream_cursor_field'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
