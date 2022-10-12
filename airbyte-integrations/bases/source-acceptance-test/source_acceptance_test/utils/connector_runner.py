@@ -39,7 +39,8 @@ class ConnectorRunner:
         self.input_folder.mkdir(parents=True)
         self.output_folder.mkdir(parents=True)
 
-        if config:
+        # using "is not None" to allow falsey config objects like {} to still write
+        if config is not None:
             with open(str(self.input_folder / "tap_config.json"), "w") as outfile:
                 json.dump(dict(config), outfile)
 
