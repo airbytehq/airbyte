@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
  * 2. checking whether binlog required from saved cdc offset is available on mysql server
  * #checkBinlog method
  * </p>
- * 3. configuring initial CDC wait time. TODO : There is a lot of shared logic for this functionality
- * between MySQL and Postgres. Refactor it to reduce code de-duplication.
+ * 3. configuring initial CDC wait time. TODO : There is a lot of shared logic for this
+ * functionality between MySQL and Postgres. Refactor it to reduce code de-duplication.
  */
 public class CdcConfigurationHelper {
 
