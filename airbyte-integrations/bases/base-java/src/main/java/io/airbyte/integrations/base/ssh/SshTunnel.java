@@ -13,6 +13,7 @@ import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
@@ -97,7 +98,7 @@ public class SshTunnel implements AutoCloseable {
                    final List<String> hostKey,
                    final List<String> portKey,
                    final String endPointKey,
-                   final URL remoteServiceUrl,
+                   final String remoteServiceUrl,
                    final TunnelMethod tunnelMethod,
                    final String tunnelHost,
                    final int tunnelPort,
@@ -137,10 +138,17 @@ public class SshTunnel implements AutoCloseable {
       Preconditions.checkArgument((hostKey != null && portKey != null) || endPointKey != null);
       Preconditions.checkArgument((remoteServiceHost != null && remoteServicePort > 0) || remoteServiceUrl != null);
       if (remoteServiceUrl != null) {
-        this.remoteServiceHost = remoteServiceUrl.getHost();
-        this.remoteServicePort = remoteServiceUrl.getPort();
-        this.remoteServiceProtocol = remoteServiceUrl.getProtocol();
-        this.remoteServicePath = remoteServiceUrl.getPath();
+        URL urlObject = null;
+        try {
+          urlObject = new URL(remoteServiceUrl);
+        } catch (MalformedURLException e) {
+          e.printStackTrace();
+        }
+        Preconditions.checkNotNull(urlObject);
+        this.remoteServiceHost = urlObject.getHost();
+        this.remoteServicePort = urlObject.getPort();
+        this.remoteServiceProtocol = urlObject.getProtocol();
+        this.remoteServicePath = urlObject.getPath();
       } else {
         this.remoteServiceProtocol = null;
         this.remoteServicePath = null;
@@ -208,25 +216,20 @@ public class SshTunnel implements AutoCloseable {
         .map(method -> TunnelMethod.valueOf(method.asText().trim()))
         .orElse(TunnelMethod.NO_TUNNEL);
     LOGGER.info("Starting connection with method: {}", tunnelMethod);
-    String remoteServiceHost = null;
-    int remoteServicePort = 0;
-    String remoteServiceProtocol = null;
-    String remoteServicePath = null;
-    final URL originaServicelUrl = new URL(Jsons.getStringOrNull(config, endPointKey));
 
     return new SshTunnel(
         config,
         null,
         null,
         endPointKey,
-        originaServicelUrl,
+        Jsons.getStringOrNull(config, endPointKey),
         tunnelMethod,
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
         Jsons.getIntOrZero(config, "tunnel_method", "tunnel_port"),
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user")),
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "ssh_key")),
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_password")),
-        remoteServiceHost, remoteServicePort);
+        null, 0);
   }
 
   public static void sshWrap(final JsonNode config,
@@ -347,10 +350,10 @@ public class SshTunnel implements AutoCloseable {
           new SshdSocketAddress(remoteServiceHost, remoteServicePort));
 
       // discover the port that the OS picked and remember it so that we can use it when we try to connect
-      // later.
       tunnelLocalPort = address.getPort();
 
-      LOGGER.info("Established tunneling session.  Port forwarding started on " + address.toInetSocketAddress());
+      LOGGER.info(String.format("Established tunneling session to %s:%d. Port forwarding started on %s ",
+          remoteServiceHost, remoteServicePort, address.toInetSocketAddress()));
       return session;
     } catch (final IOException | GeneralSecurityException e) {
       throw new RuntimeException(e);

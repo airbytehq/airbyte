@@ -60,7 +60,7 @@ public class SshWrappedDestination implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    return SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
+    return (endPointKey != null) ? SshTunnel.sshWrap(config, endPointKey, delegate::check) : SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
   }
 
   @Override
