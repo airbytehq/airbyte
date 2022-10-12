@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.7
+Fix a bug when a state is evaluated once before used in a loop of `test_read_sequential_slices` [#17757](https://github.com/airbytehq/airbyte/pull/17757/)
+
 ## 0.2.6
 Backward compatibility hypothesis testing: disable "filtering too much" health check. [#17871](https://github.com/airbytehq/airbyte/pull/17871)
 
