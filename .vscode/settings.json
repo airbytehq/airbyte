@@ -41,5 +41,6 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.stylelint": true
     }
-  }
+  },
+  "python.formatting.provider": "black"
 }

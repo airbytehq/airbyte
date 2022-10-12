@@ -221,6 +221,14 @@
   icon: convex.svg
   sourceType: api
   releaseStage: alpha
+- name: Customer.io
+  sourceDefinitionId: c47d6804-8b98-449f-970a-5ddb5cb5d7aa
+  dockerRepository: farosai/airbyte-customer-io-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/customer-io
+  icon: customer-io.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Delighted
   sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
   dockerRepository: airbyte/source-delighted

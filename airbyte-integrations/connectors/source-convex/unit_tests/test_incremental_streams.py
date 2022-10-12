@@ -5,26 +5,25 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_convex.source import IncrementalConvexStream
+from source_convex.source import ConvexStream
 
 
 @fixture
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(IncrementalConvexStream, "path", "v0/example_endpoint")
-    mocker.patch.object(IncrementalConvexStream, "primary_key", "test_primary_key")
-    mocker.patch.object(IncrementalConvexStream, "__abstractmethods__", set())
+    mocker.patch.object(ConvexStream, "path", "v0/example_endpoint")
+    mocker.patch.object(ConvexStream, "primary_key", "test_primary_key")
+    mocker.patch.object(ConvexStream, "__abstractmethods__", set())
 
 
 def test_cursor_field(patch_incremental_base_class):
-    stream = IncrementalConvexStream()
-    # TODO: replace this with your expected cursor field
-    expected_cursor_field = []
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    expected_cursor_field = "_ts"
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
-    stream = IncrementalConvexStream()
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     # TODO: replace this with your input parameters
     inputs = {"current_stream_state": None, "latest_record": None}
     # TODO: replace this with your expected updated stream state
@@ -33,7 +32,7 @@ def test_get_updated_state(patch_incremental_base_class):
 
 
 def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalConvexStream()
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     # TODO: replace this with your input parameters
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     # TODO: replace this with your expected stream slices list
@@ -42,18 +41,17 @@ def test_stream_slices(patch_incremental_base_class):
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
-    mocker.patch.object(IncrementalConvexStream, "cursor_field", "dummy_field")
-    stream = IncrementalConvexStream()
+    mocker.patch.object(ConvexStream, "cursor_field", "dummy_field")
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     assert stream.supports_incremental
 
 
 def test_source_defined_cursor(patch_incremental_base_class):
-    stream = IncrementalConvexStream()
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     assert stream.source_defined_cursor
 
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = IncrementalConvexStream()
-    # TODO: replace this with your expected checkpoint interval
-    expected_checkpoint_interval = None
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    expected_checkpoint_interval = 1000
     assert stream.state_checkpoint_interval == expected_checkpoint_interval

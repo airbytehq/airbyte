@@ -18,7 +18,7 @@ def patch_base_class(mocker):
 
 
 def test_request_params(patch_base_class):
-    stream = ConvexStream()
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     # TODO: replace this with your expected request parameters
@@ -27,7 +27,7 @@ def test_request_params(patch_base_class):
 
 
 def test_next_page_token(patch_base_class):
-    stream = ConvexStream()
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     # TODO: replace this with your input parameters
     inputs = {"response": MagicMock()}
     # TODO: replace this with your expected next page token
@@ -36,16 +36,16 @@ def test_next_page_token(patch_base_class):
 
 
 def test_parse_response(patch_base_class):
-    stream = ConvexStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    resp = MagicMock()
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f"}]}
+    inputs = {"response": resp, "stream_state": {}}
+    expected_parsed_objects = [{"_id": "my_id", "field": "f"}]
+    assert stream.parse_response(**inputs) == expected_parsed_objects
 
 
 def test_request_headers(patch_base_class):
-    stream = ConvexStream()
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     # TODO: replace this with your expected request headers
@@ -54,7 +54,7 @@ def test_request_headers(patch_base_class):
 
 
 def test_http_method(patch_base_class):
-    stream = ConvexStream()
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
@@ -72,12 +72,12 @@ def test_http_method(patch_base_class):
 def test_should_retry(patch_base_class, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    stream = ConvexStream()
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     assert stream.should_retry(response_mock) == should_retry
 
 
 def test_backoff_time(patch_base_class):
     response_mock = MagicMock()
-    stream = ConvexStream()
+    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
