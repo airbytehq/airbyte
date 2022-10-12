@@ -226,11 +226,9 @@ public class AirbyteMessageTracker implements MessageTracker {
   private void handleEmittedConfig(final AirbyteConfigMessage configMessage, final ConnectorType connectorType) {
     // TODO: Update config here
     /**
-     * Pseudocode:
-     * for (key in configMessage.getConfig()) {
-     *   validateIsReallyConfig(key);
-     *   persistConfigChange(connectorType, key, configMessage.getConfig().get(key)); // nuance here for secret storage or not.  May need to be async over API for replication orchestrator
-     * }
+     * Pseudocode: for (key in configMessage.getConfig()) { validateIsReallyConfig(key);
+     * persistConfigChange(connectorType, key, configMessage.getConfig().get(key)); // nuance here for
+     * secret storage or not. May need to be async over API for replication orchestrator }
      */
   }
 
