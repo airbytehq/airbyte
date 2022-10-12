@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper.MAX_FIRST_RECORD_WAIT_TIME;
