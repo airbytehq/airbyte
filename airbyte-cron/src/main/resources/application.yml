@@ -8,7 +8,7 @@ micronaut:
         access:
           - isAnonymous()
   server:
-    port: 9000
+    port: 9001
 
 datasources:
   config:
@@ -52,7 +52,7 @@ airbyte:
       initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
       minimum-migration-version: ${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
   local:
-    docker-mount: ${LOCAL_DOCKER_MOUNT}
+    docker-mount: ${LOCAL_DOCKER_MOUNT:}
     root: ${LOCAL_ROOT}
   role: ${AIRBYTE_ROLE:}
   temporal:

@@ -162,6 +162,7 @@
   },
   "jest": {
     "transformIgnorePatterns": [],
+    "snapshotSerializers": ["./scripts/classname-serializer.js"],
     "coveragePathIgnorePatterns": [
       ".stories.tsx"
     ]
