@@ -146,15 +146,6 @@ class Collaborations(ZendeskSellStream):
     def path(self, **kwargs) -> str:
         return "collaborations"
 
-class CustomFields(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/custom-fields/
-    """
-    primary_key = "id"
-
-    def path(self, **kwargs) -> str:
-        return ":resource_type/custom_fields"
-
 class DealSources(ZendeskSellStream):
     """
     Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deal-sources/
@@ -315,4 +306,4 @@ class SourceZendeskSell(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config["api_token"])
-        return [Contacts(authenticator=auth), Deals(authenticator=auth), Leads(authenticator=auth), Pipelines(authenticator=auth), Stages(authenticator=auth),  CallOutcomes(authenticator=auth), Calls(authenticator=auth), Collaborations(authenticator=auth), CustomFields(authenticator=auth), DealSources(authenticator=auth), DealUnqualifiedReasons(authenticator=auth), Documents(authenticator=auth), LeadConversions(authenticator=auth), LeadSources(authenticator=auth), LeadUnqualifiedReasons(authenticator=auth), LossReasons(authenticator=auth), Notes(authenticator=auth), Orders(authenticator=auth), Products(authenticator=auth), Tags(authenticator=auth), Tasks(authenticator=auth), TextMessages(authenticator=auth), Users(authenticator=auth), VisitOutcomes(authenticator=auth), Visits(authenticator=auth)]
+        return [Contacts(authenticator=auth), Deals(authenticator=auth), Leads(authenticator=auth), Pipelines(authenticator=auth), Stages(authenticator=auth),  CallOutcomes(authenticator=auth), Calls(authenticator=auth), Collaborations(authenticator=auth), DealSources(authenticator=auth), DealUnqualifiedReasons(authenticator=auth), Documents(authenticator=auth), LeadConversions(authenticator=auth), LeadSources(authenticator=auth), LeadUnqualifiedReasons(authenticator=auth), LossReasons(authenticator=auth), Notes(authenticator=auth), Orders(authenticator=auth), Products(authenticator=auth), Tags(authenticator=auth), Tasks(authenticator=auth), TextMessages(authenticator=auth), Users(authenticator=auth), VisitOutcomes(authenticator=auth), Visits(authenticator=auth)]
