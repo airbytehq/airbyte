@@ -263,8 +263,16 @@ class SourceYoutubeAnalytics(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         authenticator = self.get_authenticator(config)
         jobs_resource = JobsResource(authenticator=authenticator)
-        result = jobs_resource.list()
-        if result:
+        jobs = jobs_resource.list()
+
+        if not jobs:
+            # try to create job report if such has not been created yet
+            report_streams = ReportResources(
+                name="channel_basic_a2", jobs_resource=jobs_resource, job_id=None, authenticator=authenticator
+            )
+            jobs = list(report_streams.read_records(sync_mode=None))
+
+        if jobs:
             return True, None
         else:
             return (
