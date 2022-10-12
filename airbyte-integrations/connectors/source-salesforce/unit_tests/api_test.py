@@ -547,15 +547,15 @@ def test_bulk_stream_paging(stream_config, stream_api_pk):
         [f"test,{last_modified_date2},6"],
     ]
 
-    with requests_mock.Mocker() as m:
+    with requests_mock.Mocker() as mocked_requests:
 
         post_responses = []
         for job_id, page in enumerate(pages, 1):
             post_responses.append({"json": {"id": f"{job_id}"}})
-            m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
-            m.register_uri("GET", stream.path() + f"/{job_id}/results", text="\n".join([csv_header] + page))
-            m.register_uri("DELETE", stream.path() + f"/{job_id}")
-        m.register_uri("POST", stream.path(), post_responses)
+            mocked_requests.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+            mocked_requests.register_uri("GET", stream.path() + f"/{job_id}/results", text="\n".join([csv_header] + page))
+            mocked_requests.register_uri("DELETE", stream.path() + f"/{job_id}")
+        mocked_requests.register_uri("POST", stream.path(), post_responses)
 
         records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
@@ -569,18 +569,18 @@ def test_bulk_stream_paging(stream_config, stream_api_pk):
             {"Field1": "test", "Id": 6, "LastModifiedDate": last_modified_date2},
         ]
 
-        def req(i):
-            return m.request_history[i].json()["query"]
+        def get_query(request_index):
+            return mocked_requests.request_history[request_index].json()["query"]
 
         SELECT = "SELECT LastModifiedDate,Id FROM Account"
         ORDER_BY = "ORDER BY LastModifiedDate,Id ASC LIMIT 2"
 
-        assert req(0) == f"{SELECT} WHERE LastModifiedDate >= {last_modified_date1} {ORDER_BY}"
+        assert get_query(0) == f"{SELECT} WHERE LastModifiedDate >= {last_modified_date1} {ORDER_BY}"
 
         q = f"{SELECT} WHERE (LastModifiedDate = {last_modified_date1} AND Id > '3') OR (LastModifiedDate > {last_modified_date1}) {ORDER_BY}"
-        assert req(4) == q
+        assert get_query(4) == q
 
-        assert req(8) == f"{SELECT} WHERE LastModifiedDate >= {last_modified_date2} {ORDER_BY}"
+        assert get_query(8) == f"{SELECT} WHERE LastModifiedDate >= {last_modified_date2} {ORDER_BY}"
 
         q = f"{SELECT} WHERE (LastModifiedDate = {last_modified_date2} AND Id > '4') OR (LastModifiedDate > {last_modified_date2}) {ORDER_BY}"
-        assert req(12) == q
+        assert get_query(12) == q
