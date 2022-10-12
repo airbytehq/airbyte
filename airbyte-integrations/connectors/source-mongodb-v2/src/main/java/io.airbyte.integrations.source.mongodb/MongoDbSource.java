@@ -128,8 +128,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      */
     try {
       final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-              .append("authorizedCollections", true)
-              .append("nameOnly", true))
+          .append("authorizedCollections", true)
+          .append("nameOnly", true))
           .append("filter", "{ 'type': 'collection' }");
       return document.toBsonDocument()
           .get("cursor").asDocument()
