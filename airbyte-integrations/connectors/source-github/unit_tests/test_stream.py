@@ -34,6 +34,7 @@ from source_github.streams import (
     PullRequestStats,
     Releases,
     Repositories,
+    RepositoryStats,
     Reviews,
     Stargazers,
     Tags,
@@ -72,8 +73,12 @@ def test_internal_server_error_retry(time_mock):
     [
         (HTTPStatus.BAD_GATEWAY, {}, None),
         (HTTPStatus.INTERNAL_SERVER_ERROR, {}, None),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": 120}, 120),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": 1655804724}, 300.0),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, None),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "30"}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "120"}, 120),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804454"}, 60.0),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804724"}, 300.0),
     ],
 )
 @patch("time.time", return_value=1655804424.0)
@@ -84,6 +89,28 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+@pytest.mark.parametrize(
+    ("http_status", "response_headers", "text"),
+    [
+        (HTTPStatus.OK, {"X-RateLimit-Resource": "graphql"}, '{"errors": [{"type": "RATE_LIMITED"}]}'),
+        (HTTPStatus.OK, {"X-RateLimit-Remaining": "0"}, ""),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, ""),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, ""),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, ""),
+        (HTTPStatus.BAD_GATEWAY, {}, ""),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, ""),
+    ],
+)
+def test_should_retry(http_status, response_headers, text):
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock()
+    response_mock.status_code = http_status
+    response_mock.headers = response_headers
+    response_mock.text = text
+    response_mock.json = lambda: json.loads(text)
+    assert stream.should_retry(response_mock)
 
 
 @responses.activate
