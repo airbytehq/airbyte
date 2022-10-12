@@ -239,12 +239,13 @@ subprojects { subproj ->
 
             def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
             def isArm64 = arch == "aarch64" || arch == "arm64"
-
+            def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
             def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
             def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
             def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:alpine' : 'amd64/nginx:alpine'
-            def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/amazoncorretto:17.0.4" : "amd64/amazoncorretto:17.0.4"
-            def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
+
+            // Used by the platform -- Must be an Amazon Corretto-based image for build to work without modification to Dockerfile instructions
+            def openjdkImage = System.getenv('JDK_IMAGE') ?: "airbyte/airbyte-base-java-image:1.0"
 
             platform = buildPlatform
             images.add("airbyte/$subproj.dockerImageName:$rootProject.ext.image_tag")
