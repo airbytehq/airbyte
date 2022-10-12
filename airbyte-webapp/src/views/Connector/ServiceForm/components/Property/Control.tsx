@@ -5,7 +5,7 @@ import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
 import { SecretTextArea } from "components/ui/SecretTextArea";
-import { NewTagInput } from "components/ui/TagInput/NewTagInput";
+import { TagInput } from "components/ui/TagInput/TagInput";
 import { TextArea } from "components/ui/TextArea";
 
 import { FormBaseItem } from "core/form/types";
@@ -40,7 +40,7 @@ export const Control: React.FC<ControlProps> = ({
         name={name}
         defaultValue={property.default || []}
         render={() => (
-          <NewTagInput
+          <TagInput
             name={name}
             fieldValue={field.value || []}
             onChange={(tagLabels) => helpers.setValue(tagLabels)}

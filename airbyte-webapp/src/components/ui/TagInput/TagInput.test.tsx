@@ -2,13 +2,11 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 
-import { NewTagInput } from "./NewTagInput";
+import { TagInput } from "./TagInput";
 
 const TagInputWithWrapper = () => {
   const [fieldValue, setFieldValue] = useState(["tag1", "tag2"]);
-  return (
-    <NewTagInput name="test" fieldValue={fieldValue} onChange={(values) => setFieldValue(values)} disabled={false} />
-  );
+  return <TagInput name="test" fieldValue={fieldValue} onChange={(values) => setFieldValue(values)} disabled={false} />;
 };
 
 it("renders with defaultValue", () => {
