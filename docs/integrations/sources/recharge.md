@@ -36,7 +36,7 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 The Recharge supports full refresh and incremental sync.
 
 | Feature           | Supported? |
-|:------------------|:-----------|
+| :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | Yes        |
 | SSL connection    | Yes        |
@@ -66,9 +66,9 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------|
-| 0.2.4   | 2022-10-11 | [17840](https://github.com/airbytehq/airbyte/pull/17840) | Do not check for response.json when deciding to retry a request                           |
-| 0.2.3   | 2022-10-05 | [17608](https://github.com/airbytehq/airbyte/pull/17608) | Skip stream if we receive 403 error                                                       |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
+| 0.2.3   | 2022-10-11 | [17822](https://github.com/airbytehq/airbyte/pull/17822) | Do not parse JSON in `should_retry`                                                       |
+| 0.2.2   | 2022-10-05 | [17608](https://github.com/airbytehq/airbyte/pull/17608) | Skip stream if we receive 403 error                                                       |
 | 0.2.2   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                              |
 | 0.2.1   | 2022-09-23 | [17080](https://github.com/airbytehq/airbyte/pull/17080) | Fix `total_weight` value to be `int` instead of `float`                                   |
 | 0.2.0   | 2022-09-21 | [16959](https://github.com/airbytehq/airbyte/pull/16959) | Use TypeTransformer to reliably convert to schema declared data types                     |
@@ -79,3 +79,5 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 | 0.1.4   | 2021-11-05 | [7626](https://github.com/airbytehq/airbyte/pull/7626)   | Improve 'backoff' for HTTP requests                                                       |
 | 0.1.3   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Update `discount` and `order` schema                                                      |
 | 0.1.2   | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149)   | Change `cursor_field` for Incremental streams                                             |
+|         |            |                                                          |                                                                                           |
+
