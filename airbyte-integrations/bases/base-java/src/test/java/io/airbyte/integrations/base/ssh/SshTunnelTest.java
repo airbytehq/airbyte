@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -106,7 +105,7 @@ class SshTunnelTest {
         endPointURL == null ? Arrays.asList(new String[] {"host"}) : null,
         endPointURL == null ? Arrays.asList(new String[] {"port"}) : null,
         endPointURL == null ? null : "endpoint",
-        endPointURL == null ? null : new URL(endPointURL),
+        endPointURL == null ? null : endPointURL,
         TunnelMethod.SSH_KEY_AUTH,
         "faketunnel.com",
         22,
