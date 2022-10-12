@@ -9,7 +9,10 @@
   "eslint.format.enable": true,
   "eslint.run": "onType",
   "stylelint.enable": true,
-  "stylelint.validate": ["css", "scss"],
+  "stylelint.validate": [
+    "css",
+    "scss"
+  ],
   "[javascript]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",
@@ -41,5 +44,8 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.stylelint": true
     }
-  }
+  },
+  "python.linting.pylintEnabled": true,
+  "python.linting.prospectorEnabled": false,
+  "python.linting.enabled": true
 }

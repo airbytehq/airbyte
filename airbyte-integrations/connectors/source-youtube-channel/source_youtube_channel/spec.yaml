@@ -1,0 +1,12 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Youtube Channel Spec
+  type: object
+  required:
+    - oauth_token
+  properties:
+    oauth_token:
+      type: string
+      description: Your API key is available in the Developer Console's API Access pane for your project. https://console.developers.google.com/
+      pattern: ^[a-z0-9_\-]+$
