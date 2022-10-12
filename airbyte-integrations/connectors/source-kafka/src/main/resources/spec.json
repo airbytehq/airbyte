@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/kafka",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/kafka",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,

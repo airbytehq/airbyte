@@ -33,6 +33,19 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
+
+run {
+    // default for running on local machine.
+    env.each { entry ->
+        environment entry.getKey(), entry.getValue()
+    }
+
+    environment 'AIRBYTE_ROLE', System.getenv('AIRBYTE_ROLE')
+    environment 'AIRBYTE_VERSION', env.VERSION
+}
+
 tasks.named("buildDockerImage") {
     dependsOn copyGeneratedTar
 }
