@@ -36,7 +36,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.OracleContainer;
 
 class OracleSourceTest {
 
@@ -48,18 +47,23 @@ class OracleSourceTest {
           Field.of("NAME", JsonSchemaType.STRING),
           Field.of("IMAGE", JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
+
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(createRecord(STREAM_NAME,
       map("ID", new BigDecimal("1.0"), "NAME", "user", "IMAGE", "last_summer.png".getBytes(StandardCharsets.UTF_8))));
 
-  private static OracleContainer ORACLE_DB;
+  private static AirbyteOracleTestContainer ORACLE_DB;
 
   private static JsonNode config;
 
   @BeforeAll
   static void init() {
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+    ORACLE_DB = new AirbyteOracleTestContainer()
+        .withUsername("TEST_ORA")
+        .withPassword("oracle")
+        .usingSid()
         .withEnv("RELAX_SECURITY", "1");
+
     ORACLE_DB.start();
   }
 
@@ -95,16 +99,6 @@ class OracleSourceTest {
     } finally {
       DataSourceFactory.close(dataSource);
     }
-  }
-
-  private JsonNode getConfig(final OracleContainer oracleDb) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", oracleDb.getHost())
-        .put("port", oracleDb.getFirstMappedPort())
-        .put("sid", oracleDb.getSid())
-        .put("username", oracleDb.getUsername())
-        .put("password", oracleDb.getPassword())
-        .build());
   }
 
   @AfterAll

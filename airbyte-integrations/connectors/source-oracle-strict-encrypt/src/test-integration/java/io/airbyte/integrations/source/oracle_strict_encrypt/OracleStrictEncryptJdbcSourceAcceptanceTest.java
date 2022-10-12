@@ -53,12 +53,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.OracleContainer;
 
 class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleStrictEncryptJdbcSourceAcceptanceTest.class);
-  private static OracleContainer ORACLE_DB;
+  private static AirbyteOracleTestContainer ORACLE_DB;
 
   @BeforeAll
   static void init() {
@@ -86,7 +85,10 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s VARCHAR(20))";
     INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)')";
 
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+    ORACLE_DB = new AirbyteOracleTestContainer()
+        .withUsername("test")
+        .withPassword("oracle")
+        .usingSid()
         .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
         .withEnv("RELAX_SECURITY", "1");
     ORACLE_DB.start();
