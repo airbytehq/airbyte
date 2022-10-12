@@ -2561,7 +2561,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.67"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.68"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -2599,7 +2599,6 @@
           examples:
           - "2017-01-26T00:00:00Z"
           type: "string"
-          format: "date-time"
         access_token:
           title: "Access Token"
           description: "The value of the access token generated. See the <a href=\"\
