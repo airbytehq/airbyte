@@ -566,5 +566,6 @@
   "airbyte.datatype.unknown": "Unknown",
   "airbyte.datatype.boolean": "Boolean",
 
-  "builder.downloadYaml": "Download YAML"
+  "builder.downloadYaml": "Download YAML",
+  "builder.expandConfiguration": "Expand this pane to continue building your connector"
 }

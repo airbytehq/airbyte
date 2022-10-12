@@ -11,12 +11,15 @@ interface TwoPanelContainerProps {
   leftPanel: {
     children: React.ReactNode;
     smallWidthHeader: React.ReactNode;
+    className?: string;
   };
   rightPanel: {
     children: React.ReactNode;
     smallWidthHeader: React.ReactNode;
     showPanel: boolean;
+    className?: string;
   };
+  containerClassName?: string;
 }
 
 interface PanelContainerProps {
@@ -25,24 +28,26 @@ interface PanelContainerProps {
     width: number;
     height: number;
   };
+  className?: string;
 }
 
 const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({
   children,
   dimensions,
   smallWidthHeader,
+  className,
 }) => {
   const width = dimensions?.width ?? 0;
   const screenWidth = useWindowSize().width;
 
   return (
-    <div className={classNames(styles.leftPanelContainer)}>
+    <div className={classNames(className, styles.leftPanelContainer)}>
       {screenWidth > 500 && width < 550 && (
         <div className={styles.darkOverlay}>
           <h3>{smallWidthHeader}</h3>
         </div>
       )}
-      <div>{children}</div>
+      {children}
     </div>
   );
 };
@@ -51,28 +56,31 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
   children,
   dimensions,
   smallWidthHeader,
+  className,
 }) => {
   const width = dimensions?.width ?? 0;
 
   return (
     <>
       {width < 350 ? (
-        <div className={classNames(styles.rightPanelContainer, styles.lightOverlay)}>
+        <div className={classNames(className, styles.rightPanelContainer, styles.lightOverlay)}>
           <h2 className={styles.rotatedHeader}>{smallWidthHeader}</h2>
         </div>
       ) : (
-        <div className={styles.rightPanelContainer}>{children}</div>
+        <div className={classNames(className, styles.rightPanelContainer)}>{children}</div>
       )}
     </>
   );
 };
 // NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
-export const TwoPanelLayout: React.FC<TwoPanelContainerProps> = ({ leftPanel, rightPanel }) => {
+export const TwoPanelLayout: React.FC<TwoPanelContainerProps> = ({ leftPanel, rightPanel, containerClassName }) => {
   return (
-    <ReflexContainer orientation="vertical">
+    <ReflexContainer className={containerClassName} orientation="vertical">
       <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
-        <LeftPanelContainer smallWidthHeader={leftPanel.smallWidthHeader}>{leftPanel.children}</LeftPanelContainer>
+        <LeftPanelContainer className={leftPanel.className} smallWidthHeader={leftPanel.smallWidthHeader}>
+          {leftPanel.children}
+        </LeftPanelContainer>
       </ReflexElement>
       {rightPanel.showPanel && (
         <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
@@ -83,7 +91,7 @@ export const TwoPanelLayout: React.FC<TwoPanelContainerProps> = ({ leftPanel, ri
       )}
       {rightPanel.showPanel && (
         <ReflexElement className={styles.rightPanelStyle} size={1000} propagateDimensions minSize={60}>
-          <RightPanelContainer smallWidthHeader={rightPanel.smallWidthHeader}>
+          <RightPanelContainer className={rightPanel.className} smallWidthHeader={rightPanel.smallWidthHeader}>
             {rightPanel.children}
           </RightPanelContainer>
         </ReflexElement>

@@ -5,6 +5,7 @@ import { useWindowSize } from "react-use";
 import { LoadingPage } from "components/LoadingPage";
 import { TwoPanelLayout } from "components/ui/TwoPanelLayout";
 
+import styles from "./ConnectorDocumentationLayout.module.scss";
 import { useDocumentationPanelContext } from "./DocumentationPanelContext";
 
 const LazyDocumentationPanel = lazy(() =>
@@ -23,7 +24,11 @@ export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unkn
 
   return (
     <TwoPanelLayout
-      leftPanel={{ children, smallWidthHeader: <FormattedMessage id="connectorForm.expandForm" /> }}
+      leftPanel={{
+        children,
+        smallWidthHeader: <FormattedMessage id="connectorForm.expandForm" />,
+        className: styles.leftPanel,
+      }}
       rightPanel={{
         children: documentationPanel,
         smallWidthHeader: <FormattedMessage id="connector.setupGuide" />,
