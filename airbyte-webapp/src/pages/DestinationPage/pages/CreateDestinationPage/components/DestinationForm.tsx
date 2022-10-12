@@ -8,8 +8,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { FrequentlyUsedDestinations } from "views/Connector/ServiceForm/components/FrequentlyUsedDestinations";
-import { StartWithDestination } from "views/Connector/ServiceForm/components/StartWithDestination/StartWithDestination";
+import { FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ServiceForm";
 
 interface DestinationFormProps {
   onSubmit: (values: {
