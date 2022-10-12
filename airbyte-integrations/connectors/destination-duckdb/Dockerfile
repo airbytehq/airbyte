@@ -7,11 +7,13 @@ WORKDIR /airbyte/integration_code
 # upgrade pip to the latest version
 RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base
+    && apk --no-cache add tzdata build-base \
+    && pip install duckdb==0.5.2.dev664
 
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
+# RUN pip install duckdb --pre --upgrade
 RUN pip install --prefix=/install .
 
 # build a clean environment

@@ -7,7 +7,10 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
-    "duckdb",
+    # "duckdb==0.5.2.dev618",
+    # "git+https://github.com/duckdb/duckdb.git",
+    # "duckdb @ git+https://github.com/duckdb/duckdb.git#7c111322de1095436350f95e33c5553b09302165",
+    # "https://github.com/duckdb/duckdb/archive/master.tar.gz",
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.1"]
