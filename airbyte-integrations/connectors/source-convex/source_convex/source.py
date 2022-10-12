@@ -20,7 +20,7 @@ def convex_url_base(instance_name) -> str:
 
 # Source
 class SourceConvex(AbstractSource):
-    def shapes(self, config) -> requests.Response:
+    def _shapes(self, config) -> requests.Response:
         instance_name = config["instance_name"]
         access_key = config["access_key"]
         url = f"{convex_url_base(instance_name)}/api/0.2.0/shapes2"
@@ -35,7 +35,7 @@ class SourceConvex(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        resp = self.shapes(config)
+        resp = self._shapes(config)
         if resp.status_code == 200:
             return True, None
         else:
@@ -43,11 +43,9 @@ class SourceConvex(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        resp = self.shapes(config)
+        resp = self._shapes(config)
         assert resp.status_code == 200
         shapes = resp.json()
         table_names = list(shapes.keys())
@@ -70,7 +68,22 @@ def convex_shape_variant_to_json(shape_variant):
             "properties": {field["fieldName"]: convex_shape_to_json(field["shape"]) for field in shape_variant["fields"]},
         }
     if variant == "Float64":
-        return {"type": "number"}
+        return {"anyOf": [
+            {"type": "number"},
+            {"type": "object", "properties": {
+                # infinite or NaN
+                # float64 -> little-endian -> base64
+                "$float": {"type": "string"},
+            }}
+        ]}
+    if variant == "Int64":
+        return {
+            "type": "object",
+            "properties": {
+                # int64 -> little-endian -> base64
+                "$integer": {"type": "string"},
+            }
+        }
     if variant == "Id":
         return {
             "type": "object",
@@ -80,6 +93,10 @@ def convex_shape_variant_to_json(shape_variant):
         }
     if variant == "String":
         return {"type": "string"}
+    if variant == "Null":
+        return {"type": "null"}
+    if variant == "Boolean":
+        return {"type": "boolean"}
     # TODO(lee) other types of shapes
     raise Exception(shape_variant)
 
