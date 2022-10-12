@@ -27,8 +27,6 @@ describe("validateCronExpression", () => {
     ${"0 15 10 ? * 6#3"}                                     | ${true}
     ${"0 0 12 1/5 * ?"}                                      | ${true}
     ${"0 11 11 11 11 ?"}                                     | ${true}
-    ${"wildly invalid"}                                      | ${false}
-    ${"* * * * *"}                                           | ${false}
     ${"* * * * * ?"}                                         | ${true}
     ${"0 0 0 * * ?"}                                         | ${true}
     ${"0 0 1 * * ?"}                                         | ${true}
@@ -62,6 +60,9 @@ describe("validateCronExpression", () => {
     ${"0 45 6 * * ?"}                                        | ${true}
     ${"0 5 0 ? * 7"}                                         | ${true}
     ${"40 4,16 * * * ?"}                                     | ${true}
+    ${"wildly invalid"}                                      | ${false}
+    ${"* * * * *"}                                           | ${false}
+    ${"0 0 0 0 0 0"}                                         | ${false}
   `("'$expression' is valid: $isValid", async ({ expression, isValid }) => {
     expect(
       // await scheduleFieldValidationSchema.isValid({
