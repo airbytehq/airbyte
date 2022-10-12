@@ -146,8 +146,9 @@ class MetricRepository {
                       WHERE updated_at >= NOW() - INTERVAL '1 HOUR'
                         AND (jobs.status = 'failed' OR jobs.status = 'succeeded' OR jobs.status = 'cancelled');
                       """;
-    final var statuses = ctx.fetch(query).getValues("status", JobStatus.class);
-    final var times = ctx.fetch(query).getValues("sec", double.class);
+    final var queryResults = ctx.fetch(query);
+    final var statuses = queryResults.getValues("status", JobStatus.class);
+    final var times = queryResults.getValues("sec", double.class);
 
     final var results = new HashMap<JobStatus, Double>();
     for (int i = 0; i < statuses.size(); i++) {

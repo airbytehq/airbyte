@@ -16,7 +16,11 @@ dependencies {
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
 task copySshScript(type: Copy, dependsOn: [project(':airbyte-commons-worker').processResources]) {
+<<<<<<< HEAD
     from "${project(':airbyte-workers').buildDir}/resources/main"
+=======
+    from "${project(':airbyte-commons-worker').buildDir}/resources/main"
+>>>>>>> 6a8b053fb5873f8f9b3bf3cac48af8bd306793d6
     into "${buildDir}"
     include "sshtunneling.sh"
 }
