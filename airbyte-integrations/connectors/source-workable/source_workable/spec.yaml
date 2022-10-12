@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - api_key
     - account_subdomain
+    - created_after_date
   additionalProperties: true
   properties:
     api_key:
@@ -15,3 +16,10 @@ connectionSpecification:
     account_subdomain:
       type: string
       description: Your Workday account subdomain, e.g. https://your_account_subdomain.workable.com.
+    created_after_date:
+      type: string
+      description: Get data that was created since this date.
+      pattern: ^[0-9]{8}T[0-9]{6}Z$
+      examples:
+        - YYYYMMDDTHHMMSSZ
+        - 20150708T115616Z

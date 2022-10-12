@@ -11,6 +11,9 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
+    request_options_provider:
+      request_parameters:
+        created_after: "{{ config['created_after_date'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
