@@ -10,6 +10,7 @@ import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.Notification;
 import io.airbyte.api.model.generated.NotificationRead;
 import io.airbyte.api.model.generated.NotificationRead.StatusEnum;
@@ -22,6 +23,7 @@ import io.airbyte.api.model.generated.WorkspaceRead;
 import io.airbyte.api.model.generated.WorkspaceReadList;
 import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -79,6 +81,11 @@ public class WorkspacesHandler {
     final Boolean securityUpdates = workspaceCreate.getSecurityUpdates();
     final Boolean displaySetupWizard = workspaceCreate.getDisplaySetupWizard();
 
+    // if not set on the workspaceCreate, set the defaultGeography to AUTO
+    final io.airbyte.config.Geography defaultGeography = workspaceCreate.getDefaultGeography() != null
+        ? Enums.convertTo(workspaceCreate.getDefaultGeography(), io.airbyte.config.Geography.class)
+        : io.airbyte.config.Geography.AUTO;
+
     final StandardWorkspace workspace = new StandardWorkspace()
         .withWorkspaceId(uuidSupplier.get())
         .withCustomerId(uuidSupplier.get())
@@ -90,7 +97,8 @@ public class WorkspacesHandler {
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
         .withDisplaySetupWizard(displaySetupWizard != null ? displaySetupWizard : false)
         .withTombstone(false)
-        .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()));
+        .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()))
+        .withDefaultGeography(defaultGeography);
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
@@ -249,7 +257,8 @@ public class WorkspacesHandler {
         .anonymousDataCollection(workspace.getAnonymousDataCollection())
         .news(workspace.getNews())
         .securityUpdates(workspace.getSecurityUpdates())
-        .notifications(NotificationConverter.toApiList(workspace.getNotifications()));
+        .notifications(NotificationConverter.toApiList(workspace.getNotifications()))
+        .defaultGeography(Enums.convertTo(workspace.getDefaultGeography(), Geography.class));
   }
 
   private void validateWorkspacePatch(final StandardWorkspace persistedWorkspace, final WorkspaceUpdate workspacePatch) {
@@ -277,6 +286,10 @@ public class WorkspacesHandler {
     }
     if (workspacePatch.getNotifications() != null) {
       workspace.setNotifications(NotificationConverter.toConfigList(workspacePatch.getNotifications()));
+    }
+    if (workspacePatch.getDefaultGeography() != null) {
+      workspace.setDefaultGeography(
+          Enums.convertTo(workspacePatch.getDefaultGeography(), io.airbyte.config.Geography.class));
     }
   }
 

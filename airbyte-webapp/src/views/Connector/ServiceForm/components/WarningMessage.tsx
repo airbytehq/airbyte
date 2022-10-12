@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 
 import { Text } from "components/ui/Text";
 
-import { useConfig } from "config";
 import { ReleaseStage } from "core/request/AirbyteClient";
+import { links } from "utils/links";
 
 import styles from "./WarningMessage.module.scss";
 
@@ -13,7 +13,6 @@ interface WarningMessageProps {
 }
 
 export const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
-  const config = useConfig();
   return (
     <div className={styles.container}>
       <Text size="sm">
@@ -22,7 +21,7 @@ export const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
           id="connector.connectorsInDevelopment.docLink"
           values={{
             lnk: (node: React.ReactNode) => (
-              <a className={styles.link} href={config.links.productReleaseStages} target="_blank" rel="noreferrer">
+              <a className={styles.link} href={links.productReleaseStages} target="_blank" rel="noreferrer">
                 {node}
               </a>
             ),

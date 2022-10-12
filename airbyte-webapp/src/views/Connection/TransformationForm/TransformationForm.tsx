@@ -12,11 +12,11 @@ import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { ModalBody, ModalFooter } from "components/ui/Modal";
 
-import { useConfig } from "config";
 import { OperationService } from "core/domain/connection";
 import { OperationCreate, OperationRead } from "core/request/AirbyteClient";
 import { useGetService } from "core/servicesProvider";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { links } from "utils/links";
 import { equal } from "utils/objects";
 
 import styles from "./TransformationForm.module.scss";
@@ -66,7 +66,6 @@ const TransformationForm: React.FC<TransformationProps> = ({
   isNewTransformation,
 }) => {
   const { formatMessage } = useIntl();
-  const config = useConfig();
   const operationService = useGetService<OperationService>("OperationService");
   const { clearFormChange } = useFormChangeTrackerService();
   const formId = useUniqueFormId();
@@ -140,7 +139,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
                   id="form.entrypoint.linked"
                   values={{
                     a: (node: React.ReactNode) => (
-                      <a href={config.links.dbtCommandsReference} target="_blank" rel="noreferrer">
+                      <a href={links.dbtCommandsReference} target="_blank" rel="noreferrer">
                         {node}
                       </a>
                     ),

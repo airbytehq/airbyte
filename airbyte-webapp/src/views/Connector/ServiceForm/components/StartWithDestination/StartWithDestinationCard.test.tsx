@@ -15,9 +15,9 @@ const renderStartWithDestination = (props: StartWithDestinationProps) =>
 
 describe("<StartWithDestinationCard />", () => {
   it("should renders without crash with provided props", () => {
-    const { asFragment } = renderStartWithDestination({ destination: mockData, onDestinationSelect: jest.fn() });
+    const component = renderStartWithDestination({ destination: mockData, onDestinationSelect: jest.fn() });
 
-    expect(asFragment()).toMatchSnapshot();
+    expect(component).toMatchSnapshot();
   });
 
   it("should call provided handler with right params", async () => {

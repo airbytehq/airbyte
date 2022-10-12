@@ -69,7 +69,12 @@ const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage })
 const Option: React.FC<DropDownOptionProps> = (props) => {
   return (
     <components.Option {...props}>
-      <OptionView data-testid={props.data.label} isSelected={props.isSelected} isDisabled={props.isDisabled}>
+      <OptionView
+        data-testid={props.data.label}
+        isSelected={props.isSelected}
+        isDisabled={props.isDisabled}
+        isFocused={props.isFocused}
+      >
         <div className={styles.connectorName}>
           {props.data.img || null}
           <Text size="lg">{props.label}</Text>
