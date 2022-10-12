@@ -7,4 +7,8 @@ export const initialSetupCompleted = (completed = true) => {
       res.send(res.body);
     });
   });
+
+  cy.on('uncaught:exception', (err, runnable) => {
+    return false;
+  });
 };

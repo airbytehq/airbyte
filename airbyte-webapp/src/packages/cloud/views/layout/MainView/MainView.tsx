@@ -4,11 +4,11 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Link, Outlet } from "react-router-dom";
 
 import { LoadingPage } from "components";
-import { AlertBanner } from "components/base/Banner/AlertBanner";
+import { AlertBanner } from "components/ui/Banner/AlertBanner";
 
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
-import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import SideBar from "packages/cloud/views/layout/SideBar";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";

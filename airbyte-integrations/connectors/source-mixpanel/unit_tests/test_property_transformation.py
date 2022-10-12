@@ -27,6 +27,7 @@ def export_response():
                 "$userName": "1",
                 "userName": "2",
                 "username": "3",
+                "time": 1485302410,
             },
         },
     )
@@ -52,6 +53,7 @@ def test_export_stream_conflict_names(requests_mock, export_response, config):
             "userName",
             "_userName",
             "__username",
+            "time",
         ]
     )
     assert record["userName"] == "1"

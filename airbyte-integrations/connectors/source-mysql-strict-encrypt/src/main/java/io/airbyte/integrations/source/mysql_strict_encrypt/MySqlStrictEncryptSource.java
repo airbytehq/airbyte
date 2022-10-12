@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.mysql_strict_encrypt;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -26,6 +25,7 @@ import org.slf4j.LoggerFactory;
  * internet without encryption.
  */
 public class MySqlStrictEncryptSource extends SpecModifyingSource implements Source {
+
   public static final String TUNNEL_METHOD = "tunnel_method";
   public static final String NO_TUNNEL = "NO_TUNNEL";
   public static final String SSL_MODE = "ssl_mode";
@@ -52,17 +52,19 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly and not over SSH tunnel
+    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
+    // and not over SSH tunnel
     if (config.has(TUNNEL_METHOD)
         && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
         && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
-      //If no SSH tunnel
+      // If no SSH tunnel
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
         if (Set.of(SSL_MODE_PREFERRED).contains(config.get(SSL_MODE).get(MODE).asText())) {
-          //Fail in case SSL mode is preferred
+          // Fail in case SSL mode is preferred
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
-              .withMessage("Unsecured connection not allowed");
+              .withMessage(
+                  "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: required, verify-ca, verify-identity");
         }
       }
     }

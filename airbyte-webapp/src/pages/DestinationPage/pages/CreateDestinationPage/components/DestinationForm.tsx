@@ -52,7 +52,10 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     isLoading,
   } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
 
-  const onDropDownSelect = (destinationDefinitionId: string) => {
+  const onDropDownSelect = (
+    destinationDefinitionId: string,
+    trackParams?: { actionDescription: string; connector_destination_suggested: boolean }
+  ) => {
     setDestinationDefinitionId(destinationDefinitionId);
 
     const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId);
@@ -65,11 +68,12 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
       actionDescription: "Destination connector type selected",
       connector_destination: connector?.name,
       connector_destination_definition_id: destinationDefinitionId,
+      ...trackParams,
     });
   };
 
   const onSubmitForm = async (values: { name: string; serviceType: string }) => {
-    await onSubmit({
+    onSubmit({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
     });

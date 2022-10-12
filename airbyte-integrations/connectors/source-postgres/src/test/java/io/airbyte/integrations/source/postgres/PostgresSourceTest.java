@@ -432,6 +432,11 @@ class PostgresSourceTest {
       }
 
       final AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
+      actual.getStreams().stream().forEach(airbyteStream -> {
+        assertEquals(2, airbyteStream.getSupportedSyncModes().size());
+        assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.FULL_REFRESH));
+        assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL));
+      });
       final Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
       final Set<String> expectedVisibleNames = Sets.newHashSet(
           "table_granted_by_role",
@@ -509,7 +514,6 @@ class PostgresSourceTest {
     assertEquals(username, PostgresSource.getUsername(azureConfig));
   }
 
-
   @Test
   public void tableWithInvalidCursorShouldThrowException() throws Exception {
     try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
@@ -518,7 +522,8 @@ class PostgresSourceTest {
       try (final DSLContext dslContext = getDslContext(config)) {
         final Database database = new Database(dslContext);
         final ConfiguredAirbyteStream tableWithInvalidCursorType = createTableWithInvalidCursorType(database);
-        final ConfiguredAirbyteCatalog configuredAirbyteCatalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
+        final ConfiguredAirbyteCatalog configuredAirbyteCatalog =
+            new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
 
         final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, configuredAirbyteCatalog, null)));
         assertThat(throwable).isInstanceOf(InvalidCursorException.class)
@@ -542,9 +547,9 @@ class PostgresSourceTest {
         .withDestinationSyncMode(DestinationSyncMode.APPEND)
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
-                "test_table",
-                "public",
-                Field.of("id", JsonSchemaType.STRING))
+            "test_table",
+            "public",
+            Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 

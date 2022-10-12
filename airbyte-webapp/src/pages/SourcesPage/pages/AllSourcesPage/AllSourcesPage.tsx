@@ -1,11 +1,14 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { Button, MainPageWithScroll } from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
-import PageTitle from "components/PageTitle";
+import { MainPageWithScroll } from "components/MainPageWithScroll";
+import { Button } from "components/ui/Button";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useSourceList } from "hooks/services/useSourceHook";
@@ -22,10 +25,10 @@ const AllSourcesPage: React.FC = () => {
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
       pageTitle={
-        <PageTitle
+        <PageHeader
           title={<FormattedMessage id="sidebar.sources" />}
           endComponent={
-            <Button onClick={onCreateSource} data-id="new-source">
+            <Button icon={<FontAwesomeIcon icon={faPlus} />} onClick={onCreateSource} size="sm" data-id="new-source">
               <FormattedMessage id="sources.newSource" />
             </Button>
           }

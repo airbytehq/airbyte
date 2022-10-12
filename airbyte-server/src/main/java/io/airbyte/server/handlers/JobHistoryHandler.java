@@ -30,9 +30,9 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.models.JobStatus;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.Job;
+import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -138,6 +138,18 @@ public class JobHistoryHandler {
 
   public Optional<JobRead> getLatestSyncJob(final UUID connectionId) throws IOException {
     return jobPersistence.getLastSyncJob(connectionId).map(JobConverter::getJobRead);
+  }
+
+  public List<JobRead> getLatestSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobPersistence.getLastSyncJobForConnections(connectionIds).stream()
+        .map(JobConverter::getJobRead)
+        .collect(Collectors.toList());
+  }
+
+  public List<JobRead> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobPersistence.getRunningSyncJobForConnections(connectionIds).stream()
+        .map(JobConverter::getJobRead)
+        .collect(Collectors.toList());
   }
 
   private SourceRead getSourceRead(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {

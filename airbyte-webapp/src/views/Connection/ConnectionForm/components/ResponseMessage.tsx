@@ -1,6 +1,6 @@
 import classnames from "classnames";
 
-import { Text } from "components/base/Text";
+import { Text } from "components/ui/Text";
 
 import styles from "./ResponseMessage.module.scss";
 

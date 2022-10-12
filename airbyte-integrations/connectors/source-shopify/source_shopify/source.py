@@ -30,6 +30,8 @@ class ShopifyStream(HttpStream, ABC):
     order_field = "updated_at"
     filter_field = "updated_at_min"
 
+    raise_on_http_errors = True
+
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
         self._transformer = DataTypeEnforcer(self.get_json_schema())
@@ -82,6 +84,12 @@ class ShopifyStream(HttpStream, ABC):
                 record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 404:
+            self.logger.warn(f"Stream `{self.name}` is not available, skipping.")
+            setattr(self, "raise_on_http_errors", False)
+        return super().should_retry(response)
+
     @property
     @abstractmethod
     def data_field(self) -> str:
@@ -125,11 +133,18 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     # Parse the `stream_slice` with respect to `stream_state` for `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
-    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
+    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping] = None) -> Iterable:
         # Getting records >= state
         if stream_state:
             for record in records_slice:
-                if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field):
+                if self.cursor_field in record:
+                    if record.get(self.cursor_field, self.default_state_comparison_value) >= stream_state.get(self.cursor_field):
+                        yield record
+                else:
+                    # old entities could miss the cursor field
+                    self.logger.warn(
+                        f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor: {self.cursor_field}"
+                    )
                     yield record
         else:
             yield from records_slice
@@ -204,9 +219,11 @@ class ShopifySubstream(IncrementalShopifyStream):
                 {slice_key: 999
             ]
         """
+        sorted_substream_slices = []
 
         # reading parent nested stream_state from child stream state
         parent_stream_state = stream_state.get(self.parent_stream.name) if stream_state else {}
+
         # reading the parent stream
         for record in self.parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
             # updating the `stream_state` with the state of it's parent stream
@@ -217,9 +234,22 @@ class ShopifySubstream(IncrementalShopifyStream):
             # and corresponds to the data of child_substream we need.
             if self.nested_substream:
                 if record.get(self.nested_substream):
-                    yield {self.slice_key: record[self.nested_record]}
+                    sorted_substream_slices.append(
+                        {
+                            self.slice_key: record[self.nested_record],
+                            self.cursor_field: record[self.nested_substream][0].get(self.cursor_field, self.default_state_comparison_value),
+                        }
+                    )
             else:
                 yield {self.slice_key: record[self.nested_record]}
+
+        # output slice from sorted list to avoid filtering older records
+        if self.nested_substream:
+            if len(sorted_substream_slices) > 0:
+                # sort by cursor_field
+                sorted_substream_slices.sort(key=lambda x: x.get(self.cursor_field))
+                for sorted_slice in sorted_substream_slices:
+                    yield {self.slice_key: sorted_slice[self.slice_key]}
 
     def read_records(
         self,

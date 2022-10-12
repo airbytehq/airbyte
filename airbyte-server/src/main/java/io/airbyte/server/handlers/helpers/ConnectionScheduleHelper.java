@@ -34,7 +34,12 @@ public class ConnectionScheduleHelper {
     }
     switch (scheduleType) {
       // NOTE: the `manual` column is marked required, so we populate it until it's removed.
-      case MANUAL -> standardSync.withScheduleType(ScheduleType.MANUAL).withManual(true);
+      case MANUAL -> {
+        standardSync.withScheduleType(ScheduleType.MANUAL).withScheduleData(null).withManual(true);
+
+        // explicitly null out the legacy `schedule` column until it's removed.
+        standardSync.withSchedule(null);
+      }
       case BASIC -> {
         if (scheduleData.getBasicSchedule() == null) {
           throw new JsonValidationException("if schedule type is basic, then scheduleData.basic must be populated");
@@ -82,6 +87,9 @@ public class ConnectionScheduleHelper {
                 .withCronExpression(cronExpression)
                 .withCronTimeZone(cronTimeZone)))
             .withManual(false);
+
+        // explicitly null out the legacy `schedule` column until it's removed.
+        standardSync.withSchedule(null);
       }
     }
   }

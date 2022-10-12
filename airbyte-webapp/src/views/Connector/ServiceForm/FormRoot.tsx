@@ -2,7 +2,7 @@ import { Form, useFormikContext } from "formik";
 import React from "react";
 import styled from "styled-components";
 
-import { Spinner } from "components";
+import { Spinner } from "components/ui/Spinner";
 
 import { FormBlock } from "core/form/types";
 

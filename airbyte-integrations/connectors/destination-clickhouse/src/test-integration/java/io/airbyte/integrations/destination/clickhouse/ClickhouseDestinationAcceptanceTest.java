@@ -24,7 +24,6 @@ import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
@@ -89,15 +88,9 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected JsonNode getConfig() {
-    final Optional tcpPort = db.getExposedPorts().stream()
-        .map(exPort -> db.getMappedPort((Integer) exPort))
-        .filter(el -> !db.getFirstMappedPort().equals(el))
-        .findFirst();
-
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
-        .put(JdbcUtils.TCP_PORT_KEY, tcpPort.get())
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())

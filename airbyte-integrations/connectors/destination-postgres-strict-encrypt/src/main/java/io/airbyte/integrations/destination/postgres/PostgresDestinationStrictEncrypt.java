@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -31,7 +30,6 @@ public class PostgresDestinationStrictEncrypt extends SpecModifyingDestination i
   public static final String SSL_MODE_PREFER = "prefer";
   public static final String SSL_MODE_DISABLE = "disable";
 
-
   public PostgresDestinationStrictEncrypt() {
     super(PostgresDestination.sshWrappedDestination());
   }
@@ -48,13 +46,14 @@ public class PostgresDestinationStrictEncrypt extends SpecModifyingDestination i
     if (config.has(TUNNEL_METHOD)
         && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
         && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
-      //If no SSH tunnel
+      // If no SSH tunnel
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
         if (Set.of(SSL_MODE_DISABLE, SSL_MODE_ALLOW, SSL_MODE_PREFER).contains(config.get(SSL_MODE).get(MODE).asText())) {
-          //Fail in case SSL mode is disable, allow or prefer
+          // Fail in case SSL mode is disable, allow or prefer
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
-              .withMessage("Unsecured connection not allowed");
+              .withMessage(
+                  "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: require, verify-ca, verify-full");
         }
       }
     }

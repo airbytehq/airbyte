@@ -3,20 +3,18 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
-import { LoadingButton } from "components";
+import { Button } from "components/ui/Button";
 
 import { LogType } from "core/domain/logs/types";
 import { useNotificationService } from "hooks/services/Notification";
 import { useGetLogs } from "services/logs/LogsService";
 import { downloadFile } from "utils/file";
 
+import styles from "./LogsContainer.module.scss";
+
 const Content = styled.div`
   padding: 29px 0 27px;
   text-align: center;
-`;
-
-const LogsButton = styled(LoadingButton)`
-  margin: 0 15px;
 `;
 
 const LogsContent: React.FC = () => {
@@ -54,12 +52,12 @@ const LogsContent: React.FC = () => {
 
   return (
     <Content>
-      <LogsButton onClick={downloadServerLogs} isLoading={serverLogsLoading}>
+      <Button className={styles.logsButton} onClick={downloadServerLogs} isLoading={serverLogsLoading}>
         <FormattedMessage id="admin.downloadServerLogs" />
-      </LogsButton>
-      <LogsButton onClick={downloadSchedulerLogs} isLoading={schedulerLogsLoading}>
+      </Button>
+      <Button className={styles.logsButton} onClick={downloadSchedulerLogs} isLoading={schedulerLogsLoading}>
         <FormattedMessage id="admin.downloadSchedulerLogs" />
-      </LogsButton>
+      </Button>
     </Content>
   );
 };

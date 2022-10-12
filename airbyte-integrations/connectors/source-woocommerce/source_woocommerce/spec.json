@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/woocommerce",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/woocommerce",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Woocommerce Source CDK Specifications",
@@ -28,7 +28,7 @@
         "airbyte_secret": true
       },
       "conversion_window_days": {
-        "title": "Conversion Window (Optional)",
+        "title": "Conversion Window",
         "type": "integer",
         "description": "A conversion window is the period of time after an ad interaction (such as an ad click or video view) during which a conversion, such as a purchase, is recorded in Google Ads.",
         "minimum": 0,
