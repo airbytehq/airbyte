@@ -11,6 +11,7 @@ from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
+import json
 
 import pendulum
 import requests
@@ -318,11 +319,16 @@ class ReportsAmazonSPStream(Stream, ABC):
             payload,
         )
 
-        document_records = self.parse_document(document)
         results = []
-        for item in document_records:
-            item["source_name"] = self.source_name
-            results.append(item)
+        if self.name == "GET_SALES_AND_TRAFFIC_REPORT":
+            result_json = json.loads(document)
+            result_json["source_name"] = self.source_name
+            results.append(result_json)
+        else:
+            document_records = self.parse_document(document)
+            for item in document_records:
+                item["source_name"] = self.source_name
+                results.append(item)
         yield from results
 
     def parse_document(self, document):
