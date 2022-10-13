@@ -170,7 +170,8 @@ class WebBackendConnectionsHandlerTest {
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId());
-    final StandardSync brokenStandardSync = ConnectionHelpers.generateBrokenSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId());
+    final StandardSync brokenStandardSync =
+        ConnectionHelpers.generateBrokenSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId());
     when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
         .thenReturn(Collections.singletonList(standardSync));
     when(configRepository.getSourceAndDefinitionsFromSourceIds(Collections.singletonList(source.getSourceId())))
@@ -188,7 +189,6 @@ class WebBackendConnectionsHandlerTest {
         .operations(List.of(new OperationRead()
             .operationId(brokenConnectionRead.getOperationIds().get(0))
             .name("Test Operation")));
-
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
     sourceIdRequestBody.setSourceId(connectionRead.getSourceId());
@@ -412,7 +412,9 @@ class WebBackendConnectionsHandlerTest {
     assertTrue(expected.getDestination().getIcon().startsWith(SVG));
   }
 
-  WebBackendConnectionRead testWebBackendGetConnection(final boolean withCatalogRefresh, final ConnectionRead connectionRead, final OperationReadList operationReadList)
+  WebBackendConnectionRead testWebBackendGetConnection(final boolean withCatalogRefresh,
+                                                       final ConnectionRead connectionRead,
+                                                       final OperationReadList operationReadList)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
