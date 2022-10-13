@@ -171,6 +171,7 @@ class ShopifySubstream(IncrementalShopifyStream):
     nested_record: str = "id"
     nested_record_field_name: str = None
     nested_substream = None
+    nested_substream_list_field_id = None
 
     @property
     def parent_stream(self) -> object:
@@ -232,7 +233,15 @@ class ShopifySubstream(IncrementalShopifyStream):
             # to limit the number of API Calls and reduce the time of data fetch,
             # we can pull the ready data for child_substream, if nested data is present,
             # and corresponds to the data of child_substream we need.
-            if self.nested_substream:
+            if self.nested_substream and self.nested_substream_list_field_id:
+                if record.get(self.nested_substream):
+                    sorted_substream_slices += [
+                        {
+                            self.slice_key: rec[self.nested_substream_list_field_id],
+                            self.cursor_field: record[self.nested_substream][0].get(self.cursor_field, self.default_state_comparison_value),
+                        } for rec in record[self.nested_record]
+                    ]
+            elif self.nested_substream:
                 if record.get(self.nested_substream):
                     sorted_substream_slices.append(
                         {
@@ -270,11 +279,48 @@ class ShopifySubstream(IncrementalShopifyStream):
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=records)
 
 
+class MetafieldShopifySubstream(ShopifySubstream):
+    slice_key = "id"
+    data_field = "metafields"
+
+    parent_stream_class: object = None
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        object_id = stream_slice[self.slice_key]
+        return f"{self.parent_stream_class.data_field}/{object_id}/{self.data_field}.json"
+
+
+class Articles(IncrementalShopifyStream):
+    data_field = "articles"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class MetafieldArticles(MetafieldShopifySubstream):
+    parent_stream_class: object = Articles
+
+
+class Blogs(IncrementalShopifyStream):
+    data_field = "blogs"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class MetafieldBlogs(MetafieldShopifySubstream):
+    parent_stream_class: object = Blogs
+
+
 class Customers(IncrementalShopifyStream):
     data_field = "customers"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
+
+
+class MetafieldCustomers(MetafieldShopifySubstream):
+    parent_stream_class: object = Customers
 
 
 class Orders(IncrementalShopifyStream):
@@ -292,6 +338,10 @@ class Orders(IncrementalShopifyStream):
         return params
 
 
+class MetafieldOrders(MetafieldShopifySubstream):
+    parent_stream_class: object = Orders
+
+
 class DraftOrders(IncrementalShopifyStream):
     data_field = "draft_orders"
 
@@ -299,11 +349,63 @@ class DraftOrders(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
+class MetafieldDraftOrders(MetafieldShopifySubstream):
+    parent_stream_class: object = DraftOrders
+
+
 class Products(IncrementalShopifyStream):
     data_field = "products"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
+
+
+class MetafieldProducts(MetafieldShopifySubstream):
+    parent_stream_class: object = Products
+
+
+class ProductImages(ShopifySubstream):
+    parent_stream_class: object = Products
+    slice_key = "id"
+    data_field = "images"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        product_id = stream_slice[self.slice_key]
+        return f"products/{product_id}/{self.data_field}.json"
+
+
+class MetafieldProductImages(MetafieldShopifySubstream):
+    parent_stream_class: object = Products
+    nested_record = "images"
+    slice_key = "images"
+    nested_substream = "images"
+    nested_substream_list_field_id = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        image_id = stream_slice[self.slice_key]
+        return f"product_images/{image_id}/{self.data_field}.json"
+
+
+class ProductVariants(ShopifySubstream):
+    parent_stream_class: object = Products
+    slice_key = "id"
+    data_field = "variants"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        product_id = stream_slice[self.slice_key]
+        return f"products/{product_id}/{self.data_field}.json"
+
+
+class MetafieldProductVariants(MetafieldShopifySubstream):
+    parent_stream_class: object = Products
+    nested_record = "variants"
+    slice_key = "variants"
+    nested_substream = "variants"
+    nested_substream_list_field_id = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        variant_id = stream_slice[self.slice_key]
+        return f"variants/{variant_id}/{self.data_field}.json"
 
 
 class AbandonedCheckouts(IncrementalShopifyStream):
@@ -322,18 +424,22 @@ class AbandonedCheckouts(IncrementalShopifyStream):
         return params
 
 
-class Metafields(IncrementalShopifyStream):
-    data_field = "metafields"
-
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json"
-
-
 class CustomCollections(IncrementalShopifyStream):
     data_field = "custom_collections"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
+
+
+class SmartCollections(IncrementalShopifyStream):
+    data_field = "smart_collections"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class MetafieldSmartCollections(MetafieldShopifySubstream):
+    parent_stream_class: object = SmartCollections
 
 
 class Collects(IncrementalShopifyStream):
@@ -353,6 +459,27 @@ class Collects(IncrementalShopifyStream):
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
+
+
+class Collections(ShopifySubstream):
+    parent_stream_class: object = Collects
+    nested_record = "collection_id"
+    slice_key = "collection_id"
+    data_field = "collection"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        collection_id = stream_slice[self.slice_key]
+        return f"collections/{collection_id}.json"
+
+
+class MetafieldCollections(MetafieldShopifySubstream):
+    parent_stream_class: object = Collects
+    slice_key = "collection_id"
+    nested_record = 'collection_id'
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        object_id = stream_slice[self.slice_key]
+        return f"collections/{object_id}/{self.data_field}.json"
 
 
 class BalanceTransactions(IncrementalShopifyStream):
@@ -422,6 +549,10 @@ class Pages(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
+class MetafieldPages(MetafieldShopifySubstream):
+    parent_stream_class: object = Pages
+
+
 class PriceRules(IncrementalShopifyStream):
     data_field = "price_rules"
 
@@ -451,6 +582,10 @@ class Locations(ShopifyStream):
 
     def path(self, **kwargs):
         return f"{self.data_field}.json"
+
+
+class MetafieldLocations(MetafieldShopifySubstream):
+    parent_stream_class: object = Locations
 
 
 class InventoryLevels(ShopifySubstream):
@@ -513,6 +648,13 @@ class Shop(ShopifyStream):
         return f"{self.data_field}.json"
 
 
+class MetafieldShops(IncrementalShopifyStream):
+    data_field = "metafields"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
@@ -535,7 +677,7 @@ class SourceShopify(AbstractSource):
         """
         config["authenticator"] = ShopifyAuthenticator(config)
         user_scopes = self.get_user_scopes(config)
-        always_permitted_streams = ["Metafields", "Shop"]
+        always_permitted_streams = ["MetafieldShops", "Shop"]
         permitted_streams = [
             stream
             for user_scope in user_scopes
@@ -545,12 +687,27 @@ class SourceShopify(AbstractSource):
 
         # before adding stream to stream_instances list, please add it to SCOPES_MAPPING
         stream_instances = [
+            Articles(config),
+            MetafieldArticles(config),
+            Blogs(config),
+            Collections(config),
+            SmartCollections(config),
+            MetafieldSmartCollections(config),
+            MetafieldCollections(config),
+            MetafieldBlogs(config),
             Customers(config),
+            MetafieldCustomers(config),
             Orders(config),
+            MetafieldOrders(config),
             DraftOrders(config),
+            MetafieldDraftOrders(config),
             Products(config),
+            MetafieldProducts(config),
+            ProductImages(config),
+            MetafieldProductImages(config),
+            ProductVariants(config),
+            MetafieldProductVariants(config),
             AbandonedCheckouts(config),
-            Metafields(config),
             CustomCollections(config),
             Collects(config),
             OrderRefunds(config),
@@ -559,14 +716,17 @@ class SourceShopify(AbstractSource):
             Transactions(config),
             BalanceTransactions(config),
             Pages(config),
+            MetafieldPages(config),
             PriceRules(config),
             DiscountCodes(config),
             Locations(config),
+            MetafieldLocations(config),
             InventoryItems(config),
             InventoryLevels(config),
             FulfillmentOrders(config),
             Fulfillments(config),
             Shop(config),
+            MetafieldShops(config)
         ]
 
         return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
