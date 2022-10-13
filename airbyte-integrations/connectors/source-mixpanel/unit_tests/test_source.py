@@ -29,9 +29,9 @@ def check_connection_url(config):
         (500, False, {"error": "Server error"}),
     ],
 )
-def test_check_connection(requests_mock, check_connection_url, config, response_code, expect_success, response_json):
+def test_check_connection(requests_mock, check_connection_url, config_raw, response_code, expect_success, response_json):
     requests_mock.register_uri("GET", check_connection_url, setup_response(response_code, response_json))
-    ok, error = SourceMixpanel().check_connection(logger, config)
+    ok, error = SourceMixpanel().check_connection(logger, config_raw)
     assert ok == expect_success and error != expect_success
     expected_error = response_json.get("error")
     if expected_error:
@@ -44,19 +44,19 @@ def test_check_connection_bad_config():
     assert not ok and error
 
 
-def test_check_connection_incomplete(config):
-    config.pop("api_secret")
-    ok, error = SourceMixpanel().check_connection(logger, config)
+def test_check_connection_incomplete(config_raw):
+    config_raw.pop("api_secret")
+    ok, error = SourceMixpanel().check_connection(logger, config_raw)
     assert not ok and error
 
 
-def test_streams(config):
-    streams = SourceMixpanel().streams(config)
+def test_streams(config_raw):
+    streams = SourceMixpanel().streams(config_raw)
     assert len(streams) == 7
 
 
-def test_streams_string_date(config):
-    config = copy.deepcopy(config)
+def test_streams_string_date(config_raw):
+    config = copy.deepcopy(config_raw)
     config["start_date"] = "2020-01-01"
     config["end_date"] = "2020-01-02"
     streams = SourceMixpanel().streams(config)

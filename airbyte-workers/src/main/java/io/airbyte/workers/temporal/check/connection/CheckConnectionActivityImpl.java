@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.check.connection;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
@@ -14,7 +15,6 @@ import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
@@ -35,7 +35,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   private final Path workspaceRoot;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final JobPersistence jobPersistence;
+  private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
 
   public CheckConnectionActivityImpl(final WorkerConfigs workerConfigs,
@@ -44,7 +44,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
                                      final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
-                                     final JobPersistence jobPersistence,
+                                     final AirbyteApiClient airbyteApiClient,
                                      final String airbyteVersion) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
@@ -52,7 +52,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.workspaceRoot = workspaceRoot;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.jobPersistence = jobPersistence;
+    this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
   }
 
@@ -72,7 +72,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
             getWorkerFactory(args.getLauncherConfig()),
             () -> input,
             new CancellationHandler.TemporalCancellationHandler(context),
-            jobPersistence,
+            airbyteApiClient,
             airbyteVersion,
             () -> context);
 

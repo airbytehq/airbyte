@@ -11,7 +11,7 @@ export default {
 } as ComponentMeta<typeof Modal>;
 
 const Template: ComponentStory<typeof Modal> = (args) => {
-  if (args.clear) {
+  if (args.cardless) {
     return <Modal {...args} />;
   }
 

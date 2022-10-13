@@ -1,12 +1,3 @@
-export interface SegmentAnalytics {
-  page: (name?: string) => void;
-  reset: () => void;
-  alias: (newId: string) => void;
-  track: (name: string, properties: Record<string, unknown>) => void;
-  identify: (userId?: string, traits?: Record<string, unknown>) => void;
-  group: (organisationId: string, traits: Record<string, unknown>) => void;
-}
-
 export const enum Namespace {
   SOURCE = "Source",
   DESTINATION = "Destination",
@@ -14,6 +5,7 @@ export const enum Namespace {
   CONNECTOR = "Connector",
   ONBOARDING = "Onboarding",
   USER = "User",
+  CREDITS = "Credits",
 }
 
 export const enum Action {
@@ -34,6 +26,8 @@ export const enum Action {
   PREFERENCES = "Preferences",
   NO_MATCHING_CONNECTOR = "NoMatchingConnector",
   SELECTION_OPENED = "SelectionOpened",
+  CHECKOUT_START = "CheckoutStart",
+  LOAD_MORE_JOBS = "LoadMoreJobs",
 }
 
 export type EventParams = Record<string, unknown>;

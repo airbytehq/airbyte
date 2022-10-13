@@ -2,9 +2,9 @@ import React from "react";
 import { useIntl } from "react-intl";
 
 import { Button } from "components";
+import { Tooltip } from "components/base/Tooltip";
 import { CrossIcon } from "components/icons/CrossIcon";
 import { PencilIcon } from "components/icons/PencilIcon";
-import ToolTip from "components/ToolTip";
 
 import styles from "./EditorRow.module.scss";
 
@@ -46,5 +46,15 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
     </div>
   );
 
-  return <div className={styles.container}>{description ? <ToolTip control={body}>{description}</ToolTip> : body}</div>;
+  return (
+    <div className={styles.container}>
+      {description ? (
+        <Tooltip control={body} placement="top">
+          {description}
+        </Tooltip>
+      ) : (
+        body
+      )}
+    </div>
+  );
 };

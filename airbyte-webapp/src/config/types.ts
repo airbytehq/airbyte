@@ -1,5 +1,3 @@
-import { SegmentAnalytics } from "core/analytics/types";
-
 import { OutboundLinks } from "./links";
 
 declare global {
@@ -7,7 +5,6 @@ declare global {
     TRACKING_STRATEGY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
-    IS_DEMO?: string;
     CLOUD?: string;
     REACT_APP_SENTRY_DSN?: string;
     REACT_APP_WEBAPP_TAG?: string;
@@ -15,7 +12,7 @@ declare global {
     REACT_APP_INTEGRATION_DOCS_URLS?: string;
     SEGMENT_TOKEN?: string;
     LAUNCHDARKLY_KEY?: string;
-    analytics: SegmentAnalytics;
+    analytics: SegmentAnalytics.AnalyticsJS;
   }
 }
 
@@ -25,7 +22,6 @@ export interface Config {
   apiUrl: string;
   oauthRedirectUrl: string;
   healthCheckInterval: number;
-  isDemo: boolean;
   version?: string;
   integrationUrl: string;
   launchDarkly?: string;

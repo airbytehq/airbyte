@@ -88,6 +88,8 @@ The API user account should be assigned one of the following roles:
 * CREATIVE\_MANAGER
 * VIEWER \(Recommended\)
 
+To edit these roles, sign into Campaign Manager and follow [these instructions](https://www.linkedin.com/help/lms/answer/a496075). 
+
 ## Step 2: Set up the source connector in Airbyte
 
 **For Airbyte Cloud:**
@@ -101,7 +103,7 @@ The API user account should be assigned one of the following roles:
 7. Log in and Authorize to the LinkedIn Ads account
 8. click `Set up source`.
 
-**For Airbyte OSS:**
+**For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 

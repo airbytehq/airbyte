@@ -2,6 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from copy import deepcopy
+
 from pytest import fixture
 
 
@@ -10,10 +12,20 @@ def config():
     return {
         "client_id": "test_client_id",
         "client_secret": "test_client_secret",
-        "scope": "test_scope",
         "refresh_token": "test_refresh",
         "region": "NA",
     }
+
+
+@fixture
+def config_gen(config):
+    def inner(**kwargs):
+        new_config = deepcopy(config)
+        # WARNING, no support deep dictionaries
+        new_config.update(kwargs)
+        return {k: v for k, v in new_config.items() if v is not ...}
+
+    return inner
 
 
 @fixture

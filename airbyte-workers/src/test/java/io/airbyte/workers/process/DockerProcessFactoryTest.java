@@ -35,6 +35,8 @@ import org.junit.jupiter.api.Test;
 class DockerProcessFactoryTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
+  private static final String PROCESS_FACTORY = "process_factory";
+  private static final String BUSYBOX = "busybox";
 
   /**
    * {@link DockerProcessFactoryTest#testImageExists()} will fail if jq is not installed. The logs get
@@ -62,15 +64,15 @@ class DockerProcessFactoryTest {
    */
   @Test
   void testImageExists() throws IOException, WorkerException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), PROCESS_FACTORY);
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
-    assertTrue(processFactory.checkImageExists("busybox"));
+    assertTrue(processFactory.checkImageExists(BUSYBOX));
   }
 
   @Test
   void testImageDoesNotExist() throws IOException, WorkerException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), PROCESS_FACTORY);
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
     assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
@@ -78,12 +80,12 @@ class DockerProcessFactoryTest {
 
   @Test
   void testFileWriting() throws IOException, WorkerException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), PROCESS_FACTORY);
     final Path jobRoot = workspaceRoot.resolve("job");
 
     final DockerProcessFactory processFactory =
         new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
-    processFactory.create("tester", "job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
+    processFactory.create("tester", "job_id", 0, jobRoot, BUSYBOX, false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
         new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(), Map.of(), Map.of());
 
     assertEquals(
@@ -96,7 +98,7 @@ class DockerProcessFactoryTest {
    */
   @Test
   void testEnvMapSet() throws IOException, WorkerException, InterruptedException {
-    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), PROCESS_FACTORY);
     final Path jobRoot = workspaceRoot.resolve("job");
 
     final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
@@ -117,7 +119,7 @@ class DockerProcessFactoryTest {
         "job_id",
         0,
         jobRoot,
-        "busybox",
+        BUSYBOX,
         false,
         Map.of(),
         "/bin/sh",
@@ -149,7 +151,7 @@ class DockerProcessFactoryTest {
           "job_id_" + RandomStringUtils.randomAlphabetic(4),
           0,
           jobRoot,
-          "busybox",
+          BUSYBOX,
           false,
           Map.of(),
           "/bin/sh",

@@ -13,6 +13,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -22,6 +23,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,7 +44,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSourceDatabaseTypeTest.class);
 
-  private final List<TestDataHolder> testDataHolders = new ArrayList<>();
+  protected final List<TestDataHolder> testDataHolders = new ArrayList<>();
 
   /**
    * The column name will be used for a PK column in the test tables. Override it if default name is
@@ -179,7 +181,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    *
    * @return configured catalog
    */
-  private ConfiguredAirbyteCatalog getConfiguredCatalog() {
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(
         testDataHolders
             .stream()
@@ -240,6 +242,32 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
 
   protected void printMarkdownTestTable() {
     LOGGER.info(getMarkdownTestTable());
+  }
+
+  protected ConfiguredAirbyteStream createDummyTableWithData(final Database database) throws SQLException {
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE " + getNameSpace() + ".random_dummy_table(id INTEGER PRIMARY KEY, test_column VARCHAR(63));");
+      ctx.fetch("INSERT INTO " + getNameSpace() + ".random_dummy_table VALUES (2, 'Random Data');");
+      return null;
+    });
+
+    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withStream(CatalogHelpers.createAirbyteStream(
+            "random_dummy_table",
+            getNameSpace(),
+            Field.of("id", JsonSchemaType.INTEGER),
+            Field.of("test_column", JsonSchemaType.STRING))
+            .withSourceDefinedCursor(true)
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
+  }
+
+  protected List<AirbyteStateMessage> extractStateMessages(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
   }
 
 }

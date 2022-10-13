@@ -37,6 +37,26 @@ class SourceSalesforce(AbstractSource):
         return True, None
 
     @classmethod
+    def _get_api_type(cls, stream_name, properties, stream_state):
+        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
+        properties_not_supported_by_bulk = {
+            key: value for key, value in properties.items() if value.get("format") == "base64" or "object" in value["type"]
+        }
+        properties_length = len(",".join(p for p in properties))
+
+        rest_required = stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk
+        # If we have a lot of properties we can overcome REST API URL length and get an error: "reason: URI Too Long".
+        # For such cases connector tries to use BULK API because it uses POST request and passes properties in the request body.
+        bulk_required = properties_length + 2000 > Salesforce.REQUEST_SIZE_LIMITS
+
+        if bulk_required and not rest_required:
+            return "bulk"
+        elif rest_required and not bulk_required:
+            return "rest"
+        elif not bulk_required and not rest_required:
+            return "rest" if stream_state else "bulk"
+
+    @classmethod
     def generate_streams(
         cls,
         config: Mapping[str, Any],
@@ -51,19 +71,15 @@ class SourceSalesforce(AbstractSource):
         for stream_name, sobject_options in stream_objects.items():
             streams_kwargs = {"sobject_options": sobject_options}
             stream_state = state.get(stream_name, {}) if state else {}
-
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
-            # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
-            properties_not_supported_by_bulk = {
-                key: value for key, value in selected_properties.items() if value.get("format") == "base64" or "object" in value["type"]
-            }
 
-            if stream_state or stream_name in UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS or properties_not_supported_by_bulk:
-                # Use REST API
+            api_type = cls._get_api_type(stream_name, selected_properties, stream_state)
+            if api_type == "rest":
                 full_refresh, incremental = SalesforceStream, IncrementalSalesforceStream
-            else:
-                # Use BULK API
+            elif api_type == "bulk":
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
+            else:
+                raise Exception(f"Stream {stream_name} cannot be processed by REST or BULK API.")
 
             json_schema = stream_properties.get(stream_name, {})
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)

@@ -69,7 +69,7 @@ const CloseButton = styled(Button)`
   margin-left: 10px;
 `;
 
-const SingletonCard: React.FC<SingletonCardProps> = (props) => (
+export const SingletonCard: React.FC<SingletonCardProps> = (props) => (
   <Singleton hasError={props.hasError}>
     {props.hasError && <ErrorSign />}
     <div>

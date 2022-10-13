@@ -1,4 +1,6 @@
-name: Notify team
+# Notify users/teams when labels are added to an issue.
+
+name: Notify when adding label to issue
 
 on:
   issues:

@@ -103,12 +103,12 @@ public class JobNotifier {
               MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
 
           if (FAILURE_NOTIFICATION == action) {
-            if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+            if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl, job.getId())) {
               LOGGER.warn("Failed to successfully notify failure: {}", notification);
             }
             break;
           } else if (SUCCESS_NOTIFICATION == action) {
-            if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+            if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl, job.getId())) {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
             break;

@@ -3,11 +3,10 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation } from "react-router-dom";
 
-import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 import { useGetDebugInfoJob } from "services/job/JobService";
 
-import { AttemptRead, AttemptStatus } from "../../../core/request/AirbyteClient";
+import { AttemptRead, AttemptStatus, SynchronousJobRead } from "../../../core/request/AirbyteClient";
 import { parseAttemptLink } from "../attemptLinkUtils";
 import Logs from "./Logs";
 import { LogsDetails } from "./LogsDetails";
@@ -15,23 +14,21 @@ import Tabs, { TabsData } from "./Tabs";
 
 interface JobLogsProps {
   jobIsFailed?: boolean;
-  job: SynchronousJobReadWithStatus | JobsWithJobs;
+  job: SynchronousJobRead | JobsWithJobs;
 }
 
 const isPartialSuccess = (attempt: AttemptRead) => {
   return !!attempt.failureSummary?.partialSuccess;
 };
 
-const jobIsSynchronousJobRead = (
-  job: SynchronousJobReadWithStatus | JobsWithJobs
-): job is SynchronousJobReadWithStatus => {
-  return !!(job as SynchronousJobReadWithStatus)?.logs?.logLines;
+const jobIsSynchronousJobRead = (job: SynchronousJobRead | JobsWithJobs): job is SynchronousJobRead => {
+  return !!(job as SynchronousJobRead)?.logs?.logLines;
 };
 
 const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
   const isSynchronousJobRead = jobIsSynchronousJobRead(job);
 
-  const id: number | string = (job as JobsWithJobs).job?.id ?? (job as SynchronousJobReadWithStatus).id;
+  const id: number | string = (job as JobsWithJobs).job?.id ?? (job as SynchronousJobRead).id;
 
   const debugInfo = useGetDebugInfoJob(id, typeof id === "number", true);
 

@@ -101,7 +101,7 @@ export const getConnectionTableData = (
           : connection[connectType]?.name || "",
       lastSync: connection.latestSyncJobCreatedAt,
       enabled: connection.status === ConnectionStatus.active,
-      schedule: connection.schedule,
+      schedule: connection.scheduleData?.basicSchedule,
       status: connection.status,
       isSyncing: connection.isSyncing,
       lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),

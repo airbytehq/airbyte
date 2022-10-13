@@ -16,13 +16,13 @@ def test_http_requester():
     request_params = {"param": "value"}
     request_body_data = "body_key_1=value_1&body_key_2=value2"
     request_body_json = {"body_field": "body_value"}
-    request_options_provider.request_params.return_value = request_params
-    request_options_provider.request_body_data.return_value = request_body_data
-    request_options_provider.request_body_json.return_value = request_body_json
+    request_options_provider.get_request_params.return_value = request_params
+    request_options_provider.get_request_body_data.return_value = request_body_data
+    request_options_provider.get_request_body_json.return_value = request_body_json
 
     request_headers_provider = MagicMock()
     request_headers = {"header": "value"}
-    request_headers_provider.request_headers.return_value = request_headers
+    request_headers_provider.get_request_headers.return_value = request_headers
 
     authenticator = MagicMock()
 
@@ -48,14 +48,15 @@ def test_http_requester():
         authenticator=authenticator,
         error_handler=error_handler,
         config=config,
+        options={},
     )
 
     assert requester.get_url_base() == "https://airbyte.io"
     assert requester.get_path(stream_state={}, stream_slice=stream_slice, next_page_token={}) == "v1/1234"
     assert requester.get_authenticator() == authenticator
     assert requester.get_method() == HttpMethod.GET
-    assert requester.request_params(stream_state={}, stream_slice=None, next_page_token=None) == request_params
-    assert requester.request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
-    assert requester.request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
+    assert requester.get_request_params(stream_state={}, stream_slice=None, next_page_token=None) == request_params
+    assert requester.get_request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
+    assert requester.get_request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
     assert requester.should_retry(requests.Response()) == should_retry
     assert {} == requester.request_kwargs(stream_state={}, stream_slice=None, next_page_token=None)

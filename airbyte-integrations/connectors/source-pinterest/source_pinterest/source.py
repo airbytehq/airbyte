@@ -18,12 +18,17 @@ from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 from .utils import analytics_columns, to_datetime_str
 
+# For Pinterest analytics streams rate limit is 300 calls per day / per user.
+# once hit - response would contain `code` property with int.
+MAX_RATE_LIMIT_CODE = 8
+
 
 class PinterestStream(HttpStream, ABC):
     url_base = "https://api.pinterest.com/v5/"
     primary_key = "id"
     data_fields = ["items"]
     raise_on_http_errors = True
+    max_rate_limit_exceeded = False
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=config["authenticator"])
@@ -50,27 +55,30 @@ class PinterestStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """
-        For Pinterest analytics streams rate limit is 300 calls per day / per user.
-        Handling of rate limits for Pinterest analytics streams described in should_retry method of PinterestAnalyticsStream.
-        Response example:
-            {
-                "code": 8,
-                "message": "You have exceeded your rate limit. Try again later."
-            }
+        Parsing response data with respect to Rate Limits.
         """
-
         data = response.json()
-        exceeded_rate_limit = False
 
-        if isinstance(data, dict):
-            exceeded_rate_limit = data.get("code") == 8
-
-        if not exceeded_rate_limit:
+        if not self.max_rate_limit_exceeded:
             for data_field in self.data_fields:
                 data = data.get(data_field, [])
 
             for record in data:
                 yield record
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if isinstance(response.json(), dict):
+            self.max_rate_limit_exceeded = response.json().get("code", 0) == MAX_RATE_LIMIT_CODE
+        # when max rate limit exceeded, we should skip the stream.
+        if response.status_code == requests.codes.too_many_requests and self.max_rate_limit_exceeded:
+            self.logger.error(f"For stream {self.name} Max Rate Limit exceeded.")
+            setattr(self, "raise_on_http_errors", False)
+        return 500 <= response.status_code < 600
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if response.status_code == requests.codes.too_many_requests:
+            self.logger.error(f"For stream {self.name} rate limit exceeded.")
+            return float(response.headers.get("X-RateLimit-Reset", 0))
 
 
 class PinterestSubStream(HttpSubStream):
@@ -90,11 +98,15 @@ class PinterestSubStream(HttpSubStream):
 
 
 class Boards(PinterestStream):
+    use_cache = True
+
     def path(self, **kwargs) -> str:
         return "boards"
 
 
 class AdAccounts(PinterestStream):
+    use_cache = True
+
     def path(self, **kwargs) -> str:
         return "ad_accounts"
 
@@ -196,12 +208,6 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     granularity = "DAY"
     analytics_target_ids = None
 
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 429:
-            self.logger.error(f"For stream {self.name} rate limit exceeded.")
-            setattr(self, "raise_on_http_errors", False)
-        return 500 <= response.status_code < 600
-
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -289,8 +295,11 @@ class AdAnalytics(PinterestAnalyticsStream):
 class SourcePinterest(AbstractSource):
     @staticmethod
     def get_authenticator(config):
-        user_pass = (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
-        auth = "Basic " + standard_b64encode(user_pass).decode("ascii")
+        config = config.get("credentials") or config
+        credentials_base64_encoded = standard_b64encode(
+            (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
+        ).decode("ascii")
+        auth = f"Basic {credentials_base64_encoded}"
 
         return Oauth2Authenticator(
             token_refresh_endpoint=f"{PinterestStream.url_base}oauth/token",

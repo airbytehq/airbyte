@@ -12,7 +12,7 @@
   top: 0;
   height: 100%;
   width: 100%;
-  background-image: url(../../../../../../../public/images/testimonials/cartdotcom-person-photo.png);
+  background-image: url("../../../../../../../public/images/testimonials/cartdotcom-person-photo.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -56,13 +56,14 @@
     line-height: 28px;
     text-align: justify;
 
-    &:before {
+    &::before {
       content: open-quote;
       font-size: 50px;
       position: absolute;
       top: 0;
     }
-    &:after {
+
+    &::after {
       content: close-quote;
       font-size: 50px;
       position: absolute;

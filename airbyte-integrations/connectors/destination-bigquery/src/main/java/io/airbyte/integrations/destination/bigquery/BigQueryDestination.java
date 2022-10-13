@@ -209,6 +209,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
+      stream.setNamespace(BigQueryUtils.getDatasetId(config));
       final String streamName = stream.getName();
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
@@ -221,11 +222,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
           .build();
 
-      uploaderMap.put(
-          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-          BigQueryUploaderFactory.getUploader(uploaderConfig));
+      putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
     }
     return uploaderMap;
+  }
+
+  protected void putStreamIntoUploaderMap(final AirbyteStream stream,
+                                          final UploaderConfig uploaderConfig,
+                                          final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
+      throws IOException {
+    uploaderMap.put(
+        AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+        BigQueryUploaderFactory.getUploader(uploaderConfig));
   }
 
   /**
@@ -254,7 +262,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(config, catalog);
-    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
+    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector, BigQueryUtils.getDatasetId(config));
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,

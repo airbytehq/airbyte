@@ -275,11 +275,13 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         del ledger_entry_record["customer"]
         ledger_entry_record["customer_id"] = nested_customer_id
 
-        # Un-nest credit_block -> expiry_date into block_expiry_date and per_unit_cost_basis
+        # Un-nest credit_block -> expiry_date into block_expiry_date and id and per_unit_cost_basis
         nested_expiry_date = ledger_entry_record["credit_block"]["expiry_date"]
+        nested_id = ledger_entry_record["credit_block"]["id"]
         nested_per_unit_cost_basis = ledger_entry_record["credit_block"]["per_unit_cost_basis"]
         del ledger_entry_record["credit_block"]
         ledger_entry_record["block_expiry_date"] = nested_expiry_date
+        ledger_entry_record["credit_block_id"] = nested_id
         ledger_entry_record["credit_block_per_unit_cost_basis"] = nested_per_unit_cost_basis
 
         return ledger_entry_record

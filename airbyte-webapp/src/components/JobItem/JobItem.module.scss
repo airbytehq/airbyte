@@ -1,0 +1,10 @@
+@use "../../scss/colors";
+
+.logsLoadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: colors.$white;
+  padding: 6px 0;
+  min-height: 58px;
+}

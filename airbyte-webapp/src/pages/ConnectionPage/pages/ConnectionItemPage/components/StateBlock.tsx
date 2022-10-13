@@ -33,7 +33,7 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   );
 
   return (
-    <Card $withPadding>
+    <Card withPadding>
       <H5 bold>
         <FormattedMessage id="tables.connectionState.title" />
       </H5>

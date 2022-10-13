@@ -84,6 +84,7 @@ public class JobCleaner implements Runnable {
         });
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private void deleteOnSize() throws IOException {
     final Set<String> nonTerminalJobIds = new HashSet<>();
     final Sets.SetView<JobStatus> nonTerminalStatuses = Sets.difference(Set.of(JobStatus.values()), JobStatus.TERMINAL_STATUSES);

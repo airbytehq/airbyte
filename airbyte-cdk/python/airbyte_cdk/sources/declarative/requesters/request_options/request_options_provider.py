@@ -2,13 +2,16 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
-class RequestOptionsProvider(ABC):
+@dataclass
+class RequestOptionsProvider(JsonSchemaMixin):
     """
     Defines the request options to set on an outgoing HTTP request
 
@@ -20,7 +23,7 @@ class RequestOptionsProvider(ABC):
     """
 
     @abstractmethod
-    def request_params(
+    def get_request_params(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -35,7 +38,7 @@ class RequestOptionsProvider(ABC):
         pass
 
     @abstractmethod
-    def request_headers(
+    def get_request_headers(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -45,7 +48,7 @@ class RequestOptionsProvider(ABC):
         """Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method."""
 
     @abstractmethod
-    def request_body_data(
+    def get_request_body_data(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -63,7 +66,7 @@ class RequestOptionsProvider(ABC):
         """
 
     @abstractmethod
-    def request_body_json(
+    def get_request_body_json(
         self,
         *,
         stream_state: Optional[StreamState] = None,

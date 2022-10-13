@@ -4,9 +4,11 @@ import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { ContentCard, H4 } from "components";
+import { H4 } from "components";
+import { Card } from "components/base/Card";
 
 import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -41,7 +43,7 @@ const Content = styled.div`
   padding-bottom: 10px;
 `;
 
-const NoSupportedTransformationCard = styled(ContentCard)`
+const NoSupportedTransformationCard = styled(Card)`
   max-width: 500px;
   margin: 0 auto;
   min-height: 100px;
@@ -125,6 +127,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const workspace = useCurrentWorkspace();
 
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_TRANSFORMATION);
   const { supportsNormalization } = definition;
   const supportsDbt = useFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 

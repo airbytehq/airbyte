@@ -285,7 +285,12 @@ public class JobTracker {
         operationUsage.put(OPERATION + operation.getOperatorType(), usageCount + 1);
       }
     }
-    return MoreMaps.merge(TrackingMetadata.generateSyncMetadata(standardSync), operationUsage);
+
+    final Map<String, Object> streamCountData = new HashMap<>();
+    final Integer streamCount = standardSync.getCatalog().getStreams().size();
+    streamCountData.put("number_of_streams", streamCount);
+
+    return MoreMaps.merge(TrackingMetadata.generateSyncMetadata(standardSync), operationUsage, streamCountData);
   }
 
   private static ImmutableMap<String, Object> generateStateMetadata(final JobState jobState) {

@@ -179,6 +179,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
   }
 
+  @SuppressWarnings("PMD.EmptyIfStmt")
   private CancellationScope generateSyncWorkflowRunnable(final ConnectionUpdaterInput connectionUpdaterInput) {
     return Workflow.newCancellationScope(() -> {
       connectionId = connectionUpdaterInput.getConnectionId();
@@ -560,7 +561,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       log.info("Finished wait for connection {}, restarting connection manager workflow", connectionId);
 
-      final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.buildStartWorkflowInput(connectionId);
+      final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.getInstance().buildStartWorkflowInput(connectionId);
 
       Workflow.continueAsNew(newWorkflowInput);
 

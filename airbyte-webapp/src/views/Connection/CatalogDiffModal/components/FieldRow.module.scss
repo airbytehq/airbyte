@@ -22,6 +22,7 @@
   &.add {
     background-color: colors.$green-50;
   }
+
   &.remove {
     background-color: colors.$red-50;
   }
@@ -31,9 +32,11 @@
   &.plus {
     color: colors.$green;
   }
+
   &.minus {
     color: colors.$red;
   }
+
   &.mod {
     color: colors.$blue-100;
   }
@@ -49,10 +52,12 @@
 
 .cell {
   width: 228px;
+
   &.update {
     border-radius: variables.$border-radius-sm;
+
     & span {
-      background-color: rgba(98, 94, 255, 0.1);
+      background-color: rgba(98, 94, 255, 10%);
       padding: variables.$spacing-sm;
       border-radius: variables.$border-radius-sm;
     }

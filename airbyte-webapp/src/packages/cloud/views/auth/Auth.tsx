@@ -21,7 +21,7 @@ const hasValidRightSideUrl = (url?: string): boolean => {
   if (url) {
     try {
       const parsedUrl = new URL(url);
-      const isValid = parsedUrl.protocol === "https:" && parsedUrl.hostname.endsWith("airbyte.com");
+      const isValid = parsedUrl.protocol === "https:" && parsedUrl.hostname.endsWith("daspire.com");
       if (!isValid) {
         console.warn(`${parsedUrl} is not valid.`);
       }

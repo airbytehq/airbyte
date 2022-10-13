@@ -802,7 +802,8 @@ class Reviews(SemiIncrementalMixin, GithubStream):
             record["pull_request_url"] = pull_request["url"]
             if record["commit"]:
                 record["commit_id"] = record.pop("commit")["oid"]
-            record["user"]["type"] = record["user"].pop("__typename")
+            if record["user"]:
+                record["user"]["type"] = record["user"].pop("__typename")
             # for backward compatibility with REST API response
             record["_links"] = {
                 "html": {"href": record["html_url"]},
@@ -1019,7 +1020,8 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
         for reaction in comment["reactions"]["nodes"]:
             reaction["repository"] = self._get_name(repository)
             reaction["comment_id"] = comment["id"]
-            reaction["user"]["type"] = "User"
+            if reaction["user"]:
+                reaction["user"]["type"] = "User"
             yield reaction
 
     def _get_reactions_from_review(self, review, repository):

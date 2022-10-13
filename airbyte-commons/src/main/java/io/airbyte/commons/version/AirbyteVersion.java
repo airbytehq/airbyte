@@ -10,6 +10,7 @@ import java.util.Objects;
 /**
  * The AirbyteVersion identifies the version of the database used internally by Airbyte services.
  */
+@SuppressWarnings("PMD.ConstructorCallsOverridableMethod")
 public class AirbyteVersion {
 
   public static final String DEV_VERSION_PREFIX = "dev";

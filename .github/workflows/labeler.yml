@@ -1,4 +1,7 @@
-name: "Pull Request Labeler"
+# the mapping from filepath to label
+# is defined in .github/labeler.yml
+
+name: "Label PR based on filepath"
 on:
   - pull_request_target
 

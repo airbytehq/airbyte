@@ -12,6 +12,7 @@ import LoadingPage from "components/LoadingPage";
 import PageTitle from "components/PageTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
@@ -26,6 +27,7 @@ import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
 
 const SourceItemPage: React.FC = () => {
+  useTrackPage(PageTrackingCodes.SOURCE_ITEM);
   const { query, params, push } = useRouter<{ id: string }, { id: string; "*": string }>();
   const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
 

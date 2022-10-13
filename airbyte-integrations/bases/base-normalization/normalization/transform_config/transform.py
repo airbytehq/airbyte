@@ -8,6 +8,7 @@ import json
 import os
 import pkgutil
 import socket
+import subprocess
 from typing import Any, Dict
 
 import yaml
@@ -57,12 +58,20 @@ class TransformConfig:
             DestinationType.ORACLE.value: self.transform_oracle,
             DestinationType.MSSQL.value: self.transform_mssql,
             DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
+            DestinationType.TIDB.value: self.transform_tidb,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
         base_profile["normalize"]["outputs"]["prod"] = transformed_integration_config
 
         return base_profile
+
+    @staticmethod
+    def create_file(name, content):
+        f = open(name, "x")
+        f.write(content)
+        f.close()
+        return os.path.abspath(f.name)
 
     @staticmethod
     def is_ssh_tunnelling(config: Dict[str, Any]) -> bool:
@@ -167,9 +176,19 @@ class TransformConfig:
             "threads": 8,
         }
 
-        # if unset, we assume true.
-        if config.get("ssl", True):
-            config["sslmode"] = "require"
+        ssl = config.get("ssl")
+        if ssl:
+            ssl_mode = config.get("ssl_mode", {"mode": "allow"})
+            dbt_config["sslmode"] = ssl_mode.get("mode")
+            if ssl_mode["mode"] == "verify-ca":
+                TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
+                dbt_config["sslrootcert"] = "ca.crt"
+            elif ssl_mode["mode"] == "verify-full":
+                dbt_config["sslrootcert"] = TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
+                dbt_config["sslcert"] = TransformConfig.create_file("client.crt", ssl_mode["client_certificate"])
+                client_key = TransformConfig.create_file("client.key", ssl_mode["client_key"])
+                subprocess.call("openssl pkcs8 -topk8 -inform PEM -in client.key -outform DER -out client.pk8 -nocrypt", shell=True)
+                dbt_config["sslkey"] = client_key.replace("client.key", "client.pk8")
 
         return dbt_config
 
@@ -299,6 +318,7 @@ class TransformConfig:
         # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
         dbt_config = {
             "type": "clickhouse",
+            "driver": "native",
             "host": config["host"],
             "port": config["port"],
             "schema": config["database"],
@@ -309,6 +329,21 @@ class TransformConfig:
             dbt_config["password"] = config["password"]
         if "tcp-port" in config:
             dbt_config["port"] = config["tcp-port"]
+        return dbt_config
+
+    @staticmethod
+    def transform_tidb(config: Dict[str, Any]):
+        print("transform_tidb")
+        # https://github.com/pingcap/dbt-tidb#profile-configuration
+        dbt_config = {
+            "type": "tidb",
+            "server": config["host"],
+            "port": config["port"],
+            "schema": config["database"],
+            "database": config["database"],
+            "username": config["username"],
+            "password": config.get("password", ""),
+        }
         return dbt_config
 
     @staticmethod

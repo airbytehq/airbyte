@@ -1,4 +1,3 @@
-import { faStar } from "@fortawesome/free-regular-svg-icons";
 import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
@@ -7,6 +6,7 @@ import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 
 import { Link } from "components";
+import { CreditsIcon } from "components/icons/CreditsIcon";
 
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -26,11 +26,6 @@ import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicato
 import { useCalculateSidebarStyles, getPopoutStyles } from "views/layout/SideBar/SideBar";
 
 import { RoutePaths } from "../../../../../pages/routePaths";
-
-const CreditsIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
-`;
 
 const Bar = styled.nav`
   width: 100px;
@@ -131,7 +126,7 @@ const SideBar: React.FC = () => {
       <Menu>
         <li>
           <NavLink className={navLinkClassName} to={CloudRoutes.Credits}>
-            <CreditsIcon icon={faStar} />
+            <CreditsIcon />
             <Text>
               <FormattedNumber value={cloudWorkspace.remainingCredits} />
             </Text>
@@ -140,12 +135,12 @@ const SideBar: React.FC = () => {
         <li>
           <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "status" }, { value: "recipes" }]}>
             {({ onOpen, isOpen }) => (
-              <div className={getPopoutStyles(isOpen)} onClick={onOpen}>
+              <button className={getPopoutStyles(isOpen)} onClick={onOpen}>
                 <DocsIcon />
                 <Text>
                   <FormattedMessage id="sidebar.resources" />
                 </Text>
-              </div>
+              </button>
             )}
           </SidebarPopout>
         </li>
@@ -167,12 +162,12 @@ const SideBar: React.FC = () => {
             ]}
           >
             {({ onOpen, isOpen }) => (
-              <div className={getPopoutStyles(isOpen)} onClick={onOpen}>
+              <button className={getPopoutStyles(isOpen)} onClick={onOpen} role="menu">
                 <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
                 <Text>
                   <FormattedMessage id="sidebar.support" />
                 </Text>
-              </div>
+              </button>
             )}
           </SidebarPopout>
         </li>

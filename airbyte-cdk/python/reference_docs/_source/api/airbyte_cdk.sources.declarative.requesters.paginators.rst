@@ -26,14 +26,6 @@ airbyte\_cdk.sources.declarative.requesters.paginators.no\_pagination module
    :undoc-members:
    :show-inheritance:
 
-airbyte\_cdk.sources.declarative.requesters.paginators.pagination\_strategy module
-----------------------------------------------------------------------------------
-
-.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 airbyte\_cdk.sources.declarative.requesters.paginators.paginator module
 -----------------------------------------------------------------------
 

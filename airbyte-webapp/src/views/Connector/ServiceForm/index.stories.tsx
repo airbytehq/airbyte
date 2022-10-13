@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 import withMock from "storybook-addon-mock";
 
-import { ContentCard } from "components";
+import { Card } from "components/base/Card";
 
 import { ConnectorSpecification } from "core/domain/connector";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
@@ -61,9 +61,9 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
   }
 
   return (
-    <ContentCard title="Test">
+    <Card title="Test">
       <ServiceForm {...args} />
-    </ContentCard>
+    </Card>
   );
 };
 

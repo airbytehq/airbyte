@@ -79,17 +79,16 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
               onEscape={onEscape}
               onEnter={onEnter}
               disabled={loading}
-              defaultFocus
             />
           </div>
         </div>
       ) : (
-        <div className={styles.nameContainer} onClick={() => setEditingState(true)}>
+        <button className={styles.nameContainer} onClick={() => setEditingState(true)}>
           <div>
             <h2>{name}</h2>
           </div>
           <FontAwesomeIcon className={styles.icon} icon={faPenToSquare} />
-        </div>
+        </button>
       )}
     </div>
   );

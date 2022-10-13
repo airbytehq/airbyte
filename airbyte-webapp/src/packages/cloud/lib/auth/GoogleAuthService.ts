@@ -1,3 +1,5 @@
+import type { OAuthProviders } from "./AuthProviders";
+
 import {
   Auth,
   User,
@@ -15,35 +17,16 @@ import {
   updatePassword,
   updateEmail,
   AuthErrorCodes,
+  signInWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
 } from "firebase/auth";
 
 import { Provider } from "config";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { EmailLinkErrorCodes, ErrorCodes } from "packages/cloud/services/auth/types";
 
-interface AuthService {
-  login(email: string, password: string): Promise<UserCredential>;
-
-  signOut(): Promise<void>;
-
-  signUp(email: string, password: string): Promise<UserCredential>;
-
-  reauthenticate(email: string, passwordPassword: string): Promise<UserCredential>;
-
-  updatePassword(newPassword: string): Promise<void>;
-
-  resetPassword(email: string): Promise<void>;
-
-  finishResetPassword(code: string, newPassword: string): Promise<void>;
-
-  sendEmailVerifiedLink(): Promise<void>;
-
-  updateEmail(email: string, password: string): Promise<void>;
-
-  signInWithEmailLink(email: string): Promise<UserCredential>;
-}
-
-export class GoogleAuthService implements AuthService {
+export class GoogleAuthService {
   constructor(private firebaseAuthProvider: Provider<Auth>) {}
 
   get auth(): Auth {
@@ -52,6 +35,10 @@ export class GoogleAuthService implements AuthService {
 
   getCurrentUser(): User | null {
     return this.auth.currentUser;
+  }
+
+  async loginWithOAuth(provider: OAuthProviders) {
+    await signInWithPopup(this.auth, provider === "github" ? new GithubAuthProvider() : new GoogleAuthProvider());
   }
 
   async login(email: string, password: string): Promise<UserCredential> {

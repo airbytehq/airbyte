@@ -1,5 +1,6 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { render } from "test-utils/testutils";
 
 import {
   ConnectionStatus,
@@ -9,9 +10,8 @@ import {
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
-import { render } from "utils/testutils";
 
-import ConnectionForm, { ConnectionFormProps } from "./ConnectionForm";
+import { ConnectionForm, ConnectionFormProps } from "./ConnectionForm";
 
 const mockSource: SourceRead = {
   sourceId: "test-source",
@@ -91,6 +91,7 @@ describe("<ConnectionForm />", () => {
       const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       userEvent.type(prefixInput!, "{selectall}{del}prefix");
       await waitFor(() => userEvent.keyboard("{enter}"));
     });

@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.ClickHouseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -52,6 +53,14 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
         tableName, columnClause, primaryKeyClause.equals("") ? "Engine = TinyLog"
             : "ENGINE = MergeTree() ORDER BY " + primaryKeyClause + " PRIMARY KEY "
                 + primaryKeyClause);
+  }
+
+  @BeforeAll
+  static void init() {
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES([12, 13, 0, 1]);)";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
   }
 
   @Override

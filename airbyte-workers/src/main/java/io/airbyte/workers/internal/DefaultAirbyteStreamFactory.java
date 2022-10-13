@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
  * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
  * line, only the first will be parsed.
  */
+@SuppressWarnings("PMD.MoreThanOneLogger")
 public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
@@ -91,12 +92,15 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   }
 
   private void internalLog(final AirbyteLogMessage logMessage) {
+    final String combinedMessage =
+        logMessage.getMessage() + (logMessage.getStackTrace() != null ? (System.lineSeparator() + "Stack Trace: " + logMessage.getStackTrace()) : "");
+
     switch (logMessage.getLevel()) {
-      case FATAL, ERROR -> logger.error(logMessage.getMessage());
-      case WARN -> logger.warn(logMessage.getMessage());
-      case DEBUG -> logger.debug(logMessage.getMessage());
-      case TRACE -> logger.trace(logMessage.getMessage());
-      default -> logger.info(logMessage.getMessage());
+      case FATAL, ERROR -> logger.error(combinedMessage);
+      case WARN -> logger.warn(combinedMessage);
+      case DEBUG -> logger.debug(combinedMessage);
+      case TRACE -> logger.trace(combinedMessage);
+      default -> logger.info(combinedMessage);
     }
   }
 

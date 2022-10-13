@@ -11,6 +11,8 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.0.2"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
@@ -18,3 +20,12 @@ tests:
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      ignored_fields:
+        "daily_active_users": ["uuid"]
+        "weekly_active_users": ["uuid"]
+        "four_weekly_active_users": ["uuid"]
+        "devices": ["uuid"]
+        "locations": ["uuid"]
+        "pages": ["uuid"]
+        "traffic_sources": ["uuid"]
+        "website_overview": ["uuid"]

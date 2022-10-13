@@ -225,7 +225,8 @@ public class WorkspacesHandler {
       // database transaction, but that is not something we can do quickly.
       resolvedSlug = proposedSlug + "-" + RandomStringUtils.randomAlphabetic(8);
       isSlugUsed = configRepository.getWorkspaceBySlugOptional(resolvedSlug, true).isPresent();
-      if (count++ > MAX_ATTEMPTS) {
+      count++;
+      if (count > MAX_ATTEMPTS) {
         throw new InternalServerKnownException(String.format("could not generate a valid slug after %s tries.", MAX_ATTEMPTS));
       }
     }

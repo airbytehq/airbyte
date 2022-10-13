@@ -16,6 +16,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -172,7 +173,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
-        jobPersistence.writeOutput(jobId, attemptId, jobOutput);
+        final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats);
       } else {
         log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
@@ -230,7 +232,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
-        jobPersistence.writeOutput(jobId, attemptId, jobOutput);
+        final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats);
       }
 
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);

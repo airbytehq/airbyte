@@ -26,7 +26,7 @@ def mock_requests(requests_mock):
 
 @pytest.fixture
 def config():
-    start_date = pendulum.now().subtract(days=100).strftime("%Y-%m-%dT%H:%M:%SZ")
+    start_date = pendulum.now().subtract(days=75).strftime("%Y-%m-%dT%H:%M:%SZ")
     config = {
         "client_id": "client-id",
         "client_secret": "********",
@@ -39,8 +39,8 @@ def config():
 
 
 @pytest.fixture
-def send_email_stream(config):
-    activity = {
+def activity():
+    return {
         "id": 6,
         "name": "send_email",
         "description": "Send Marketo Email to a person",
@@ -53,6 +53,10 @@ def send_email_stream(config):
             {"name": "Test Variant", "dataType": "integer"},
         ],
     }
+
+
+@pytest.fixture
+def send_email_stream(config, activity):
     stream_name = f"activities_{activity['name']}"
     cls = type(stream_name, (Activities,), {"activity": activity})
     return cls(config)

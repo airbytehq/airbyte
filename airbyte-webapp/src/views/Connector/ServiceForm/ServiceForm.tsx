@@ -33,7 +33,7 @@ const FormikPatch: React.FC = () => {
   return null;
 };
 
-/***
+/**
  * This function sets all initial const values in the form to current values
  * @param schema
  * @constructor
@@ -112,6 +112,7 @@ const SetDefaultName: React.FC = () => {
 
 export interface ServiceFormProps {
   formType: "source" | "destination";
+  formId?: string;
   availableServices: ConnectorDefinition[];
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   onServiceSelect?: (id: string) => void;
@@ -130,7 +131,7 @@ export interface ServiceFormProps {
 }
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
-  const formId = useUniqueFormId();
+  const formId = useUniqueFormId(props.formId);
   const { clearFormChange } = useFormChangeTrackerService();
 
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);

@@ -364,6 +364,7 @@ class Issues(IncrementalJiraStream):
         fields = [
             "assignee",
             "attachment",
+            "components",
             "created",
             "creator",
             "description",

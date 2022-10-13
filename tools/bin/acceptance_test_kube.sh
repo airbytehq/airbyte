@@ -50,7 +50,8 @@ if [ -n "$CI" ]; then
     describe_nodes;
     describe_pods;
   }
-  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
+# Uncomment for debugging. Warning, this is verbose.
+#  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
 fi
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &

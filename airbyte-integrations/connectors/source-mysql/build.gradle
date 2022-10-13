@@ -24,6 +24,7 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-2'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testImplementation libs.connectors.testcontainers.mysql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')

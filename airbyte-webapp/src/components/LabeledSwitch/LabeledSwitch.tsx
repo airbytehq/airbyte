@@ -13,7 +13,7 @@ interface LabeledSwitchProps extends React.InputHTMLAttributes<HTMLInputElement>
 }
 
 export const LabeledSwitch: React.FC<LabeledSwitchProps> = (props) => (
-  <div className={styles.labeledSwitch}>
+  <div className={classNames(styles.labeledSwitch, props.className)}>
     <span>
       {props.checkbox ? (
         <CheckBox {...props} id={`toggle-${props.name}`} />

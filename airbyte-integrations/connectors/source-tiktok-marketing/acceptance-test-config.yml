@@ -13,11 +13,6 @@ tests:
       status: "succeed"
     - config_path: "secrets/prod_config_with_lifetime_granularity.json"
       status: "succeed"
-# Sandbox creds are not working temporary because of issues from APi side
-#    - config_path: "secrets/config.json"
-#      status: "succeed"
-#    - config_path: "secrets/new_config_sandbox.json"
-#      status: "succeed"
     - config_path: "secrets/new_config_prod.json"
       status: "succeed"
     - config_path: "secrets/config_oauth.json"
@@ -31,11 +26,23 @@ tests:
 
   discovery:
     - config_path: "secrets/prod_config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.14"
     - config_path: "secrets/prod_config_with_day_granularity.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.14"
     - config_path: "secrets/prod_config_with_lifetime_granularity.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.14"
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.14"
     - config_path: "secrets/new_config_prod.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.14"
     - config_path: "secrets/config_oauth.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.14"
 
   basic_read:
     # New style streams (for >= 0.1.13):

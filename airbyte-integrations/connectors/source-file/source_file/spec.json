@@ -5,7 +5,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "required": ["dataset_name", "format", "url", "provider"],
     "properties": {
       "dataset_name": {
@@ -15,7 +15,7 @@
       },
       "format": {
         "type": "string",
-        "enum": ["csv", "json", "jsonl", "excel", "feather", "parquet", "yaml"],
+        "enum": ["csv", "json", "jsonl", "excel", "excel_binary", "feather", "parquet", "yaml"],
         "default": "csv",
         "title": "File Format",
         "description": "The Format of the file which should be replicated (Warning: some formats may be experimental, please refer to the docs)."

@@ -49,7 +49,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   private GenericContainer db;
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
-    final String jdbcStr = String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=none",
+    final String jdbcStr = String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=NONE",
         ClickhouseDestination.HTTPS_PROTOCOL,
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asInt(),

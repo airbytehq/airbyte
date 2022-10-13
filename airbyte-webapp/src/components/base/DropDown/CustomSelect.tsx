@@ -37,6 +37,7 @@ export const CustomSelect = styled(Select)<
 
     & .react-select__value-container {
       overflow: visible;
+      display: flex;
     }
   }
 `;

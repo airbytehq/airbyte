@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.SyncStats;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
@@ -28,6 +29,8 @@ import java.util.stream.Stream;
  * running
  */
 public interface JobPersistence {
+
+  List<SyncStats> getSyncStats(Long attemptId) throws IOException;
 
   Job getJob(long jobId) throws IOException;
 
@@ -125,7 +128,7 @@ public interface JobPersistence {
    * StandardSyncOutput#state in the configs database by calling
    * ConfigRepository#updateConnectionState, which takes care of persisting the connection state.
    */
-  <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException;
+  <T> void writeOutput(long jobId, int attemptNumber, T output, SyncStats syncStats) throws IOException;
 
   /**
    * Writes a summary of all failures that occurred during the attempt.
@@ -136,6 +139,14 @@ public interface JobPersistence {
    * @throws IOException exception due to interaction with persistence
    */
   void writeAttemptFailureSummary(long jobId, int attemptNumber, AttemptFailureSummary failureSummary) throws IOException;
+
+  /**
+   * @param configTypes - the type of config, e.g. sync
+   * @param connectionId - ID of the connection for which the job count should be retrieved
+   * @return count of jobs belonging to the specified connection
+   * @throws IOException
+   */
+  Long getJobCount(final Set<ConfigType> configTypes, final String connectionId) throws IOException;
 
   /**
    * @param configTypes - type of config, e.g. sync
@@ -154,6 +165,20 @@ public interface JobPersistence {
   List<Job> listJobs(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
 
   List<Job> listJobs(JobConfig.ConfigType configType, String configId, int limit, int offset) throws IOException;
+
+  /**
+   * @param configTypes - type of config, e.g. sync
+   * @param connectionId - id of the connection for which jobs should be retrieved
+   * @param includingJobId - id of the job that should be the included in the list, if it exists in
+   *        the connection
+   * @param pagesize - the pagesize that should be used when building the list (response may include
+   *        multiple pages)
+   * @return List of jobs in descending created_at order including the specified job. Will include
+   *         multiple pages of jobs if required to include the specified job. If the specified job
+   *         does not exist in the connection, the returned list will be empty.
+   * @throws IOException
+   */
+  List<Job> listJobsIncludingId(Set<JobConfig.ConfigType> configTypes, String connectionId, long includingJobId, int pagesize) throws IOException;
 
   List<Job> listJobsWithStatus(JobStatus status) throws IOException;
 

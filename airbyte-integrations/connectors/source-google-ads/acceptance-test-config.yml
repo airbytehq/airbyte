@@ -22,6 +22,7 @@ tests:
           "display_topics_performance_report",
           "shopping_performance_report",
           "unhappytable",
+          "click_view",
         ]
       timeout_seconds: 600
     - config_path: "secrets/config.json"

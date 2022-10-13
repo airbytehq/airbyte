@@ -16,6 +16,7 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,7 +33,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters"})
+@SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters", "PMD.ConstructorCallsOverridableMethod"})
 public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
@@ -41,6 +42,8 @@ public class EnvConfigs implements Configs {
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
   public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
+  public static final String AIRBYTE_API_AUTH_HEADER_NAME = "AIRBYTE_API_AUTH_HEADER_NAME";
+  public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String SPEC_CACHE_BUCKET = "SPEC_CACHE_BUCKET";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
@@ -89,6 +92,8 @@ public class EnvConfigs implements Configs {
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   public static final String PUBLISH_METRICS = "PUBLISH_METRICS";
+  public static final String DD_AGENT_HOST = "DD_AGENT_HOST";
+  public static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
   private static final String CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
@@ -97,8 +102,6 @@ public class EnvConfigs implements Configs {
   private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
-  private static final String DD_AGENT_HOST = "DD_AGENT_HOST";
-  private static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
   public static final String DD_CONSTANT_TAGS = "DD_CONSTANT_TAGS";
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -128,12 +131,25 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
+  private static final String WORKER_PLANE = "WORKER_PLANE";
+
+  // Worker - Control plane configs
+  private static final String DEFAULT_DATA_SYNC_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
+  private static final String CONNECTION_IDS_FOR_MVP_DATA_PLANE = "CONNECTION_IDS_FOR_MVP_DATA_PLANE";
+
+  // Worker - Data Plane configs
+  private static final String DATA_SYNC_TASK_QUEUES = "DATA_SYNC_TASK_QUEUES";
+  private static final String CONTROL_PLANE_AUTH_ENDPOINT = "CONTROL_PLANE_AUTH_ENDPOINT";
+  private static final String DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH = "DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH";
+  private static final String DATA_PLANE_SERVICE_ACCOUNT_EMAIL = "DATA_PLANE_SERVICE_ACCOUNT_EMAIL";
 
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
 
-  private static final String METRIC_CLIENT = "METRIC_CLIENT";
+  public static final String METRIC_CLIENT = "METRIC_CLIENT";
   private static final String OTEL_COLLECTOR_ENDPOINT = "OTEL_COLLECTOR_ENDPOINT";
+
+  public static final String REMOTE_CONNECTOR_CATALOG_URL = "REMOTE_CONNECTOR_CATALOG_URL";
 
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
@@ -153,9 +169,18 @@ public class EnvConfigs implements Configs {
   static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
   static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
 
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST = "NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST";
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT = "NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT";
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
+
+  private static final String VAULT_ADDRESS = "VAULT_ADDRESS";
+  private static final String VAULT_PREFIX = "VAULT_PREFIX";
+  private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
+
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
-  public static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
+  private static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_JOB_CPU_REQUIREMENT = null;
   private static final String DEFAULT_JOB_MEMORY_REQUIREMENT = null;
   private static final String DEFAULT_JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
@@ -166,17 +191,11 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
   private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
-
-  private static final String VAULT_ADDRESS = "VAULT_ADDRESS";
-  private static final String VAULT_PREFIX = "VAULT_PREFIX";
-  private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
-
-  public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
-  public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
-  public static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
-  public static final long DEFAULT_MAX_SYNC_WORKERS = 5;
-
-  public static final String DEFAULT_NETWORK = "host";
+  private static final long DEFAULT_MAX_SPEC_WORKERS = 5;
+  private static final long DEFAULT_MAX_CHECK_WORKERS = 5;
+  private static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
+  private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
+  private static final String DEFAULT_NETWORK = "host";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -210,6 +229,8 @@ public class EnvConfigs implements Configs {
     this.getAllEnvKeys = envMap::keySet;
     this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
+
+    validateSyncWorkflowConfigs();
   }
 
   private Optional<CloudStorageConfigs> getLogConfiguration() {
@@ -303,6 +324,16 @@ public class EnvConfigs implements Configs {
   @Override
   public Path getWorkspaceRoot() {
     return getPath(WORKSPACE_ROOT);
+  }
+
+  @Override
+  public Optional<URI> getRemoteConnectorCatalogUrl() {
+    final String remoteConnectorCatalogUrl = getEnvOrDefault(REMOTE_CONNECTOR_CATALOG_URL, null);
+    if (remoteConnectorCatalogUrl != null) {
+      return Optional.of(URI.create(remoteConnectorCatalogUrl));
+    } else {
+      return Optional.empty();
+    }
   }
 
   // Docker Only
@@ -462,6 +493,16 @@ public class EnvConfigs implements Configs {
   @Override
   public int getAirbyteApiPort() {
     return Integer.parseInt(getEnsureEnv(INTERNAL_API_HOST).split(":")[1]);
+  }
+
+  @Override
+  public String getAirbyteApiAuthHeaderName() {
+    return getEnvOrDefault(AIRBYTE_API_AUTH_HEADER_NAME, "");
+  }
+
+  @Override
+  public String getAirbyteApiAuthHeaderValue() {
+    return getEnvOrDefault(AIRBYTE_API_AUTH_HEADER_VALUE, "");
   }
 
   @Override
@@ -767,6 +808,26 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getNormalizationJobMainContainerCpuRequest() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST, getJobMainContainerCpuRequest());
+  }
+
+  @Override
+  public String getNormalizationJobMainContainerCpuLimit() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT, getJobMainContainerCpuLimit());
+  }
+
+  @Override
+  public String getNormalizationJobMainContainerMemoryRequest() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST, getJobMainContainerMemoryRequest());
+  }
+
+  @Override
+  public String getNormalizationJobMainContainerMemoryLimit() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT, getJobMainContainerMemoryLimit());
+  }
+
+  @Override
   public LogConfigs getLogConfigs() {
     return logConfigs;
   }
@@ -798,7 +859,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public List<String> getDDConstantTags() {
-    String tagsString = getEnvOrDefault(DD_CONSTANT_TAGS, "");
+    final String tagsString = getEnvOrDefault(DD_CONSTANT_TAGS, "");
     return Splitter.on(",")
         .splitToStream(tagsString)
         .filter(s -> !s.trim().isBlank())
@@ -868,6 +929,64 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean shouldRunConnectionManagerWorkflows() {
     return getEnvOrDefault(SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS, true);
+  }
+
+  @Override
+  public WorkerPlane getWorkerPlane() {
+    return getEnvOrDefault(WORKER_PLANE, WorkerPlane.CONTROL_PLANE, s -> WorkerPlane.valueOf(s.toUpperCase()));
+  }
+
+  // Worker - Control plane
+
+  @Override
+  public Set<String> connectionIdsForMvpDataPlane() {
+    final var connectionIds = getEnvOrDefault(CONNECTION_IDS_FOR_MVP_DATA_PLANE, "");
+    if (connectionIds.isEmpty()) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(connectionIds.split(",")).collect(Collectors.toSet());
+  }
+
+  // Worker - Data plane
+
+  @Override
+  public Set<String> getDataSyncTaskQueues() {
+    final var taskQueues = getEnvOrDefault(DATA_SYNC_TASK_QUEUES, DEFAULT_DATA_SYNC_TASK_QUEUES);
+    if (taskQueues.isEmpty()) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(taskQueues.split(",")).collect(Collectors.toSet());
+  }
+
+  @Override
+  public String getControlPlaneAuthEndpoint() {
+    return getEnvOrDefault(CONTROL_PLANE_AUTH_ENDPOINT, "");
+  }
+
+  @Override
+  public String getDataPlaneServiceAccountCredentialsPath() {
+    return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH, "");
+  }
+
+  @Override
+  public String getDataPlaneServiceAccountEmail() {
+    return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_EMAIL, "");
+  }
+
+  /**
+   * Ensures the user hasn't configured themselves into a corner by making sure that the worker is set
+   * up to properly process sync workflows. With sensible defaults, it should be hard to fail this
+   * validation, but this provides a safety net regardless.
+   */
+  private void validateSyncWorkflowConfigs() {
+    if (shouldRunSyncWorkflows()) {
+      if (getWorkerPlane().equals(WorkerPlane.DATA_PLANE) && getDataSyncTaskQueues().isEmpty()) {
+        throw new IllegalArgumentException(String.format(
+            "When %s is true, the worker must either be configured as a Control Plane worker, or %s must be non-empty.",
+            SHOULD_RUN_SYNC_WORKFLOWS,
+            DATA_SYNC_TASK_QUEUES));
+      }
+    }
   }
 
   @Override

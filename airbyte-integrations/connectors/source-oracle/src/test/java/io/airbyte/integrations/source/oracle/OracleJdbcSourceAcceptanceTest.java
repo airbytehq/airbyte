@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -16,11 +17,13 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -57,6 +60,8 @@ import org.testcontainers.containers.OracleContainer;
 class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleJdbcSourceAcceptanceTest.class);
+  protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
+  protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
   private static OracleContainer ORACLE_DB;
 
   @BeforeAll
@@ -81,6 +86,10 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ID_VALUE_3 = new BigDecimal(3);
     ID_VALUE_4 = new BigDecimal(4);
     ID_VALUE_5 = new BigDecimal(5);
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s CLOB)";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(to_clob('clob data'))";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s VARCHAR(20))";
+    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)')";
 
     ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
         .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
@@ -159,22 +168,22 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   void cleanUpTables() throws SQLException {
-    final Connection conn = DriverManager.getConnection(
+    final Connection connection = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
     for (final String schemaName : TEST_SCHEMAS) {
       final ResultSet resultSet =
-          conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
+          connection.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
         final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
-            .enquoteIdentifier(conn, tableName) : tableName;
-        conn.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
+            .enquoteIdentifier(connection, tableName) : tableName;
+        connection.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
       }
     }
-    if (!conn.isClosed())
-      conn.close();
+    if (!connection.isClosed())
+      connection.close();
   }
 
   @Override
@@ -321,11 +330,11 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   public void executeOracleStatement(final String query) {
     try (
-        final Connection conn = DriverManager.getConnection(
+        final Connection connection = DriverManager.getConnection(
             ORACLE_DB.getJdbcUrl(),
             ORACLE_DB.getUsername(),
             ORACLE_DB.getPassword());
-        final Statement stmt = conn.createStatement()) {
+        final Statement stmt = connection.createStatement()) {
       stmt.execute(query);
     } catch (final SQLException e) {
       logSQLException(e);
@@ -379,6 +388,52 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
 
     assertEquals(expected, actual);
+  }
+
+  @Test
+  void testCheckIncorrectPasswordFailure() throws Exception {
+    // by using a fake password oracle can block user account so we will create separate account for
+    // this test
+    executeOracleStatement(String.format("CREATE USER locked_user IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "locked_user");
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
+    final AirbyteConnectionStatus status = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 99999; Error code: 28000;"));
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() throws Exception {
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
+    final AirbyteConnectionStatus status = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 72000; Error code: 1017;"));
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() throws Exception {
+    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
+    final AirbyteConnectionStatus status = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08006; Error code: 17002;"));
+  }
+
+  @Test
+  public void testCheckIncorrectPortFailure() throws Exception {
+    ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "0000");
+    final AirbyteConnectionStatus status = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08006; Error code: 17002;"));
+  }
+
+  @Test
+  public void testUserHasNoPermissionToDataBase() throws Exception {
+    executeOracleStatement(String.format("CREATE USER %s IDENTIFIED BY %s", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION));
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
+    final AirbyteConnectionStatus status = source.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 72000; Error code: 1045;"));
   }
 
 }

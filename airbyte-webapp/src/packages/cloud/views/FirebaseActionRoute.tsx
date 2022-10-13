@@ -5,6 +5,7 @@ import { useAsync } from "react-use";
 
 import LoadingPage from "components/LoadingPage";
 
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification";
 import useRouter from "hooks/useRouter";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -26,6 +27,7 @@ export const VerifyEmailAction: React.FC = () => {
   const { formatMessage } = useIntl();
   const { registerNotification } = useNotificationService();
 
+  useTrackPage(PageTrackingCodes.VERIFY_EMAIL);
   useAsync(async () => {
     if (query.mode === FirebaseActionMode.VERIFY_EMAIL) {
       // Send verification code to authentication service

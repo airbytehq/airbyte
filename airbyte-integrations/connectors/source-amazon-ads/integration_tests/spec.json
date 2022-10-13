@@ -40,9 +40,9 @@
       },
       "report_wait_timeout": {
         "title": "Report Wait Timeout *",
-        "description": "Timeout duration in minutes for Reports. Default is 30 minutes.",
-        "default": 30,
-        "examples": [30, 120],
+        "description": "Timeout duration in minutes for Reports. Default is 60 minutes.",
+        "default": 60,
+        "examples": [60, 120],
         "order": 5,
         "type": "integer"
       },

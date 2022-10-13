@@ -1,1 +1,1 @@
-export { LDExperimentServiceProvider as LDExperimentationServiceProvider } from "./LDExperimentService";
+export { LDExperimentServiceProvider } from "./LDExperimentService";

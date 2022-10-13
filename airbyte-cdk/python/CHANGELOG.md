@@ -1,5 +1,56 @@
 # Changelog
 
+## 0.1.85
+- Make TypeTransformer more robust to incorrect incoming records
+
+## 0.1.84
+- Emit legacy format when state is unspecified for read override connectors
+
+## 0.1.83
+- Fix per-stream to send legacy format for connectors that override read
+
+## 0.1.82
+- Freeze dataclasses-jsonschema to 2.15.1
+
+## 0.1.81
+- Fix regression in `_checkpoint_state` arg
+
+## Unreleased
+- Update Airbyte Protocol model to support protocol_version
+
+## 0.1.80
+- Add NoAuth to declarative registry and auth parse bug fix
+
+## 0.1.79
+- Fix yaml schema parsing when running from docker container
+
+## 0.1.78
+- Fix yaml config parsing when running from docker container
+
+## 0.1.77
+- Add schema validation for declarative YAML connector configs
+
+## 0.1.76
+- Bugfix: Correctly set parent slice stream for sub-resource streams
+
+## 0.1.75
+- Improve `filter_secrets` skip empty secret
+
+## 0.1.74
+- Replace JelloRecordExtractor with DpathRecordExtractor
+
+## 0.1.73
+- Bugfix: Fix bug in DatetimeStreamSlicer's parsing method
+
+## 0.1.72
+- Bugfix: Fix bug in DatetimeStreamSlicer's format method
+
+## 0.1.71
+- Refactor declarative package to dataclasses
+- Bugfix: Requester header always converted to string
+- Bugfix: Reset paginator state between stream slices
+- Bugfix: Record selector handles single records
+
 ## 0.1.70
 - Bugfix: DatetimeStreamSlicer cast interpolated result to string before converting to datetime
 - Bugfix: Set stream slicer's request options in SimpleRetriever

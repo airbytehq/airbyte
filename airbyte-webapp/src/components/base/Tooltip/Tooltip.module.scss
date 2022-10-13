@@ -1,0 +1,33 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+@use "../../../scss/z-indices";
+
+.container {
+  display: inline;
+  position: relative;
+}
+
+.tooltip {
+  font-size: 12px;
+  line-height: initial;
+  padding: variables.$spacing-md;
+  border-radius: 5px;
+  max-width: 300px;
+  z-index: z-indices.$tooltip;
+  box-shadow: 0 2px 4px rgba(colors.$dark-blue, 0.12);
+  background: rgba(colors.$dark-blue, 0.9);
+  color: colors.$white;
+
+  a {
+    color: rgba(colors.$white, 0.5);
+  }
+
+  &.light {
+    background: rgba(colors.$white, 0.9);
+    color: colors.$dark-blue;
+
+    a {
+      color: colors.$blue;
+    }
+  }
+}

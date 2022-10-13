@@ -6,6 +6,7 @@ import { useIntl } from "react-intl";
 import { Button } from "components";
 
 import { JobDebugInfoRead } from "core/request/AirbyteClient";
+import { downloadFile } from "utils/file";
 
 interface DownloadButtonProps {
   jobDebugInfo: JobDebugInfoRead;
@@ -16,15 +17,10 @@ const DownloadButton: React.FC<DownloadButtonProps> = ({ jobDebugInfo, fileName 
   const { formatMessage } = useIntl();
 
   const downloadFileWithLogs = () => {
-    const element = document.createElement("a");
     const file = new Blob([jobDebugInfo.attempts.flatMap((info) => info.logs.logLines).join("\n")], {
       type: "text/plain;charset=utf-8",
     });
-    element.href = URL.createObjectURL(file);
-    element.download = `${fileName}.txt`;
-    document.body.appendChild(element); // Required for this to work in FireFox
-    element.click();
-    document.body.removeChild(element);
+    downloadFile(file, `${fileName}.txt`);
   };
 
   return (

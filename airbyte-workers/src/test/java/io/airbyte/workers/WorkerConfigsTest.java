@@ -19,10 +19,11 @@ import org.junit.jupiter.api.Test;
 
 class WorkerConfigsTest {
 
-  private static final Map<String, String> DEFAULT_NODE_SELECTORS = ImmutableMap.of("job", "default");
-  private static final Map<String, String> SPEC_NODE_SELECTORS = ImmutableMap.of("job", "spec");
-  private static final Map<String, String> CHECK_NODE_SELECTORS = ImmutableMap.of("job", "check");
-  private static final Map<String, String> DISCOVER_NODE_SELECTORS = ImmutableMap.of("job", "discover");
+  private static final String JOB = "job";
+  private static final Map<String, String> DEFAULT_NODE_SELECTORS = ImmutableMap.of(JOB, "default");
+  private static final Map<String, String> SPEC_NODE_SELECTORS = ImmutableMap.of(JOB, "spec");
+  private static final Map<String, String> CHECK_NODE_SELECTORS = ImmutableMap.of(JOB, "check");
+  private static final Map<String, String> DISCOVER_NODE_SELECTORS = ImmutableMap.of(JOB, "discover");
   private static final String DEFAULT_CPU_REQUEST = "0.1";
   private static final String DEFAULT_CPU_LIMIT = "0.2";
   private static final String DEFAULT_MEMORY_REQUEST = "100Mi";

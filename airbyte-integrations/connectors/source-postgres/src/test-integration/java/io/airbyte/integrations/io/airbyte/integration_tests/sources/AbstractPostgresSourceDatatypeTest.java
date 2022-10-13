@@ -176,13 +176,25 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
 
     // Debezium does not handle era indicators (AD nd BC)
     // https://github.com/airbytehq/airbyte/issues/14590
-     addDataTypeTestData(
-     TestDataHolder.builder()
-     .sourceType("date")
-     .airbyteType(JsonSchemaType.STRING_DATE)
-     .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "null")
-     .addExpectedValues("1999-01-08", "1991-02-10 BC", null)
-     .build());
+    for (final String type : Set.of("date", "date not null default now()")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("date")
+              .fullSourceDataType(type)
+              .airbyteType(JsonSchemaType.STRING_DATE)
+              .addInsertValues("'1999-01-08'", "'1991-02-10 BC'")
+              .addExpectedValues("1999-01-08", "1991-02-10 BC")
+              .build());
+    }
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("date")
+            .airbyteType(JsonSchemaType.STRING_DATE)
+            .addInsertValues("null")
+            .addExpectedValues((String) null)
+            .build());
+
 
     for (final String type : Set.of("double precision", "float", "float8")) {
       addDataTypeTestData(
@@ -283,17 +295,17 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 "null",
                 "'999.99'", "'1,001.01'", "'-1,000'",
                 "'$999.99'", "'$1001.01'", "'-$1,000'"
-                // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
-                // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
-                // https://github.com/airbytehq/airbyte/issues/7338
-                /*"'-92233720368547758.08'", "'92233720368547758.07'"*/)
+            // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
+            // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
+            // https://github.com/airbytehq/airbyte/issues/7338
+            /* "'-92233720368547758.08'", "'92233720368547758.07'" */)
             .addExpectedValues(
                 null,
                 // Double#toString method is necessary here because sometimes the output
                 // has unexpected decimals, e.g. Double.toString(-1000) is -1000.0
                 "999.99", "1001.01", Double.toString(-1000),
                 "999.99", "1001.01", Double.toString(-1000)
-                /*"-92233720368547758.08", "92233720368547758.07"*/)
+            /* "-92233720368547758.08", "92233720368547758.07" */)
             .build());
 
     // Blocked by https://github.com/airbytehq/airbyte/issues/8902
@@ -385,6 +397,20 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     }
 
     // time without time zone
+    for (final String fullSourceType : Set.of("time", "time without time zone", "time without time zone not null default now()")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("time")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
+              // time column will ignore time zone
+              .addInsertValues("'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'")
+              .addExpectedValues("13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
+                  "13:00:00.000000")
+              .build());
+    }
+
+    // time without time zone
     for (final String fullSourceType : Set.of("time", "time without time zone")) {
       addDataTypeTestData(
           TestDataHolder.builder()
@@ -392,24 +418,36 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // time column will ignore time zone
-              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'")
-              .addExpectedValues(null, "13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
-                  "13:00:00.000000")
+              .addInsertValues("null")
+              .addExpectedValues((String) null)
               .build());
     }
 
-    // time with time zone
-    for (final String fullSourceType : Set.of("timetz", "time with time zone")) {
+    // timestamp without time zone
+    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone default now()")) {
       addDataTypeTestData(
           TestDataHolder.builder()
-              .sourceType("timetz")
+              .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
-              .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
-              // A time value without time zone will use the time zone set on the database, which is Z-7,
-              // so 13:00:01 is returned as 13:00:01-07.
-              .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z",
-                  "13:00:05.012345-08:00", "13:00:06.000000+08:00")
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .addInsertValues(
+                  "TIMESTAMP '2004-10-19 10:23:00'",
+                  "TIMESTAMP '2004-10-19 10:23:54.123456'",
+                  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from
+                  // inconsistent leap year handling
+                  "TIMESTAMP '3004-10-19 10:23:54.123456 BC'",
+                  // The earliest possible timestamp in CE
+                  "TIMESTAMP '0001-01-01 00:00:00.000000'",
+                  // The last possible timestamp in BCE
+                  "TIMESTAMP '0001-12-31 23:59:59.999999 BC'",
+                  "'epoch'")
+              .addExpectedValues(
+                  "2004-10-19T10:23:00.000000",
+                  "2004-10-19T10:23:54.123456",
+                  "3004-10-19T10:23:54.123456 BC",
+                  "0001-01-01T00:00:00.000000",
+                  "0001-12-31T23:59:59.999999 BC",
+                  "1970-01-01T00:00:00.000000")
               .build());
     }
 
@@ -420,25 +458,12 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .addInsertValues(
-                  "TIMESTAMP '2004-10-19 10:23:00'",
-                  "TIMESTAMP '2004-10-19 10:23:54.123456'",
-                  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from inconsistent leap year handling
-                  "TIMESTAMP '3004-10-19 10:23:54.123456 BC'",
-                  // The earliest possible timestamp in CE
-                  "TIMESTAMP '0001-01-01 00:00:00.000000'",
-                  // The last possible timestamp in BCE
-                  "TIMESTAMP '0001-12-31 23:59:59.999999 BC'",
-                  "null")
-              .addExpectedValues(
-                  "2004-10-19T10:23:00.000000",
-                  "2004-10-19T10:23:54.123456",
-                  "3004-10-19T10:23:54.123456 BC",
-                  "0001-01-01T00:00:00.000000",
-                  "0001-12-31T23:59:59.999999 BC",
-                  null)
+              .addInsertValues("null")
+              .addExpectedValues((String) null)
               .build());
     }
+
+    addTimestampWithInfinityValuesTest();
 
     // timestamp with time zone
     for (final String fullSourceType : Set.of("timestamptz", "timestamp with time zone")) {
@@ -451,7 +476,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   // 10:23-08 == 18:23Z
                   "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:00-08'",
                   "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54.123456-08'",
-                  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from inconsistent leap year handling
+                  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from
+                  // inconsistent leap year handling
                   "TIMESTAMP WITH TIME ZONE '3004-10-19 10:23:54.123456-08 BC'",
                   // The earliest possible timestamp in CE (16:00-08 == 00:00Z)
                   "TIMESTAMP WITH TIME ZONE '0001-12-31 16:00:00.000000-08 BC'",
@@ -553,6 +579,43 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 {"ISBN-13":"978-1449370000","weight":"11.2 ounces","paperback":"243","publisher":"postgresqltutorial.com","language":"English"}""",
                 null)
             .build());
+
+    addTimeWithTimeZoneTest();
+  }
+
+  protected void addTimeWithTimeZoneTest() {
+    // time with time zone
+    for (final String fullSourceType : Set.of("timetz", "time with time zone")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("timetz")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
+              .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
+              // A time value without time zone will use the time zone set on the database, which is Z-7,
+              // so 13:00:01 is returned as 13:00:01-07.
+              .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z",
+                  "13:00:05.012345-08:00", "13:00:06.000000+08:00")
+              .build());
+    }
+  }
+
+  protected void addTimestampWithInfinityValuesTest() {
+    // timestamp without time zone
+    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone not null default now()")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("timestamp")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .addInsertValues(
+                  "'infinity'",
+                  "'-infinity'")
+              .addExpectedValues(
+                  "+292278994-08-16T23:00:00.000000",
+                  "+292269055-12-02T23:00:00.000000 BC")
+              .build());
+    }
   }
 
 }

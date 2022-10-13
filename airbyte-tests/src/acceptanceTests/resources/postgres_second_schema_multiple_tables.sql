@@ -4,7 +4,7 @@ CREATE
 CREATE
     TABLE
         staging.cool_employees(
-            id INTEGER,
+            id INTEGER NOT NULL,
             name VARCHAR(200)
         );
 
@@ -38,7 +38,7 @@ INSERT
 CREATE
     TABLE
         staging.awesome_people(
-            id INTEGER,
+            id INTEGER NOT NULL,
             name VARCHAR(200)
         );
 

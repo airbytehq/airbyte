@@ -28,7 +28,7 @@ def test(test_name, key, expected_value):
     }
     config = {"c": "VALUE_FROM_CONFIG"}
     kwargs = {"a": "VALUE_FROM_KWARGS"}
-    mapping = InterpolatedMapping(d, options={"b": "VALUE_FROM_OPTIONS", "k": "key"})
+    mapping = InterpolatedMapping(mapping=d, options={"b": "VALUE_FROM_OPTIONS", "k": "key"})
 
     interpolated = mapping.eval(config, **{"kwargs": kwargs})
 

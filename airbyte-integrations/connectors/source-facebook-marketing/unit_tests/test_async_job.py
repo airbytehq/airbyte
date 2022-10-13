@@ -14,7 +14,7 @@ from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
-from facebook_business.api import FacebookAdsApiBatch
+from facebook_business.api import FacebookAdsApiBatch, FacebookBadObjectError
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
 
@@ -298,6 +298,18 @@ class TestInsightAsyncJob:
         assert isinstance(result[0], AdsInsights)
         assert result[0].export_all_data() == {"some_data": 123}
         assert result[1].export_all_data() == {"some_data": 77}
+
+    def test_get_result_retried(self, mocker, job, api):
+        job.start()
+        api.call().json.return_value = {"data": [{"some_data": 123}, {"some_data": 77}]}
+        ads_insights = AdsInsights(api=api)
+        ads_insights._set_data({"items": [{"some_data": 123}, {"some_data": 77}]})
+        with mocker.patch(
+            "facebook_business.adobjects.objectparser.ObjectParser.parse_multiple",
+            side_effect=[FacebookBadObjectError("Bad data to set object data"), ads_insights],
+        ):
+            # in case this is not retried, an error will be raised
+            job.get_result()
 
     def test_get_result_when_job_is_not_started(self, job):
         with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started or failed"):

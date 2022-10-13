@@ -27,6 +27,7 @@ public class EntrypointEnvChecker {
    * @return the entrypoint in the env variable AIRBYTE_ENTRYPOINT
    * @throws RuntimeException if there is ambiguous output from the container
    */
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public static String getEntrypointEnvVariable(final ProcessFactory processFactory,
                                                 final String jobId,
                                                 final int jobAttempt,
@@ -51,11 +52,12 @@ public class EntrypointEnvChecker {
 
     String outputLine = null;
 
-    String line;
-    while (((line = stdout.readLine()) != null) && outputLine == null) {
+    String line = stdout.readLine();
+    while ((line != null) && outputLine == null) {
       if (line.contains("AIRBYTE_ENTRYPOINT")) {
         outputLine = line;
       }
+      line = stdout.readLine();
     }
 
     process.waitFor();

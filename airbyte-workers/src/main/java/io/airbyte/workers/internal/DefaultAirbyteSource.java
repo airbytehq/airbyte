@@ -6,6 +6,7 @@ package io.airbyte.workers.internal;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -48,6 +49,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
+  private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
   public DefaultAirbyteSource(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
     this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
@@ -78,6 +80,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
         sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC_BUILDER);
+
+    logInitialStateAsJSON(sourceConfig);
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
@@ -148,6 +152,14 @@ public class DefaultAirbyteSource implements AirbyteSource {
       WorkerUtils.cancelProcess(sourceProcess);
       LOGGER.info("Cancelled source process!");
     }
+  }
+
+  private void logInitialStateAsJSON(final WorkerSourceConfig sourceConfig) {
+    if (!logConnectorMessages) {
+      return;
+    }
+
+    LOGGER.info("source starting state | " + Jsons.serialize(sourceConfig.getState().getState()));
   }
 
 }

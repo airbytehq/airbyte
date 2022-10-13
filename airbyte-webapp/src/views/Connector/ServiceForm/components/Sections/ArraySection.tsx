@@ -2,11 +2,11 @@ import { FieldArray, useField } from "formik";
 import React, { useMemo, useState } from "react";
 
 import { ArrayOfObjectsEditor } from "components";
+import { TooltipTable } from "components/base/Tooltip";
 import GroupControls from "components/GroupControls";
 
 import { FormBlock, FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
-import styles from "./ArraySection.module.scss";
 import { SectionContainer } from "./common";
 import { VariableInputFieldForm } from "./VariableInputFieldForm";
 
@@ -34,21 +34,10 @@ const getItemDescription = (item: Record<string, string>, properties: FormBlock[
       const property = properties.find(({ fieldKey }) => fieldKey === key);
       const name = property?.title ?? key;
       const value = item[key];
-      return (
-        <tr key={key}>
-          <td className={styles.name}>{name}:</td>
-          <td className={styles.value}>{value}</td>
-        </tr>
-      );
+      return [name, value];
     });
 
-  return (
-    <div className={styles.description}>
-      <table>
-        <tbody>{rows}</tbody>
-      </table>
-    </div>
-  );
+  return <TooltipTable rows={rows} />;
 };
 
 export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, disabled }) => {

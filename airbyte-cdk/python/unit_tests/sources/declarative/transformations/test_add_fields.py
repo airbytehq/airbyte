@@ -106,5 +106,5 @@ from airbyte_cdk.sources.declarative.types import FieldPointer
 def test_add_fields(
     input_record: Mapping[str, Any], field: List[Tuple[FieldPointer, str]], kwargs: Mapping[str, Any], expected: Mapping[str, Any]
 ):
-    inputs = [AddedFieldDefinition(v[0], v[1]) for v in field]
-    assert AddFields(inputs).transform(input_record, **kwargs) == expected
+    inputs = [AddedFieldDefinition(path=v[0], value=v[1], options={}) for v in field]
+    assert AddFields(fields=inputs, options={"alas": "i live"}).transform(input_record, **kwargs) == expected

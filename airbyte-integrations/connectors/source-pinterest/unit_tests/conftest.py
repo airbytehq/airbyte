@@ -38,7 +38,19 @@ def test_record():
 
 
 @fixture
+def test_record_filter():
+    return {"items": [{"updated_time": "2021-11-01"}], "bookmark": "string"}
+
+
+@fixture
 def test_response(test_record):
     response = MagicMock()
     response.json.return_value = test_record
+    return response
+
+
+@fixture
+def test_response_filter(test_record_filter):
+    response = MagicMock()
+    response.json.return_value = test_record_filter
     return response
