@@ -32,7 +32,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private final MdcScope.Builder containerLogMdcBuilder;
   private final AirbyteProtocolPredicate protocolValidator;
-  private final Logger logger;
+  protected final Logger logger;
 
   public DefaultAirbyteStreamFactory() {
     this(MdcScope.DEFAULT_BUILDER);
