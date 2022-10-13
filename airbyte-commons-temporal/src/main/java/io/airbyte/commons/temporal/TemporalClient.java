@@ -78,7 +78,7 @@ public class TemporalClient {
   private final ConnectionManagerUtils connectionManagerUtils;
   private final StreamResetRecordsHelper streamResetRecordsHelper;
 
-  public TemporalClient(@Named("workspaceRoot") final Path workspaceRoot,
+  public TemporalClient(@Named("workspaceRootTemporal") final Path workspaceRoot,
                         final WorkflowClient client,
                         final WorkflowServiceStubs service,
                         final StreamResetPersistence streamResetPersistence,
