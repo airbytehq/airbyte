@@ -122,6 +122,7 @@ class WebBackendConnectionsHandlerTest {
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
   private WebBackendConnectionRead expectedWithNewSchemaBroken;
+  private WebBackendConnectionRead expectedNoDiscoveryWithNewSchema;
   private EventRunner eventRunner;
   private ConfigRepository configRepository;
 
@@ -272,6 +273,33 @@ class WebBackendConnectionsHandlerTest {
         .latestSyncJobStatus(JobStatus.SUCCEEDED)
         .isSyncing(false)
         .schemaChange(SchemaChange.NO_CHANGE)
+        .resourceRequirements(new ResourceRequirements()
+            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
+            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+
+    expectedNoDiscoveryWithNewSchema = new WebBackendConnectionRead()
+        .connectionId(connectionRead.getConnectionId())
+        .sourceId(connectionRead.getSourceId())
+        .destinationId(connectionRead.getDestinationId())
+        .operationIds(connectionRead.getOperationIds())
+        .name(connectionRead.getName())
+        .namespaceDefinition(connectionRead.getNamespaceDefinition())
+        .namespaceFormat(connectionRead.getNamespaceFormat())
+        .prefix(connectionRead.getPrefix())
+        .syncCatalog(connectionRead.getSyncCatalog())
+        .status(connectionRead.getStatus())
+        .schedule(connectionRead.getSchedule())
+        .scheduleType(connectionRead.getScheduleType())
+        .scheduleData(connectionRead.getScheduleData())
+        .source(sourceRead)
+        .destination(destinationRead)
+        .operations(operationReadList.getOperations())
+        .latestSyncJobCreatedAt(now.getEpochSecond())
+        .latestSyncJobStatus(JobStatus.SUCCEEDED)
+        .isSyncing(false)
+        .schemaChange(SchemaChange.NON_BREAKING)
         .resourceRequirements(new ResourceRequirements()
             .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
             .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
@@ -456,7 +484,7 @@ class WebBackendConnectionsHandlerTest {
         .thenReturn(Optional.of(new ActorCatalogFetchEvent().withCreatedAt(5000L)));
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withCreatedAt(4000L));
     final WebBackendConnectionRead result = testWebBackendGetConnection(false, connectionRead, operationReadList);
-    assertEquals(expectedWithNewSchema, result);
+    assertEquals(expectedNoDiscoveryWithNewSchema, result);
   }
 
   @Test
