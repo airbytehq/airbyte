@@ -124,6 +124,24 @@ public class ConnectionHelpers {
         .withIsBreaking(false);
   }
 
+  public static StandardSync generateBrokenSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId) {
+    final UUID connectionId = UUID.randomUUID();
+
+    return new StandardSync()
+        .withConnectionId(connectionId)
+        .withName(STANDARD_SYNC_NAME)
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
+        .withPrefix(STANDARD_SYNC_PREFIX)
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withCatalog(generateBasicConfiguredAirbyteCatalog())
+        .withSourceId(sourceId)
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(UUID.randomUUID()))
+        .withManual(true)
+        .withIsBreaking(true);
+  }
+
   public static ConnectionSchedule generateBasicConnectionSchedule() {
     return new ConnectionSchedule()
         .timeUnit(ConnectionSchedule.TimeUnitEnum.fromValue(BASIC_SCHEDULE_TIME_UNIT))
