@@ -7,6 +7,8 @@ package io.airbyte.workers.internal;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
@@ -42,7 +44,9 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder);
   }
 
-  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger, final MdcScope.Builder containerLogMdcBuilder) {
+  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
+                              final Logger logger,
+                              final MdcScope.Builder containerLogMdcBuilder) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
@@ -50,9 +54,12 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   @Override
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
+    final var metricClient = MetricClientFactory.getMetricClient();
     return bufferedReader
         .lines()
+        .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
         .flatMap(this::parseJson)
+        .peek(json -> metricClient.distribution(OssMetricsRegistry.JSON_SIZE, json.size()))
         .filter(this::validate)
         .flatMap(this::toAirbyteMessage)
         .filter(this::filterLog);
@@ -99,7 +106,8 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   protected void internalLog(final AirbyteLogMessage logMessage) {
     final String combinedMessage =
-        logMessage.getMessage() + (logMessage.getStackTrace() != null ? (System.lineSeparator() + "Stack Trace: " + logMessage.getStackTrace()) : "");
+        logMessage.getMessage() + (logMessage.getStackTrace() != null ? (System.lineSeparator()
+            + "Stack Trace: " + logMessage.getStackTrace()) : "");
 
     switch (logMessage.getLevel()) {
       case FATAL, ERROR -> logger.error(combinedMessage);
