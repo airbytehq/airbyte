@@ -17,9 +17,9 @@ Refer to the REST API documentation for the source you want to build the connect
     - Page count passed either by query params or request header
     - Cursor field pointing to the URL of the next page of records
 - Does the API support any of the following authentication mechanisms:
-    - [A query param or a HTTP header](https://docs.airbyte.com/connector-development/config-based/authentication#apikeyauthenticator)
-    - [Basic Auth over HTTPS](https://docs.airbyte.com/connector-development/config-based/authentication#basichttpauthenticator)
-    - [OAuth 2.0](https://docs.airbyte.com/connector-development/config-based/authentication#oauth)
+    - [A query param or a HTTP header](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/authentication#apikeyauthenticator)
+    - [Basic Auth over HTTPS](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/authentication#basichttpauthenticator)
+    - [OAuth 2.0](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/authentication#oauth)
 - Does the API support static schema?
 - Does the endpoint have a strict rate limit?
   Throttling is not supported, but the connector can use exponential backoff to avoid API bans in case it gets rate limited. This can work for APIs with high rate limits, but not for those that have strict limits on a small time-window.
