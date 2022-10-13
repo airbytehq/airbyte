@@ -46,10 +46,10 @@ The following variables are relevant to both Docker and Kubernetes.
 
 #### Access
 
-# Set to empty values, e.g. "" to disable basic auth
+Set to empty values, e.g. "" to disable basic auth. **Be sure to change these values**.
 
-BASIC_AUTH_USERNAME=airbyte
-BASIC_AUTH_PASSWORD=password
+1. BASIC_AUTH_USERNAME=airbyte
+2. BASIC_AUTH_PASSWORD=password
 
 #### Secrets
 

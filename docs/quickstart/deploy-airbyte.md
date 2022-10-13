@@ -11,7 +11,7 @@ cd airbyte
 docker-compose up
 ```
 
-Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000](http://localhost:8000)! You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, be sure to change these.
+Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000](http://localhost:8000)! You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, **be sure to change these** in your `.env` file.
 
 Alternatively, if you have an Airbyte Cloud invite, just follow [these steps.](../deploying-airbyte/on-cloud.md)
 

@@ -17,7 +17,15 @@ docker-compose up
 ```
 
 - In your browser, just visit [http://localhost:8000](http://localhost:8000)
-- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, be sure to [change these](/operator-guides/security).
+- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, be sure to [change these](/operator-guides/security):
+
+```yaml
+# Proxy Configuration
+# Set to empty values, e.g. "" to disable basic auth
+BASIC_AUTH_USERNAME=your_new_username_here
+BASIC_AUTH_PASSWORD=your_new_password_here
+```
+
 - Start moving some data!
 
 ## Deploy on Windows
