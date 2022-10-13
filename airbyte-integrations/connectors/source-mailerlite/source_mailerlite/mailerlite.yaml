@@ -62,6 +62,12 @@ definitions:
       name: "campaigns"
       primary_key: "id"
       path: "/api/campaigns"
+  timezones_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "timezones"
+      primary_key: "id"
+      path: "/api/timezones"
 
 
 streams:
@@ -70,7 +76,13 @@ streams:
   - "*ref(definitions.automations_stream)"
   - "*ref(definitions.forms_stream)"
   - "*ref(definitions.campaigns_stream)"
+  - "*ref(definitions.timezones_stream)"
 
 check:
   stream_names:
     - "subscribers"
+    - "segments"
+    - "automations"
+    - "forms"
+    - "campaigns"
+    - "timezones"

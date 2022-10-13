@@ -1,248 +1,293 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "required": [
-      "data",
-      "links",
-      "meta"
-    ],
-    "properties": {
-      "data": {
-        "type": "array",
-        "items": [
-          {
-            "type": "object",
-            "required": [
-              "id",
-              "email",
-              "status",
-              "source",
-              "sent",
-              "opens_count",
-              "clicks_count",
-              "open_rate",
-              "click_rate",
-              "ip_address",
-              "subscribed_at",
-              "unsubscribed_at",
-              "created_at",
-              "updated_at",
-              "fields",
-              "opted_in_at",
-              "optin_ip"
-            ],
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "email": {
-                "type": "string"
-              },
-              "status": {
-                "type": "string"
-              },
-              "source": {
-                "type": "string"
-              },
-              "sent": {
-                "type": "integer"
-              },
-              "opens_count": {
-                "type": "integer"
-              },
-              "clicks_count": {
-                "type": "integer"
-              },
-              "open_rate": {
-                "type": "integer"
-              },
-              "click_rate": {
-                "type": "integer"
-              },
-              "ip_address": {
-                "type": ["string", "null"]
-              },
-              "subscribed_at": {
-                "type": "string"
-              },
-              "unsubscribed_at": {
-                "type": ["string", "null"]
-              },
-              "created_at": {
-                "type": "string"
-              },
-              "updated_at": {
-                "type": "string"
-              },
-              "fields": {
-                "type": "object",
-                "required": [
-                    "name",
-                    "last_name",
-                    "company",
-                    "country",
-                    "city",
-                    "phone",
-                    "state",
-                    "z_i_p"
-                ],
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "last_name": {
-                    "type": ["string", "null"]
-                  },
-                  "company": {
-                    "type": ["string", "null"]
-                  },
-                  "country": {
-                    "type": ["string", "null"]
-                  },
-                  "city": {
-                    "type": ["string", "null"]
-                  },
-                  "phone": {
-                    "type": ["string", "null"]
-                  },
-                  "state": {
-                    "type": ["string", "null"]
-                  },
-                  "z_i_p": {
-                    "type": ["string", "null"]
-                  }
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "data",
+    "links",
+    "meta"
+  ],
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "email",
+            "status",
+            "source",
+            "sent",
+            "opens_count",
+            "clicks_count",
+            "open_rate",
+            "click_rate",
+            "ip_address",
+            "subscribed_at",
+            "unsubscribed_at",
+            "created_at",
+            "updated_at",
+            "fields",
+            "opted_in_at",
+            "optin_ip"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "sent": {
+              "type": "integer"
+            },
+            "opens_count": {
+              "type": "integer"
+            },
+            "clicks_count": {
+              "type": "integer"
+            },
+            "open_rate": {
+              "type": "integer"
+            },
+            "click_rate": {
+              "type": "integer"
+            },
+            "ip_address": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "subscribed_at": {
+              "type": "string"
+            },
+            "unsubscribed_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "fields": {
+              "type": "object",
+              "required": [
+                "name",
+                "last_name",
+                "company",
+                "country",
+                "city",
+                "phone",
+                "state",
+                "z_i_p"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "last_name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "company": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "country": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "city": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "phone": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "state": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "z_i_p": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
-              },
-              "opted_in_at": {
-                "type": ["string", "null"]
-              },
-              "optin_ip": {
-                "type": ["string", "null"]
               }
+            },
+            "opted_in_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "optin_ip": {
+              "type": [
+                "string",
+                "null"
+              ]
             }
           }
-        ]
-      },
-      "links": {
-        "type": "object",
-        "required": [
-          "first",
-          "last",
-          "prev",
-          "next"
-        ],
-        "properties": {
-          "first": {
-            "type": "string"
-          },
-          "last": {
-            "type": "string"
-          },
-          "prev": {
-            "type": ["string", "null"]
-          },
-          "next": {
-            "type": ["string", "null"]
-          }
         }
-      },
-      "meta": {
-        "type": "object",
-        "required": [
-            "current_page",
-            "from",
-            "last_page",
-            "links",
-            "path",
-            "per_page",
-            "to",
-            "total"
-        ],
-        "properties": {
-          "current_page": {
-            "type": "integer"
-          },
-          "from": {
-            "type": "integer"
-          },
-          "last_page": {
-            "type": "integer"
-          },
-          "links": {
-            "type": "array",
-            "items": [
-              {
-                "type": "object",
-                "required": [
-                    "url",
-                    "label",
-                    "active"
-                ],
-                "properties": {
-                  "url": {
-                    "type": ["string", "null"]
-                  },
-                  "label": {
-                    "type": "string"
-                  },
-                  "active": {
-                    "type": "boolean"
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "required": [
-                    "url",
-                    "label",
-                    "active"
-                ],
-                "properties": {
-                  "url": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  },
-                  "active": {
-                    "type": "boolean"
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "required": [
-                    "url",
-                    "label",
-                    "active"
-                ],
-                "properties": {
-                  "url": {
-                    "type": ["string", "null"]
-                  },
-                  "label": {
-                    "type": "string"
-                  },
-                  "active": {
-                    "type": "boolean"
-                  }
+      ]
+    },
+    "links": {
+      "type": "object",
+      "required": [
+        "first",
+        "last",
+        "prev",
+        "next"
+      ],
+      "properties": {
+        "first": {
+          "type": "string"
+        },
+        "last": {
+          "type": "string"
+        },
+        "prev": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "next": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "required": [
+        "current_page",
+        "from",
+        "last_page",
+        "links",
+        "path",
+        "per_page",
+        "to",
+        "total"
+      ],
+      "properties": {
+        "current_page": {
+          "type": "integer"
+        },
+        "from": {
+          "type": "integer"
+        },
+        "last_page": {
+          "type": "integer"
+        },
+        "links": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "required": [
+                "url",
+                "label",
+                "active"
+              ],
+              "properties": {
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "label": {
+                  "type": "string"
+                },
+                "active": {
+                  "type": "boolean"
                 }
               }
-            ]
-          },
-          "path": {
-            "type": "string"
-          },
-          "per_page": {
-            "type": "integer"
-          },
-          "to": {
-            "type": "integer"
-          },
-          "total": {
-            "type": "integer"
-          }
+            },
+            {
+              "type": "object",
+              "required": [
+                "url",
+                "label",
+                "active"
+              ],
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "active": {
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "url",
+                "label",
+                "active"
+              ],
+              "properties": {
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "label": {
+                  "type": "string"
+                },
+                "active": {
+                  "type": "boolean"
+                }
+              }
+            }
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "per_page": {
+          "type": "integer"
+        },
+        "to": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
         }
       }
     }
   }
+}
