@@ -219,7 +219,8 @@ class DefaultSynchronousSchedulerClientTest {
     void testCreateDestinationCheckConnectionJob() throws IOException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
           .withConnectionConfiguration(DESTINATION_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE);
+          .withDockerImage(DOCKER_IMAGE)
+          .withProtocolVersion(PROTOCOL_VERSION);
 
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withCheckConnection(mockOutput);
