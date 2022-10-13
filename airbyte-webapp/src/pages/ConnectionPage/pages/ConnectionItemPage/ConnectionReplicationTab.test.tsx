@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { render as tlr, act } from "@testing-library/react";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
@@ -18,7 +18,7 @@ jest.mock("services/connector/DestinationDefinitionSpecificationService", () => 
 }));
 
 describe("ConnectionReplicationTab", () => {
-  const Wrapper: React.FC = ({ children }) => (
+  const Wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
     <Suspense fallback={<div>I should not show up in a snapshot</div>}>
       <TestWrapper>
         <ConnectionEditServiceProvider connectionId={mockConnection.connectionId}>
@@ -57,7 +57,7 @@ describe("ConnectionReplicationTab", () => {
     setupSpies();
 
     const renderResult = await render();
-    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult).toMatchSnapshot();
   });
 
   it("should show an error if there is a schemaError", async () => {
@@ -68,7 +68,7 @@ describe("ConnectionReplicationTab", () => {
     await act(async () => {
       renderResult.queryByText("Refresh source schema")?.click();
     });
-    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult).toMatchSnapshot();
   });
 
   it("should show loading if the schema is refreshing", async () => {

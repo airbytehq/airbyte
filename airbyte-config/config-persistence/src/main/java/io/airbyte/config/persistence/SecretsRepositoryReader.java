@@ -111,8 +111,7 @@ public class SecretsRepositoryReader {
   public StandardWorkspace getWorkspaceWithSecrets(final UUID workspaceId, final boolean includeTombstone)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, includeTombstone);
-    final JsonNode webhookConfigs = secretsHydrator.hydrate(workspace.getWebhookOperationConfigs());
-    workspace.withWebhookOperationConfigs(webhookConfigs);
+    // TODO: hydrate any secrets once they're introduced.
     return workspace;
   }
 

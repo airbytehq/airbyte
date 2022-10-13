@@ -37,7 +37,6 @@ import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.validation.json.JsonValidationException;
@@ -56,7 +55,6 @@ class WorkspacesHandlerTest {
 
   public static final String FAILURE_NOTIFICATION_WEBHOOK = "http://airbyte.notifications/failure";
   private ConfigRepository configRepository;
-  private SecretsRepositoryReader secretsRepositoryReader;
   private SecretsRepositoryWriter secretsRepositoryWriter;
   private ConnectionsHandler connectionsHandler;
   private DestinationHandler destinationHandler;
@@ -78,15 +76,13 @@ class WorkspacesHandlerTest {
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
-    secretsRepositoryReader = mock(SecretsRepositoryReader.class);
-    secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
+    secretsRepositoryWriter = new SecretsRepositoryWriter(configRepository, Optional.empty(), Optional.empty());
     connectionsHandler = mock(ConnectionsHandler.class);
     destinationHandler = mock(DestinationHandler.class);
     sourceHandler = mock(SourceHandler.class);
     uuidSupplier = mock(Supplier.class);
-
     workspace = generateWorkspace();
-    workspacesHandler = new WorkspacesHandler(configRepository, secretsRepositoryReader, secretsRepositoryWriter, connectionsHandler,
+    workspacesHandler = new WorkspacesHandler(configRepository, secretsRepositoryWriter, connectionsHandler,
         destinationHandler, sourceHandler, uuidSupplier);
   }
 
@@ -152,8 +148,7 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(false)
         .securityUpdates(false)
         .notifications(List.of(generateApiNotification()))
-        .defaultGeography(GEOGRAPHY_US)
-        .webhookConfigs(Collections.emptyList());
+        .defaultGeography(GEOGRAPHY_US);
 
     assertEquals(expectedRead, actualRead);
   }
@@ -191,8 +186,7 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(false)
         .securityUpdates(false)
         .notifications(Collections.emptyList())
-        .defaultGeography(GEOGRAPHY_AUTO)
-        .webhookConfigs(Collections.emptyList());
+        .defaultGeography(GEOGRAPHY_AUTO);
 
     assertTrue(actualRead.getSlug().startsWith(workspace.getSlug()));
     assertNotEquals(workspace.getSlug(), actualRead.getSlug());

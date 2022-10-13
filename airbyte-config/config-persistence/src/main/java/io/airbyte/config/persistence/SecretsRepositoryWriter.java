@@ -5,8 +5,6 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
@@ -85,7 +83,7 @@ public class SecretsRepositoryWriter {
         source.getWorkspaceId(),
         previousSourceConnection,
         source.getConfiguration(),
-        connectorSpecification.getConnectionSpecification(),
+        connectorSpecification,
         source.getTombstone() == null || !source.getTombstone());
     final SourceConnection partialSource = Jsons.clone(source).withConfiguration(partialConfig);
 
@@ -109,7 +107,7 @@ public class SecretsRepositoryWriter {
         destination.getWorkspaceId(),
         previousDestinationConnection,
         destination.getConfiguration(),
-        connectorSpecification.getConnectionSpecification(),
+        connectorSpecification,
         destination.getTombstone() == null || !destination.getTombstone());
     final DestinationConnection partialDestination = Jsons.clone(destination).withConfiguration(partialConfig);
 
@@ -148,11 +146,11 @@ public class SecretsRepositoryWriter {
   private JsonNode statefulUpdateSecrets(final UUID workspaceId,
                                          final Optional<JsonNode> oldConfig,
                                          final JsonNode fullConfig,
-                                         final JsonNode spec,
+                                         final ConnectorSpecification spec,
                                          final boolean validate)
       throws JsonValidationException {
     if (validate) {
-      validator.ensure(spec, fullConfig);
+      validator.ensure(spec.getConnectionSpecification(), fullConfig);
     }
 
     if (longLivedSecretPersistence.isEmpty()) {
@@ -165,13 +163,13 @@ public class SecretsRepositoryWriter {
           workspaceId,
           oldConfig.get(),
           fullConfig,
-          spec,
+          spec.getConnectionSpecification(),
           longLivedSecretPersistence.get());
     } else {
       splitSecretConfig = SecretsHelpers.splitConfig(
           workspaceId,
           fullConfig,
-          spec);
+          spec.getConnectionSpecification());
     }
     splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
     return splitSecretConfig.getPartialConfig();
@@ -326,32 +324,8 @@ public class SecretsRepositoryWriter {
 
   public void writeWorkspace(final StandardWorkspace workspace)
       throws JsonValidationException, IOException {
-    final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-    final JsonNode webhookConfigSchema = mapper.readTree(ConfigSchema.WORKSPACE_WEBHOOK_OPERATION_CONFIGS.getConfigSchemaFile());
-    final var previousWorkspace = getWorkspaceIfExists(workspace.getWorkspaceId());
-    Optional<JsonNode> previousWebhookConfigs = Optional.empty();
-    if (previousWorkspace.isPresent() && previousWorkspace.get().getWebhookOperationConfigs() != null) {
-      previousWebhookConfigs = Optional.of(previousWorkspace.get().getWebhookOperationConfigs());
-    }
-    final JsonNode partialConfig = workspace.getWebhookOperationConfigs() == null ? null
-        : statefulUpdateSecrets(
-            workspace.getWorkspaceId(),
-            previousWebhookConfigs,
-            workspace.getWebhookOperationConfigs(),
-            webhookConfigSchema, true);
-    final StandardWorkspace partialWorkspace = Jsons.clone(workspace);
-    if (partialConfig != null) {
-      partialWorkspace.withWebhookOperationConfigs(partialConfig);
-    }
-    configRepository.writeStandardWorkspaceNoSecrets(partialWorkspace);
-  }
-
-  private Optional<StandardWorkspace> getWorkspaceIfExists(final UUID workspaceId) {
-    try {
-      return Optional.of(configRepository.getStandardWorkspaceNoSecrets(workspaceId, true));
-    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
-      return Optional.empty();
-    }
+    // TODO(msiega): split secrets once they're introduced.
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
   }
 
 }
