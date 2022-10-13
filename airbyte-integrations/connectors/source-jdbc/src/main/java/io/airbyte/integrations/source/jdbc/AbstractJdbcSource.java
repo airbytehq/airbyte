@@ -355,8 +355,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                 }
               }
 
+              final List<String> wrappedColumnNames = getWrappedColumnNames(database, columnNames, schemaName, tableName);
               final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s %s ?",
-                  sourceOperations.enquoteIdentifierList(connection, columnNames),
+                  sourceOperations.enquoteIdentifierList(connection, wrappedColumnNames),
                   fullTableName,
                   quotedCursorField,
                   operator));
@@ -377,6 +378,16 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         throw new RuntimeException(e);
       }
     });
+  }
+
+  /**
+   * Some databases need special column names in the query.
+   */
+  protected List<String> getWrappedColumnNames(final JdbcDatabase database,
+                                               final List<String> columnNames,
+                                               final String schemaName,
+                                               final String tableName) {
+    return columnNames;
   }
 
   protected String getCountColumnName() {

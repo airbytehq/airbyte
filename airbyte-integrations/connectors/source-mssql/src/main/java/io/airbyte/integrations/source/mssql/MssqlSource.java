@@ -17,7 +17,6 @@ import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -28,7 +27,6 @@ import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -50,7 +48,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,51 +78,13 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
 
-    final List<String> newIdentifiersList = getWrappedColumn(database,
-        columnNames,
-        schemaName, tableName, "\"");
+    final List<String> newIdentifiersList = getWrappedColumnNames(database, columnNames, schemaName, tableName);
     final String preparedSqlQuery = String
         .format("SELECT %s FROM %s", String.join(",", newIdentifiersList),
             getFullTableName(schemaName, tableName));
 
     LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
     return queryTable(database, preparedSqlQuery);
-  }
-
-  @Override
-  public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final CursorInfo cursorInfo,
-                                                               final JDBCType cursorFieldType) {
-    LOGGER.info("Queueing query for table: {}", tableName);
-    return AutoCloseableIterators.lazyIterator(() -> {
-      try {
-        final Stream<JsonNode> stream = database.unsafeQuery(
-            connection -> {
-              LOGGER.info("Preparing query for table: {}", tableName);
-
-              final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
-              final List<String> newColumnNames = getWrappedColumn(database, columnNames, schemaName, tableName, identifierQuoteString);
-
-              final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
-                  String.join(",", newColumnNames),
-                  sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  sourceOperations.enquoteIdentifier(connection, cursorInfo.getCursorField()));
-              LOGGER.info("Prepared SQL query for queryTableIncremental is: " + sql);
-
-              final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
-              LOGGER.info("Executing query for table: {}", tableName);
-              return preparedStatement;
-            },
-            sourceOperations::rowToJson);
-        return AutoCloseableIterators.fromStream(stream);
-      } catch (final SQLException e) {
-        throw new RuntimeException(e);
-      }
-    });
   }
 
   /**
@@ -137,13 +96,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
    *
    * @return the list with Column names updated to handle functions (if nay) properly
    */
-  private List<String> getWrappedColumn(final JdbcDatabase database,
-                                        final List<String> columnNames,
-                                        final String schemaName,
-                                        final String tableName,
-                                        final String enquoteSymbol) {
+  @Override
+  protected List<String> getWrappedColumnNames(final JdbcDatabase database,
+                                               final List<String> columnNames,
+                                               final String schemaName,
+                                               final String tableName) {
     final List<String> hierarchyIdColumns = new ArrayList<>();
     try {
+      final String identifierQuoteString = database.getMetaData().getIdentifierQuoteString();
       final SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
           .queryMetadata(String
               .format("SELECT TOP 1 %s FROM %s", // only first row is enough to get field's type
@@ -159,20 +119,20 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         }
       }
 
+      // iterate through names and replace Hierarchyid field for query is with toString() function
+      // Eventually would get columns like this: testColumn.toString as "testColumn"
+      // toString function in SQL server is the only way to get human readable value, but not mssql
+      // specific HEX value
+      return columnNames.stream()
+          .map(
+              el -> hierarchyIdColumns.contains(el) ? String
+                  .format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
+                  : getIdentifierWithQuoting(el))
+          .collect(toList());
     } catch (final SQLException e) {
       LOGGER.error("Failed to fetch metadata to prepare a proper request.", e);
+      throw new RuntimeException(e);
     }
-
-    // iterate through names and replace Hierarchyid field for query is with toString() function
-    // Eventually would get columns like this: testColumn.toString as "testColumn"
-    // toString function in SQL server is the only way to get human readable value, but not mssql
-    // specific HEX value
-    return columnNames.stream()
-        .map(
-            el -> hierarchyIdColumns.contains(el) ? String
-                .format("%s.ToString() as %s%s%s", el, enquoteSymbol, el, enquoteSymbol)
-                : getIdentifierWithQuoting(el))
-        .collect(toList());
   }
 
   @Override
