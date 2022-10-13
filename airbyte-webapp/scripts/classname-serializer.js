@@ -5,8 +5,13 @@ import { prettyDOM } from "@testing-library/react";
  * the count of classnames instead, e.g. "<3 classnames>"
  */
 const traverseAndRedactClasses = (node) => {
-  if (node.className && typeof node.className === "string") {
-    node.className = `<removed-for-snapshot-test>`;
+  if (
+    node.className &&
+    (typeof node.className === "string" || (node.className instanceof SVGAnimatedString && node.className.baseVal))
+  ) {
+    // We need to use setAttribute here, since on SVGElement we can't
+    // set `className` to a string for the `SVGAnimatedString` case.
+    node.setAttribute("class", `<removed-for-snapshot-test>`);
   }
   node.childNodes.forEach(traverseAndRedactClasses);
 };

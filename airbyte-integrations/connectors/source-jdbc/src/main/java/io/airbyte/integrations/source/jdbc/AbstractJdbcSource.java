@@ -82,6 +82,7 @@ import org.slf4j.LoggerFactory;
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
 public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
+
   public static final String SSL_MODE = "sslMode";
 
   public static final String TRUST_KEY_STORE_URL = "trustCertificateKeyStoreUrl";
@@ -118,7 +119,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   }
 
-
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
   protected final String driverClass;
@@ -129,8 +129,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   protected Collection<DataSource> dataSources = new ArrayList<>();
 
   public AbstractJdbcSource(final String driverClass,
-      final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
-      final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
+                            final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
+                            final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
     this.driverClass = driverClass;
     this.streamingQueryConfigProvider = streamingQueryConfigProvider;
     this.sourceOperations = sourceOperations;
@@ -174,10 +174,10 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     LOGGER.info("Internal schemas to exclude: {}", internalSchemas);
     final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     return database.bufferedResultSetQuery(
-            // retrieve column metadata from the database
-            connection -> connection.getMetaData().getColumns(getCatalog(database), schema, null, null),
-            // store essential column metadata to a Json object from the result set about each column
-            this::getColumnMetadata)
+        // retrieve column metadata from the database
+        connection -> connection.getMetaData().getColumns(getCatalog(database), schema, null, null),
+        // store essential column metadata to a Json object from the result set about each column
+        this::getColumnMetadata)
         .stream()
         .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
         // group by schema and table name to handle the case where a table with the same name exists in
@@ -216,7 +216,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   protected Predicate<JsonNode> excludeNotAccessibleTables(final Set<String> internalSchemas,
-      final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
+                                                           final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
     return jsonNode -> {
       if (tablesWithSelectGrantPrivilege.isEmpty()) {
         return isNotInternalSchema(jsonNode, internalSchemas);
@@ -224,7 +224,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
       return tablesWithSelectGrantPrivilege.stream()
           .anyMatch(e -> e.getSchemaName().equals(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
           && tablesWithSelectGrantPrivilege.stream()
-          .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
+              .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
           && !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
     };
   }
@@ -275,7 +275,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
-      final List<TableInfo<CommonField<Datatype>>> tableInfos) {
+                                                          final List<TableInfo<CommonField<Datatype>>> tableInfos) {
     LOGGER.info("Discover primary keys for tables: " + tableInfos.stream().map(TableInfo::getName).collect(
         Collectors.toSet()));
     try {
@@ -327,11 +327,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName,
-      final CursorInfo cursorInfo,
-      final Datatype cursorFieldType) {
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName,
+                                                               final CursorInfo cursorInfo,
+                                                               final Datatype cursorFieldType) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -459,7 +459,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @throws IllegalArgumentException
    */
   protected static void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-      final Map<String, String> defaultParameters) {
+                                                                             final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
@@ -577,8 +577,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     return sslMode.name();
   }
 
-
-
   protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
     final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams = stateManager.getCdcStateManager().getInitialStreamsSynced();
     if (alreadySyncedStreams.isEmpty() && (stateManager.getCdcStateManager().getCdcState() == null
@@ -595,4 +593,5 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         .map(Jsons::clone)
         .collect(Collectors.toList());
   }
+
 }
