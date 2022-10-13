@@ -267,6 +267,7 @@ public class SchedulerHandler {
       final AirbyteCatalog persistenceCatalog = Jsons.object(catalog.getCatalog(),
           io.airbyte.protocol.models.AirbyteCatalog.class);
       sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(persistenceCatalog));
+      sourceDiscoverSchemaRead.catalogId(response.getOutput());
     }
 
     return sourceDiscoverSchemaRead;
