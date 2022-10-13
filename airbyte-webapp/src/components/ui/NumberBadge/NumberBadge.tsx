@@ -12,7 +12,7 @@ interface NumberBadgeProps {
 
 export const NumberBadge: React.FC<NumberBadgeProps> = ({ value, color, className, "aria-label": ariaLabel }) => {
   const numberBadgeClassnames = classnames(className, styles.circle, {
-    [styles.darkBlue]: !color,
+    [styles.default]: !color,
     [styles.green]: color === "green",
     [styles.red]: color === "red",
     [styles.blue]: color === "blue",
