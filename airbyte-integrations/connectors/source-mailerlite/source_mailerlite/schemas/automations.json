@@ -1,0 +1,727 @@
+{
+  "$id": "root",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "default": "57444257882965766",
+            "examples": [
+              "57444257882965766"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "default": "Automation 1",
+            "examples": [
+              "Automation 1"
+            ]
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": false,
+            "examples": [
+              true,
+              false
+            ]
+          },
+          "trigger_data": {
+            "type": "object",
+            "properties": {
+              "group_id": {
+                "type": "integer",
+                "default": 55347917090718780,
+                "examples": [
+                  55347917090718780
+                ]
+              },
+              "exclude_group_ids": {
+                "type": "array"
+              },
+              "valid": {
+                "type": "boolean",
+                "default": true,
+                "examples": [
+                  true,
+                  false
+                ]
+              }
+            },
+            "required": [
+              "group_id",
+              "exclude_group_ids",
+              "valid"
+            ],
+            "additionalProperties": false
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "default": "57444257892403137",
+                  "examples": [
+                    "57444257892403137"
+                  ]
+                },
+                "type": {
+                  "type": "string",
+                  "default": "delay",
+                  "examples": [
+                    "delay"
+                  ]
+                },
+                "parent_id": {
+                  "type": "null"
+                },
+                "unit": {
+                  "type": "string",
+                  "default": "minutes",
+                  "examples": [
+                    "minutes"
+                  ]
+                },
+                "complete": {
+                  "type": "boolean",
+                  "default": true,
+                  "examples": [
+                    true,
+                    false
+                  ]
+                },
+                "created_at": {
+                  "type": "string",
+                  "default": "2022-06-09 13:58:33",
+                  "examples": [
+                    "2022-06-09 13:58:33"
+                  ]
+                },
+                "updated_at": {
+                  "type": "string",
+                  "default": "2022-06-09 13:58:33",
+                  "examples": [
+                    "2022-06-09 13:58:33"
+                  ]
+                },
+                "value": {
+                  "type": "string",
+                  "default": "5",
+                  "examples": [
+                    "5"
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "default": "Wait for 5 minutes",
+                  "examples": [
+                    "Wait for 5 minutes"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "parent_id",
+                "unit",
+                "complete",
+                "created_at",
+                "updated_at",
+                "value",
+                "description"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "triggers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "default": "58526716047394764",
+                  "examples": [
+                    "58526716047394764"
+                  ]
+                },
+                "type": {
+                  "type": "string",
+                  "default": "subscriber_joins_group",
+                  "examples": [
+                    "subscriber_joins_group"
+                  ]
+                },
+                "group_id": {
+                  "type": "string",
+                  "default": "55347917090718788",
+                  "examples": [
+                    "55347917090718788"
+                  ]
+                },
+                "group": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "default": "55347917090718788",
+                      "examples": [
+                        "55347917090718788"
+                      ]
+                    },
+                    "name": {
+                      "type": "string",
+                      "default": "new group",
+                      "examples": [
+                        "new group"
+                      ]
+                    },
+                    "url": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "url"
+                  ],
+                  "additionalProperties": false
+                },
+                "exclude_group_ids": {
+                  "type": "array"
+                },
+                "excluded_groups": {
+                  "type": "array"
+                },
+                "broken": {
+                  "type": "boolean",
+                  "default": false,
+                  "examples": [
+                    true,
+                    false
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "group_id",
+                "group",
+                "exclude_group_ids",
+                "excluded_groups",
+                "broken"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "complete": {
+            "type": "boolean",
+            "default": true,
+            "examples": [
+              true,
+              false
+            ]
+          },
+          "broken": {
+            "type": "boolean",
+            "default": false,
+            "examples": [
+              true,
+              false
+            ]
+          },
+          "warnings": {
+            "type": "array"
+          },
+          "emails_count": {
+            "type": "integer",
+            "default": 1,
+            "examples": [
+              1
+            ]
+          },
+          "first_email_screenshot_url": {
+            "type": "null"
+          },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "completed_subscribers_count": {
+                "type": "integer",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "subscribers_in_queue_count": {
+                "type": "integer",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "bounce_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "integer",
+                    "default": 0,
+                    "examples": [
+                      0
+                    ]
+                  },
+                  "string": {
+                    "type": "string",
+                    "default": "0%",
+                    "examples": [
+                      "0%"
+                    ]
+                  }
+                },
+                "required": [
+                  "float",
+                  "string"
+                ],
+                "additionalProperties": false
+              },
+              "click_to_open_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "integer",
+                    "default": 0,
+                    "examples": [
+                      0
+                    ]
+                  },
+                  "string": {
+                    "type": "string",
+                    "default": "0%",
+                    "examples": [
+                      "0%"
+                    ]
+                  }
+                },
+                "required": [
+                  "float",
+                  "string"
+                ],
+                "additionalProperties": false
+              },
+              "sent": {
+                "type": "integer",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "opens_count": {
+                "type": "integer",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "unique_opens_count": {
+                "type": "null"
+              },
+              "open_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "integer",
+                    "default": 0,
+                    "examples": [
+                      0
+                    ]
+                  },
+                  "string": {
+                    "type": "string",
+                    "default": "0%",
+                    "examples": [
+                      "0%"
+                    ]
+                  }
+                },
+                "required": [
+                  "float",
+                  "string"
+                ],
+                "additionalProperties": false
+              },
+              "clicks_count": {
+                "type": "integer",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "unique_clicks_count": {
+                "type": "null"
+              },
+              "click_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "integer",
+                    "default": 0,
+                    "examples": [
+                      0
+                    ]
+                  },
+                  "string": {
+                    "type": "string",
+                    "default": "0%",
+                    "examples": [
+                      "0%"
+                    ]
+                  }
+                },
+                "required": [
+                  "float",
+                  "string"
+                ],
+                "additionalProperties": false
+              },
+              "unsubscribes_count": {
+                "type": "integer",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "unsubscribe_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "integer",
+                    "default": 0,
+                    "examples": [
+                      0
+                    ]
+                  },
+                  "string": {
+                    "type": "string",
+                    "default": "0%",
+                    "examples": [
+                      "0%"
+                    ]
+                  }
+                },
+                "required": [
+                  "float",
+                  "string"
+                ],
+                "additionalProperties": false
+              },
+              "spam_count": {
+                "type": "integer",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "spam_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "integer",
+                    "default": 0,
+                    "examples": [
+                      0
+                    ]
+                  },
+                  "string": {
+                    "type": "string",
+                    "default": "0%",
+                    "examples": [
+                      "0%"
+                    ]
+                  }
+                },
+                "required": [
+                  "float",
+                  "string"
+                ],
+                "additionalProperties": false
+              },
+              "hard_bounces_count": {
+                "type": "integer",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "hard_bounce_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "integer",
+                    "default": 0,
+                    "examples": [
+                      0
+                    ]
+                  },
+                  "string": {
+                    "type": "string",
+                    "default": "0%",
+                    "examples": [
+                      "0%"
+                    ]
+                  }
+                },
+                "required": [
+                  "float",
+                  "string"
+                ],
+                "additionalProperties": false
+              },
+              "soft_bounces_count": {
+                "type": "integer",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "soft_bounce_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "integer",
+                    "default": 0,
+                    "examples": [
+                      0
+                    ]
+                  },
+                  "string": {
+                    "type": "string",
+                    "default": "0%",
+                    "examples": [
+                      "0%"
+                    ]
+                  }
+                },
+                "required": [
+                  "float",
+                  "string"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "completed_subscribers_count",
+              "subscribers_in_queue_count",
+              "bounce_rate",
+              "click_to_open_rate",
+              "sent",
+              "opens_count",
+              "unique_opens_count",
+              "open_rate",
+              "clicks_count",
+              "unique_clicks_count",
+              "click_rate",
+              "unsubscribes_count",
+              "unsubscribe_rate",
+              "spam_count",
+              "spam_rate",
+              "hard_bounces_count",
+              "hard_bounce_rate",
+              "soft_bounces_count",
+              "soft_bounce_rate"
+            ],
+            "additionalProperties": false
+          },
+          "created_at": {
+            "type": "string",
+            "default": "2022-06-09 13:58:33",
+            "examples": [
+              "2022-06-09 13:58:33"
+            ]
+          },
+          "has_banned_content": {
+            "type": "boolean",
+            "default": false,
+            "examples": [
+              true,
+              false
+            ]
+          },
+          "qualified_subscribers_count": {
+            "type": "integer",
+            "default": 63,
+            "examples": [
+              63
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "enabled",
+          "trigger_data",
+          "steps",
+          "triggers",
+          "complete",
+          "broken",
+          "warnings",
+          "emails_count",
+          "first_email_screenshot_url",
+          "stats",
+          "created_at",
+          "has_banned_content",
+          "qualified_subscribers_count"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "first": {
+          "type": "string",
+          "default": "https://connect.mailerlite.com/api/automations?page=1",
+          "examples": [
+            "https://connect.mailerlite.com/api/automations?page=1"
+          ]
+        },
+        "last": {
+          "type": "string",
+          "default": "https://connect.mailerlite.com/api/automations?page=1",
+          "examples": [
+            "https://connect.mailerlite.com/api/automations?page=1"
+          ]
+        },
+        "prev": {
+          "type": "null"
+        },
+        "next": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "first",
+        "last",
+        "prev",
+        "next"
+      ],
+      "additionalProperties": false
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "current_page": {
+          "type": "integer",
+          "default": 1,
+          "examples": [
+            1
+          ]
+        },
+        "from": {
+          "type": "integer",
+          "default": 1,
+          "examples": [
+            1
+          ]
+        },
+        "last_page": {
+          "type": "integer",
+          "default": 1,
+          "examples": [
+            1
+          ]
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "null"
+              },
+              "label": {
+                "type": "string",
+                "default": "&laquo; Previous",
+                "examples": [
+                  "&laquo; Previous"
+                ]
+              },
+              "active": {
+                "type": "boolean",
+                "default": false,
+                "examples": [
+                  true,
+                  false
+                ]
+              }
+            },
+            "required": [
+              "url",
+              "label",
+              "active"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "path": {
+          "type": "string",
+          "default": "https://connect.mailerlite.com/api/automations",
+          "examples": [
+            "https://connect.mailerlite.com/api/automations"
+          ]
+        },
+        "per_page": {
+          "type": "integer",
+          "default": 10,
+          "examples": [
+            10
+          ]
+        },
+        "to": {
+          "type": "integer",
+          "default": 1,
+          "examples": [
+            1
+          ]
+        },
+        "total": {
+          "type": "integer",
+          "default": 1,
+          "examples": [
+            1
+          ]
+        },
+        "total_unfiltered": {
+          "type": "integer",
+          "default": 24,
+          "examples": [
+            24
+          ]
+        }
+      },
+      "required": [
+        "current_page",
+        "from",
+        "last_page",
+        "links",
+        "path",
+        "per_page",
+        "to",
+        "total",
+        "total_unfiltered"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "data",
+    "links",
+    "meta"
+  ],
+  "additionalProperties": false
+}

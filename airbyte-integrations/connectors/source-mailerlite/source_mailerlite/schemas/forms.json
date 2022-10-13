@@ -1,0 +1,341 @@
+{
+  "$id": "root",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "default": "38965245585131492",
+            "examples": [
+              "38965245585131492"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "default": "embedded",
+            "examples": [
+              "embedded"
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "default": "Ec7t3n",
+            "examples": [
+              "Ec7t3n"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "default": "inventore provident ut",
+            "examples": [
+              "inventore provident ut"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "default": "2021-11-17 14:42:33",
+            "examples": [
+              "2021-11-17 14:42:33"
+            ]
+          },
+          "conversions_count": {
+            "type": "integer",
+            "default": 0,
+            "examples": [
+              0
+            ]
+          },
+          "opens_count": {
+            "type": "integer",
+            "default": 0,
+            "examples": [
+              0
+            ]
+          },
+          "conversion_rate": {
+            "type": "object",
+            "properties": {
+              "float": {
+                "type": "integer",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "string": {
+                "type": "string",
+                "default": "0%",
+                "examples": [
+                  "0%"
+                ]
+              }
+            },
+            "required": [
+              "float",
+              "string"
+            ],
+            "additionalProperties": false
+          },
+          "settings": {
+            "type": "array"
+          },
+          "last_registration_at": {
+            "type": "null"
+          },
+          "active": {
+            "type": "boolean",
+            "default": false,
+            "examples": [
+              true,
+              false
+            ]
+          },
+          "is_broken": {
+            "type": "boolean",
+            "default": false,
+            "examples": [
+              true,
+              false
+            ]
+          },
+          "has_content": {
+            "type": "boolean",
+            "default": false,
+            "examples": [
+              true,
+              false
+            ]
+          },
+          "can": {
+            "type": "object",
+            "properties": {
+              "update": {
+                "type": "boolean",
+                "default": true,
+                "examples": [
+                  true,
+                  false
+                ]
+              }
+            },
+            "required": [
+              "update"
+            ],
+            "additionalProperties": false
+          },
+          "used_in_automations": {
+            "type": "boolean",
+            "default": false,
+            "examples": [
+              true,
+              false
+            ]
+          },
+          "warnings": {
+            "type": "array"
+          },
+          "double_optin": {
+            "type": "null"
+          },
+          "screenshot_url": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "slug",
+          "name",
+          "created_at",
+          "conversions_count",
+          "opens_count",
+          "conversion_rate",
+          "settings",
+          "last_registration_at",
+          "active",
+          "is_broken",
+          "has_content",
+          "can",
+          "used_in_automations",
+          "warnings",
+          "double_optin",
+          "screenshot_url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "first": {
+          "type": "string",
+          "default": "https://connect.mailerlite.com/api/forms/embedded?page=1",
+          "examples": [
+            "https://connect.mailerlite.com/api/forms/embedded?page=1"
+          ]
+        },
+        "last": {
+          "type": "string",
+          "default": "https://connect.mailerlite.com/api/forms/embedded?page=1",
+          "examples": [
+            "https://connect.mailerlite.com/api/forms/embedded?page=1"
+          ]
+        },
+        "prev": {
+          "type": "null"
+        },
+        "next": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "first",
+        "last",
+        "prev",
+        "next"
+      ],
+      "additionalProperties": false
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "current_page": {
+          "type": "integer",
+          "default": 1,
+          "examples": [
+            1
+          ]
+        },
+        "from": {
+          "type": "integer",
+          "default": 1,
+          "examples": [
+            1
+          ]
+        },
+        "last_page": {
+          "type": "integer",
+          "default": 1,
+          "examples": [
+            1
+          ]
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "null"
+              },
+              "label": {
+                "type": "string",
+                "default": "&laquo; Previous",
+                "examples": [
+                  "&laquo; Previous"
+                ]
+              },
+              "active": {
+                "type": "boolean",
+                "default": false,
+                "examples": [
+                  true,
+                  false
+                ]
+              }
+            },
+            "required": [
+              "url",
+              "label",
+              "active"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "path": {
+          "type": "string",
+          "default": "https://connect.mailerlite.com/api/forms/embedded",
+          "examples": [
+            "https://connect.mailerlite.com/api/forms/embedded"
+          ]
+        },
+        "per_page": {
+          "type": "integer",
+          "default": 25,
+          "examples": [
+            25
+          ]
+        },
+        "to": {
+          "type": "integer",
+          "default": 1,
+          "examples": [
+            1
+          ]
+        },
+        "total": {
+          "type": "integer",
+          "default": 1,
+          "examples": [
+            1
+          ]
+        },
+        "aggregations": {
+          "type": "object",
+          "properties": {
+            "popup": {
+              "type": "integer",
+              "default": 3,
+              "examples": [
+                3
+              ]
+            },
+            "embedded": {
+              "type": "integer",
+              "default": 1,
+              "examples": [
+                1
+              ]
+            },
+            "promotion": {
+              "type": "integer",
+              "default": 1,
+              "examples": [
+                1
+              ]
+            }
+          },
+          "required": [
+            "popup",
+            "embedded",
+            "promotion"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "current_page",
+        "from",
+        "last_page",
+        "links",
+        "path",
+        "per_page",
+        "to",
+        "total",
+        "aggregations"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "data",
+    "links",
+    "meta"
+  ],
+  "additionalProperties": false
+}

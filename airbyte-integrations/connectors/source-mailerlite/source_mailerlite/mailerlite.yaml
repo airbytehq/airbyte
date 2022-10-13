@@ -38,9 +38,38 @@ definitions:
       name: "subscribers"
       primary_key: "id"
       path: "/api/subscribers"
+  segments_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "segments"
+      primary_key: "id"
+      path: "/api/segments"
+  automations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "automations"
+      primary_key: "id"
+      path: "/api/automations"
+  forms_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "forms"
+      primary_key: "id"
+      path: "/api/forms/promotion" #add type requester promotion, popup, embedded
+  campaigns_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "campaigns"
+      primary_key: "id"
+      path: "/api/campaigns"
+
 
 streams:
   - "*ref(definitions.subscribers_stream)"
+  - "*ref(definitions.segments_stream)"
+  - "*ref(definitions.automations_stream)"
+  - "*ref(definitions.forms_stream)"
+  - "*ref(definitions.campaigns_stream)"
 
 check:
   stream_names:
