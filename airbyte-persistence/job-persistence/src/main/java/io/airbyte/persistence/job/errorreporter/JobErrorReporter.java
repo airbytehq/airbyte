@@ -137,7 +137,7 @@ public class JobErrorReporter {
                                           final FailureReason failureReason,
                                           final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspace(workspaceId, true) : null;
+    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspaceNoSecrets(workspaceId, true) : null;
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final Map<String, String> metadata = MoreMaps.merge(
         getSourceMetadata(sourceDefinition),
@@ -158,7 +158,7 @@ public class JobErrorReporter {
                                                final FailureReason failureReason,
                                                final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspace(workspaceId, true) : null;
+    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspaceNoSecrets(workspaceId, true) : null;
     final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     final Map<String, String> metadata = MoreMaps.merge(
         getDestinationMetadata(destinationDefinition),
@@ -178,7 +178,7 @@ public class JobErrorReporter {
                                        final FailureReason failureReason,
                                        final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspace(workspaceId, true) : null;
+    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspaceNoSecrets(workspaceId, true) : null;
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final Map<String, String> metadata = MoreMaps.merge(
         getSourceMetadata(sourceDefinition),
