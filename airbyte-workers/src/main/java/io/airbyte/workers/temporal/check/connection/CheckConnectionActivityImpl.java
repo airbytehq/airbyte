@@ -7,6 +7,8 @@ package io.airbyte.workers.temporal.check.connection;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
+import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
@@ -20,6 +22,9 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
+import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
+import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -44,6 +49,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   private final LogConfigs logConfigs;
   private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
+  private final AirbyteMessageSerDeProvider serDeProvider;
+  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
 
   public CheckConnectionActivityImpl(@Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
                                      @Named("checkProcessFactory") final ProcessFactory processFactory,
@@ -52,7 +59,9 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
                                      final AirbyteApiClient airbyteApiClient,
-                                     @Value("${airbyte.version}") final String airbyteVersion) {
+                                     @Value("${airbyte.version}") final String airbyteVersion,
+                                     final AirbyteMessageSerDeProvider serDeProvider,
+                                     final AirbyteMessageVersionedMigratorFactory migratorFactory) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
@@ -61,6 +70,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.airbyteApiClient = airbyteApiClient;
     this.secretsHydrator = secretsHydrator;
     this.airbyteVersion = airbyteVersion;
+    this.serDeProvider = serDeProvider;
+    this.migratorFactory = migratorFactory;
   }
 
   @Override
@@ -105,8 +116,11 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           launcherConfig.getDockerImage(),
           processFactory,
           workerConfigs.getResourceRequirements());
+      final AirbyteStreamFactory streamFactory = launcherConfig.getProtocolVersion() != null
+          ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion())
+          : new DefaultAirbyteStreamFactory();
 
-      return new DefaultCheckConnectionWorker(integrationLauncher);
+      return new DefaultCheckConnectionWorker(integrationLauncher, streamFactory);
     };
   }
 
