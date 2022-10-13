@@ -34,6 +34,10 @@ spec:
           {{- printf "- name: %s" .name | nindent 8 }}
         {{- end }}
       {{- end }}
+      {{- if .Values.extraInitContainers }}
+      initContainers:
+      {{- toYaml .Values.extraInitContainers | nindent 6 }}
+      {{- end }}
       containers:
       - name: airbyte-webapp-container
         image: {{ printf "%s:%s" .Values.image.repository (include "webapp.imageTag" .) }}
