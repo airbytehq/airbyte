@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import HeadTitle from "components/HeadTitle";
 
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useWorkspace, { useCurrentWorkspace, WebhookPayload } from "hooks/services/useWorkspace";
 
 import { Content, SettingsCard } from "../SettingsComponents";
@@ -41,6 +42,8 @@ function useAsyncWithTimeout<K, T>(f: (data: K) => Promise<T>) {
 }
 
 const NotificationPage: React.FC = () => {
+  useTrackPage(PageTrackingCodes.SETTINGS_NOTIFICATION);
+
   const { updateWebhook, testWebhook } = useWorkspace();
   const workspace = useCurrentWorkspace();
 

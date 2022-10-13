@@ -20,11 +20,11 @@ from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_o
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 
 logger = init_logger("airbyte")
-init_uncaught_exception_handler(logger)
 
 
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
+        init_uncaught_exception_handler(logger)
         self.source = source
         self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 
@@ -32,6 +32,7 @@ class AirbyteEntrypoint(object):
     def parse_args(args: List[str]) -> argparse.Namespace:
         # set up parent parsers
         parent_parser = argparse.ArgumentParser(add_help=False)
+        parent_parser.add_argument("--debug", action="store_true", help="enables detailed debug logs related to the sync")
         main_parser = argparse.ArgumentParser()
         subparsers = main_parser.add_subparsers(title="commands", dest="command")
 
@@ -66,6 +67,12 @@ class AirbyteEntrypoint(object):
         cmd = parsed_args.command
         if not cmd:
             raise Exception("No command passed")
+
+        if hasattr(parsed_args, "debug") and parsed_args.debug:
+            self.logger.setLevel(logging.DEBUG)
+            self.logger.debug("Debug logs enabled")
+        else:
+            self.logger.setLevel(logging.INFO)
 
         # todo: add try catch for exceptions with different exit codes
         source_spec: ConnectorSpecification = self.source.spec(self.logger)

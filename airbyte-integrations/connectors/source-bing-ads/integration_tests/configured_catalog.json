@@ -38,6 +38,26 @@
     },
     {
       "stream": {
+        "name": "account_performance_report_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "account_performance_report_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "account_performance_report_weekly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
@@ -58,6 +78,26 @@
     },
     {
       "stream": {
+        "name": "ad_group_performance_report_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_group_performance_report_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "ad_group_performance_report_weekly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
@@ -69,6 +109,26 @@
     {
       "stream": {
         "name": "ad_group_performance_report_monthly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_performance_report_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_performance_report_daily",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
       },
@@ -108,6 +168,26 @@
     },
     {
       "stream": {
+        "name": "campaign_performance_report_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "campaign_performance_report_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "campaign_performance_report_weekly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
@@ -119,6 +199,26 @@
     {
       "stream": {
         "name": "campaign_performance_report_monthly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "keyword_performance_report_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "keyword_performance_report_daily",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
       },

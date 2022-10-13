@@ -1,20 +1,20 @@
 import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { DropDownRow } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
-import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import { ConnectorIcon } from "components/ConnectorIcon";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
-import PageTitle from "components/PageTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
+import { Breadcrumbs } from "components/ui/Breadcrumbs";
+import { PageHeader } from "components/ui/PageHeader";
 
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useGetSource } from "hooks/services/useSourceHook";
-import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { getIcon } from "utils/imageUtils";
@@ -26,14 +26,19 @@ import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
 
 const SourceItemPage: React.FC = () => {
-  const { query, params, push } = useRouter<{ id: string }, { id: string; "*": string }>();
-  const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
+  useTrackPage(PageTrackingCodes.SOURCE_ITEM);
+  const params = useParams<{ "*": StepsTypes | "" | undefined; id: string }>();
+  const navigate = useNavigate();
+  const currentStep = useMemo<StepsTypes | "" | undefined>(
+    () => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]),
+    [params]
+  );
 
   const { destinations } = useDestinationList();
 
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const source = useGetSource(query.id);
+  const source = useGetSource(params.id || "");
   const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
 
   const { connections } = useConnectionList();
@@ -41,7 +46,7 @@ const SourceItemPage: React.FC = () => {
   const breadcrumbsData = [
     {
       name: <FormattedMessage id="sidebar.sources" />,
-      onClick: () => push(".."),
+      onClick: () => navigate(".."),
     },
     { name: source.name },
   ];
@@ -65,7 +70,7 @@ const SourceItemPage: React.FC = () => {
 
   const onSelectStep = (id: string) => {
     const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
-    push(path);
+    navigate(path);
   };
 
   const onSelect = (data: DropDownRow.IDataItem) => {
@@ -78,13 +83,13 @@ const SourceItemPage: React.FC = () => {
             sourceId: source.sourceId,
           };
 
-    push(path, { state });
+    navigate(path, { state });
   };
 
   return (
     <ConnectorDocumentationWrapper>
       <HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />
-      <PageTitle
+      <PageHeader
         title={<Breadcrumbs data={breadcrumbsData} />}
         middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
       />

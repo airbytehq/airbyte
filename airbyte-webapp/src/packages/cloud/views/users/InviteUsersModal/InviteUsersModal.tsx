@@ -1,14 +1,20 @@
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, DropDown, H5, Input, LoadingButton, Modal } from "components";
+import { Button, DropDown, Input } from "components";
+import { H5 } from "components/base/Titles";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
+import { Modal } from "components/ui/Modal";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUserHook } from "packages/cloud/services/users/UseUserHook";
+
+import styles from "./InviteUsersModal.module.scss";
 
 const requestConnectorValidationSchema = yup.object({
   users: yup.array().of(
@@ -28,10 +34,6 @@ const Controls = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-top: 26px;
-`;
-
-const SendInvitationButton = styled(LoadingButton)`
-  margin-left: 10px;
 `;
 
 const FormHeader = styled(Header)`
@@ -82,7 +84,7 @@ export const InviteUsersModal: React.FC<{
           );
         }}
       >
-        {({ values, isValid, isSubmitting, dirty }) => {
+        {({ values, isValid, isSubmitting, dirty, setFieldValue }) => {
           return (
             <Form>
               <Content>
@@ -129,6 +131,19 @@ export const InviteUsersModal: React.FC<{
                               </Field>
                             </Cell>
                           )}
+                          <Button
+                            className={styles.deleteButton}
+                            type="button"
+                            disabled={values.users.length < 2}
+                            onClick={() => {
+                              setFieldValue("users", [
+                                ...values.users.slice(0, index),
+                                ...values.users.slice(index + 1),
+                              ]);
+                            }}
+                            variant="secondary"
+                            icon={<FontAwesomeIcon icon={faTimes} />}
+                          />
                         </FormRow>
                       ))}
                       <Button
@@ -140,7 +155,7 @@ export const InviteUsersModal: React.FC<{
                             role: ROLE_OPTIONS[0].value,
                           })
                         }
-                        secondary
+                        variant="secondary"
                       >
                         <FormattedMessage id="modals.addUser.button.addUser" />
                       </Button>
@@ -149,17 +164,18 @@ export const InviteUsersModal: React.FC<{
                 />
 
                 <Controls>
-                  <Button type="button" secondary onClick={() => props.onClose()}>
+                  <Button type="button" variant="secondary" onClick={props.onClose}>
                     <FormattedMessage id="modals.addUser.button.cancel" />
                   </Button>
-                  <SendInvitationButton
+                  <Button
+                    className={styles.sendInvitationButton}
                     data-testid="modals.addUser.button.submit"
                     type="submit"
                     disabled={!isValid || !dirty}
                     isLoading={isSubmitting}
                   >
                     <FormattedMessage id="modals.addUser.button.submit" />
-                  </SendInvitationButton>
+                  </Button>
                 </Controls>
               </Content>
             </Form>

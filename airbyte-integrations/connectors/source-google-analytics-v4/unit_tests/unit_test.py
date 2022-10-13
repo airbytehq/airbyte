@@ -70,6 +70,15 @@ def mock_unknown_metrics_or_dimensions_error(requests_mock):
 
 
 @pytest.fixture
+def mock_daily_request_limit_error(requests_mock):
+    yield requests_mock.post(
+        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
+        status_code=429,
+        json={"error": {"code": 429, "message": "Quota Error: profileId 207066566 has exceeded the daily request limit."}},
+    )
+
+
+@pytest.fixture
 def mock_api_returns_no_records(requests_mock):
     """API returns empty data for given date based slice"""
     yield requests_mock.post(
@@ -305,6 +314,11 @@ def test_check_connection_success_oauth(
 
 
 def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error):
+    records = GoogleAnalyticsV4Stream(MagicMock()).read_records(sync_mode=None)
+    assert records
+
+
+def test_daily_request_limit_error_validation(mock_metrics_dimensions_type_list_link, mock_daily_request_limit_error):
     records = GoogleAnalyticsV4Stream(MagicMock()).read_records(sync_mode=None)
     assert records
 

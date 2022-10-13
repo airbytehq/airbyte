@@ -13,7 +13,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import HTTPError
 
-from .graphql import get_query_pull_requests, get_query_reviews
+from .graphql import CursorStorage, QueryReactions, get_query_pull_requests, get_query_reviews
 from .utils import getter
 
 DEFAULT_PAGE_SIZE = 100
@@ -115,7 +115,6 @@ class GithubStream(HttpStream, ABC):
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
-            error_msg = str(e.response.json().get("message"))
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
@@ -128,6 +127,7 @@ class GithubStream(HttpStream, ABC):
                 else:
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
             elif e.response.status_code == requests.codes.FORBIDDEN:
+                error_msg = str(e.response.json().get("message"))
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
@@ -153,7 +153,8 @@ class GithubStream(HttpStream, ABC):
                     f"`{stream_slice['repository']}`, it seems like this repository is empty."
                 )
             else:
-                self.logger.error(f"Undefined error while reading records: {error_msg}")
+                # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
+                self.logger.error(f"Undefined error while reading records: {e.response.text}")
                 raise e
 
             self.logger.warn(error_msg)
@@ -802,7 +803,8 @@ class Reviews(SemiIncrementalMixin, GithubStream):
             record["pull_request_url"] = pull_request["url"]
             if record["commit"]:
                 record["commit_id"] = record.pop("commit")["oid"]
-            record["user"]["type"] = record["user"].pop("__typename")
+            if record["user"]:
+                record["user"]["type"] = record["user"].pop("__typename")
             # for backward compatibility with REST API response
             record["_links"] = {
                 "html": {"href": record["html_url"]},
@@ -988,12 +990,139 @@ class IssueReactions(ReactionStream):
     copy_parent_key = "issue_number"
 
 
-class PullRequestCommentReactions(ReactionStream):
+class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment
+    API docs:
+    https://docs.github.com/en/graphql/reference/objects#pullrequestreviewcomment
+    https://docs.github.com/en/graphql/reference/objects#reaction
     """
 
-    parent_entity = ReviewComments
+    http_method = "POST"
+    cursor_field = "created_at"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.cursor_storage = CursorStorage(["PullRequest", "PullRequestReview", "PullRequestReviewComment", "Reaction"])
+        self.query_reactions = QueryReactions()
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "graphql"
+
+    def raise_error_from_response(self, response_json):
+        if "errors" in response_json:
+            raise Exception(str(response_json["errors"]))
+
+    def _get_name(self, repository):
+        return repository["owner"]["login"] + "/" + repository["name"]
+
+    def _get_reactions_from_comment(self, comment, repository):
+        for reaction in comment["reactions"]["nodes"]:
+            reaction["repository"] = self._get_name(repository)
+            reaction["comment_id"] = comment["id"]
+            if reaction["user"]:
+                reaction["user"]["type"] = "User"
+            yield reaction
+
+    def _get_reactions_from_review(self, review, repository):
+        for comment in review["comments"]["nodes"]:
+            yield from self._get_reactions_from_comment(comment, repository)
+
+    def _get_reactions_from_pull_request(self, pull_request, repository):
+        for review in pull_request["reviews"]["nodes"]:
+            yield from self._get_reactions_from_review(review, repository)
+
+    def _get_reactions_from_repository(self, repository):
+        for pull_request in repository["pullRequests"]["nodes"]:
+            yield from self._get_reactions_from_pull_request(pull_request, repository)
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.raise_error_from_response(response_json=response.json())
+        data = response.json()["data"]
+        repository = data.get("repository")
+        if repository:
+            yield from self._get_reactions_from_repository(repository)
+
+        node = data.get("node")
+        if node:
+            if node["__typename"] == "PullRequest":
+                yield from self._get_reactions_from_pull_request(node, node["repository"])
+            elif node["__typename"] == "PullRequestReview":
+                yield from self._get_reactions_from_review(node, node["repository"])
+            elif node["__typename"] == "PullRequestReviewComment":
+                yield from self._get_reactions_from_comment(node, node["repository"])
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        data = response.json()["data"]
+        repository = data.get("repository")
+        if repository:
+            self._add_cursor(repository, "pullRequests")
+            for pull_request in repository["pullRequests"]["nodes"]:
+                self._add_cursor(pull_request, "reviews")
+                for review in pull_request["reviews"]["nodes"]:
+                    self._add_cursor(review, "comments")
+                    for comment in review["comments"]["nodes"]:
+                        self._add_cursor(comment, "reactions")
+
+        node = data.get("node")
+        if node:
+            if node["__typename"] == "PullRequest":
+                self._add_cursor(node, "reviews")
+                for review in node["reviews"]["nodes"]:
+                    self._add_cursor(review, "comments")
+                    for comment in review["comments"]["nodes"]:
+                        self._add_cursor(comment, "reactions")
+            elif node["__typename"] == "PullRequestReview":
+                self._add_cursor(node, "comments")
+                for comment in node["comments"]["nodes"]:
+                    self._add_cursor(comment, "reactions")
+            elif node["__typename"] == "PullRequestReviewComment":
+                self._add_cursor(node, "reactions")
+
+        return self.cursor_storage.get_cursor()
+
+    def _add_cursor(self, node, link):
+        link_to_object = {
+            "reactions": "Reaction",
+            "comments": "PullRequestReviewComment",
+            "reviews": "PullRequestReview",
+            "pullRequests": "PullRequest",
+        }
+
+        pageInfo = node[link]["pageInfo"]
+        if pageInfo["hasNextPage"]:
+            self.cursor_storage.add_cursor(
+                link_to_object[link], pageInfo["endCursor"], node[link]["totalCount"], parent_id=node.get("node_id")
+            )
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        if next_page_token:
+            after = next_page_token["cursor"]
+            page_size = min(self.page_size, next_page_token["total_count"])
+            if next_page_token["typename"] == "PullRequest":
+                query = self.query_reactions.get_query_root_repository(owner=organization, name=name, first=page_size, after=after)
+            elif next_page_token["typename"] == "PullRequestReview":
+                query = self.query_reactions.get_query_root_pull_request(node_id=next_page_token["parent_id"], first=page_size, after=after)
+            elif next_page_token["typename"] == "PullRequestReviewComment":
+                query = self.query_reactions.get_query_root_review(node_id=next_page_token["parent_id"], first=page_size, after=after)
+            elif next_page_token["typename"] == "Reaction":
+                query = self.query_reactions.get_query_root_comment(node_id=next_page_token["parent_id"], first=page_size, after=after)
+        else:
+            query = self.query_reactions.get_query_root_repository(owner=organization, name=name, first=self.page_size)
+
+        return {"query": query}
 
 
 class Deployments(SemiIncrementalMixin, GithubStream):
@@ -1207,6 +1336,61 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
                 yield record
             if created_at < break_point:
                 break
+
+
+class WorkflowJobs(SemiIncrementalMixin, GithubStream):
+    """
+    Get all workflow jobs for a workflow run
+    API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
+    """
+
+    cursor_field = "completed_at"
+
+    def __init__(self, parent: WorkflowRuns, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/runs/{stream_slice['run_id']}/jobs"
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        parent_stream_state = None
+        if stream_state is not None:
+            parent_stream_state = {repository: {self.parent.cursor_field: v[self.cursor_field]} for repository, v in stream_state.items()}
+        parent_stream_slices = self.parent.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_stream_state)
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=parent_stream_state
+            )
+            for record in parent_records:
+                stream_slice["run_id"] = record["id"]
+                yield from super().read_records(
+                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                )
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        for record in response.json()["jobs"]:
+            if record.get(self.cursor_field):
+                yield self.transform(record=record, stream_slice=stream_slice)
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params["filter"] = "all"
+        return params
 
 
 class TeamMembers(GithubStream):

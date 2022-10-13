@@ -4,9 +4,7 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.EnvConfigs;
@@ -38,7 +36,6 @@ import org.slf4j.LoggerFactory;
  */
 public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
 
-  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
   private static final String MIGRATION_NAME = "Configs db migration 0.30.22.001";
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_30_22_001__Store_last_sync_state.class);
 
@@ -109,6 +106,7 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
    * data from the job database).
    */
   @VisibleForTesting
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   static Optional<Database> getJobsDatabase(final String databaseUser, final String databasePassword, final String databaseUrl) {
     try {
       if (databaseUrl == null || "".equals(databaseUrl.trim())) {
@@ -139,7 +137,6 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
 
     final Table<?> attemptsTable = DSL.table("attempts");
     final Field<Long> attemptJobId = DSL.field("attempts.job_id", SQLDataType.BIGINT);
-    final Field<Integer> attemptNumber = DSL.field("attempts.attempt_number", SQLDataType.INTEGER);
     final Field<OffsetDateTime> attemptCreatedAt = DSL.field("attempts.created_at", SQLDataType.TIMESTAMPWITHTIMEZONE);
 
     // output schema: JobOutput.yaml

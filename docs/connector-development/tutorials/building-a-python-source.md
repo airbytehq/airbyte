@@ -147,6 +147,24 @@ Note: Each time you make a change to your implementation you need to re-build th
 
 The nice thing about this approach is that you are running your source exactly as it will be run by Airbyte. The tradeoff is that iteration is slightly slower, because you need to re-build the connector between each change.
 
+**Detailed Debug Messages**
+
+During development of your connector, you can enable the printing of detailed debug information during a sync by specifying the `--debug` flag. This will allow you to get a better picture of what is happening during each step of your sync.
+```text
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
+```
+
+In addition to the preset CDK debug statements, you can also emit custom debug information from your connector by introducing your own debug statements:
+```python
+self.logger.debug(
+    "your debug message here",
+    extra={
+        "debug_field": self.value,
+        "custom_field": your_object.field
+    }
+)
+```
+
 **TDD using standard tests**
 
 Airbyte provides a standard test suite that is run against every source. The objective of these tests is to provide some "free" tests that can sanity check that the basic functionality of the source works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.

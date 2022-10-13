@@ -6,6 +6,7 @@ sources:
     schema: false
     identifier: false
   tables:
+  - name: _airbyte_raw_arrays
   - name: _airbyte_raw_conflict_stream_array
   - name: _airbyte_raw_conflict_stream_name
   - name: _airbyte_raw_conflict_stream_scalar

@@ -15,6 +15,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -44,7 +45,6 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME1 = "ID_AND_NAME1";
   private static final String STREAM_NAME2 = "ID_AND_NAME2";
   private static final String STREAM_NAME3 = "ID_AND_NAME3";
-  public static final String PASSWORD = "password";
 
   private Db2Container db;
   private JsonNode config;
@@ -67,12 +67,12 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
 
   private JsonNode getConfig(final String userName, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
-        .put("username", userName)
-        .put("password", password)
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.USERNAME_KEY, userName)
+        .put(JdbcUtils.PASSWORD_KEY, password)
+        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")
             .build()))
         .build());
@@ -115,12 +115,12 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
     config = getConfig(db.getUsername(), db.getPassword());
 
     dataSource = DataSourceFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         Db2Source.DRIVER_CLASS,
         String.format(DatabaseDriver.DB2.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("db").asText()));
 
     try {
@@ -167,7 +167,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   @Test
   public void testCheckPrivilegesForUserWithLessPerm() throws Exception {
     createUser(LESS_PERMITTED_USER);
-    final JsonNode config = getConfig(LESS_PERMITTED_USER, PASSWORD);
+    final JsonNode config = getConfig(LESS_PERMITTED_USER, JdbcUtils.PASSWORD_KEY);
 
     final List<String> actualNamesWithPermission = getActualNamesWithPermission(config);
     final List<String> expected = List.of(STREAM_NAME3, STREAM_NAME1);
@@ -179,7 +179,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   public void testCheckPrivilegesForUserWithoutPerm() throws Exception {
     createUser(USER_WITH_OUT_PERMISSIONS);
 
-    final JsonNode config = getConfig(USER_WITH_OUT_PERMISSIONS, PASSWORD);
+    final JsonNode config = getConfig(USER_WITH_OUT_PERMISSIONS, JdbcUtils.PASSWORD_KEY);
 
     final List<String> actualNamesWithPermission = getActualNamesWithPermission(config);
     final List<String> expected = Collections.emptyList();
@@ -188,7 +188,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void createUser(final String lessPermittedUser) throws IOException, InterruptedException {
-    final String encryptedPassword = db.execInContainer("openssl", "passwd", PASSWORD).getStdout().replaceAll("\n", "");
+    final String encryptedPassword = db.execInContainer("openssl", "passwd", JdbcUtils.PASSWORD_KEY).getStdout().replaceAll("\n", "");
     db.execInContainer("useradd", lessPermittedUser, "-p", encryptedPassword);
   }
 

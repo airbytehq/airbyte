@@ -12,7 +12,11 @@ import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
+
+  public static final String STRING = "string";
+  public static final String TYPE = "type";
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -21,7 +25,7 @@ public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected String getExpectedConsentUrl() {
-    return "https://account.aws.snowflakecomputing.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state";
+    return "https://account.aws.snowflakecomputing.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state&scope=session%3Arole%3Asome_role";
   }
 
   @Override
@@ -34,7 +38,7 @@ public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected JsonNode getCompleteOAuthOutputSpecification() {
-    return getJsonSchema(Map.of("access_token", Map.of("type", "string"), "refresh_token", Map.of("type", "string")));
+    return getJsonSchema(Map.of("access_token", Map.of(TYPE, STRING), "refresh_token", Map.of(TYPE, STRING)));
   }
 
   @Override
@@ -45,6 +49,7 @@ public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
         "client_id", MoreOAuthParameters.SECRET_MASK);
   }
 
+  @Override
   protected JsonNode getOAuthParamConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("client_id", "test_client_id")
@@ -56,27 +61,29 @@ public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
   protected JsonNode getInputOAuthConfiguration() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", "account.aws.snowflakecomputing.com")
+        .put("role", "some_role")
         .build());
   }
 
+  @Override
   protected JsonNode getUserInputFromConnectorConfigSpecification() {
-    return getJsonSchema(Map.of("host", Map.of("type", "string")));
+    return getJsonSchema(Map.of("host", Map.of(TYPE, STRING), "role", Map.of(TYPE, STRING)));
   }
 
   @Test
   @Override
-  public void testGetSourceConsentUrlEmptyOAuthSpec() {}
+  void testGetSourceConsentUrlEmptyOAuthSpec() {}
 
   @Test
   @Override
-  public void testGetDestinationConsentUrlEmptyOAuthSpec() {}
+  void testGetDestinationConsentUrlEmptyOAuthSpec() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteDestinationOAuth() {}
+  void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteSourceOAuth() {}
+  void testDeprecatedCompleteSourceOAuth() {}
 
 }

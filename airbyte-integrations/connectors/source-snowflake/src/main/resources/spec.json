@@ -5,7 +5,6 @@
     "title": "Snowflake Source Spec",
     "type": "object",
     "required": ["host", "role", "warehouse", "database", "schema"],
-    "additionalProperties": true,
     "properties": {
       "credentials": {
         "title": "Authorization Method",
@@ -134,17 +133,19 @@
     "oauth_config_specification": {
       "oauth_user_input_from_connector_config_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "host": {
             "type": "string",
             "path_in_connector_config": ["host"]
+          },
+          "role": {
+            "type": "string",
+            "path_in_connector_config": ["role"]
           }
         }
       },
       "complete_oauth_output_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "access_token": {
             "type": "string",
@@ -158,7 +159,6 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string"
@@ -170,7 +170,6 @@
       },
       "complete_oauth_server_output_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string",

@@ -78,12 +78,12 @@ export class SourceService extends AirbyteRequestService {
     return deleteSource({ sourceId }, this.requestOptions);
   }
 
-  public async discoverSchema(sourceId: string) {
-    const result = await discoverSchemaForSource({ sourceId }, this.requestOptions);
+  public async discoverSchema(sourceId: string, disableCache?: boolean) {
+    const result = await discoverSchemaForSource({ sourceId, disable_cache: disableCache }, this.requestOptions);
 
     if (!result.jobInfo?.succeeded || !result.catalog) {
       // @ts-expect-error TODO: address this case
-      const e = new CommonRequestError(result);
+      const e = result.jobInfo?.logs ? new LogsRequestError(result.jobInfo) : new CommonRequestError(result);
       // Generate error with failed status and received logs
       e._status = 400;
       // @ts-expect-error address this case

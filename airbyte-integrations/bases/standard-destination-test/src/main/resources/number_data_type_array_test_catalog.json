@@ -23,13 +23,6 @@
               "type": "number",
               "airbyte_type": "integer"
             }
-          },
-          "array_big_integer": {
-            "type": ["array"],
-            "items": {
-              "type": "number",
-              "airbyte_type": "big_integer"
-            }
           }
         }
       }

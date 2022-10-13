@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class RechargeStream(HttpStream, ABC):
@@ -18,6 +19,9 @@ class RechargeStream(HttpStream, ABC):
 
     limit = 250
     page_num = 1
+
+    # regestring the default schema transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     @property
     def data_path(self):
@@ -73,6 +77,10 @@ class IncrementalRechargeStream(RechargeStream, ABC):
     def __init__(self, start_date, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
+
+    @property
+    def state_checkpoint_interval(self):
+        return self.limit
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = latest_record[self.cursor_field]

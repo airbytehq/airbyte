@@ -34,12 +34,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DestinationHandler {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationHandler.class);
 
   private final ConnectionsHandler connectionsHandler;
   private final Supplier<UUID> uuidGenerator;
@@ -62,7 +58,7 @@ public class DestinationHandler {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.validator = integrationSchemaValidation;
+    validator = integrationSchemaValidation;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
@@ -82,7 +78,6 @@ public class DestinationHandler {
         connectionsHandler,
         UUID::randomUUID,
         JsonSecretsProcessor.builder()
-            .maskSecrets(true)
             .copySecrets(true)
             .build(),
         new ConfigurationUpdate(configRepository, secretsRepositoryReader));
@@ -313,7 +308,8 @@ public class DestinationHandler {
         .destinationDefinitionId(destinationConnection.getDestinationDefinitionId())
         .connectionConfiguration(destinationConnection.getConfiguration())
         .name(destinationConnection.getName())
-        .destinationName(standardDestinationDefinition.getName());
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
   }
 
 }

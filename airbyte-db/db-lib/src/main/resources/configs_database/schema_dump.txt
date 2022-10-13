@@ -53,6 +53,7 @@ create table "public"."actor_definition"(
   "resource_requirements" jsonb null,
   "public" bool not null default false,
   "custom" bool not null default false,
+  "protocol_version" varchar(255) null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );
@@ -213,10 +214,6 @@ alter table "public"."actor_definition_workspace_grant"
   add constraint "actor_definition_workspace_grant_workspace_id_fkey"
     foreign key ("workspace_id")
     references "public"."workspace" ("id");
-alter table "public"."actor_oauth_parameter"
-  add constraint "actor_oauth_parameter_actor_definition_id_fkey"
-    foreign key ("actor_definition_id")
-    references "public"."actor_definition" ("id");
 alter table "public"."connection"
   add constraint "connection_actor_catalog_id_fk"
     foreign key ("source_catalog_id")

@@ -12,6 +12,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
+import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.protocol.models.AirbyteGlobalState;
@@ -81,15 +82,16 @@ public class StatePersistence {
    * @param state
    * @throws IOException
    */
-  public void updateOrCreateState(final UUID connectionId, final StateWrapper state) throws IOException {
+  public void updateOrCreateState(final UUID connectionId, final StateWrapper state)
+      throws IOException {
     final Optional<StateWrapper> previousState = getCurrentState(connectionId);
-    final boolean isMigration = previousState.isPresent() && previousState.get().getStateType() == StateType.LEGACY &&
-        state.getStateType() != StateType.LEGACY;
+    final StateType currentStateType = state.getStateType();
+    final boolean isMigration = StateMessageHelper.isMigration(currentStateType, previousState);
 
     // The only case where we allow a state migration is moving from LEGACY.
     // We expect any other migration to go through an explicit reset.
-    if (!isMigration && previousState.isPresent() && previousState.get().getStateType() != state.getStateType()) {
-      throw new IllegalStateException("Unexpected type migration from '" + previousState.get().getStateType() + "' to '" + state.getStateType() +
+    if (!isMigration && previousState.isPresent() && previousState.get().getStateType() != currentStateType) {
+      throw new IllegalStateException("Unexpected type migration from '" + previousState.get().getStateType() + "' to '" + currentStateType +
           "'. Migration of StateType need to go through an explicit reset.");
     }
 
@@ -215,6 +217,7 @@ public class StatePersistence {
    * @return the StateType of the records
    * @throws IllegalStateException If StateRecords have inconsistent types
    */
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static io.airbyte.db.instance.configs.jooq.generated.enums.StateType getStateType(
                                                                                             final UUID connectionId,
                                                                                             final List<StateRecord> records) {

@@ -60,6 +60,10 @@ class WorkspacesHandlerTest {
   private StandardWorkspace workspace;
   private WorkspacesHandler workspacesHandler;
 
+  private static final String TEST_EMAIL = "test@airbyte.io";
+  private static final String TEST_WORKSPACE_NAME = "test workspace";
+  private static final String TEST_WORKSPACE_SLUG = "test-workspace";
+
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() {
@@ -76,9 +80,9 @@ class WorkspacesHandlerTest {
     return new StandardWorkspace()
         .withWorkspaceId(UUID.randomUUID())
         .withCustomerId(UUID.randomUUID())
-        .withEmail("test@airbyte.io")
-        .withName("test workspace")
-        .withSlug("test-workspace")
+        .withEmail(TEST_EMAIL)
+        .withName(TEST_WORKSPACE_NAME)
+        .withSlug(TEST_WORKSPACE_SLUG)
         .withInitialSetupComplete(false)
         .withDisplaySetupWizard(true)
         .withNews(false)
@@ -113,7 +117,7 @@ class WorkspacesHandlerTest {
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name("new workspace")
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .news(false)
         .anonymousDataCollection(false)
         .securityUpdates(false)
@@ -123,7 +127,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead expectedRead = new WorkspaceRead()
         .workspaceId(uuid)
         .customerId(uuid)
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .name("new workspace")
         .slug("new-workspace")
         .initialSetupComplete(false)
@@ -150,7 +154,7 @@ class WorkspacesHandlerTest {
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name(workspace.getName())
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .news(false)
         .anonymousDataCollection(false)
         .securityUpdates(false)
@@ -160,7 +164,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead expectedRead = new WorkspaceRead()
         .workspaceId(uuid)
         .customerId(uuid)
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .name(workspace.getName())
         .slug(workspace.getSlug())
         .initialSetupComplete(false)
@@ -257,9 +261,9 @@ class WorkspacesHandlerTest {
     final WorkspaceRead workspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
-        .name("test workspace")
-        .slug("test-workspace")
+        .email(TEST_EMAIL)
+        .name(TEST_WORKSPACE_NAME)
+        .slug(TEST_WORKSPACE_SLUG)
         .initialSetupComplete(false)
         .displaySetupWizard(true)
         .news(false)
@@ -278,7 +282,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead workspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .name(workspace.getName())
         .slug(workspace.getSlug())
         .initialSetupComplete(workspace.getInitialSetupComplete())
@@ -309,9 +313,9 @@ class WorkspacesHandlerTest {
     final StandardWorkspace expectedWorkspace = new StandardWorkspace()
         .withWorkspaceId(workspace.getWorkspaceId())
         .withCustomerId(workspace.getCustomerId())
-        .withEmail("test@airbyte.io")
-        .withName("test workspace")
-        .withSlug("test-workspace")
+        .withEmail(TEST_EMAIL)
+        .withName(TEST_WORKSPACE_NAME)
+        .withSlug(TEST_WORKSPACE_SLUG)
         .withAnonymousDataCollection(true)
         .withSecurityUpdates(false)
         .withNews(false)
@@ -331,9 +335,9 @@ class WorkspacesHandlerTest {
     final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
-        .name("test workspace")
-        .slug("test-workspace")
+        .email(TEST_EMAIL)
+        .name(TEST_WORKSPACE_NAME)
+        .slug(TEST_WORKSPACE_SLUG)
         .initialSetupComplete(true)
         .displaySetupWizard(false)
         .news(false)
@@ -356,7 +360,7 @@ class WorkspacesHandlerTest {
     final StandardWorkspace expectedWorkspace = new StandardWorkspace()
         .withWorkspaceId(workspace.getWorkspaceId())
         .withCustomerId(workspace.getCustomerId())
-        .withEmail("test@airbyte.io")
+        .withEmail(TEST_EMAIL)
         .withName("New Workspace Name")
         .withSlug("new-workspace-name")
         .withAnonymousDataCollection(workspace.getAnonymousDataCollection())
@@ -376,7 +380,7 @@ class WorkspacesHandlerTest {
     final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
-        .email("test@airbyte.io")
+        .email(TEST_EMAIL)
         .name("New Workspace Name")
         .slug("new-workspace-name")
         .initialSetupComplete(workspace.getInitialSetupComplete())
@@ -392,7 +396,39 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  public void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
+  @DisplayName("Partial patch update should preserve unchanged fields")
+  void testWorkspacePatchUpdate() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final String EXPECTED_NEW_EMAIL = "expected-new-email@example.com";
+    final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate()
+        .workspaceId(workspace.getWorkspaceId())
+        .anonymousDataCollection(true)
+        .email(EXPECTED_NEW_EMAIL);
+
+    final StandardWorkspace expectedWorkspace = Jsons.clone(workspace).withEmail(EXPECTED_NEW_EMAIL).withAnonymousDataCollection(true);
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+        .thenReturn(workspace)
+        .thenReturn(expectedWorkspace);
+    // The same as the original workspace, with only the email and data collection flags changed.
+    final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
+        .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
+        .email(EXPECTED_NEW_EMAIL)
+        .name(workspace.getName())
+        .slug(workspace.getSlug())
+        .initialSetupComplete(workspace.getInitialSetupComplete())
+        .displaySetupWizard(workspace.getDisplaySetupWizard())
+        .news(workspace.getNews())
+        .anonymousDataCollection(true)
+        .securityUpdates(workspace.getSecurityUpdates())
+        .notifications(NotificationConverter.toApiList(workspace.getNotifications()));
+
+    final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
+    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+    assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
+  }
+
+  @Test
+  void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
     final WorkspaceGiveFeedback workspaceGiveFeedback = new WorkspaceGiveFeedback()
         .workspaceId(UUID.randomUUID());
 

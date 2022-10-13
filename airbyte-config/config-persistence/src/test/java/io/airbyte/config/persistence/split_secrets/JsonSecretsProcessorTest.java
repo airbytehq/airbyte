@@ -186,6 +186,7 @@ class JsonSecretsProcessorTest {
   private static final String ARRAY_OF_ONEOF = "array_of_oneof";
   private static final String NESTED_OBJECT = "nested_object";
   private static final String NESTED_ONEOF = "nested_oneof";
+  private static final String ONE_OF_SECRET = "oneof_secret";
   private static final String ONE_OF = "oneof";
   private static final String OPTIONAL_PASSWORD = "optional_password";
   private static final String POSTGRES_SSH_KEY = "postgres_ssh_key";
@@ -197,7 +198,6 @@ class JsonSecretsProcessorTest {
   public void setup() {
     processor = JsonSecretsProcessor.builder()
         .copySecrets(true)
-        .maskSecrets(true)
         .build();
   }
 
@@ -334,6 +334,8 @@ class JsonSecretsProcessorTest {
         Arguments.of(NESTED_ONEOF, false),
         Arguments.of(ONE_OF, true),
         Arguments.of(ONE_OF, false),
+        Arguments.of(ONE_OF_SECRET, true),
+        Arguments.of(ONE_OF_SECRET, false),
         Arguments.of(OPTIONAL_PASSWORD, true),
         Arguments.of(OPTIONAL_PASSWORD, false),
         Arguments.of(POSTGRES_SSH_KEY, true),
@@ -499,7 +501,6 @@ class JsonSecretsProcessorTest {
     public void setup() {
       processor = JsonSecretsProcessor.builder()
           .copySecrets(false)
-          .maskSecrets(false)
           .build();
     }
 
@@ -565,7 +566,7 @@ class JsonSecretsProcessorTest {
       final InputStream inputIs = getClass().getClassLoader().getResourceAsStream(inputFilePath);
       final JsonNode input = objectMapper.readTree(inputIs);
 
-      final String expectedFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
+      final String expectedFilePath = folder + "/expected.json";
       final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
       final JsonNode expected = objectMapper.readTree(expectedIs);
 

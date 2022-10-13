@@ -5,20 +5,22 @@
     "title": "Iterable Spec",
     "type": "object",
     "required": ["start_date", "api_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
+      "api_key": {
+        "type": "string",
+        "title": "API Key",
+        "description": "Iterable API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/iterable\">docs</a> for more information on how to obtain this key.",
+        "airbyte_secret": true,
+        "order": 0
+      },
       "start_date": {
         "type": "string",
         "title": "Start Date",
         "description": "The date from which you'd like to replicate data for Iterable, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "examples": ["2021-04-01T00:00:00Z"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-      },
-      "api_key": {
-        "type": "string",
-        "title": "API Key",
-        "description": "Iterable API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/iterable\">docs</a> for more information on how to obtain this key.",
-        "airbyte_secret": true
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "order": 1
       }
     }
   }

@@ -6,9 +6,9 @@ import { useServiceForm } from "../../serviceFormContext";
 import { makeConnectionConfigurationPath, OrderComparator } from "../../utils";
 import { ArraySection } from "./ArraySection";
 import { AuthSection } from "./auth/AuthSection";
-import { SectionContainer } from "./common";
 import { ConditionSection } from "./ConditionSection";
 import { PropertySection } from "./PropertySection";
+import { SectionContainer } from "./SectionContainer";
 
 interface FormNodeProps {
   sectionPath: string;
@@ -43,7 +43,7 @@ interface FormSectionProps {
   disabled?: boolean;
 }
 
-const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend, hasOauth, disabled }) => {
+export const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend, hasOauth, disabled }) => {
   const sections = useMemo(() => {
     const flattenedBlocks = [blocks].flat();
 
@@ -84,5 +84,3 @@ const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend
     </>
   );
 };
-
-export { FormSection };

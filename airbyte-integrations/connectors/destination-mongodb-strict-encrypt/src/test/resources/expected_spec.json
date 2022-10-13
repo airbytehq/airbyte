@@ -9,7 +9,6 @@
     "title": "MongoDB Destination Spec",
     "type": "object",
     "required": ["database", "auth_type"],
-    "additionalProperties": true,
     "properties": {
       "instance_type": {
         "description": "MongoDb instance to connect to. For MongoDB Atlas and Replica Set TLS connection is used by default.",
@@ -70,7 +69,6 @@
           },
           {
             "title": "MongoDB Atlas",
-            "additionalProperties": false,
             "required": ["instance", "cluster_url"],
             "properties": {
               "instance": {
@@ -101,7 +99,6 @@
         "oneOf": [
           {
             "title": "None",
-            "additionalProperties": false,
             "description": "None.",
             "required": ["authorization"],
             "type": "object",
@@ -114,7 +111,6 @@
           },
           {
             "title": "Login/Password",
-            "additionalProperties": false,
             "description": "Login/Password.",
             "required": ["authorization", "username", "password"],
             "type": "object",

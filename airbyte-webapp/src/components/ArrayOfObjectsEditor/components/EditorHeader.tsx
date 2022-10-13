@@ -15,7 +15,7 @@ const Content = styled.div`
   font-weight: 500;
   font-size: 14px;
   line-height: 17px;
-  margin: 5px 0;
+  margin: 5px 0 10px;
 `;
 
 interface EditorHeaderProps {
@@ -39,7 +39,7 @@ const EditorHeader: React.FC<EditorHeaderProps> = ({
     <Content>
       {mainTitle || <FormattedMessage id="form.items" values={{ count: itemsCount }} />}
       {mode !== "readonly" && (
-        <Button secondary type="button" onClick={onAddItem} data-testid="addItemButton" disabled={disabled}>
+        <Button variant="secondary" type="button" onClick={onAddItem} data-testid="addItemButton" disabled={disabled}>
           {addButtonText || <FormattedMessage id="form.addItems" />}
         </Button>
       )}

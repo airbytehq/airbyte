@@ -1,17 +1,18 @@
 import { useMutation, useQueryClient } from "react-query";
 
+import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationService } from "core/domain/connector/DestinationService";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
 import { useConfig } from "../../config";
-import { DestinationRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { DestinationRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useAnalyticsService } from "./Analytics";
+import { useRemoveConnectionsFromList } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const destinationsKeys = {
@@ -93,16 +94,17 @@ const useDeleteDestination = () => {
   const service = useDestinationService();
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
+  const removeConnectionsFromList = useRemoveConnectionsFromList();
 
   return useMutation(
-    (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionRead[] }) =>
+    (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionListItem[] }) =>
       service.delete(payload.destination.destinationId),
     {
       onSuccess: (_data, ctx) => {
-        analyticsService.track("Destination - Action", {
-          action: "Delete destination",
+        analyticsService.track(Namespace.DESTINATION, Action.DELETE, {
+          actionDescription: "Destination deleted",
           connector_destination: ctx.destination.destinationName,
-          connector_destination_id: ctx.destination.destinationDefinitionId,
+          connector_destination_definition_id: ctx.destination.destinationDefinitionId,
         });
 
         queryClient.removeQueries(destinationsKeys.detail(ctx.destination.destinationId));
@@ -115,12 +117,8 @@ const useDeleteDestination = () => {
             } as DestinationList)
         );
 
-        // To delete connections with current destination from local store
         const connectionIds = ctx.connectionsWithDestination.map((item) => item.connectionId);
-
-        queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
-          connections: ls?.connections.filter((c) => connectionIds.includes(c.connectionId)) ?? [],
-        }));
+        removeConnectionsFromList(connectionIds);
       },
     }
   );

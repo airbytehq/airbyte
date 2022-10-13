@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.s3.S3Destination'
+    mainClass = 'io.airbyte.integrations.destination.s3.S3DestinationRunner'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
@@ -13,6 +13,7 @@ dependencies {
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     // csv
@@ -21,16 +22,23 @@ dependencies {
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
     // parquet
-    implementation group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.3.3'
-    implementation group: 'org.apache.hadoop', name: 'hadoop-aws', version: '3.3.3'
-    implementation group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.3.3'
-    implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
-    implementation group: 'com.github.airbytehq', name: 'json-avro-converter', version: '1.0.1'
-
+    implementation ('org.apache.hadoop:hadoop-common:3.3.3') {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    }
+    implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    }
+    implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+    implementation ('com.github.airbytehq:json-avro-converter:1.0.1') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    implementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
     testImplementation "org.mockito:mockito-inline:4.1.0"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-s3')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:s3-destination-base-integration-test')
 }

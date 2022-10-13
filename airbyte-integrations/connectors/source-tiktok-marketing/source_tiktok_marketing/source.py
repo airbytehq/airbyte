@@ -5,18 +5,11 @@
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification, SyncMode
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .spec import (
-    CompleteOauthOutputSpecification,
-    CompleteOauthServerInputSpecification,
-    CompleteOauthServerOutputSpecification,
-    SourceTiktokMarketingSpec,
-)
 from .streams import (
     DEFAULT_END_DATE,
     DEFAULT_START_DATE,
@@ -63,27 +56,6 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceTiktokMarketing(AbstractSource):
-    def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """Returns the spec for this integration."""
-        return ConnectorSpecification(
-            documentationUrl=DOCUMENTATION_URL,
-            changelogUrl=DOCUMENTATION_URL,
-            supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
-            connectionSpecification=SourceTiktokMarketingSpec.schema(),
-            additionalProperties=True,
-            advanced_auth=AdvancedAuth(
-                auth_flow_type=AuthFlowType.oauth2_0,
-                predicate_key=["credentials", "auth_type"],
-                predicate_value="oauth2.0",
-                oauth_config_specification=OAuthConfigSpecification(
-                    complete_oauth_output_specification=CompleteOauthOutputSpecification.schema(),
-                    complete_oauth_server_input_specification=CompleteOauthServerInputSpecification.schema(),
-                    complete_oauth_server_output_specification=CompleteOauthServerOutputSpecification.schema(),
-                ),
-            ),
-        )
-
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""

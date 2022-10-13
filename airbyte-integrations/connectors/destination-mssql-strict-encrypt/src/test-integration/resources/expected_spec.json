@@ -9,7 +9,6 @@
     "title": "MS SQL Server Destination Spec",
     "type": "object",
     "required": ["host", "port", "username", "database", "schema"],
-    "additionalProperties": true,
     "properties": {
       "host": {
         "title": "Host",
@@ -68,7 +67,6 @@
         "oneOf": [
           {
             "title": "Encrypted (trust server certificate)",
-            "additionalProperties": false,
             "description": "Use the certificate provided by the server without verification. (For testing purposes only!)",
             "required": ["ssl_method"],
             "type": "object",
@@ -83,7 +81,6 @@
           },
           {
             "title": "Encrypted (verify certificate)",
-            "additionalProperties": false,
             "description": "Verify and use the certificate provided by the server.",
             "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
             "type": "object",

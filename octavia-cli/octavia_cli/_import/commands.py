@@ -15,6 +15,9 @@ from octavia_cli.get.commands import get_json_representation
 from octavia_cli.get.resources import Connection as UnmanagedConnection
 from octavia_cli.get.resources import Destination as UnmanagedDestination
 from octavia_cli.get.resources import Source as UnmanagedSource
+from octavia_cli.list.listings import Connections as UnmanagedConnections
+from octavia_cli.list.listings import Destinations as UnmanagedDestinations
+from octavia_cli.list.listings import Sources as UnmanagedSources
 
 
 class MissingResourceDependencyError(click.UsageError):
@@ -82,10 +85,13 @@ def import_connection(
         str: The generated import message.
     """
     remote_configuration = json.loads(get_json_representation(api_client, workspace_id, UnmanagedConnection, resource_to_get))
+    # Since #15253 "schedule" is deprecated
+    remote_configuration.pop("schedule", None)
     source_name, destination_name = remote_configuration["source"]["name"], remote_configuration["destination"]["name"]
     source_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
         project_path=".", definition_type="source", resource_name=source_name
     )
+
     destination_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
         project_path=".", definition_type="destination", resource_name=destination_name
     )
@@ -148,6 +154,19 @@ def destination(ctx: click.Context, resource: str):
 @requires_init
 def connection(ctx: click.Context, resource: str):
     click.echo(import_connection(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], resource))
+
+
+@_import.command(cls=OctaviaCommand, name="all", help=build_help_message("all"))
+@click.pass_context
+@requires_init
+def all(ctx: click.Context):
+    api_client, workspace_id = ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"]
+    for _, _, resource_id in UnmanagedSources(api_client, workspace_id).get_listing():
+        import_source_or_destination(api_client, workspace_id, UnmanagedSource, resource_id)
+    for _, _, resource_id in UnmanagedDestinations(api_client, workspace_id).get_listing():
+        import_source_or_destination(api_client, workspace_id, UnmanagedDestination, resource_id)
+    for _, resource_id, _, _, _ in UnmanagedConnections(api_client, workspace_id).get_listing():
+        import_connection(api_client, workspace_id, resource_id)
 
 
 AVAILABLE_COMMANDS: List[click.Command] = [source, destination, connection]

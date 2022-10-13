@@ -13,6 +13,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.sql.JDBCType;
@@ -39,19 +40,19 @@ public class MssqlStressTest extends JdbcStressTest {
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
-        .put("username", dbContainer.getUsername())
-        .put("password", dbContainer.getPassword())
+        .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
+        .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
+        .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
         .build());
 
     final DataSource dataSource = DataSourceFactory.create(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
+        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
+        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
-            configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asInt()));
+            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
+            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -61,7 +62,7 @@ public class MssqlStressTest extends JdbcStressTest {
       database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
       config = Jsons.clone(configWithoutDbName);
-      ((ObjectNode) config).put("database", dbName);
+      ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
 
       super.setup();
     } finally {

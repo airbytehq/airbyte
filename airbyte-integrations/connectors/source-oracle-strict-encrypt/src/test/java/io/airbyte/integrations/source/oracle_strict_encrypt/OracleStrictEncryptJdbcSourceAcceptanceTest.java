@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.oracle_strict_encrypt;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,12 +23,16 @@ import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.oracle.OracleSource;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -37,6 +42,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
@@ -75,6 +81,10 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     ID_VALUE_3 = new BigDecimal(3);
     ID_VALUE_4 = new BigDecimal(4);
     ID_VALUE_5 = new BigDecimal(5);
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s CLOB)";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(to_clob('clob data'))";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s VARCHAR(20))";
+    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)')";
 
     ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
         .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
@@ -128,21 +138,21 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   }
 
   void cleanUpTables() throws SQLException {
-    final Connection conn = DriverManager.getConnection(
+    final Connection connection = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
     for (final String schemaName : TEST_SCHEMAS) {
       final ResultSet resultSet =
-          conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
+          connection.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
-        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations.enquoteIdentifier(conn, tableName) : tableName;
-        conn.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
+        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations.enquoteIdentifier(connection, tableName) : tableName;
+        connection.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
       }
     }
-    if (!conn.isClosed())
-      conn.close();
+    if (!connection.isClosed())
+      connection.close();
   }
 
   @Override
@@ -196,11 +206,11 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   }
 
   public void executeOracleStatement(final String query) {
-    try (final Connection conn = DriverManager.getConnection(
+    try (final Connection connection = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
-        final Statement stmt = conn.createStatement()) {
+        final Statement stmt = connection.createStatement()) {
       stmt.execute(query);
     } catch (final SQLException e) {
       logSQLException(e);
@@ -255,6 +265,35 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     assertEquals(expected, actual);
   }
 
+  protected AirbyteCatalog getCatalog(final String defaultNamespace) {
+    return new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME_WITHOUT_PK,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(Collections.emptyList()),
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME_COMPOSITE_PK,
+            defaultNamespace,
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(
+                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
+  }
+
   @Override
   protected List<AirbyteMessage> getTestMessages() {
     return Lists.newArrayList(
@@ -280,15 +319,6 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
                         COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
-  }
-
-  @Test
-  void testIncrementalTimestampCheckCursor() throws Exception {
-    incrementalCursorCheck(
-        COL_UPDATED_AT,
-        "2005-10-18T00:00:00.000000Z",
-        "2006-10-19T00:00:00.000000Z",
-        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
   @Test
@@ -341,6 +371,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     expectedMessages.add(new AirbyteMessage()
         .withType(AirbyteMessage.Type.STATE)
         .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(new DbStreamState()
@@ -351,9 +382,18 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
-    assertTrue(expectedMessages.size() == actualMessagesSecondSync.size());
+    assertArrayEquals(expectedMessages.toArray(), actualMessagesSecondSync.toArray());
     assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
     assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
+  }
+
+  @Test
+  void testIncrementalTimestampCheckCursor() throws Exception {
+    incrementalCursorCheck(
+        COL_UPDATED_AT,
+        "2005-10-18T00:00:00.000000Z",
+        "2006-10-19T00:00:00.000000Z",
+        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
 }

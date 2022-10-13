@@ -21,7 +21,7 @@ def test_get_ref():
     s = """
     limit_ref: "*ref(limit)"
     """
-    ref_key = parser.get_ref_key(s)
+    ref_key = parser._get_ref_key(s)
     assert ref_key == "limit"
 
 
@@ -29,7 +29,7 @@ def test_get_ref_no_ref():
     s = """
     limit: 50
     """
-    ref_key = parser.get_ref_key(s)
+    ref_key = parser._get_ref_key(s)
     assert ref_key is None
 
 
@@ -100,7 +100,7 @@ def test_refer_and_overwrite():
       offset: "{{ next_page_token['offset'] }}"
       limit: "*ref(limit)"
     custom_request_parameters:
-      ref: "*ref(offset_request_parameters)"
+      $ref: "*ref(offset_request_parameters)"
       limit: "*ref(custom_limit)"
     """
     config = parser.parse(content)
@@ -120,9 +120,9 @@ example:
         value: "found it!"
   nested.path: "uh oh"
 reference_to_nested_path:
-  ref: "*ref(example.nested.path)"
+  $ref: "*ref(example.nested.path)"
 reference_to_nested_nested_value:
-  ref: "*ref(example.nested.more_nested.value)"
+  $ref: "*ref(example.nested.more_nested.value)"
     """
     config = parser.parse(content)
     assert config["example"]["nested"]["path"] == "first one"
@@ -130,3 +130,15 @@ reference_to_nested_nested_value:
     assert config["reference_to_nested_path"] == "uh oh"
     assert config["example"]["nested"]["more_nested"]["value"] == "found it!"
     assert config["reference_to_nested_nested_value"] == "found it!"
+
+
+def test_list():
+    content = """
+    list:
+      - "A"
+      - "B"
+    elem_ref: "*ref(list[0])"
+    """
+    config = parser.parse(content)
+    elem_ref = config["elem_ref"]
+    assert elem_ref == "A"

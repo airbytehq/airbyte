@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "default": 0
+    },
+    "description": {
+      "type": "string",
+      "default": ""
+    },
+    "status": {
+      "type": "string",
+      "default": ""
+    },
+    "waiting_on_who": {
+      "type": ["null", "string"],
+      "default": null
+    },
+    "waiting_on_what": {
+      "type": ["null", "string"],
+      "default": null
+    },
+    "link": {
+      "type": ["null", "string"],
+      "default": null
+    },
+    "value": {
+      "type": ["null", "integer"],
+      "default": null
+    },
+    "effort": {
+      "type": ["null", "integer"],
+      "default": null
+    },
+    "roi": {
+      "type": ["null", "number"],
+      "default": null
+    },
+    "private_to_circle": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "default": ""
+    },
+    "archived_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "default": null
+    },
+    "type": {
+      "type": "string",
+      "default": ""
+    },
+    "links": {
+      "type": "object",
+      "default": {},
+      "properties": {
+        "role": {
+          "type": ["null", "integer"],
+          "default": null
+        },
+        "person": {
+          "type": ["null", "integer"],
+          "default": null
+        },
+        "circle": {
+          "type": ["null", "integer"],
+          "default": null
+        }
+      }
+    }
+  }
+}

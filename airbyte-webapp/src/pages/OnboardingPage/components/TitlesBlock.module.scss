@@ -1,0 +1,10 @@
+@use "../../../scss/variables";
+
+.container {
+  padding: 42px 0 33px;
+  max-width: 493px;
+}
+
+.content {
+  padding-top: variables.$spacing-md;
+}

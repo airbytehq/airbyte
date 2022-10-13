@@ -34,12 +34,12 @@ class EnumsTest {
   }
 
   @Test
-  public void testConversion() {
+  void testConversion() {
     Assertions.assertEquals(E2.TEST, convertTo(E1.TEST, E2.class));
   }
 
   @Test
-  public void testConversionFails() {
+  void testConversionFails() {
     Assertions.assertThrows(IllegalArgumentException.class, () -> convertTo(E1.TEST2, E2.class));
   }
 

@@ -14,12 +14,8 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-# TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-#      expect_records:
-#        path: "integration_tests/expected_records.txt"
-#        extra_fields: no
-#        exact_order: no
-#        extra_records: yes
+      timeout_seconds: 7200
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 7200

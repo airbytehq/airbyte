@@ -1,0 +1,30 @@
+@use "../../scss/colors";
+@use "../../scss/variables";
+
+.content,
+.entityInfo {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32px 18px 27px;
+}
+
+.entityType {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: colors.$grey-400;
+}
+
+.entityInfo {
+  justify-content: left;
+  padding-top: variables.$spacing-lg;
+  padding-bottom: 39px;
+  gap: variables.$spacing-lg;
+}
+
+.entityIcon {
+  height: 40px;
+  width: 40px;
+}

@@ -40,12 +40,12 @@ const ConnectionCell: React.FC<ConnectionCellProps> = ({
   return (
     <>
       <Connector>
-        <Icon small icon={sourceIcon} />
+        <Icon icon={sourceIcon} />
         {sourceDefinitionName}
       </Connector>
       <Connector>
         <Arrow icon={faArrowRight} />
-        <Icon small icon={destinationIcon} />
+        <Icon icon={destinationIcon} />
         {destinationDefinitionName}
       </Connector>
     </>

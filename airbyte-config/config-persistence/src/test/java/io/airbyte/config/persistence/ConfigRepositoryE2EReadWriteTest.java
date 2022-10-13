@@ -139,7 +139,7 @@ class ConfigRepositoryE2EReadWriteTest {
   void testWorkspaceCountConnections() throws IOException {
 
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
-    assertEquals(4, configRepository.countConnectionsForWorkspace(workspaceId));
+    assertEquals(3, configRepository.countConnectionsForWorkspace(workspaceId));
     assertEquals(2, configRepository.countDestinationsForWorkspace(workspaceId));
     assertEquals(2, configRepository.countSourcesForWorkspace(workspaceId));
   }
@@ -199,10 +199,17 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  void testListWorkspaceStandardSync() throws IOException {
+  void testListWorkspaceStandardSyncAll() throws IOException {
 
-    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId());
+    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
     assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncExcludeDeleted() throws IOException {
+
+    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), false);
+    assertThat(MockData.standardSyncs().subList(0, 3)).hasSameElementsAs(syncs);
   }
 
   @Test

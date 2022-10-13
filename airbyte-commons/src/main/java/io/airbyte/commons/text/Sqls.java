@@ -4,6 +4,8 @@
 
 package io.airbyte.commons.text;
 
+import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -11,6 +13,10 @@ public class Sqls {
 
   public static <T extends Enum<T>> String toSqlName(final T value) {
     return value.name().toLowerCase();
+  }
+
+  public static <T extends Enum<T>> Set<String> toSqlNames(final Collection<T> values) {
+    return values.stream().map(Sqls::toSqlName).collect(Collectors.toSet());
   }
 
   /**

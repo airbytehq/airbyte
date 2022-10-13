@@ -5,7 +5,7 @@
         "name": "website_overview",
         "json_schema": {
           "type": ["null", "object"],
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "ga_date": {
               "type": ["string"]
@@ -60,7 +60,7 @@
         "name": "traffic_sources",
         "json_schema": {
           "type": ["null", "object"],
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "ga_date": {
               "type": ["string"]

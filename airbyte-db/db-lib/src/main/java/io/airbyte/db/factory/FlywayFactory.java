@@ -12,6 +12,7 @@ import org.flywaydb.core.Flyway;
  * instances. This class will be removed once the project has been converted to leverage an
  * application framework to manage the creation and injection of {@link Flyway} objects.
  */
+@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public class FlywayFactory {
 
   static final String MIGRATION_TABLE_FORMAT = "airbyte_%s_migrations";
