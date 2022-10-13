@@ -12,18 +12,10 @@ import {
 } from "pages/SettingsPage/pages/ConnectorsPage";
 // import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
 import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
-import { PageConfig, SettingsRoute } from "pages/SettingsPage/SettingsPage";
+import { PageConfig } from "pages/SettingsPage/SettingsPage";
+import { isOsanoActive, showOsanoDrawer } from "utils/dataPrivacy";
 
-const CloudSettingsRoutes = {
-  Configuration: SettingsRoute.Configuration,
-  Notifications: SettingsRoute.Notifications,
-  Account: SettingsRoute.Account,
-  Source: SettingsRoute.Source,
-  Destination: SettingsRoute.Destination,
-
-  Workspace: "workspaces",
-  AccessManagement: "access-management",
-} as const;
+import { CloudSettingsRoutes } from "./routePaths";
 
 export const CloudSettingsPage: React.FC = () => {
   // TODO: uncomment when supported in cloud
@@ -40,6 +32,15 @@ export const CloudSettingsPage: React.FC = () => {
               name: <FormattedMessage id="settings.account" />,
               component: AccountSettingsView,
             },
+            ...(isOsanoActive()
+              ? [
+                  {
+                    name: <FormattedMessage id="settings.cookiePreferences" />,
+                    path: "__COOKIE_PREFERENCES__", // Special path with no meaning, since the onClick will be triggered
+                    onClick: () => showOsanoDrawer(),
+                  },
+                ]
+              : []),
           ],
         },
         {
