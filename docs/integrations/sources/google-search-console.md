@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the google sear
 
 :::note
 
-Google has depreciated [some OAuth workflows](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration) that might impact you. We are in the process of working on a fix at the connector-level. Thank you for your patience!
+Google has deprecated [some OAuth workflows](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration) that might impact you. We are in the process of working on a fix at the connector-level.
 
 :::
 
