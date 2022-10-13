@@ -81,6 +81,7 @@ class WorkspacesHandlerTest {
     destinationHandler = mock(DestinationHandler.class);
     sourceHandler = mock(SourceHandler.class);
     uuidSupplier = mock(Supplier.class);
+
     workspace = generateWorkspace();
     workspacesHandler = new WorkspacesHandler(configRepository, secretsRepositoryWriter, connectionsHandler,
         destinationHandler, sourceHandler, uuidSupplier);
@@ -118,8 +119,8 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testCreateWorkspace() throws JsonValidationException, IOException {
-    when(configRepository.listStandardWorkspaces(false)).thenReturn(Collections.singletonList(workspace));
+  void testCreateWorkspace() throws JsonValidationException, IOException, ConfigNotFoundException {
+    when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(false))).thenReturn(workspace);
 
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
@@ -148,17 +149,19 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(false)
         .securityUpdates(false)
         .notifications(List.of(generateApiNotification()))
-        .defaultGeography(GEOGRAPHY_US);
+        .defaultGeography(GEOGRAPHY_US)
+        .webhookConfigs(Collections.emptyList());
 
     assertEquals(expectedRead, actualRead);
   }
 
   @Test
-  void testCreateWorkspaceDuplicateSlug() throws JsonValidationException, IOException {
+  void testCreateWorkspaceDuplicateSlug() throws JsonValidationException, IOException, ConfigNotFoundException {
     when(configRepository.getWorkspaceBySlugOptional(any(String.class), eq(true)))
         .thenReturn(Optional.of(workspace))
         .thenReturn(Optional.of(workspace))
         .thenReturn(Optional.empty());
+    when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(false))).thenReturn(workspace);
 
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
@@ -186,7 +189,8 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(false)
         .securityUpdates(false)
         .notifications(Collections.emptyList())
-        .defaultGeography(GEOGRAPHY_AUTO);
+        .defaultGeography(GEOGRAPHY_AUTO)
+        .webhookConfigs(Collections.emptyList());
 
     assertTrue(actualRead.getSlug().startsWith(workspace.getSlug()));
     assertNotEquals(workspace.getSlug(), actualRead.getSlug());
@@ -461,4 +465,5 @@ class WorkspacesHandlerTest {
     verify(configRepository).setFeedback(workspaceGiveFeedback.getWorkspaceId());
   }
 
+  // TODO(https://github.com/airbytehq/airbyte/issues/16740): add unit tests for webhook configs.
 }

@@ -8859,7 +8859,7 @@ follow the ISO 3166-1 alpha-2 standard. (<span class="nickname">webBackendListGe
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
       <a href="#WebBackendGeographiesListResult">WebBackendGeographiesListResult</a>
-      
+
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -11423,6 +11423,23 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">hasConnections </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">hasSources </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">hasDestinations </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebhookConfigRead"><code>WebhookConfigRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>the readable info for a webhook config; omits sensitive info e.g., auth token</div>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> human-readable name e.g., for display in UI </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebhookConfigWrite"><code>WebhookConfigWrite</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> human readable name for this webhook e.g., for UI display </div>
+<div class="param">authToken (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> An auth token, to be passed as the value for an HTTP Authorization header. Note - must include prefix such as &quot;Bearer <credential>&quot;. </div>
+<div class="param">validationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> If supplied, the webhook config will be validated by checking that this URL returns a 2xx response. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
