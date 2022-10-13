@@ -18,11 +18,13 @@ import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -147,7 +149,8 @@ public class ConnectionHelpers {
                                                               final UUID sourceId,
                                                               final UUID destinationId,
                                                               final List<UUID> operationIds,
-                                                              final UUID sourceCatalogId) {
+                                                              final UUID sourceCatalogId,
+                                                              final Geography geography) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
@@ -168,7 +171,8 @@ public class ConnectionHelpers {
             .cpuLimit(TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
             .memoryRequest(TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
             .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()))
-        .sourceCatalogId(sourceCatalogId);
+        .sourceCatalogId(sourceCatalogId)
+        .geography(geography);
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
@@ -177,7 +181,8 @@ public class ConnectionHelpers {
         standardSync.getSourceId(),
         standardSync.getDestinationId(),
         standardSync.getOperationIds(),
-        standardSync.getSourceCatalogId());
+        standardSync.getSourceCatalogId(),
+        Enums.convertTo(standardSync.getGeography(), Geography.class));
 
     if (standardSync.getSchedule() == null) {
       connectionRead.schedule(null);
@@ -200,7 +205,8 @@ public class ConnectionHelpers {
         .name(standardSync.getName())
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
-        .sourceCatalogId(standardSync.getSourceCatalogId());
+        .sourceCatalogId(standardSync.getSourceCatalogId())
+        .geography(ApiPojoConverters.toApiGeography(standardSync.getGeography()));
 
     if (standardSync.getNamespaceDefinition() != null) {
       connectionRead

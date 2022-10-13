@@ -4,7 +4,9 @@
 
 import json
 from typing import Any, List, Mapping, Optional, Tuple
+from urllib.parse import urlparse
 
+import jsonschema
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -12,7 +14,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
-from jsonschema import validate
 from source_google_search_console.exceptions import InvalidSiteURLValidationError
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
 from source_google_search_console.streams import (
@@ -41,11 +42,42 @@ custom_reports_schema = {
 
 
 class SourceGoogleSearchConsole(AbstractSource):
+    @staticmethod
+    def normalize_url(url):
+        parse_result = urlparse(url)
+        if parse_result.path == "":
+            parse_result = parse_result._replace(path="/")
+        return parse_result.geturl()
+
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        authorization = config["authorization"]
+        if authorization["auth_type"] == "Service":
+            try:
+                authorization["service_account_info"] = json.loads(authorization["service_account_info"])
+            except ValueError:
+                raise Exception("authorization.service_account_info is not valid JSON")
+
+        if "custom_reports" in config:
+            try:
+                config["custom_reports"] = json.loads(config["custom_reports"])
+            except ValueError:
+                raise Exception("custom_reports is not valid JSON")
+            jsonschema.validate(config["custom_reports"], custom_reports_schema)
+
+        pendulum.parse(config["start_date"])
+        end_date = config.get("end_date")
+        if end_date:
+            pendulum.parse(end_date)
+        config["end_date"] = end_date or pendulum.now().to_date_string()
+
+        config["site_urls"] = [self.normalize_url(url) for url in config["site_urls"]]
+        return config
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
+            config = self._validate_and_transform(config)
             stream_kwargs = self.get_stream_kwargs(config)
-            self.validate_site_urls(config, stream_kwargs)
-
+            self.validate_site_urls(config["site_urls"], stream_kwargs["authenticator"])
             sites = Sites(**stream_kwargs)
             stream_slice = sites.stream_slices(SyncMode.full_refresh)
 
@@ -56,7 +88,7 @@ class SourceGoogleSearchConsole(AbstractSource):
                 next(sites_gen)
             return True, None
 
-        except InvalidSiteURLValidationError as e:
+        except (InvalidSiteURLValidationError, jsonschema.ValidationError) as e:
             return False, repr(e)
         except Exception as error:
             return (
@@ -65,9 +97,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             )
 
     @staticmethod
-    def validate_site_urls(config, stream_kwargs):
-        auth = stream_kwargs["authenticator"]
-
+    def validate_site_urls(site_urls, auth):
         if isinstance(auth, ServiceAccountAuthenticator):
             request = auth(requests.Request(method="GET", url="https://www.googleapis.com/webmasters/v3/sites"))
             with requests.Session() as s:
@@ -76,10 +106,8 @@ class SourceGoogleSearchConsole(AbstractSource):
             response = requests.get("https://www.googleapis.com/webmasters/v3/sites", headers=auth.get_auth_header())
         response_data = response.json()
 
-        site_urls = set([s["siteUrl"] for s in response_data["siteEntry"]])
-        provided_by_client = set(config["site_urls"])
-
-        invalid_site_url = provided_by_client - site_urls
+        remote_site_urls = {s["siteUrl"] for s in response_data["siteEntry"]}
+        invalid_site_url = set(site_urls) - remote_site_urls
         if invalid_site_url:
             raise InvalidSiteURLValidationError(f'The following URLs are not permitted: {", ".join(invalid_site_url)}')
 
@@ -87,7 +115,7 @@ class SourceGoogleSearchConsole(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-
+        config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
 
         streams = [
@@ -106,40 +134,32 @@ class SourceGoogleSearchConsole(AbstractSource):
         return streams
 
     def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
-        if "custom_reports" not in config:
-            return []
-
-        reports = json.loads(config["custom_reports"])
-        validate(reports, custom_reports_schema)
-
         return [
             type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
-            for report in reports
+            for report in config.get("custom_reports", [])
         ]
 
-    @staticmethod
-    def get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        authorization = config.get("authorization", {})
-
-        stream_kwargs = {
-            "site_urls": config.get("site_urls"),
-            "start_date": config.get("start_date"),
-            "end_date": config.get("end_date") or pendulum.now().to_date_string(),
+    def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            "site_urls": config["site_urls"],
+            "start_date": config["start_date"],
+            "end_date": config["end_date"],
+            "authenticator": self.get_authenticator(config),
         }
 
-        auth_type = authorization.get("auth_type")
+    def get_authenticator(self, config):
+        authorization = config["authorization"]
+        auth_type = authorization["auth_type"]
+
         if auth_type == "Client":
-            stream_kwargs["authenticator"] = Oauth2Authenticator(
+            return Oauth2Authenticator(
                 token_refresh_endpoint="https://oauth2.googleapis.com/token",
-                client_secret=authorization.get("client_secret"),
-                client_id=authorization.get("client_id"),
-                refresh_token=authorization.get("refresh_token"),
+                client_secret=authorization["client_secret"],
+                client_id=authorization["client_id"],
+                refresh_token=authorization["refresh_token"],
             )
         elif auth_type == "Service":
-            stream_kwargs["authenticator"] = ServiceAccountAuthenticator(
-                service_account_info=json.loads(authorization.get("service_account_info")), email=authorization.get("email")
+            return ServiceAccountAuthenticator(
+                service_account_info=authorization["service_account_info"],
+                email=authorization["email"],
             )
-        else:
-            raise Exception(f"Invalid auth type: {auth_type}")
-
-        return stream_kwargs

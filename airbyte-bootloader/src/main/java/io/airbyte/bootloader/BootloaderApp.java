@@ -12,6 +12,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.Geography;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.DefinitionsProvider;
@@ -286,8 +287,11 @@ public class BootloaderApp {
         .withSlug(workspaceId.toString())
         .withInitialSetupComplete(false)
         .withDisplaySetupWizard(true)
-        .withTombstone(false);
-    configRepository.writeStandardWorkspace(workspace);
+        .withTombstone(false)
+        .withDefaultGeography(Geography.AUTO);
+    // NOTE: it's safe to use the NoSecrets version since we know that the user hasn't supplied any
+    // secrets yet.
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
   }
 
   private static void assertNonBreakingMigration(final JobPersistence jobPersistence, final AirbyteVersion airbyteVersion)
