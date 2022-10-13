@@ -317,19 +317,13 @@ public class WebBackendConnectionsHandler {
       diff = null;
     }
 
-    log.info("source catalog id is: " + connection.getSourceCatalogId());
-    log.info("source id is: " + connection.getSourceId());
-
     final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
-        configRepository.getMostRecentActorCatalogFetchEventForSource(connection.getSourceCatalogId());
+        configRepository.getMostRecentActorCatalogFetchEventForSource(connection.getSourceId());
 
-    log.info("most recent fetch event: " + mostRecentFetchEvent);
     if (mostRecentFetchEvent.isPresent()) {
-      log.info("inside most recent fetch event");
       final Long mostRecentCatalogCreatedAt = mostRecentFetchEvent.get().getCreatedAt();
       final Long currentCatalogCreatedAt = configRepository.getActorCatalogById(connection.getSourceCatalogId()).getCreatedAt();
       if (mostRecentCatalogCreatedAt > currentCatalogCreatedAt) {
-        log.info("connection object is: " + connection);
         if (connection.getIsBreaking()) {
           schemaChange = SchemaChange.BREAKING;
         } else {
