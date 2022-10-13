@@ -101,7 +101,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
         if self.compare_date_template:
             latest_state = pendulum.parse(latest_record[self.cursor_field]).strftime(self.compare_date_template)
         else:
-            latest_state = latest_record[self.cursor_field]
+            latest_state = latest_record.get(self.cursor_field, "")
         return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -234,7 +234,7 @@ class ActiveUsers(IncrementalAmplitudeStream):
         if response_data:
             series = list(map(list, zip(*response_data["series"])))
             for i, date in enumerate(response_data["xValues"]):
-                yield {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
+                yield from [{"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}] if series else []
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/users"

@@ -13,6 +13,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinateToPayload;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -319,6 +320,12 @@ public class SecretsRepositoryWriter {
     } catch (final ConfigNotFoundException e) {
       return Optional.empty();
     }
+  }
+
+  public void writeWorkspace(final StandardWorkspace workspace)
+      throws JsonValidationException, IOException {
+    // TODO(msiega): split secrets once they're introduced.
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
   }
 
 }
