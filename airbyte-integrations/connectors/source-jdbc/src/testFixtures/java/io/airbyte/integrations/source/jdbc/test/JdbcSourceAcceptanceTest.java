@@ -92,6 +92,8 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String TABLE_NAME_COMPOSITE_PK = "full_name_composite_pk";
   public static String TABLE_NAME_WITHOUT_CURSOR_TYPE = "table_without_cursor_type";
   public static String TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "table_with_null_cursor_type";
+  // this table is used in testing incremental sync with concurrent insertions
+  public static String TABLE_NAME_AND_TIMESTAMP = "name_and_timestamp";
 
   public static String COL_ID = "id";
   public static String COL_NAME = "name";
@@ -822,16 +824,11 @@ public abstract class JdbcSourceAcceptanceTest {
         expectedRecordMessages);
   }
 
-  protected String getConcurrentTestTableName() {
-    return "name_and_timestamp";
-  }
-
   // See https://github.com/airbytehq/airbyte/issues/14732 for rationale and details.
   @Test
   void testIncrementalWithConcurrentInsertion() throws Exception {
     final String namespace = getDefaultNamespace();
-    final String tableName = getConcurrentTestTableName();
-    final String fullyQualifiedTableName = getFullyQualifiedTableName(tableName);
+    final String fullyQualifiedTableName = getFullyQualifiedTableName(TABLE_NAME_AND_TIMESTAMP);
 
     // 1st sync
     database.execute(ctx -> {
@@ -843,7 +840,7 @@ public abstract class JdbcSourceAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         new AirbyteCatalog().withStreams(List.of(
             CatalogHelpers.createAirbyteStream(
-                tableName,
+                TABLE_NAME_AND_TIMESTAMP,
                 namespace,
                 Field.of("name", JsonSchemaType.STRING),
                 Field.of("timestamp", JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)))));
@@ -854,12 +851,12 @@ public abstract class JdbcSourceAcceptanceTest {
     });
 
     final List<AirbyteMessage> firstSyncActualMessages = MoreIterators.toList(
-        source.read(config, configuredCatalog, createEmptyState(tableName, namespace)));
+        source.read(config, configuredCatalog, createEmptyState(TABLE_NAME_AND_TIMESTAMP, namespace)));
 
     // cursor after 1st sync: 2021-01-01 00:00:00, count 2
     final Optional<AirbyteMessage> firstSyncStateOptional = firstSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(firstSyncStateOptional.isPresent());
-    final JsonNode firstSyncState = getStateData(firstSyncStateOptional.get(), tableName);
+    final JsonNode firstSyncState = getStateData(firstSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP);
     assertTrue(firstSyncState.get("cursor").asText().contains("2021-01-01"));
     assertTrue(firstSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(2L, firstSyncState.get("cursor_record_count").asLong());
@@ -876,12 +873,12 @@ public abstract class JdbcSourceAcceptanceTest {
     });
 
     final List<AirbyteMessage> secondSyncActualMessages = MoreIterators.toList(
-        source.read(config, configuredCatalog, createState(tableName, namespace, firstSyncState)));
+        source.read(config, configuredCatalog, createState(TABLE_NAME_AND_TIMESTAMP, namespace, firstSyncState)));
 
     // cursor after 2nd sync: 2021-01-02 00:00:00, count 1
     final Optional<AirbyteMessage> secondSyncStateOptional = secondSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(secondSyncStateOptional.isPresent());
-    final JsonNode secondSyncState = getStateData(secondSyncStateOptional.get(), tableName);
+    final JsonNode secondSyncState = getStateData(secondSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP);
     assertTrue(secondSyncState.get("cursor").asText().contains("2021-01-02"));
     assertTrue(secondSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(1L, secondSyncState.get("cursor_record_count").asLong());
@@ -900,12 +897,12 @@ public abstract class JdbcSourceAcceptanceTest {
     });
 
     final List<AirbyteMessage> thirdSyncActualMessages = MoreIterators.toList(
-        source.read(config, configuredCatalog, createState(tableName, namespace, secondSyncState)));
+        source.read(config, configuredCatalog, createState(TABLE_NAME_AND_TIMESTAMP, namespace, secondSyncState)));
 
     // Cursor after 3rd sync is: 2021-01-03 00:00:00, count 1.
     final Optional<AirbyteMessage> thirdSyncStateOptional = thirdSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(thirdSyncStateOptional.isPresent());
-    final JsonNode thirdSyncState = getStateData(thirdSyncStateOptional.get(), tableName);
+    final JsonNode thirdSyncState = getStateData(thirdSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP);
     assertTrue(thirdSyncState.get("cursor").asText().contains("2021-01-03"));
     assertTrue(thirdSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(1L, thirdSyncState.get("cursor_record_count").asLong());

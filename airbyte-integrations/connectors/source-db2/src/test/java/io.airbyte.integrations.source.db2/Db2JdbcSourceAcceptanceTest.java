@@ -41,8 +41,9 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     TABLE_NAME_COMPOSITE_PK = "FULL_NAME_COMPOSITE_PK";
     TABLE_NAME_WITHOUT_CURSOR_TYPE = "TABLE_NAME_WITHOUT_CURSOR_TYPE";
     TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE";
+    TABLE_NAME_AND_TIMESTAMP = "NAME_AND_TIMESTAMP";
     TEST_TABLES = ImmutableSet
-        .of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK);
+        .of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK, TABLE_NAME_AND_TIMESTAMP);
     COL_ID = "ID";
     COL_NAME = "NAME";
     COL_UPDATED_AT = "UPDATED_AT";
@@ -131,11 +132,6 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new Db2Source();
-  }
-
-  @Override
-  protected String getConcurrentTestTableName() {
-    return "NAME_AND_TIMESTAMP";
   }
 
 }

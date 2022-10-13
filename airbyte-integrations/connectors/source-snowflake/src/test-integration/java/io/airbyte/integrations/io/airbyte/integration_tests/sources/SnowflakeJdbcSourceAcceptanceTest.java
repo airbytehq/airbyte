@@ -57,6 +57,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
     TABLE_NAME_WITHOUT_PK = "ID_AND_NAME_WITHOUT_PK";
     TABLE_NAME_COMPOSITE_PK = "FULL_NAME_COMPOSITE_PK";
+    TABLE_NAME_AND_TIMESTAMP = "NAME_AND_TIMESTAMP";
     COL_ID = "ID";
     COL_NAME = "NAME";
     COL_UPDATED_AT = "UPDATED_AT";
@@ -221,11 +222,6 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .withCursorRecordCount(1L);
     expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
-  }
-
-  @Override
-  protected String getConcurrentTestTableName() {
-    return "NAME_AND_TIMESTAMP";
   }
 
 }
