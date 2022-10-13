@@ -6,7 +6,6 @@ package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
-import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
@@ -193,14 +192,12 @@ public class DbConverter {
     return new ActorCatalog()
         .withId(record.get(ACTOR_CATALOG.ID))
         .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
-        .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH))
-        .withCreatedAt(record.get(ACTOR_CATALOG.CREATED_AT).toInstant().toEpochMilli());
+        .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
   }
 
   public static ActorCatalogFetchEvent buildActorCatalogFetchEvent(final Record record) {
     return new ActorCatalogFetchEvent()
-        .withId(record.get(ACTOR_CATALOG.ID))
-        .withCreatedAt(record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT).toInstant().toEpochMilli());
+        .withActorCatalogId(record.get(ACTOR_CATALOG.ID));
   }
 
   public static WorkspaceServiceAccount buildWorkspaceServiceAccount(final Record record) {
