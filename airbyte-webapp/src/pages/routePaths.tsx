@@ -15,5 +15,5 @@ export enum RoutePaths {
   SourceNew = "new-source",
   DestinationNew = "new-destination",
 
-  Builder = "builder",
+  ConnectorBuilder = "connector-builder",
 }

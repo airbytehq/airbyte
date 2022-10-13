@@ -14,8 +14,8 @@ import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
+import { ConnectorBuilderPage } from "../components/ConnectorBuilderPage/ConnectorBuilderPage";
 import { WorkspaceRead } from "../core/request/AirbyteClient";
-import { BuilderPage } from "./BuilderPage/BuilderPage";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
 import OnboardingPage from "./OnboardingPage";
@@ -37,7 +37,7 @@ const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
 };
 
 const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) => {
-  const allowBuilder = useFeature(FeatureItem.AllowBuilder);
+  const allowConnectorBuilder = useFeature(FeatureItem.AllowConnectorBuilder);
   return (
     <MainView>
       <ApiErrorBoundary>
@@ -46,7 +46,9 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) =
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
-          {allowBuilder && <Route path={`${RoutePaths.Builder}/*`} element={<BuilderPage />} />}
+          {allowConnectorBuilder && (
+            <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
+          )}
           {workspace.displaySetupWizard ? (
             <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
           ) : null}

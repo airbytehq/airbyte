@@ -2731,11 +2731,14 @@ components:
       required:
         - sourceDefinitionId
         - connectionConfiguration
+        - workspaceId
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     SourceCreate:
       type: object
       required:
@@ -3027,6 +3030,8 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     DestinationCreate:
       type: object
       required:
@@ -4204,6 +4209,7 @@ components:
       required:
         - transformType
         - fieldName
+        - breaking
       properties:
         transformType:
           type: string
@@ -4213,6 +4219,8 @@ components:
             - update_field_schema
         fieldName:
           $ref: "#/components/schemas/FieldName"
+        breaking:
+          type: boolean
         addField:
           $ref: "#/components/schemas/FieldAdd"
         removeField:
