@@ -91,6 +91,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(to_clob('clob data'))";
     CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s VARCHAR(20))";
     INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)')";
+    INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY = "INSERT INTO %s (name, timestamp) VALUES ('%s', TO_TIMESTAMP('%s', 'YYYY-MM-DD HH24:MI:SS'))";
 
     ORACLE_DB = new AirbyteOracleTestContainer()
         .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
@@ -284,7 +285,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     .withStreamName(streamName)
                     .withStreamNamespace(namespace)
                     .withCursorField(ImmutableList.of(COL_ID))
-                    .withCursor("5")))))));
+                    .withCursor("5")
+                    .withCursorRecordCount(1L)))))));
 
     setEmittedAtToNull(actualMessagesSecondSync);
 

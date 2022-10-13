@@ -120,6 +120,8 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(0);";
   public static String CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s VARCHAR(20));";
   public static String INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
+  public static String INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY = "INSERT INTO %s (name, timestamp) VALUES ('%s', '%s')";
+
   public JsonNode config;
   public DataSource dataSource;
   public JdbcDatabase database;
@@ -836,8 +838,8 @@ public abstract class JdbcSourceAcceptanceTest {
     // 1st sync
     database.execute(ctx -> {
       ctx.createStatement().execute(createTableQuery(fullyQualifiedTableName, columnDefinition, ""));
-      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('a', '2021-01-01 00:00:00')", fullyQualifiedTableName));
-      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('b', '2021-01-01 00:00:00')", fullyQualifiedTableName));
+      ctx.createStatement().execute(String.format(INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY, fullyQualifiedTableName, "a", "2021-01-01 00:00:00"));
+      ctx.createStatement().execute(String.format(INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY, fullyQualifiedTableName, "b", "2021-01-01 00:00:00"));
     });
 
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
@@ -873,7 +875,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     // 2nd sync
     database.execute(ctx -> {
-      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('c', '2021-01-02 00:00:00')", fullyQualifiedTableName));
+      ctx.createStatement().execute(String.format(INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY, fullyQualifiedTableName, "c", "2021-01-02 00:00:00"));
     });
 
     final List<AirbyteMessage> secondSyncActualMessages = MoreIterators.toList(
@@ -896,9 +898,9 @@ public abstract class JdbcSourceAcceptanceTest {
 
     // 3rd sync has records with duplicated cursors
     database.execute(ctx -> {
-      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('d', '2021-01-02 00:00:00')", fullyQualifiedTableName));
-      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('e', '2021-01-02 00:00:00')", fullyQualifiedTableName));
-      ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('f', '2021-01-03 00:00:00')", fullyQualifiedTableName));
+      ctx.createStatement().execute(String.format(INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY, fullyQualifiedTableName, "d", "2021-01-02 00:00:00"));
+      ctx.createStatement().execute(String.format(INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY, fullyQualifiedTableName, "e", "2021-01-02 00:00:00"));
+      ctx.createStatement().execute(String.format(INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY, fullyQualifiedTableName, "f", "2021-01-03 00:00:00"));
     });
 
     final List<AirbyteMessage> thirdSyncActualMessages = MoreIterators.toList(
