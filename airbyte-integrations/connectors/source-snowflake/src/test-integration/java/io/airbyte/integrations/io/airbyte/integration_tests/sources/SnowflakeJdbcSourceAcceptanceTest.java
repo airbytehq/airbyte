@@ -64,6 +64,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     COL_FIRST_NAME = "FIRST_NAME";
     COL_LAST_NAME = "LAST_NAME";
     COL_LAST_NAME_WITH_SPACE = "LAST NAME";
+    COL_TIMESTAMP = "TIMESTAMP";
     ID_VALUE_1 = new BigDecimal(1);
     ID_VALUE_2 = new BigDecimal(2);
     ID_VALUE_3 = new BigDecimal(3);
