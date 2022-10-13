@@ -5,8 +5,6 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
@@ -327,8 +325,7 @@ public class SecretsRepositoryWriter {
   public void writeWorkspace(final StandardWorkspace workspace)
       throws JsonValidationException, IOException {
     // Get the schema for the webhook config so we can split out any secret fields.
-    final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-    final JsonNode webhookConfigSchema = mapper.readTree(ConfigSchema.WORKSPACE_WEBHOOK_OPERATION_CONFIGS.getConfigSchemaFile());
+    final JsonNode webhookConfigSchema = Jsons.jsonNodeFromFile(ConfigSchema.WORKSPACE_WEBHOOK_OPERATION_CONFIGS.getConfigSchemaFile());
     // Check if there's an existing config, so we can re-use the secret coordinates.
     final var previousWorkspace = getWorkspaceIfExists(workspace.getWorkspaceId(), false);
     Optional<JsonNode> previousWebhookConfigs = Optional.empty();
@@ -352,7 +349,7 @@ public class SecretsRepositoryWriter {
   private Optional<StandardWorkspace> getWorkspaceIfExists(final UUID workspaceId, final boolean includeTombstone) {
     try {
       final StandardWorkspace existingWorkspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, includeTombstone);
-      return Optional.of(existingWorkspace);
+      return existingWorkspace == null ? Optional.empty() : Optional.of(existingWorkspace);
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
       return Optional.empty();
     }

@@ -54,6 +54,7 @@ import org.mockito.ArgumentCaptor;
 class WorkspacesHandlerTest {
 
   public static final String FAILURE_NOTIFICATION_WEBHOOK = "http://airbyte.notifications/failure";
+  public static final String NEW_WORKSPACE = "new workspace";
   private ConfigRepository configRepository;
   private SecretsRepositoryWriter secretsRepositoryWriter;
   private ConnectionsHandler connectionsHandler;
@@ -128,7 +129,7 @@ class WorkspacesHandlerTest {
     configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
-        .name("new workspace")
+        .name(NEW_WORKSPACE)
         .email(TEST_EMAIL)
         .news(false)
         .anonymousDataCollection(false)
@@ -141,7 +142,7 @@ class WorkspacesHandlerTest {
         .workspaceId(uuid)
         .customerId(uuid)
         .email(TEST_EMAIL)
-        .name("new workspace")
+        .name(NEW_WORKSPACE)
         .slug("new-workspace")
         .initialSetupComplete(false)
         .displaySetupWizard(false)
@@ -465,5 +466,42 @@ class WorkspacesHandlerTest {
     verify(configRepository).setFeedback(workspaceGiveFeedback.getWorkspaceId());
   }
 
-  // TODO(https://github.com/airbytehq/airbyte/issues/16740): add unit tests for webhook configs.
+  @Test
+  void testWorkspaceIsWrittenThroughSecretsWriter() throws JsonValidationException, ConfigNotFoundException, IOException {
+    secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
+    workspacesHandler = new WorkspacesHandler(configRepository, secretsRepositoryWriter, connectionsHandler,
+        destinationHandler, sourceHandler, uuidSupplier);
+
+    final UUID uuid = UUID.randomUUID();
+    when(uuidSupplier.get()).thenReturn(uuid);
+
+    final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
+        .name(NEW_WORKSPACE)
+        .email(TEST_EMAIL)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false)
+        .notifications(List.of(generateApiNotification()))
+        .defaultGeography(GEOGRAPHY_US);
+
+    final WorkspaceRead actualRead = workspacesHandler.createWorkspace(workspaceCreate);
+    final WorkspaceRead expectedRead = new WorkspaceRead()
+        .workspaceId(uuid)
+        .customerId(uuid)
+        .email(TEST_EMAIL)
+        .name(NEW_WORKSPACE)
+        .slug("new-workspace")
+        .initialSetupComplete(false)
+        .displaySetupWizard(false)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false)
+        .notifications(List.of(generateApiNotification()))
+        .defaultGeography(GEOGRAPHY_US)
+        .webhookConfigs(Collections.emptyList());
+
+    assertEquals(expectedRead, actualRead);
+    verify(secretsRepositoryWriter, times(1)).writeWorkspace(any());
+  }
+
 }
