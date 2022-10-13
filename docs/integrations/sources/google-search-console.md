@@ -7,6 +7,12 @@ This page contains the setup guide and reference information for the google sear
 
 * Credentials to a Google Service Account \(or Google Service Account with delegated Domain Wide Authority\) or Google User Account
 
+:::note
+
+Google has depreciated [some OAuth workflows](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration) that might impact you. We are in the process of working on a fix at the connector-level. Thank you for your patience!
+
+:::
+
 
 ## Setup guide
 ### Step 1: Set up google search console
