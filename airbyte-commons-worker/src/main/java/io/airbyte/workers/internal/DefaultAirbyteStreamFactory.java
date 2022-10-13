@@ -45,8 +45,8 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   }
 
   DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
-      final Logger logger,
-      final MdcScope.Builder containerLogMdcBuilder) {
+                              final Logger logger,
+                              final MdcScope.Builder containerLogMdcBuilder) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
