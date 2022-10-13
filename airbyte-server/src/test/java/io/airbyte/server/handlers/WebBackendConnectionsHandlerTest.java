@@ -88,7 +88,6 @@ import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;

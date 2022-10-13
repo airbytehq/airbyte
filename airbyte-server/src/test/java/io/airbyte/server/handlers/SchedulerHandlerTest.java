@@ -74,7 +74,6 @@ import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;

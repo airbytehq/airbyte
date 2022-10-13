@@ -16,7 +16,6 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
@@ -88,7 +87,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            final String airbyteVersion) {
     this.jobRunConfig = jobRunConfig;
 
-    this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    this.jobRoot = TemporalUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.workerSupplier = workerSupplier;
     this.inputSupplier = inputSupplier;
     this.mdcSetter = mdcSetter;

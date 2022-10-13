@@ -10,10 +10,19 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.DeletedWorkflowException;
+import io.airbyte.commons.temporal.exception.UnreachableWorkflowException;
+import io.airbyte.commons.temporal.scheduling.CheckConnectionWorkflow;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.commons.temporal.scheduling.DiscoverCatalogWorkflow;
+import io.airbyte.commons.temporal.scheduling.SpecWorkflow;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.JobCheckConnectionConfig;
+import io.airbyte.config.JobDiscoverCatalogConfig;
+import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.persistence.StreamResetPersistence;
@@ -312,6 +321,47 @@ public class TemporalClient {
     }
   }
 
+  public TemporalResponse<ConnectorJobOutput> submitGetSpec(final UUID jobId, final int attempt, final JobGetSpecConfig config) {
+    final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
+
+    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
+        .withJobId(jobId.toString())
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getDockerImage());
+    return execute(jobRunConfig,
+        () -> getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(jobRunConfig, launcherConfig));
+
+  }
+
+  public TemporalResponse<ConnectorJobOutput> submitCheckConnection(final UUID jobId,
+                                                                    final int attempt,
+                                                                    final JobCheckConnectionConfig config) {
+    final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
+    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
+        .withJobId(jobId.toString())
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getDockerImage());
+    final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
+
+    return execute(jobRunConfig,
+        () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
+  }
+
+  public TemporalResponse<ConnectorJobOutput> submitDiscoverSchema(final UUID jobId,
+                                                                   final int attempt,
+                                                                   final JobDiscoverCatalogConfig config) {
+    final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
+    final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
+        .withJobId(jobId.toString())
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getDockerImage());
+    final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration())
+        .withSourceId(config.getSourceId()).withConnectorVersion(config.getConnectorVersion()).withConfigHash(config.getConfigHash());
+
+    return execute(jobRunConfig,
+        () -> getWorkflowStub(DiscoverCatalogWorkflow.class, TemporalJobType.DISCOVER_SCHEMA).run(jobRunConfig, launcherConfig, input));
+  }
+
   public TemporalResponse<StandardSyncOutput> submitSync(final long jobId, final int attempt, final JobSyncConfig config, final UUID connectionId) {
     final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
@@ -375,8 +425,8 @@ public class TemporalClient {
 
   @VisibleForTesting
   <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
-    final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
-    final Path logPath = WorkerUtils.getLogPath(jobRoot);
+    final Path jobRoot = TemporalUtils.getJobRoot(workspaceRoot, jobRunConfig);
+    final Path logPath = TemporalUtils.getLogPath(jobRoot);
 
     T operationOutput = null;
     RuntimeException exception = null;
@@ -420,6 +470,35 @@ public class TemporalClient {
     }
 
     return connectionManagerWorkflow;
+  }
+
+  public void deleteConnection(final UUID connectionId) {
+    try {
+      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId,
+          connectionManagerWorkflow -> connectionManagerWorkflow::deleteConnection);
+    } catch (final DeletedWorkflowException e) {
+      log.info("Connection {} has already been deleted.", connectionId);
+    }
+  }
+
+  public void update(final UUID connectionId) {
+    final ConnectionManagerWorkflow connectionManagerWorkflow;
+    try {
+      connectionManagerWorkflow = connectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
+    } catch (final DeletedWorkflowException e) {
+      log.info("Connection {} is deleted, and therefore cannot be updated.", connectionId);
+      return;
+    } catch (final UnreachableWorkflowException e) {
+      log.error(
+          String.format("Failed to retrieve ConnectionManagerWorkflow for connection %s. Repairing state by creating new workflow.", connectionId),
+          e);
+      connectionManagerUtils.safeTerminateWorkflow(client, connectionId,
+          "Terminating workflow in unreachable state before starting a new workflow for this connection");
+      submitConnectionUpdaterAsync(connectionId);
+      return;
+    }
+
+    connectionManagerWorkflow.connectionUpdated();
   }
 
   private boolean getConnectorJobSucceeded(final ConnectorJobOutput output) {
