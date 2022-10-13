@@ -964,7 +964,8 @@ public class ConfigRepository {
   }
 
   public Optional<ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSource(final UUID sourceId) throws IOException {
-    final Result<Record> records = database.transaction(ctx -> ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
+
+    final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
         .from(ACTOR_CATALOG_FETCH_EVENT)
         .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(sourceId))
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1).fetch());
