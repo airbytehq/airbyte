@@ -42,6 +42,7 @@ class EmitterTest {
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
     verify(repo).numberOfPendingJobs();
     verify(client).gauge(OssMetricsRegistry.NUM_PENDING_JOBS, value);
+    verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
   @Test
@@ -55,6 +56,7 @@ class EmitterTest {
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
     verify(repo).numberOfRunningJobs();
     verify(client).gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, value);
+    verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
   @Test
@@ -68,6 +70,7 @@ class EmitterTest {
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
     verify(repo).numberOfOrphanRunningJobs();
     verify(client).gauge(OssMetricsRegistry.NUM_ORPHAN_RUNNING_JOBS, value);
+    verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
   @Test
@@ -81,6 +84,7 @@ class EmitterTest {
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
     verify(repo).oldestRunningJobAgeSecs();
     verify(client).gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, value);
+    verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
   @Test
@@ -94,6 +98,7 @@ class EmitterTest {
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
     verify(repo).oldestPendingJobAgeSecs();
     verify(client).gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, value);
+    verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
   @Test
@@ -109,6 +114,7 @@ class EmitterTest {
     for (final var value : values) {
       verify(client).distribution(OssMetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, value);
     }
+    verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
   @Test
@@ -122,6 +128,7 @@ class EmitterTest {
     assertEquals(Duration.ofHours(1), emitter.getDuration());
     verify(repo).numberOfJobsNotRunningOnScheduleInLastDay();
     verify(client).gauge(OssMetricsRegistry.NUM_ABNORMAL_SCHEDULED_SYNCS_IN_LAST_DAY, value);
+    verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
   @Test
@@ -135,11 +142,13 @@ class EmitterTest {
     assertEquals(Duration.ofHours(1), emitter.getDuration());
     verify(repo).numScheduledActiveConnectionsInLastDay();
     verify(client).gauge(OssMetricsRegistry.NUM_TOTAL_SCHEDULED_SYNCS_IN_LAST_DAY, value);
+    verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
   @Test
   void TestTotalJobRuntimeByTerminalState() {
-    final var values = Map.of(JobStatus.cancelled, 101.0, JobStatus.succeeded, 202.0, JobStatus.failed, 303.0);
+    final var values = Map.of(JobStatus.cancelled, 101.0, JobStatus.succeeded, 202.0,
+        JobStatus.failed, 303.0);
     when(repo.overallJobRuntimeForTerminalJobsInLastHour()).thenReturn(values);
 
     final var emitter = new TotalJobRuntimeByTerminalState(client, repo);
@@ -148,9 +157,11 @@ class EmitterTest {
     assertEquals(Duration.ofHours(1), emitter.getDuration());
     verify(repo).overallJobRuntimeForTerminalJobsInLastHour();
     values.forEach((jobStatus, time) -> {
-      verify(client).distribution(OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, time,
+      verify(client).distribution(
+          OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, time,
           new MetricAttribute(MetricTags.JOB_STATUS, jobStatus.getLiteral()));
     });
+    verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
 }
