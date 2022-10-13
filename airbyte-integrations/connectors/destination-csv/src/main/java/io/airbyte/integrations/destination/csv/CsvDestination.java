@@ -45,7 +45,7 @@ public class CsvDestination extends BaseConnector implements Destination {
 
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
-  static final String DELIMETER_FIELD = "delimeter";
+  static final String DELIMITER_FIELD = "delimiter";
 
   private final StandardNameTransformer namingResolver;
 
@@ -57,7 +57,6 @@ public class CsvDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       FileUtils.forceMkdir(getDestinationPath(config).toFile());
-      // Get delimeter?
     } catch (final Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
@@ -76,6 +75,7 @@ public class CsvDestination extends BaseConnector implements Destination {
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Path destinationDir = getDestinationPath(config);
+    final String delimiter = getDelimiter(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());
 
@@ -99,7 +99,7 @@ public class CsvDestination extends BaseConnector implements Destination {
       }
       final FileWriter fileWriter = new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), isAppendMode);
       final CSVPrinter printer = new CSVPrinter(fileWriter, csvFormat);
-      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
+      writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath, delimiter));
     }
 
     return new CsvConsumer(writeConfigs, catalog, outputRecordCollector);
@@ -126,23 +126,16 @@ public class CsvDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * Extract provided delimeter from csv config object.
+   * Extract provided delimiter from csv config object.
    *
    * @param config - csv config object
-   * @return delimeter.
+   * @return delimiter.
    */
-  protected Delimeter getDelimeter(final JsonNode config) {
-    Delimeter delimeter = Paths.get(config.get(DELIMETER_FIELD).asText());
-    Preconditions.checkNotNull(delimeter);
+  protected String getDelimiter(final JsonNode config) {
+    String delimiter = config.get(DELIMITER_FIELD).asText();
+    Preconditions.checkNotNull(delimiter);
 
-    if (!delimeter.startsWith("/local"))
-      delimeter = Path.of("/local", delimeter.toString());
-    final Path normalizePath = delimeter.normalize();
-    if (!normalizePath.startsWith("/local")) {
-      throw new IllegalArgumentException("Destination file should be inside the /local directory");
-    }
-
-    return delimeter;
+    return delimiter;
   }
 
   /**
@@ -237,11 +230,13 @@ public class CsvDestination extends BaseConnector implements Destination {
     private final CSVPrinter writer;
     private final Path tmpPath;
     private final Path finalPath;
+    private final String delimiter;
 
-    public WriteConfig(final CSVPrinter writer, final Path tmpPath, final Path finalPath) {
+    public WriteConfig(final CSVPrinter writer, final Path tmpPath, final Path finalPath, final String delimiter) {
       this.writer = writer;
       this.tmpPath = tmpPath;
       this.finalPath = finalPath;
+      this.delimiter = delimiter;
     }
 
     public CSVPrinter getWriter() {
@@ -254,6 +249,10 @@ public class CsvDestination extends BaseConnector implements Destination {
 
     public Path getFinalPath() {
       return finalPath;
+    }
+
+    public String getDelimiter() {
+      return delimiter;
     }
 
   }
