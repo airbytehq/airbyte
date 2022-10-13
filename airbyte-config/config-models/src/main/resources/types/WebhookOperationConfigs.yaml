@@ -5,6 +5,7 @@ title: WebhookOperationConfigs
 description: List of configurations for webhook operations
 additionalProperties: false
 # NOTE: we have an extra layer of object nesting because the generator has some weird behavior with arrays.
+# See https://github.com/OpenAPITools/openapi-generator/issues/7802.
 type: object
 properties:
   webhookConfigs:
