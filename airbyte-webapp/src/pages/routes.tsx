@@ -14,9 +14,9 @@ import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
-import { ConnectorBuilderPage } from "../components/ConnectorBuilderPage/ConnectorBuilderPage";
 import { WorkspaceRead } from "../core/request/AirbyteClient";
 import ConnectionPage from "./ConnectionPage";
+import { ConnectorBuilderPage } from "./connector-builder/ConnectorBuilderPage";
 import DestinationPage from "./DestinationPage";
 import OnboardingPage from "./OnboardingPage";
 import PreferencesPage from "./PreferencesPage";
