@@ -37,6 +37,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
@@ -131,8 +132,9 @@ public class SchedulerHandler {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final Version protocolVersion = new Version(sourceDef.getProtocolVersion());
 
-    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
+    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion));
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(final SourceCoreConfig sourceConfig)
@@ -149,8 +151,10 @@ public class SchedulerHandler {
         .withConfiguration(partialConfig)
         .withWorkspaceId(sourceConfig.getWorkspaceId());
 
+    final Version protocolVersion = new Version(sourceDef.getProtocolVersion());
+
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
+    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion));
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(final SourceUpdate sourceUpdate)
@@ -267,6 +271,7 @@ public class SchedulerHandler {
       final AirbyteCatalog persistenceCatalog = Jsons.object(catalog.getCatalog(),
           io.airbyte.protocol.models.AirbyteCatalog.class);
       sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(persistenceCatalog));
+      sourceDiscoverSchemaRead.catalogId(response.getOutput());
     }
 
     return sourceDiscoverSchemaRead;
