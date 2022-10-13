@@ -42,4 +42,4 @@ The Trustpilot connector should not run into any limitations under normal usage,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.0  | 2022-10-13 | [3566](https://github.com/airbytehq/airbyte/pull/3368)   | Bump CDK connectors |
+| 0.1.0  | 2022-10-13 | [17933](https://github.com/airbytehq/airbyte/pull/17933)   | Bump CDK connectors |
