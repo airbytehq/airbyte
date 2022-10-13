@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import static io.airbyte.workers.temporal.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.CONNECTION_ID_TAG_KEY;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.JOB_ID_TAG_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
@@ -31,7 +31,7 @@ public class StreamResetActivityImpl implements StreamResetActivity {
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public void deleteStreamResetRecordsForJob(final DeleteStreamResetRecordsForJobInput input) {
-    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_TAG_KEY, input.getConnectionId(), JOB_ID_TAG_KEY, input.getJobId()));
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId(), JOB_ID_KEY, input.getJobId()));
     streamResetRecordsHelper.deleteStreamResetRecordsForJob(input.getJobId(), input.getConnectionId());
   }
 

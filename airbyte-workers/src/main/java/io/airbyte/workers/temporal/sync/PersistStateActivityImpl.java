@@ -6,8 +6,8 @@ package io.airbyte.workers.temporal.sync;
 
 import static io.airbyte.config.helpers.StateMessageHelper.isMigration;
 import static io.airbyte.workers.helper.StateConverter.convertClientStateTypeToInternal;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.CONNECTION_ID_TAG_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
@@ -47,7 +47,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput, final ConfiguredAirbyteCatalog configuredCatalog) {
-    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_TAG_KEY, connectionId.toString()));
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId.toString()));
     final State state = syncOutput.getState();
     if (state != null) {
       // todo: these validation logic should happen on server side.

@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import static io.airbyte.workers.temporal.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.CONNECTION_ID_TAG_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.config.WorkerMode;
@@ -66,7 +66,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   @Override
   public ScheduleRetrieverOutput getTimeToWait(final ScheduleRetrieverInput input) {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_TAG_KEY, input.getConnectionId()));
+      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
 
       if (standardSync.getScheduleType() != null) {

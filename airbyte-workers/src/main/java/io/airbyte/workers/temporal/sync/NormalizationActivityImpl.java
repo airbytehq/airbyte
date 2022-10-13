@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import static io.airbyte.workers.temporal.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.DESTINATION_DOCKER_IMAGE_TAG_KEY;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.JOB_ID_TAG_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
@@ -99,7 +99,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                         final IntegrationLauncherConfig destinationLauncherConfig,
                                         final NormalizationInput input) {
     ApmTraceUtils.addTagsToTrace(
-        Map.of(JOB_ID_TAG_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_TAG_KEY, destinationLauncherConfig.getDockerImage()));
+        Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
     final ActivityExecutionContext context = Activity.getExecutionContext();
     return temporalUtils.withBackgroundHeartbeat(() -> {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());

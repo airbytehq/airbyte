@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import static io.airbyte.workers.temporal.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.JOB_ID_TAG_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -35,7 +35,7 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
   @Override
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public boolean shouldRunNormalization(final Long jobId, final Long attemptNumber, final Optional<Long> numCommittedRecords) throws IOException {
-    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_TAG_KEY, jobId));
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId));
 
     // if job persistence is unavailable, default to running normalization
     if (jobPersistence.isEmpty()) {

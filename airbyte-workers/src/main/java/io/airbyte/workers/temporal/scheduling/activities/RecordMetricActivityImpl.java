@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import static io.airbyte.workers.temporal.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.CONNECTION_ID_TAG_KEY;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.JOB_ID_TAG_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.config.WorkerMode;
@@ -47,7 +47,7 @@ public class RecordMetricActivityImpl implements RecordMetricActivity {
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public void recordWorkflowCountMetric(final RecordMetricInput metricInput) {
-    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_TAG_KEY, metricInput.getConnectionUpdaterInput().getConnectionId(), JOB_ID_TAG_KEY,
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, metricInput.getConnectionUpdaterInput().getConnectionId(), JOB_ID_KEY,
         metricInput.getConnectionUpdaterInput().getJobId()));
     final List<MetricAttribute> baseMetricAttributes = generateMetricAttributes(metricInput.getConnectionUpdaterInput());
     if (metricInput.getMetricAttributes() != null) {

@@ -7,8 +7,8 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import static io.airbyte.persistence.job.JobNotifier.CONNECTION_DISABLED_NOTIFICATION;
 import static io.airbyte.persistence.job.JobNotifier.CONNECTION_DISABLED_WARNING_NOTIFICATION;
 import static io.airbyte.persistence.job.models.Job.REPLICATION_TYPES;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.CONNECTION_ID_TAG_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 import datadog.trace.api.Trace;
@@ -70,7 +70,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public AutoDisableConnectionOutput autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
-    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_TAG_KEY, input.getConnectionId()));
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
     if (featureFlags.autoDisablesFailingConnections()) {
       try {
         // if connection is already inactive, no need to disable

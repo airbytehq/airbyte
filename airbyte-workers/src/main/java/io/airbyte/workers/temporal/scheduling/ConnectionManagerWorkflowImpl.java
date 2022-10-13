@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
-import static io.airbyte.workers.temporal.TemporalTraceConstants.CONNECTION_ID_TAG_KEY;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.JOB_ID_TAG_KEY;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
@@ -156,7 +156,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_TAG_KEY, connectionUpdaterInput.getConnectionId()));
+      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionUpdaterInput.getConnectionId()));
       recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.empty(), OssMetricsRegistry.TEMPORAL_WORKFLOW_ATTEMPT, null));
       workflowDelay = getWorkflowRestartDelaySeconds();
 
@@ -542,7 +542,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public JobInformation getJobInformation() {
     final Long jobId = workflowInternalState.getJobId() != null ? workflowInternalState.getJobId() : NON_RUNNING_JOB_ID;
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
-    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_TAG_KEY, connectionId, JOB_ID_TAG_KEY, jobId));
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId, JOB_ID_KEY, jobId));
     return new JobInformation(
         jobId,
         attemptNumber == null ? NON_RUNNING_ATTEMPT_ID : attemptNumber);
@@ -553,7 +553,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public QuarantinedInformation getQuarantinedInformation() {
     final Long jobId = workflowInternalState.getJobId() != null ? workflowInternalState.getJobId() : NON_RUNNING_JOB_ID;
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
-    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_TAG_KEY, connectionId, JOB_ID_TAG_KEY, jobId));
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId, JOB_ID_KEY, jobId));
     return new QuarantinedInformation(
         connectionId,
         jobId,
@@ -929,7 +929,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private void traceConnectionId() {
     if (connectionId != null) {
-      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_TAG_KEY, connectionId));
+      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId));
     }
   }
 

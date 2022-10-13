@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.temporal.check.connection;
 
-import static io.airbyte.workers.temporal.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.DOCKER_IMAGE_TAG_KEY;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.JOB_ID_TAG_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.DOCKER_IMAGE_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
@@ -85,7 +85,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   @Override
   public ConnectorJobOutput runWithJobOutput(final CheckConnectionInput args) {
     ApmTraceUtils
-        .addTagsToTrace(Map.of(JOB_ID_TAG_KEY, args.getJobRunConfig().getJobId(), DOCKER_IMAGE_TAG_KEY, args.getLauncherConfig().getDockerImage()));
+        .addTagsToTrace(Map.of(JOB_ID_KEY, args.getJobRunConfig().getJobId(), DOCKER_IMAGE_KEY, args.getLauncherConfig().getDockerImage()));
     final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
 
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
@@ -111,7 +111,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   @Override
   public StandardCheckConnectionOutput run(final CheckConnectionInput args) {
     ApmTraceUtils
-        .addTagsToTrace(Map.of(JOB_ID_TAG_KEY, args.getJobRunConfig().getJobId(), DOCKER_IMAGE_TAG_KEY, args.getLauncherConfig().getDockerImage()));
+        .addTagsToTrace(Map.of(JOB_ID_KEY, args.getJobRunConfig().getJobId(), DOCKER_IMAGE_KEY, args.getLauncherConfig().getDockerImage()));
     final ConnectorJobOutput output = runWithJobOutput(args);
     if (output.getFailureReason() != null) {
       return new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("Error checking connection");

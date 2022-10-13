@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import static io.airbyte.workers.temporal.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.TemporalTraceConstants.JOB_ID_TAG_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
@@ -42,7 +42,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
   @Override
   public GeneratedJobInput getSyncWorkflowInput(final SyncInput input) {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_TAG_KEY, input.getJobId()));
+      ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, input.getJobId()));
       final long jobId = input.getJobId();
       final int attempt = input.getAttemptId();
       final JobSyncConfig config;
@@ -112,7 +112,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public GeneratedJobInput getSyncWorkflowInputWithAttemptNumber(final SyncInputWithAttemptNumber input) {
-    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_TAG_KEY, input.getJobId()));
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, input.getJobId()));
     return getSyncWorkflowInput(new SyncInput(
         input.getAttemptNumber(),
         input.getJobId()));
