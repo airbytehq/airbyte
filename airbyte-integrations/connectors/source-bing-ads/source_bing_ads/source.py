@@ -212,14 +212,9 @@ class Campaigns(BingAdsStream):
         "MultimediaAdsBidAdjustment",
         "TargetImpressionShareBiddingScheme",
         "TargetSetting",
-        "VerifiedTrackingSetting"
+        "VerifiedTrackingSetting",
     ]
-    campaign_types: Iterable[str] = [
-        "Audience",
-        "DynamicSearchAds",
-        "Search",
-        "Shopping"
-    ]
+    campaign_types: Iterable[str] = ["Audience", "DynamicSearchAds", "Search", "Shopping"]
 
     def request_params(
         self,
