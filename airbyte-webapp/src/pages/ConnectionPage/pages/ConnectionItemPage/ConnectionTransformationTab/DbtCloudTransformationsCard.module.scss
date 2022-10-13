@@ -49,4 +49,37 @@
   margin-top: 10px;
   padding: 18px;
   width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  & img {
+    height: 32px;
+    width: 32px;
+  }
+}
+
+.transformationListItemIntegrationName {
+  display: flex;
+  align-items: center;
+}
+
+.transformationListItemInputGroup {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.transformationListItemInput {
+  height: fit-content;
+  margin-left: 1em;
+}
+
+.transformationListItemDelete {
+  color: colors.$grey-200;
+  font-size: large;
+  margin: 0 1em;
+  cursor: pointer;
+  border: none;
+  background-color: inherit;
 }

@@ -1,17 +1,21 @@
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Link } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
+import { Input } from "components/ui/Input";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { RoutePaths } from "pages/routePaths";
 
 import styles from "./DbtCloudTransformationsCard.module.scss";
 
-type Transformation = { project: string; job: string };
+interface Transformation {
+  project: string;
+  job: string;
+}
 
 // This won't be used by the first prototype, but it is the UI specced in
 // follow-up designs which can support multiple integrations; it's also a small,
@@ -45,8 +49,29 @@ const TransformationsList = ({
   );
 };
 
-const TransformationListItem = (transformation: Transformation) => {
-  return <Card className={styles.transformationListItem}>{JSON.stringify(transformation)}</Card>;
+const TransformationListItem = ({ transformation }: { transformation: Transformation }) => {
+  return (
+    <Card className={styles.transformationListItem}>
+      <div className={styles.transformationListItemIntegrationName}>
+        <img src="/images/external/dbt-bit_tm.png" alt="dbt logo" />
+        dbt Cloud transform
+      </div>
+      <div className={styles.transformationListItemInputGroup}>
+        <div className={styles.transformationListItemInput}>
+          <Input type="text" defaultValue={transformation.project} />
+        </div>
+        <div className={styles.transformationListItemInput}>
+          <Input type="text" defaultValue={transformation.job} />
+        </div>
+        <button
+          className={styles.transformationListItemDelete}
+          onClick={() => console.info(`deleting transformation: ${JSON.stringify(transformation)}`)}
+        >
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
+      </div>
+    </Card>
+  );
 };
 
 const NoDbtIntegration = ({ className, workspaceId }: { className: string; workspaceId: string }) => {
