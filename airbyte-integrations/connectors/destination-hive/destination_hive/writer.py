@@ -22,7 +22,7 @@ class HiveWriter:
 
     flush_interval = 1000
 
-    def __init__(self, connection: hs2.HiveServer2Connection) -> None:
+    def __init__(self, connection: hs2.HiveServer2Connection, config: Mapping[str, Any], logger: AirbyteLogger) -> None:
         """
         :param connection: Firebolt SDK connection class with established connection
             to the databse.
@@ -30,7 +30,7 @@ class HiveWriter:
         self.connection = connection
         self._buffer = defaultdict(list)
         self._values = 0
-        self.logger = getLogger('airbyte')
+        self.logger = logger
 
     def create_raw_table(self, name: str):
         """
@@ -103,7 +103,7 @@ class HiveS3Writer(HiveWriter):
 
     flush_interval = 100000
 
-    def __init__(self, connection: hs2.HiveServer2Connection, config: Mapping[str, Any]) -> None:
+    def __init__(self, connection: hs2.HiveServer2Connection, config: Mapping[str, Any], logger: AirbyteLogger) -> None:
         """
         :param connection: Firebolt SDK connection class with established connection
             to the databse.
@@ -113,8 +113,7 @@ class HiveS3Writer(HiveWriter):
         :param secret_key: Corresponding AWS Secret Key.
         :param s3_region: S3 region. Best to keep this the same as Firebolt database region. Default us-east-1.
         """
-        super().__init__(connection)
-
+        super().__init__(connection, config, logger)
         self.s3_bucket = config["s3_bucket"]
         self.key_id = config["aws_key_id"]
         self.secret_key = config["aws_key_secret"]
@@ -123,7 +122,6 @@ class HiveS3Writer(HiveWriter):
         self._updated_tables = set()
         self.s3_unique_dir = f"airbyte_output/{int(time())}_{uuid4()}"
         self.s3_unique_path = f"{self.s3_bucket}/{self.s3_unique_dir}"
-        self.logger = getLogger('airbyte')
 
         self.boto_session = boto3.Session(
             aws_access_key_id = self.key_id,
@@ -131,56 +129,11 @@ class HiveS3Writer(HiveWriter):
             )
         self.boto_client = self.boto_session.client('s3')
 
-        # transfer_config = TransferConfig(multipart_threshold=1024 * 25, 
-        #                 max_concurrency=10,
-        #                 multipart_chunksize=1024 * 25,
-        #                 use_threads=True)
-
-    
-
-        # self.fs = fs.S3FileSystem(access_key=access_key, secret_key=secret_key, region=s3_region)
-
     def __del__(self):
-        self.connection.cursor().close()
-
-    def _flush(self) -> None:
-        """
-        Intermediate data flush that's triggered during the
-        buffering operation. Uploads data stored in memory to S3.
-        """
-        self.logger.info("flushing")
-        for table, data in self._buffer.items():
-            self.logger.info(table)
-            ss = ''
-            for row in data:
-                (key, ts, payload) = row
-                js = {}
-                js["airbyte_ab_id"] = key
-                js["airbyte_emitted_at"] = str(ts)
-                js["airbyte_data"] = payload
-                ss += json.dumps(js) + "\n"
-                
-            response = self.boto_client.put_object(
-                Bucket=self.s3_bucket, 
-                Key=f"{self.s3_unique_dir}/{table}/file",
-                Body=ss.encode())
-            self.logger.info(f"response = {response}")
-        # Update tables
-        self._updated_tables.update(self._buffer.keys())
-        self._buffer.clear()
-        self._values = 0
-
-    def flush(self) -> None:
-        """
-        Flush any leftover data after ingestion and write from S3 to Firebolt.
-        Intermediate data on S3 and External Table will be deleted after write is complete.
-        """
-        self._flush()
-        for table in self._updated_tables:
-            self.create_raw_table(table)
-            self.create_external_table(table)
-            self.ingest_data(table)
-            self.cleanup(table)
+        try:
+            self.connection.cursor().close()
+        except Exception as e:
+            self.logger.error("Error closing connection", e)
 
     def create_external_table(self, name: str):
         """
@@ -206,9 +159,7 @@ class HiveS3Writer(HiveWriter):
         LOCATION 's3a://{self.s3_unique_path}/{name}/'
         TBLPROPERTIES ( 'classification'='json')
         """
-
         self.logger.info(query)
-        
         cursor.execute(query)
 
 
@@ -243,6 +194,45 @@ class HiveS3Writer(HiveWriter):
             Key=f"{self.s3_unique_dir}/{name}/file"
         )
 
+    def _flush(self) -> None:
+        """
+        Intermediate data flush that's triggered during the
+        buffering operation. Uploads data stored in memory to S3.
+        """
+        self.logger.info("flushing")
+        for table, data in self._buffer.items():
+            self.logger.info(table)
+            ss = ''
+            for row in data:
+                (key, ts, payload) = row
+                js = {}
+                js["airbyte_ab_id"] = key
+                js["airbyte_emitted_at"] = str(ts)
+                js["airbyte_data"] = payload
+                # TODO: Fix inefficient way of accumulating rows into a string
+                ss += json.dumps(js) + "\n"
+
+            response = self.boto_client.put_object(
+                Bucket=self.s3_bucket,
+                Key=f"{self.s3_unique_dir}/{table}/file",
+                Body=ss.encode())
+            self.logger.info(f"response = {response}")
+        # Update tables
+        self._updated_tables.update(self._buffer.keys())
+        self._buffer.clear()
+        self._values = 0
+
+    def flush(self) -> None:
+        """
+        Flush any leftover data after ingestion and write from S3 to Firebolt.
+        Intermediate data on S3 and External Table will be deleted after write is complete.
+        """
+        self._flush()
+        for table in self._updated_tables:
+            self.create_raw_table(table)
+            self.create_external_table(table)
+            self.ingest_data(table)
+            self.cleanup(table)
 
 class HiveSQLWriter(HiveWriter):
     """
@@ -253,12 +243,12 @@ class HiveSQLWriter(HiveWriter):
 
     flush_interval = 1000
 
-    def __init__(self, connection: hs2.HiveServer2Connection) -> None:
+    def __init__(self, connection: hs2.HiveServer2Connection, config: Mapping[str, Any], logger: AirbyteLogger) -> None:
         """
         :param connection: Firebolt SDK connection class with established connection
             to the databse.
         """
-        super().__init__(connection)
+        super().__init__(connection, config, logger)
 
     def _flush(self) -> None:
         """
@@ -278,15 +268,15 @@ class HiveSQLWriter(HiveWriter):
         """
         self._flush()
 
-
-def create_hive_writer(connection: hs2.HiveServer2Connection, config: json, logger: AirbyteLogger) -> HiveWriter:
+def create_hive_writer(connection: hs2.HiveServer2Connection, config: Mapping[str, Any], logger: AirbyteLogger) -> HiveWriter:
     if config["loading_method"]["method"] == "S3":
-        logger.info("Using the S3 writing strategy")
+        logger.info("Using S3 to stage data")
         writer = HiveS3Writer(
             connection,
-            config["loading_method"]
+            config["loading_method"],
+            logger
         )
     else:
         logger.info("Using the SQL writing strategy")
-        writer = HiveSQLWriter(connection)
+        writer = HiveSQLWriter(connection, config, logger)
     return writer

@@ -15,44 +15,36 @@ from uuid import uuid4
 
 from .writer import create_hive_writer
 
-def establish_connection(config: json, logger: Optional[AirbyteLogger] = None) -> hs2.HiveServer2Connection:
+
+def establish_connection(config: json, logger: AirbyteLogger) -> hs2.HiveServer2Connection:
     """
     Creates a connection to Hive database using the parameters provided.
     :param config: Json object containing db credentials.
     :param logger: AirbyteLogger instance to print logs.
     :return: PEP-249 compliant database Connection object.
     """
-    logger = getLogger("airbyte")
-    logger.info("Connecting to Hive.") if logger else None
-
-    credentials = config
-    #logger.info(credentials)
-    # add configuration to yaml
-    if (not credentials["auth_type"]):
-        hive_conn = impala.dbapi.connect(
-                        host=credentials["host"],
-                        port=credentials["port"],
-                )
-    elif (credentials["auth_type"].upper() == 'LDAP'):
-        hive_conn = impala.dbapi.connect(
-                        host=credentials["host"],
-                        port=credentials["port"],
-                        auth_mechanism='LDAP',
-                        use_http_transport=credentials["use_http_transport"],
-                        user=credentials["user"],
-                        password=credentials["password"],
-                        use_ssl=credentials["use_ssl"],
-                        http_path=credentials["http_path"]
-                )
-
-    #connection.state = ConnectionState.OPEN
-    #connection.handle = hive_conn
+    logger.info("Connecting to Hive")
+    hive_conn = None
+    try:
+        if (not config["auth_type"]):
+            hive_conn = impala.dbapi.connect(
+                host=config["host"],
+                port=config["port"]
+            )
+        elif (config["auth_type"].upper() == 'LDAP'):
+            hive_conn = impala.dbapi.connect(
+                host=config["host"],
+                port=config["port"],
+                auth_mechanism='LDAP',
+                use_http_transport=config["use_http_transport"],
+                user=config["user"],
+                password=config["password"],
+                use_ssl=config["use_ssl"],
+                http_path=config["http_path"]
+            )
+    except Exception as e:
+        logger.error("Error connecting to hive", str(e))
     return hive_conn
-
-    #connection = connect(**parse_config(config, logger))
-    logger.debug("Connection to Hive established.") if logger else None
-    return connection
-
 
 class DestinationHive(Destination):
     def write(
@@ -76,7 +68,7 @@ class DestinationHive(Destination):
 
         streams = {s.stream.name for s in configured_catalog.streams}
         logger = getLogger("airbyte")
-        with establish_connection(config) as connection:
+        with establish_connection(config, logger) as connection:
             writer = create_hive_writer(connection, config, logger)
 
             for configured_stream in configured_catalog.streams:
@@ -118,7 +110,7 @@ class DestinationHive(Destination):
                 # We can only verify correctness of connection parameters on execution
                 with connection.cursor() as cursor:
                     cursor.execute("SELECT 1")
-                    print (cursor.fetchall())
+                    print(cursor.fetchall())
                     cursor.close()
                 # Test access to the bucket, if S3 strategy is used
                 create_hive_writer(connection, config, logger)
