@@ -33,14 +33,15 @@ def test_privileges_validation(requests_mock, basic_config):
 
     expected = [
         "orders",
+        "metafield_orders",
         "abandoned_checkouts",
-        "metafields",
         "order_refunds",
         "order_risks",
         "tender_transactions",
         "transactions",
         "fulfillments",
         "shop",
+        "metafield_shops"
     ]
 
     assert [stream.name for stream in source.streams(basic_config)] == expected
