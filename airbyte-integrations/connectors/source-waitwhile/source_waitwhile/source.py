@@ -3,10 +3,90 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 import pendulum
+# from location_list import LOCATION_IDS
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+
+LOCATION_IDS = iter([
+    "2iZH42aDANo9SMFlXQaQ",
+    "39AwnQyU6WMnGWJtlQ80",
+    "3CMnSBq5mO7yAUMsaFrk",
+    "7eF3zNYAMU6LNSXzwOmA",
+    "7q9wTpkDD0H5Ur5hj2rW",
+    "C6dYEzgL8oWulk333LUN",
+    "DJTSoryWxaHUiggq0WjT",
+    "DeNTr0hqPAKk7NsUxqxx",
+    "KrGDXVPIqBDwQKKNZolw",
+    "MpseOmuXjt3C8Ehf4bqV",
+    "PLIQM9iEt6uWHPP2JVrI",
+    "Rv3ktsEle8AbhWaZKLqf",
+    "ZgHMtlL1luOdCPB10UZI",
+    "rKDqWXqu0b9WGIAPrvUm",
+])
+
+
+class WaitwhileStreamAvailability(HttpStream, ABC):
+    url_base = "https://api.waitwhile.com/v2/"
+
+    primary_key = None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        :param response: the most recent response from the API
+        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
+                If there are no more pages in the result, return None.
+        """
+        try:
+            location_id = next(LOCATION_IDS)
+            return {"locationId": location_id}
+        except:
+            return None
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = {}
+        if next_page_token:
+            params.update(**next_page_token)
+        else:
+            try:
+                params.update(**{"locationId": next(LOCATION_IDS)})
+            except:
+                pass
+
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        if response.status_code != 200:
+            return []
+
+        response_json = response.json()
+        if response_json:
+            yield from response_json
+
+        return []
+
+
+class LocationsAvailability(WaitwhileStreamAvailability):
+    """
+    List locations availability data source.
+    """
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        To define the path of the stream.
+        """
+        return "visits/availability"
 
 
 class WaitwhileStream(HttpStream, ABC):
@@ -268,4 +348,5 @@ class SourceWaitwhile(AbstractSource):
             LocationStatus(authenticator=auth),
             Customers(authenticator=auth, start_date=config["start_date"]),
             Visits(authenticator=auth, start_date=config["start_date"]),
+            LocationsAvailability(authenticator=auth),
         ]

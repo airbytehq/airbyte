@@ -2,6 +2,14 @@
   "streams": [
     {
       "stream": {
+        "name": "locations_availability",
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "locations",
         "json_schema": {}
       },

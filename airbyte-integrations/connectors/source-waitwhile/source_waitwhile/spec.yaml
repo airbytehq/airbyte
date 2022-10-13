@@ -19,5 +19,5 @@ connectionSpecification:
       examples:
         - "2022-01-01"
         - "2022-10-03"
-      default: "2022-10-01"
+      default: "2022-10-12"
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
