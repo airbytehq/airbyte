@@ -24,6 +24,10 @@
   justify-content: space-between;
 }
 
+.transformationListForm {
+  width: 100%;
+}
+
 .emptyListContent {
   display: flex;
   flex-direction: column;
@@ -43,6 +47,16 @@
   & a {
     color: colors.$grey-300;
   }
+}
+
+.transformationListButtonGroup {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.transformationListButton {
+  margin-left: 10px;
 }
 
 .transformationListItem {

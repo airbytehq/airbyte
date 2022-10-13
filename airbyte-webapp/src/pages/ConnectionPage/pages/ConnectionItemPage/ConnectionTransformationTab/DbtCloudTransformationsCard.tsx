@@ -1,6 +1,7 @@
 import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
+import { Field, Form, Formik, FieldProps } from "formik";
 import { Link } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
@@ -30,15 +31,34 @@ const TransformationsList = ({
   className?: string;
   transformations: Transformation[];
 }) => {
+  const onSubmit = (fields: { transformations: Transformation[] }) => {
+    console.info(`Saving with this job list: ${JSON.stringify(fields)}`);
+  };
   return (
     <div className={classNames(className, styles.emptyListContent)}>
       <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
       {transformations.length ? (
-        <>
-          {transformations.map((t, i) => (
-            <TransformationListItem transformation={t} key={i} />
-          ))}
-        </>
+        <Formik onSubmit={onSubmit} initialValues={{ transformations }}>
+          <Form className={styles.transformationListForm}>
+            {transformations.map((_t, i) => (
+              <TransformationListItem
+                key={i}
+                transformationIndex={i}
+                deleteTransformation={() => {
+                  console.info(`deleting transformation #${i}`);
+                }}
+              />
+            ))}
+            <div className={styles.transformationListButtonGroup}>
+              <Button className={styles.transformationListButton} type="reset" variant="secondary">
+                Cancel
+              </Button>
+              <Button className={styles.transformationListButton} type="submit" variant="primary">
+                Save changes
+              </Button>
+            </div>
+          </Form>
+        </Formik>
       ) : (
         <>
           <img src="/images/octavia/worker.png" alt="An octopus wearing a hard hat, tools at the ready" />
@@ -49,7 +69,13 @@ const TransformationsList = ({
   );
 };
 
-const TransformationListItem = ({ transformation }: { transformation: Transformation }) => {
+const TransformationListItem = ({
+  transformationIndex,
+  deleteTransformation,
+}: {
+  transformationIndex: number;
+  deleteTransformation: () => void;
+}) => {
   return (
     <Card className={styles.transformationListItem}>
       <div className={styles.transformationListItemIntegrationName}>
@@ -58,15 +84,16 @@ const TransformationListItem = ({ transformation }: { transformation: Transforma
       </div>
       <div className={styles.transformationListItemInputGroup}>
         <div className={styles.transformationListItemInput}>
-          <Input type="text" defaultValue={transformation.project} />
+          <Field name={`transformations.${transformationIndex}.project`}>
+            {({ field }: FieldProps<string>) => <Input {...field} type="text" placeholder="Project name" />}
+          </Field>
         </div>
         <div className={styles.transformationListItemInput}>
-          <Input type="text" defaultValue={transformation.job} />
+          <Field name={`transformations.${transformationIndex}.job`}>
+            {({ field }: FieldProps<string>) => <Input {...field} type="text" placeholder="Job name" />}
+          </Field>
         </div>
-        <button
-          className={styles.transformationListItemDelete}
-          onClick={() => console.info(`deleting transformation: ${JSON.stringify(transformation)}`)}
-        >
+        <button className={styles.transformationListItemDelete} onClick={deleteTransformation}>
           <FontAwesomeIcon icon={faXmark} />
         </button>
       </div>
