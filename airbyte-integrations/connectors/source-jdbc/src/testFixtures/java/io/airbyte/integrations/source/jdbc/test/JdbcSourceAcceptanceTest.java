@@ -102,6 +102,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String COL_LAST_NAME = "last_name";
   public static String COL_LAST_NAME_WITH_SPACE = "last name";
   public static String COL_CURSOR = "cursor_field";
+  public static String COL_TIMESTAMP = "timestamp";
   public static Number ID_VALUE_1 = 1;
   public static Number ID_VALUE_2 = 2;
   public static Number ID_VALUE_3 = 3;
@@ -842,11 +843,11 @@ public abstract class JdbcSourceAcceptanceTest {
             CatalogHelpers.createAirbyteStream(
                 TABLE_NAME_AND_TIMESTAMP,
                 namespace,
-                Field.of("name", JsonSchemaType.STRING),
-                Field.of("timestamp", JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)))));
+                Field.of(COL_NAME, JsonSchemaType.STRING),
+                Field.of(COL_TIMESTAMP, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)))));
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
-      airbyteStream.setCursorField(List.of("timestamp"));
+      airbyteStream.setCursorField(List.of(COL_TIMESTAMP));
       airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
 
@@ -857,13 +858,14 @@ public abstract class JdbcSourceAcceptanceTest {
     final Optional<AirbyteMessage> firstSyncStateOptional = firstSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(firstSyncStateOptional.isPresent());
     final JsonNode firstSyncState = getStateData(firstSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP);
+    assertEquals(firstSyncState.get("cursor_field").elements().next().asText(), COL_TIMESTAMP);
     assertTrue(firstSyncState.get("cursor").asText().contains("2021-01-01"));
     assertTrue(firstSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(2L, firstSyncState.get("cursor_record_count").asLong());
 
     final List<String> firstSyncNames = firstSyncActualMessages.stream()
         .filter(r -> r.getType() == Type.RECORD)
-        .map(r -> r.getRecord().getData().get("name").asText())
+        .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
     assertEquals(List.of("a", "b"), firstSyncNames);
 
@@ -879,13 +881,14 @@ public abstract class JdbcSourceAcceptanceTest {
     final Optional<AirbyteMessage> secondSyncStateOptional = secondSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(secondSyncStateOptional.isPresent());
     final JsonNode secondSyncState = getStateData(secondSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP);
+    assertEquals(secondSyncState.get("cursor_field").elements().next().asText(), COL_TIMESTAMP);
     assertTrue(secondSyncState.get("cursor").asText().contains("2021-01-02"));
     assertTrue(secondSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(1L, secondSyncState.get("cursor_record_count").asLong());
 
     final List<String> secondSyncNames = secondSyncActualMessages.stream()
         .filter(r -> r.getType() == Type.RECORD)
-        .map(r -> r.getRecord().getData().get("name").asText())
+        .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
     assertEquals(List.of("c"), secondSyncNames);
 
@@ -903,6 +906,7 @@ public abstract class JdbcSourceAcceptanceTest {
     final Optional<AirbyteMessage> thirdSyncStateOptional = thirdSyncActualMessages.stream().filter(r -> r.getType() == Type.STATE).findFirst();
     assertTrue(thirdSyncStateOptional.isPresent());
     final JsonNode thirdSyncState = getStateData(thirdSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP);
+    assertEquals(thirdSyncState.get("cursor_field").elements().next().asText(), COL_TIMESTAMP);
     assertTrue(thirdSyncState.get("cursor").asText().contains("2021-01-03"));
     assertTrue(thirdSyncState.get("cursor").asText().contains("00:00:00"));
     assertEquals(1L, thirdSyncState.get("cursor_record_count").asLong());
@@ -911,7 +915,7 @@ public abstract class JdbcSourceAcceptanceTest {
     // record count in the database is different from that in the state.
     final List<String> thirdSyncExpectedNames = thirdSyncActualMessages.stream()
         .filter(r -> r.getType() == Type.RECORD)
-        .map(r -> r.getRecord().getData().get("name").asText())
+        .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
     assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
   }
@@ -1201,12 +1205,13 @@ public abstract class JdbcSourceAcceptanceTest {
                   .withStreamState(stateData));
       return Jsons.jsonNode(List.of(airbyteStateMessage));
     } else {
+      final List<String> cursorFields = MoreIterators.toList(stateData.get("cursor_field").elements()).stream().map(JsonNode::asText).toList();
       final DbState dbState = new DbState().withStreams(List.of(
           new DbStreamState()
               .withStreamName(streamName)
               .withStreamNamespace(streamNamespace)
               .withCursor(stateData.get("cursor").asText())
-              .withCursorField(List.of(stateData.get("cursor_field").asText()))
+              .withCursorField(cursorFields)
               .withCursorRecordCount(stateData.get("cursor_record_count").asLong())));
       return Jsons.jsonNode(dbState);
     }

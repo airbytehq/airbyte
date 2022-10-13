@@ -50,6 +50,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     COL_FIRST_NAME = "FIRST_NAME";
     COL_LAST_NAME = "LAST_NAME";
     COL_LAST_NAME_WITH_SPACE = "LAST NAME";
+    COL_TIMESTAMP = "TIMESTAMP";
     // In Db2 PK columns must be declared with NOT NULL statement.
     COLUMN_CLAUSE_WITH_PK = "id INTEGER NOT NULL, name VARCHAR(200), updated_at DATE";
     COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE";
