@@ -166,7 +166,7 @@ public class WebBackendConnectionsHandler {
     final Optional<JobRead> latestRunningSyncJob = jobHistoryHandler.getLatestRunningSyncJob(connectionRead.getConnectionId());
 
     final WebBackendConnectionRead webBackendConnectionRead = getWebBackendConnectionRead(connectionRead, source, destination, operations)
-        .catalogId(connectionRead.getSourceCatalogId()).schemaChange(connectionRead.getSchemaChange());
+        .catalogId(connectionRead.getSourceCatalogId());
 
     webBackendConnectionRead.setIsSyncing(latestRunningSyncJob.isPresent());
 
@@ -174,6 +174,25 @@ public class WebBackendConnectionsHandler {
       webBackendConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
       webBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
     });
+
+    SchemaChange schemaChange = SchemaChange.NO_CHANGE;
+
+    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
+        configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
+
+    if (mostRecentFetchEvent.isPresent()) {
+      final Long mostRecentCatalogCreatedAt = mostRecentFetchEvent.get().getCreatedAt();
+      final Long currentCatalogCreatedAt = configRepository.getActorCatalogById(connectionRead.getSourceCatalogId()).getCreatedAt();
+      if (mostRecentCatalogCreatedAt > currentCatalogCreatedAt) {
+        if (connectionRead.getIsBreaking()) {
+          schemaChange = SchemaChange.BREAKING;
+        } else {
+          schemaChange = SchemaChange.NON_BREAKING;
+        }
+      }
+    }
+
+    webBackendConnectionRead.setSchemaChange(schemaChange);
 
     return webBackendConnectionRead;
   }
@@ -286,7 +305,6 @@ public class WebBackendConnectionsHandler {
 
     final CatalogDiff diff;
     final AirbyteCatalog syncCatalog;
-    SchemaChange schemaChange = SchemaChange.NO_CHANGE;
     if (refreshedCatalog.isPresent()) {
       connection.setSourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
@@ -317,23 +335,7 @@ public class WebBackendConnectionsHandler {
       diff = null;
     }
 
-    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
-        configRepository.getMostRecentActorCatalogFetchEventForSource(connection.getSourceId());
-
-    if (mostRecentFetchEvent.isPresent()) {
-      final Long mostRecentCatalogCreatedAt = mostRecentFetchEvent.get().getCreatedAt();
-      final Long currentCatalogCreatedAt = configRepository.getActorCatalogById(connection.getSourceCatalogId()).getCreatedAt();
-      if (mostRecentCatalogCreatedAt > currentCatalogCreatedAt) {
-        if (connection.getIsBreaking()) {
-          schemaChange = SchemaChange.BREAKING;
-        } else {
-          schemaChange = SchemaChange.NON_BREAKING;
-        }
-      }
-    }
-
     connection.setSyncCatalog(syncCatalog);
-    connection.setSchemaChange(schemaChange);
     return buildWebBackendConnectionRead(connection).catalogDiff(diff);
   }
 
