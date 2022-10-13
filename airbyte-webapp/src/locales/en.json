@@ -564,5 +564,7 @@
   "airbyte.datatype.untyped": "Untyped",
   "airbyte.datatype.union": "Union",
   "airbyte.datatype.unknown": "Unknown",
-  "airbyte.datatype.boolean": "Boolean"
+  "airbyte.datatype.boolean": "Boolean",
+
+  "builder.downloadYaml": "Download YAML"
 }
