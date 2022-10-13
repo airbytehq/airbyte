@@ -3,28 +3,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 import pendulum
-# from location_list import LOCATION_IDS
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
-LOCATION_IDS = iter([
-    "2iZH42aDANo9SMFlXQaQ",
-    "39AwnQyU6WMnGWJtlQ80",
-    "3CMnSBq5mO7yAUMsaFrk",
-    "7eF3zNYAMU6LNSXzwOmA",
-    "7q9wTpkDD0H5Ur5hj2rW",
-    "C6dYEzgL8oWulk333LUN",
-    "DJTSoryWxaHUiggq0WjT",
-    "DeNTr0hqPAKk7NsUxqxx",
-    "KrGDXVPIqBDwQKKNZolw",
-    "MpseOmuXjt3C8Ehf4bqV",
-    "PLIQM9iEt6uWHPP2JVrI",
-    "Rv3ktsEle8AbhWaZKLqf",
-    "ZgHMtlL1luOdCPB10UZI",
-    "rKDqWXqu0b9WGIAPrvUm",
-])
 
 
 class WaitwhileStreamAvailability(HttpStream, ABC):
@@ -32,8 +14,10 @@ class WaitwhileStreamAvailability(HttpStream, ABC):
 
     primary_key = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, location_ids: Optional[Iterable[str]], **kwargs):
         super().__init__(**kwargs)
+        self.location_ids = location_ids
+
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -42,7 +26,7 @@ class WaitwhileStreamAvailability(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
         try:
-            location_id = next(LOCATION_IDS)
+            location_id = next(self.location_ids)
             return {"locationId": location_id}
         except:
             return None
@@ -55,7 +39,7 @@ class WaitwhileStreamAvailability(HttpStream, ABC):
             params.update(**next_page_token)
         else:
             try:
-                params.update(**{"locationId": next(LOCATION_IDS)})
+                params.update(**{"locationId": next(self.location_ids)})
             except:
                 pass
 
@@ -335,11 +319,19 @@ class SourceWaitwhile(AbstractSource):
         except Exception as e:
             return False, e
 
+    def get_location_ids(self, config):
+        headers = dict(Accept="application/json", apikey=config["apikey"])
+        url = "https://api.waitwhile.com/v2/locations?limit=100"
+        resp = requests.get(url, headers=headers)
+        location_ids = [x.get("id") for x in resp.json()["results"]]
+        return iter(location_ids)
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         auth = TokenAuthenticator(config["apikey"])
+        location_ids = self.get_location_ids(config)
         return [
             Locations(authenticator=auth),
             Services(authenticator=auth),
@@ -348,5 +340,5 @@ class SourceWaitwhile(AbstractSource):
             LocationStatus(authenticator=auth),
             Customers(authenticator=auth, start_date=config["start_date"]),
             Visits(authenticator=auth, start_date=config["start_date"]),
-            LocationsAvailability(authenticator=auth),
+            LocationsAvailability(authenticator=auth, location_ids=location_ids),
         ]
