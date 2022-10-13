@@ -18,8 +18,8 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
-import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
+import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -384,10 +384,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   private long getActualCursorRecordCount(final Connection connection,
-                                         final String fullTableName,
-                                         final String quotedCursorField,
-                                         final Datatype cursorFieldType,
-                                         final String cursor) throws SQLException {
+                                          final String fullTableName,
+                                          final String quotedCursorField,
+                                          final Datatype cursorFieldType,
+                                          final String cursor)
+      throws SQLException {
     final String columnName = getCountColumnName();
     final PreparedStatement cursorRecordStatement;
     if (cursor == null) {

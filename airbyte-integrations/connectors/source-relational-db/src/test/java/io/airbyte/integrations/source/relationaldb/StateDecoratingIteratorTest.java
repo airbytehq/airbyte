@@ -134,7 +134,8 @@ class StateDecoratingIteratorTest {
 
   @Test
   void testWithInitialCursor() {
-    // record 1 and 2 has smaller cursor value, so at the end, the initial cursor is emitted with 0 record count
+    // record 1 and 2 has smaller cursor value, so at the end, the initial cursor is emitted with 0
+    // record count
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_5, 0L)).thenReturn(STATE_MESSAGE_5.getState());
 
     messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
@@ -370,7 +371,8 @@ class StateDecoratingIteratorTest {
    * start with `F1 > 16` and skip record 3.
    * <p/>
    * So intermediate state emission should only happen when all records with the same cursor value has
-   * been synced to destination. Reference: <a href="https://github.com/airbytehq/airbyte/issues/15427">link</a>
+   * been synced to destination. Reference:
+   * <a href="https://github.com/airbytehq/airbyte/issues/15427">link</a>
    */
   @Test
   @DisplayName("When there are multiple records with the same cursor value")

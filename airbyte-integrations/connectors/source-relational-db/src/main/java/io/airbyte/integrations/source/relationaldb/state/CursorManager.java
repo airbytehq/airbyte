@@ -48,8 +48,8 @@ public class CursorManager<S> {
    *        the connector's state.
    * @param cursorFieldFunction A {@link Function} that extracts the cursor field name from a stream
    *        stored in the connector's state.
-   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a stream
-   *        stored in the connector's state.
+   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a
+   *        stream stored in the connector's state.
    * @param namespacePairFunction A {@link Function} that generates a
    *        {@link AirbyteStreamNameNamespacePair} that identifies each stream in the connector's
    *        state.
@@ -75,8 +75,8 @@ public class CursorManager<S> {
    *        the connector's state.
    * @param cursorFieldFunction A {@link Function} that extracts the cursor field name from a stream
    *        stored in the connector's state.
-   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a stream
-   *        stored in the connector's state.
+   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a
+   *        stream stored in the connector's state.
    * @param namespacePairFunction A {@link Function} that generates a
    *        {@link AirbyteStreamNameNamespacePair} that identifies each stream in the connector's
    *        state.
@@ -107,7 +107,8 @@ public class CursorManager<S> {
     for (final AirbyteStreamNameNamespacePair pair : allStreamNames) {
       final Optional<S> stateOptional = Optional.ofNullable(pairToState.get(pair));
       final Optional<ConfiguredAirbyteStream> streamOptional = Optional.ofNullable(pairToConfiguredAirbyteStream.get(pair));
-      localMap.put(pair, createCursorInfoForStream(pair, stateOptional, streamOptional, cursorFunction, cursorFieldFunction, cursorRecordCountFunction));
+      localMap.put(pair,
+          createCursorInfoForStream(pair, stateOptional, streamOptional, cursorFunction, cursorFieldFunction, cursorRecordCountFunction));
     }
 
     return localMap;
@@ -126,8 +127,8 @@ public class CursorManager<S> {
    *        associated with the stream.
    * @param cursorFieldFunction A {@link Function} that provides the cursor field name for the cursor
    *        stored in the state associated with the stream.
-   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a stream
-   *        stored in the connector's state.
+   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a
+   *        stream stored in the connector's state.
    * @return A {@link CursorInfo} object based on the data currently stored in the connector's state
    *         for the given stream.
    */

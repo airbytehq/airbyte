@@ -844,10 +844,10 @@ public abstract class JdbcSourceAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         new AirbyteCatalog().withStreams(List.of(
             CatalogHelpers.createAirbyteStream(
-            tableName,
-            namespace,
-            Field.of("name", JsonSchemaType.STRING),
-            Field.of("timestamp", JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)))));
+                tableName,
+                namespace,
+                Field.of("name", JsonSchemaType.STRING),
+                Field.of("timestamp", JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)))));
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(List.of("timestamp"));

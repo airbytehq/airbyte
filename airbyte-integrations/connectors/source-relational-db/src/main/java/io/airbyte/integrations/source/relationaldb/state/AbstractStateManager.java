@@ -40,8 +40,8 @@ public abstract class AbstractStateManager<T, S> implements StateManager<T, S> {
    *        the connector's state.
    * @param cursorFieldFunction A {@link Function} that extracts the cursor field name from a stream
    *        stored in the connector's state.
-   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a stream
-   *        stored in the connector's state.
+   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a
+   *        stream stored in the connector's state.
    * @param namespacePairFunction A {@link Function} that generates a
    *        {@link AirbyteStreamNameNamespacePair} that identifies each stream in the connector's
    *        state.
