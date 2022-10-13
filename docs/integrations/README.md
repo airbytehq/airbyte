@@ -162,6 +162,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [TiDB](sources/tidb.md)                                                                     | Alpha                | No                  |
 | [TikTok Marketing](./sources/tiktok-marketing.md)                                           | Generally Available  | Yes                 |
 | [Trello](sources/trello.md)                                                                 | Alpha                | No                  |
+| [Trustpilot](sources/trustpilot.md)                                                         | Alpha                | No                  |
 | [Twilio](sources/twilio.md)                                                                 | Beta                 | Yes                 |
 | [Typeform](sources/typeform.md)                                                             | Alpha                | Yes                 |
 | [US Census](sources/us-census.md)                                                           | Alpha                | Yes                 |
