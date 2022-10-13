@@ -48,7 +48,10 @@ const ConnectionEditContext = createContext<Omit<
   "refreshSchema" | "schemaError"
 > | null>(null);
 
-export const ConnectionEditServiceProvider: React.FC<ConnectionEditProps> = ({ children, ...props }) => {
+export const ConnectionEditServiceProvider: React.FC<React.PropsWithChildren<ConnectionEditProps>> = ({
+  children,
+  ...props
+}) => {
   const { refreshSchema, schemaError, ...data } = useConnectionEdit(props);
   return (
     <ConnectionEditContext.Provider value={data}>
