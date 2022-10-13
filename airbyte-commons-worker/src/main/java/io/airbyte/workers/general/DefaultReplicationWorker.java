@@ -25,6 +25,7 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.helper.ThreadedTimeTracker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
@@ -129,11 +130,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
     destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
-    final ThreadedTimeHolder timeHolder = new ThreadedTimeHolder();
+    final ThreadedTimeTracker timeTracker = new ThreadedTimeTracker();
     final long startTime = System.currentTimeMillis();
-    final long replicationStartTime = System.currentTimeMillis();
-    long sourceReadStartTime = -1;
-    long destinationWriteStartTime = -1;
+    timeTracker.trackReplicationStartTime();
 
     final AtomicReference<FailureReason> replicationRunnableFailureRef = new AtomicReference<>();
     final AtomicReference<FailureReason> destinationRunnableFailureRef = new AtomicReference<>();
@@ -151,14 +150,14 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // closed first (which is what we want).
       try (destination; source) {
         destination.start(destinationConfig, jobRoot);
-        sourceReadStartTime = System.currentTimeMillis();
+        timeTracker.trackSourceReadStartTime();
         source.start(sourceConfig, jobRoot);
-        destinationWriteStartTime = System.currentTimeMillis();
+        timeTracker.trackDestinationWriteStartTime();
 
         // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
         // thrown
         final CompletableFuture<?> destinationOutputThreadFuture = CompletableFuture.runAsync(
-            getDestinationOutputRunnable(destination, cancelled, messageTracker, mdc, timeHolder),
+            getDestinationOutputRunnable(destination, cancelled, messageTracker, mdc, timeTracker),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof DestinationException) {
@@ -170,7 +169,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter, timeHolder),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter, timeTracker),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -211,7 +210,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         outputStatus = ReplicationStatus.COMPLETED;
       }
 
-      final long replicationEndTime = System.currentTimeMillis();
+      timeTracker.trackReplicationEndTime();
 
       final SyncStats totalSyncStats = new SyncStats()
           .withRecordsEmitted(messageTracker.getTotalRecordsEmitted())
@@ -222,12 +221,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withMeanSecondsBeforeSourceStateMessageEmitted(messageTracker.getMeanSecondsToReceiveSourceStateMessage())
           .withMaxSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
           .withMeanSecondsBetweenStateMessageEmittedandCommitted(messageTracker.getMeanSecondsBetweenStateMessageEmittedAndCommitted().orElse(null))
-          .withReplicationStartTime(replicationStartTime)
-          .withReplicationEndTime(replicationEndTime > 0 ? replicationEndTime : null)
-          .withSourceReadStartTime(sourceReadStartTime > 0 ? sourceReadStartTime : null)
-          .withSourceReadEndTime(timeHolder.getSourceReadEndTime() > 0 ? timeHolder.getSourceReadEndTime() : null)
-          .withDestinationWriteStartTime(destinationWriteStartTime > 0 ? destinationWriteStartTime : null)
-          .withDestinationWriteEndTime(timeHolder.getDestinationWriteEndTime() > 0 ? timeHolder.getDestinationWriteEndTime() : null);
+          .withReplicationStartTime(timeTracker.getReplicationStartTime())
+          .withReplicationEndTime(timeTracker.getReplicationEndTime())
+          .withSourceReadStartTime(timeTracker.getSourceReadStartTime())
+          .withSourceReadEndTime(timeTracker.getSourceReadEndTime())
+          .withDestinationWriteStartTime(timeTracker.getDestinationWriteStartTime())
+          .withDestinationWriteEndTime(timeTracker.getDestinationWriteEndTime());
 
       if (outputStatus == ReplicationStatus.COMPLETED) {
         totalSyncStats.setRecordsCommitted(totalSyncStats.getRecordsEmitted());
@@ -325,29 +324,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   }
 
-  private class ThreadedTimeHolder {
-
-    private long sourceReadEndTime = -1;
-    private long destinationWriteEndTime = -1;
-
-    public synchronized void trackSourceReadEndTime() {
-      this.sourceReadEndTime = System.currentTimeMillis();
-    }
-
-    public synchronized void trackDestinationWriteEndTime() {
-      this.destinationWriteEndTime = System.currentTimeMillis();
-    }
-
-    public synchronized long getSourceReadEndTime() {
-      return this.sourceReadEndTime;
-    }
-
-    public synchronized long getDestinationWriteEndTime() {
-      return this.destinationWriteEndTime;
-    }
-
-  }
-
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private static Runnable getReplicationRunnable(final AirbyteSource source,
                                                  final AirbyteDestination destination,
@@ -357,7 +333,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final Map<String, String> mdc,
                                                  final RecordSchemaValidator recordSchemaValidator,
                                                  final WorkerMetricReporter metricReporter,
-                                                 final ThreadedTimeHolder timeHolder) {
+                                                 final ThreadedTimeTracker timeHolder) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -472,7 +448,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                        final AtomicBoolean cancelled,
                                                        final MessageTracker messageTracker,
                                                        final Map<String, String> mdc,
-                                                       final ThreadedTimeHolder timeHolder) {
+                                                       final ThreadedTimeTracker timeHolder) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Destination output thread started.");
