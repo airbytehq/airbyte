@@ -2289,10 +2289,10 @@ components:
       properties:
         name:
           type: string
-          description: human readable name for this webhook e.g. for UI display
+          description: human readable name for this webhook e.g. for UI display.
         authToken:
           type: string
-          description: an auth token, to be passed as the value for an HTTP Authorization header. Note - must include prefix such as "Bearer <credential>".
+          description: an auth token, to be passed as the value for an HTTP Authorization header.
         validationUrl:
           type: string
           description: if supplied, the webhook config will be validated by checking that this URL returns a 2xx response.
