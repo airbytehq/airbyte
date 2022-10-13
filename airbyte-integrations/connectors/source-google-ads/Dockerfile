@@ -4,7 +4,6 @@ FROM python:3.9-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
 
 WORKDIR /airbyte/integration_code
 COPY setup.py ./
@@ -12,6 +11,7 @@ RUN pip install .
 COPY source_google_ads ./source_google_ads
 COPY main.py ./
 
+COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=v2
