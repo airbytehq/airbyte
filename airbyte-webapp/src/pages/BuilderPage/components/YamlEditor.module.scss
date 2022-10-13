@@ -1,4 +1,4 @@
-@use "../../../scss/colors";
+@use "scss/colors";
 
 .container {
   display: flex;
@@ -15,7 +15,7 @@
 
 .editorContainer {
   flex: 1 1 0;
-  background-image: linear-gradient(rgb(21, 19, 62), rgb(23, 22, 67) 10%, rgb(10, 10, 36));
+  background-image: linear-gradient(colors.$dark-blue-900, colors.$dark-blue-1000);
 }
 
 .downloadButton {
