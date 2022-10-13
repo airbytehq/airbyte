@@ -46,7 +46,6 @@ export const YamlEditor: React.FC = () => {
         <Editor
           beforeMount={setEditorTheme}
           value={editorValue}
-          height="100%"
           language="yaml"
           theme="airbyte"
           onChange={handleEditorChange}

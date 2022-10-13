@@ -1,9 +1,9 @@
 import { FormattedMessage } from "react-intl";
 
 import { ResizablePanels } from "components/ui/ResizablePanels";
+import { YamlEditor } from "components/YamlEditor";
 
 import styles from "./ConnectorBuilderPage.module.scss";
-import { YamlEditor } from "./YamlEditor";
 
 export const ConnectorBuilderPage: React.FC = () => {
   return (
