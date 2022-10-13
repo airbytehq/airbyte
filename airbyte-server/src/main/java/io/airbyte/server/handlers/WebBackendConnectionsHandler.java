@@ -44,6 +44,7 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -181,9 +182,8 @@ public class WebBackendConnectionsHandler {
         configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
 
     if (mostRecentFetchEvent.isPresent()) {
-      final Long mostRecentCatalogCreatedAt = mostRecentFetchEvent.get().getCreatedAt();
-      final Long currentCatalogCreatedAt = configRepository.getActorCatalogById(connectionRead.getSourceCatalogId()).getCreatedAt();
-      if (mostRecentCatalogCreatedAt > currentCatalogCreatedAt) {
+      final ActorCatalog currentCatalog = configRepository.getActorCatalogById(connectionRead.getSourceCatalogId());
+      if (mostRecentFetchEvent.get().getCreatedAt() > currentCatalog.getCreatedAt() && mostRecentFetchEvent.get().getActorCatalogId() != currentCatalog.getId()) {
         if (connectionRead.getIsBreaking()) {
           schemaChange = SchemaChange.BREAKING;
         } else {
