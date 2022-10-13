@@ -149,7 +149,7 @@ export const ScheduleField: React.FC = () => {
               <DropDown
                 {...field}
                 options={frequencies}
-                data-testid="schedule"
+                data-testid="scheduleData"
                 onChange={(item) => {
                   onScheduleChange(item, form);
                 }}

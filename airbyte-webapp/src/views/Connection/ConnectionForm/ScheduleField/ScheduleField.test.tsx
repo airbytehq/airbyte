@@ -34,7 +34,7 @@ describe(`${ScheduleField.name}`, () => {
     const container = await render(<MockForm />);
 
     await act(async () => {
-      const selectContainer = container.getByTestId("schedule");
+      const selectContainer = container.getByTestId("scheduleData");
       await selectEvent.select(selectContainer, "Cron");
     });
 
@@ -45,7 +45,7 @@ describe(`${ScheduleField.name}`, () => {
     const container = await render(<MockForm />);
 
     await act(async () => {
-      const selectContainer = container.getByTestId("schedule");
+      const selectContainer = container.getByTestId("scheduleData");
       await selectEvent.select(selectContainer, "Cron");
       userEvent.type(container.getByTestId("cronExpression"), "{selectall}this is an invalid cron expression");
     });
