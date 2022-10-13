@@ -143,7 +143,8 @@ public class SshTunnel implements AutoCloseable {
         try {
           urlObject = new URL(remoteServiceUrl);
         } catch (MalformedURLException e) {
-          AirbyteTraceMessageUtility.emitConfigErrorTrace(e, String.format("Provided value for remote service URL is not valid: %s", remoteServiceUrl));
+          AirbyteTraceMessageUtility.emitConfigErrorTrace(e,
+              String.format("Provided value for remote service URL is not valid: %s", remoteServiceUrl));
         }
         Preconditions.checkNotNull(urlObject, "Failed to parse URL of remote service");
         this.remoteServiceHost = urlObject.getHost();
