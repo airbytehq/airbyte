@@ -12,5 +12,5 @@ const Template: ComponentStory<typeof NumberBadge> = (args) => <NumberBadge {...
 
 export const Primary = Template.bind({});
 Primary.args = {
-  value: undefined,
+  value: 10,
 };

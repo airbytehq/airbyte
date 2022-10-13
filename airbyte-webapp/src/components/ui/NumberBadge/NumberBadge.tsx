@@ -5,12 +5,13 @@ import styles from "./NumberBadge.module.scss";
 
 interface NumberBadgeProps {
   value: number;
-  color?: string;
+  color?: "green" | "red" | "blue" | "default";
+  className?: string;
   "aria-label"?: string;
 }
 
-export const NumberBadge: React.FC<NumberBadgeProps> = ({ value, color, "aria-label": ariaLabel }) => {
-  const numberBadgeClassnames = classnames(styles.circle, {
+export const NumberBadge: React.FC<NumberBadgeProps> = ({ value, color, className, "aria-label": ariaLabel }) => {
+  const numberBadgeClassnames = classnames(className, styles.circle, {
     [styles.darkBlue]: !color,
     [styles.green]: color === "green",
     [styles.red]: color === "red",
