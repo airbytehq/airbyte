@@ -341,7 +341,7 @@ public class TemporalClient {
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
-        .withProtocolVersion(config.getProtocolVersion());;
+        .withProtocolVersion(config.getProtocolVersion());
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
 
     return execute(jobRunConfig,
