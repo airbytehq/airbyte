@@ -76,8 +76,7 @@ describe("Connection main actions", () => {
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
 
-    cy.wait(5000);
-    cy.wait("@updateConnection").then((interception) => {
+    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
     });
 

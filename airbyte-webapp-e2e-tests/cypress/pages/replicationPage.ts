@@ -58,11 +58,11 @@ export const selectCursorField = (value: string) => {
 };
 
 export const checkCursorField = (expectedValue: string) => {
-  cy.get(cursorFieldDropdown).find("p").should("have.text", expectedValue);
+  cy.get(cursorFieldDropdown).contains(expectedValue);
 };
 
 export const checkPrimaryKey = (expectedValue: string) => {
-  cy.get(primaryKeyText).should("have.text", expectedValue);
+  cy.get(primaryKeyText).contains(expectedValue);
 };
 
 export const searchStream = (value: string) => {
