@@ -793,7 +793,6 @@ public abstract class JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessagesFirstSync);
 
-    assertEquals(expectedMessagesFirstSync, actualMessagesFirstSync);
     assertEquals(expectedMessagesFirstSync.size(), actualMessagesFirstSync.size());
     assertTrue(expectedMessagesFirstSync.containsAll(actualMessagesFirstSync));
     assertTrue(actualMessagesFirstSync.containsAll(expectedMessagesFirstSync));
