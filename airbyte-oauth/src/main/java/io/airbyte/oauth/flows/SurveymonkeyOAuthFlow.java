@@ -23,9 +23,18 @@ import org.apache.http.client.utils.URIBuilder;
  * https://developer.surveymonkey.com/api/v3/?#authentication
  */
 public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
+  /**
+   * https://developer.surveymonkey.com/api/v3/#access-url
+   */
+  private static final String API_ACCESS_URL_USA = "https://api.surveymonkey.com/";
+  private static final String API_ACCESS_URL_EU = "https://api.eu.surveymonkey.com/";
+  private static final String API_ACCESS_URL_CA = "https://api.surveymonkey.ca/";
 
-  private static final String AUTHORIZE_URL = "https://api.surveymonkey.com/oauth/authorize";
-  private static final String ACCESS_TOKEN_URL = "https://api.surveymonkey.com/oauth/token";
+  private static final String EUROPE = "Europe";
+  private static final String CANADA = "Canada";
+
+  private static final String AUTHORIZE_URL = "oauth/authorize";
+  private static final String ACCESS_TOKEN_URL = "oauth/token";
 
   public SurveymonkeyOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -36,6 +45,17 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
     super(configRepository, httpClient, stateSupplier);
   }
 
+  protected String getAuthorizeUrl(final JsonNode inputOAuthConfiguration) {
+    final String origin = getConfigValueUnsafe(inputOAuthConfiguration, "origin");
+    if (origin.equals(EUROPE)) {
+      return API_ACCESS_URL_EU + AUTHORIZE_URL;
+    }
+    if (origin.equals(CANADA)) {
+      return API_ACCESS_URL_CA + AUTHORIZE_URL;
+    }
+    return API_ACCESS_URL_USA + AUTHORIZE_URL;
+  }
+
   @Override
   protected String formatConsentUrl(final UUID definitionId,
                                     final String clientId,
@@ -43,7 +63,8 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
     try {
-      return new URIBuilder(AUTHORIZE_URL)
+      final String baseUrl = getAuthorizeUrl(inputOAuthConfiguration);
+      return new URIBuilder(baseUrl)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("response_type", "code")
@@ -56,7 +77,15 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
 
   @Override
   protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
-    return ACCESS_TOKEN_URL;
+    final String origin = getConfigValueUnsafe(inputOAuthConfiguration, "origin");
+
+    if (origin.equals(EUROPE)) {
+      return API_ACCESS_URL_EU + ACCESS_TOKEN_URL;
+    }
+    if (origin.equals(CANADA)) {
+      return API_ACCESS_URL_CA + ACCESS_TOKEN_URL;
+    }
+    return API_ACCESS_URL_USA + ACCESS_TOKEN_URL;
   }
 
   @Override
