@@ -6,6 +6,7 @@ import datetime as dt
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, Union
 
+from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from dataclasses_jsonschema import JsonSchemaMixin
 
@@ -16,6 +17,10 @@ class MinMaxDatetime(JsonSchemaMixin):
     Compares the provided date against optional minimum or maximum times. If date is earlier than
     min_date, then min_date is returned. If date is greater than max_date, then max_date is returned.
     If neither, the input date is returned.
+
+    The timestamp format accepts the same format codes as datetime.strfptime, which are
+    all the format codes required by the 1989 C standard.
+    Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html
 
     Attributes:
         datetime (Union[InterpolatedString, str]): InterpolatedString or string representing the datetime in the format specified by `datetime_format`
@@ -36,6 +41,7 @@ class MinMaxDatetime(JsonSchemaMixin):
     def __post_init__(self, options: Mapping[str, Any]):
         self.datetime = InterpolatedString.create(self.datetime, options=options or {})
         self.timezone = dt.timezone.utc
+        self._parser = DatetimeParser()
         self.min_datetime = InterpolatedString.create(self.min_datetime, options=options) if self.min_datetime else None
         self.max_datetime = InterpolatedString.create(self.max_datetime, options=options) if self.max_datetime else None
 
@@ -53,17 +59,13 @@ class MinMaxDatetime(JsonSchemaMixin):
         if not datetime_format:
             datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
-        time = dt.datetime.strptime(str(self.datetime.eval(config, **additional_options)), datetime_format).replace(tzinfo=self._timezone)
+        time = self._parser.parse(str(self.datetime.eval(config, **additional_options)), datetime_format, self.timezone)
 
         if self.min_datetime:
-            min_time = dt.datetime.strptime(str(self.min_datetime.eval(config, **additional_options)), datetime_format).replace(
-                tzinfo=self._timezone
-            )
+            min_time = self._parser.parse(str(self.min_datetime.eval(config, **additional_options)), datetime_format, self.timezone)
             time = max(time, min_time)
         if self.max_datetime:
-            max_time = dt.datetime.strptime(str(self.max_datetime.eval(config, **additional_options)), datetime_format).replace(
-                tzinfo=self._timezone
-            )
+            max_time = self._parser.parse(str(self.max_datetime.eval(config, **additional_options)), datetime_format, self.timezone)
             time = min(time, max_time)
         return time
 

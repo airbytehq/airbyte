@@ -1,18 +1,19 @@
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 
-import Table from "components/Table";
+import { Table } from "components/ui/Table";
 
-import useRouter from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
 import ConnectorCell from "./components/ConnectorCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
-import SortButton from "./components/SortButton";
+import SortIcon from "./components/SortIcon";
 import styles from "./ImplementationTable.module.scss";
 import { EntityTableDataItem, SortOrderEnum } from "./types";
 
@@ -23,7 +24,8 @@ interface IProps {
 }
 
 const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => {
-  const { query, push } = useRouter();
+  const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
+  const navigate = useNavigate();
   const sortBy = query.sortBy || "entity";
   const sortOrder = query.order || SortOrderEnum.ASC;
 
@@ -31,7 +33,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
     (field: string) => {
       const order =
         sortBy !== field ? SortOrderEnum.ASC : sortOrder === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
-      push({
+      navigate({
         search: queryString.stringify(
           {
             sortBy: field,
@@ -41,7 +43,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         ),
       });
     },
-    [push, sortBy, sortOrder]
+    [navigate, sortBy, sortOrder]
   );
 
   const sortData = useCallback(
@@ -67,14 +69,10 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
     () => [
       {
         Header: (
-          <>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("entity")}>
             <FormattedMessage id="tables.name" />
-            <SortButton
-              wasActive={sortBy === "entity"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("entity")}
-            />
-          </>
+            <SortIcon wasActive={sortBy === "entity"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </button>
         ),
         headerHighlighted: true,
         accessor: "entityName",
@@ -85,14 +83,10 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
       },
       {
         Header: (
-          <>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("connector")}>
             <FormattedMessage id="tables.connector" />
-            <SortButton
-              wasActive={sortBy === "connector"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("connector")}
-            />
-          </>
+            <SortIcon wasActive={sortBy === "connector"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </button>
         ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
@@ -108,14 +102,10 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
       },
       {
         Header: (
-          <>
+          <button className={styles.tableHeaderButton} onClick={() => onSortClick("lastSync")}>
             <FormattedMessage id="tables.lastSync" />
-            <SortButton
-              wasActive={sortBy === "lastSync"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("lastSync")}
-            />
-          </>
+            <SortIcon wasActive={sortBy === "lastSync"} lowToLarge={sortOrder === SortOrderEnum.ASC} />
+          </button>
         ),
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (

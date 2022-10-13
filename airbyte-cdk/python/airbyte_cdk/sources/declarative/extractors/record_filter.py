@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
@@ -20,7 +20,7 @@ class RecordFilter(JsonSchemaMixin):
     """
 
     options: InitVar[Mapping[str, Any]]
-    config: Config = field(default=dict)
+    config: Config
     condition: str = ""
 
     def __post_init__(self, options: Mapping[str, Any]):

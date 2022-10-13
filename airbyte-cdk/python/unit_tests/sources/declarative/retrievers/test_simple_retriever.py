@@ -8,7 +8,7 @@ import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.read_exception import ReadException
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType

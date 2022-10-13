@@ -56,7 +56,7 @@ class HttpResponseFilter(JsonSchemaMixin):
             return None
 
     def _response_matches_predicate(self, response: requests.Response) -> bool:
-        return self.predicate and self.predicate.eval(None, response=response.json())
+        return self.predicate and self.predicate.eval(None, response=response.json(), headers=response.headers)
 
     def _response_contains_error_message(self, response: requests.Response) -> bool:
         if not self.error_message_contains:

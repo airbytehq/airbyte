@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 public class V0_35_26_001__PersistDiscoveredCatalog extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_26_001__PersistDiscoveredCatalog.class);
+  private static final String ACTOR_CATALOG = "actor_catalog";
 
   @Override
   public void migrate(final Context context) throws Exception {
@@ -48,7 +49,7 @@ public class V0_35_26_001__PersistDiscoveredCatalog extends BaseJavaMigration {
     final Field<JSONB> catalog = DSL.field("catalog", SQLDataType.JSONB.nullable(false));
     final Field<String> catalogHash = DSL.field("catalog_hash", SQLDataType.VARCHAR(32).nullable(false));
     final Field<OffsetDateTime> createdAt = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
-    ctx.createTableIfNotExists("actor_catalog")
+    ctx.createTableIfNotExists(ACTOR_CATALOG)
         .columns(id,
             catalog,
             catalogHash,
@@ -56,7 +57,7 @@ public class V0_35_26_001__PersistDiscoveredCatalog extends BaseJavaMigration {
         .constraints(primaryKey(id))
         .execute();
     LOGGER.info("actor_catalog table created");
-    ctx.createIndexIfNotExists("actor_catalog_catalog_hash_id_idx").on("actor_catalog", "catalog_hash").execute();
+    ctx.createIndexIfNotExists("actor_catalog_catalog_hash_id_idx").on(ACTOR_CATALOG, "catalog_hash").execute();
   }
 
   private static void createCatalogFetchEvent(final DSLContext ctx) {
@@ -73,7 +74,7 @@ public class V0_35_26_001__PersistDiscoveredCatalog extends BaseJavaMigration {
             configHash,
             actorVersion)
         .constraints(primaryKey(id),
-            foreignKey(actorCatalogId).references("actor_catalog", "id").onDeleteCascade(),
+            foreignKey(actorCatalogId).references(ACTOR_CATALOG, "id").onDeleteCascade(),
             foreignKey(actorId).references("actor", "id").onDeleteCascade())
         .execute();
     LOGGER.info("actor_catalog_fetch_event table created");
@@ -89,7 +90,7 @@ public class V0_35_26_001__PersistDiscoveredCatalog extends BaseJavaMigration {
         .dropConstraintIfExists("connection_actor_catalog_id_fk");
     ctx.alterTable("connection")
         .add(constraint("connection_actor_catalog_id_fk").foreignKey(sourceCatalogId)
-            .references("actor_catalog", "id").onDeleteCascade())
+            .references(ACTOR_CATALOG, "id").onDeleteCascade())
         .execute();
   }
 

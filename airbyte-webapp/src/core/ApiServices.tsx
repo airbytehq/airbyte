@@ -5,12 +5,11 @@ import { useConfig } from "config";
 import { OperationService } from "./domain/connection";
 import { DestinationDefinitionService } from "./domain/connector/DestinationDefinitionService";
 import { SourceDefinitionService } from "./domain/connector/SourceDefinitionService";
-import { DeploymentService } from "./domain/deployment/DeploymentService";
 import { HealthService } from "./health/HealthService";
 import { RequestMiddleware } from "./request/RequestMiddleware";
 import { useGetService, useInjectServices } from "./servicesProvider";
 
-export const ApiServices: React.FC = React.memo(({ children }) => {
+export const ApiServices: React.FC<React.PropsWithChildren<unknown>> = React.memo(({ children }) => {
   const config = useConfig();
   const middlewares = useGetService<RequestMiddleware[]>("DefaultRequestMiddlewares");
 
@@ -18,7 +17,6 @@ export const ApiServices: React.FC = React.memo(({ children }) => {
     () => ({
       SourceDefinitionService: new SourceDefinitionService(config.apiUrl, middlewares),
       DestinationDefinitionService: new DestinationDefinitionService(config.apiUrl, middlewares),
-      DeploymentService: new DeploymentService(config.apiUrl, middlewares),
       OperationService: new OperationService(config.apiUrl, middlewares),
       HealthService: new HealthService(config.apiUrl, middlewares),
     }),

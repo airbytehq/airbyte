@@ -122,39 +122,36 @@ expected_obj_schema = {
 
 expected_array_schema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "items": {
-        "properties": {
-            "batters": {
-                "properties": {
-                    "batter": {
-                        "items": {
-                            "properties": {"id": {"type": "string"}, "type": {"type": "string"}},
-                            "required": ["id", "type"],
-                            "type": "object",
-                        },
-                        "type": "array",
-                    }
-                },
-                "required": ["batter"],
+    "properties": {
+        "batters": {
+            "properties": {
+                "batter": {
+                    "items": {
+                        "properties": {"id": {"type": "string"}, "type": {"type": "string"}},
+                        "required": ["id", "type"],
+                        "type": "object",
+                    },
+                    "type": "array",
+                }
+            },
+            "required": ["batter"],
+            "type": "object",
+        },
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "ppu": {"type": "number"},
+        "topping": {
+            "items": {
+                "properties": {"id": {"type": "string"}, "type": {"type": "string"}},
+                "required": ["id", "type"],
                 "type": "object",
             },
-            "id": {"type": "string"},
-            "name": {"type": "string"},
-            "ppu": {"type": "number"},
-            "topping": {
-                "items": {
-                    "properties": {"id": {"type": "string"}, "type": {"type": "string"}},
-                    "required": ["id", "type"],
-                    "type": "object",
-                },
-                "type": "array",
-            },
-            "type": {"type": "string"},
+            "type": "array",
         },
-        "required": ["batters", "id", "name", "ppu", "topping", "type"],
-        "type": "object",
+        "type": {"type": "string"},
     },
-    "type": "array",
+    "required": ["batters", "id", "name", "ppu", "topping", "type"],
+    "type": "object",
 }
 
 

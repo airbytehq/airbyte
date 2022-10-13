@@ -27,6 +27,7 @@ class IncrementalUtilsTest {
       STREAM_NAME,
       null,
       Field.of("ascending_inventory_uuid", JsonSchemaType.STRING));
+  private static final String ABC = "abc";
 
   @Test
   void testGetCursorField() {
@@ -74,13 +75,13 @@ class IncrementalUtilsTest {
 
   @Test
   void testCompareCursors() {
-    assertTrue(IncrementalUtils.compareCursors("abc", "def", JsonSchemaPrimitive.STRING) < 0);
-    Assertions.assertEquals(0, IncrementalUtils.compareCursors("abc", "abc", JsonSchemaPrimitive.STRING));
+    assertTrue(IncrementalUtils.compareCursors(ABC, "def", JsonSchemaPrimitive.STRING) < 0);
+    Assertions.assertEquals(0, IncrementalUtils.compareCursors(ABC, ABC, JsonSchemaPrimitive.STRING));
     assertTrue(IncrementalUtils.compareCursors("1", "2", JsonSchemaPrimitive.NUMBER) < 0);
     assertTrue(IncrementalUtils.compareCursors("5000000000", "5000000001", JsonSchemaPrimitive.NUMBER) < 0);
     assertTrue(IncrementalUtils.compareCursors("false", "true", JsonSchemaPrimitive.BOOLEAN) < 0);
     assertTrue(IncrementalUtils.compareCursors(null, "def", JsonSchemaPrimitive.STRING) < 1);
-    assertTrue(IncrementalUtils.compareCursors("abc", null, JsonSchemaPrimitive.STRING) > 0);
+    assertTrue(IncrementalUtils.compareCursors(ABC, null, JsonSchemaPrimitive.STRING) > 0);
     Assertions.assertEquals(0, IncrementalUtils.compareCursors(null, null, JsonSchemaPrimitive.STRING));
     assertThrows(IllegalStateException.class, () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.ARRAY));
     assertThrows(IllegalStateException.class, () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.OBJECT));

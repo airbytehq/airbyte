@@ -119,6 +119,15 @@ SOME_BACKOFF_TIME = 60
             ResponseStatus.retry(10),
             None,
         ),
+        (
+            "test_200_fail_with_predicate_from_header",
+            HTTPStatus.OK,
+            HttpResponseFilter(action=ResponseAction.FAIL, predicate="{{ headers['fail'] }}", options={}),
+            None,
+            {"fail": True},
+            response_status.FAIL,
+            None,
+        ),
     ],
 )
 def test_default_error_handler(

@@ -13,17 +13,17 @@ import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.security.GeneralSecurityException;
 import java.security.KeyPair;
+import java.time.Duration;
 import java.util.List;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
+import org.apache.sshd.common.util.security.SecurityUtils;
+import org.apache.sshd.core.CoreModuleProperties;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.openssl.PEMKeyPair;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -226,16 +226,19 @@ public class SshTunnel implements AutoCloseable {
   }
 
   /**
-   * From the RSA format private key string, use bouncycastle to deserialize the key pair, reconstruct
-   * the keys from the key info, and return the key pair for use in authentication.
+   * From the OPENSSH private key string, use mina-sshd to deserialize the key pair, reconstruct the
+   * keys from the key info, and return the key pair for use in authentication.
+   *
+   * @see <a href=
+   *      "https://javadoc.io/static/org.apache.sshd/sshd-common/2.8.0/org/apache/sshd/common/config/keys/loader/KeyPairResourceLoader.html#loadKeyPairs-org.apache.sshd.common.session.SessionContext-org.apache.sshd.common.util.io.resource.IoResource-org.apache.sshd.common.config.keys.FilePasswordProvider-">loadKeyPairs()</a>
    */
-  private KeyPair getPrivateKeyPair() throws IOException {
-    final PEMParser pemParser = new PEMParser(new StringReader(validateKey()));
-    final PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
-    final JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-    return new KeyPair(
-        converter.getPublicKey(SubjectPublicKeyInfo.getInstance(keypair.getPublicKeyInfo())),
-        converter.getPrivateKey(keypair.getPrivateKeyInfo()));
+  KeyPair getPrivateKeyPair() throws IOException, GeneralSecurityException {
+    final String validatedKey = validateKey();
+    final var keyPairs = SecurityUtils
+        .getKeyPairResourceParser()
+        .loadKeyPairs(null, null, null, new StringReader(validatedKey));
+
+    return (keyPairs == null) ? null : keyPairs.iterator().next();
   }
 
   private String validateKey() {
@@ -247,18 +250,18 @@ public class SshTunnel implements AutoCloseable {
    * before opening a tunnel.
    */
   private SshClient createClient() {
-    java.security.Security.addProvider(
-        new org.bouncycastle.jce.provider.BouncyCastleProvider());
+    java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     final SshClient client = SshClient.setUpDefaultClient();
     client.setForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
     client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
+    CoreModuleProperties.IDLE_TIMEOUT.set(client, Duration.ZERO);
     return client;
   }
 
   /**
    * Starts an ssh session; wrap this in a try-finally and use closeTunnel() to close it.
    */
-  private ClientSession openTunnel(final SshClient client) {
+  ClientSession openTunnel(final SshClient client) {
     try {
       client.start();
       final ClientSession session = client.connect(
@@ -286,7 +289,7 @@ public class SshTunnel implements AutoCloseable {
 
       LOGGER.info("Established tunneling session.  Port forwarding started on " + address.toInetSocketAddress());
       return session;
-    } catch (final IOException e) {
+    } catch (final IOException | GeneralSecurityException e) {
       throw new RuntimeException(e);
     }
   }

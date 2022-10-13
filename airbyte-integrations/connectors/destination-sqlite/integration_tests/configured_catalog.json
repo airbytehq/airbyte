@@ -1,0 +1,38 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "airbyte_acceptance_table",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "column1": {
+              "type": "string"
+            },
+            "column2": {
+              "type": "number"
+            },
+            "column3": {
+              "type": "string",
+              "format": "datetime",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "column4": {
+              "type": "number"
+            },
+            "column5": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

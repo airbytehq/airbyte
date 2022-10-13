@@ -32,6 +32,7 @@ public class TrelloOAuthFlow extends BaseOAuthFlow {
   private static final String REQUEST_TOKEN_URL = "https://trello.com/1/OAuthGetRequestToken";
   private static final String AUTHENTICATE_URL = "https://trello.com/1/OAuthAuthorizeToken";
   private static final String ACCESS_TOKEN_URL = "https://trello.com/1/OAuthGetAccessToken";
+  private static final String OAUTH_VERIFIER = "oauth_verifier";
 
   // Airbyte webserver creates new TrelloOAuthFlow class instance for every API
   // call. Since oAuth 1.0 workflow requires data from previous step to build
@@ -141,12 +142,12 @@ public class TrelloOAuthFlow extends BaseOAuthFlow {
   private Map<String, Object> internalCompleteOAuth(final JsonNode oAuthParamConfig, final Map<String, Object> queryParams)
       throws IOException {
     final String clientKey = getClientIdUnsafe(oAuthParamConfig);
-    if (!queryParams.containsKey("oauth_verifier") || !queryParams.containsKey("oauth_token")) {
+    if (!queryParams.containsKey(OAUTH_VERIFIER) || !queryParams.containsKey("oauth_token")) {
       throw new IOException(
-          "Undefined " + (!queryParams.containsKey("oauth_verifier") ? "oauth_verifier" : "oauth_token") + " from consent redirected url.");
+          "Undefined " + (!queryParams.containsKey(OAUTH_VERIFIER) ? OAUTH_VERIFIER : "oauth_token") + " from consent redirected url.");
     }
     final String temporaryToken = (String) queryParams.get("oauth_token");
-    final String verificationCode = (String) queryParams.get("oauth_verifier");
+    final String verificationCode = (String) queryParams.get(OAUTH_VERIFIER);
     final OAuthGetAccessToken oAuthGetAccessToken = new OAuthGetAccessToken(ACCESS_TOKEN_URL);
     oAuthGetAccessToken.signer = signer;
     oAuthGetAccessToken.transport = transport;

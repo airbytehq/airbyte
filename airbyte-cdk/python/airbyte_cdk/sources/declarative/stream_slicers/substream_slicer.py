@@ -14,7 +14,7 @@ from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ParentStreamConfig:
+class ParentStreamConfig(JsonSchemaMixin):
     """
     Describes how to create a stream slice from a parent stream
 
@@ -127,7 +127,7 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
                 stream_state_field = parent_stream_config.stream_slice_field
                 for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
                     empty_parent_slice = True
-                    parent_slice = parent_stream_slice.get("slice")
+                    parent_slice = parent_stream_slice
 
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None

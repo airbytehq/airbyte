@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { FeatureService, IfFeatureEnabled, useFeature, useFeatureService } from "./FeatureService";
 import { FeatureItem, FeatureSet } from "./types";
 
-const wrapper: React.FC = ({ children }) => (
+const wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <FeatureService features={[FeatureItem.AllowCreateConnection, FeatureItem.AllowSync]}>{children}</FeatureService>
 );
 
@@ -23,7 +23,7 @@ interface FeatureOverwrites {
  */
 const getFeatures = (initialProps: FeatureOverwrites) => {
   return renderHook(
-    ({ overwrite, user, workspace }: FeatureOverwrites) => {
+    ({ overwrite, user, workspace }: React.PropsWithChildren<FeatureOverwrites>) => {
       const { features, setWorkspaceFeatures, setUserFeatures, setFeatureOverwrites } = useFeatureService();
       useEffect(() => {
         setWorkspaceFeatures(workspace);

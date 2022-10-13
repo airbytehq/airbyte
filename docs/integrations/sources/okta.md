@@ -5,7 +5,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 ## Prerequisites
 * Created Okta account with added application on [Add Application Page](https://okta-domain.okta.com/enduser/catalog) page. (change okta-domain to you'r domain received after complete registration)
 
-## Airbyte OSS
+## Airbyte Open Source
 * Name
 * Okta-Domain
 * Start Date
@@ -33,13 +33,13 @@ Okta is the complete identity solution for all your apps and people that’s uni
 3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for this connector.
 4. Add **Name**
 5. Add **Okta-Domain**
-6. Add **Start date**
+6. Add **Start date** (defaults to 7 days if no date is included)
 7. Choose the method of authentication
 8. If you select Token authentication - fill the field  **Personal Api Token** 
 9. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
 10. Click `Set up source`.
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 
 1. Go to local Airbyte page.
 2. Use API token from requirements and Okta [domain](https://developer.okta.com/docs/guides/find-your-domain/-/main/). 
@@ -69,6 +69,7 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 - [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started)
 - [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles)
 - [Permissions](https://developer.okta.com/docs/reference/api/roles/#list-permissions)
+- [Resource Sets](https://developer.okta.com/docs/reference/api/roles/#list-resource-sets)
 
 ## Performance considerations
 
@@ -78,6 +79,7 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.1.13  | 2022-08-12 | [14700](https://github.com/airbytehq/airbyte/pull/14700) | Add resource sets |
 | 0.1.12  | 2022-08-05 | [15050](https://github.com/airbytehq/airbyte/pull/15050) | Add parameter `start_date` for Logs stream                                     |
 | 0.1.11  | 2022-08-03 | [14739](https://github.com/airbytehq/airbyte/pull/14739) | Add permissions for custom roles                                               |
 | 0.1.10  | 2022-08-01 | [15179](https://github.com/airbytehq/airbyte/pull/15179) | Fix broken schemas for all streams                                             | 
