@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.7
+Fix a bug when a state is evaluated once before used in a loop of `test_read_sequential_slices` [#17757](https://github.com/airbytehq/airbyte/pull/17757/)
+
+## 0.2.6
+Backward compatibility hypothesis testing: disable "filtering too much" health check. [#17871](https://github.com/airbytehq/airbyte/pull/17871)
+
+## 0.2.5
+Unit test `test_state_with_abnormally_large_values` to check state emission testing is working. [#17791](https://github.com/airbytehq/airbyte/pull/17791)
+
+## 0.2.4
+Make incremental tests compatible with per stream states.[#16686](https://github.com/airbytehq/airbyte/pull/16686/)
+
+## 0.2.3
+Backward compatibility tests: improve `check_if_type_of_type_field_changed` to make it less radical when validating specs and allow `'str' -> ['str', '<another_type>']` type changes.[#16429](https://github.com/airbytehq/airbyte/pull/16429/)
+
 ## 0.2.2
 Backward compatibility tests: improve `check_if_cursor_field_was_changed` to make it less radical and allow stream addition to catalog.[#15835](https://github.com/airbytehq/airbyte/pull/15835/)
 

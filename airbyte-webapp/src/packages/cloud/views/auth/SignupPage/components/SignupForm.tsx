@@ -1,15 +1,18 @@
 import { Field, FieldProps, Formik } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link, LoadingButton } from "components";
+import { LabeledInput, Link } from "components";
+import { Button } from "components/ui/Button";
 
-import { useConfig } from "config";
 import { useExperiment } from "hooks/services/Experiment";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { isGdprCountry } from "utils/dataPrivacy";
+import { links } from "utils/links";
 
 import CheckBoxControl from "../../components/CheckBoxControl";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
@@ -131,19 +134,18 @@ export const NewsField: React.FC = () => {
 };
 
 export const Disclaimer: React.FC = () => {
-  const config = useConfig();
   return (
     <div className={styles.disclaimer}>
       <FormattedMessage
         id="login.disclaimer"
         values={{
           terms: (terms: React.ReactNode) => (
-            <Link $clear target="_blank" href={config.links.termsLink} as="a">
+            <Link $clear target="_blank" href={links.termsLink} as="a">
               {terms}
             </Link>
           ),
           privacy: (privacy: React.ReactNode) => (
-            <Link $clear target="_blank" href={config.links.privacyLink} as="a">
+            <Link $clear target="_blank" href={links.privacyLink} as="a">
               {privacy}
             </Link>
           ),
@@ -164,12 +166,12 @@ export const SignupButton: React.FC<SignupButtonProps> = ({
   disabled,
   buttonMessageId = "login.signup.submitButton",
 }) => (
-  <LoadingButton className={styles.signUpButton} type="submit" isLoading={isLoading} disabled={disabled}>
+  <Button full size="lg" type="submit" isLoading={isLoading} disabled={disabled}>
     <FormattedMessage id={buttonMessageId} />
-  </LoadingButton>
+  </Button>
 );
 
-export const SignupFormStatusMessage: React.FC = ({ children }) => (
+export const SignupFormStatusMessage: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <div className={styles.statusMessage}>{children}</div>
 );
 
@@ -195,15 +197,19 @@ export const SignupForm: React.FC = () => {
     return yup.object().shape(shape);
   }, [showName, showCompanyName]);
 
+  const [params] = useSearchParams();
+  const search = Object.fromEntries(params);
+
+  const initialValues = {
+    name: `${search.firstname ?? ""} ${search.lastname ?? ""}`.trim(),
+    companyName: search.company ?? "",
+    email: search.email ?? "",
+    password: "",
+    news: !isGdprCountry(),
+  };
   return (
     <Formik<FormValues>
-      initialValues={{
-        name: "",
-        companyName: "",
-        email: "",
-        password: "",
-        news: true,
-      }}
+      initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={async (values, { setFieldError, setStatus }) =>
         signUp(values).catch((err) => {

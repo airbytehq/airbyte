@@ -6,11 +6,13 @@ package io.airbyte.db;
 
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.util.Optional;
 
 public class IncrementalUtils {
 
   private static final String PROPERTIES = "properties";
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public static String getCursorField(final ConfiguredAirbyteStream stream) {
     if (stream.getCursorField().size() == 0) {
       throw new IllegalStateException("No cursor field specified for stream attempting to do incremental.");
@@ -18,6 +20,14 @@ public class IncrementalUtils {
       throw new IllegalStateException("Source does not support nested cursor fields.");
     } else {
       return stream.getCursorField().get(0);
+    }
+  }
+
+  public static Optional<String> getCursorFieldOptional(final ConfiguredAirbyteStream stream) {
+    try {
+      return Optional.ofNullable(getCursorField(stream));
+    } catch (IllegalStateException e) {
+      return Optional.empty();
     }
   }
 

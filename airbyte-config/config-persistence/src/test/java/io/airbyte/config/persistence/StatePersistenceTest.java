@@ -275,7 +275,7 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                         .withStreamState(null),
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
-                        .withStreamState(null)))));;
+                        .withStreamState(null)))));
 
     statePersistence.updateOrCreateState(connectionId, state0);
     statePersistence.updateOrCreateState(connectionId, fullReset);
@@ -558,7 +558,7 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final DestinationConnection destinationConnection = MockData.destinationConnections().get(0);
     final StandardSync sync = MockData.standardSyncs().get(0);
 
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
     configRepository.writeStandardSourceDefinition(sourceDefinition);
     configRepository.writeSourceConnectionNoSecrets(sourceConnection);
     configRepository.writeStandardDestinationDefinition(destinationDefinition);

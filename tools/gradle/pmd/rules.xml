@@ -101,20 +101,8 @@
         <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
-        <exclude name="AvoidFieldNameMatchingTypeName"/>
-        <exclude name="AvoidInstanceofChecksInCatchClause"/>
-        <exclude name="AvoidLiteralsInIfCondition"/>
         <exclude name="CloseResource"/>
-        <exclude name="CompareObjectsWithEquals"/>
-        <exclude name="ConstructorCallsOverridableMethod"/>
-        <exclude name="DoNotTerminateVM"/>
-        <exclude name="EmptyCatchBlock"/>
-        <exclude name="EmptyIfStmt"/>
-        <exclude name="EmptyStatementNotInLoop"/>
-        <exclude name="ImplicitSwitchFallThrough"/>
-        <exclude name="InvalidLogMessageFormat"/>
         <exclude name="MissingSerialVersionUID"/>
-        <exclude name="MoreThanOneLogger"/>
         <exclude name="NullAssignment"/>
         <exclude name="ReturnEmptyCollectionRatherThanNull"/>
         <exclude name="SimpleDateFormatNeedsLocale"/>

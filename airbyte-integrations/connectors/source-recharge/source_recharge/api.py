@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class RechargeStream(HttpStream, ABC):
@@ -18,6 +19,10 @@ class RechargeStream(HttpStream, ABC):
 
     limit = 250
     page_num = 1
+    raise_on_http_errors = True
+
+    # regestring the default schema transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     @property
     def data_path(self):
@@ -57,13 +62,17 @@ class RechargeStream(HttpStream, ABC):
             return [response_data]
 
     def should_retry(self, response: requests.Response) -> bool:
-        res = super().should_retry(response)
-        if res:
-            return res
-
-        # For some reason, successful responses contains incomplete data
         content_length = int(response.headers.get("Content-Length", 0))
-        return response.status_code == 200 and content_length > len(response.content)
+        incomplete_data_response = response.status_code == 200 and content_length > len(response.content)
+
+        if incomplete_data_response:
+            return True
+        elif response.status_code == requests.codes.FORBIDDEN:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.error(f"Skiping stream {self.name} because of a 403 error.")
+            return False
+
+        return super().should_retry(response)
 
 
 class IncrementalRechargeStream(RechargeStream, ABC):
@@ -108,20 +117,6 @@ class Charges(IncrementalRechargeStream):
     Charges Stream: https://developer.rechargepayments.com/v1-shopify?python#list-charges
     """
 
-    def get_stream_data(self, response_data: Any) -> List[dict]:
-        # We expect total_weight to be an integer, but the API is returning numbers like 42.0
-        # Cast these down to int if possible, and error if not.
-        data = super().get_stream_data(response_data)
-        for record in data:
-            if "total_weight" in record:
-                total_weight = record["total_weight"]
-                int_total_weight = int(total_weight)
-                if total_weight == int_total_weight:
-                    record["total_weight"] = int_total_weight
-                else:
-                    raise ValueError(f"Expected total_weight to be an integer, got {total_weight}")
-        return data
-
 
 class Collections(RechargeStream):
     """
@@ -162,20 +157,6 @@ class Orders(IncrementalRechargeStream):
     """
     Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
     """
-
-    def get_stream_data(self, response_data: Any) -> List[dict]:
-        # We expect total_weight to be an integer, but the API is returning numbers like 42.0
-        # Cast these down to int if possible, and error if not.
-        data = super().get_stream_data(response_data)
-        for record in data:
-            if "total_weight" in record:
-                total_weight = record["total_weight"]
-                int_total_weight = int(total_weight)
-                if total_weight == int_total_weight:
-                    record["total_weight"] = int_total_weight
-                else:
-                    raise ValueError(f"Expected total_weight to be an integer, got {total_weight}")
-        return data
 
 
 class Products(RechargeStream):

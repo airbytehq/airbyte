@@ -4,12 +4,7 @@ kind: Pod
 metadata:
   name: {{ include "common.names.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "airbyte.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    helm.sh/chart: {{ include "airbyte.chart" . }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
+    {{- include "airbyte.labels" . | nindent 4 }}
   annotations:
     helm.sh/hook: pre-install,pre-upgrade
     helm.sh/hook-weight: "0"
@@ -34,9 +29,13 @@ spec:
   {{- if .Values.affinity }}
   affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
   {{- end }}
+  {{- if .Values.extraInitContainers }}
+  initContainers:
+  {{- toYaml .Values.extraInitContainers | nindent 4 }}
+  {{- end }}
   containers:
     - name: airbyte-bootloader-container
-      image: {{ printf "%s:%s" .Values.image.repository (default .Chart.AppVersion .Values.image.tag) }}
+      image: {{ printf "%s:%s" .Values.image.repository (include "bootloader.imageTag" .) }}
       imagePullPolicy: "{{ .Values.image.pullPolicy }}"
       env:
         {{- if eq .Values.global.deploymentMode "oss"  }}
@@ -58,8 +57,8 @@ spec:
         - name: DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.database.secretName | default (printf "%s-postgresql" .Release.Name ) }}
-              key: {{ .Values.global.database.secretValue | default "postgresql-password" }}
+              name: {{ .Values.global.database.secretName | default (printf "%s-airbyte-secrets" .Release.Name ) }}
+              key: {{ .Values.global.database.secretValue | default "DATABASE_PASSWORD" }}
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
@@ -68,7 +67,7 @@ spec:
         - name: DATABASE_USER
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.configMapName | default (printf "%s-airbyte-secrets" .Release.Name) }}
+              name: {{ .Values.global.secretName | default (printf "%s-airbyte-secrets" .Release.Name) }}
               key: DATABASE_USER
         {{- end }}
         # Values from secret
@@ -95,4 +94,23 @@ spec:
         {{- toYaml .Values.extraEnv | nindent 8 }}
         {{- end }}
 
+      {{- if .Values.resources }}
       resources: {{- toYaml .Values.resources | nindent 8 }}
+      {{- end }}
+      {{- if .Values.extraVolumeMounts }}
+      volumeMounts:
+        {{- toYaml .Values.extraVolumeMounts | nindent 8 }}
+      {{- end }}
+      {{- if .Values.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.containerSecurityContext | nindent 8 }}
+      {{- end }}
+    {{- if .Values.extraContainers }}
+    {{ toYaml .Values.extraContainers | nindent 4 }}
+    {{- end }}
+    {{- if .Values.global.extraContainers }}
+    {{ toYaml .Values.global.extraContainers | nindent 4 }}
+    {{- end }}
+  {{- if .Values.extraVolumes }}
+  volumes:
+    {{- toYaml .Values.extraVolumes | nindent 4 }}
+  {{- end }}

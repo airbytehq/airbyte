@@ -26,6 +26,7 @@ from source_facebook_marketing.streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    CustomConversions,
     Images,
     Videos,
 )
@@ -116,6 +117,12 @@ class SourceFacebookMarketing(AbstractSource):
                 page_size=config.page_size,
                 max_batch_size=config.max_batch_size,
             ),
+            CustomConversions(
+                api=api,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
+            ),
             Images(
                 api=api,
                 start_date=config.start_date,
@@ -150,8 +157,8 @@ class SourceFacebookMarketing(AbstractSource):
         (e.g: username and password) required to run this integration.
         """
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
-            changelogUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
+            documentationUrl="https://docs.airbyte.com/integrations/sources/facebook-marketing",
+            changelogUrl="https://docs.airbyte.com/integrations/sources/facebook-marketing",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),

@@ -70,7 +70,7 @@ class BaseDiffChecker(ABC):
         if new_values_in_type_list:
             self._raise_error("A new value was added to a 'type' field")
 
-    def check_if_type_of_type_field_changed(self, diff: DeepDiff):
+    def check_if_type_of_type_field_changed(self, diff: DeepDiff, allow_type_widening: bool = False):
         """
         Detect the change of type of a type field on a property
         e.g:
@@ -91,11 +91,20 @@ class BaseDiffChecker(ABC):
             if isinstance(change.t1, str):
                 if not isinstance(change.t2, list):
                     self._raise_error("A 'type' field was changed from string to an invalid value.", diff)
-                # If the new type field is a list we want to make sure it only has the original type (t1) and null: e.g. "str" -> ["str", "null"]
-                # We want to raise an error otherwise.
-                t2_not_null_types = [_type for _type in change.t2 if _type != "null"]
-                if not (len(t2_not_null_types) == 1 and t2_not_null_types[0] == change.t1):
-                    self._raise_error("The 'type' field was changed to a list with multiple invalid values", diff)
+                if allow_type_widening:
+                    # If the new type field is a list we want to make sure it contains the original type (t1):
+                    # e.g. "str" -> ["str", "null"]
+                    #      "int" -> ["int", "str"]
+                    # We want to raise an error otherwise.
+                    if change.t1 not in change.t2:
+                        self._raise_error("The 'type' field was changed to a list which does not contain previous type", diff)
+                else:
+                    # If the new type field is a list we want to make sure it only has the original type (t1)
+                    # and null: e.g. "str" -> ["str", "null"]
+                    # We want to raise an error otherwise.
+                    t2_not_null_types = [_type for _type in change.t2 if _type != "null"]
+                    if not (len(t2_not_null_types) == 1 and t2_not_null_types[0] == change.t1):
+                        self._raise_error("The 'type' field was changed to a list with multiple invalid values", diff)
             if isinstance(change.t1, list):
                 if not isinstance(change.t2, str):
                     self._raise_error("The 'type' field was changed from a list to an invalid value", diff)
@@ -121,7 +130,7 @@ class SpecDiffChecker(BaseDiffChecker):
         self.check_if_added_a_new_required_property(self.connection_specification_diff)
         self.check_if_value_of_type_field_changed(self.connection_specification_diff)
         # self.check_if_new_type_was_added(self.connection_specification_diff) We want to allow type expansion atm
-        self.check_if_type_of_type_field_changed(self.connection_specification_diff)
+        self.check_if_type_of_type_field_changed(self.connection_specification_diff, allow_type_widening=True)
         self.check_if_field_was_made_not_nullable(self.connection_specification_diff)
         self.check_if_enum_was_narrowed(self.connection_specification_diff)
         self.check_if_declared_new_enum_field(self.connection_specification_diff)
@@ -179,7 +188,11 @@ def validate_previous_configs(
     2. Validate a fake previous config against the actual connector specification json schema."""
 
     @given(from_schema(previous_connector_spec.dict()["connectionSpecification"]))
-    @settings(max_examples=number_of_configs_to_generate, verbosity=Verbosity.quiet, suppress_health_check=(HealthCheck.too_slow,))
+    @settings(
+        max_examples=number_of_configs_to_generate,
+        verbosity=Verbosity.quiet,
+        suppress_health_check=(HealthCheck.too_slow, HealthCheck.filter_too_much),
+    )
     def check_fake_previous_config_against_actual_spec(fake_previous_config):
         if isinstance(fake_previous_config, dict):  # Looks like hypothesis-jsonschema not only generate dict objects...
             fake_previous_config = SecretDict(fake_previous_config)
@@ -213,7 +226,7 @@ class CatalogDiffChecker(BaseDiffChecker):
     def assert_is_backward_compatible(self):
         self.check_if_stream_was_removed(self.streams_json_schemas_diff)
         self.check_if_value_of_type_field_changed(self.streams_json_schemas_diff)
-        self.check_if_type_of_type_field_changed(self.streams_json_schemas_diff)
+        self.check_if_type_of_type_field_changed(self.streams_json_schemas_diff, allow_type_widening=False)
         self.check_if_cursor_field_was_changed(self.streams_cursor_fields_diff)
 
     def check_if_stream_was_removed(self, diff: DeepDiff):

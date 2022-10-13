@@ -45,8 +45,8 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
     container.start();
 
     var sslMode = ImmutableMap.builder()
-            .put(JdbcUtils.MODE_KEY, "required")
-            .build();
+        .put(JdbcUtils.MODE_KEY, "required")
+        .build();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "STANDARD")
         .build());
@@ -128,6 +128,11 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
+  }
+
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
   }
 
 }

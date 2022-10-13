@@ -6,11 +6,10 @@ import styled from "styled-components";
 
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
-
-import { ConnectionFormMode } from "./ConnectionForm/ConnectionForm";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 15px 24px;
@@ -41,7 +40,7 @@ export const FormCard = <T extends object>({
     form.onSubmit(values, formikHelpers);
   });
 
-  const errorMessage = error ? createFormErrorMessage(error) : null;
+  const errorMessage = error ? generateMessageFromError(error) : null;
 
   return (
     <Formik {...form} onSubmit={(values, formikHelpers) => mutateAsync({ values, formikHelpers })}>

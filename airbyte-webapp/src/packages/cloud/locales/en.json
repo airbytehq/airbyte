@@ -90,6 +90,9 @@
   "settings.generalSettings.changeWorkspace": "Change Workspace",
   "settings.generalSettings.form.name.label": "Workspace name",
   "settings.generalSettings.form.name.placeholder": "Workspace name",
+  "settings.generalSettings.form.advancedMode.label": "Advanced mode",
+  "settings.generalSettings.form.advancedMode.switchLabel": "Enable advanced mode",
+  "settings.generalSettings.form.advancedMode.tooltip": "When Advanced Mode is enabled, certain views will display additional technical information.",
   "settings.generalSettings.deleteLabel": "Delete your workspace",
   "settings.generalSettings.deleteText": "Delete",
   "settings.accessManagementSettings": "Access Management",
@@ -114,6 +117,8 @@
   "settings.accessManagement.roleViewers": "<b>Viewers</b> are in read-only and cannot edit or add connections.",
   "settings.accessManagement.roleEditors": "<b>Editors</b> can edit connections",
   "settings.accessManagement.roleAdmin": "<b>Admin</b> can also manage users",
+
+  "addUsers.success.title": "Invitations sent!",
 
   "credits.date": "Date",
   "credits.amount": "Credits",
@@ -146,5 +151,8 @@
 
   "verifyEmail.notification": "You successfully verified your email. Thank you.",
 
-  "webapp.cannotReachServer": "Cannot reach server."
+  "webapp.cannotReachServer": "Cannot reach server.",
+
+  "inviteUsersHint.message": "Need help from a teammate to set up the {connector}?",
+  "inviteUsersHint.cta": "Invite users"
 }
