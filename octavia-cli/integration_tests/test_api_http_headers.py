@@ -13,6 +13,8 @@ vcr_log = logging.getLogger("vcr")
 vcr_log.setLevel(logging.WARN)
 
 AIRBYTE_URL = "http://localhost:8000"
+AIRBYTE_USERNAME = "airbyte"
+AIRBYTE_PASSWORD = "password"
 
 
 @pytest.fixture(scope="module")
@@ -47,7 +49,17 @@ def test_api_http_headers(vcr, file_based_headers, option_based_headers):
     expected_headers = expected_option_based_headers + expected_file_based_headers
     runner = CliRunner()
     command_options = (
-        ["--airbyte-url", AIRBYTE_URL, "--api-http-headers-file-path", custom_api_http_headers_yaml_file_path, "--api-http-header"]
+        [
+            "--airbyte-url",
+            AIRBYTE_URL,
+            "--airbyte-username",
+            AIRBYTE_USERNAME,
+            "--airbyte-password",
+            AIRBYTE_PASSWORD,
+            "--api-http-headers-file-path",
+            custom_api_http_headers_yaml_file_path,
+            "--api-http-header",
+        ]
         + raw_option_based_headers
         + ["list", "connectors", "sources"]
     )
