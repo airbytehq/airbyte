@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { act, render as tlr } from "@testing-library/react";
+import React from "react";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
@@ -19,7 +20,7 @@ jest.mock("services/workspaces/WorkspacesService", () => ({
 }));
 
 describe("CreateConnectionForm", () => {
-  const Wrapper: React.FC = ({ children }) => <TestWrapper>{children}</TestWrapper>;
+  const Wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => <TestWrapper>{children}</TestWrapper>;
   const render = async () => {
     let renderResult: ReturnType<typeof tlr>;
 
