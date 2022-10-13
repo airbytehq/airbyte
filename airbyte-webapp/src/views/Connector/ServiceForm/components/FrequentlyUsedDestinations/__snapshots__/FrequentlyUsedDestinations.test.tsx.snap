@@ -31,7 +31,7 @@ exports[`<FrequentlyUsedDestinations /> should renders with mock data without cr
           >
             <svg
               aria-hidden="true"
-              class="svg-inline--fa fa-chevron-left slick-arrow slick-prev slick-disabled"
+              class="<removed-for-snapshot-test>"
               data-icon="chevron-left"
               data-prefix="fas"
               data-role="none"
@@ -314,7 +314,7 @@ exports[`<FrequentlyUsedDestinations /> should renders with mock data without cr
           >
             <svg
               aria-hidden="true"
-              class="svg-inline--fa fa-chevron-right slick-arrow slick-next"
+              class="<removed-for-snapshot-test>"
               data-icon="chevron-right"
               data-prefix="fas"
               data-role="none"
