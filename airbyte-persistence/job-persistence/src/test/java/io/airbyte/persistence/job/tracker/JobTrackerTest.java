@@ -204,7 +204,7 @@ class JobTrackerTest {
             .withName(SOURCE_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
-    when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
+    when(configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     assertCheckConnCorrectMessageForEachState(
         (jobState, output) -> jobTracker.trackCheckConnectionSource(JOB_ID, UUID1, WORKSPACE_ID, jobState, output),
@@ -234,7 +234,7 @@ class JobTrackerTest {
             .withName(DESTINATION_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
-    when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
+    when(configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     assertCheckConnCorrectMessageForEachState(
         (jobState, output) -> jobTracker.trackCheckConnectionDestination(JOB_ID, UUID2, WORKSPACE_ID, jobState, output),
@@ -264,7 +264,7 @@ class JobTrackerTest {
             .withName(SOURCE_DEF_NAME)
             .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
-    when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
+    when(configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, WORKSPACE_ID, jobState), metadata);
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, null, jobState), metadata);
@@ -285,7 +285,7 @@ class JobTrackerTest {
     when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(jobId)).thenReturn(WORKSPACE_ID);
     when(configRepository.getStandardSync(CONNECTION_ID))
         .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true).withCatalog(CATALOG));
-    when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
+    when(configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     when(configRepository.getStandardSync(CONNECTION_ID))
         .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(false).withCatalog(CATALOG)
@@ -369,7 +369,7 @@ class JobTrackerTest {
 
     when(configRepository.getStandardSync(CONNECTION_ID))
         .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true).withCatalog(CATALOG));
-    when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
+    when(configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     final Map<String, Object> manualMetadata = MoreMaps.merge(
         metadata,
@@ -489,7 +489,7 @@ class JobTrackerTest {
     when(configRepository.getStandardSync(CONNECTION_ID))
         .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true).withCatalog(CATALOG));
     when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(LONG_JOB_ID)).thenReturn(WORKSPACE_ID);
-    when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
+    when(configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     final Map<String, Object> manualMetadata = MoreMaps.merge(
         ATTEMPT_METADATA,
