@@ -1,13 +1,13 @@
 import { FormattedMessage } from "react-intl";
 
-import { TwoPanelLayout } from "components/ui/TwoPanelLayout";
+import { ResizablePanels } from "components/ui/ResizablePanels";
 
 import styles from "./ConnectorBuilderPage.module.scss";
 import { YamlEditor } from "./YamlEditor";
 
 export const ConnectorBuilderPage: React.FC = () => {
   return (
-    <TwoPanelLayout
+    <ResizablePanels
       leftPanel={{ children: <YamlEditor />, smallWidthHeader: <FormattedMessage id="builder.expandConfiguration" /> }}
       rightPanel={{
         children: <p>Testing Panel</p>,

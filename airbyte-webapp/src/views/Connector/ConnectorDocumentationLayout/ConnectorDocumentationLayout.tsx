@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useWindowSize } from "react-use";
 
 import { LoadingPage } from "components/LoadingPage";
-import { TwoPanelLayout } from "components/ui/TwoPanelLayout";
+import { ResizablePanels } from "components/ui/ResizablePanels";
 
 import styles from "./ConnectorDocumentationLayout.module.scss";
 import { useDocumentationPanelContext } from "./DocumentationPanelContext";
@@ -23,7 +23,7 @@ export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unkn
   );
 
   return (
-    <TwoPanelLayout
+    <ResizablePanels
       leftPanel={{
         children,
         smallWidthHeader: <FormattedMessage id="connectorForm.expandForm" />,

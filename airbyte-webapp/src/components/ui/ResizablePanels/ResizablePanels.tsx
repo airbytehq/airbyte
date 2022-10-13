@@ -5,9 +5,9 @@ import React from "react";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { useWindowSize } from "react-use";
 
-import styles from "./TwoPanelLayout.module.scss";
+import styles from "./ResizablePanels.module.scss";
 
-interface TwoPanelContainerProps {
+interface ResizablePanelsProps {
   leftPanel: {
     children: React.ReactNode;
     smallWidthHeader: React.ReactNode;
@@ -74,7 +74,7 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
 };
 // NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
-export const TwoPanelLayout: React.FC<TwoPanelContainerProps> = ({ leftPanel, rightPanel, containerClassName }) => {
+export const ResizablePanels: React.FC<ResizablePanelsProps> = ({ leftPanel, rightPanel, containerClassName }) => {
   return (
     <ReflexContainer className={containerClassName} orientation="vertical">
       <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
