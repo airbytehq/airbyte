@@ -17,6 +17,5 @@ def test_streams(mocker):
     source = SourceZendeskSell()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    # TODO: replace this with your streams number
-    expected_streams_number = 2
+    expected_streams_number = 23
     assert len(streams) == expected_streams_number

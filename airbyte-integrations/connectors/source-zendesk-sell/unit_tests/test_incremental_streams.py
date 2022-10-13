@@ -18,17 +18,14 @@ def patch_incremental_base_class(mocker):
 
 def test_cursor_field(patch_incremental_base_class):
     stream = IncrementalZendeskSellStream()
-    # TODO: replace this with your expected cursor field
-    expected_cursor_field = []
+    expected_cursor_field = "updated_at"
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
     stream = IncrementalZendeskSellStream()
-    # TODO: replace this with your input parameters
-    inputs = {"current_stream_state": None, "latest_record": None}
-    # TODO: replace this with your expected updated stream state
-    expected_state = {}
+    inputs = {"current_stream_state": {"updated_at": "2022-03-17T16:03:07Z"}, "latest_record": {"updated_at": "2022-03-18T16:03:07Z"}}
+    expected_state = {"updated_at": "2022-03-18T16:03:07Z"}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
@@ -54,6 +51,5 @@ def test_source_defined_cursor(patch_incremental_base_class):
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
     stream = IncrementalZendeskSellStream()
-    # TODO: replace this with your expected checkpoint interval
-    expected_checkpoint_interval = None
+    expected_checkpoint_interval = 100
     assert stream.state_checkpoint_interval == expected_checkpoint_interval

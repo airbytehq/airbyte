@@ -5,6 +5,7 @@ connectionSpecification:
   type: object
   required:
     - api_token
+    - start_date
   properties:
     api_token:
       title: API token
@@ -13,3 +14,11 @@ connectionSpecification:
       examples: 
         - "f23yhd630otl94y85a8bf384958473pto95847fd006da49382716or937ruw059"
       airbyte_secret: true
+    start_date:
+      title: Start Date
+      type: string
+      description: "The date from which you'd like to replicate data for Zendesk Sell in the format YYYY-MM-DDT00:00:00Z. All data created after this date will be replicated."
+      examples: 
+        - "2022-01-01T00:00:00Z"
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      airbyte_secret: false
