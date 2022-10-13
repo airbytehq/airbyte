@@ -27,22 +27,22 @@ pub enum Error {
     #[error("go.estuary.dev/E007: The connector's protocol does not match the requested protocol. Connector protocol is {0}, requested protocol is {1}")]
     MismatchingRuntimeProtocol(String, &'static str),
 
-    #[error("go.estuary.dev/E008: IO Error")]
+    #[error("go.estuary.dev/E008: IO Error: {0}")]
     IOError(#[from] std::io::Error),
 
-    #[error("go.estuary.dev/E009: Json Error")]
+    #[error("go.estuary.dev/E009: Json Error: {0}")]
     JsonError(#[from] serde_json::Error),
 
-    #[error("go.estuary.dev/E010: Decoding protobuf RPC messages")]
+    #[error("go.estuary.dev/E010: Decoding protobuf RPC messages: {0}")]
     MessageDecodeError(#[from] prost::DecodeError),
 
-    #[error("go.estuary.dev/E010: Encoding protobuf RPC messages")]
+    #[error("go.estuary.dev/E010: Encoding protobuf RPC messages: {0}")]
     MessageEncodeError(#[from] prost::EncodeError),
 
     #[error("go.estuary.dev/E011: Missing required image inspect file. Specify it via --image-inspect-json-path in command line")]
     MissingImageInspectFile,
 
-    #[error("go.estuary.dev/E013: Creating and persisting temporary file")]
+    #[error("go.estuary.dev/E013: Creating and persisting temporary file: {0}")]
     TempfilePersistError(#[from] tempfile::PersistError),
 
     #[error("go.estuary.dev/E014: Executing and joining a concurrent task failed")]
