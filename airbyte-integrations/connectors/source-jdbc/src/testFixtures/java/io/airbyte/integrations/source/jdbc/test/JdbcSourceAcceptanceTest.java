@@ -833,7 +833,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     // 1st sync
     database.execute(ctx -> {
-      ctx.createStatement().execute(createTableQuery(fullyQualifiedTableName, "name VARCHAR(200) NOT NULL, timestamp TIMESTAMP NOT NULL", ""));
+      ctx.createStatement().execute(createTableQuery(fullyQualifiedTableName, "name VARCHAR(200) NOT NULL, timestamp DATETIME NOT NULL", ""));
       ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('a', '2021-01-01 00:00:00')", fullyQualifiedTableName));
       ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('b', '2021-01-01 00:00:00')", fullyQualifiedTableName));
     });

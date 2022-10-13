@@ -36,6 +36,7 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
+import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -78,10 +79,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
 
-    final List<String> newIdentifiersList = getWrappedColumnNames(database, columnNames, schemaName, tableName);
-    final String preparedSqlQuery = String
-        .format("SELECT %s FROM %s", String.join(",", newIdentifiersList),
-            getFullTableName(schemaName, tableName));
+    final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
+    final String preparedSqlQuery = String.format("SELECT %s FROM %s", newIdentifiers, getFullTableName(schemaName, tableName));
 
     LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
     return queryTable(database, preparedSqlQuery);
@@ -97,10 +96,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
    * @return the list with Column names updated to handle functions (if nay) properly
    */
   @Override
-  protected List<String> getWrappedColumnNames(final JdbcDatabase database,
-                                               final List<String> columnNames,
-                                               final String schemaName,
-                                               final String tableName) {
+  protected String getWrappedColumnNames(final JdbcDatabase database,
+                                         final Connection connection,
+                                         final List<String> columnNames,
+                                         final String schemaName,
+                                         final String tableName) {
     final List<String> hierarchyIdColumns = new ArrayList<>();
     try {
       final String identifierQuoteString = database.getMetaData().getIdentifierQuoteString();
@@ -123,12 +123,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       // Eventually would get columns like this: testColumn.toString as "testColumn"
       // toString function in SQL server is the only way to get human readable value, but not mssql
       // specific HEX value
-      return columnNames.stream()
+      return String.join(", ", columnNames.stream()
           .map(
               el -> hierarchyIdColumns.contains(el) ? String
                   .format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
                   : getIdentifierWithQuoting(el))
-          .collect(toList());
+          .toList());
     } catch (final SQLException e) {
       LOGGER.error("Failed to fetch metadata to prepare a proper request.", e);
       throw new RuntimeException(e);
