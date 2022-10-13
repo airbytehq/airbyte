@@ -2,6 +2,7 @@ documentationUrl: https://docsurl.com
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Trustpilot Spec
+  description: Trustpilot Spec schema
   type: object
   required:
     - app_name
@@ -9,12 +10,32 @@ connectionSpecification:
   additionalProperties: true
   properties:
     app_name:
+      title: App Name
+      description: This is Your app or company name, for which You need reviews from Trustpilot. For example, in https://www.trustpilot.com/review/{MY_APP_NAME}, where MY_APP_NAME is the value of Your App Name.
       type: string
+      examples:
+        - free-now.com
+        - limos4less.com
+        - tempuslogix.com
+        - adkos.com
     start_date:
+      title: Start Date
+      description: This is start date, from which You need reviews from Trustpilot
       type: string
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - YYYY-MM-DD
+        - 2022-01-01
+        - 2022-09-01
+        - 1998-12-04
     timeout_ms:
+      title: Timeout MS
+      description: Timeout in milliseconds between two subsequent requests to Trustpilot website.
       type: integer
+      default: 1000
       minimum: 0
+      examples:
+        - 1000
+        - 100
+        - 10
+        - 1

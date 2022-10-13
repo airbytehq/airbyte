@@ -5,6 +5,7 @@ import datetime
 import json
 from dataclasses import InitVar, dataclass, field
 from html.parser import HTMLParser
+from time import sleep
 from typing import Any, Mapping, Optional, Union, Iterable
 from typing import List
 
@@ -57,6 +58,9 @@ class TrustpilotExtractor(RecordExtractor):
 
     options: InitVar[Mapping[str, Any]]
 
+    def __post_init__(self, options: Mapping[str, Any]):
+        self._timeout_ms = options['config']['timeout_ms'] if 'timeout_ms' in options['config'] else 1000
+
     @staticmethod
     def __parse_html(response: requests.Response) -> List[Record]:
         dom = response.text
@@ -70,6 +74,7 @@ class TrustpilotExtractor(RecordExtractor):
 
     def extract_records(self, response: requests.Response,
                         ) -> List[Record]:
+        sleep(self._timeout_ms / 1000.0)
         return self.__parse_html(response)
 
 
