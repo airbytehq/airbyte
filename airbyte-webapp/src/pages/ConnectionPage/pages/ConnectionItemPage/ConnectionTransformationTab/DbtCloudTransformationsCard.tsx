@@ -1,11 +1,17 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
+import { Link } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { RoutePaths } from "pages/routePaths";
+
 import styles from "./DbtCloudTransformationsCard.module.scss";
+
+type Transformation = { project: string; job: string };
 
 // This won't be used by the first prototype, but it is the UI specced in
 // follow-up designs which can support multiple integrations; it's also a small,
@@ -13,15 +19,50 @@ import styles from "./DbtCloudTransformationsCard.module.scss";
 // bundle size.
 // eslint-disable-next-line: @typescript-eslint/no-usused-vars @typescript-eslint/ban-ts-comment
 // @ts-ignore: no unused locals
-const EmptyTransformationsList = ({ className }: { className: string }) => (
-  <div className={classNames(className, styles.emptyListContent)}>
-    <div className={styles.contextExplanation}>
-      After an Airbyte sync job has completed, the following jobs will run.
+const TransformationsList = ({
+  className,
+  transformations,
+}: {
+  className?: string;
+  transformations: Transformation[];
+}) => {
+  return (
+    <div className={classNames(className, styles.emptyListContent)}>
+      <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
+      {transformations.length ? (
+        <>
+          {transformations.map((t, i) => (
+            <TransformationListItem transformation={t} key={i} />
+          ))}
+        </>
+      ) : (
+        <>
+          <img src="/images/octavia/worker.png" alt="An octopus wearing a hard hat, tools at the ready" />
+          No transformations
+        </>
+      )}
     </div>
-    <img src="/images/octavia/worker.png" alt="An octopus wearing a hard hat, tools at the ready" />
-    No transformations
-  </div>
-);
+  );
+};
+
+const TransformationListItem = (transformation: Transformation) => {
+  return <Card className={styles.transformationListItem}>{JSON.stringify(transformation)}</Card>;
+};
+
+const NoDbtIntegration = ({ className, workspaceId }: { className: string; workspaceId: string }) => {
+  const dbtSettingsPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Settings}/dbt-cloud`;
+  return (
+    <div className={classNames(className, styles.emptyListContent)}>
+      <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
+      <p className={styles.contextExplanation}>
+        Go to your <Link to={dbtSettingsPath}>settings</Link> to connect your dbt Cloud account
+      </p>
+      <DbtCloudSignupBanner />
+    </div>
+  );
+};
+
+const DbtCloudSignupBanner = () => <div />;
 
 export const DbtCloudTransformationsCard = () => {
   // Possible render paths:
@@ -33,15 +74,16 @@ export const DbtCloudTransformationsCard = () => {
   //        THEN show empty jobs list and the "+ Add transformation" button
   //   2.2) AND the connection has saved dbt jobs
   //        THEN show the "no jobs" card body and the "+ Add transformation" button
-  const transformations = [];
-  /* const transformations = [1, 2, 3]; */
+  /* const transformations: Transformation[] = []; */
+  const transformations: Transformation[] = [
+    { project: "Project #1", job: "Job #1" },
+    { project: "Project #1", job: "Job #2" },
+    { project: "Project #1", job: "Job #3" },
+  ];
 
-  const TransformationList = ({ className }: { className: string }) =>
-    transformations.length ? (
-      <div className={className}>this is a list</div>
-    ) : (
-      <EmptyTransformationsList className={className} />
-    );
+  const { workspaceId } = useCurrentWorkspace();
+  const hasDbtIntegration = true;
+  /* const hasDbtIntegration = false; */
 
   return (
     <Card
@@ -54,7 +96,11 @@ export const DbtCloudTransformationsCard = () => {
         </span>
       }
     >
-      <TransformationList className={styles.cloudTransformationsListContainer} />
+      {hasDbtIntegration ? (
+        <TransformationsList transformations={transformations} className={styles.cloudTransformationsListContainer} />
+      ) : (
+        <NoDbtIntegration className={styles.cloudTransformationsListContainer} workspaceId={workspaceId} />
+      )}
     </Card>
   );
 };
