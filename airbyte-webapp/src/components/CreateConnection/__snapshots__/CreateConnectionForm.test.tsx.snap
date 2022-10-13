@@ -160,7 +160,7 @@ exports[`CreateConnectionForm should render 1`] = `
                         >
                           <svg
                             aria-hidden="true"
-                            class="svg-inline--fa fa-sort-down sc-dPyBCJ eGVczJ"
+                            class="<removed-for-snapshot-test>"
                             data-icon="sort-down"
                             data-prefix="fas"
                             focusable="false"
@@ -283,7 +283,7 @@ exports[`CreateConnectionForm should render 1`] = `
                           >
                             <svg
                               aria-hidden="true"
-                              class="svg-inline--fa fa-sort-down sc-dPyBCJ eGVczJ"
+                              class="<removed-for-snapshot-test>"
                               data-icon="sort-down"
                               data-prefix="fas"
                               focusable="false"
@@ -379,7 +379,7 @@ exports[`CreateConnectionForm should render 1`] = `
                     >
                       <svg
                         aria-hidden="true"
-                        class="svg-inline--fa fa-rotate tryArrow"
+                        class="<removed-for-snapshot-test>"
                         data-icon="rotate"
                         data-prefix="fas"
                         focusable="false"
@@ -644,7 +644,7 @@ exports[`CreateConnectionForm should render 1`] = `
                         >
                           <svg
                             aria-hidden="true"
-                            class="svg-inline--fa fa-chevron-right sc-ehmTmK eOIlNv"
+                            class="<removed-for-snapshot-test>"
                             data-icon="chevron-right"
                             data-prefix="fas"
                             focusable="false"
@@ -760,7 +760,7 @@ exports[`CreateConnectionForm should render 1`] = `
                                 >
                                   <svg
                                     aria-hidden="true"
-                                    class="svg-inline--fa fa-sort-down sc-dPyBCJ eGVczJ"
+                                    class="<removed-for-snapshot-test>"
                                     data-icon="sort-down"
                                     data-prefix="fas"
                                     focusable="false"
@@ -977,7 +977,7 @@ exports[`CreateConnectionForm should render with an error 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="svg-inline--fa fa-xmark "
+            class="<removed-for-snapshot-test>"
             data-icon="xmark"
             data-prefix="fas"
             focusable="false"
