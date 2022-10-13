@@ -356,33 +356,4 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     assertThrows(IllegalArgumentException.class, () -> rf.formatRecord(airbyteRecordMessage));
   }
 
-  // @Test
-  // void formatRecord_objectType2() {
-  // final JsonNode jsonNodeSchema = getSchemaWithAllOf();
-  // DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
-  // jsonNodeSchema, new BigQuerySQLNameTransformer());
-  // final ObjectNode objectNode = mapper.createObjectNode().put("title", "test");
-  // final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage();
-  // airbyteRecordMessage.setEmittedAt(1602637589000L);
-  // airbyteRecordMessage.setData(objectNode);
-  //
-  // final JsonNode result = rf.formatRecord(airbyteRecordMessage);
-  //
-  // assertNotNull(result);
-  // assertTrue(result.has("name"));
-  // assertEquals("data", result.get("name").textValue());
-  // assertEquals(JsonNodeType.STRING, result.get("name").getNodeType());
-  // }
-
-  @Test
-  void addAirbyteColumns() {}
-
-  @Test
-  void formatDateTimeFields() {
-
-  }
-
-  @Test
-  void getBigQuerySchema() {}
-
 }
