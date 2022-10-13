@@ -463,8 +463,8 @@ class WebBackendConnectionsHandlerTest {
   void testWebBackendGetConnectionWithDiscoveryAndNewSchema() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(expectedWithNewSchema.getCatalogDiff());
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
-        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withCreatedAt(5000L).withActorCatalogId(UUID.randomUUID())));
-    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withCreatedAt(4000L).withId(UUID.randomUUID()));
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID())));
+    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead, operationReadList);
     verify(schedulerHandler).discoverSchemaForSourceFromSourceId(any());
     assertEquals(expectedWithNewSchema, result);
@@ -481,8 +481,8 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testWebBackendGetConnectionNoDiscoveryWithNewSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
-        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withCreatedAt(5000L).withActorCatalogId(UUID.randomUUID())));
-    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withCreatedAt(4000L).withId(UUID.randomUUID()));
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID())));
+    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
     final WebBackendConnectionRead result = testWebBackendGetConnection(false, connectionRead, operationReadList);
     assertEquals(expectedNoDiscoveryWithNewSchema, result);
   }
@@ -491,8 +491,8 @@ class WebBackendConnectionsHandlerTest {
   void testWebBackendGetConnectionNoDiscoveryWithNewSchemaBreaking() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(connectionsHandler.getConnection(brokenConnectionRead.getConnectionId())).thenReturn(brokenConnectionRead);
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
-        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withCreatedAt(5000L).withActorCatalogId(UUID.randomUUID())));
-    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withCreatedAt(4000L).withId(UUID.randomUUID()));
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID())));
+    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
     final WebBackendConnectionRead result = testWebBackendGetConnection(false, brokenConnectionRead, brokenOperationReadList);
     assertEquals(expectedWithNewSchemaBroken, result);
   }

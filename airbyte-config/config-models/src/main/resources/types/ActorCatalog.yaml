@@ -18,5 +18,3 @@ properties:
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
   catalogHash:
     type: string
-  createdAt:
-    type: integer
