@@ -8,6 +8,7 @@ import { Text } from "components/ui/Text";
 import { ConnectorSpecification } from "core/domain/connector";
 
 import { useServiceForm } from "../../../serviceFormContext";
+import { useAuthentication } from "../../../useAuthentication";
 import styles from "./AuthButton.module.scss";
 import GoogleAuthButton from "./GoogleAuthButton";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
@@ -39,7 +40,8 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
 }
 
 export const AuthButton: React.FC = () => {
-  const { selectedService, authErrors, selectedConnector } = useServiceForm();
+  const { selectedService, selectedConnector } = useServiceForm();
+  const { authErrors } = useAuthentication();
   const hasAuthError = Object.values(authErrors).includes("form.empty.error");
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
