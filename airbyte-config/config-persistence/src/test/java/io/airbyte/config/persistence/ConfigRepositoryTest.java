@@ -19,7 +19,6 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
-import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -40,7 +39,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterEach;
@@ -505,4 +503,5 @@ class ConfigRepositoryTest {
             streamDescriptor -> "stream2".equals(streamDescriptor.getName()) && streamDescriptor.getNamespace() == null));
 
   }
+
 }
