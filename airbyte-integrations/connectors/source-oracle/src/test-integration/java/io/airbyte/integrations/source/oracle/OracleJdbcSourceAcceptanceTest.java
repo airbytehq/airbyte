@@ -55,14 +55,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.OracleContainer;
 
 class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleJdbcSourceAcceptanceTest.class);
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
-  private static OracleContainer ORACLE_DB;
+  private static AirbyteOracleTestContainer ORACLE_DB;
 
   @BeforeAll
   static void init() {
@@ -91,8 +90,12 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s VARCHAR(20))";
     INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)')";
 
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+    ORACLE_DB = new AirbyteOracleTestContainer()
         .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
+        .withEnv("RELAX_SECURITY", "1")
+        .withUsername("TEST_ORA")
+        .withPassword("oracle")
+        .usingSid()
         .withEnv("RELAX_SECURITY", "1");
     ORACLE_DB.start();
   }
@@ -398,8 +401,10 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "locked_user");
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus status = source.check(config);
+
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 99999; Error code: 28000;"));
+    assertEquals("State code: 72000; Error code: 1017; Message: ORA-01017: invalid username/password; logon denied\n",
+        status.getMessage());
   }
 
   @Test
