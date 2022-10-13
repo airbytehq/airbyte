@@ -1,0 +1,17 @@
+{
+  "host": "XXX",
+  "port": 443,
+  "auth_type": "LDAP",
+  "use_ssl": "true",
+  "use_http_transport": "true",
+  "http_path": "hive-env/cdp-proxy-api/hive",
+  "user": "XXX",
+  "password": "XXX",
+  "loading_method": {
+    "method": "S3",
+    "s3_bucket": "datalake",
+    "s3_region": "us-east-1",
+    "aws_key_id": "XXXXXXX",
+    "aws_key_secret": "XXXXXXX"
+  }
+}

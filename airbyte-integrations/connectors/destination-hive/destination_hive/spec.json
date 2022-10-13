@@ -21,7 +21,7 @@
         "type": "integer",
         "description": "Port number"
       },
-      "auth_mechanism": {
+      "auth_type": {
         "type": "string",
         "description": "LDAP, Kerberos"
       },
@@ -106,4 +106,3 @@
     }
   }
 }
-

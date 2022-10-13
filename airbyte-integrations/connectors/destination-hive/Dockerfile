@@ -13,6 +13,8 @@ RUN apk --no-cache upgrade \
 COPY setup.py ./
 # install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
+RUN pip install impyla --prefix=/install .
+RUN pip install boto3 --prefix=/install .
 
 # build a clean environment
 FROM base

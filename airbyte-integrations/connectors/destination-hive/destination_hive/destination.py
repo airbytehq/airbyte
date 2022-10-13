@@ -2,12 +2,56 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
-from typing import Any, Iterable, Mapping
-
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from datetime import datetime
+import impala.dbapi
+import impala.hiveserver2 as hs2
+import json
+from logging import getLogger
+from typing import Any, Dict, Iterable, Mapping, Optional
+from uuid import uuid4
+
+from .writer import create_hive_writer
+
+def establish_connection(config: json, logger: Optional[AirbyteLogger] = None) -> hs2.HiveServer2Connection:
+    """
+    Creates a connection to Hive database using the parameters provided.
+    :param config: Json object containing db credentials.
+    :param logger: AirbyteLogger instance to print logs.
+    :return: PEP-249 compliant database Connection object.
+    """
+    logger = getLogger("airbyte")
+    logger.info("Connecting to Hive.") if logger else None
+
+    credentials = config
+    #logger.info(credentials)
+    # add configuration to yaml
+    if (not credentials["auth_type"]):
+        hive_conn = impala.dbapi.connect(
+                        host=credentials["host"],
+                        port=credentials["port"],
+                )
+    elif (credentials["auth_type"].upper() == 'LDAP'):
+        hive_conn = impala.dbapi.connect(
+                        host=credentials["host"],
+                        port=credentials["port"],
+                        auth_mechanism='LDAP',
+                        use_http_transport=credentials["use_http_transport"],
+                        user=credentials["user"],
+                        password=credentials["password"],
+                        use_ssl=credentials["use_ssl"],
+                        http_path=credentials["http_path"]
+                )
+
+    #connection.state = ConnectionState.OPEN
+    #connection.handle = hive_conn
+    return hive_conn
+
+    #connection = connect(**parse_config(config, logger))
+    logger.debug("Connection to Hive established.") if logger else None
+    return connection
 
 
 class DestinationHive(Destination):
@@ -16,7 +60,6 @@ class DestinationHive(Destination):
     ) -> Iterable[AirbyteMessage]:
 
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -31,7 +74,31 @@ class DestinationHive(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
 
-        pass
+        streams = {s.stream.name for s in configured_catalog.streams}
+        logger = getLogger("airbyte")
+        with establish_connection(config) as connection:
+            writer = create_hive_writer(connection, config, logger)
+
+            for configured_stream in configured_catalog.streams:
+                if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                    writer.delete_table(configured_stream.stream.name)
+                    logger.info(f"Stream {configured_stream.stream.name} is wiped.")
+                writer.create_raw_table(configured_stream.stream.name)
+
+            for message in input_messages:
+                if message.type == Type.STATE:
+                    yield message
+                elif message.type == Type.RECORD:
+                    data = message.record.data
+                    stream = message.record.stream
+                    # Skip unselected streams
+                    if stream not in streams:
+                        logger.debug(f"Stream {stream} was not present in configured streams, skipping")
+                        continue
+                    writer.queue_write_data(stream, str(uuid4()), datetime.now(), json.dumps(data))
+
+            # Flush any leftover messages
+            writer.flush()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -45,8 +112,16 @@ class DestinationHive(Destination):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
+
         try:
-            # TODO
+            with establish_connection(config, logger) as connection:
+                # We can only verify correctness of connection parameters on execution
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT 1")
+                    print (cursor.fetchall())
+                    cursor.close()
+                # Test access to the bucket, if S3 strategy is used
+                create_hive_writer(connection, config, logger)
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
