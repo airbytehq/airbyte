@@ -1,4 +1,4 @@
-import { validateCronExpression } from "./validationSchema";
+import { validateCronExpression } from "./validateCronExpression";
 
 // Test cases are taken from http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html
 describe("validateCronExpression", () => {

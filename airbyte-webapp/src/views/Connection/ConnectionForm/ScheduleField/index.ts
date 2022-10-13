@@ -1,2 +1,2 @@
 export { ScheduleField } from "./ScheduleField";
-export { scheduleFieldValidationSchema } from "./validationSchema";
+export { validateCronExpression } from "./validateCronExpression";
