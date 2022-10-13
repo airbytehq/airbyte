@@ -150,11 +150,13 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         if response.status_code == 400:
             self.logger.info(f"{response.json()['error']['message']}")
             self._raise_on_http_errors = False
+            return False
 
         elif response.status_code == 429 and "has exceeded the daily request limit" in response.json()["error"]["message"]:
             rate_limit_docs_url = "https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas"
             self.logger.info(f"{response.json()['error']['message']}. More info: {rate_limit_docs_url}")
             self._raise_on_http_errors = False
+            return False
 
         result: bool = HttpStream.should_retry(self, response)
         return result
@@ -395,7 +397,9 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     "ga_exitRate":6.523809523809524
         }
         """
-        json_response = response.json()
+        json_response = response.json() if response.status_code not in (400, 429) else None
+        if not json_response:
+            return []
         reports = json_response.get(self.report_field, [])
 
         for report in reports:
