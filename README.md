@@ -2,7 +2,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000)](https://GitHub.com/airbytehq/airbyte/stargazers/) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md)
 
-**Data integration made simple, secure and extensible.**
+**Data integration is made simple, secure, and extensible.**
 The new open-source standard to sync data from applications, APIs & databases to warehouses, lakes & other destinations.
 
 Airbyte is on a mission to make data integration pipelines a commodity.
@@ -48,14 +48,14 @@ See our [Contributing guide](docs/contributing-to-airbyte/README.md) on how to g
 
 **Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
 
-**Also, we will never ask you to maintain your connector. The goal is that the Airbyte team and the community helps maintain it, let's call it crowdsourced maintenance!**
+**Also, we will never ask you to maintain your connector. The goal is that the Airbyte team and the community help maintain it, let's call it crowdsourced maintenance!**
 
 ## Community support
 
 For general help using Airbyte, please refer to the official Airbyte documentation. For additional help, you can use one of these channels to ask a question:
 
 * [Slack](https://slack.airbyte.io) \(For live discussion with the Community and Airbyte team\)
-* [Forum](https://discuss.airbyte.io/) \(For deeper converstaions about features, connectors, or problems\)
+* [Forum](https://discuss.airbyte.io/) \(For deeper conversations about features, connectors, or problems\)
 * [GitHub](https://github.com/airbytehq/airbyte) \(Bug reports, Contributions\)
 * [Twitter](https://twitter.com/airbytehq) \(Get the news fast\)
 * [Weekly office hours](https://airbyte.io/weekly-office-hours/) \(Live informal 30-minute video call sessions with the Airbyte team\)
@@ -63,13 +63,13 @@ For general help using Airbyte, please refer to the official Airbyte documentati
 ## Reporting Vulnerabilities
 ⚠️ Please do not file GitHub issues or post on our public forum for security vulnerabilities as they are public! ⚠️
 
-Airbyte takes security issues very seriously. If you have any concern around Airbyte or believe you have uncovered a vulnerability, please get in touch via the e-mail address security@airbyte.io. In the message, try to provide a description of the issue and ideally a way of reproducing it. The security team will get back to you as soon as possible.
+Airbyte takes security issues very seriously. If you have any concerns about Airbyte or believe you have uncovered a vulnerability, please get in touch via the e-mail address security@airbyte.io. In the message, try to provide a description of the issue and ideally a way of reproducing it. The security team will get back to you as soon as possible.
 
 Note that this security address should be used only for undisclosed vulnerabilities. Dealing with fixed issues or general questions on how to use the security features should be handled regularly via the user and the dev lists. Please report any security problems to us before disclosing it publicly.
 
 ## Roadmap
 
-Check out our [roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/launch-week-roadmap) to get informed on what we are currently working on, and what we have in mind for the next weeks, months and years.
+Check out our [roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/launch-week-roadmap) to get informed on what we are currently working on, and what we have in mind for the next weeks, months, and years.
 
 ## License
 

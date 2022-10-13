@@ -3,9 +3,10 @@ import { FormattedMessage } from "react-intl";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components";
+import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { CreateConnection } from "components/CreateConnection/CreateConnection";
+import { CreateConnectionForm } from "components/CreateConnection/CreateConnectionForm";
 import HeadTitle from "components/HeadTitle";
 import { PageHeader } from "components/ui/PageHeader";
 import { StepsMenu } from "components/ui/StepsMenu";
@@ -144,6 +145,7 @@ export const CreationFormPage: React.FC = () => {
                 }
               }}
             />
+            <CloudInviteUsersHint connectorType="source" />
           </>
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
@@ -158,6 +160,7 @@ export const CreationFormPage: React.FC = () => {
                 setCurrentStep(StepsTypes.CREATE_CONNECTION);
               }}
             />
+            <CloudInviteUsersHint connectorType="destination" />
           </>
         );
       }
@@ -168,7 +171,7 @@ export const CreationFormPage: React.FC = () => {
       return <LoadingPage />;
     }
 
-    return <CreateConnection source={source} destination={destination} />;
+    return <CreateConnectionForm source={source} destination={destination} />;
   };
 
   const steps =
