@@ -92,7 +92,7 @@
         "order": 3,
         "type": "string",
         "title": "Custom Reports",
-        "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4#data-processing-latency\">the docs</a> for more information about the exact format you can use to fill out this field."
+        "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4#data-processing-latency\">the docs</a> for more information about the exact format you can use to fill out this field."
       },
       "window_in_days": {
         "type": "integer",

@@ -189,7 +189,8 @@ class SchedulerHandlerTest {
 
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
         .sourceDefinitionId(source.getSourceDefinitionId())
-        .connectionConfiguration(source.getConfiguration());
+        .connectionConfiguration(source.getConfiguration())
+        .workspaceId(source.getWorkspaceId());
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
@@ -384,6 +385,7 @@ class SchedulerHandlerTest {
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
 
     assertNotNull(actual.getCatalog());
+    assertEquals(actual.getCatalogId(), discoverResponse.getOutput());
     assertNotNull(actual.getJobInfo());
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
@@ -398,8 +400,9 @@ class SchedulerHandlerTest {
 
     final SynchronousResponse<UUID> discoverResponse = (SynchronousResponse<UUID>) jobResponse;
     final SynchronousJobMetadata metadata = mock(SynchronousJobMetadata.class);
+    final UUID thisCatalogId = UUID.randomUUID();
     when(discoverResponse.isSuccess()).thenReturn(true);
-    when(discoverResponse.getOutput()).thenReturn(UUID.randomUUID());
+    when(discoverResponse.getOutput()).thenReturn(thisCatalogId);
     when(discoverResponse.getMetadata()).thenReturn(metadata);
     when(metadata.isSucceeded()).thenReturn(true);
 
@@ -412,7 +415,7 @@ class SchedulerHandlerTest {
     final ActorCatalog actorCatalog = new ActorCatalog()
         .withCatalog(Jsons.jsonNode(airbyteCatalog))
         .withCatalogHash("")
-        .withId(UUID.randomUUID());
+        .withId(thisCatalogId);
     when(configRepository.getActorCatalog(any(), any(), any())).thenReturn(Optional.of(actorCatalog));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG))
         .thenReturn(discoverResponse);
@@ -421,6 +424,7 @@ class SchedulerHandlerTest {
 
     assertNotNull(actual.getCatalog());
     assertNotNull(actual.getJobInfo());
+    assertEquals(actual.getCatalogId(), discoverResponse.getOutput());
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
     verify(configRepository).getActorCatalog(eq(request.getSourceId()), any(), any());
@@ -505,7 +509,8 @@ class SchedulerHandlerTest {
 
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
         .sourceDefinitionId(source.getSourceDefinitionId())
-        .connectionConfiguration(source.getConfiguration());
+        .connectionConfiguration(source.getConfiguration())
+        .workspaceId(source.getWorkspaceId());
     final ActorCatalog actorCatalog = new ActorCatalog()
         .withCatalog(Jsons.jsonNode(airbyteCatalog))
         .withCatalogHash("")
@@ -526,6 +531,7 @@ class SchedulerHandlerTest {
 
     assertNotNull(actual.getCatalog());
     assertNotNull(actual.getJobInfo());
+    assertEquals(actual.getCatalogId(), discoverResponse.getOutput());
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG);
   }
@@ -538,7 +544,8 @@ class SchedulerHandlerTest {
 
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
         .sourceDefinitionId(source.getSourceDefinitionId())
-        .connectionConfiguration(source.getConfiguration());
+        .connectionConfiguration(source.getConfiguration())
+        .workspaceId(source.getWorkspaceId());
 
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
@@ -623,7 +630,7 @@ class SchedulerHandlerTest {
     when(configRepository.getAllStreamsForConnection(connectionId))
         .thenReturn(streamDescriptors);
 
-    when(eventRunner.resetConnection(connectionId, streamDescriptors))
+    when(eventRunner.resetConnection(connectionId, streamDescriptors, false))
         .thenReturn(manualOperationResult);
 
     doReturn(new JobInfoRead())
@@ -631,7 +638,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    verify(eventRunner).resetConnection(connectionId, streamDescriptors);
+    verify(eventRunner).resetConnection(connectionId, streamDescriptors, false);
   }
 
   @Test
