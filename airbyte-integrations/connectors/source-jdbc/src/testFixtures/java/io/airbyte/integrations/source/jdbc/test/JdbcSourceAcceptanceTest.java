@@ -103,6 +103,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String COL_LAST_NAME_WITH_SPACE = "last name";
   public static String COL_CURSOR = "cursor_field";
   public static String COL_TIMESTAMP = "timestamp";
+  public static String COL_TIMESTAMP_TYPE = "TIMESTAMP";
   public static Number ID_VALUE_1 = 1;
   public static Number ID_VALUE_2 = 2;
   public static Number ID_VALUE_3 = 3;
@@ -830,10 +831,11 @@ public abstract class JdbcSourceAcceptanceTest {
   void testIncrementalWithConcurrentInsertion() throws Exception {
     final String namespace = getDefaultNamespace();
     final String fullyQualifiedTableName = getFullyQualifiedTableName(TABLE_NAME_AND_TIMESTAMP);
+    final String columnDefinition = String.format("name VARCHAR(200) NOT NULL, timestamp %s NOT NULL", COL_TIMESTAMP_TYPE);
 
     // 1st sync
     database.execute(ctx -> {
-      ctx.createStatement().execute(createTableQuery(fullyQualifiedTableName, "name VARCHAR(200) NOT NULL, timestamp DATETIME NOT NULL", ""));
+      ctx.createStatement().execute(createTableQuery(fullyQualifiedTableName, columnDefinition, ""));
       ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('a', '2021-01-01 00:00:00')", fullyQualifiedTableName));
       ctx.createStatement().execute(String.format("INSERT INTO %s (name, timestamp) VALUES ('b', '2021-01-01 00:00:00')", fullyQualifiedTableName));
     });
