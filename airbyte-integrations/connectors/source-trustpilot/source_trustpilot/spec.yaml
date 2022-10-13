@@ -20,16 +20,16 @@ connectionSpecification:
         - adkos.com
     start_date:
       title: Start Date
-      description: This is start date, from which You need reviews from Trustpilot
+      description: This is start date, from which You need reviews from Trustpilot. It should be in format YYYY-MM-DD.
       type: string
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
-        - YYYY-MM-DD
-        - 2022-01-01
+        - 2022-12-01
         - 2022-09-01
+        - 2022-01-01
         - 1998-12-04
-    timeout_ms:
-      title: Timeout MS
+    timeout_milliseconds:
+      title: Timeout Milliseconds
       description: Timeout in milliseconds between two subsequent requests to Trustpilot website.
       type: integer
       default: 1000

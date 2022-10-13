@@ -1,5 +1,5 @@
 {
   "app_name": "free-now.com",
   "start_date": "2022-01-01",
-  "timeout_ms": 1000
+  "timeout_milliseconds": 1000
 }
