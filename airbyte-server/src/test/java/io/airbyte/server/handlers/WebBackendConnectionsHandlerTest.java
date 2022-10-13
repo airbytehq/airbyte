@@ -115,10 +115,13 @@ class WebBackendConnectionsHandlerTest {
 
   private SourceRead sourceRead;
   private ConnectionRead connectionRead;
+  private ConnectionRead brokenConnectionRead;
   private WebBackendConnectionListItem expectedListItem;
   private OperationReadList operationReadList;
+  private OperationReadList brokenOperationReadList;
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
+  private WebBackendConnectionRead expectedWithNewSchemaBroken;
   private EventRunner eventRunner;
   private ConfigRepository configRepository;
 
@@ -167,6 +170,7 @@ class WebBackendConnectionsHandlerTest {
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId());
+    final StandardSync brokenStandardSync = ConnectionHelpers.generateBrokenSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId());
     when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
         .thenReturn(Collections.singletonList(standardSync));
     when(configRepository.getSourceAndDefinitionsFromSourceIds(Collections.singletonList(source.getSourceId())))
@@ -175,10 +179,16 @@ class WebBackendConnectionsHandlerTest {
         .thenReturn(Collections.singletonList(new DestinationAndDefinition(destination, destinationDefinition)));
 
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+    brokenConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(brokenStandardSync);
     operationReadList = new OperationReadList()
         .operations(List.of(new OperationRead()
             .operationId(connectionRead.getOperationIds().get(0))
             .name("Test Operation")));
+    brokenOperationReadList = new OperationReadList()
+        .operations(List.of(new OperationRead()
+            .operationId(brokenConnectionRead.getOperationIds().get(0))
+            .name("Test Operation")));
+
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
     sourceIdRequestBody.setSourceId(connectionRead.getSourceId());
@@ -210,6 +220,28 @@ class WebBackendConnectionsHandlerTest {
 
     when(jobHistoryHandler.getLatestSyncJobsForConnections(Collections.singletonList(connectionRead.getConnectionId())))
         .thenReturn(Collections.singletonList(jobRead.getJob()));
+
+    final JobWithAttemptsRead brokenJobRead = new JobWithAttemptsRead()
+        .job(new JobRead()
+            .configId(brokenConnectionRead.getConnectionId().toString())
+            .configType(JobConfigType.SYNC)
+            .id(10L)
+            .status(JobStatus.SUCCEEDED)
+            .createdAt(now.getEpochSecond())
+            .updatedAt(now.getEpochSecond()))
+        .attempts(Lists.newArrayList(new AttemptRead()
+            .id(12L)
+            .status(AttemptStatus.SUCCEEDED)
+            .bytesSynced(100L)
+            .recordsSynced(15L)
+            .createdAt(now.getEpochSecond())
+            .updatedAt(now.getEpochSecond())
+            .endedAt(now.getEpochSecond())));
+
+    when(jobHistoryHandler.getLatestSyncJob(brokenConnectionRead.getConnectionId())).thenReturn(Optional.of(brokenJobRead.getJob()));
+
+    when(jobHistoryHandler.getLatestSyncJobsForConnections(Collections.singletonList(brokenConnectionRead.getConnectionId())))
+        .thenReturn(Collections.singletonList(brokenJobRead.getJob()));
 
     expectedListItem = ConnectionHelpers.generateExpectedWebBackendConnectionListItem(
         standardSync,
@@ -287,6 +319,33 @@ class WebBackendConnectionsHandlerTest {
             .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
             .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
 
+    expectedWithNewSchemaBroken = new WebBackendConnectionRead()
+        .connectionId(brokenConnectionRead.getConnectionId())
+        .sourceId(brokenConnectionRead.getSourceId())
+        .destinationId(brokenConnectionRead.getDestinationId())
+        .operationIds(brokenConnectionRead.getOperationIds())
+        .name(brokenConnectionRead.getName())
+        .namespaceDefinition(brokenConnectionRead.getNamespaceDefinition())
+        .namespaceFormat(brokenConnectionRead.getNamespaceFormat())
+        .prefix(brokenConnectionRead.getPrefix())
+        .syncCatalog(brokenConnectionRead.getSyncCatalog())
+        .status(brokenConnectionRead.getStatus())
+        .schedule(brokenConnectionRead.getSchedule())
+        .scheduleType(brokenConnectionRead.getScheduleType())
+        .scheduleData(brokenConnectionRead.getScheduleData())
+        .source(sourceRead)
+        .destination(destinationRead)
+        .operations(brokenOperationReadList.getOperations())
+        .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
+        .latestSyncJobStatus(expected.getLatestSyncJobStatus())
+        .isSyncing(false)
+        .schemaChange(SchemaChange.BREAKING)
+        .resourceRequirements(new ResourceRequirements()
+            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
+            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+
     when(schedulerHandler.resetConnection(any(ConnectionIdRequestBody.class)))
         .thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
   }
@@ -353,7 +412,7 @@ class WebBackendConnectionsHandlerTest {
     assertTrue(expected.getDestination().getIcon().startsWith(SVG));
   }
 
-  WebBackendConnectionRead testWebBackendGetConnection(final boolean withCatalogRefresh)
+  WebBackendConnectionRead testWebBackendGetConnection(final boolean withCatalogRefresh, final ConnectionRead connectionRead, final OperationReadList operationReadList)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
@@ -371,12 +430,12 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testWebBackendGetConnectionWithDiscovery() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testWebBackendGetConnectionWithDiscoveryAndNewSchema() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(expectedWithNewSchema.getCatalogDiff());
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
         .thenReturn(Optional.of(new ActorCatalogFetchEvent().withCreatedAt(5000L)));
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withCreatedAt(4000L));
-    final WebBackendConnectionRead result = testWebBackendGetConnection(true);
+    final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead, operationReadList);
     verify(schedulerHandler).discoverSchemaForSourceFromSourceId(any());
     assertEquals(expectedWithNewSchema, result);
   }
@@ -384,9 +443,28 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testWebBackendGetConnectionNoRefreshCatalog()
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final WebBackendConnectionRead result = testWebBackendGetConnection(false);
+    final WebBackendConnectionRead result = testWebBackendGetConnection(false, connectionRead, operationReadList);
     verify(schedulerHandler, never()).discoverSchemaForSourceFromSourceId(any());
     assertEquals(expected, result);
+  }
+
+  @Test
+  void testWebBackendGetConnectionNoDiscoveryWithNewSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withCreatedAt(5000L)));
+    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withCreatedAt(4000L));
+    final WebBackendConnectionRead result = testWebBackendGetConnection(false, connectionRead, operationReadList);
+    assertEquals(expectedWithNewSchema, result);
+  }
+
+  @Test
+  void testWebBackendGetConnectionNoDiscoveryWithNewSchemaBreaking() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(connectionsHandler.getConnection(brokenConnectionRead.getConnectionId())).thenReturn(brokenConnectionRead);
+    when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withCreatedAt(5000L)));
+    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withCreatedAt(4000L));
+    final WebBackendConnectionRead result = testWebBackendGetConnection(false, brokenConnectionRead, brokenOperationReadList);
+    assertEquals(expectedWithNewSchemaBroken, result);
   }
 
   @Test
