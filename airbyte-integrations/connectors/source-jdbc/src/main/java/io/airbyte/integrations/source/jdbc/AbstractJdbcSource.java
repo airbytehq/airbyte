@@ -368,8 +368,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
               }
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+              LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
               sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
-              LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
             sourceOperations::rowToJson);
