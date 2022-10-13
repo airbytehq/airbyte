@@ -121,9 +121,7 @@ public abstract class SshElasticsearchDestinationAcceptanceTest  extends Destina
     ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     connection.allIndices().forEach(connection::deleteIndexIfPresent);
     connection.close();
-    container.stop();
     container.close();
-    bastion.getContainer().stop();
     bastion.getContainer().close();
   }
 }

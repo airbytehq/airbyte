@@ -96,7 +96,9 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   @Override
   protected JsonNode getFailCheckConfig() {
     // should result in a failed connection check
-    return mapper.createObjectNode();
+    var configJson = mapper.createObjectNode();
+    configJson.put("endpoint", String.format("htp::/%s:-%s", container.getHost(), container.getMappedPort(9200)));
+    return configJson;
   }
 
   @Override

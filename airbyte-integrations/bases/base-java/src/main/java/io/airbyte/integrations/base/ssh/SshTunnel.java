@@ -10,6 +10,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
@@ -142,9 +143,9 @@ public class SshTunnel implements AutoCloseable {
         try {
           urlObject = new URL(remoteServiceUrl);
         } catch (MalformedURLException e) {
-          e.printStackTrace();
+          AirbyteTraceMessageUtility.emitConfigErrorTrace(e, String.format("Provided value for remote service URL is not valid: %s", remoteServiceUrl));
         }
-        Preconditions.checkNotNull(urlObject);
+        Preconditions.checkNotNull(urlObject, "Failed to parse URL of remote service");
         this.remoteServiceHost = urlObject.getHost();
         this.remoteServicePort = urlObject.getPort();
         this.remoteServiceProtocol = urlObject.getProtocol();
