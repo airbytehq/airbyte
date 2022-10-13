@@ -248,6 +248,8 @@ update public.actor set configuration =jsonb_set(configuration, '{replication_me
 WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configuration->>'replication_method' = 'CDC');
 ```
 
+Add placeholder change
+
 ## Changelog
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
