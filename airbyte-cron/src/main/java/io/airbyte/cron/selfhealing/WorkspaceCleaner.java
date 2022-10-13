@@ -12,7 +12,6 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
-import io.micronaut.scheduling.annotation.Scheduled;
 import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
