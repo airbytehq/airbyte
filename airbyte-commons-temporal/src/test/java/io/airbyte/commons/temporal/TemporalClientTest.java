@@ -71,6 +71,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+@SuppressWarnings("PMD.JUnit5TestShouldBePackagePrivate")
 public class TemporalClientTest {
 
   private static final UUID CONNECTION_ID = UUID.randomUUID();
@@ -130,7 +131,7 @@ public class TemporalClientTest {
     private ConnectionManagerUtils mConnectionManagerUtils;
 
     @BeforeEach
-    public void init() {
+    void init() {
       mConnectionManagerUtils = mock(ConnectionManagerUtils.class);
 
       temporalClient = spy(
