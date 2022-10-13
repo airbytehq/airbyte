@@ -4,8 +4,6 @@
 
 package io.airbyte.server.handlers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.slugify.Slugify;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -26,6 +24,7 @@ import io.airbyte.api.model.generated.WorkspaceReadList;
 import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WebhookOperationConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -40,6 +39,7 @@ import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -269,15 +269,12 @@ public class WorkspacesHandler {
         .notifications(NotificationConverter.toApiList(workspace.getNotifications()))
         .defaultGeography(Enums.convertTo(workspace.getDefaultGeography(), Geography.class));
     // Add read-only webhook configs.
-    try {
-      final WebhookOperationConfigs persistedConfigs = new ObjectMapper().treeToValue(
-          workspace.getWebhookOperationConfigs(), WebhookOperationConfigs.class);
-      if (persistedConfigs != null) {
-        result.setWebhookConfigs(WebhookOperationConfigsConverter.toApiReads(
-            persistedConfigs.getWebhookConfigs()));
-      }
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException("Failed to read webhook configs: {}", e);
+    final Optional<WebhookOperationConfigs> persistedConfigs = Jsons.tryObject(
+        workspace.getWebhookOperationConfigs(),
+        WebhookOperationConfigs.class);
+    if (persistedConfigs.isPresent()) {
+      result.setWebhookConfigs(WebhookOperationConfigsConverter.toApiReads(
+          persistedConfigs.get().getWebhookConfigs()));
     }
     return result;
   }

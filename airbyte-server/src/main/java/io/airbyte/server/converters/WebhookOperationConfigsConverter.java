@@ -5,7 +5,6 @@
 package io.airbyte.server.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.api.model.generated.WebhookConfigRead;
 import io.airbyte.api.model.generated.WebhookConfigWrite;
 import io.airbyte.commons.json.Jsons;
@@ -26,7 +25,7 @@ public class WebhookOperationConfigsConverter {
     final WebhookOperationConfigs configs = new WebhookOperationConfigs()
         .withWebhookConfigs(apiWebhookConfigs.stream().map(WebhookOperationConfigsConverter::toPersistenceConfig).collect(Collectors.toList()));
 
-    return new ObjectMapper().convertValue(configs, JsonNode.class);
+    return Jsons.jsonNode(configs);
   }
 
   public static List<WebhookConfigRead> toApiReads(List<WebhookConfig> persistenceConfig) {
