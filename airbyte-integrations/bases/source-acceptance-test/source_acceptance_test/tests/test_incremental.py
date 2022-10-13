@@ -218,9 +218,7 @@ class TestIncremental(BaseTest):
         stream_name_to_per_stream_state = dict()
         for idx, state_message in enumerate(checkpoint_messages):
             assert state_message.type == Type.STATE
-            state_input, complete_state = self.get_next_state_input(
-                state_message, stream_name_to_per_stream_state, is_per_stream
-            )
+            state_input, complete_state = self.get_next_state_input(state_message, stream_name_to_per_stream_state, is_per_stream)
 
             if len(checkpoint_messages) >= min_batches_to_test and idx % sample_rate != 0:
                 continue
