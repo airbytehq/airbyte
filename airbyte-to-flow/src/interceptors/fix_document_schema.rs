@@ -16,7 +16,7 @@ pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<V
             match token {
                 // Add "minItems" to arrays to ensure the key is always available at that index
                 doc::ptr::Token::Index(idx) => {
-                    /* This code can have ambiguous results when encountering integer-like
+                    /* TODO: This code can have ambiguous results when encountering integer-like
                      * properties, and as such has been disabled for now.
                      * See https://github.com/estuary/airbyte/pull/46#discussion_r992250679
                      *
@@ -34,8 +34,27 @@ pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<V
                 },
                 // Add "required" and ensure the property and its parent's type do not include null
                 doc::ptr::Token::Property(prop) => {
-                    let parent = doc.pointer_mut(&current.to_string()).unwrap();
-                    let parent_map = parent.as_object_mut().ok_or(Error::InvalidAirbyteSchema("expected object schema specification to be an object".to_string()))?;
+                    let mut parent_map = doc.pointer_mut(&current.to_string())
+                        .unwrap()
+                        .as_object_mut()
+                        .ok_or(Error::InvalidAirbyteSchema("expected object schema specification to be an object".to_string()))?;
+
+                    // These advanced cases are not supported at the moment as we don't expect
+                    // there to be many cases of them
+                    if parent_map.contains_key("allOf") || parent_map.contains_key("anyOf") || parent_map.contains_key("not") {
+                        tracing::warn!("automatic fixing of document schema keys for schemas with allOf, anyOf and not are not supported yet, skipping.");
+                        return Ok(doc)
+                    }
+
+                    // If the object references a definition, use that definition
+                    if parent_map.contains_key("$ref") {
+                        let refr = parent_map.get("$ref").unwrap().as_str().unwrap().to_string();
+                        parent_map = doc.pointer_mut("/$defs")
+                            .and_then(|defs| defs.as_object_mut())
+                            .and_then(|defs| defs.get_mut(&refr))
+                            .and_then(|resolved_ref| resolved_ref.as_object_mut())
+                            .ok_or(Error::InvalidAirbyteSchema(format!("expected to find $ref: {:?} in $defs", refr)))?;
+                    }
                     let jprop = json!(prop);
 
                     parent_map.entry("required").and_modify(|e| {
@@ -59,7 +78,7 @@ pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<V
                         .get_mut("properties")
                         .and_then(|props| props.get_mut(prop))
                         .and_then(|schema| schema.as_object_mut())
-                        .ok_or(Error::InvalidAirbyteSchema(format!("expected key {:?} to exist in 'properties' of {:?} in {:?}", prop, current, document_schema_json)))?;
+                        .ok_or(Error::InvalidAirbyteSchema(format!("expected key {:?} to exist in 'properties' of \"{}\" in {}", prop, current, document_schema_json)))?;
 
                     prop_schema.entry("type").and_modify(|e| {
                         if let Some(vec) = e.as_array_mut() {
@@ -107,6 +126,86 @@ mod test {
                     }
                 },
                 "required": ["id"]
+            })
+        );
+    }
+
+    #[test]
+    fn test_fix_document_schema_ref_and_defs() {
+        let doc_schema = r#"{
+            "$defs": {
+                "test": {
+                    "properties": {
+                        "id": {
+                            "type": ["string", "null"]
+                        }
+                    }
+                }
+            },
+            "$ref": "test"
+        }"#.to_string();
+
+        let key_ptrs = vec![vec!["id".to_string()]];
+
+        assert_eq!(
+            fix_document_schema_keys(&RawValue::from_string(doc_schema).unwrap(), key_ptrs).unwrap(),
+            json!({
+                "$defs": {
+                    "test": {
+                        "properties": {
+                            "id": {
+                                "type": ["string"]
+                            }
+                        },
+                        "required": ["id"]
+                    }
+                },
+                "$ref": "test"
+            })
+        );
+    }
+
+    // We don't support this case yet, so the test just checks to make sure that we don't error out
+    // either, just return the document as it was received
+    #[test]
+    #[allow(non_snake_case)]
+    fn test_fix_document_schema_allOf() {
+        let doc_schema = r#"{
+            "$defs": {
+                "test": {
+                    "properties": {
+                        "id": {
+                            "type": ["string", "null"]
+                        }
+                    }
+                }
+            },
+            "allOf": [{
+                "$ref": "test"
+            }, {
+                "type": "object"
+            }]
+        }"#.to_string();
+
+        let key_ptrs = vec![vec!["id".to_string()]];
+
+        assert_eq!(
+            fix_document_schema_keys(&RawValue::from_string(doc_schema).unwrap(), key_ptrs).unwrap(),
+            json!({
+                "$defs": {
+                    "test": {
+                        "properties": {
+                            "id": {
+                                "type": ["string", "null"]
+                            }
+                        }
+                    }
+                },
+                "allOf": [{
+                    "$ref": "test"
+                }, {
+                    "type": "object"
+                }]
             })
         );
     }
