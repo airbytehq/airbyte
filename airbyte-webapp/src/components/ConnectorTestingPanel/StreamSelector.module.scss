@@ -1,0 +1,32 @@
+@use "scss/variables";
+
+.streamSelector {
+  margin-left: auto;
+  margin-right: auto;
+  width: 90%;
+  max-width: 300px;
+
+  div:global(.react-select__control) {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    justify-content: space-between;
+
+    div:global(.react-select__value-container) {
+      flex: none;
+      margin-left: auto;
+      margin-right: 0px;
+    }
+
+    div:global(.react-select__indicators) {
+      flex: none;
+      margin-left: 0px;
+      margin-right: auto;
+    }
+
+    div:global(.react-select__single-value) {
+      font-weight: bold;
+      font-size: 16px;
+    }
+  }
+}
