@@ -69,8 +69,7 @@ public class OperationsHandler {
     return persistOperation(standardSyncOperation);
   }
 
-  private StandardSyncOperation toStandardSyncOperation(final OperationCreate operationCreate)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
+  private StandardSyncOperation toStandardSyncOperation(final OperationCreate operationCreate) {
     final StandardSyncOperation standardSyncOperation = new StandardSyncOperation()
         .withWorkspaceId(operationCreate.getWorkspaceId())
         .withName(operationCreate.getName())
@@ -91,6 +90,7 @@ public class OperationsHandler {
     }
     if ((io.airbyte.api.model.generated.OperatorType.WEBHOOK).equals(operationCreate.getOperatorConfiguration().getOperatorType())) {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getWebhook() != null);
+      // TODO(mfsiega-airbyte): check that the webhook config id references a real webhook config.
       standardSyncOperation.withOperatorWebhook(new OperatorWebhook()
           .withExecutionUrl(operationCreate.getOperatorConfiguration().getWebhook().getExecutionUrl())
           .withExecutionBody(operationCreate.getOperatorConfiguration().getWebhook().getExecutionBody())
