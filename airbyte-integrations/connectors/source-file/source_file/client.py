@@ -317,6 +317,13 @@ class Client:
             logger.error(error_msg)
             raise ConfigurationError(error_msg) from err
 
+        try:
+            reader(fp)
+        except UnicodeDecodeError as err:
+            error_msg = f"File {fp} can't be parsed with reader of chosen type ({self._reader_format})\n{traceback.format_exc()}"
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg) from err
+
         reader_options = {**self._reader_options}
         if self._reader_format == "csv":
             reader_options["chunksize"] = self.CSV_CHUNK_SIZE
