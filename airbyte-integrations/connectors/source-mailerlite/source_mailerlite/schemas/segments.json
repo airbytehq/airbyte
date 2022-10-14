@@ -1,235 +1,55 @@
 {
-  "$id": "root",
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "data": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "default": "1",
-            "examples": [
-              "1"
-            ]
-          },
-          "name": {
-            "type": "string",
-            "default": "Dummy segment",
-            "examples": [
-              "Dummy segment"
-            ]
-          },
-          "total": {
-            "type": "integer",
-            "default": 21,
-            "examples": [
-              21
-            ]
-          },
-          "open_rate": {
-            "type": "object",
-            "properties": {
-              "float": {
-                "type": "integer",
-                "default": 0,
-                "examples": [
-                  0
-                ]
-              },
-              "string": {
-                "type": "string",
-                "default": "0%",
-                "examples": [
-                  "0%"
-                ]
-              }
-            },
-            "required": [
-              "float",
-              "string"
-            ],
-            "additionalProperties": false
-          },
-          "click_rate": {
-            "type": "object",
-            "properties": {
-              "float": {
-                "type": "integer",
-                "default": 0,
-                "examples": [
-                  0
-                ]
-              },
-              "string": {
-                "type": "string",
-                "default": "0%",
-                "examples": [
-                  "0%"
-                ]
-              }
-            },
-            "required": [
-              "float",
-              "string"
-            ],
-            "additionalProperties": false
-          },
-          "created_at": {
-            "type": "string",
-            "default": "2021-08-06 10:17:45",
-            "examples": [
-              "2021-08-06 10:17:45"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "total",
-          "open_rate",
-          "click_rate",
-          "created_at"
-        ],
-        "additionalProperties": false
-      }
+    "id": {
+      "type": "string"
     },
-    "links": {
+    "name": {
+      "type": "string"
+    },
+    "total": {
+      "type": "integer"
+    },
+    "open_rate": {
       "type": "object",
       "properties": {
-        "first": {
-          "type": "string",
-          "default": "https://connect.mailerlite.com/api/segments?page=1",
-          "examples": [
-            "https://connect.mailerlite.com/api/segments?page=1"
-          ]
+        "float": {
+          "type": "number"
         },
-        "last": {
-          "type": "string",
-          "default": "https://connect.mailerlite.com/api/segments?page=1",
-          "examples": [
-            "https://connect.mailerlite.com/api/segments?page=1"
-          ]
-        },
-        "prev": {
-          "type": "null"
-        },
-        "next": {
-          "type": "null"
+        "string": {
+          "type": "string"
         }
       },
       "required": [
-        "first",
-        "last",
-        "prev",
-        "next"
-      ],
-      "additionalProperties": false
+        "float",
+        "string"
+      ]
     },
-    "meta": {
+    "click_rate": {
       "type": "object",
       "properties": {
-        "current_page": {
-          "type": "integer",
-          "default": 1,
-          "examples": [
-            1
-          ]
+        "float": {
+          "type": "number"
         },
-        "from": {
-          "type": "integer",
-          "default": 1,
-          "examples": [
-            1
-          ]
-        },
-        "last_page": {
-          "type": "integer",
-          "default": 1,
-          "examples": [
-            1
-          ]
-        },
-        "links": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "url": {
-                "type": "null"
-              },
-              "label": {
-                "type": "string",
-                "default": "&laquo; Previous",
-                "examples": [
-                  "&laquo; Previous"
-                ]
-              },
-              "active": {
-                "type": "boolean",
-                "default": false,
-                "examples": [
-                  true,
-                  false
-                ]
-              }
-            },
-            "required": [
-              "url",
-              "label",
-              "active"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "path": {
-          "type": "string",
-          "default": "https://connect.mailerlite.com/api/segments",
-          "examples": [
-            "https://connect.mailerlite.com/api/segments"
-          ]
-        },
-        "per_page": {
-          "type": "integer",
-          "default": 25,
-          "examples": [
-            25
-          ]
-        },
-        "to": {
-          "type": "integer",
-          "default": 1,
-          "examples": [
-            1
-          ]
-        },
-        "total": {
-          "type": "integer",
-          "default": 1,
-          "examples": [
-            1
-          ]
+        "string": {
+          "type": "string"
         }
       },
       "required": [
-        "current_page",
-        "from",
-        "last_page",
-        "links",
-        "path",
-        "per_page",
-        "to",
-        "total"
-      ],
-      "additionalProperties": false
+        "float",
+        "string"
+      ]
+    },
+    "created_at": {
+      "type": "string"
     }
   },
   "required": [
-    "data",
-    "links",
-    "meta"
-  ],
-  "additionalProperties": false
+    "id",
+    "name",
+    "total",
+    "open_rate",
+    "click_rate",
+    "created_at"
+  ]
 }

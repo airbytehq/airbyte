@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_pointer: [ "data" ]
   requester:
     url_base: "https://connect.mailerlite.com"
     http_method: "GET"
@@ -50,39 +50,39 @@ definitions:
       name: "automations"
       primary_key: "id"
       path: "/api/automations"
-  forms_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "forms"
-      primary_key: "id"
-      path: "/api/forms/promotion" #add type requester promotion, popup, embedded
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "campaigns"
       primary_key: "id"
       path: "/api/campaigns"
-  timezones_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "timezones"
-      primary_key: "id"
-      path: "/api/timezones"
+  # timezones_stream:
+  #   $ref: "*ref(definitions.base_stream)"
+  #   $options:
+  #     name: "timezones"
+  #     primary_key: "id"
+  #     path: "/api/timezones"
+  # forms_stream:
+  #   $ref: "*ref(definitions.base_stream)"
+  #   $options:
+  #     name: "forms"
+  #     primary_key: "id"
+  #     path: "/api/forms/promotion" #add type requester promotion, popup, embedded
 
 
 streams:
   - "*ref(definitions.subscribers_stream)"
   - "*ref(definitions.segments_stream)"
   - "*ref(definitions.automations_stream)"
-  - "*ref(definitions.forms_stream)"
   - "*ref(definitions.campaigns_stream)"
-  - "*ref(definitions.timezones_stream)"
+  # - "*ref(definitions.timezones_stream)"
+  # - "*ref(definitions.forms_stream)"
 
 check:
   stream_names:
     - "subscribers"
     - "segments"
     - "automations"
-    - "forms"
     - "campaigns"
-    - "timezones"
+    # - "timezones"
+    # - "forms"
