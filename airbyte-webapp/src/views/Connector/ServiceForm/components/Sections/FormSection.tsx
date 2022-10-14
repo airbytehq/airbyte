@@ -41,6 +41,8 @@ interface FormSectionProps {
 }
 
 export const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend, disabled }) => {
+  const { isHiddenAuthField, shouldShowAuthButton, oAuthButtonPath } = useAuthentication();
+
   const sections = useMemo(() => {
     const flattenedBlocks = [blocks].flat();
 
@@ -51,25 +53,16 @@ export const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, ski
     return flattenedBlocks;
   }, [blocks]);
 
-  const { isFieldImplicitAuthField, isAuthFlowSelected, oAuthButtonPath } = useAuthentication();
-
   return (
     <>
       {sections
-        .filter(
-          (formField) =>
-            !formField.airbyte_hidden &&
-            (!isAuthFlowSelected || (isAuthFlowSelected && !isFieldImplicitAuthField(formField.path)))
-        )
+        .filter((formField) => !formField.airbyte_hidden && !isHiddenAuthField(formField.path))
         .map((formField) => {
           const sectionPath = path ? (skipAppend ? path : `${path}.${formField.fieldKey}`) : formField.fieldKey;
 
           return (
             <React.Fragment key={sectionPath}>
-              <div style={{ background: "hotpink" }}>
-                {sectionPath} (_type: {formField._type})
-              </div>
-              {isAuthFlowSelected && oAuthButtonPath === sectionPath && formField._type !== "formCondition" && (
+              {shouldShowAuthButton && oAuthButtonPath === sectionPath && formField._type !== "formCondition" && (
                 <AuthSection />
               )}
               <FormNode formField={formField} sectionPath={sectionPath} disabled={disabled} />

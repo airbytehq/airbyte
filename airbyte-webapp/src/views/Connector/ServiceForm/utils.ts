@@ -3,7 +3,7 @@ import { naturalComparator } from "utils/objects";
 
 import { ConnectorDefinitionSpecification } from "../../../core/domain/connector";
 
-export function makeConnectionConfigurationPath(path: string[]): string {
+export function makeConnectionConfigurationPath(path: string[] = []): string {
   return ["connectionConfiguration", ...path].join(".");
 }
 
