@@ -10,8 +10,9 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import IncrementalMixin
 
 # Basic full refresh stream
 class ZendeskSellStream(HttpStream, ABC):
@@ -23,6 +24,10 @@ class ZendeskSellStream(HttpStream, ABC):
 
     url_base = "https://api.getbase.com/v2/"
     primary_key = None
+
+    # def __init__(self, config: Mapping[str, Any], **kwargs):
+    #     super().__init__()
+    #     self.start_date = config["start_date"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
@@ -43,9 +48,28 @@ class ZendeskSellStream(HttpStream, ABC):
             return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
         items = response.json()['items']
         return [item['data'] for item in items]
+
+# Basic incremental stream
+class IncrementalZendeskSellStream(ZendeskSellStream, IncrementalMixin, ABC):
+    state_checkpoint_interval = 100
+    cursor_field = "updated_at"
+
+    # def __init__(self, **kwargs):
+    #     super().__init__()
+    #     self._cursor_value = None
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {self.cursor_field: self.start_date}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+       self._cursor_value = value[self.cursor_field]
 
 
 class Pipelines(ZendeskSellStream):
@@ -65,27 +89,6 @@ class Stages(ZendeskSellStream):
 
     def path(self, **kwargs) -> str:
         return "stages"
-
-
-# Basic incremental stream
-class IncrementalZendeskSellStream(ZendeskSellStream, ABC):
-    state_checkpoint_interval = 100
-
-    @property
-    def cursor_field(self) -> str:
-        return "updated_at"
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        if current_stream_state is not None and self.cursor_field in current_stream_state:
-            current_updated_at = current_stream_state[self.cursor_field]
-            latest_updated_at = latest_record[self.cursor_field]
-            return {self.cursor_field: max(current_updated_at, latest_updated_at)}
-        else:
-            return {self.cursor_field: '1970-01-01T00:00:00Z'}
 
 
 class Contacts(IncrementalZendeskSellStream):
@@ -283,6 +286,7 @@ class SourceZendeskSell(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             authenticator = TokenAuthenticator(token = config["api_token"])
+            #stream = Contacts(authenticator=authenticator, config = config)
             stream = Contacts(authenticator=authenticator)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -294,3 +298,4 @@ class SourceZendeskSell(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config["api_token"])
         return [Contacts(authenticator=auth), Deals(authenticator=auth), Leads(authenticator=auth), Pipelines(authenticator=auth), Stages(authenticator=auth),  CallOutcomes(authenticator=auth), Calls(authenticator=auth), Collaborations(authenticator=auth), DealSources(authenticator=auth), DealUnqualifiedReasons(authenticator=auth), LeadConversions(authenticator=auth), LeadSources(authenticator=auth), LeadUnqualifiedReasons(authenticator=auth), LossReasons(authenticator=auth), Notes(authenticator=auth), Orders(authenticator=auth), Products(authenticator=auth), Tags(authenticator=auth), Tasks(authenticator=auth), TextMessages(authenticator=auth), Users(authenticator=auth), VisitOutcomes(authenticator=auth), Visits(authenticator=auth)]
+        #return [Contacts(authenticator=auth, config = config), Deals(authenticator=auth, config = config), Leads(authenticator=auth, config = config), Pipelines(authenticator=auth, config = config), Stages(authenticator=auth, config = config),  CallOutcomes(authenticator=auth, config = config), Calls(authenticator=auth, config = config), Collaborations(authenticator=auth, config = config), DealSources(authenticator=auth, config = config), DealUnqualifiedReasons(authenticator=auth, config = config), LeadConversions(authenticator=auth, config = config), LeadSources(authenticator=auth, config = config), LeadUnqualifiedReasons(authenticator=auth, config = config), LossReasons(authenticator=auth, config = config), Notes(authenticator=auth, config = config), Orders(authenticator=auth, config = config), Products(authenticator=auth, config = config), Tags(authenticator=auth, config = config), Tasks(authenticator=auth, config = config), TextMessages(authenticator=auth, config = config), Users(authenticator=auth, config = config), VisitOutcomes(authenticator=auth, config = config), Visits(authenticator=auth, config = config)]
