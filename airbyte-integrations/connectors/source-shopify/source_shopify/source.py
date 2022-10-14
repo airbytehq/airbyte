@@ -244,12 +244,12 @@ class ShopifySubstream(IncrementalShopifyStream):
             # and corresponds to the data of child_substream we need.
             if self.nested_substream and self.nested_substream_list_field_id:
                 if record.get(self.nested_substream):
-                    sorted_substream_slices += [
+                    sorted_substream_slices.extend([
                         {
                             self.slice_key: rec[self.nested_substream_list_field_id],
                             self.cursor_field: record[self.nested_substream][0].get(self.cursor_field, self.default_state_comparison_value),
                         } for rec in record[self.nested_record]
-                    ]
+                    ])
             elif self.nested_substream:
                 if record.get(self.nested_substream):
                     sorted_substream_slices.append(
@@ -363,6 +363,7 @@ class MetafieldDraftOrders(MetafieldShopifySubstream):
 
 
 class Products(IncrementalShopifyStream):
+    use_cache = True
     data_field = "products"
 
     def path(self, **kwargs) -> str:
@@ -377,6 +378,7 @@ class ProductImages(ShopifySubstream):
     parent_stream_class: object = Products
     slice_key = "id"
     data_field = "images"
+    nested_substream = "images"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         product_id = stream_slice[self.slice_key]
@@ -399,6 +401,7 @@ class ProductVariants(ShopifySubstream):
     parent_stream_class: object = Products
     slice_key = "id"
     data_field = "variants"
+    nested_substream = "variants"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         product_id = stream_slice[self.slice_key]
@@ -696,46 +699,46 @@ class SourceShopify(AbstractSource):
 
         # before adding stream to stream_instances list, please add it to SCOPES_MAPPING
         stream_instances = [
+            AbandonedCheckouts(config),
             Articles(config),
-            MetafieldArticles(config),
+            BalanceTransactions(config),
             Blogs(config),
             Collections(config),
-            SmartCollections(config),
-            MetafieldSmartCollections(config),
-            MetafieldCollections(config),
-            MetafieldBlogs(config),
-            Customers(config),
-            MetafieldCustomers(config),
-            Orders(config),
-            MetafieldOrders(config),
-            DraftOrders(config),
-            MetafieldDraftOrders(config),
-            Products(config),
-            MetafieldProducts(config),
-            ProductImages(config),
-            MetafieldProductImages(config),
-            ProductVariants(config),
-            MetafieldProductVariants(config),
-            AbandonedCheckouts(config),
-            CustomCollections(config),
             Collects(config),
-            OrderRefunds(config),
-            OrderRisks(config),
-            TenderTransactions(config),
-            Transactions(config),
-            BalanceTransactions(config),
-            Pages(config),
-            MetafieldPages(config),
-            PriceRules(config),
+            CustomCollections(config),
+            Customers(config),
             DiscountCodes(config),
-            Locations(config),
-            MetafieldLocations(config),
-            InventoryItems(config),
-            InventoryLevels(config),
+            DraftOrders(config),
             FulfillmentOrders(config),
             Fulfillments(config),
+            InventoryItems(config),
+            InventoryLevels(config),
+            Locations(config),
+            MetafieldArticles(config),
+            MetafieldBlogs(config),
+            MetafieldCollections(config),
+            MetafieldCustomers(config),
+            MetafieldDraftOrders(config),
+            MetafieldLocations(config),
+            MetafieldOrders(config),
+            MetafieldPages(config),
+            MetafieldProductImages(config),
+            MetafieldProducts(config),
+            MetafieldProductVariants(config),
+            MetafieldShops(config),
+            MetafieldSmartCollections(config),
+            OrderRefunds(config),
+            OrderRisks(config),
+            Orders(config),
+            Pages(config),
+            PriceRules(config),
+            ProductImages(config),
+            Products(config),
+            ProductVariants(config),
             Shop(config),
-            MetafieldShops(config)
+            SmartCollections(config),
+            TenderTransactions(config),
+            Transactions(config)
         ]
 
         return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
