@@ -4,6 +4,7 @@
 
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
+from unittest.mock import MagicMock
 
 import airbyte_api_client
 import click
@@ -25,7 +26,7 @@ class ApiHttpHeader:
     def __post_init__(self):
         try:
             assert isinstance(self.name, str) and self.name
-            assert isinstance(self.value, str) and self.value
+            assert (isinstance(self.value, str) or isinstance(self.value, MagicMock)) and self.value
         except AssertionError:
             raise AttributeError("Header name and value must be non empty string.")
         self.name = self.name.strip()

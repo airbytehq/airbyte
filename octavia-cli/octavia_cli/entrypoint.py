@@ -144,13 +144,6 @@ def octavia(
 def get_api_client(
     airbyte_url: str, airbyte_username: str, airbyte_password: str, user_agent: str, api_http_headers: Optional[List[ApiHttpHeader]]
 ):
-    # basic_auth = ""
-    # if len(airbyte_username) > 0:
-    #     basic_auth += airbyte_username
-    # if len(airbyte_password) > 0:
-    #     if len(airbyte_username) > 0:
-    #         basic_auth += ":"
-    #     basic_auth += airbyte_password
     client_configuration = airbyte_api_client.Configuration(host=f"{airbyte_url}/api", username=airbyte_username, password=airbyte_password)
     api_client = airbyte_api_client.ApiClient(client_configuration)
     api_client.user_agent = user_agent
