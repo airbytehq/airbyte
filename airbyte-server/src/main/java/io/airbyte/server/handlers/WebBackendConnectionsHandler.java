@@ -181,13 +181,18 @@ public class WebBackendConnectionsHandler {
     final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
         configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
 
-    if (mostRecentFetchEvent.isPresent()) {
-      final ActorCatalog currentCatalog = configRepository.getActorCatalogById(connectionRead.getSourceCatalogId());
-      if (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentCatalog.getId())) {
-        if (connectionRead.getIsBreaking()) {
-          schemaChange = SchemaChange.BREAKING;
-        } else {
-          schemaChange = SchemaChange.NON_BREAKING;
+    if (connectionRead.getSourceId() != null && connectionRead.getSourceCatalogId() != null) {
+      final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
+          configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
+
+      if (mostRecentFetchEvent.isPresent()) {
+        final ActorCatalog currentCatalog = configRepository.getActorCatalogById(connectionRead.getSourceCatalogId());
+        if (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentCatalog.getId())) {
+          if (connectionRead.getIsBreaking()) {
+            schemaChange = SchemaChange.BREAKING;
+          } else {
+            schemaChange = SchemaChange.NON_BREAKING;
+          }
         }
       }
     }
@@ -297,16 +302,18 @@ public class WebBackendConnectionsHandler {
      * configuration set.
      */
     final Optional<SourceDiscoverSchemaRead> refreshedCatalog;
+    log.info("getting refreshed catalog bool: " + webBackendConnectionRequestBody.getWithRefreshedCatalog());
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
+      log.info("getting refreshed catalog");
       refreshedCatalog = getRefreshedSchema(connection.getSourceId());
     } else {
+      log.info("setting refreshed catalog to empty");
       refreshedCatalog = Optional.empty();
     }
 
     final CatalogDiff diff;
     final AirbyteCatalog syncCatalog;
     if (refreshedCatalog.isPresent()) {
-      connection.setSourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
        * constructs a full picture of all existing configured + all new / updated streams in the newest
        * catalog.
