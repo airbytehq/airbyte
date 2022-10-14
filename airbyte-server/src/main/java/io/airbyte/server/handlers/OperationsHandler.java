@@ -22,6 +22,7 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
+import io.airbyte.config.OperatorWebhook;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -68,7 +69,8 @@ public class OperationsHandler {
     return persistOperation(standardSyncOperation);
   }
 
-  private static StandardSyncOperation toStandardSyncOperation(final OperationCreate operationCreate) {
+  private StandardSyncOperation toStandardSyncOperation(final OperationCreate operationCreate)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSyncOperation standardSyncOperation = new StandardSyncOperation()
         .withWorkspaceId(operationCreate.getWorkspaceId())
         .withName(operationCreate.getName())
@@ -86,6 +88,13 @@ public class OperationsHandler {
           .withGitRepoBranch(operationCreate.getOperatorConfiguration().getDbt().getGitRepoBranch())
           .withDockerImage(operationCreate.getOperatorConfiguration().getDbt().getDockerImage())
           .withDbtArguments(operationCreate.getOperatorConfiguration().getDbt().getDbtArguments()));
+    }
+    if ((io.airbyte.api.model.generated.OperatorType.WEBHOOK).equals(operationCreate.getOperatorConfiguration().getOperatorType())) {
+      Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getWebhook() != null);
+      standardSyncOperation.withOperatorWebhook(new OperatorWebhook()
+          .withExecutionUrl(operationCreate.getOperatorConfiguration().getWebhook().getExecutionUrl())
+          .withExecutionBody(operationCreate.getOperatorConfiguration().getWebhook().getExecutionBody())
+          .withWebhookConfigId(operationCreate.getOperatorConfiguration().getWebhook().getWebhookConfigId()));
     }
     return standardSyncOperation;
   }
@@ -228,6 +237,9 @@ public class OperationsHandler {
           .gitRepoBranch(standardSyncOperation.getOperatorDbt().getGitRepoBranch())
           .dockerImage(standardSyncOperation.getOperatorDbt().getDockerImage())
           .dbtArguments(standardSyncOperation.getOperatorDbt().getDbtArguments()));
+    }
+    if ((OperatorType.WEBHOOK).equals(standardSyncOperation.getOperatorType())) {
+      Preconditions.checkArgument(standardSyncOperation.getOperatorWebhook() != null);
     }
     return new OperationRead()
         .workspaceId(standardSyncOperation.getWorkspaceId())
