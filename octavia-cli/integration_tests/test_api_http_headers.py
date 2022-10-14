@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import logging
 
 import pytest
@@ -46,7 +47,12 @@ def option_based_headers():
 def test_api_http_headers(vcr, file_based_headers, option_based_headers):
     raw_option_based_headers, expected_option_based_headers = option_based_headers
     custom_api_http_headers_yaml_file_path, expected_file_based_headers = file_based_headers
-    expected_headers = expected_option_based_headers + expected_file_based_headers
+    basic_auth_header_value = f"Basic {base64.b64encode(f'{AIRBYTE_USERNAME}:{AIRBYTE_PASSWORD}'.encode()).decode()}"
+    expected_headers = (
+        expected_option_based_headers
+        + expected_file_based_headers
+        + [api_http_headers.ApiHttpHeader("Authorization", basic_auth_header_value)]
+    )
     runner = CliRunner()
     command_options = (
         [
