@@ -16,18 +16,14 @@ import io.airbyte.api.model.generated.OperationRead;
 import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
 import io.airbyte.api.model.generated.OperatorConfiguration;
-import io.airbyte.api.model.generated.OperatorNormalization.OptionEnum;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.OperatorDbt;
-import io.airbyte.config.OperatorNormalization;
-import io.airbyte.config.OperatorNormalization.Option;
-import io.airbyte.config.OperatorWebhook;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.converters.OperationsConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,27 +71,7 @@ public class OperationsHandler {
         .withName(operationCreate.getName())
         .withOperatorType(Enums.convertTo(operationCreate.getOperatorConfiguration().getOperatorType(), OperatorType.class))
         .withTombstone(false);
-    if ((io.airbyte.api.model.generated.OperatorType.NORMALIZATION).equals(operationCreate.getOperatorConfiguration().getOperatorType())) {
-      Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getNormalization() != null);
-      standardSyncOperation.withOperatorNormalization(new OperatorNormalization()
-          .withOption(Enums.convertTo(operationCreate.getOperatorConfiguration().getNormalization().getOption(), Option.class)));
-    }
-    if ((io.airbyte.api.model.generated.OperatorType.DBT).equals(operationCreate.getOperatorConfiguration().getOperatorType())) {
-      Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getDbt() != null);
-      standardSyncOperation.withOperatorDbt(new OperatorDbt()
-          .withGitRepoUrl(operationCreate.getOperatorConfiguration().getDbt().getGitRepoUrl())
-          .withGitRepoBranch(operationCreate.getOperatorConfiguration().getDbt().getGitRepoBranch())
-          .withDockerImage(operationCreate.getOperatorConfiguration().getDbt().getDockerImage())
-          .withDbtArguments(operationCreate.getOperatorConfiguration().getDbt().getDbtArguments()));
-    }
-    if ((io.airbyte.api.model.generated.OperatorType.WEBHOOK).equals(operationCreate.getOperatorConfiguration().getOperatorType())) {
-      Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getWebhook() != null);
-      // TODO(mfsiega-airbyte): check that the webhook config id references a real webhook config.
-      standardSyncOperation.withOperatorWebhook(new OperatorWebhook()
-          .withExecutionUrl(operationCreate.getOperatorConfiguration().getWebhook().getExecutionUrl())
-          .withExecutionBody(operationCreate.getOperatorConfiguration().getWebhook().getExecutionBody())
-          .withWebhookConfigId(operationCreate.getOperatorConfiguration().getWebhook().getWebhookConfigId()));
-    }
+    OperationsConverter.populateOperatorConfigFromApi(operationCreate.getOperatorConfiguration(), standardSyncOperation);
     return standardSyncOperation;
   }
 
@@ -105,6 +81,9 @@ public class OperationsHandler {
     }
     if ((io.airbyte.api.model.generated.OperatorType.DBT).equals(operatorConfiguration.getOperatorType())) {
       Preconditions.checkArgument(operatorConfiguration.getDbt() != null);
+    }
+    if (io.airbyte.api.model.generated.OperatorType.WEBHOOK.equals(operatorConfiguration.getOperatorType())) {
+      Preconditions.checkArgument(operatorConfiguration.getWebhook() != null);
     }
   }
 
@@ -122,35 +101,8 @@ public class OperationsHandler {
 
   public static StandardSyncOperation updateOperation(final OperationUpdate operationUpdate, final StandardSyncOperation standardSyncOperation) {
     standardSyncOperation
-        .withName(operationUpdate.getName())
-        .withOperatorType(Enums.convertTo(operationUpdate.getOperatorConfiguration().getOperatorType(), OperatorType.class));
-    if ((io.airbyte.api.model.generated.OperatorType.NORMALIZATION).equals(operationUpdate.getOperatorConfiguration().getOperatorType())) {
-      Preconditions.checkArgument(operationUpdate.getOperatorConfiguration().getNormalization() != null);
-      standardSyncOperation.withOperatorNormalization(new OperatorNormalization()
-          .withOption(Enums.convertTo(operationUpdate.getOperatorConfiguration().getNormalization().getOption(), Option.class)));
-    } else {
-      standardSyncOperation.withOperatorNormalization(null);
-    }
-    if ((io.airbyte.api.model.generated.OperatorType.DBT).equals(operationUpdate.getOperatorConfiguration().getOperatorType())) {
-      Preconditions.checkArgument(operationUpdate.getOperatorConfiguration().getDbt() != null);
-      standardSyncOperation.withOperatorDbt(new OperatorDbt()
-          .withGitRepoUrl(operationUpdate.getOperatorConfiguration().getDbt().getGitRepoUrl())
-          .withGitRepoBranch(operationUpdate.getOperatorConfiguration().getDbt().getGitRepoBranch())
-          .withDockerImage(operationUpdate.getOperatorConfiguration().getDbt().getDockerImage())
-          .withDbtArguments(operationUpdate.getOperatorConfiguration().getDbt().getDbtArguments()));
-    } else {
-      standardSyncOperation.withOperatorDbt(null);
-    }
-    if ((io.airbyte.api.model.generated.OperatorType.WEBHOOK).equals(operationUpdate.getOperatorConfiguration().getOperatorType())) {
-      Preconditions.checkArgument(operationUpdate.getOperatorConfiguration().getWebhook() != null);
-      // TODO(mfsiega-airbyte): check that the webhook config id references a real webhook config.
-      standardSyncOperation.withOperatorWebhook(new OperatorWebhook()
-          .withExecutionUrl(operationUpdate.getOperatorConfiguration().getWebhook().getExecutionUrl())
-          .withExecutionBody(operationUpdate.getOperatorConfiguration().getWebhook().getExecutionBody())
-          .withWebhookConfigId(operationUpdate.getOperatorConfiguration().getWebhook().getWebhookConfigId()));
-    } else {
-      standardSyncOperation.withOperatorWebhook(null);
-    }
+        .withName(operationUpdate.getName());
+    OperationsConverter.populateOperatorConfigFromApi(operationUpdate.getOperatorConfiguration(), standardSyncOperation);
     return standardSyncOperation;
   }
 
@@ -233,33 +185,7 @@ public class OperationsHandler {
   }
 
   private static OperationRead buildOperationRead(final StandardSyncOperation standardSyncOperation) {
-    final OperatorConfiguration operatorConfiguration = new OperatorConfiguration()
-        .operatorType(Enums.convertTo(standardSyncOperation.getOperatorType(), io.airbyte.api.model.generated.OperatorType.class));
-    if ((OperatorType.NORMALIZATION).equals(standardSyncOperation.getOperatorType())) {
-      Preconditions.checkArgument(standardSyncOperation.getOperatorNormalization() != null);
-      operatorConfiguration.normalization(new io.airbyte.api.model.generated.OperatorNormalization()
-          .option(Enums.convertTo(standardSyncOperation.getOperatorNormalization().getOption(), OptionEnum.class)));
-    }
-    if ((OperatorType.DBT).equals(standardSyncOperation.getOperatorType())) {
-      Preconditions.checkArgument(standardSyncOperation.getOperatorDbt() != null);
-      operatorConfiguration.dbt(new io.airbyte.api.model.generated.OperatorDbt()
-          .gitRepoUrl(standardSyncOperation.getOperatorDbt().getGitRepoUrl())
-          .gitRepoBranch(standardSyncOperation.getOperatorDbt().getGitRepoBranch())
-          .dockerImage(standardSyncOperation.getOperatorDbt().getDockerImage())
-          .dbtArguments(standardSyncOperation.getOperatorDbt().getDbtArguments()));
-    }
-    if ((OperatorType.WEBHOOK).equals(standardSyncOperation.getOperatorType())) {
-      Preconditions.checkArgument(standardSyncOperation.getOperatorWebhook() != null);
-      operatorConfiguration.webhook(new io.airbyte.api.model.generated.OperatorWebhook()
-          .webhookConfigId(standardSyncOperation.getOperatorWebhook().getWebhookConfigId())
-          .executionUrl(standardSyncOperation.getOperatorWebhook().getExecutionUrl())
-          .executionBody(standardSyncOperation.getOperatorWebhook().getExecutionBody()));
-    }
-    return new OperationRead()
-        .workspaceId(standardSyncOperation.getWorkspaceId())
-        .operationId(standardSyncOperation.getOperationId())
-        .name(standardSyncOperation.getName())
-        .operatorConfiguration(operatorConfiguration);
+    return OperationsConverter.operationReadFromPersistedOperation(standardSyncOperation);
   }
 
 }
