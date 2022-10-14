@@ -151,12 +151,11 @@ def get_api_client(
     #     if len(airbyte_username) > 0:
     #         basic_auth += ":"
     #     basic_auth += airbyte_password
-    api_http_headers = api_http_headers if api_http_headers else []
-    has_existing_authorization_headers = bool([header for header in api_http_headers if header.name.lower() == "authorization"])
-
     client_configuration = airbyte_api_client.Configuration(host=f"{airbyte_url}/api", username=airbyte_username, password=airbyte_password)
     api_client = airbyte_api_client.ApiClient(client_configuration)
     api_client.user_agent = user_agent
+    api_http_headers = api_http_headers if api_http_headers else []
+    has_existing_authorization_headers = bool([header for header in api_http_headers if header.name.lower() == "authorization"])
     if not has_existing_authorization_headers:
         basic_auth_token = client_configuration.get_basic_auth_token()
         api_http_headers.append(ApiHttpHeader("Authorization", basic_auth_token))
