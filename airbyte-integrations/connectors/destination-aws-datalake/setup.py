@@ -16,7 +16,7 @@ TEST_REQUIREMENTS = ["pytest~=6.1"]
 
 setup(
     name="destination_aws_datalake",
-    description="Destination implementation for Aws Datalake.",
+    description="Destination implementation for AWS Datalake.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
