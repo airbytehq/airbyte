@@ -202,7 +202,9 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       },
       serviceType: {
         /* since we use <ConnectorServiceTypeControl/> outside formik form
-           we need to keep the serviceType field in formik, but hide it */
+           we need to keep the serviceType field in formik, but hide it.
+           serviceType prop will be removed in further PR
+        */
         component: () => null,
       },
     };
