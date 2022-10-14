@@ -22,23 +22,34 @@ showhelp() {
   ${CLEAR}-h
     ${GREEN}Display help
 
-  ${CLEAR}-w <workspace id>
-      ${GREEN}Specify the workspace ID where new connectors and connections should be created
+  ${CLEAR}-W <workspace id>
+    ${GREEN}Specify the workspace ID where new connectors and connections should be created.
+    Required.
 
-  ${CLEAR}-s <hostname>
-    ${GREEN}Specify the Airbyte API server hostname that the script should call to create new connectors and connections
+  ${CLEAR}-H <hostname>
+    ${GREEN}Specify the Airbyte API server hostname that the script should call to create new connectors and connections.
+    Defaults to 'localhost'.
 
-  ${CLEAR}-p <port mapping>
-    ${GREEN}Specify the kubernetes airbyte-server deployment port-forward mapping (ex. "8001:8001 -n ab")
+  ${CLEAR}-P <port>
+    ${GREEN}Specify the port for the Airbyte server. If kube (ie. '-k' is provided), port-forwarding
+    will be set up for the airbyte-server deployment using the provided <port> (ie. '8001:8001').
+    Defaults to '8001'.
 
-  ${CLEAR}-n <count>
-    ${GREEN}Specify the number of connections that should be created by the script
+  ${CLEAR}-C <count>
+    ${GREEN}Specify the number of connections that should be created by the script.
+    Defaults to '1'.
 
-  ${CLEAR}-t <minutes>
-    ${GREEN}Specify the time in minutes that each connection should sync for
+  ${CLEAR}-T <minutes>
+    ${GREEN}Specify the time in minutes that each connection should sync for.
+    Defaults to '10'.
 
-  ${CLEAR}-c
-    ${GREEN}Run in cleanup mode instead of creating new syncs. Previously-created connectors and connections will be deleted.
+  ${CLEAR}-k
+    ${GREEN}Indicate that the script is running against a kubernetes instance of Airbyte
+
+  ${CLEAR}-N <namespace>
+    ${GREEN}Specify the kubernetes namespace where the airbyte-server deployment exists g (ex. "ab").
+    Only use with '-k' option.
+    Defaults to 'default'.
   """ && exit 1
 }
 
@@ -47,28 +58,43 @@ if [[ $# -eq 0 ]] ; then
     exit 0
 fi
 
-while getopts ":hw:s:p:n:t:c" options ; do
+hostname=localhost
+api_port=8001
+num_connections=1
+sync_minutes=10
+kube=false
+kube_namespace=default
+
+while getopts "hW:H:P:C:T:kN:" options ; do
   case "${options}" in
     h)
       showhelp
       ;;
-    w)
-      workspace="${OPTARG}"
+    W)
+      workspace_id="${OPTARG}"
       ;;
-    s)
-      server="${OPTARG}"
+    H)
+      hostname="${OPTARG}"
       ;;
-    p)
-      port_mapping="${OPTARG}"
+    P)
+      api_port="${OPTARG}"
       ;;
-    n)
+    C)
       num_connections="${OPTARG}"
       ;;
-    t)
+    T)
       sync_minutes="${OPTARG}"
       ;;
-    c)
-      cleanup=true
+    k)
+      kube=true
+      ;;
+    N)
+      if test "$kube" = true; then
+        kube_namespace="${OPTARG}"
+      else
+        echo "error: -k must be set to use option -N"
+        exit 1
+      fi
       ;;
     *)
       showhelp
@@ -76,57 +102,83 @@ while getopts ":hw:s:p:n:t:c" options ; do
   esac
 done
 
-echo "set server to ${server}"
-echo "set workspace to ${workspace}"
-echo "set port_mapping to ${port_mapping}"
+if test -z "$workspace_id"; then
+  echo "error: must set a workspace id with -W"
+  exit 1
+fi
+
+echo "set workspace_id to ${workspace_id}"
+echo "set hostname to ${hostname}"
+echo "set api_port to ${api_port}"
 echo "set num_connections to ${num_connections}"
 echo "set sync_minutes to ${sync_minutes}"
-echo "set cleanup to ${cleanup}"
+echo "set kube to ${kube}"
+echo "set kube_namespace to ${kube_namespace}"
 
 # base64-encoded: {"user_id": "cloud-api", "email_verified": "true"}
 api_header="eyJ1c2VyX2lkIjogImNsb3VkLWFwaSIsICJlbWFpbF92ZXJpZmllZCI6ICJ0cnVlIn0K"
 
-function createSource() {
+# call the API with the endpoint passed as arg $1, and (optional) payload passed as arg $2
+# example of calling the API with a payload:
+#    callApi "destinations/list" "{\"workspaceId\":\"${workspace}\"}"
+function callApi {
+  curl -s -X POST -H 'Content-Type: application/json' -H "X-Endpoint-API-UserInfo: ${api_header}" -d "$2" "${hostname}:${api_port}/api/v1/$1"
+}
+
+function getE2ETestSourceDefinitionId {
+  # call source_definitions/list and search response for E2E Test, get the ID
+  # uses startswith because Cloud's dockerRepository for the E2E Test source is actually airbyte/source-e2e-test-cloud
+  export sourceDefinitionId=$(
+    callApi "source_definitions/list" |
+      jq '.sourceDefinitions[]
+        | select(.dockerRepository | startswith("airbyte/source-e2e-test"))
+        | .sourceDefinitionId'
+  )
+}
+
+function createSource {
   # based on sync_minutes, figure out what to set for max_messages in the source spec's connectionConfiguration
   # write created sourceId to file for later cleanup
+  echo "implement me"
+
 }
 
-function createDestination() {
+function createDestination {
   # get the destination Definition ID, set it in the spec
   # write created destinationId to file for later cleanup
-
+  echo "implement me"
 }
 
-function createConnection() {
+function createConnection {
   # straightforward, just use the sourceId and destinationId that we created
   # two options: either make them 'manual' and have the script start it manually, or set a schedule of
   # something like 24 hours so that the sync starts as soon as it is created
   # in the future, could get fancy with cron scheduling and set them up to all start at the exact same moment,
   # maybe out of scope for MVP
-
+  echo "implement me"
 }
 
-function portForward() {
+function portForward {
   # if running against kubernetes, set up "kubectl port-forward airbyte-server 8001:8001 -n ab" or something similar
   # note that local kube doesn't run in the ab namespace, so that should be optional
-
+  echo "implement me"
 }
 
-function getMockApiSourceDefinition() {
-  # call source_definitions/list and search response for Mock API, get the ID
-}
 
-function getMockApiDestinationDefinition() {
+
+function getMockApiDestinationDefinition {
   # call destination_definitions/list and search response for E2E Test, get the ID
+  echo "implement me"
 }
 
-function createMultipleConnections() {
+function createMultipleConnections {
   # based on input, call `createConnection()` n times
+  echo "implement me"
 }
 
-function cleanup() {
-  # go through files of IDs that were created previously, call API to delete connectors/connections
+############
+##  MAIN  ##
+############
 
-}
-
-# main
+getE2ETestSourceDefinitionId
+echo "E2E Test Source Definition ID is ${sourceDefinitionId}"
