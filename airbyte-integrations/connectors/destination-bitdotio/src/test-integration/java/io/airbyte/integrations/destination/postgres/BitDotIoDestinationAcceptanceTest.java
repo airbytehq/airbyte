@@ -20,10 +20,11 @@ import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,14 @@ public class BitDotIoDestinationAcceptanceTest extends DestinationAcceptanceTest
     }
 
     public String getJdbcUrl() {
-        return "jdbc:postgresql://db.bit.io:5432/" + "/" + database + "?sslmode=require";
+        String jdbcUrl = "";
+        try {
+          jdbcUrl = "jdbc:postgresql://db.bit.io:5432" + "/" + URLEncoder.encode(database, "UTF-8") + "?sslmode=require";
+        } catch (UnsupportedEncodingException e) {
+          // Should never happen
+          e.printStackTrace();
+        }
+        return jdbcUrl;
     }
   }
 
@@ -72,19 +80,32 @@ public class BitDotIoDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @Override
   protected JsonNode getConfig() {
+
     return Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, "db.bit.io")
+        .put(JdbcUtils.PORT_KEY, 5432)
+        .put(JdbcUtils.SCHEMA_KEY, "public")
         .put(JdbcUtils.USERNAME_KEY, cfg.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, cfg.getPassword())
         .put(JdbcUtils.DATABASE_KEY, cfg.getDatabase())
+        .put(JdbcUtils.SSL_KEY, true )
+        .put("sslmode", "require" )
+        .put("ssl_mode", ImmutableMap.builder().put("mode", "require").build())
         .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, "db.bit.io")
+        .put(JdbcUtils.PORT_KEY, 5432)
+        .put(JdbcUtils.SCHEMA_KEY, "public")
         .put(JdbcUtils.USERNAME_KEY, cfg.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.DATABASE_KEY, cfg.getDatabase())
+        .put(JdbcUtils.SSL_KEY, true)
+        .put("sslmode", "require" )
+        .put("ssl_mode", ImmutableMap.builder().put("mode", "require").build())
         .build());
   }
 
@@ -170,7 +191,38 @@ public class BitDotIoDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    // nothing to do here
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        cfg.getUsername(),
+        cfg.getPassword(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        cfg.getJdbcUrl(),
+        SQLDialect.POSTGRES)) {
+
+      Database db = new Database(dslContext);
+      List<JsonNode> tables = db.query(
+              ctx -> ctx
+                  .fetch( "SELECT table_name FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema not IN ('pg_catalog', 'information_schema');")
+                  .stream()
+                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+                  .map(Jsons::deserialize)
+                  .collect(Collectors.toList()));
+        for (JsonNode node : tables) {
+          db.query(ctx -> ctx.fetch(String.format("DROP TABLE IF EXISTS %s CASCADE", node.get("table_name"))));
+        }
+      List<JsonNode> schemas = db.query(
+              ctx -> ctx
+                  .fetch( "SELECT DISTINCT table_schema FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema not IN ('public', 'pg_catalog', 'information_schema');")
+                  .stream()
+                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+                  .map(Jsons::deserialize)
+                  .collect(Collectors.toList()));
+        for (JsonNode node : schemas) {
+          db.query(ctx -> ctx.fetch(String.format("DROP SCHEMA IF EXISTS %s CASCADE", node.get("table_schema"))));
+        }
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     LOGGER.info("Finished acceptance test for bit.io");
   }
 }

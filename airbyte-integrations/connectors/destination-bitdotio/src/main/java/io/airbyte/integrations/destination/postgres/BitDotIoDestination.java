@@ -29,35 +29,28 @@ public class BitDotIoDestination extends SpecModifyingDestination implements Des
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    String json = "[ \"database\", \"schema\", \"username\", \"password\"]  ";
+    String json = "[ \"database\", \"username\", \"password\"]  ";
 
     ObjectMapper objectMapper = new ObjectMapper();
     
     JsonNode jsonNode;
     try {
       jsonNode = objectMapper.readTree(json);
-      System.out.println(jsonNode);
-
-    System.out.println(spec);
-    try {
       spec.setDocumentationUrl(new URI("https://docs.airbyte.io/integrations/destinations/bitdotio"));
-    } catch (URISyntaxException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    ((ObjectNode) spec.getConnectionSpecification()).replace("required", jsonNode);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.PORT_LIST_KEY);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.HOST_KEY);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.TCP_PORT_KEY);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.JDBC_URL_PARAMS_KEY);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.SSL_KEY, "true");
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.HOST_KEY, "db.bit.io");
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).put("sslmode", "require");
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.TCP_PORT_KEY, "5432");
-    System.out.println(spec);
+      ((ObjectNode) spec.getConnectionSpecification()).replace("required", jsonNode);
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.PORT_LIST_KEY);
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.HOST_KEY);
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.TCP_PORT_KEY);
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.JDBC_URL_PARAMS_KEY);
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.SSL_KEY, "true");
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.HOST_KEY, "db.bit.io");
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).put("sslmode", "require");
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).put(JdbcUtils.TCP_PORT_KEY, "5432");
     } catch (JsonProcessingException e) {
-      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (URISyntaxException e) {
+      // This should never happen.
       e.printStackTrace();
     }
 

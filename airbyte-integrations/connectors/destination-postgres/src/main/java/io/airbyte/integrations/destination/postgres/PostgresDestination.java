@@ -76,6 +76,10 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
         encodedDatabase);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3c80bf2912 (solve conflict)
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
