@@ -6,6 +6,7 @@ package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
@@ -197,7 +198,7 @@ public class DbConverter {
 
   public static ActorCatalogFetchEvent buildActorCatalogFetchEvent(final Record record) {
     return new ActorCatalogFetchEvent()
-        .withActorCatalogId(record.get(ACTOR_CATALOG.ID));
+        .withActorCatalogId(record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID));
   }
 
   public static WorkspaceServiceAccount buildWorkspaceServiceAccount(final Record record) {
