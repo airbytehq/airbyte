@@ -24,18 +24,22 @@ import io.airbyte.api.model.generated.WorkspaceReadList;
 import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.WebhookOperationConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.server.converters.NotificationConverter;
+import io.airbyte.server.converters.WebhookOperationConfigsConverter;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -103,7 +107,8 @@ public class WorkspacesHandler {
         .withDisplaySetupWizard(displaySetupWizard != null ? displaySetupWizard : false)
         .withTombstone(false)
         .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()))
-        .withDefaultGeography(defaultGeography);
+        .withDefaultGeography(defaultGeography)
+        .withWebhookOperationConfigs(WebhookOperationConfigsConverter.toPersistenceWrite(workspaceCreate.getWebhookConfigs()));
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
@@ -250,7 +255,7 @@ public class WorkspacesHandler {
   }
 
   private static WorkspaceRead buildWorkspaceRead(final StandardWorkspace workspace) {
-    return new WorkspaceRead()
+    final WorkspaceRead result = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
         .email(workspace.getEmail())
@@ -263,6 +268,15 @@ public class WorkspacesHandler {
         .securityUpdates(workspace.getSecurityUpdates())
         .notifications(NotificationConverter.toApiList(workspace.getNotifications()))
         .defaultGeography(Enums.convertTo(workspace.getDefaultGeography(), Geography.class));
+    // Add read-only webhook configs.
+    final Optional<WebhookOperationConfigs> persistedConfigs = Jsons.tryObject(
+        workspace.getWebhookOperationConfigs(),
+        WebhookOperationConfigs.class);
+    if (persistedConfigs.isPresent()) {
+      result.setWebhookConfigs(WebhookOperationConfigsConverter.toApiReads(
+          persistedConfigs.get().getWebhookConfigs()));
+    }
+    return result;
   }
 
   private void validateWorkspacePatch(final StandardWorkspace persistedWorkspace, final WorkspaceUpdate workspacePatch) {
