@@ -59,6 +59,7 @@ jobs:
               - 'airbyte-cdk/**'
               - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
+              - 'airbyte-workers/**'
             db:
               - 'airbyte-db/**'
             frontend:
