@@ -63,8 +63,8 @@ class DestinationDuckdb(Destination):
         path = self._get_destination_path(path)
         # check if file exists
 
+        logger.info(f"Opening DuckDB file at {path}")
         con = duckdb.connect(database=path, read_only=False)
-        logger.info(f"Existing DuckDB file opened at {path}")
 
         # create the tables if needed
         # con.execute("BEGIN TRANSACTION")
