@@ -3,7 +3,8 @@ import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
-import { Button, Switch } from "components";
+import { Button } from "components/ui/Button";
+import { Switch } from "components/ui/Switch";
 
 import { useEnableConnection } from "hooks/services/useConnectionHook";
 
