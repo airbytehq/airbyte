@@ -71,7 +71,7 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
   protected JsonNode getConfig() throws Exception {
     return bastion.getTunnelConfig(getTunnelMethod(), ImmutableMap.builder()
         .put("host", HostPortResolver.resolveIpAddress(redisContainer))
-        .put("port", HostPortResolver.resolvePort(redisContainer))
+        .put("port", redisContainer.getExposedPorts().get(0))
         .put("username", configJson.get("username"))
         .put("password", configJson.get("password"))
         .put("cache_type", configJson.get("cache_type")));
