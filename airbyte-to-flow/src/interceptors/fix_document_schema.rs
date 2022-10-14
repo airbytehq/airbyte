@@ -59,7 +59,7 @@ pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<V
                         .get_mut("properties")
                         .and_then(|props| props.get_mut(prop))
                         .and_then(|schema| schema.as_object_mut())
-                        .ok_or(Error::InvalidAirbyteSchema(format!("expected key {} to exist in 'properties' of {}", prop, current)))?;
+                        .ok_or(Error::InvalidAirbyteSchema(format!("expected key {:?} to exist in 'properties' of {:?} in {:?}", prop, current, document_schema_json)))?;
 
                     prop_schema.entry("type").and_modify(|e| {
                         if let Some(vec) = e.as_array_mut() {
@@ -72,7 +72,7 @@ pub fn fix_document_schema_keys(document_schema_json: &RawValue, key_ptrs: Vec<V
                     current.push(Token::Property("properties"));
                     current.push(Token::Property(prop));
                 },
-                doc::ptr::Token::NextIndex => return Err(Error::InvalidAirbyteSchema(format!("cannot use JSONPointer next index pointer /-/ in key pointer at {}", current))),
+                doc::ptr::Token::NextIndex => return Err(Error::InvalidAirbyteSchema(format!("cannot use JSONPointer next index pointer /-/ in key pointer at {:?} in {:?}", current, document_schema_json))),
             }
         }
     }
