@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { act, render as tlr } from "@testing-library/react";
+import React from "react";
 import mockConnection from "test-utils/mock-data/mockConnection.json";
 import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
 import { TestWrapper } from "test-utils/testutils";
@@ -24,7 +25,7 @@ jest.mock("components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConn
 }));
 
 describe("CreateConnectionForm", () => {
-  const Wrapper: React.FC = ({ children }) => <TestWrapper>{children}</TestWrapper>;
+  const Wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => <TestWrapper>{children}</TestWrapper>;
   const render = async () => {
     let renderResult: ReturnType<typeof tlr>;
 
@@ -49,7 +50,7 @@ describe("CreateConnectionForm", () => {
   it("should render", async () => {
     jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => baseUseDiscoverSchema);
     const renderResult = await render();
-    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult).toMatchSnapshot();
     expect(renderResult.queryByText("Please wait a little bit more…")).toBeFalsy();
   });
 
@@ -59,7 +60,7 @@ describe("CreateConnectionForm", () => {
       .mockImplementationOnce(() => ({ ...baseUseDiscoverSchema, isLoading: true }));
 
     const renderResult = await render();
-    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult).toMatchSnapshot();
   });
 
   it("should render with an error", async () => {
@@ -69,6 +70,6 @@ describe("CreateConnectionForm", () => {
     }));
 
     const renderResult = await render();
-    expect(renderResult.container).toMatchSnapshot();
+    expect(renderResult).toMatchSnapshot();
   });
 });

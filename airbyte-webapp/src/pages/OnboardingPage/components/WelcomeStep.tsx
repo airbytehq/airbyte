@@ -5,9 +5,9 @@ import styled from "styled-components";
 import { useExperimentSpeedyConnection } from "components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { Button } from "components/ui/Button";
 
-import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { links } from "utils/links";
 
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
@@ -29,7 +29,6 @@ const Videos = styled.div`
 `;
 
 const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
-  const config = useConfig();
   // exp-speedy-connection
   const { isExperimentVariant } = useExperimentSpeedyConnection();
   const analyticsService = useAnalyticsService();
@@ -71,7 +70,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
         <VideoItem
           description={<FormattedMessage id="onboarding.exploreDemo" />}
           img="/videoCover.png"
-          link={config.links.demoLink}
+          link={links.demoLink}
         />
       </Videos>
 

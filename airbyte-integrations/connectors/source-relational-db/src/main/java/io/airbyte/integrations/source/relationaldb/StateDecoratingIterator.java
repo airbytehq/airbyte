@@ -30,6 +30,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
 
   private final String initialCursor;
   private String maxCursor;
+  private long maxCursorRecordCount = 0L;
   private boolean hasEmittedFinalState;
 
   /**
@@ -125,13 +126,17 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         final AirbyteMessage message = messageIterator.next();
         if (message.getRecord().getData().hasNonNull(cursorField)) {
           final String cursorCandidate = getCursorCandidate(message);
-          if (IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType) < 0) {
+          final int cursorComparison = IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType);
+          if (cursorComparison < 0) {
             if (stateEmissionFrequency > 0 && !Objects.equals(maxCursor, initialCursor) && messageIterator.hasNext()) {
               // Only emit an intermediate state when it is not the first or last record message,
               // because the last state message will be taken care of in a different branch.
               intermediateStateMessage = createStateMessage(false);
             }
             maxCursor = cursorCandidate;
+            maxCursorRecordCount = 1L;
+          } else if (cursorComparison == 0) {
+            maxCursorRecordCount++;
           }
         }
 
@@ -183,18 +188,21 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    * @return AirbyteMessage which includes information on state of records read so far
    */
   public AirbyteMessage createStateMessage(final boolean isFinalState) {
-    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor);
-    LOGGER.info("State Report: stream name: {}, original cursor field: {}, original cursor value {}, cursor field: {}, new cursor value: {}",
+    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor, maxCursorRecordCount);
+    final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
+    LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
         pair,
-        stateManager.getOriginalCursorField(pair).orElse(null),
-        stateManager.getOriginalCursor(pair).orElse(null),
-        stateManager.getCursorField(pair).orElse(null),
-        stateManager.getCursor(pair).orElse(null));
+        cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
+        cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
+        cursorInfo.map(CursorInfo::getOriginalCursorRecordCount).orElse(null),
+        cursorInfo.map(CursorInfo::getCursorField).orElse(null),
+        cursorInfo.map(CursorInfo::getCursor).orElse(null),
+        cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
 
     if (isFinalState) {
       hasEmittedFinalState = true;
       if (stateManager.getCursor(pair).isEmpty()) {
-        LOGGER.warn("Cursor was for stream {} was null. This stream will replicate all records on the next run", pair);
+        LOGGER.warn("Cursor for stream {} was null. This stream will replicate all records on the next run", pair);
       }
     }
 
