@@ -50,13 +50,12 @@ export const tidyConnectionFormValues = (
   return formValues;
 };
 
-const useConnectionForm = ({ connection, mode, refreshSchema }: ConnectionServiceProps) => {
+const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: ConnectionServiceProps) => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
   const { formatMessage } = useIntl();
   const [submitError, setSubmitError] = useState<FormError | null>(null);
   const formId = useUniqueFormId();
-  const schemaError = { name: "hi", status: "401", message: "bad bad thing happened", response: "oh no" };
 
   const getErrorMessage = useCallback(
     (formValid: boolean, connectionDirty: boolean) =>
