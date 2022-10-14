@@ -68,6 +68,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     TABLE_NAME = "ID_AND_NAME";
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
     TABLE_NAME_WITHOUT_PK = "ID_AND_NAME_WITHOUT_PK";
+    TABLE_NAME_COMPOSITE_PK = "FULL_NAME_COMPOSITE_PK";
     TABLE_NAME_AND_TIMESTAMP = "NAME_AND_TIMESTAMP";
     COL_ID = "ID";
     COL_NAME = "NAME";
