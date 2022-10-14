@@ -26,7 +26,7 @@ definitions:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      $ref: "*ref(definitions.increment_paginator)"
+      type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
@@ -38,36 +38,62 @@ definitions:
       name: "subscribers"
       primary_key: "id"
       path: "/api/subscribers"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
   segments_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "segments"
       primary_key: "id"
       path: "/api/segments"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
   automations_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "automations"
       primary_key: "id"
       path: "/api/automations"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 10
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "campaigns"
       primary_key: "id"
       path: "/api/campaigns"
-  # timezones_stream:
-  #   $ref: "*ref(definitions.base_stream)"
-  #   $options:
-  #     name: "timezones"
-  #     primary_key: "id"
-  #     path: "/api/timezones"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+  timezones_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "timezones"
+      primary_key: "id"
+      path: "/api/timezones"
   # forms_stream:
   #   $ref: "*ref(definitions.base_stream)"
   #   $options:
   #     name: "forms"
   #     primary_key: "id"
-  #     path: "/api/forms/promotion" #add type requester promotion, popup, embedded
+  #     path: "/api/forms/promotion" # add type requester promotion, popup, embedded
+  #   retriever:
+  #     $ref: "*ref(definitions.retriever)"
+  #     paginator:
+  #       $ref: "*ref(definitions.increment_paginator)"
 
 
 streams:
@@ -75,7 +101,7 @@ streams:
   - "*ref(definitions.segments_stream)"
   - "*ref(definitions.automations_stream)"
   - "*ref(definitions.campaigns_stream)"
-  # - "*ref(definitions.timezones_stream)"
+  - "*ref(definitions.timezones_stream)"
   # - "*ref(definitions.forms_stream)"
 
 check:
@@ -84,5 +110,5 @@ check:
     - "segments"
     - "automations"
     - "campaigns"
-    # - "timezones"
+    - "timezones"
     # - "forms"
