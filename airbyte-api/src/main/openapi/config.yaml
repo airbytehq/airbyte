@@ -2280,6 +2280,22 @@ components:
           type: boolean
         defaultGeography:
           $ref: "#/components/schemas/Geography"
+        webhookConfigs:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookConfigWrite"
+    WebhookConfigWrite:
+      type: object
+      properties:
+        name:
+          type: string
+          description: human readable name for this webhook e.g. for UI display.
+        authToken:
+          type: string
+          description: an auth token, to be passed as the value for an HTTP Authorization header.
+        validationUrl:
+          type: string
+          description: if supplied, the webhook config will be validated by checking that this URL returns a 2xx response.
     Notification:
       type: object
       required:
@@ -2384,6 +2400,23 @@ components:
           type: boolean
         defaultGeography:
           $ref: "#/components/schemas/Geography"
+        webhookConfigs:
+          type: array
+          items:
+            # Note: this omits any sensitive info e.g. auth token
+            $ref: "#/components/schemas/WebhookConfigRead"
+    WebhookConfigRead:
+      type: object
+      description: the readable info for a webhook config; omits sensitive info e.g. auth token
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: human-readable name e.g. for display in UI
     WorkspaceUpdateName:
       type: object
       required:
