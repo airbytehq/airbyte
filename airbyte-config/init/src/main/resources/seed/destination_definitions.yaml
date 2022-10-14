@@ -50,13 +50,6 @@
           memory_limit: "1Gi"
           memory_request: "1Gi"
   releaseStage: beta
-- name: bit.io
-  destinationDefinitionId: 592af2e0-882c-4ed8-b0fe-a31761146a8d
-  dockerRepository: airbyte/destination-bitdotio
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/bitdotio
-  icon: bitdotio.svg
-  releaseStage: alpha
 - name: Cassandra
   destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
   dockerRepository: airbyte/destination-cassandra
