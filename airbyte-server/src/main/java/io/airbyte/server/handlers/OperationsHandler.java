@@ -141,6 +141,16 @@ public class OperationsHandler {
     } else {
       standardSyncOperation.withOperatorDbt(null);
     }
+    if ((io.airbyte.api.model.generated.OperatorType.WEBHOOK).equals(operationUpdate.getOperatorConfiguration().getOperatorType())) {
+      Preconditions.checkArgument(operationUpdate.getOperatorConfiguration().getWebhook() != null);
+      // TODO(mfsiega-airbyte): check that the webhook config id references a real webhook config.
+      standardSyncOperation.withOperatorWebhook(new OperatorWebhook()
+          .withExecutionUrl(operationUpdate.getOperatorConfiguration().getWebhook().getExecutionUrl())
+          .withExecutionBody(operationUpdate.getOperatorConfiguration().getWebhook().getExecutionBody())
+          .withWebhookConfigId(operationUpdate.getOperatorConfiguration().getWebhook().getWebhookConfigId()));
+    } else {
+      standardSyncOperation.withOperatorWebhook(null);
+    }
     return standardSyncOperation;
   }
 
@@ -240,6 +250,10 @@ public class OperationsHandler {
     }
     if ((OperatorType.WEBHOOK).equals(standardSyncOperation.getOperatorType())) {
       Preconditions.checkArgument(standardSyncOperation.getOperatorWebhook() != null);
+      operatorConfiguration.webhook(new io.airbyte.api.model.generated.OperatorWebhook()
+          .webhookConfigId(standardSyncOperation.getOperatorWebhook().getWebhookConfigId())
+          .executionUrl(standardSyncOperation.getOperatorWebhook().getExecutionUrl())
+          .executionBody(standardSyncOperation.getOperatorWebhook().getExecutionBody()));
     }
     return new OperationRead()
         .workspaceId(standardSyncOperation.getWorkspaceId())
