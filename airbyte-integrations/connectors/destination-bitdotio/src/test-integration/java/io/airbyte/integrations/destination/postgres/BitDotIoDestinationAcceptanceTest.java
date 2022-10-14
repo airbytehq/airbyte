@@ -14,54 +14,57 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.stream.Collectors;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BitDotIoDestinationAcceptanceTest extends DestinationAcceptanceTest {
+
   public class BitDotIoConfig {
-      private String username = "";
-      private String database = "";
-      private String password = "";
-      public String getUsername() {
-        return username;
-      }
-      public String getDatabase() {
-        return database;
-      }
-      public String getPassword() {
-        return password;
-      }
-    public BitDotIoConfig(String username, String database, String password) 
-    {
+
+    private String username = "";
+    private String database = "";
+    private String password = "";
+
+    public String getUsername() {
+      return username;
+    }
+
+    public String getDatabase() {
+      return database;
+    }
+
+    public String getPassword() {
+      return password;
+    }
+
+    public BitDotIoConfig(String username, String database, String password) {
       this.username = username;
       this.database = database;
       this.password = password;
     }
 
     public String getJdbcUrl() {
-        String jdbcUrl = "";
-        try {
-          jdbcUrl = "jdbc:postgresql://db.bit.io:5432" + "/" + URLEncoder.encode(database, "UTF-8") + "?sslmode=require";
-        } catch (UnsupportedEncodingException e) {
-          // Should never happen
-          e.printStackTrace();
-        }
-        return jdbcUrl;
+      String jdbcUrl = "";
+      try {
+        jdbcUrl = "jdbc:postgresql://db.bit.io:5432" + "/" + URLEncoder.encode(database, "UTF-8") + "?sslmode=require";
+      } catch (UnsupportedEncodingException e) {
+        // Should never happen
+        e.printStackTrace();
+      }
+      return jdbcUrl;
     }
-  }
 
+  }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BitDotIoDestinationAcceptanceTest.class);
   private BitDotIoConfig cfg;
@@ -88,8 +91,8 @@ public class BitDotIoDestinationAcceptanceTest extends DestinationAcceptanceTest
         .put(JdbcUtils.USERNAME_KEY, cfg.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, cfg.getPassword())
         .put(JdbcUtils.DATABASE_KEY, cfg.getDatabase())
-        .put(JdbcUtils.SSL_KEY, true )
-        .put("sslmode", "require" )
+        .put(JdbcUtils.SSL_KEY, true)
+        .put("sslmode", "require")
         .put("ssl_mode", ImmutableMap.builder().put("mode", "require").build())
         .build());
   }
@@ -104,7 +107,7 @@ public class BitDotIoDestinationAcceptanceTest extends DestinationAcceptanceTest
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.DATABASE_KEY, cfg.getDatabase())
         .put(JdbcUtils.SSL_KEY, true)
-        .put("sslmode", "require" )
+        .put("sslmode", "require")
         .put("ssl_mode", ImmutableMap.builder().put("mode", "require").build())
         .build());
   }
@@ -173,6 +176,7 @@ public class BitDotIoDestinationAcceptanceTest extends DestinationAcceptanceTest
                   .collect(Collectors.toList()));
     }
   }
+
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
@@ -187,8 +191,9 @@ public class BitDotIoDestinationAcceptanceTest extends DestinationAcceptanceTest
     final String database = credentialsJson.get(CONFIG_BITIO_DATABASE).asText();
     final String password = credentialsJson.get(CONFIG_BITIO_CONNECT_PASSWORD).asText();
 
-    this.cfg = new BitDotIoConfig(username, database, password) ;
+    this.cfg = new BitDotIoConfig(username, database, password);
   }
+
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     try (final DSLContext dslContext = DSLContextFactory.create(
@@ -200,29 +205,32 @@ public class BitDotIoDestinationAcceptanceTest extends DestinationAcceptanceTest
 
       Database db = new Database(dslContext);
       List<JsonNode> tables = db.query(
-              ctx -> ctx
-                  .fetch( "SELECT table_name FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema not IN ('pg_catalog', 'information_schema');")
-                  .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList()));
-        for (JsonNode node : tables) {
-          db.query(ctx -> ctx.fetch(String.format("DROP TABLE IF EXISTS %s CASCADE", node.get("table_name"))));
-        }
+          ctx -> ctx
+              .fetch(
+                  "SELECT table_name FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema not IN ('pg_catalog', 'information_schema');")
+              .stream()
+              .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+              .map(Jsons::deserialize)
+              .collect(Collectors.toList()));
+      for (JsonNode node : tables) {
+        db.query(ctx -> ctx.fetch(String.format("DROP TABLE IF EXISTS %s CASCADE", node.get("table_name"))));
+      }
       List<JsonNode> schemas = db.query(
-              ctx -> ctx
-                  .fetch( "SELECT DISTINCT table_schema FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema not IN ('public', 'pg_catalog', 'information_schema');")
-                  .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList()));
-        for (JsonNode node : schemas) {
-          db.query(ctx -> ctx.fetch(String.format("DROP SCHEMA IF EXISTS %s CASCADE", node.get("table_schema"))));
-        }
+          ctx -> ctx
+              .fetch(
+                  "SELECT DISTINCT table_schema FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema not IN ('public', 'pg_catalog', 'information_schema');")
+              .stream()
+              .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+              .map(Jsons::deserialize)
+              .collect(Collectors.toList()));
+      for (JsonNode node : schemas) {
+        db.query(ctx -> ctx.fetch(String.format("DROP SCHEMA IF EXISTS %s CASCADE", node.get("table_schema"))));
+      }
     } catch (SQLException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
     LOGGER.info("Finished acceptance test for bit.io");
   }
+
 }

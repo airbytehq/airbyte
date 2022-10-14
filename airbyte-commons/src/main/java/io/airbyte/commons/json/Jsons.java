@@ -275,9 +275,9 @@ public class Jsons {
   }
 
   /**
-   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
-   * New usage of this function is best to explicitly declare the intended array mode.
-   * This version is provided for backward compatibility.
+   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object. New usage of
+   * this function is best to explicitly declare the intended array mode. This version is provided for
+   * backward compatibility.
    */
   public static Map<String, Object> flatten(final JsonNode node) {
     return flatten(node, false);

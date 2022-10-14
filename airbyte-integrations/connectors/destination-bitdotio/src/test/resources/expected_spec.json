@@ -8,11 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Postgres Destination Spec",
     "type": "object",
-    "required": [
-      "database",
-      "username",
-      "password"
-    ],
+    "required": ["database", "username", "password"],
     "additionalProperties": true,
     "properties": {
       "database": {
@@ -25,9 +21,7 @@
         "title": "Default Schema",
         "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
         "type": "string",
-        "examples": [
-          "public"
-        ],
+        "examples": ["public"],
         "default": "public",
         "order": 3
       },
