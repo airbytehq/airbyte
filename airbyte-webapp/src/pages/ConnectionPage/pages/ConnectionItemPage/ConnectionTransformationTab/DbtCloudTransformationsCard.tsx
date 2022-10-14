@@ -1,7 +1,7 @@
 import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { Field, Form, Formik, FieldProps } from "formik";
+import { Field, Form, Formik, FieldArray, FieldProps } from "formik";
 import { Link } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
@@ -34,31 +34,41 @@ const TransformationsList = ({
   const onSubmit = (fields: { transformations: Transformation[] }) => {
     console.info(`Saving with this job list: ${JSON.stringify(fields)}`);
   };
+
+  const transformationKey = (t: Transformation, i: number) => `${i}:${t.project}/${t.job}`;
+
   return (
     <div className={classNames(className, styles.emptyListContent)}>
       <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
       {transformations.length ? (
-        <Formik onSubmit={onSubmit} initialValues={{ transformations }}>
-          <Form className={styles.transformationListForm}>
-            {transformations.map((_t, i) => (
-              <TransformationListItem
-                key={i}
-                transformationIndex={i}
-                deleteTransformation={() => {
-                  console.info(`deleting transformation #${i}`);
-                }}
+        <Formik
+          onSubmit={onSubmit}
+          initialValues={{ transformations }}
+          render={({ values }) => (
+            <Form className={styles.transformationListForm}>
+              <FieldArray
+                name="transformations"
+                render={(arrayHelpers) =>
+                  values.transformations.map((t, i) => (
+                    <TransformationListItem
+                      key={transformationKey(t, i)}
+                      transformationIndex={i}
+                      deleteTransformation={() => arrayHelpers.remove(i)}
+                    />
+                  ))
+                }
               />
-            ))}
-            <div className={styles.transformationListButtonGroup}>
-              <Button className={styles.transformationListButton} type="reset" variant="secondary">
-                Cancel
-              </Button>
-              <Button className={styles.transformationListButton} type="submit" variant="primary">
-                Save changes
-              </Button>
-            </div>
-          </Form>
-        </Formik>
+              <div className={styles.transformationListButtonGroup}>
+                <Button className={styles.transformationListButton} type="reset" variant="secondary">
+                  Cancel
+                </Button>
+                <Button className={styles.transformationListButton} type="submit" variant="primary">
+                  Save changes
+                </Button>
+              </div>
+            </Form>
+          )}
+        />
       ) : (
         <>
           <img src="/images/octavia/worker.png" alt="An octopus wearing a hard hat, tools at the ready" />
@@ -93,7 +103,7 @@ const TransformationListItem = ({
             {({ field }: FieldProps<string>) => <Input {...field} type="text" placeholder="Job name" />}
           </Field>
         </div>
-        <button className={styles.transformationListItemDelete} onClick={deleteTransformation}>
+        <button type="button" className={styles.transformationListItemDelete} onClick={deleteTransformation}>
           <FontAwesomeIcon icon={faXmark} />
         </button>
       </div>
