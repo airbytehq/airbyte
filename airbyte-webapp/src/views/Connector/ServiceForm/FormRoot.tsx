@@ -1,4 +1,3 @@
-import classnames from "classnames";
 import { Form, useFormikContext } from "formik";
 import React from "react";
 
@@ -42,7 +41,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
   const { resetServiceForm, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
-    <Form className={classnames({ [styles.emptyContainer]: !selectedConnector })}>
+    <Form>
       <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
         <div className={styles.loaderContainer}>

@@ -1,6 +1,4 @@
-.emptyContainer {
-  display: none;
-}
+@use "scss/variables" as vars;
 
 .loaderContainer {
   display: flex;
@@ -10,6 +8,6 @@
 }
 
 .loadingMessage {
-  margin-top: 10px;
-  margin-left: 15px;
+  margin-top: vars.$spacing-md;
+  margin-left: vars.$spacing-lg;
 }
