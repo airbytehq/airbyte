@@ -84,8 +84,10 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -938,7 +940,15 @@ class BasicAcceptanceTests {
     assertEquals(1, state.getStreamState().size());
     final StreamState idAndNameState = state.getStreamState().get(0);
     assertEquals(new StreamDescriptor().namespace(PUBLIC).name(STREAM_NAME), idAndNameState.getStreamDescriptor());
-    assertEquals(Jsons.deserialize(expectedState), idAndNameState.getStreamState());
+    assertStateContains(Jsons.deserialize(expectedState), idAndNameState.getStreamState());
+  }
+
+  // Verify that actual contains expected all the (key, value) from expected.
+  private void assertStateContains(final JsonNode expected, final JsonNode actual) {
+    for (Iterator<Entry<String, JsonNode>> it = expected.fields(); it.hasNext();) {
+      Entry<String, JsonNode> e = it.next();
+      assertEquals(e.getValue(), actual.get(e.getKey()));
+    }
   }
 
   @Test
