@@ -6,7 +6,10 @@ package io.airbyte.workers.temporal.spec;
 
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
+import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobGetSpecConfig;
@@ -17,6 +20,8 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.general.DefaultGetSpecWorker;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
+import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -41,6 +46,8 @@ public class SpecActivityImpl implements SpecActivity {
   private final LogConfigs logConfigs;
   private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
+  private final AirbyteMessageSerDeProvider serDeProvider;
+  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
 
   public SpecActivityImpl(@Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
                           @Named("specProcessFactory") final ProcessFactory processFactory,
@@ -48,7 +55,9 @@ public class SpecActivityImpl implements SpecActivity {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final AirbyteApiClient airbyteApiClient,
-                          @Value("${airbyte.version}") final String airbyteVersion) {
+                          @Value("${airbyte.version}") final String airbyteVersion,
+                          final AirbyteMessageSerDeProvider serDeProvider,
+                          final AirbyteMessageVersionedMigratorFactory migratorFactory) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
@@ -56,6 +65,8 @@ public class SpecActivityImpl implements SpecActivity {
     this.logConfigs = logConfigs;
     this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
+    this.serDeProvider = serDeProvider;
+    this.migratorFactory = migratorFactory;
   }
 
   @Override
@@ -82,6 +93,8 @@ public class SpecActivityImpl implements SpecActivity {
   private CheckedSupplier<Worker<JobGetSpecConfig, ConnectorJobOutput>, Exception> getWorkerFactory(
                                                                                                     final IntegrationLauncherConfig launcherConfig) {
     return () -> {
+      final Version protocolVersion = launcherConfig.getProtocolVersion();
+      final AirbyteStreamFactory streamFactory = new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion);
       final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
           launcherConfig.getJobId(),
           launcherConfig.getAttemptId().intValue(),
@@ -89,7 +102,7 @@ public class SpecActivityImpl implements SpecActivity {
           processFactory,
           workerConfigs.getResourceRequirements());
 
-      return new DefaultGetSpecWorker(integrationLauncher);
+      return new DefaultGetSpecWorker(integrationLauncher, streamFactory);
     };
   }
 
