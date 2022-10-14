@@ -71,6 +71,14 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",
       "time taken to create a new kube pod process"),
+  JSON_STRING_LENGTH(
+      MetricEmittingApps.WORKER,
+      "json_string_length",
+      "string length of a raw json string"),
+  JSON_SIZE(
+      MetricEmittingApps.WORKER,
+      "json_size",
+      "size of the json object"),
   NUM_PENDING_JOBS(
       MetricEmittingApps.METRICS_REPORTER,
       "num_pending_jobs",
@@ -124,7 +132,9 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   private final String metricName;
   private final String metricDescription;
 
-  OssMetricsRegistry(final MetricEmittingApp application, final String metricName, final String metricDescription) {
+  OssMetricsRegistry(final MetricEmittingApp application,
+                     final String metricName,
+                     final String metricDescription) {
     Preconditions.checkNotNull(metricDescription);
     Preconditions.checkNotNull(application);
 
