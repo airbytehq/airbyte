@@ -21,6 +21,7 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.ReleaseStage;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.net.Uris;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreLists;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
@@ -39,7 +40,6 @@ import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
@@ -84,7 +84,7 @@ public class DestinationDefinitionsHandler {
           .name(standardDestinationDefinition.getName())
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
-          .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
+          .documentationUrl(Uris.fromStringOrNull(standardDestinationDefinition.getDocumentationUrl()).orElse(null))
           .icon(loadIcon(standardDestinationDefinition.getIcon()))
           .protocolVersion(standardDestinationDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardDestinationDefinition))
@@ -203,11 +203,11 @@ public class DestinationDefinitionsHandler {
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
 
     final UUID id = uuidSupplier.get();
-    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+    return new StandardDestinationDefinition()
         .withDestinationDefinitionId(id)
         .withDockerRepository(destinationDefCreate.getDockerRepository())
         .withDockerImageTag(destinationDefCreate.getDockerImageTag())
-        .withDocumentationUrl(destinationDefCreate.getDocumentationUrl().toString())
+        .withDocumentationUrl(destinationDefCreate.getDocumentationUrl() == null ? null : destinationDefCreate.getDocumentationUrl().toString())
         .withName(destinationDefCreate.getName())
         .withIcon(destinationDefCreate.getIcon())
         .withSpec(spec)
@@ -215,7 +215,6 @@ public class DestinationDefinitionsHandler {
         .withTombstone(false)
         .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
-    return destinationDefinition;
   }
 
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate)

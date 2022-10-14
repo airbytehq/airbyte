@@ -30,6 +30,7 @@ import io.airbyte.api.model.generated.ReleaseStage;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.net.Uris;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.ResourceRequirements;
@@ -44,7 +45,6 @@ import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -98,7 +98,6 @@ class DestinationDefinitionsHandlerTest {
         .withName("presto")
         .withDockerImageTag("12.3")
         .withDockerRepository("repo")
-        .withDocumentationUrl("https://hulu.com")
         .withIcon("http.svg")
         .withSpec(spec)
         .withProtocolVersion("0.2.2")
@@ -120,7 +119,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destinationDefinition.getName())
         .dockerRepository(destinationDefinition.getDockerRepository())
         .dockerImageTag(destinationDefinition.getDockerImageTag())
-        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destinationDefinition.getDocumentationUrl()).orElse(null))
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .protocolVersion(destinationDefinition.getProtocolVersion())
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
@@ -135,7 +134,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destination2.getName())
         .dockerRepository(destination2.getDockerRepository())
         .dockerImageTag(destination2.getDockerImageTag())
-        .documentationUrl(new URI(destination2.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destination2.getDocumentationUrl()).orElse(null))
         .icon(DestinationDefinitionsHandler.loadIcon(destination2.getIcon()))
         .protocolVersion(destinationDefinition.getProtocolVersion())
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
@@ -165,7 +164,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destinationDefinition.getName())
         .dockerRepository(destinationDefinition.getDockerRepository())
         .dockerImageTag(destinationDefinition.getDockerImageTag())
-        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destinationDefinition.getDocumentationUrl()).orElse(null))
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .protocolVersion(destinationDefinition.getProtocolVersion())
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
@@ -180,7 +179,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destination2.getName())
         .dockerRepository(destination2.getDockerRepository())
         .dockerImageTag(destination2.getDockerImageTag())
-        .documentationUrl(new URI(destination2.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destination2.getDocumentationUrl()).orElse(null))
         .icon(DestinationDefinitionsHandler.loadIcon(destination2.getIcon()))
         .protocolVersion(destinationDefinition.getProtocolVersion())
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
@@ -213,7 +212,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destinationDefinition.getName())
         .dockerRepository(destinationDefinition.getDockerRepository())
         .dockerImageTag(destinationDefinition.getDockerImageTag())
-        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destinationDefinition.getDocumentationUrl()).orElse(null))
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .protocolVersion(destinationDefinition.getProtocolVersion())
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
@@ -228,7 +227,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destinationDefinition2.getName())
         .dockerRepository(destinationDefinition.getDockerRepository())
         .dockerImageTag(destinationDefinition.getDockerImageTag())
-        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destinationDefinition.getDocumentationUrl()).orElse(null))
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .protocolVersion(destinationDefinition.getProtocolVersion())
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
@@ -264,7 +263,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destinationDefinition.getName())
         .dockerRepository(destinationDefinition.getDockerRepository())
         .dockerImageTag(destinationDefinition.getDockerImageTag())
-        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destinationDefinition.getDocumentationUrl()).orElse(null))
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .protocolVersion(destinationDefinition.getProtocolVersion())
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
@@ -310,7 +309,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destinationDefinition.getName())
         .dockerRepository(destinationDefinition.getDockerRepository())
         .dockerImageTag(destinationDefinition.getDockerImageTag())
-        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destinationDefinition.getDocumentationUrl()).orElse(null))
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .protocolVersion(destinationDefinition.getProtocolVersion())
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
@@ -345,7 +344,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destination.getDocumentationUrl()).orElse(null))
         .icon(destination.getIcon())
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
@@ -356,7 +355,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destination.getDocumentationUrl()).orElse(null))
         .destinationDefinitionId(destination.getDestinationDefinitionId())
         .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()))
         .protocolVersion(DEFAULT_PROTOCOL_VERSION)
@@ -378,7 +377,7 @@ class DestinationDefinitionsHandlerTest {
 
   @Test
   @DisplayName("createCustomDestinationDefinition should correctly create a destinationDefinition")
-  void testCreateCustomDestinationDefinition() throws URISyntaxException, IOException, JsonValidationException {
+  void testCreateCustomDestinationDefinition() throws URISyntaxException, IOException {
     final StandardDestinationDefinition destination = generateDestinationDefinition();
     final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
 
@@ -391,7 +390,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destination.getDocumentationUrl()).orElse(null))
         .icon(destination.getIcon())
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
@@ -406,7 +405,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destination.getDocumentationUrl()).orElse(null))
         .destinationDefinitionId(destination.getDestinationDefinitionId())
         .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()))
         .protocolVersion(DEFAULT_PROTOCOL_VERSION)
@@ -454,7 +453,7 @@ class DestinationDefinitionsHandlerTest {
         Jsons.clone(destinationDefinition).withDockerImageTag(newDockerImageTag).withSpec(newSpec).withProtocolVersion(newProtocolVersion);
 
     final DestinationDefinitionRead destinationRead = destinationDefinitionsHandler.updateDestinationDefinition(
-        new DestinationDefinitionUpdate().destinationDefinitionId(this.destinationDefinition.getDestinationDefinitionId())
+        new DestinationDefinitionUpdate().destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
             .dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, destinationRead.getDockerImageTag());
@@ -467,7 +466,7 @@ class DestinationDefinitionsHandlerTest {
   void testDeleteDestinationDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody =
         new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinition.getDestinationDefinitionId());
-    final StandardDestinationDefinition updatedDestinationDefinition = Jsons.clone(this.destinationDefinition).withTombstone(true);
+    final StandardDestinationDefinition updatedDestinationDefinition = Jsons.clone(destinationDefinition).withTombstone(true);
     final DestinationRead destination = new DestinationRead();
 
     when(configRepository.getStandardDestinationDefinition(destinationDefinition.getDestinationDefinitionId()))
@@ -494,7 +493,7 @@ class DestinationDefinitionsHandlerTest {
         .name(destinationDefinition.getName())
         .dockerRepository(destinationDefinition.getDockerRepository())
         .dockerImageTag(destinationDefinition.getDockerImageTag())
-        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(destinationDefinition.getDocumentationUrl()).orElse(null))
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .protocolVersion(destinationDefinition.getProtocolVersion())
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))

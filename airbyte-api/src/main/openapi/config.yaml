@@ -2522,7 +2522,6 @@ components:
         - name
         - dockerRepository
         - dockerImageTag
-        - documentationUrl
       properties:
         name:
           type: string
@@ -2890,7 +2889,6 @@ components:
         - name
         - dockerRepository
         - dockerImageTag
-        - documentationUrl
       properties:
         name:
           type: string
@@ -2924,7 +2922,6 @@ components:
         - name
         - dockerRepository
         - dockerImageTag
-        - documentationUrl
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"

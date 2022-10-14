@@ -31,6 +31,7 @@ import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.net.Uris;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.ResourceRequirements;
@@ -45,7 +46,6 @@ import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -94,7 +94,6 @@ class SourceDefinitionsHandlerTest {
     return new StandardSourceDefinition()
         .withSourceDefinitionId(sourceDefinitionId)
         .withName("presto")
-        .withDocumentationUrl("https://netflix.com")
         .withDockerRepository("dockerstuff")
         .withDockerImageTag("12.3")
         .withIcon("http.svg")
@@ -118,7 +117,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
@@ -132,7 +131,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition2.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
@@ -161,7 +160,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
@@ -175,7 +174,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition2.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
@@ -207,7 +206,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
@@ -221,7 +220,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition2.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
@@ -255,7 +254,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
@@ -298,7 +297,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
@@ -332,7 +331,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(sourceDefinition.getIcon())
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
@@ -343,7 +342,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .protocolVersion(DEFAULT_PROTOCOL_VERSION)
@@ -367,7 +366,7 @@ class SourceDefinitionsHandlerTest {
 
   @Test
   @DisplayName("createCustomSourceDefinition should correctly create a sourceDefinition")
-  void testCreateCustomSourceDefinition() throws URISyntaxException, IOException, JsonValidationException {
+  void testCreateCustomSourceDefinition() throws URISyntaxException, IOException {
     final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
 
@@ -380,7 +379,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(sourceDefinition.getIcon())
         .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
@@ -395,7 +394,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .protocolVersion(DEFAULT_PROTOCOL_VERSION)
@@ -420,7 +419,7 @@ class SourceDefinitionsHandlerTest {
 
   @Test
   @DisplayName("updateSourceDefinition should correctly update a sourceDefinition")
-  void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException, URISyntaxException {
+  void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId())).thenReturn(sourceDefinition);
     final String newDockerImageTag = "averydifferenttag";
     final String newProtocolVersion = "0.2.1";
@@ -454,7 +453,7 @@ class SourceDefinitionsHandlerTest {
   void testDeleteSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinition.getSourceDefinitionId());
-    final StandardSourceDefinition updatedSourceDefinition = Jsons.clone(this.sourceDefinition).withTombstone(true);
+    final StandardSourceDefinition updatedSourceDefinition = Jsons.clone(sourceDefinition).withTombstone(true);
     final SourceRead source = new SourceRead();
 
     when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId()))
@@ -481,7 +480,7 @@ class SourceDefinitionsHandlerTest {
         .name(sourceDefinition.getName())
         .dockerRepository(sourceDefinition.getDockerRepository())
         .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .documentationUrl(Uris.fromStringOrNull(sourceDefinition.getDocumentationUrl()).orElse(null))
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
@@ -522,7 +521,7 @@ class SourceDefinitionsHandlerTest {
 
     @Test
     @DisplayName("should return the latest list")
-    void testCorrect() throws IOException, InterruptedException {
+    void testCorrect() throws InterruptedException {
       final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
       when(githubStore.getLatestSources()).thenReturn(Collections.singletonList(sourceDefinition));
 

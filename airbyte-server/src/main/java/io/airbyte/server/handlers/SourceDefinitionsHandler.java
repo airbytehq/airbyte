@@ -22,6 +22,7 @@ import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.net.Uris;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreLists;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
@@ -40,7 +41,6 @@ import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
@@ -85,7 +85,7 @@ public class SourceDefinitionsHandler {
           .sourceType(getSourceType(standardSourceDefinition))
           .dockerRepository(standardSourceDefinition.getDockerRepository())
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
-          .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
+          .documentationUrl(Uris.fromStringOrNull(standardSourceDefinition.getDocumentationUrl()).orElse(null))
           .icon(loadIcon(standardSourceDefinition.getIcon()))
           .protocolVersion(standardSourceDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardSourceDefinition))
@@ -211,7 +211,7 @@ public class SourceDefinitionsHandler {
         .withSourceDefinitionId(id)
         .withDockerRepository(sourceDefinitionCreate.getDockerRepository())
         .withDockerImageTag(sourceDefinitionCreate.getDockerImageTag())
-        .withDocumentationUrl(sourceDefinitionCreate.getDocumentationUrl().toString())
+        .withDocumentationUrl(sourceDefinitionCreate.getDocumentationUrl() == null ? null : sourceDefinitionCreate.getDocumentationUrl().toString())
         .withName(sourceDefinitionCreate.getName())
         .withIcon(sourceDefinitionCreate.getIcon())
         .withSpec(spec)
