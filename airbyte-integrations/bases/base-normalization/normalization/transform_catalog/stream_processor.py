@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+
 import os
 import re
 from enum import Enum
@@ -1269,9 +1270,9 @@ where 1 = 1
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
         elif self.destination_sync_mode == DestinationSyncMode.overwrite:
-            if suffix == "":
+            if suffix == "" and not is_intermediate:
                 # drop SCD table after creating the destination table
-                scd_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "scd", truncate_name)
+                scd_table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, "scd", truncate_name)
                 print(f"  Adding drop table hook for {scd_table_name} to {file_name}")
                 hooks = [
                     Template(
@@ -1284,8 +1285,12 @@ where 1 = 1
                         )
                     {{ '%}' }}
                     {{ '{%' }}
-                        do adapter.drop_relation(scd_table_relation)
+                        if scd_table_relation is not none
                     {{ '%}' }}
+                    {{ '{%' }}
+                            do adapter.drop_relation(scd_table_relation)
+                    {{ '%}' }}
+                    {{ '{% endif %}' }}
                         """
                     ).render(scd_table_name=scd_table_name)
                 ]

@@ -38,9 +38,12 @@ def before_all_tests(request):
         if integration_type in destinations_to_test:
             test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
             shutil.rmtree(test_root_dir, ignore_errors=True)
+
+    # handle environment based overwrite of target schema name
     if os.getenv("RANDOM_TEST_SCHEMA"):
         target_schema = dbt_test_utils.generate_random_string("test_normalization_ci_")
         dbt_test_utils.set_target_schema(target_schema)
+
     dbt_test_utils.change_current_test_dir(request)
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
@@ -91,6 +94,98 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
         run_test_normalization(destination_type, test_resource_name)
     finally:
         dbt_test_utils.set_target_schema(target_schema)
+
+
+@pytest.mark.parametrize("destination_type", list(DestinationType))
+def test_reset_scd_on_overwrite(destination_type: DestinationType) -> bool:
+    if destination_type.value not in dbt_test_utils.get_test_targets():
+        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
+
+    test_resource_name = "test_reset_scd_overwrite"
+    # Select target schema
+    target_schema = dbt_test_utils.target_schema
+    # Overwrite target schema for Oracle or Redshift
+    if destination_type.value == DestinationType.ORACLE.value:
+        # Oracle does not allow changing to random schema
+        dbt_test_utils.set_target_schema("test_normalization")
+    elif destination_type.value == DestinationType.REDSHIFT.value:
+        # set unique schema for Redshift test
+        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_normalization_"))
+
+    print(f"Testing resetting SCD tables on overwrite with {destination_type} in schema {target_schema}")
+    # Generate DBT profile yaml
+    test_root_dir = setup_test_dir(destination_type, test_resource_name)
+    destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
+    test_directory = os.path.join(test_root_dir, "models/generated")
+    shutil.rmtree(test_directory, ignore_errors=True)
+
+    # Generate config file for the destination
+    config_file = os.path.join(test_root_dir, "destination_config.json")
+    with open(config_file, "w") as f:
+        f.write(json.dumps(destination_config))
+
+    # make sure DBT dependencies are installed
+    dbt_test_utils.dbt_check(destination_type, test_root_dir)
+
+    # Generate catalog for an initial reset/cleanup (pre-test)
+    original_catalog_file = os.path.join("resources", test_resource_name, "data_input", "test_drop_scd_catalog.json")
+    dbt_test_utils.copy_replace(
+        original_catalog_file,
+        os.path.join(test_root_dir, "initial_reset_catalog.json"),
+        pattern='"destination_sync_mode": ".*"',
+        replace_value='"destination_sync_mode": "overwrite"',
+    )
+
+    # Force a reset in destination raw tables to remove any data left over from previous test runs
+    assert run_destination_process(destination_type, test_root_dir, "", "initial_reset_catalog.json")
+
+    # Run the first sync to create raw tables in destinations
+    dbt_test_utils.copy_replace(original_catalog_file, os.path.join(test_root_dir, "destination_catalog.json"))
+    message_file = os.path.join("resources", test_resource_name, "data_input", "test_drop_scd_messages.txt")
+    assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json")
+
+    # generate models from catalog
+    generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "test_drop_scd_catalog.json")
+
+    # Run dbt process to normalize data from the first sync
+    dbt_test_utils.dbt_run(destination_type, test_root_dir, force_full_refresh=True)
+
+    # Remove models generated in previous step to avoid DBT compilation errors
+    test_directory = os.path.join(test_root_dir, "models/generated/airbyte_incremental")
+    shutil.rmtree(test_directory, ignore_errors=True)
+    test_directory = os.path.join(test_root_dir, "models/generated/airbyte_views")
+    shutil.rmtree(test_directory, ignore_errors=True)
+    test_directory = os.path.join(test_root_dir, "models/generated/airbyte_ctes")
+    shutil.rmtree(test_directory, ignore_errors=True)
+
+    # Generate a catalog with modified schema for a reset
+    reset_catalog_file = os.path.join("resources", test_resource_name, "data_input", "test_drop_scd_catalog_reset.json")
+    dbt_test_utils.copy_replace(reset_catalog_file, os.path.join(test_root_dir, "reset_catalog.json"))
+
+    # Run a reset
+    assert run_destination_process(destination_type, test_root_dir, "", "reset_catalog.json")
+
+    # Run dbt process after reset to drop SCD table
+    generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "test_drop_scd_catalog_reset.json")
+    dbt_test_utils.dbt_run(destination_type, test_root_dir, force_full_refresh=True)
+
+    # Remove models generated in previous step to avoid DBT compilation errors
+    test_directory = os.path.join(test_root_dir, "models/generated/airbyte_incremental")
+    shutil.rmtree(test_directory, ignore_errors=True)
+    test_directory = os.path.join(test_root_dir, "models/generated/airbyte_views")
+    shutil.rmtree(test_directory, ignore_errors=True)
+    test_directory = os.path.join(test_root_dir, "models/generated/airbyte_ctes")
+    shutil.rmtree(test_directory, ignore_errors=True)
+
+    # Run another sync with modified catalog
+    modified_catalog_file = os.path.join("resources", test_resource_name, "data_input", "test_drop_scd_catalog_incremental.json")
+    dbt_test_utils.copy_replace(modified_catalog_file, os.path.join(test_root_dir, "destination_catalog.json"))
+    message_file = os.path.join("resources", test_resource_name, "data_input", "test_scd_reset_messages_incremental.txt")
+    assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json")
+
+    # Run dbt process
+    generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "test_drop_scd_catalog_reset.json")
+    dbt_test_utils.dbt_run(destination_type, test_root_dir)
 
 
 def run_test_normalization(destination_type: DestinationType, test_resource_name: str):
@@ -251,10 +346,10 @@ def setup_schema_change_data(destination_type: DestinationType, test_resource_na
     catalog_file = os.path.join("resources", test_resource_name, "data_input", "catalog_schema_change.json")
     message_file = os.path.join("resources", test_resource_name, "data_input", "messages_schema_change.txt")
     dbt_test_utils.copy_replace(
-        catalog_file,
-        os.path.join(test_root_dir, "reset_catalog.json"),
-        pattern='"destination_sync_mode": ".*"',
-        replace_value='"destination_sync_mode": "overwrite"',
+       catalog_file,
+       os.path.join(test_root_dir, "reset_catalog.json"),
+       pattern='"destination_sync_mode": ".*"',
+       replace_value='"destination_sync_mode": "overwrite"',
     )
     dbt_test_utils.copy_replace(catalog_file, os.path.join(test_root_dir, "destination_catalog.json"))
     dbt_test_utils.copy_replace(
@@ -414,6 +509,7 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
     Copy file while hacking snowflake identifiers that needs to be uppercased...
     (so we can share these dbt tests files accross destinations)
     """
+    print(f"Copying test files from {src} to {dst} for {destination_type} ")
     if os.path.exists(src):
         temp_dir = tempfile.mkdtemp(dir="/tmp/", prefix="normalization_test_")
         temporary_folders.add(temp_dir)
