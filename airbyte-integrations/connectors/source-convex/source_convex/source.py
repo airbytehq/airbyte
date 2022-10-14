@@ -20,10 +20,10 @@ def convex_url_base(instance_name) -> str:
 
 # Source
 class SourceConvex(AbstractSource):
-    def _shapes(self, config) -> requests.Response:
+    def _json_schemas(self, config) -> requests.Response:
         instance_name = config["instance_name"]
         access_key = config["access_key"]
-        url = f"{convex_url_base(instance_name)}/api/0.2.0/shapes2"
+        url = f"{convex_url_base(instance_name)}/api/0.2.0/json_schemas"
         headers = {"Authorization": f"Convex {access_key}"}
         return requests.get(url, headers=headers)
 
@@ -45,71 +45,27 @@ class SourceConvex(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        resp = self._shapes(config)
+        resp = self._json_schemas(config)
         assert resp.status_code == 200
-        shapes = resp.json()
-        table_names = list(shapes.keys())
+        json_schemas = resp.json()
+        table_names = list(json_schemas.keys())
         return [
             ConvexStream(
                 config["instance_name"],
                 config["access_key"],
                 table_name,
-                shapes[table_name],
+                json_schemas[table_name],
             )
             for table_name in table_names
         ]
 
 
-def convex_shape_variant_to_json(shape_variant):
-    variant = shape_variant["type"]
-    if variant == "Object":
-        return {
-            "type": "object",
-            "properties": {field["fieldName"]: convex_shape_to_json(field["shape"]) for field in shape_variant["fields"]},
-        }
-    if variant == "Float64":
-        return {"anyOf": [
-            {"type": "number"},
-            {"type": "object", "properties": {
-                # infinite or NaN
-                # float64 -> little-endian -> base64
-                "$float": {"type": "string"},
-            }}
-        ]}
-    if variant == "Int64":
-        return {
-            "type": "object",
-            "properties": {
-                # int64 -> little-endian -> base64
-                "$integer": {"type": "string"},
-            }
-        }
-    if variant == "Id":
-        return {
-            "type": "object",
-            "properties": {
-                "$id": {"type": "string"},
-            },
-        }
-    if variant == "String":
-        return {"type": "string"}
-    if variant == "Null":
-        return {"type": "null"}
-    if variant == "Boolean":
-        return {"type": "boolean"}
-    # TODO(lee) other types of shapes
-    raise Exception(shape_variant)
-
-
-def convex_shape_to_json(shape):
-    return convex_shape_variant_to_json(shape["variant"])
-
-
 class ConvexStream(HttpStream, IncrementalMixin):
-    def __init__(self, instance_name: str, access_key: str, table_name: str, shape: Any):
+    def __init__(self, instance_name: str, access_key: str, table_name: str, json_schema: Any):
         self.instance_name = instance_name
         self.table_name = table_name
-        self.shape = shape
+        json_schema["properties"]["_ts"] = {"type": "number"}
+        self.json_schema = json_schema
         self._cursor_value = None
         self._has_more = True
         super().__init__(TokenAuthenticator(access_key, "Convex"))
@@ -124,7 +80,6 @@ class ConvexStream(HttpStream, IncrementalMixin):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         shape = convex_shape_to_json(self.shape)
-        shape["properties"]["_ts"] = {"type": "number"}
         return shape
 
     primary_key = "_id"
