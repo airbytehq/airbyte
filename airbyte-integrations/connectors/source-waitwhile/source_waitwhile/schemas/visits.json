@@ -187,6 +187,7 @@
     "ticket",
     "partySize",
     "removedTime",
+    "cancelTime",
     "createdBy",
     "firstName",
     "id",
