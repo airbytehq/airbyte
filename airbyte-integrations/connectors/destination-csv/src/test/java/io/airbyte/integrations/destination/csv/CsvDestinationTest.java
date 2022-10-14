@@ -84,17 +84,25 @@ class CsvDestinationTest {
       CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, null, Field.of("goal", JsonSchemaType.STRING))));
 
   private Path destinationPath;
+  private char delimiter;
   private JsonNode config;
 
   @BeforeEach
   void setup() throws IOException {
     destinationPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
-    config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString()));
+    delimiter = ',';
+    config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString(), CsvDestination.DELIMITER_FIELD, delimiter));
   }
 
   private CsvDestination getDestination() {
     final CsvDestination result = spy(CsvDestination.class);
     doReturn(destinationPath).when(result).getDestinationPath(any());
+    return result;
+  }
+
+  private CsvDestination getDelimiter() {
+    final CsvDestination result = spy(CsvDestination.class);
+    doReturn(delimiter).when(result).getDelimiter(any());
     return result;
   }
 
