@@ -52,6 +52,11 @@ public class StateGeneratorUtils {
     }
   };
 
+  public static final Function<AirbyteStreamState, Long> CURSOR_RECORD_COUNT_FUNCTION = stream -> {
+    final Optional<DbStreamState> dbStreamState = StateGeneratorUtils.extractState(stream);
+    return dbStreamState.map(DbStreamState::getCursorRecordCount).orElse(0L);
+  };
+
   /**
    * {@link Function} that creates an {@link AirbyteStreamNameNamespacePair} from the stream state.
    */
@@ -120,11 +125,15 @@ public class StateGeneratorUtils {
    */
   public static DbStreamState generateDbStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
                                                     final CursorInfo cursorInfo) {
-    return new DbStreamState()
+    final DbStreamState state = new DbStreamState()
         .withStreamName(airbyteStreamNameNamespacePair.getName())
         .withStreamNamespace(airbyteStreamNameNamespacePair.getNamespace())
         .withCursorField(cursorInfo.getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(cursorInfo.getCursorField()))
         .withCursor(cursorInfo.getCursor());
+    if (cursorInfo.getCursorRecordCount() > 0L) {
+      state.setCursorRecordCount(cursorInfo.getCursorRecordCount());
+    }
+    return state;
   }
 
   /**
