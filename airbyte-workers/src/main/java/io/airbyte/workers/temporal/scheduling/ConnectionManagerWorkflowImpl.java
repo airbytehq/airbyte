@@ -53,6 +53,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.EnsureCleanJobStateInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCheckFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobFailureInput;
@@ -401,7 +402,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
     final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
 
-    if (isResetJob(sourceLauncherConfig) || checkFailure.isFailed()) {
+    final JobCheckFailureInput jobStateInput =
+        new JobCheckFailureInput(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), connectionId);
+    var isLastJobOrAttemptFailure = jobCreationAndStatusUpdateActivity.isLastJobOrAttemptFailure(jobStateInput);
+
+    if (isResetJob(sourceLauncherConfig) || checkFailure.isFailed() || !isLastJobOrAttemptFailure) {
       // reset jobs don't need to connect to any external source, so check connection is unnecessary
       log.info("SOURCE CHECK: Skipped");
     } else {
@@ -419,7 +424,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(destinationConfig);
     final CheckConnectionInput checkDestinationInput = new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
 
-    if (checkFailure.isFailed()) {
+    if (checkFailure.isFailed() || !isLastJobOrAttemptFailure) {
       log.info("DESTINATION CHECK: Skipped");
     } else {
       log.info("DESTINATION CHECK: Starting");
