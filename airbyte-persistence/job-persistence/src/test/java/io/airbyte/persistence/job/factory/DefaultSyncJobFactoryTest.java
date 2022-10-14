@@ -5,6 +5,8 @@
 package io.airbyte.persistence.job.factory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,9 +18,11 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.DefaultJobCreator;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
@@ -38,6 +42,7 @@ class DefaultSyncJobFactoryTest {
     final UUID operationId = UUID.randomUUID();
     final DefaultJobCreator jobCreator = mock(DefaultJobCreator.class);
     final ConfigRepository configRepository = mock(ConfigRepository.class);
+    final WorkspaceHelper workspaceHelper = mock(WorkspaceHelper.class);
     final long jobId = 11L;
 
     final StandardSyncOperation operation = new StandardSyncOperation().withOperationId(operationId);
@@ -62,8 +67,9 @@ class DefaultSyncJobFactoryTest {
     when(configRepository.getSourceConnection(sourceId)).thenReturn(sourceConnection);
     when(configRepository.getDestinationConnection(destinationId)).thenReturn(destinationConnection);
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
-    when(jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, null, null))
-        .thenReturn(Optional.of(jobId));
+    when(
+        jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, null, null, null))
+            .thenReturn(Optional.of(jobId));
     when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
             .withDockerImageTag(srcDockerTag));
@@ -72,12 +78,14 @@ class DefaultSyncJobFactoryTest {
         .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinitionId).withDockerRepository(dstDockerRepo)
             .withDockerImageTag(dstDockerTag));
 
-    final SyncJobFactory factory = new DefaultSyncJobFactory(true, jobCreator, configRepository, mock(OAuthConfigSupplier.class));
+    when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(true))).thenReturn(new StandardWorkspace());
+
+    final SyncJobFactory factory = new DefaultSyncJobFactory(true, jobCreator, configRepository, mock(OAuthConfigSupplier.class), workspaceHelper);
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 
     verify(jobCreator)
-        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, null, null);
+        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, null, null, null);
   }
 
 }

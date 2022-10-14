@@ -174,6 +174,7 @@ class DefaultJobCreatorTest {
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
         null,
+        null,
         null).orElseThrow();
     assertEquals(JOB_ID, jobId);
   }
@@ -207,6 +208,7 @@ class DefaultJobCreatorTest {
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
         null,
+        null,
         null).isEmpty());
   }
 
@@ -219,6 +221,7 @@ class DefaultJobCreatorTest {
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
+        null,
         null,
         null);
 
@@ -261,6 +264,7 @@ class DefaultJobCreatorTest {
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
+        null,
         null,
         null);
 
@@ -307,6 +311,7 @@ class DefaultJobCreatorTest {
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
+        null,
         new ActorDefinitionResourceRequirements().withDefault(sourceResourceRequirements),
         new ActorDefinitionResourceRequirements().withJobSpecific(List.of(
             new JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(destResourceRequirements))));
