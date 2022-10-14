@@ -37,6 +37,7 @@ import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -53,7 +54,9 @@ import org.mockito.ArgumentCaptor;
 class WorkspacesHandlerTest {
 
   public static final String FAILURE_NOTIFICATION_WEBHOOK = "http://airbyte.notifications/failure";
+  public static final String NEW_WORKSPACE = "new workspace";
   private ConfigRepository configRepository;
+  private SecretsRepositoryWriter secretsRepositoryWriter;
   private ConnectionsHandler connectionsHandler;
   private DestinationHandler destinationHandler;
   private SourceHandler sourceHandler;
@@ -74,12 +77,15 @@ class WorkspacesHandlerTest {
   @BeforeEach
   void setUp() {
     configRepository = mock(ConfigRepository.class);
+    secretsRepositoryWriter = new SecretsRepositoryWriter(configRepository, Optional.empty(), Optional.empty());
     connectionsHandler = mock(ConnectionsHandler.class);
     destinationHandler = mock(DestinationHandler.class);
     sourceHandler = mock(SourceHandler.class);
     uuidSupplier = mock(Supplier.class);
+
     workspace = generateWorkspace();
-    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler, uuidSupplier);
+    workspacesHandler = new WorkspacesHandler(configRepository, secretsRepositoryWriter, connectionsHandler,
+        destinationHandler, sourceHandler, uuidSupplier);
   }
 
   private StandardWorkspace generateWorkspace() {
@@ -114,16 +120,16 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testCreateWorkspace() throws JsonValidationException, IOException {
-    when(configRepository.listStandardWorkspaces(false)).thenReturn(Collections.singletonList(workspace));
+  void testCreateWorkspace() throws JsonValidationException, IOException, ConfigNotFoundException {
+    when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(false))).thenReturn(workspace);
 
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
 
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
-        .name("new workspace")
+        .name(NEW_WORKSPACE)
         .email(TEST_EMAIL)
         .news(false)
         .anonymousDataCollection(false)
@@ -136,7 +142,7 @@ class WorkspacesHandlerTest {
         .workspaceId(uuid)
         .customerId(uuid)
         .email(TEST_EMAIL)
-        .name("new workspace")
+        .name(NEW_WORKSPACE)
         .slug("new-workspace")
         .initialSetupComplete(false)
         .displaySetupWizard(false)
@@ -144,22 +150,24 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(false)
         .securityUpdates(false)
         .notifications(List.of(generateApiNotification()))
-        .defaultGeography(GEOGRAPHY_US);
+        .defaultGeography(GEOGRAPHY_US)
+        .webhookConfigs(Collections.emptyList());
 
     assertEquals(expectedRead, actualRead);
   }
 
   @Test
-  void testCreateWorkspaceDuplicateSlug() throws JsonValidationException, IOException {
+  void testCreateWorkspaceDuplicateSlug() throws JsonValidationException, IOException, ConfigNotFoundException {
     when(configRepository.getWorkspaceBySlugOptional(any(String.class), eq(true)))
         .thenReturn(Optional.of(workspace))
         .thenReturn(Optional.of(workspace))
         .thenReturn(Optional.empty());
+    when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(false))).thenReturn(workspace);
 
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
 
-    configRepository.writeStandardWorkspace(workspace);
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
     final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
         .name(workspace.getName())
@@ -182,7 +190,8 @@ class WorkspacesHandlerTest {
         .anonymousDataCollection(false)
         .securityUpdates(false)
         .notifications(Collections.emptyList())
-        .defaultGeography(GEOGRAPHY_AUTO);
+        .defaultGeography(GEOGRAPHY_AUTO)
+        .webhookConfigs(Collections.emptyList());
 
     assertTrue(actualRead.getSlug().startsWith(workspace.getSlug()));
     assertNotEquals(workspace.getSlug(), actualRead.getSlug());
@@ -204,7 +213,7 @@ class WorkspacesHandlerTest {
     final DestinationRead destination = new DestinationRead();
     final SourceRead source = new SourceRead();
 
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false)).thenReturn(workspace);
 
     when(configRepository.listStandardWorkspaces(false)).thenReturn(Collections.singletonList(workspace));
 
@@ -266,7 +275,7 @@ class WorkspacesHandlerTest {
 
   @Test
   void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false)).thenReturn(workspace);
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false)).thenReturn(workspace);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
 
@@ -340,7 +349,7 @@ class WorkspacesHandlerTest {
         .withNotifications(List.of(expectedNotification))
         .withDefaultGeography(Geography.US);
 
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false))
         .thenReturn(workspace)
         .thenReturn(expectedWorkspace);
 
@@ -362,7 +371,7 @@ class WorkspacesHandlerTest {
         .notifications(List.of(expectedNotificationRead))
         .defaultGeography(GEOGRAPHY_US);
 
-    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+    verify(configRepository).writeStandardWorkspaceNoSecrets(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
@@ -389,7 +398,7 @@ class WorkspacesHandlerTest {
         .withNotifications(workspace.getNotifications())
         .withDefaultGeography(Geography.AUTO);
 
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false))
         .thenReturn(workspace)
         .thenReturn(expectedWorkspace);
 
@@ -409,7 +418,7 @@ class WorkspacesHandlerTest {
         .notifications(List.of(generateApiNotification()))
         .defaultGeography(GEOGRAPHY_AUTO);
 
-    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+    verify(configRepository).writeStandardWorkspaceNoSecrets(expectedWorkspace);
 
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
@@ -424,7 +433,7 @@ class WorkspacesHandlerTest {
         .email(EXPECTED_NEW_EMAIL);
 
     final StandardWorkspace expectedWorkspace = Jsons.clone(workspace).withEmail(EXPECTED_NEW_EMAIL).withAnonymousDataCollection(true);
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
+    when(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false))
         .thenReturn(workspace)
         .thenReturn(expectedWorkspace);
     // The same as the original workspace, with only the email and data collection flags changed.
@@ -443,7 +452,7 @@ class WorkspacesHandlerTest {
         .defaultGeography(GEOGRAPHY_AUTO);
 
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
-    verify(configRepository).writeStandardWorkspace(expectedWorkspace);
+    verify(configRepository).writeStandardWorkspaceNoSecrets(expectedWorkspace);
     assertEquals(expectedWorkspaceRead, actualWorkspaceRead);
   }
 
@@ -455,6 +464,44 @@ class WorkspacesHandlerTest {
     workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
 
     verify(configRepository).setFeedback(workspaceGiveFeedback.getWorkspaceId());
+  }
+
+  @Test
+  void testWorkspaceIsWrittenThroughSecretsWriter() throws JsonValidationException, IOException {
+    secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
+    workspacesHandler = new WorkspacesHandler(configRepository, secretsRepositoryWriter, connectionsHandler,
+        destinationHandler, sourceHandler, uuidSupplier);
+
+    final UUID uuid = UUID.randomUUID();
+    when(uuidSupplier.get()).thenReturn(uuid);
+
+    final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
+        .name(NEW_WORKSPACE)
+        .email(TEST_EMAIL)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false)
+        .notifications(List.of(generateApiNotification()))
+        .defaultGeography(GEOGRAPHY_US);
+
+    final WorkspaceRead actualRead = workspacesHandler.createWorkspace(workspaceCreate);
+    final WorkspaceRead expectedRead = new WorkspaceRead()
+        .workspaceId(uuid)
+        .customerId(uuid)
+        .email(TEST_EMAIL)
+        .name(NEW_WORKSPACE)
+        .slug("new-workspace")
+        .initialSetupComplete(false)
+        .displaySetupWizard(false)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false)
+        .notifications(List.of(generateApiNotification()))
+        .defaultGeography(GEOGRAPHY_US)
+        .webhookConfigs(Collections.emptyList());
+
+    assertEquals(expectedRead, actualRead);
+    verify(secretsRepositoryWriter, times(1)).writeWorkspace(any());
   }
 
 }
