@@ -34,6 +34,7 @@ RUN pip install duckdb
 # copy payload code only
 COPY main.py ./
 COPY destination_duckdb ./destination_duckdb
+RUN mkdir -p /tmp/duckdb
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
