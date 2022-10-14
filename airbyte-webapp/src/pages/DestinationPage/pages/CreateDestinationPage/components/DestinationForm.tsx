@@ -10,6 +10,8 @@ import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ServiceForm";
 
+import styles from "./DestinationForm.module.scss";
+
 interface DestinationFormProps {
   onSubmit: (values: {
     name: string;
@@ -65,25 +67,29 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     <FrequentlyUsedDestinations onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
   );
   const startWithDestinationComponent = !isLoading && !destinationDefinitionId && (
-    <StartWithDestination onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+    <div className={styles.startWithDestinationContainer}>
+      <StartWithDestination onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
+    </div>
   );
 
   return (
-    <ConnectorCard
-      onServiceSelect={onDropDownSelect}
-      fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
-      onSubmit={onSubmitForm}
-      formType="destination"
-      additionalSelectorComponent={frequentlyUsedDestinationsComponent}
-      intermediateComponent={startWithDestinationComponent}
-      availableServices={destinationDefinitions}
-      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
-      hasSuccess={hasSuccess}
-      errorMessage={errorMessage}
-      isLoading={isLoading}
-      formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
-      title={<FormattedMessage id="onboarding.destinationSetUp" />}
-      jobInfo={LogsRequestError.extractJobInfo(error)}
-    />
+    <>
+      <ConnectorCard
+        onServiceSelect={onDropDownSelect}
+        fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
+        onSubmit={onSubmitForm}
+        formType="destination"
+        additionalSelectorComponent={frequentlyUsedDestinationsComponent}
+        availableServices={destinationDefinitions}
+        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+        hasSuccess={hasSuccess}
+        errorMessage={errorMessage}
+        isLoading={isLoading}
+        formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
+        title={<FormattedMessage id="onboarding.destinationSetUp" />}
+        jobInfo={LogsRequestError.extractJobInfo(error)}
+      />
+      {startWithDestinationComponent}
+    </>
   );
 };
