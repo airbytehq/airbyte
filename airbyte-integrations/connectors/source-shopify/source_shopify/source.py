@@ -136,14 +136,23 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping] = None) -> Iterable:
         # Getting records >= state
         if stream_state:
+            state_value = stream_state.get(self.cursor_field)
             for record in records_slice:
                 if self.cursor_field in record:
-                    if record.get(self.cursor_field, self.default_state_comparison_value) >= stream_state.get(self.cursor_field):
+                    record_value = record.get(self.cursor_field, self.default_state_comparison_value)
+                    if record_value:
+                        if record_value >= state_value:
+                            yield record
+                    else:
+                        # old entities could have cursor field in place, but set to null
+                        self.logger.warn(
+                            f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` cursor value is: {record_value}, record is emitted without state comparison"
+                        )
                         yield record
                 else:
                     # old entities could miss the cursor field
                     self.logger.warn(
-                        f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor: {self.cursor_field}"
+                        f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor field: {self.cursor_field}, record is emitted without state comparison"
                     )
                     yield record
         else:
