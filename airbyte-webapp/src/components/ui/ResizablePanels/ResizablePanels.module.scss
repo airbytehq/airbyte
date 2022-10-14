@@ -50,14 +50,17 @@
   right: 0;
   z-index: 10;
   background-color: colors.$white;
-  text-align: center;
-  vertical-align: middle;
   overflow: hidden;
-  padding-top: 80px;
+  padding-top: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .rotatedHeader {
-  transform: rotate(-90deg);
+  transform: rotate(180deg);
+  writing-mode: vertical-lr;
+
   white-space: nowrap;
 }
 
