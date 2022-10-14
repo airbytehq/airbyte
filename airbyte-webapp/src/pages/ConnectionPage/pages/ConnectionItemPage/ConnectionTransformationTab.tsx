@@ -172,7 +172,7 @@ export const ConnectionTransformationTab: React.FC<ConnectionTransformationTabPr
         )}
         {!supportsNormalization && !supportsDbt && (
           <NoSupportedTransformationCard>
-            <Text as="p" size="lg" centered>
+            <Text size="lg" centered>
               <FormattedMessage id="connectionForm.operations.notSupported" />
             </Text>
           </NoSupportedTransformationCard>

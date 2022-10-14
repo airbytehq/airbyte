@@ -15,7 +15,7 @@ interface TryAfterErrorBlockProps {
 export const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClick }) => (
   <div className={styles.container}>
     <StatusIcon big />
-    <Text as="p" size="lg" centered className={styles.message}>
+    <Text size="lg" centered className={styles.message}>
       {message || <FormattedMessage id="form.schemaFailed" />}
     </Text>
     <Button className={styles.retryButton} onClick={onClick} variant="danger">

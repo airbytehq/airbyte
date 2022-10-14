@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import React from "react";
 
-import { Text } from "components/ui/Text";
+import { Heading } from "components/ui/Heading";
 
 import styles from "./PageHeader.module.scss";
 
@@ -21,7 +21,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   endComponent,
 }) => (
   <div className={classNames(styles.container)} data-withline={withLine}>
-    <Text
+    <Heading
       as="h1"
       size="md"
       className={classNames(styles.start, {
@@ -29,9 +29,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       })}
     >
       {title}
-    </Text>
+    </Heading>
     {middleTitleBlock ? (
-      <Text
+      <Heading
         as="h3"
         size="md"
         className={classNames(styles.heading, {
@@ -39,7 +39,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         })}
       >
         {middleTitleBlock}
-      </Text>
+      </Heading>
     ) : (
       <div className={classNames(styles.middle)}>{middleComponent}</div>
     )}
