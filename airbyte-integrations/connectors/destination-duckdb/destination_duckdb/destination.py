@@ -26,15 +26,15 @@ class DestinationDuckdb(Destination):
     def _get_destination_path(destination_path: str) -> str:
         """
         Get a normalized version of the destination path.
-        Automatically append /tmp/ to the start of the path
+        Automatically append /local/ to the start of the path
         """
-        if not destination_path.startswith("/tmp"):
-            destination_path = os.path.join("/tmp", destination_path)
+        if not destination_path.startswith("/local"):
+            destination_path = os.path.join("/local", destination_path)
 
         destination_path = os.path.normpath(destination_path)
-        if not destination_path.startswith("/tmp"):
+        if not destination_path.startswith("/local"):
             raise ValueError(
-                f"destination_path={destination_path} is not a valid path." "A valid path shall start with /tmp or no / prefix"
+                f"destination_path={destination_path} is not a valid path." "A valid path shall start with /local or no / prefix"
             )
 
         return destination_path
