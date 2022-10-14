@@ -141,7 +141,7 @@ docker-compose run octavia-cli <command>`
 | ---------------------------------------- | --------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------ |
 | `--airbyte-url`                          | Airbyte instance URL.                                                             | `AIRBYTE_URL`              | `http://localhost:8000`                                |
 | `--airbyte-username`                     | Airbyte instance username (basic auth).                                           | `AIRBYTE_URL`              | `airbyte`                                              |
-| `--airbyte-password`                     | Airbyte instance password (basic auth).                                           | `AIRBYTE_URL`              | password`                                              |
+| `--airbyte-password`                     | Airbyte instance password (basic auth).                                           | `AIRBYTE_URL`              | `password`                                             |
 | `--workspace-id`                         | Airbyte workspace id.                                                             | `AIRBYTE_WORKSPACE_ID`     | The first workspace id found on your Airbyte instance. |
 | `--enable-telemetry/--disable-telemetry` | Enable or disable the sending of telemetry data.                                  | `OCTAVIA_ENABLE_TELEMETRY` | True                                                   |
 | `--api-http-header`                      | HTTP Header value pairs passed while calling Airbyte's API                        | None                       | None                                                   |
