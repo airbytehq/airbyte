@@ -4,11 +4,10 @@ connectionSpecification:
   title: Zapier Supported Storage Spec
   type: object
   required:
-    - secret
+    - api_key
   additionalProperties: true
   properties:
-    secret:
+    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+    api_key:
       type: string
-      description: secret key supplied by zapier
-      airbyte_secret: true
-
+      description: API Key

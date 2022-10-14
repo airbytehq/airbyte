@@ -5,14 +5,11 @@ definitions:
     extractor:
       field_pointer: []
   requester:
-    url_base: "https://store.zapier.com"
+    url_base: "https://example.com"
     http_method: "GET"
-#    authenticator:
-#      type: BearerAuthenticator
-#      api_token: "{{ config['api_key'] }}"
-    request_options_provider:
-      request_parameters:
-        secret: "{{ config['secret'] }}"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -23,16 +20,16 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  zapier_supported_storage_stream:
+  customers_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "zapier_supported_storage"
-      primary_key: "data"
-      path: "/api/records"
+      name: "customers"
+      primary_key: "id"
+      path: "/example"
 
 streams:
-  - "*ref(definitions.zapier_supported_storage_stream)"
+  - "*ref(definitions.customers_stream)"
 
 check:
   stream_names:
-    - "zapier_supported_storage"
+    - "customers"
