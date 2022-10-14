@@ -9,10 +9,10 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
 import com.mongodb.MongoSecurityException;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.exception.ConnectionErrorException;

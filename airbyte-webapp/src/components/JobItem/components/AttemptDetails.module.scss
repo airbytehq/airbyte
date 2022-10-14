@@ -7,7 +7,7 @@
   color: colors.$grey;
 }
 
-.details > *:not(:last-child)::after {
+.details > *:not(:last-child, .lastAttempt)::after {
   content: "|";
   padding: 0 variables.$spacing-sm;
 }
@@ -17,4 +17,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.lastAttempt {
+  margin-right: variables.$spacing-sm;
+
+  &.failed {
+    color: colors.$red;
+  }
 }
