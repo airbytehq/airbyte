@@ -17,7 +17,11 @@ export const ConnectorBuilderPage: React.FC = () => {
 
   return (
     <ResizablePanels
-      leftPanel={{ children: <YamlEditor />, smallWidthHeader: <FormattedMessage id="builder.expandConfiguration" /> }}
+      leftPanel={{
+        children: <YamlEditor />,
+        smallWidthHeader: <FormattedMessage id="builder.expandConfiguration" />,
+        className: styles.leftPanel,
+      }}
       rightPanel={{
         children: (
           <ConnectorTestingPanel
