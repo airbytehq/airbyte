@@ -5,7 +5,7 @@
       "type": ["null", "integer"]
     },
     "handle": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "title": {
       "type": ["null", "string"]

@@ -15,7 +15,7 @@
       "type": ["null", "string"]
     },
     "blog_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "author": {
       "type": ["null", "string"]
