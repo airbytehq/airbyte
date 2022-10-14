@@ -1,6 +1,5 @@
 package io.airbyte.integrations.destination.kafka;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 public class KafkaSshDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -64,8 +62,6 @@ public class KafkaSshDestinationAcceptanceTest extends DestinationAcceptanceTest
             """
     );
     stubProtocolConfig.put("truststore_certificates", truststoreCertificates);
-
-    LOGGER.info("resolved bootstrap server was {}", HostPortResolver.resolveHost(KAFKA) + ":" + HostPortResolver.resolvePort(KAFKA));
 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("bootstrap_servers", HostPortResolver.resolveHost(KAFKA) + ":" + HostPortResolver.resolvePort(KAFKA))
@@ -191,8 +187,10 @@ public class KafkaSshDestinationAcceptanceTest extends DestinationAcceptanceTest
         // These certs were generated using https://github.com/confluentinc/cp-docker-images/blob/5.3.3-post/examples/kafka-cluster-ssl/secrets/create-certs.sh
         .withClasspathResourceMapping("kafka_ssl", "/etc/kafka/secrets", BindMode.READ_ONLY)
         .withEnv(Map.of(
-            "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "SSL:SSL,BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT",
-            "KAFKA_LISTENERS", "SSL://0.0.0.0:9093,BROKER://0.0.0.0:9092,PLAINTEXT://0.0.0.0:9094",
+            "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "SSL:SSL,BROKER:PLAINTEXT",
+            // Note that the testcontainer will remap advertised.listeners' SSL listener to a random high port (see KafkaContainer#containerIsStarting)
+            // So the actual advertised listeners will be something like "SSL://localhost:55160,BROKER://172.17.0.3:9092"
+            "KAFKA_LISTENERS", "SSL://0.0.0.0:9093,BROKER://0.0.0.0:9092",
             "KAFKA_SSL_KEYSTORE_FILENAME", "kafka.broker1.keystore.jks",
             "KAFKA_SSL_KEYSTORE_CREDENTIALS", "broker1_keystore_creds",
             "KAFKA_SSL_KEY_CREDENTIALS", "broker1_sslkey_creds"
