@@ -14,6 +14,6 @@ COPY main.py ./
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=v2
+LABEL io.airbyte.version=v1
 LABEL io.airbyte.name=airbyte/source-google-ads
 LABEL FLOW_TCP_PORT=2222
