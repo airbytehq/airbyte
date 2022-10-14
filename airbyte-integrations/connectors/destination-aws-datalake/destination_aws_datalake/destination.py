@@ -61,10 +61,16 @@ class DestinationAwsDatalake(Destination):
         for message in input_messages:
             if message.type == Type.STATE:
                 if not message.state.data:
-                    # if state is empty, reset all streams
-                    logger.info(f"Received empty state, resetting streams: {message}")
-                    for stream in streams:
+
+                    if message.state.stream:
+                        stream = message.state.stream.stream_descriptor.name
+                        logger.info(f"Received empty state for stream {stream}, resetting stream")
                         streams[stream].reset()
+
+                    if not message.state.stream:
+                        logger.info(f"Received empty state for, resetting all streams including non-incremental streams")
+                        for stream in streams:
+                            streams[stream].reset()
 
                 # Flush records when state is received
                 if message.state.stream:
