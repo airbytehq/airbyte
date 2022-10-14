@@ -165,9 +165,7 @@ class AdvancedAcceptanceTests {
             .put("mock_catalog", Jsons.jsonNode(ImmutableMap.builder()
                 .put("type", "SINGLE_STREAM")
                 .put("stream_name", "data")
-                .put("stream_schema", "{\"type\":\"object\",\"properties\":{\"column1\":{\"type\":\"string\"}}}")
-                )
-            )
+                .put("stream_schema", "{\"type\":\"object\",\"properties\":{\"column1\":{\"type\":\"string\"}}}")))
             .build()));
 
     final DestinationRead destination = testHarness.createDestination(
@@ -261,9 +259,7 @@ class AdvancedAcceptanceTests {
             .put("mock_catalog", Jsons.jsonNode(ImmutableMap.builder()
                 .put("type", "SINGLE_STREAM")
                 .put("stream_name", "data")
-                .put("stream_schema", "{\"type\":\"object\",\"properties\":{\"column1\":{\"type\":\"string\"}}}")
-                )
-            )
+                .put("stream_schema", "{\"type\":\"object\",\"properties\":{\"column1\":{\"type\":\"string\"}}}")))
             .build()));
 
     final DestinationRead destination = testHarness.createDestination(
