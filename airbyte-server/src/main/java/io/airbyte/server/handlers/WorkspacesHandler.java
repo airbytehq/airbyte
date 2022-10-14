@@ -32,7 +32,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.server.converters.NotificationConverter;
-import io.airbyte.server.converters.WebhookOperationConfigsConverter;
+import io.airbyte.server.converters.WorkspaceWebhookConfigsConverter;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.errors.ValueConflictKnownException;
@@ -108,7 +108,7 @@ public class WorkspacesHandler {
         .withTombstone(false)
         .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()))
         .withDefaultGeography(defaultGeography)
-        .withWebhookOperationConfigs(WebhookOperationConfigsConverter.toPersistenceWrite(workspaceCreate.getWebhookConfigs()));
+        .withWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspaceCreate.getWebhookConfigs()));
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
@@ -273,7 +273,7 @@ public class WorkspacesHandler {
         workspace.getWebhookOperationConfigs(),
         WebhookOperationConfigs.class);
     if (persistedConfigs.isPresent()) {
-      result.setWebhookConfigs(WebhookOperationConfigsConverter.toApiReads(
+      result.setWebhookConfigs(WorkspaceWebhookConfigsConverter.toApiReads(
           persistedConfigs.get().getWebhookConfigs()));
     }
     return result;
