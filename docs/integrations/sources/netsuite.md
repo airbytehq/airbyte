@@ -4,8 +4,10 @@ One unified business management suite, encompassing ERP/Financials, CRM and ecom
 
 This connector implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html) and uses REST API to fetch the customers data.
 
+
 ## Prerequisites
 * Oracle NetSuite [account](https://system.netsuite.com/pages/customerlogin.jsp?country=US)
+* [Netsuite Analytics](https://www.netsuite.com/portal/products/analytics.shtml)
 * Allowed access to all Account permissions options
 
 ## Airbyte OSS and Airbyte Cloud
