@@ -188,7 +188,7 @@ public class KafkaSshDestinationAcceptanceTest extends DestinationAcceptanceTest
         .withClasspathResourceMapping("kafka_ssl", "/etc/kafka/secrets", BindMode.READ_ONLY)
         .withEnv(Map.of(
             "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "SSL:SSL,BROKER:PLAINTEXT",
-            // Note that the testcontainer will remap advertised.listeners' SSL listener to a random high port (see KafkaContainer#containerIsStarting)
+            // Note that the testcontainer will remap advertised.listeners to actual ports/IPs
             // So the actual advertised listeners will be something like "SSL://localhost:55160,BROKER://172.17.0.3:9092"
             "KAFKA_LISTENERS", "SSL://0.0.0.0:9093,BROKER://0.0.0.0:9092",
             "KAFKA_SSL_KEYSTORE_FILENAME", "kafka.broker1.keystore.jks",
