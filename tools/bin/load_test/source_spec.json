@@ -1,0 +1,17 @@
+{
+  "name": "End-to-End Testing (Mock API)",
+  "sourceDefinitionId": "50bd8338-7c4e-46f1-8c7f-3ef95de19fdd",
+  "workspaceId": "decf427c-0bd2-404a-b304-b3395e1b0584",
+  "connectionConfiguration": {
+    "type": "CONTINUOUS_FEED",
+    "mock_catalog": {
+      "type": "SINGLE_STREAM",
+      "stream_name": "data_stream",
+      "stream_schema": "{ \"type\": \"object\", \"properties\": { \"column1\": { \"type\": \"string\" } } }",
+      "stream_duplication": 1
+    },
+    "seed": 0,
+    "max_messages": 600000,
+    "message_interval_ms": 1000
+  }
+}
