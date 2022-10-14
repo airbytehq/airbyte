@@ -1,27 +1,28 @@
-/* * Copyright (c) 2022 Airbyte, Inc., all rights reserved.  */
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.postgres;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode ;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingDestination;
-import io.airbyte.integrations.destination.postgres.PostgresDestination;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BitDotIoDestination extends SpecModifyingDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BitDotIoDestination.class);
-  
+
   public BitDotIoDestination() {
     super(new PostgresDestination());
   }
@@ -32,7 +33,7 @@ public class BitDotIoDestination extends SpecModifyingDestination implements Des
     String json = "[ \"database\", \"username\", \"password\"]  ";
 
     ObjectMapper objectMapper = new ObjectMapper();
-    
+
     JsonNode jsonNode;
     try {
       jsonNode = objectMapper.readTree(json);
