@@ -11,73 +11,29 @@ from source_convex.source import SourceConvex
 def setup_responses():
     sample_shapes_resp = {
         "posts": {
-            "numValues": 6,
-            "variant": {
-                "type": "Object",
-                "fields": [
-                    {
-                        "fieldName": "_creationTime",
-                        "shape": {
-                            "numValues": 6,
-                            "variant": {
-                                "type": "Float64",
-                                "float64Range": {
-                                    "int": {
-                                        "minusInfToMinExactF64": 0,
-                                        "minExactF64ToZero": 0,
-                                        "zeroToMaxExactF64": 0,
-                                        "maxExactF64ToPosInf": 0,
-                                    },
-                                    "fractional": 6,
-                                    "negZero": 0,
-                                    "nan": 0,
-                                    "inf": 0,
-                                },
-                            },
-                        },
-                    },
-                    {"fieldName": "_id", "shape": {"numValues": 6, "variant": {"type": "Id", "tableName": "posts"}}},
-                    {"fieldName": "author", "shape": {"numValues": 6, "variant": {"type": "Id", "tableName": "users"}}},
-                    {"fieldName": "body", "shape": {"numValues": 6, "variant": {"type": "String"}}},
-                ],
+            "type": "object",
+            "properties": {
+                "_creationTime": {"type": "number"},
+                "_id": {"$description": "Id(posts)", "type": "object", "properties": {"$id": {"type": "string"}}},
+                "author": {"$description": "Id(users)", "type": "object", "properties": {"$id": {"type": "string"}}},
+                "body": {"type": "string"},
             },
+            "$schema": "http://json-schema.org/draft-07/schema#",
         },
         "users": {
-            "numValues": 2,
-            "variant": {
-                "type": "Object",
-                "fields": [
-                    {
-                        "fieldName": "_creationTime",
-                        "shape": {
-                            "numValues": 2,
-                            "variant": {
-                                "type": "Float64",
-                                "float64Range": {
-                                    "int": {
-                                        "minusInfToMinExactF64": 0,
-                                        "minExactF64ToZero": 0,
-                                        "zeroToMaxExactF64": 0,
-                                        "maxExactF64ToPosInf": 0,
-                                    },
-                                    "fractional": 2,
-                                    "negZero": 0,
-                                    "nan": 0,
-                                    "inf": 0,
-                                },
-                            },
-                        },
-                    },
-                    {"fieldName": "_id", "shape": {"numValues": 2, "variant": {"type": "Id", "tableName": "users"}}},
-                    {"fieldName": "name", "shape": {"numValues": 2, "variant": {"type": "String"}}},
-                    {"fieldName": "tokenIdentifier", "shape": {"numValues": 2, "variant": {"type": "String"}}},
-                ],
+            "type": "object",
+            "properties": {
+                "_creationTime": {"type": "number"},
+                "_id": {"$description": "Id(users)", "type": "object", "properties": {"$id": {"type": "string"}}},
+                "name": {"type": "string"},
+                "tokenIdentifier": {"type": "string"},
             },
+            "$schema": "http://json-schema.org/draft-07/schema#",
         },
     }
     responses.add(
         responses.GET,
-        "https://murky-swan-635.convex.cloud/api/0.2.0/shapes2",
+        "https://murky-swan-635.convex.cloud/api/0.2.0/json_schemas",
         json=sample_shapes_resp,
     )
 

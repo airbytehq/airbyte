@@ -35,7 +35,7 @@ class SourceConvex(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        resp = self._shapes(config)
+        resp = self._json_schemas(config)
         if resp.status_code == 200:
             return True, None
         else:
@@ -64,7 +64,10 @@ class ConvexStream(HttpStream, IncrementalMixin):
     def __init__(self, instance_name: str, access_key: str, table_name: str, json_schema: Any):
         self.instance_name = instance_name
         self.table_name = table_name
-        json_schema["properties"]["_ts"] = {"type": "number"}
+        if json_schema:
+            json_schema["properties"]["_ts"] = {"type": "number"}
+        else:
+            json_schema = {}
         self.json_schema = json_schema
         self._cursor_value = None
         self._has_more = True
@@ -79,8 +82,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         return convex_url_base(self.instance_name)
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        shape = convex_shape_to_json(self.shape)
-        return shape
+        return self.json_schema
 
     primary_key = "_id"
     cursor_field = "_ts"
@@ -117,16 +119,9 @@ class ConvexStream(HttpStream, IncrementalMixin):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         resp_json = response.json()
-        self._cursor_value = resp_json["cursor"] or self._cursor_from_values(resp_json["values"])
-        # TODO(lee) return has_more from API.
-        self._has_more = len(resp_json["values"]) > 0
+        self._cursor_value = resp_json["cursor"]
+        self._has_more = resp_json["hasMore"]
         return resp_json["values"]
-
-    def _cursor_from_values(self, values):
-        # TODO(lee) update API to always return cursor, so we can delete this function.
-        if values:
-            return values[-1][self.cursor_field]
-        return None
 
     def request_params(
         self,
