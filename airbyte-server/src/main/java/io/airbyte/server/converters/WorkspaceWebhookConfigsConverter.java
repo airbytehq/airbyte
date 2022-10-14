@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class WebhookOperationConfigsConverter {
+public class WorkspaceWebhookConfigsConverter {
 
   public static JsonNode toPersistenceWrite(List<WebhookConfigWrite> apiWebhookConfigs) {
     if (apiWebhookConfigs == null) {
@@ -23,7 +23,7 @@ public class WebhookOperationConfigsConverter {
     }
 
     final WebhookOperationConfigs configs = new WebhookOperationConfigs()
-        .withWebhookConfigs(apiWebhookConfigs.stream().map(WebhookOperationConfigsConverter::toPersistenceConfig).collect(Collectors.toList()));
+        .withWebhookConfigs(apiWebhookConfigs.stream().map(WorkspaceWebhookConfigsConverter::toPersistenceConfig).collect(Collectors.toList()));
 
     return Jsons.jsonNode(configs);
   }
@@ -32,7 +32,7 @@ public class WebhookOperationConfigsConverter {
     if (persistenceConfig.isEmpty()) {
       return Collections.emptyList();
     }
-    return persistenceConfig.stream().map(WebhookOperationConfigsConverter::toApiRead).collect(Collectors.toList());
+    return persistenceConfig.stream().map(WorkspaceWebhookConfigsConverter::toApiRead).collect(Collectors.toList());
   }
 
   private static WebhookConfig toPersistenceConfig(final WebhookConfigWrite input) {
