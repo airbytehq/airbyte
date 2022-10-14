@@ -178,9 +178,6 @@ public class WebBackendConnectionsHandler {
 
     SchemaChange schemaChange = SchemaChange.NO_CHANGE;
 
-    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
-        configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
-
     if (connectionRead.getSourceId() != null && connectionRead.getSourceCatalogId() != null) {
       final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
           configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
