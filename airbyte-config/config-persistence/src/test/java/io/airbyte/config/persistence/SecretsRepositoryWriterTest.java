@@ -57,6 +57,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -445,7 +446,8 @@ class SecretsRepositoryWriterTest {
   }
 
   @Test
-  void testWriteWorkspaceSplitsSecrets() throws JsonValidationException, IOException {
+  @DisplayName("writeWorkspace should ensure that secret fields are replaced")
+  void testWriteWorkspaceSplitsAuthTokens() throws JsonValidationException, IOException {
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final SecretPersistence secretPersistence = mock(SecretPersistence.class);
     final SecretsRepositoryWriter secretsRepositoryWriter =

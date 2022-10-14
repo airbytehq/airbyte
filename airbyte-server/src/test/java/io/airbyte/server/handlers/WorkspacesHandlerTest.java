@@ -467,7 +467,7 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testWorkspaceIsWrittenThroughSecretsWriter() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testWorkspaceIsWrittenThroughSecretsWriter() throws JsonValidationException, IOException {
     secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
     workspacesHandler = new WorkspacesHandler(configRepository, secretsRepositoryWriter, connectionsHandler,
         destinationHandler, sourceHandler, uuidSupplier);
