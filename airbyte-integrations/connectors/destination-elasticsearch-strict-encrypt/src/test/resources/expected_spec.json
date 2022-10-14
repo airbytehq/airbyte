@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/elasticsearch",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/elasticsearch",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsNamespaces": true,

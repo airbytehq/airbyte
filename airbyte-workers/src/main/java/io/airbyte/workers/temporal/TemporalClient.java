@@ -125,7 +125,8 @@ public class TemporalClient {
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
-        .withDockerImage(config.getDockerImage());
+        .withDockerImage(config.getDockerImage())
+        .withProtocolVersion(config.getProtocolVersion());
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
 
     return execute(jobRunConfig,

@@ -7,7 +7,7 @@ package io.airbyte.workers.config;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.workers.ContainerOrchestratorConfig;
-import io.airbyte.workers.general.DocumentStoreClient;
+import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.storage.StateClients;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.micronaut.context.annotation.Factory;
