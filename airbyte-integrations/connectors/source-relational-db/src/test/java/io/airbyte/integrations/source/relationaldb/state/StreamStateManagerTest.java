@@ -106,7 +106,8 @@ public class StreamStateManagerTest {
                 .withStreamName(STREAM_NAME1)
                 .withStreamNamespace(NAMESPACE)
                 .withCursorField(List.of(CURSOR_FIELD1))
-                .withCursor("a"),
+                .withCursor("a")
+                .withCursorRecordCount(1L),
             new DbStreamState()
                 .withStreamName(STREAM_NAME2)
                 .withStreamNamespace(NAMESPACE)
