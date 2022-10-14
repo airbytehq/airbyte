@@ -50,3 +50,9 @@ properties:
     type: boolean
   defaultGeography:
     "$ref": Geography.yaml
+  webhookOperationConfigs:
+    description:
+      Configurations for webhooks operations, stored as a JSON object so we can replace sensitive info with
+      coordinates in the secrets manager. Must conform to WebhookOperationConfigs.yaml.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
