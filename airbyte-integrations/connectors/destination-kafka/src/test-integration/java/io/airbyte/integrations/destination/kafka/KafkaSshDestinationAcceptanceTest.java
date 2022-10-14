@@ -187,17 +187,15 @@ public class KafkaSshDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"))
+    KAFKA = new SslKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"))
         // These certs were generated using https://github.com/confluentinc/cp-docker-images/blob/5.3.3-post/examples/kafka-cluster-ssl/secrets/create-certs.sh
         .withClasspathResourceMapping("kafka_ssl", "/etc/kafka/secrets", BindMode.READ_ONLY)
         .withEnv(Map.of(
-            "KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP", "CLIENT:SSL",
-            "KAFKA_ADVERTISED_LISTENERS", "CLIENT://localhost:9093",
-            "KAFKA_SSL_KEYSTORE_FILENAME", "/etc/kafka/secretskafka.broker1.keystore.jks",
-            "KAFKA_SSL_KEYSTORE_CREDENTIALS", "/etc/kafka/secretsbroker1_keystore_creds",
-            "KAFKA_SSL_KEY_CREDENTIALS", "/etc/kafka/secretsbroker1_sslkey_creds"
-//            ,
-//            "KAFKA_SECURITY_INTER_BROKER_PROTOCOL", "SSL"
+            "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "SSL:SSL,BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT",
+            "KAFKA_LISTENERS", "SSL://0.0.0.0:9093,BROKER://0.0.0.0:9092,PLAINTEXT://0.0.0.0:9094",
+            "KAFKA_SSL_KEYSTORE_FILENAME", "kafka.broker1.keystore.jks",
+            "KAFKA_SSL_KEYSTORE_CREDENTIALS", "broker1_keystore_creds",
+            "KAFKA_SSL_KEY_CREDENTIALS", "broker1_sslkey_creds"
         ))
     ;
     KAFKA.start();
