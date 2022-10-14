@@ -23,7 +23,8 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
-from faker import Faker
+from mimesis import Datetime, Person
+from mimesis.locales import Locale
 
 
 class SourceFaker(Source):
@@ -108,8 +109,8 @@ class SourceFaker(Source):
         records_per_sync: int = config["records_per_sync"] if "records_per_sync" in config else 500
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
 
-        Faker.seed(seed)
-        fake = Faker()
+        person = Person(locale=Locale.EN, seed=seed)
+        dt = Datetime(seed=seed)
 
         to_generate_users = False
         to_generate_purchases = False
@@ -136,14 +137,14 @@ class SourceFaker(Source):
                 records_in_page = 0
 
                 for i in range(cursor, count):
-                    user = generate_user(fake, i)
+                    user = generate_user(person, dt, i)
                     yield generate_record(stream, user)
                     total_records += 1
                     records_in_sync += 1
                     records_in_page += 1
 
                     if to_generate_purchases:
-                        purchases = generate_purchases(fake, user, purchases_count)
+                        purchases = generate_purchases(user, purchases_count)
                         for p in purchases:
                             yield generate_record(purchases_stream, p)
                             purchases_count += 1
@@ -210,14 +211,29 @@ def generate_state(state: Dict[str, any], stream: any, data: any):
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state))
 
 
-def generate_user(fake: Faker, user_id: int):
-    profile = fake.profile()
-    del profile["birthdate"]  # the birthdate field seems to not obey the seed at the moment, so we'll ignore it
-
-    time_a = fake.date_time()
-    time_b = fake.date_time()
-    metadata = {
+def generate_user(person: Person, dt: Datetime, user_id: int):
+    profile = {
         "id": user_id + 1,
+        "name": person.name(),
+        "title": person.title(),
+        "age": person.age(),
+        "email": person.email(),
+        "telephone": person.telephone(),
+        "gender": person.gender(),
+        "language": person.language(),
+        "academic_degree": person.academic_degree(),
+        "nationality": person.nationality(),
+        "occupation": person.occupation(),
+        "biometric": {
+            "height": person.height(),
+            "blood_type": person.blood_type(),
+            "weight": person.weight(),
+        },
+    }
+
+    time_a = dt.datetime()
+    time_b = dt.datetime()
+    metadata = {
         "created_at": time_a if time_a <= time_b else time_b,
         "updated_at": time_a if time_a > time_b else time_b,
     }
@@ -225,7 +241,7 @@ def generate_user(fake: Faker, user_id: int):
     return profile
 
 
-def generate_purchases(fake: Faker, user: any, purchases_count: int) -> list[Dict]:
+def generate_purchases(user: any, purchases_count: int) -> list[Dict]:
     purchases: list[Dict] = []
     purchase_percent_remaining = 80  # ~ 20% of people will have no purchases
     total_products = len(generate_products())
