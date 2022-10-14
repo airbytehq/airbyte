@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
 import os
 import re
 from enum import Enum
@@ -1140,6 +1139,10 @@ where 1 = 1
         subdir: str = "",
         partition_by: PartitionScheme = PartitionScheme.DEFAULT,
     ) -> str:
+        # Explicit function so that we can have type hints to satisfy the linter
+        def wrap_in_quotes(s: str) -> str:
+            return '"' + s + '"'
+
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
         truncate_name = self.destination_type == DestinationType.MYSQL or self.destination_type == DestinationType.TIDB
@@ -1261,14 +1264,32 @@ where 1 = 1
                 else:
                     hooks.append(f"drop view {stg_schema}.{stg_table}")
 
-                # Explicit function so that we can have type hints to satisfy the linter
-                def wrap_in_quotes(s: str) -> str:
-                    return '"' + s + '"'
-
                 config["post_hook"] = "[" + ",".join(map(wrap_in_quotes, hooks)) + "]"
             else:
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
+        elif self.destination_sync_mode == DestinationSyncMode.overwrite:
+            if suffix == "":
+                # drop SCD table after creating the destination table
+                scd_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "scd", truncate_name)
+                print(f"  Adding drop table hook for {scd_table_name} to {file_name}")
+                hooks = [
+                    Template(
+                        """
+                    {{ '{%' }}
+                        set scd_table_relation = adapter.get_relation(
+                            database=this.database,
+                            schema=this.schema,
+                            identifier='{{ scd_table_name }}'
+                        )
+                    {{ '%}' }}
+                    {{ '{%' }}
+                        do adapter.drop_relation(scd_table_relation)
+                    {{ '%}' }}
+                        """
+                    ).render(scd_table_name=scd_table_name)
+                ]
+                config["post_hook"] = "[" + ",".join(map(wrap_in_quotes, hooks)) + "]"
         template = Template(
             """
 {{ '{{' }} config(
@@ -1280,6 +1301,7 @@ where 1 = 1
 {{ sql }}
     """
         )
+
         self.sql_outputs[output] = template.render(config=config, sql=sql, tags=self.get_model_tags(is_intermediate))
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
