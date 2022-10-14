@@ -31,8 +31,6 @@ import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  public static String COL_TIMESTAMP_TYPE = "TIMESTAMP";
-
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "password_3435!";
   private static MSSQLServerContainer<?> dbContainer;
