@@ -162,8 +162,7 @@ class JsonsTest {
 
     assertEquals(
         Lists.newArrayList(expected),
-        Jsons.object(Jsons.jsonNode(Lists.newArrayList(expected)), new TypeReference<List<ToClass>>() {
-        }));
+        Jsons.object(Jsons.jsonNode(Lists.newArrayList(expected)), new TypeReference<List<ToClass>>() {}));
 
     assertEquals(
         new ToClass(),
@@ -179,8 +178,7 @@ class JsonsTest {
 
     assertEquals(
         Optional.of(expected),
-        Jsons.tryObject(Jsons.deserialize(SERIALIZED_JSON), new TypeReference<ToClass>() {
-        }));
+        Jsons.tryObject(Jsons.deserialize(SERIALIZED_JSON), new TypeReference<ToClass>() {}));
 
     final ToClass emptyExpected = new ToClass();
     assertEquals(
@@ -189,8 +187,7 @@ class JsonsTest {
 
     assertEquals(
         Optional.of(emptyExpected),
-        Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), new TypeReference<ToClass>() {
-        }));
+        Jsons.tryObject(Jsons.deserialize("{\"str1\":\"abc\"}"), new TypeReference<ToClass>() {}));
 
   }
 
@@ -273,9 +270,9 @@ class JsonsTest {
   void testFlatten__noArrays() {
     final JsonNode json = Jsons.deserialize("{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": true, \"pqr\": 1 }");
     Map<String, Object> expected = Stream.of(new Object[][] {
-        { "abc.def", "ghi" },
-        { "jkl", true },
-        { "pqr", 1 },
+      {"abc.def", "ghi"},
+      {"jkl", true},
+      {"pqr", 1},
     }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
     assertEquals(expected, Jsons.flatten(json, false));
   }
@@ -285,9 +282,9 @@ class JsonsTest {
     final JsonNode json = Jsons
         .deserialize("{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }");
     Map<String, Object> expected = Stream.of(new Object[][] {
-        { "abc", "[{\"def\":\"ghi\"},{\"fed\":\"ihg\"}]" },
-        { "jkl", true },
-        { "pqr", 1 },
+      {"abc", "[{\"def\":\"ghi\"},{\"fed\":\"ihg\"}]"},
+      {"jkl", true},
+      {"pqr", 1},
     }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
     assertEquals(expected, Jsons.flatten(json, false));
   }
@@ -297,22 +294,22 @@ class JsonsTest {
     final JsonNode json = Jsons
         .deserialize("{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }");
     Map<String, Object> expected = Stream.of(new Object[][] {
-        { "abc", "[{\"def\":\"ghi\"},{\"fed\":\"ihg\"}]" },
-        { "jkl", true },
-        { "pqr", 1 },
+      {"abc", "[{\"def\":\"ghi\"},{\"fed\":\"ihg\"}]"},
+      {"jkl", true},
+      {"pqr", 1},
     }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
     assertEquals(expected, Jsons.flatten(json));
   }
-  
+
   @Test
   void testFlatten__withArraysApplyFlatten() {
     final JsonNode json = Jsons
         .deserialize("{ \"abc\": [{ \"def\": \"ghi\" }, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }");
     Map<String, Object> expected = Stream.of(new Object[][] {
-        { "abc.[0].def", "ghi" },
-        { "abc.[1].fed", "ihg" },
-        { "jkl", true },
-        { "pqr", 1 },
+      {"abc.[0].def", "ghi"},
+      {"abc.[1].fed", "ihg"},
+      {"jkl", true},
+      {"pqr", 1},
     }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
     assertEquals(expected, Jsons.flatten(json, true));
   }
@@ -323,10 +320,10 @@ class JsonsTest {
         .deserialize(
             "{ \"abc\": [{ \"def\": {\"ghi\": [\"xyz\"] }}, { \"fed\": \"ihg\" }], \"jkl\": true, \"pqr\": 1 }");
     Map<String, Object> expected = Stream.of(new Object[][] {
-        { "abc.[0].def.ghi.[0]", "xyz" },
-        { "abc.[1].fed", "ihg" },
-        { "jkl", true },
-        { "pqr", 1 },
+      {"abc.[0].def.ghi.[0]", "xyz"},
+      {"abc.[1].fed", "ihg"},
+      {"jkl", true},
+      {"pqr", 1},
     }).collect(Collectors.toMap(data -> (String) data[0], data -> data[1]));
     assertEquals(expected, Jsons.flatten(json, true));
   }
@@ -342,8 +339,7 @@ class JsonsTest {
     @JsonProperty("numLong")
     long numLong;
 
-    public ToClass() {
-    }
+    public ToClass() {}
 
     public ToClass(final String str, final Integer num, final long numLong) {
       this.str = str;
