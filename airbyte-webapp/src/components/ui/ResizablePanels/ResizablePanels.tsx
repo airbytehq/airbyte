@@ -18,6 +18,7 @@ interface ResizablePanelsProps {
     smallWidthHeader: React.ReactNode;
     showPanel: boolean;
     className?: string;
+    startingFlex?: number;
   };
   containerClassName?: string;
 }
@@ -89,7 +90,13 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({ leftPanel, rig
         </ReflexSplitter>
       )}
       {rightPanel.showPanel && (
-        <ReflexElement className={styles.rightPanelStyle} size={1000} propagateDimensions minSize={60}>
+        <ReflexElement
+          className={styles.rightPanelStyle}
+          size={1000}
+          propagateDimensions
+          minSize={60}
+          flex={rightPanel.startingFlex}
+        >
           <RightPanelContainer className={rightPanel.className} smallWidthHeader={rightPanel.smallWidthHeader}>
             {rightPanel.children}
           </RightPanelContainer>

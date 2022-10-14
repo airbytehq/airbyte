@@ -33,6 +33,7 @@ export const ConnectorBuilderPage: React.FC = () => {
         smallWidthHeader: <span>{selectedStream}</span>,
         showPanel: true,
         className: styles.rightPanel,
+        startingFlex: 0.33,
       }}
       containerClassName={styles.container}
     />
