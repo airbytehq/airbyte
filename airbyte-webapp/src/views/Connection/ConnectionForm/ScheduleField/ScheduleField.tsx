@@ -5,13 +5,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { ControlLabels, Link } from "components";
 import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
+import { Text } from "components/ui/Text";
 
 import { Action, Namespace } from "core/analytics";
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { links } from "utils/links";
-import { PropertyError } from "views/Connector/ServiceForm/components/Property/PropertyError";
 
 import availableCronTimeZones from "../../../../config/availableCronTimeZones.json";
 import { FormikConnectionFormValues, useFrequencyDropdownData } from "../formConfig";
@@ -206,9 +206,9 @@ export const ScheduleField: React.FC = () => {
                   />
                 </div>
                 {cronValidationError && (
-                  <PropertyError data-testid="cronExpressionError">
+                  <Text className={styles.errorMessage} data-testid="cronExpressionError">
                     <FormattedMessage id={cronValidationError} />
-                  </PropertyError>
+                  </Text>
                 )}
               </div>
             </div>
