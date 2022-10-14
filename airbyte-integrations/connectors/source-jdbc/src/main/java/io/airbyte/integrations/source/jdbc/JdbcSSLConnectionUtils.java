@@ -9,7 +9,6 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.util.SSLCertificateUtils;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStoreException;

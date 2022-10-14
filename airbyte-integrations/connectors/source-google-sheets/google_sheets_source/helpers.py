@@ -202,7 +202,7 @@ class Helpers(object):
         if re.match(r"(http://)|(https://)", id_or_url):
             # This is a URL
             m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
-            if m.group(2):
+            if m is not None and m.group(2):
                 return m.group(2)
         else:
             return id_or_url

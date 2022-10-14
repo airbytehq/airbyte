@@ -24,6 +24,7 @@ import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -128,8 +129,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      */
     try {
       final Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-              .append("authorizedCollections", true)
-              .append("nameOnly", true))
+          .append("authorizedCollections", true)
+          .append("nameOnly", true))
           .append("filter", "{ 'type': 'collection' }");
       return document.toBsonDocument()
           .get("cursor").asDocument()
@@ -179,10 +180,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final List<String> columnNames,
                                                                final String schemaName,
                                                                final String tableName,
-                                                               final String cursorField,
-                                                               final BsonType cursorFieldType,
-                                                               final String cursorValue) {
-    final Bson greaterComparison = gt(cursorField, MongoUtils.getBsonValue(cursorFieldType, cursorValue));
+                                                               final CursorInfo cursorInfo,
+                                                               final BsonType cursorFieldType) {
+    final Bson greaterComparison = gt(cursorInfo.getCursorField(), MongoUtils.getBsonValue(cursorFieldType, cursorInfo.getCursor()));
     return queryTable(database, columnNames, tableName, greaterComparison);
   }
 
