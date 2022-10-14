@@ -299,12 +299,9 @@ public class WebBackendConnectionsHandler {
      * configuration set.
      */
     final Optional<SourceDiscoverSchemaRead> refreshedCatalog;
-    log.info("getting refreshed catalog bool: " + webBackendConnectionRequestBody.getWithRefreshedCatalog());
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
-      log.info("getting refreshed catalog");
       refreshedCatalog = getRefreshedSchema(connection.getSourceId());
     } else {
-      log.info("setting refreshed catalog to empty");
       refreshedCatalog = Optional.empty();
     }
 
