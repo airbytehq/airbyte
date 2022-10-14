@@ -135,6 +135,11 @@
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
+    "cancelTime": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
     "createdBy": {
       "type": "string"
     },
