@@ -23,8 +23,11 @@ set +o xtrace  # +x easier human reading here
 
 
 function docker_tag_exists() {
-  # Added check for images pushed to github container registry
-  if [[ $1 == ghcr* ]]
+  # Is true for images stored in the Github Container Registry
+  repo=$1
+  tag=$2
+  # we user [[ here because test doesn't support globbing well
+  if [[ $repo == ghcr* ]]
   then
     TOKEN_URL=https://ghcr.io/token\?scope\="repository:$1:pull"
     token=$(curl $TOKEN_URL | jq -r '.token' > /dev/null)
@@ -42,7 +45,7 @@ function docker_tag_exists() {
     # < x-ratelimit-limit: 180
     # < x-ratelimit-reset: 1665683196
     # < x-ratelimit-remaining: 180
-    docker_rate_limit_remaining=$(grep 'x-ratelimit-remaining: ' < header.txt | grep --only-matching --extended-regexp "\d+")
+    docker_rate_limit_remaining=$(grep 'x-ratelimit-remaining: ' header.txt | grep --only-matching --extended-regexp "\d+")
     # too noisy when set to < 1.  Dockerhub starts complaining somewhere around 10
     if test "$docker_rate_limit_remaining" -lt 20; then
       echo -e "$red_text""We are close to a sensitive dockerhub rate limit!""$default_text"
@@ -64,7 +67,8 @@ checkPlatformImages() {
   #Pull without printing progress information and send error stream because that where image names are
   docker-compose pull --quiet 2> compose_output
   docker_compose_success=$?
-  images_pulled_count=$(docker images | wc -l)
+  # quiet output is just SHAs ie: f8a3d002a8a6
+  images_pulled_count=$(docker images --quiet | wc -l)
   if test $images_pulled_count -eq 0; then
     echo -e "$red_text""Nothing was pulled!  This script may be broken! We expect to pull something""$default_text"
     exit 1
