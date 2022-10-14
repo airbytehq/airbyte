@@ -213,3 +213,9 @@ extraVolumeMounts: []
 ##     emptyDir: {}
 ##
 extraVolumes: []
+
+##  podSweeper.timeToDeletePods.completed Time to remove pods on completed status in minutes
+##  podSweeper.timeToDeletePods.erro Time to remove pods on error status in minutes
+timeToDeletePods:
+  completed: 120
+  error: 1440
