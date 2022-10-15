@@ -9,6 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, DestinationSyncMode, Type
 from meilisearch import Client
+from destination_meilisearch.writer import MeiliWriter
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
@@ -17,25 +18,29 @@ def get_client(config: Mapping[str, Any]) -> Client:
     return Client(host, api_key)
 
 class DestinationMeilisearch(Destination):
+    primary_key = '_ab_pk'
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         client = get_client(config=config)
 
         for configured_stream in configured_catalog.streams:
+            steam_name = configured_stream.stream.name
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                client.delete_index(configured_stream.stream.name)
-            client.create_index(configured_stream.stream.name, {'primaryKey': '_ab_pk'})
+                client.delete_index(steam_name)
+            client.create_index(steam_name, {'primaryKey': self.primary_key})
 
-        for message in input_messages:
-            if message.type == Type.STATE:
-                yield message
-            elif message.type == Type.RECORD:
-                record = message.record
-                client.index(record.stream).add_documents([record.data])
-            else:
-                continue
+            writer = MeiliWriter(client, steam_name, self.primary_key)
+            for message in input_messages:
+                if message.type == Type.STATE:
+                    writer.flush()
+                    yield message
+                elif message.type == Type.RECORD:
+                    writer.queue_write_operation(message.record.data)
+                else:
+                    continue
+            writer.flush()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
