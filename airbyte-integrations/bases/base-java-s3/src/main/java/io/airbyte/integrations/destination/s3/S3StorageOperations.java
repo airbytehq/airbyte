@@ -8,10 +8,8 @@ import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -96,14 +94,15 @@ public class S3StorageOperations extends BlobStorageOperations {
   @Override
   public void createBucketObjectIfNotExists(final String objectPath) {
     final String bucket = s3Config.getBucketName();
+    final String folderPath = objectPath.endsWith("/") ? objectPath : objectPath + "/";
     if (!doesBucketExist(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);
       LOGGER.info("Bucket {} has been created.", bucket);
     }
-    if (!s3Client.doesObjectExist(bucket, objectPath)) {
+    if (!s3Client.doesObjectExist(bucket, folderPath)) {
       LOGGER.info("Storage Object {}/{} does not exist in bucket; creating...", bucket, objectPath);
-      s3Client.putObject(bucket, objectPath.endsWith("/") ? objectPath : objectPath + "/", "");
+      s3Client.putObject(bucket, folderPath, "");
       LOGGER.info("Storage Object {}/{} has been created in bucket.", bucket, objectPath);
     }
   }
