@@ -5,7 +5,7 @@ definitions:
     extractor:
       field_pointer: []
   requester:
-    url_base: "https://example.com"
+    url_base: "https://store.zapier.com"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -20,16 +20,16 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  customers_stream:
+  zapier_supported_storage_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "customers"
-      primary_key: "id"
-      path: "/example"
+      name: "zapier_supported_storage"
+      primary_key: "data"
+      path: "/api/records"
 
 streams:
-  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.zapier_supported_storage_stream)"
 
 check:
   stream_names:
-    - "customers"
+    - "zapier_supported_storage"
