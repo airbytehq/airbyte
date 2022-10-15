@@ -3,7 +3,7 @@ import { createTestConnection } from "commands/connection";
 import { deleteDestination } from "commands/destination";
 import { deleteSource } from "commands/source";
 import { initialSetupCompleted } from "commands/workspaces";
-import { confirmStreamConfigurationChangedPopup, selectSchedule, fillOutDestinationPrefix, goToReplicationTab, setupDestinationNamespaceCustomFormat, selectSyncMode, checkSuccessResult, searchStream, selectCursorField, checkCursorField} from "pages/replicationPage";
+import { setupDestinationNamespaceDefaultFormat, confirmStreamConfigurationChangedPopup, selectSchedule, fillOutDestinationPrefix, goToReplicationTab, setupDestinationNamespaceCustomFormat, selectSyncMode, checkSuccessResult, searchStream, selectCursorField, checkCursorField, setupDestinationNamespaceSourceFormat} from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
 import { update, ceil } from "cypress/types/lodash";
@@ -289,6 +289,162 @@ describe("Connection main actions", () => {
     goToSettingsPage();
 
     deleteEntity();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
+
+  it("Saving a connection's destination type with DestinationNamespaceCustomFormat value", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
+    const destName = appendRandomString("Test update connection Local JSON destination cypress");
+
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    selectSchedule("Every hour");
+    
+    const namespace = "_DestinationNamespaceCustomFormat";
+    setupDestinationNamespaceCustomFormat(namespace);
+
+    // Ensures the DestinationNamespace is applied to the streams
+    assert(cy.get(`[title*="${namespace}"]`));
+
+    submitButtonClick();
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+      expect(interception.request.method).to.eq("POST");
+      expect(interception.request)
+        .property("body")
+        .to.contain({
+          name: sourceName + " <> " + destName + "Connection name",
+          namespaceDefinition: "customformat",
+          namespaceFormat: "${SOURCE_NAMESPACE}_DestinationNamespaceCustomFormat",
+          status: "active",
+        });
+      expect(interception.request.body.scheduleData.basicSchedule).to.contain({
+        units: 1,
+        timeUnit: "hours",
+      });
+
+      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+
+      expect(streamToUpdate.stream).to.contain({
+        name: "pokemon",
+      });
+    });
+    checkSuccessResult();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
+
+  it("Saving a connection's destination type with DestinationNamespaceSourceFormat value", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
+    const destName = appendRandomString("Test update connection Local JSON destination cypress");
+
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    selectSchedule("Every hour");
+    setupDestinationNamespaceSourceFormat();
+
+    const namespace = "<source schema>";
+
+    // Ensures the DestinationNamespace is applied to the streams
+    assert(cy.get(`[title*="${namespace}"]`));
+
+    submitButtonClick();
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+      expect(interception.request.method).to.eq("POST");
+      expect(interception.request)
+        .property("body")
+        .to.contain({
+          name: sourceName + " <> " + destName + "Connection name",
+          namespaceDefinition: "source",
+          namespaceFormat: "${SOURCE_NAMESPACE}",
+          status: "active",
+        });
+      expect(interception.request.body.scheduleData.basicSchedule).to.contain({
+        units: 1,
+        timeUnit: "hours",
+      });
+
+      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+
+      expect(streamToUpdate.stream).to.contain({
+        name: "pokemon",
+      });
+    });
+    checkSuccessResult();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
+
+  it("Saving a connection's destination type with DestinationNamespaceDefaultFormat value", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
+    const destName = appendRandomString("Test update connection Local JSON destination cypress");
+
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    selectSchedule("Every hour");
+    setupDestinationNamespaceDefaultFormat();
+
+    const namespace = "<destination schema>";
+
+    // Ensures the DestinationNamespace is applied to the streams
+    assert(cy.get(`[title*="${namespace}"]`));
+
+    submitButtonClick();
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+      expect(interception.request.method).to.eq("POST");
+      expect(interception.request)
+        .property("body")
+        .to.contain({
+          name: sourceName + " <> " + destName + "Connection name",
+          namespaceDefinition: "destination",
+          namespaceFormat: "${SOURCE_NAMESPACE}",
+          status: "active",
+        });
+      expect(interception.request.body.scheduleData.basicSchedule).to.contain({
+        units: 1,
+        timeUnit: "hours",
+      });
+
+      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+
+      expect(streamToUpdate.stream).to.contain({
+        name: "pokemon",
+      });
+    });
+    checkSuccessResult();
 
     deleteSource(sourceName);
     deleteDestination(destName);

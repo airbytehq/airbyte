@@ -4,6 +4,7 @@ const destinationPrefix = "input[data-testid='prefixInput']";
 const replicationTab = "div[data-id='replication-step']";
 const destinationNamespace = "div[data-testid='namespaceDefinition']";
 const destinationNamespaceCustom = "div[data-testid='namespaceDefinition-customformat']";
+const destinationNamespaceDefault = "div[data-testid='namespaceDefinition-destination']";
 const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source']";
 const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
@@ -43,6 +44,11 @@ export const setupDestinationNamespaceCustomFormat = (value: string) => {
 export const setupDestinationNamespaceSourceFormat = () => {
   cy.get(destinationNamespace).click();
   cy.get(destinationNamespaceSource).click();
+};
+
+export const setupDestinationNamespaceDefaultFormat = () => {
+  cy.get(destinationNamespace).click();
+  cy.get(destinationNamespaceDefault).click();
 };
 
 export const selectSyncMode = (source: string, dest: string) => {

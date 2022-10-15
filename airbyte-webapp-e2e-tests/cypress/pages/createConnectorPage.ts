@@ -6,7 +6,8 @@ const databaseInput = "input[name='connectionConfiguration.database']";
 const usernameInput = "input[name='connectionConfiguration.username']";
 const passwordInput = "input[name='connectionConfiguration.password']";
 const pokemonNameInput = "input[name='connectionConfiguration.pokemon_name']";
-const schemaInput = "input[name='connectionConfiguration.schemas']";
+const schemaInput = "#react-select-5-input";
+const schemaField = "div[data-testid='tag-input']";
 const destinationPathInput = "input[name='connectionConfiguration.destination_path']";
 
 export const selectServiceType = (type: string) => {
@@ -50,5 +51,13 @@ export const enterSchema = (value: string) => {
   if (!value) {
     return;
   }
-  cy.get(schemaInput).clear().clear().type("{selectAll}{del}").type(value);
+  removeSchema();
+  cy.get(schemaInput).type("{selectAll}{del}").type(value);
+};
+
+export const removeSchema = (value: string = "Remove public") => {
+  if (!value) {
+    return;
+  }
+  cy.get(`[aria-label*="${value}"]`).click();
 };
