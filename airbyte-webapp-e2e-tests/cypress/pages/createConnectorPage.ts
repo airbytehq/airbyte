@@ -52,7 +52,7 @@ export const enterSchema = (value: string) => {
     return;
   }
   removeSchema();
-  cy.get(schemaInput).type("{selectAll}{del}").type(value);
+  cy.get(schemaInput).type("{selectAll}{del}").type(value).type("{enter}");
 };
 
 export const removeSchema = (value: string = "Remove public") => {
