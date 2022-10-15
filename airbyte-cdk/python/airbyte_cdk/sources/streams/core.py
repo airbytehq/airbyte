@@ -60,6 +60,18 @@ class Stream(ABC):
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
 
+    def __new__(cls, *args, **kwargs):
+        obj = super().__new__(cls)
+        if "_total_number" not in cls.__dict__:
+            cls._total_number = 0
+        cls._total_number += 1
+        obj._instance_number = cls._total_number
+        return obj
+
+    def get_instance_number(self) -> int:
+        ":return: sequential number of instance of the same class"
+        return self._instance_number
+
     # Use self.logger in subclasses to log any messages
     @property
     def logger(self):
@@ -231,14 +243,3 @@ class Stream(ABC):
             return wrapped_keys
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
-
-    def _get_instance_number(self):
-        """
-        return sequential number of instance of the same class
-        """
-        if not hasattr(self.__class__, "_instance_ids"):
-            self.__class__._instance_ids = []
-        instance_id = id(self)
-        if instance_id not in self._instance_ids:
-            self._instance_ids.append(instance_id)
-        return self._instance_ids.index(instance_id)

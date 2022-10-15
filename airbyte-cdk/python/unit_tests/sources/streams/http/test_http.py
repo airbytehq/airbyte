@@ -373,7 +373,7 @@ class CacheHttpSubStream(HttpSubStream):
 
 def test_caching_filename():
     stream = CacheHttpStream()
-    assert stream.cache_filename == f"{stream.name}.yml"
+    assert stream.cache_filename == f"{stream.name}.sqlite"
 
 
 def test_caching_cassettes_are_different():
