@@ -17,30 +17,22 @@ def test_source_streams():
 
     assert len(schemas) == 3
     assert schemas[0]["properties"] == {
-        "id": { "type": "number" },
-        "created_at": {
-        "type": "string",
-        "format": "date-time",
-        "airbyte_type": "timestamp_with_timezone"
-        },
-        "updated_at": {
-        "type": "string",
-        "format": "date-time",
-        "airbyte_type": "timestamp_with_timezone"
-        },
-        "name": { "type": "string" },
-        "title": { "type": "string" },
-        "age": { "type": "integer" },
-        "email": { "type": "string" },
-        "telephone": { "type": "string" },
-        "gender": { "type": "string" },
-        "language": { "type": "string" },
-        "academic_degree": { "type": "string" },
-        "nationality": { "type": "string" },
-        "occupation": { "type": "string" },
-        "height": { "type": "string" },
-        "blood_type": { "type": "string" },
-        "weight": { "type": "integer" }
+        "id": {"type": "number"},
+        "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+        "updated_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+        "name": {"type": "string"},
+        "title": {"type": "string"},
+        "age": {"type": "integer"},
+        "email": {"type": "string"},
+        "telephone": {"type": "string"},
+        "gender": {"type": "string"},
+        "language": {"type": "string"},
+        "academic_degree": {"type": "string"},
+        "nationality": {"type": "string"},
+        "occupation": {"type": "string"},
+        "height": {"type": "string"},
+        "blood_type": {"type": "string"},
+        "weight": {"type": "integer"},
     }
 
     for schema in schemas:

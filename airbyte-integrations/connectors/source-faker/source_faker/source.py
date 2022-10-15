@@ -231,7 +231,7 @@ def generate_user(person: Person, dt: Datetime, user_id: int):
         "occupation": person.occupation(),
         "height": person.height(),
         "blood_type": person.blood_type(),
-        "weight": person.weight()
+        "weight": person.weight(),
     }
 
     while not profile["created_at"]:
@@ -293,7 +293,8 @@ def random_date_in_range(start_date: datetime.datetime, end_date: datetime.datet
     random_date = start_date + datetime.timedelta(days=random_number_of_days)
     return random_date
 
-def format_airbyte_time (d: datetime):
+
+def format_airbyte_time(d: datetime):
     s = f"{d}"
     s = s.split(".")[0]
     s = s.replace(" ", "T")
