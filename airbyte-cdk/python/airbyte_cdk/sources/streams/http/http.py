@@ -49,6 +49,9 @@ class HttpStream(Stream, ABC):
         """
         Override if needed. Return the name of cache file
         """
+        number = self._get_instance_number() + 1
+        if number > 1:
+            return f"{self.name}.{number}.sqlite"
         return f"{self.name}.sqlite"
 
     @property

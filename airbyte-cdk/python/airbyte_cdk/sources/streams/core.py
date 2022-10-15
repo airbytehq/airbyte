@@ -231,3 +231,14 @@ class Stream(ABC):
             return wrapped_keys
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
+
+    def _get_instance_number(self):
+        """
+        return sequential number of instance of the same class
+        """
+        if not hasattr(self.__class__, "_instance_ids"):
+            self.__class__._instance_ids = []
+        instance_id = id(self)
+        if instance_id not in self._instance_ids:
+            self._instance_ids.append(instance_id)
+        return self._instance_ids.index(instance_id)
