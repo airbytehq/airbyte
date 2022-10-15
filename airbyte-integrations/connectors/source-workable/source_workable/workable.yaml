@@ -55,13 +55,22 @@ definitions:
       primary_key: "id"
       path: "/spi/v3/candidates"
       field_pointer: ["candidates"]
+  stages_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "stages"
+      primary_key: "id"
+      path: "/spi/v3/stages"
+      field_pointer: ["stages"]
 
 
 streams:
   - "*ref(definitions.jobs_stream)"
   - "*ref(definitions.candidates_stream)"
+  - "*ref(definitions.stages_stream)"
 
 check:
   stream_names:
     - "jobs"
     - "candidates"
+    - "stages"

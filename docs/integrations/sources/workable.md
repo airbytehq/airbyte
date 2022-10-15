@@ -44,7 +44,7 @@ The Workable source connector supports the following [sync modes](https://docs.a
 
 * [Jobs](https://workable.readme.io/reference/jobs)
 * [Candidates](https://workable.readme.io/reference/job-candidates-index)
-* TODO: more streams
+* [Stages](https://workable.readme.io/reference/stages)
 
 ## Data type map
 
