@@ -16,9 +16,14 @@ import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfi
 import java.nio.file.Path;
 import java.sql.SQLException;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This test is disabled because we have not set up a Databricks cluster with Azure storage.
+ */
+@Disabled
 public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends DatabricksDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksAzureBlobStorageDestinationAcceptanceTest.class);
