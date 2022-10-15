@@ -7,6 +7,8 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
+    "requests~=2.28",
+    "jsonschema~=3.2"
 ]
 
 TEST_REQUIREMENTS = [

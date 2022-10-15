@@ -67,6 +67,7 @@ class TrustpilotExtractor(RecordExtractor):
         parser = TrustpilotReviewsParser()
         parser.feed(dom)
         data = parser.get_reviews_script_data()
+        print(data)
         data = json.loads(data)
         data = data['@graph']
         data = list(filter(lambda e: e.get('@type', '') == 'Review', data))
