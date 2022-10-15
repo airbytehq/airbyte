@@ -13,8 +13,6 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
 def convex_url_base(instance_name) -> str:
-    if instance_name == "localhost":
-        return "http://localhost:8000"
     return f"https://{instance_name}.convex.cloud"
 
 

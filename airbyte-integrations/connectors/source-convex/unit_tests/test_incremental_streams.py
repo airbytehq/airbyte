@@ -3,6 +3,8 @@
 #
 
 
+from unittest.mock import MagicMock
+
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_convex.source import ConvexStream
@@ -24,11 +26,13 @@ def test_cursor_field(patch_incremental_base_class):
 
 def test_get_updated_state(patch_incremental_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
-    # TODO: replace this with your input parameters
-    inputs = {"current_stream_state": None, "latest_record": None}
-    # TODO: replace this with your expected updated stream state
-    expected_state = {}
-    assert stream.get_updated_state(**inputs) == expected_state
+    resp = MagicMock()
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 123}], "cursor": 1234, "hasMore": True}
+    stream.parse_response(resp, {})
+    assert stream.get_updated_state(None, None) == {"_ts": 1234}
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 1235, "hasMore": False}
+    stream.parse_response(resp, {})
+    assert stream.get_updated_state(None, None) == {"_ts": 1235}
 
 
 def test_stream_slices(patch_incremental_base_class):
