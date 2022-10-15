@@ -12,22 +12,22 @@ This Chargebee source uses the [Chargebee Python Client Library](https://github.
 Log into Chargebee and then generate an [API Key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication). 
 Then follow [these](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2) instructions, under `API Version` section, on how to find your Product Catalog version.
 
-## Step 2: Set up the Chargebee connector in Airbyte
+### Step 2: Set up the Chargebee connector in Airbyte
 
-### For Airbyte Cloud:
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+#### For Airbyte Cloud:
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. Click **Sources** and then click **+New source**.
 3. On the Set up the source page, enter the name for the Harvest connector and select **Chargebee** from the Source type dropdown. 
-4. Set the name for your source 
+4. Enter a name for your source 
 5. Enter your `site_api_key`
 6. Enter your `site` 
 7. Enter your `product_catalog` 
 8. Enter the `start_date` you want your sync to start from
 9. Click **Set up source**
 
-### For Airbyte OSS:
+#### For Airbyte OSS:
 1. Navigate to the Airbyte Open Source dashboard
-2. Set the name for your source 
+2. Enter a name for your source 
 3. Enter your `site_api_key`
 4. Enter your `site` 
 5. Enter your `product_catalog` 
@@ -118,4 +118,3 @@ regardless of how many AttachedItems were actually changed or synced in a partic
 | 0.1.2   | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067) | Prepare connector for publishing                                                                    |
 | 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add entrypoint and bump version for connector                                                       |
 | 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410) | New Source: Chargebee                                                                               |
-
