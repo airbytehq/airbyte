@@ -4,10 +4,10 @@ connectionSpecification:
   title: Zapier Supported Storage Spec
   type: object
   required:
-    - secret_key
+    - secret
   additionalProperties: true
   properties:
-    secret_key:
+    secret:
       type: string
       description: secret key supplied by zapier
       airbyte_secret: true
