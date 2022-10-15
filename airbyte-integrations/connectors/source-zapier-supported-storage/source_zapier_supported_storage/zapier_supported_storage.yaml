@@ -7,9 +7,12 @@ definitions:
   requester:
     url_base: "https://store.zapier.com"
     http_method: "GET"
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['api_key'] }}"
+#    authenticator:
+#      type: BearerAuthenticator
+#      api_token: "{{ config['api_key'] }}"
+    request_options_provider:
+      request_parameters:
+        secret: "{{ config['secret_key'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
