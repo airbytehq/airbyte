@@ -21,7 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This test is disabled because we have not set up a Databricks cluster with Azure storage.
+ * This test is disabled because we have not set up a Databricks cluster with Azure storage. This
+ * issue is tracked in <a href="https://github.com/airbytehq/airbyte/issues/18026">#18026</a>.
  */
 @Disabled
 public class DatabricksAzureBlobStorageDestinationAcceptanceTest extends DatabricksDestinationAcceptanceTest {
