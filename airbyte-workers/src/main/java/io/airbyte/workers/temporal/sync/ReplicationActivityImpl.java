@@ -15,6 +15,7 @@ import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
@@ -169,19 +170,18 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   }
 
   private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
-    final long totalBytesReplicated = output.getReplicationAttemptSummary().getBytesSynced();
-    final long totalRecordsReplicated = output.getReplicationAttemptSummary().getRecordsSynced();
-
-    final StandardSyncSummary syncSummary = new StandardSyncSummary();
-    syncSummary.setBytesSynced(totalBytesReplicated);
-    syncSummary.setRecordsSynced(totalRecordsReplicated);
-    syncSummary.setStartTime(output.getReplicationAttemptSummary().getStartTime());
-    syncSummary.setEndTime(output.getReplicationAttemptSummary().getEndTime());
-    syncSummary.setStatus(output.getReplicationAttemptSummary().getStatus());
-    syncSummary.setTotalStats(output.getReplicationAttemptSummary().getTotalStats());
-    syncSummary.setStreamStats(output.getReplicationAttemptSummary().getStreamStats());
-
     final StandardSyncOutput standardSyncOutput = new StandardSyncOutput();
+    final StandardSyncSummary syncSummary = new StandardSyncSummary();
+    final ReplicationAttemptSummary replicationSummary = output.getReplicationAttemptSummary();
+
+    syncSummary.setBytesSynced(replicationSummary.getBytesSynced());
+    syncSummary.setRecordsSynced(replicationSummary.getRecordsSynced());
+    syncSummary.setStartTime(replicationSummary.getStartTime());
+    syncSummary.setEndTime(replicationSummary.getEndTime());
+    syncSummary.setStatus(replicationSummary.getStatus());
+    syncSummary.setTotalStats(replicationSummary.getTotalStats());
+    syncSummary.setStreamStats(replicationSummary.getStreamStats());
+
     standardSyncOutput.setState(output.getState());
     standardSyncOutput.setOutputCatalog(output.getOutputCatalog());
     standardSyncOutput.setStandardSyncSummary(syncSummary);
