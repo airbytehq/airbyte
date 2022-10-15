@@ -337,45 +337,40 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      var recordsRead = 0;
+      final var recordsRead = 0;
       final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       try {
-        while (!cancelled.get() && !source.isFinished()) {
-          final Optional<AirbyteMessage> messageOptional;
+        // if we turn this into a stream, how do we cancel?
+        // we can turn this into a spliterator?
+//        while (!cancelled.get() && !source.isFinished()) {
+        while (!cancelled.get() && !source.tryAttempt(airbyteMessage -> {
+          validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
+          final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
+
+          messageTracker.acceptFromSource(message);
+
           try {
-            messageOptional = source.attemptRead();
+            if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
+              destination.accept(message);
+            }
           } catch (final Exception e) {
-            throw new SourceException("Source process read attempt failed", e);
+            throw new DestinationException("Destination process message delivery failed", e);
           }
 
-          if (messageOptional.isPresent()) {
-            final AirbyteMessage airbyteMessage = messageOptional.get();
-            validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
-            final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
+          recordsRead += 1;
 
-            messageTracker.acceptFromSource(message);
-
-            try {
-              if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
-                destination.accept(message);
-              }
-            } catch (final Exception e) {
-              throw new DestinationException("Destination process message delivery failed", e);
-            }
-
-            recordsRead += 1;
-
-            if (recordsRead % 1000 == 0) {
-              LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
-            }
-          } else {
-            LOGGER.info("Source has no more messages, closing connection.");
-            try {
-              source.close();
-            } catch (final Exception e) {
-              throw new SourceException("Source cannot be stopped!", e);
-            }
+          if (recordsRead % 1000 == 0) {
+            LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
           }
+        })) {
+//          } else {
+//            LOGGER.info("Source has no more messages, closing connection.");
+//            try {
+//              source.close();
+//            } catch (final Exception e) {
+//              throw new SourceException("Source cannot be stopped!", e);
+//            }
+//          }
         }
         timeHolder.trackSourceReadEndTime();
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));

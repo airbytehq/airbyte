@@ -12,7 +12,9 @@ import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,15 +59,18 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     final var metricClient = MetricClientFactory.getMetricClient();
     return bufferedReader
         .lines()
+        .parallel()
         .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
-        .flatMap(this::parseJson)
+        .map(this::parseJson)
+        .filter(Objects::nonNull)
         .peek(json -> metricClient.distribution(OssMetricsRegistry.JSON_SIZE, json.size()))
         .filter(this::validate)
-        .flatMap(this::toAirbyteMessage)
+        .map(this::toAirbyteMessage)
+        .filter(Objects::nonNull)
         .filter(this::filterLog);
   }
 
-  protected Stream<JsonNode> parseJson(final String line) {
+  protected JsonNode parseJson(final String line) {
     final Optional<JsonNode> jsonLine = Jsons.tryDeserialize(line);
     if (jsonLine.isEmpty()) {
       // we log as info all the lines that are not valid json
@@ -73,9 +78,10 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
       // want to make sure this info is available in the logs.
       try (final var mdcScope = containerLogMdcBuilder.build()) {
         logger.info(line);
+        return null;
       }
     }
-    return jsonLine.stream();
+    return jsonLine.get();
   }
 
   protected boolean validate(final JsonNode json) {
@@ -86,12 +92,13 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     return res;
   }
 
-  protected Stream<AirbyteMessage> toAirbyteMessage(final JsonNode json) {
+  protected AirbyteMessage toAirbyteMessage(final JsonNode json) {
     final Optional<AirbyteMessage> m = Jsons.tryObject(json, AirbyteMessage.class);
     if (m.isEmpty()) {
       logger.error("Deserialization failed: {}", Jsons.serialize(json));
+      return null;
     }
-    return m.stream();
+    return m.get();
   }
 
   protected boolean filterLog(final AirbyteMessage message) {
@@ -116,6 +123,14 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
       case TRACE -> logger.trace(combinedMessage);
       default -> logger.info(combinedMessage);
     }
+  }
+
+  public static void main(final String[] args) {
+    // create a stream of string
+    // evoke parallel
+    // test flatmap, peek, filter
+
+    System.out.println(Stream.generate(() -> "x").limit(110).collect(Collectors.toList()));
   }
 
 }

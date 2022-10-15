@@ -23,9 +23,10 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Iterator;
 import java.util.Optional;
+import java.util.Spliterator;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private final HeartbeatMonitor heartbeatMonitor;
 
   private Process sourceProcess = null;
-  private Iterator<AirbyteMessage> messageIterator = null;
+  private Spliterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
@@ -82,7 +83,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
         .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE || message.getType() == Type.TRACE)
-        .iterator();
+        .spliterator();
   }
 
   @Override
@@ -90,12 +91,12 @@ public class DefaultAirbyteSource implements AirbyteSource {
     Preconditions.checkState(sourceProcess != null);
     // As this check is done on every message read, it is important for this operation to be efficient.
     // Short circuit early to avoid checking the underlying process.
-    final var isEmpty = !messageIterator.hasNext(); // hasNext is blocking.
+    final var isEmpty = messageIterator.getExactSizeIfKnown() == 0; // hasNext is blocking.
     if (!isEmpty) {
       return false;
     }
 
-    return !sourceProcess.isAlive() && !messageIterator.hasNext();
+    return !sourceProcess.isAlive();
   }
 
   @Override
@@ -114,7 +115,13 @@ public class DefaultAirbyteSource implements AirbyteSource {
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(sourceProcess != null);
 
-    return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
+//    return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
+    return Optional.empty();
+  }
+
+  @Override
+  public boolean tryAttempt(final Consumer<AirbyteMessage> consumer) {
+    return messageIterator.tryAdvance(consumer);
   }
 
   @Override

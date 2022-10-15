@@ -13,7 +13,6 @@ import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
 import io.airbyte.commons.protocol.serde.AirbyteMessageDeserializer;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.AirbyteMessage;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,13 +48,13 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   }
 
   @Override
-  protected Stream<AirbyteMessage> toAirbyteMessage(final JsonNode json) {
+  protected AirbyteMessage toAirbyteMessage(final JsonNode json) {
     try {
       final io.airbyte.protocol.models.v0.AirbyteMessage message = migrator.upgrade(deserializer.deserialize(json));
-      return Stream.of(convert(message));
-    } catch (RuntimeException e) {
+      return convert(message);
+    } catch (final RuntimeException e) {
       logger.warn("Failed to upgrade a message from version {}: {}", protocolVersion, Jsons.serialize(json), e);
-      return Stream.empty();
+      return null;
     }
   }
 
