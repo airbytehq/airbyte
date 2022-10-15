@@ -33,11 +33,10 @@ def hash(value, hash_type="md5", salt=None):
     :return: computed hash as a hexadecimal string
     """
     hash_obj = getattr(hashlib, hash_type, None)()
-    hash_obj.update(str(value).encode("utf-8"))
-    hash_obj.update(str(salt).encode("utf-8"))
-
 
     if hash_obj:
+        hash_obj.update(str(value).encode("utf-8"))
+        hash_obj.update(str(salt).encode("utf-8"))
         computed_hash = hash_obj.hexdigest()
     else:
         raise AttributeError(
