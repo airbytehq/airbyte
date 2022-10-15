@@ -37,7 +37,8 @@ def hash(value, hash_type="md5", salt=None):
     if hash_func:
         hash_obj = hash_func()
         hash_obj.update(str(value).encode("utf-8"))
-        hash_obj.update(str(salt).encode("utf-8"))
+        if salt:
+            hash_obj.update(str(salt).encode("utf-8"))
         computed_hash = hash_obj.hexdigest()
     else:
         raise AttributeError(
