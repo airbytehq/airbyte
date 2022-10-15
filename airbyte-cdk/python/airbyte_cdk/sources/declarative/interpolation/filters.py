@@ -32,9 +32,10 @@ def hash(value, hash_type="md5", salt=None):
                  is different from the hash created for that value on other systems.
     :return: computed hash as a hexadecimal string
     """
-    hash_obj = getattr(hashlib, hash_type, None)()
+    hash_func = getattr(hashlib, hash_type, None)
 
-    if hash_obj:
+    if hash_func:
+        hash_obj = hash_func()
         hash_obj.update(str(value).encode("utf-8"))
         hash_obj.update(str(salt).encode("utf-8"))
         computed_hash = hash_obj.hexdigest()
