@@ -12,7 +12,7 @@ definitions:
 #      api_token: "{{ config['api_key'] }}"
     request_options_provider:
       request_parameters:
-        secret: "{{ config['secret_key'] }}"
+        secret: "{{ config['secret'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
