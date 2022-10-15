@@ -185,7 +185,7 @@ def generate_record(stream: any, data: any):
     # timestamps need to be emitted in ISO format
     for key in dict:
         if isinstance(dict[key], datetime.datetime):
-            dict[key] = dict[key].isoformat()
+            dict[key] = format_airbyte_time(dict[key])
 
     return AirbyteMessage(
         type=Type.RECORD,
@@ -212,8 +212,13 @@ def generate_state(state: Dict[str, any], stream: any, data: any):
 
 
 def generate_user(person: Person, dt: Datetime, user_id: int):
+    time_a = dt.datetime()
+    time_b = dt.datetime()
+
     profile = {
         "id": user_id + 1,
+        "created_at": time_a if time_a <= time_b else time_b,
+        "updated_at": time_a if time_a > time_b else time_b,
         "name": person.name(),
         "title": person.title(),
         "age": person.age(),
@@ -224,20 +229,17 @@ def generate_user(person: Person, dt: Datetime, user_id: int):
         "academic_degree": person.academic_degree(),
         "nationality": person.nationality(),
         "occupation": person.occupation(),
-        "biometric": {
-            "height": person.height(),
-            "blood_type": person.blood_type(),
-            "weight": person.weight(),
-        },
+        "height": person.height(),
+        "blood_type": person.blood_type(),
+        "weight": person.weight()
     }
 
-    time_a = dt.datetime()
-    time_b = dt.datetime()
-    metadata = {
-        "created_at": time_a if time_a <= time_b else time_b,
-        "updated_at": time_a if time_a > time_b else time_b,
-    }
-    profile.update(metadata)
+    while not profile["created_at"]:
+        profile["created_at"] = dt.datetime()
+
+    if not profile["updated_at"]:
+        profile["updated_at"] = profile["created_at"] + 1
+
     return profile
 
 
@@ -288,3 +290,10 @@ def random_date_in_range(start_date: datetime.datetime, end_date: datetime.datet
     random_number_of_days = random.randrange(days_between_dates)
     random_date = start_date + datetime.timedelta(days=random_number_of_days)
     return random_date
+
+def format_airbyte_time (d: datetime):
+    s = f"{d}"
+    s = s.split(".")[0]
+    s = s.replace(" ", "T")
+    s += "+00:00"
+    return s
