@@ -43,6 +43,7 @@ The Workable source connector supports the following [sync modes](https://docs.a
 ## Supported Streams
 
 * [Jobs](https://workable.readme.io/reference/jobs)
+* [Candidates](https://workable.readme.io/reference/job-candidates-index)
 * TODO: more streams
 
 ## Data type map
@@ -58,5 +59,5 @@ The Workable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
-| 0.1.0   | 2022-10-14 | TODO [6975](https://github.com/airbytehq/airbyte/pull/6975)   | New Source: Workable                                |
+| 0.1.0   | 2022-10-14 | TODO [TODO](https://github.com/airbytehq/airbyte/pull/TODO)   | New Source: Workable                                |
 

@@ -2,6 +2,9 @@ version: "0.1.0"
 
 definitions:
   page_size: 100
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_sentry/schemas/{{ options.name }}.json"
   selector:
     extractor:
       field_pointer: []
@@ -45,11 +48,20 @@ definitions:
       primary_key: "id"
       path: "/spi/v3/jobs"
       field_pointer: ["jobs"]
+  candidates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "candidates"
+      primary_key: "id"
+      path: "/spi/v3/candidates"
+      field_pointer: ["candidates"]
 
 
 streams:
   - "*ref(definitions.jobs_stream)"
+  - "*ref(definitions.candidates_stream)"
 
 check:
   stream_names:
     - "jobs"
+    - "candidates"
