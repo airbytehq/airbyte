@@ -51,7 +51,7 @@ export const enterSchema = (value: string) => {
     return;
   }
   removeSchema();
-  cy.get(schemaInput).type(value, { force: true }).type("{enter}");
+  cy.get(schemaInput).type(value, { force: true }).type("{enter}"), { force: true };
 };
 
 export const removeSchema = (value: string = "Remove public") => {
