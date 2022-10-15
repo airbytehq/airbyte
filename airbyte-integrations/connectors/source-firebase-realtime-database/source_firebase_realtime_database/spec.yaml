@@ -1,4 +1,5 @@
 documentationUrl: https://docs.airbyte.io/integrations/sources/firebase-realtime-database
+supported_sync_modes: ["full_refresh"]
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Firebase Realtime Database Spec
@@ -20,3 +21,7 @@ connectionSpecification:
       title: Node Path
       type: string
       description: Path to a node in the Firebase realtime database
+    buffer_size:
+      title: Buffer Size
+      type: number
+      description: Number of records to fetch at once

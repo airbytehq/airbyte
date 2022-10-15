@@ -20,29 +20,25 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import db
+from .firebase_rtdb import Client
 
 
 class SourceFirebaseRealtimeDatabase(Source):
+    DEFAULT_BUFFER_SIZE = 10000
+    DEFAULT_PATH = ""
+
     @staticmethod
-    def _initialize_client(config: json):
-        database_name = config["database_name"]
-        database_url = f"https://{database_name}.firebaseio.com"
-        google_application_credentials = config["google_application_credentials"]
-        sa_key = json.loads(google_application_credentials)
+    def stream_name_from(config):
+        path = config.get("path", SourceFirebaseRealtimeDatabase.DEFAULT_PATH)
+        node_name = path.rstrip("/").split("/")[-1]
+        if not node_name:
+            node_name = config["database_name"]
 
-        cred = credentials.Certificate(sa_key)
-
-        firebase_admin.initialize_app(cred, {
-            'databaseURL': database_url,
-        })
+        return node_name.replace("-", "_")
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
-        Tests if the input configuration can be used to successfully connect to the integration
-            e.g: if a provided Stripe API token can be used to connect to the Stripe API.
+        Tests if the input configuration can be used to successfully connect to Firebase Realtime Database
 
         :param logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
@@ -52,12 +48,14 @@ class SourceFirebaseRealtimeDatabase(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            self._initialize_client(config)
+            database_name = config["database_name"]
+            google_application_credentials = config["google_application_credentials"]
 
-            ref = db.reference()
+            client = Client()
+            client.initialize(database_name, google_application_credentials)
 
             # get root-node's keys to check connectivity
-            res = ref.get(shallow=True)
+            client.check_connection()
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
@@ -65,9 +63,8 @@ class SourceFirebaseRealtimeDatabase(Source):
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         """
-        Returns an AirbyteCatalog representing the available streams and fields in this integration.
-        For example, given valid credentials to a Postgres database,
-        returns an Airbyte catalog where each postgres table is a stream, and each table column is a field.
+        Returns an AirbyteCatalog representing the available streams and fields in the users's connection to Firebase.
+        This connector returns only one stream that is specified by `path` in the config.
 
         :param logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
@@ -82,11 +79,6 @@ class SourceFirebaseRealtimeDatabase(Source):
         """
         streams = []
 
-        self._initialize_client(config)
-
-        path = config.get("path", "")
-        fetch_only_this_node = config["fetch_only_this_node"]
-
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -96,13 +88,9 @@ class SourceFirebaseRealtimeDatabase(Source):
             },
         }
 
-        node_name = path.rstrip("/").split("/")[-1]
-        if node_name:
-            stream_name = node_name
-        else:
-            stream_name = config["database_name"]
+        stream_name = self.stream_name_from(config)
 
-        streams.append(AirbyteStream(name=stream_name.replace("-", "_"), json_schema=json_schema))
+        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema, supported_sync_modes=["full_refresh"]))
 
         return AirbyteCatalog(streams=streams)
 
@@ -128,12 +116,20 @@ class SourceFirebaseRealtimeDatabase(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = "TableName"  # Example
-        data = {"columnName": "Hello World"}  # Example
+        
+        stream = catalog.streams[0].stream
+        stream_name = stream.name
 
-        # Not Implemented
-
-        yield AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
-        )
+        buffer_size = config.get("buffer_size", self.DEFAULT_BUFFER_SIZE)
+        path = config.get("path", self.DEFAULT_PATH)
+        database_name = config["database_name"]
+        google_application_credentials = config["google_application_credentials"]
+        
+        client = Client(path, buffer_size)
+        client.initialize(database_name, google_application_credentials)
+        
+        for data in client.extract():
+            yield AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+            )
