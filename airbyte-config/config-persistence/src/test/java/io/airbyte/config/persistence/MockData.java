@@ -36,6 +36,8 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.WebhookConfig;
+import io.airbyte.config.WebhookOperationConfigs;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AuthSpecification;
@@ -156,7 +158,9 @@ public class MockData {
         .withNotifications(Collections.singletonList(notification))
         .withFirstCompletedSync(true)
         .withFeedbackDone(true)
-        .withDefaultGeography(Geography.AUTO);
+        .withDefaultGeography(Geography.AUTO)
+        .withWebhookOperationConfigs(Jsons.jsonNode(
+            new WebhookOperationConfigs().withWebhookConfigs(List.of(new WebhookConfig().withId(WEBHOOK_CONFIG_ID).withName("name")))));
 
     final StandardWorkspace workspace2 = new StandardWorkspace()
         .withWorkspaceId(WORKSPACE_ID_2)

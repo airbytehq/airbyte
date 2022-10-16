@@ -24,9 +24,7 @@ import io.airbyte.api.model.generated.WorkspaceReadList;
 import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.WebhookOperationConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
@@ -39,7 +37,6 @@ import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -269,12 +266,9 @@ public class WorkspacesHandler {
         .notifications(NotificationConverter.toApiList(workspace.getNotifications()))
         .defaultGeography(Enums.convertTo(workspace.getDefaultGeography(), Geography.class));
     // Add read-only webhook configs.
-    final Optional<WebhookOperationConfigs> persistedConfigs = Jsons.tryObject(
-        workspace.getWebhookOperationConfigs(),
-        WebhookOperationConfigs.class);
-    if (persistedConfigs.isPresent()) {
-      result.setWebhookConfigs(WorkspaceWebhookConfigsConverter.toApiReads(
-          persistedConfigs.get().getWebhookConfigs()));
+    if (workspace.getWebhookOperationConfigs() != null) {
+      LOGGER.info("webhook configs: {}", workspace.getWebhookOperationConfigs());
+      result.setWebhookConfigs(WorkspaceWebhookConfigsConverter.toApiReads(workspace.getWebhookOperationConfigs()));
     }
     return result;
   }
@@ -308,6 +302,9 @@ public class WorkspacesHandler {
     if (workspacePatch.getDefaultGeography() != null) {
       workspace.setDefaultGeography(
           Enums.convertTo(workspacePatch.getDefaultGeography(), io.airbyte.config.Geography.class));
+    }
+    if (workspacePatch.getWebhookConfigs() != null) {
+      workspace.setWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspacePatch.getWebhookConfigs()));
     }
   }
 
