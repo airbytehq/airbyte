@@ -395,7 +395,7 @@ def test_cache_response(mocker):
     mocker.patch.object(stream, "url_base", "https://google.com/")
     list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
-    with open(stream.cache_filename, "r") as f:
+    with open(stream.cache_filename, "rb") as f:
         assert f.read()
 
 
