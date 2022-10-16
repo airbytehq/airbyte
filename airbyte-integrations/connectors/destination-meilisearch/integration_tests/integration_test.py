@@ -3,10 +3,11 @@
 #
 
 import json
-from typing import Any, Dict, List, Mapping
+import logging
+import time
+from typing import Any, Dict, Mapping
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -20,7 +21,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from destination_meilisearch.destination import DestinationMeilisearch, get_client
-
 from meilisearch import Client
 
 
@@ -34,41 +34,45 @@ def config_fixture() -> Mapping[str, Any]:
 def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     stream_schema = {"type": "object", "properties": {"string_col": {"type": "str"}, "int_col": {"type": "integer"}}}
 
-    append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="append_stream", json_schema=stream_schema),
-        sync_mode=SyncMode.incremental,
-        destination_sync_mode=DestinationSyncMode.append,
-    )
-
     overwrite_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="overwrite_stream", json_schema=stream_schema),
+        stream=AirbyteStream(name="_airbyte", json_schema=stream_schema),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.overwrite,
     )
 
-    return ConfiguredAirbyteCatalog(streams=[append_stream, overwrite_stream])
+    return ConfiguredAirbyteCatalog(streams=[overwrite_stream])
 
 
-# @pytest.fixture(autouse=True)
-# def teardown(config: Mapping):
-#     yield
-#     client = get_client(**config)
-#     client.delete(list(client.list_keys()))
+@pytest.fixture(autouse=True)
+def teardown(config: Mapping):
+    yield
+    client = get_client(config=config)
+    client.delete_index("_airbyte")
 
 
 @pytest.fixture(name="client")
 def client_fixture(config) -> Client:
-    return get_client(config=config)
+    client = get_client(config=config)
+    resp = client.create_index("_airbyte", {"primaryKey": "_ab_pk"})
+    while True:
+        time.sleep(0.2)
+        task = client.get_task(resp["taskUid"])
+        status = task["status"]
+        if status == "succeeded" or status == "failed":
+            break
+    return client
 
 
-# def test_check_valid_config(config: Mapping):
-#     outcome = DestinationMeilisearch().check(AirbyteLogger(), config)
-#     assert outcome.status == Status.SUCCEEDED
+def test_check_valid_config(config: Mapping):
+    outcome = DestinationMeilisearch().check(logging.getLogger("airbyte"), config)
+    assert outcome.status == Status.SUCCEEDED
 
 
-# def test_check_invalid_config():
-#     outcome = DestinationMeilisearch().check(AirbyteLogger(), {"api_key": "not_a_real_key", "host": "https://www.meilisearch.com"})
-#     assert outcome.status == Status.FAILED
+def test_check_invalid_config():
+    outcome = DestinationMeilisearch().check(
+        logging.getLogger("airbyte"), {"api_key": "not_a_real_key", "host": "https://www.meilisearch.com"}
+    )
+    assert outcome.status == Status.FAILED
 
 
 def _state(data: Dict[str, Any]) -> AirbyteMessage:
@@ -81,60 +85,16 @@ def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     )
 
 
-def retrieve_all_records(client: Client) -> List[AirbyteRecordMessage]:
-    """retrieves and formats all records in kvdb as Airbyte messages"""
-    # all_records = client.list_keys(list_values=True)
-    # out = []
-    # for record in all_records:
-        # key = record[0]
-        # stream = key.split("__ab__")[0]
-        # value = record[1]
-        # out.append(_record(stream, value["str_col"], value["int_col"]))
-    # return out
-    return []
+def records_count(client: Client) -> int:
+    documents_results = client.index("_airbyte").get_documents()
+    return documents_results.total
 
 
 def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
-    """
-    This test verifies that:
-        1. writing a stream in "overwrite" mode overwrites any existing data for that stream
-        2. writing a stream in "append" mode appends new records without deleting the old ones
-        3. The correct state message is output by the connector at the end of the sync
-    """
-    append_stream, overwrite_stream = configured_catalog.streams[0].stream.name, configured_catalog.streams[1].stream.name
+    overwrite_stream = configured_catalog.streams[0].stream.name
     first_state_message = _state({"state": "1"})
-    first_record_chunk = [_record(append_stream, str(i), i) for i in range(5)] + [_record(overwrite_stream, str(i), i) for i in range(5)]
-
-    second_state_message = _state({"state": "2"})
-    second_record_chunk = [_record(append_stream, str(i), i) for i in range(5, 10)] + [
-        _record(overwrite_stream, str(i), i) for i in range(5, 10)
-    ]
+    first_record_chunk = [_record(overwrite_stream, str(i), i) for i in range(2)]
 
     destination = DestinationMeilisearch()
-
-    expected_states = [first_state_message, second_state_message]
-    output_states = list(
-        destination.write(
-            config, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message]
-        )
-    )
-    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
-
-    expected_records = [_record(append_stream, str(i), i) for i in range(10)] + [_record(overwrite_stream, str(i), i) for i in range(10)]
-    records_in_destination = retrieve_all_records(client)
-    assert expected_records == records_in_destination, "Records in destination should match records expected"
-
-    # After this sync we expect the append stream to have 15 messages and the overwrite stream to have 5
-    third_state_message = _state({"state": "3"})
-    third_record_chunk = [_record(append_stream, str(i), i) for i in range(10, 15)] + [
-        _record(overwrite_stream, str(i), i) for i in range(10, 15)
-    ]
-
-    output_states = list(destination.write(config, configured_catalog, [*third_record_chunk, third_state_message]))
-    assert [third_state_message] == output_states
-
-    records_in_destination = retrieve_all_records(client)
-    expected_records = [_record(append_stream, str(i), i) for i in range(15)] + [
-        _record(overwrite_stream, str(i), i) for i in range(10, 15)
-    ]
-    assert expected_records == records_in_destination
+    list(destination.write(config, configured_catalog, [*first_record_chunk, first_state_message]))
+    assert records_count(client) == 2
