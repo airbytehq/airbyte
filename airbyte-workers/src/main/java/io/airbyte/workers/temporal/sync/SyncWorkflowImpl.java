@@ -97,13 +97,15 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
           dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, syncInput.getResourceRequirements(), operatorDbtInput);
         } else if (standardSyncOperation.getOperatorType() == OperatorType.WEBHOOK) {
-          LOGGER.info("running webhook activity: {}", standardSyncOperation);
+          LOGGER.info("running webhook operation");
+          LOGGER.debug("webhook operation input: {}", standardSyncOperation);
           webhookOperationActivity
-              .invokeWebhook(new OperatorWebhookInput()
-                  .withExecutionUrl(standardSyncOperation.getOperatorWebhook().getExecutionUrl())
-                  .withExecutionBody(standardSyncOperation.getOperatorWebhook().getExecutionBody())
-                  .withWebhookConfigId(standardSyncOperation.getOperatorWebhook().getWebhookConfigId())
-                  .withWorkspaceWebhookConfigs(syncInput.getWebhookOperationConfigs()));
+                .invokeWebhook(new OperatorWebhookInput()
+                    .withExecutionUrl(standardSyncOperation.getOperatorWebhook().getExecutionUrl())
+                    .withExecutionBody(standardSyncOperation.getOperatorWebhook().getExecutionBody())
+                    .withWebhookConfigId(standardSyncOperation.getOperatorWebhook().getWebhookConfigId())
+                    .withWorkspaceWebhookConfigs(syncInput.getWebhookOperationConfigs()));
+          // TODO(mfsiega-airbyte): check if the webhook got a 2xx-response and populate the output.
         } else {
           final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
           LOGGER.error(message);

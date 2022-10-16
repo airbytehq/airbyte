@@ -38,15 +38,18 @@ public class WebhookOperationActivityImpl implements WebhookOperationActivity {
   @Override
   public void invokeWebhook(OperatorWebhookInput input) {
     LOGGER.info("Invoking webhook operation {}", input.getName());
+    LOGGER.debug("Webhook operation input: {}", input);
     final JsonNode fullWebhookConfigJson = secretsHydrator.hydrate(input.getWorkspaceWebhookConfigs());
     final WebhookOperationConfigs webhookConfigs = Jsons.object(fullWebhookConfigJson, WebhookOperationConfigs.class);
-
     final Optional<WebhookConfig> webhookConfig =
-        webhookConfigs.getWebhookConfigs().stream().filter((config) -> config.getId() == input.getWebhookConfigId()).findFirst();
+        webhookConfigs.getWebhookConfigs().stream().filter((config) -> {
+          return config.getId().equals(input.getWebhookConfigId());
+        }).findFirst();
     if (!webhookConfig.isPresent()) {
       throw new RuntimeException(String.format("Can find webhook config %s", input.getWebhookConfigId().toString()));
     }
 
+    LOGGER.debug("Found webhook config: {}", webhookConfig.get());
     final HttpRequest req = HttpRequest.newBuilder()
         .uri(URI.create(input.getExecutionUrl()))
         .POST(HttpRequest.BodyPublishers.ofString(input.getExecutionBody()))
@@ -56,6 +59,7 @@ public class WebhookOperationActivityImpl implements WebhookOperationActivity {
       HttpResponse<String> response = this.httpClient.send(req, HttpResponse.BodyHandlers.ofString());
       LOGGER.debug("Webhook response: {}", response.body());
     } catch (IOException | InterruptedException e) {
+      LOGGER.error(e.getMessage());
       throw new RuntimeException(e);
     }
   }
