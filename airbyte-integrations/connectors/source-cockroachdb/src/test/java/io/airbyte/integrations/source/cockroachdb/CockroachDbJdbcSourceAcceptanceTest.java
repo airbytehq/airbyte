@@ -331,7 +331,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     .withStreamName(streamName)
                     .withStreamNamespace(namespace)
                     .withCursorField(ImmutableList.of(COL_ID))
-                    .withCursor("5")))))));
+                    .withCursor("5")
+                    .withCursorRecordCount(1L)))))));
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
@@ -463,7 +464,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                         .withStreamName(streamName)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
-                        .withCursor("3"),
+                        .withCursor("3")
+                        .withCursorRecordCount(1L),
                     new DbStreamState()
                         .withStreamName(streamName2)
                         .withStreamNamespace(namespace)
@@ -481,12 +483,14 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                         .withStreamName(streamName)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
-                        .withCursor("3"),
+                        .withCursor("3")
+                        .withCursorRecordCount(1L),
                     new DbStreamState()
                         .withStreamName(streamName2)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
-                        .withCursor("3")))))));
+                        .withCursor("3")
+                        .withCursorRecordCount(1L)))))));
 
     setEmittedAtToNull(actualMessagesFirstSync);
 
