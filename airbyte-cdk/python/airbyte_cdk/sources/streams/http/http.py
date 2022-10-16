@@ -13,6 +13,7 @@ import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.utils.helpers import get_instance_number
 from requests.auth import AuthBase
 
 from .auth.core import HttpAuthenticator, NoAuth
@@ -49,7 +50,7 @@ class HttpStream(Stream, ABC):
         """
         Override if needed. Return the name of cache file
         """
-        number = self.get_instance_number()
+        number = get_instance_number(self)
         if number > 1:
             return f"{self.name}.{number}.sqlite"
         return f"{self.name}.sqlite"

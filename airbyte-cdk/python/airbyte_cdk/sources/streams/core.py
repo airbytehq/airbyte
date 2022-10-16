@@ -5,7 +5,6 @@
 
 import inspect
 import logging
-import weakref
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -60,19 +59,6 @@ class Stream(ABC):
     """
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
-
-    def __new__(cls, *args, **kwargs):
-        instance = super().__new__(cls)
-        if "_instances" not in cls.__dict__:
-            cls._instances = []
-        cls._instances.append(weakref.ref(instance))
-        return instance
-
-    def get_instance_number(self) -> int:
-        ":return: sequential number of instance of the same class"
-        for n, ref in enumerate(self._instances):
-            if ref() is self:
-                return n + 1
 
     # Use self.logger in subclasses to log any messages
     @property

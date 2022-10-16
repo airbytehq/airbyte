@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping
 
 import pytest
 from airbyte_cdk.models import AirbyteStream, SyncMode
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import Stream
 
 
 class StreamStubFullRefresh(Stream):
@@ -173,35 +173,3 @@ def test_wrapped_primary_key_various_argument(test_input, expected):
     wrapped = Stream._wrapped_primary_key(test_input)
 
     assert wrapped == expected
-
-
-def test_stream_instance_number():
-    class StreamFullRefresh(StreamStubFullRefresh):
-        pass
-
-    class StreamFullRefreshImproved(StreamFullRefresh):
-        pass
-
-    class StreamIncremental(StreamFullRefresh, IncrementalMixin):
-        def state(self):
-            pass
-
-        def state(self):
-            pass
-
-    stream1_instance1 = StreamFullRefresh()
-    stream1_instance2 = StreamFullRefresh()
-    stream2_instance1 = StreamFullRefreshImproved()
-    stream2_instance2 = StreamFullRefreshImproved()
-    stream3_instance1 = StreamIncremental()
-    stream3_instance2 = StreamIncremental()
-
-    assert stream1_instance1.get_instance_number() == 1
-    assert stream1_instance2.get_instance_number() == 2
-    assert stream2_instance1.get_instance_number() == 1
-    assert stream2_instance2.get_instance_number() == 2
-    assert stream3_instance1.get_instance_number() == 1
-    assert stream3_instance2.get_instance_number() == 2
-    del stream3_instance1
-    stream3_instance3 = StreamIncremental()
-    assert stream3_instance3.get_instance_number() == 3
