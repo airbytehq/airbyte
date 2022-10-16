@@ -5,15 +5,15 @@
         "title": "Clockify Spec",
         "type": "object",
         "required": [
-            "workspaceId",
-            "X-Api-Key"
+            "workspace_id",
+            "api_key"
         ],
         "properties": {
-            "workspaceId": {
+            "workspace_id": {
                 "type": "string",
                 "description": "WorkSpace Id"
             },
-            "X-Api-Key": {
+            "api_key": {
                 "title": "API Key",
                 "description": "You can get your api access_key <a href=\"https://app.clockify.me/user/settings\">here</a> This API is Case Sensitive.",
                 "type": "string",
