@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 // NOTE: we suppress this warning because PMD thinks it can be a foreach loop in toApiReads but the
@@ -22,13 +23,13 @@ import java.util.stream.Collectors;
 @SuppressWarnings("PMD.ForLoopCanBeForeach")
 public class WorkspaceWebhookConfigsConverter {
 
-  public static JsonNode toPersistenceWrite(List<WebhookConfigWrite> apiWebhookConfigs) {
+  public static JsonNode toPersistenceWrite(List<WebhookConfigWrite> apiWebhookConfigs, Supplier<UUID> uuidSupplier) {
     if (apiWebhookConfigs == null) {
       return Jsons.emptyObject();
     }
 
     final WebhookOperationConfigs configs = new WebhookOperationConfigs()
-        .withWebhookConfigs(apiWebhookConfigs.stream().map(WorkspaceWebhookConfigsConverter::toPersistenceConfig).collect(Collectors.toList()));
+        .withWebhookConfigs(apiWebhookConfigs.stream().map((item) -> toPersistenceConfig(uuidSupplier, item)).collect(Collectors.toList()));
 
     return Jsons.jsonNode(configs);
   }
@@ -50,9 +51,9 @@ public class WorkspaceWebhookConfigsConverter {
     return configReads;
   }
 
-  private static WebhookConfig toPersistenceConfig(final WebhookConfigWrite input) {
+  private static WebhookConfig toPersistenceConfig(final Supplier<UUID> uuidSupplier, final WebhookConfigWrite input) {
     return new WebhookConfig()
-        .withId(UUID.randomUUID())
+        .withId(uuidSupplier.get())
         .withName(input.getName())
         .withAuthToken(input.getAuthToken());
   }

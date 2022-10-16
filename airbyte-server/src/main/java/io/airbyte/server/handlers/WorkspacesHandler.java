@@ -105,7 +105,7 @@ public class WorkspacesHandler {
         .withTombstone(false)
         .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()))
         .withDefaultGeography(defaultGeography)
-        .withWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspaceCreate.getWebhookConfigs()));
+        .withWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspaceCreate.getWebhookConfigs(), uuidSupplier));
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
@@ -303,7 +303,7 @@ public class WorkspacesHandler {
           Enums.convertTo(workspacePatch.getDefaultGeography(), io.airbyte.config.Geography.class));
     }
     if (workspacePatch.getWebhookConfigs() != null) {
-      workspace.setWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspacePatch.getWebhookConfigs()));
+      workspace.setWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspacePatch.getWebhookConfigs(), uuidSupplier));
     }
   }
 
