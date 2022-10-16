@@ -1,144 +1,28 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.models import (
+    AirbyteErrorTraceMessage,
+    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
-    ConnectorSpecification,
+    Level,
+    TraceType,
     Type,
 )
 from source_acceptance_test.config import BasicReadTestConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
-from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
 
-
-@pytest.mark.parametrize(
-    "connector_spec, should_fail",
-    [
-        (
-            {
-                "connectionSpecification": {
-                    "type": "object",
-                    "properties": {
-                        "client_id": {"type": "string"},
-                        "client_secret": {"type": "string"},
-                        "access_token": {"type": "string"},
-                        "refresh_token": {"type": "string"},
-                        "$ref": None,
-                    },
-                }
-            },
-            True,
-        ),
-        (
-            {
-                "advanced_auth": {
-                    "auth_flow_type": "oauth2.0",
-                    "predicate_key": ["credentials", "auth_type"],
-                    "predicate_value": "Client",
-                    "oauth_config_specification": {
-                        "complete_oauth_output_specification": {
-                            "type": "object",
-                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
-                        }
-                    },
-                }
-            },
-            True,
-        ),
-        (
-            {
-                "advanced_auth": {
-                    "auth_flow_type": "oauth2.0",
-                    "predicate_key": ["credentials", "auth_type"],
-                    "predicate_value": "Client",
-                    "oauth_config_specification": {
-                        "complete_oauth_server_input_specification": {
-                            "type": "object",
-                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
-                        }
-                    },
-                }
-            },
-            True,
-        ),
-        (
-            {
-                "advanced_auth": {
-                    "auth_flow_type": "oauth2.0",
-                    "predicate_key": ["credentials", "auth_type"],
-                    "predicate_value": "Client",
-                    "oauth_config_specification": {
-                        "complete_oauth_server_output_specification": {
-                            "type": "object",
-                            "properties": {"refresh_token": {"type": "string"}, "$ref": None},
-                        }
-                    },
-                }
-            },
-            True,
-        ),
-        (
-            {
-                "connectionSpecification": {
-                    "type": "object",
-                    "properties": {
-                        "client_id": {"type": "string"},
-                        "client_secret": {"type": "string"},
-                        "access_token": {"type": "string"},
-                        "refresh_token": {"type": "string"},
-                    },
-                }
-            },
-            False,
-        ),
-        (
-            {
-                "connectionSpecification": {
-                    "type": "object",
-                    "properties": {
-                        "client_id": {"type": "string"},
-                        "client_secret": {"type": "string"},
-                        "access_token": {"type": "string"},
-                        "refresh_token": {"type": "string"},
-                    },
-                },
-                "advanced_auth": {
-                    "auth_flow_type": "oauth2.0",
-                    "predicate_key": ["credentials", "auth_type"],
-                    "predicate_value": "Client",
-                    "oauth_config_specification": {
-                        "complete_oauth_server_output_specification": {
-                            "type": "object",
-                            "properties": {"refresh_token": {"type": "string"}},
-                        }
-                    },
-                },
-            },
-            False,
-        ),
-        ({"$ref": None}, True),
-        ({"properties": {"user": {"$ref": None}}}, True),
-        ({"properties": {"user": {"$ref": "user.json"}}}, True),
-        ({"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}}, False),
-        ({"properties": {"fake_items": {"type": "array", "items": {"$ref": "fake_item.json"}}}}, True),
-    ],
-)
-def test_ref_in_spec_schemas(connector_spec, should_fail):
-    t = _TestSpec()
-    if should_fail is True:
-        with pytest.raises(AssertionError):
-            t.test_defined_refs_exist_in_json_spec_file(connector_spec_dict=connector_spec)
-    else:
-        t.test_defined_refs_exist_in_json_spec_file(connector_spec_dict=connector_spec)
+from .conftest import does_not_raise
 
 
 @pytest.mark.parametrize(
@@ -196,6 +80,124 @@ def test_ref_in_discovery_schemas(schema, should_fail):
 
 
 @pytest.mark.parametrize(
+    "schema, keyword, should_fail",
+    [
+        ({}, "allOf", False),
+        ({"allOf": [{"type": "string"}, {"maxLength": 1}]}, "allOf", True),
+        ({"type": "object", "properties": {"allOf": {"type": "string"}}}, "allOf", False),
+        ({"type": "object", "properties": {"name": {"allOf": [{"type": "string"}, {"maxLength": 1}]}}}, "allOf", True),
+        (
+            {"type": "object", "properties": {"name": {"type": "array", "items": {"allOf": [{"type": "string"}, {"maxLength": 4}]}}}},
+            "allOf",
+            True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "array",
+                        "items": {"anyOf": [{"type": "number"}, {"allOf": [{"type": "string"}, {"maxLength": 4}, {"minLength": 2}]}]},
+                    }
+                },
+            },
+            "allOf",
+            True,
+        ),
+        ({"not": {"type": "string"}}, "not", True),
+        ({"type": "object", "properties": {"not": {"type": "string"}}}, "not", False),
+        ({"type": "object", "properties": {"name": {"not": {"type": "string"}}}}, "not", True),
+    ],
+)
+def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
+    t = _TestDiscovery()
+    discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
+    if should_fail:
+        with pytest.raises(AssertionError):
+            t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
+    else:
+        t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
+
+
+@pytest.mark.parametrize(
+    "discovered_catalog, expectation",
+    [
+        ({"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}})}, pytest.raises(AssertionError)),
+        (
+            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": []})},
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream": AirbyteStream.parse_obj(
+                    {"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]}
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh"]})},
+            does_not_raise(),
+        ),
+        (
+            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["incremental"]})},
+            does_not_raise(),
+        ),
+    ],
+)
+def test_supported_sync_modes_in_stream(discovered_catalog, expectation):
+    t = _TestDiscovery()
+    with expectation:
+        t.test_streams_has_sync_modes(discovered_catalog)
+
+
+@pytest.mark.parametrize(
+    "discovered_catalog, expectation",
+    [
+        ({"test_stream_1": AirbyteStream.parse_obj({"name": "test_stream_1", "json_schema": {}})}, does_not_raise()),
+        (
+            {"test_stream_2": AirbyteStream.parse_obj({"name": "test_stream_2", "json_schema": {"additionalProperties": True}})},
+            does_not_raise(),
+        ),
+        (
+            {"test_stream_3": AirbyteStream.parse_obj({"name": "test_stream_3", "json_schema": {"additionalProperties": False}})},
+            pytest.raises(AssertionError),
+        ),
+        (
+            {"test_stream_4": AirbyteStream.parse_obj({"name": "test_stream_4", "json_schema": {"additionalProperties": "foo"}})},
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_5": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_5",
+                        "json_schema": {"additionalProperties": True, "properties": {"my_object": {"additionalProperties": True}}},
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_6": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_6",
+                        "json_schema": {"additionalProperties": True, "properties": {"my_object": {"additionalProperties": False}}},
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+    ],
+)
+def test_additional_properties_is_true(discovered_catalog, expectation):
+    t = _TestDiscovery()
+    with expectation:
+        t.test_additional_properties_is_true(discovered_catalog)
+
+
+@pytest.mark.parametrize(
     "schema, record, should_fail",
     [
         ({"type": "object"}, {"aa": 23}, False),
@@ -235,223 +237,92 @@ def test_read(schema, record, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, expected_error",
+    "output, expect_trace_message_on_failure, should_fail",
     [
-        # SUCCESS: no authSpecification specified
-        (ConnectorSpecification(connectionSpecification={}), ""),
-        # FAIL: Field specified in root object does not exist
         (
-            ConnectorSpecification(
-                connectionSpecification={"type": "object"},
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "Specified oauth fields are missed from spec schema:",
+            [
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                )
+            ],
+            True,
+            False,
         ),
-        # SUCCESS: Empty root object
         (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "client_id": {"type": "string"},
-                        "client_secret": {"type": "string"},
-                        "access_token": {"type": "string"},
-                        "refresh_token": {"type": "string"},
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": [],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
+            [
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=Level.ERROR, message="oh no"),
+                ),
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                ),
+            ],
+            True,
+            False,
         ),
-        # FAIL: Some oauth fields missed
         (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "properties": {
-                                "client_id": {"type": "string"},
-                                "client_secret": {"type": "string"},
-                                "access_token": {"type": "string"},
-                            },
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "Specified oauth fields are missed from spec schema:",
+            [
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                ),
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=112, error=AirbyteErrorTraceMessage(message="oh no!!")),
+                ),
+            ],
+            True,
+            False,
         ),
-        # SUCCESS: case w/o oneOf property
         (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "properties": {
-                                "client_id": {"type": "string"},
-                                "client_secret": {"type": "string"},
-                                "access_token": {"type": "string"},
-                                "refresh_token": {"type": "string"},
-                            },
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials"],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
+            [
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=Level.ERROR, message="oh no"),
+                )
+            ],
+            True,
+            True,
         ),
-        # SUCCESS: case w/ oneOf property
+        ([], True, True),
         (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
-                                },
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
+            [
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                )
+            ],
+            False,
+            False,
         ),
-        # FAIL: Wrong root object index
         (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
-                                },
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 1],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "Specified oauth fields are missed from spec schema:",
+            [
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=Level.ERROR, message="oh no"),
+                )
+            ],
+            False,
+            False,
         ),
-        # SUCCESS: root object index equal to 1
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                                {
-                                    "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 1],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
-        ),
+        ([], False, False),
     ],
 )
-def test_validate_oauth_flow(connector_spec, expected_error):
-    t = _TestSpec()
-    if expected_error:
-        with pytest.raises(AssertionError, match=expected_error):
-            t.test_oauth_flow_parameters(connector_spec)
-    else:
-        t.test_oauth_flow_parameters(connector_spec)
+def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failure, should_fail):
+    t = _TestBasicRead()
+    input_config = BasicReadTestConfig(expect_trace_message_on_failure=expect_trace_message_on_failure)
+    docker_runner_mock = MagicMock()
+    docker_runner_mock.call_read.return_value = output
+
+    with patch.object(pytest, "skip", return_value=None):
+        if should_fail:
+            with pytest.raises(AssertionError, match="Connector should emit at least one error trace message"):
+                t.test_airbyte_trace_message_on_failure(None, input_config, docker_runner_mock)
+        else:
+            t.test_airbyte_trace_message_on_failure(None, input_config, docker_runner_mock)
 
 
 @pytest.mark.parametrize(

@@ -1,12 +1,13 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import java.sql.JDBCType;
@@ -19,7 +20,7 @@ public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSource.class);
 
   public JdbcSource() {
-    super("org.postgresql.Driver", new PostgresJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+    super(DatabaseDriver.POSTGRESQL.getDriverClassName(), AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   // no-op for JdbcSource since the config it receives is designed to be use for JDBC.

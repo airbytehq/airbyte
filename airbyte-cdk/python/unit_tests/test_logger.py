@@ -1,17 +1,13 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
 
 import json
 import logging
-import subprocess
-import sys
 from typing import Dict
 
 import pytest
 from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 
 
 @pytest.fixture(scope="session")
@@ -53,18 +49,19 @@ def test_level_transform(logger, caplog):
     assert level_critical == "FATAL"
 
 
-def test_trace(logger, caplog):
-    logger.log(logging.getLevelName("TRACE"), "Test trace 1")
-    record = caplog.records[0]
-    assert record.levelname == "TRACE"
-    assert record.message == "Test trace 1"
-
-
 def test_debug(logger, caplog):
-    logger.debug("Test debug 1")
+    # Test debug logger in isolation since the default logger is initialized to TRACE (15) instead of DEBUG (10).
+    debug_logger = logging.getLogger("airbyte.Debuglogger")
+    debug_logger.setLevel(logging.DEBUG)
+    debug_logger.debug("Test debug 1")
     record = caplog.records[0]
     assert record.levelname == "DEBUG"
     assert record.message == "Test debug 1"
+
+
+def test_default_debug_is_ignored(logger, caplog):
+    logger.debug("Test debug that is ignored since log level is TRACE")
+    assert len(caplog.records) == 0
 
 
 def test_info(logger, caplog):
@@ -95,21 +92,3 @@ def test_fatal(logger, caplog):
     record = caplog.records[0]
     assert record.levelname == "CRITICAL"
     assert record.message == "Test fatal 1"
-
-
-def test_unhandled_logger():
-    cmd = "from airbyte_cdk.logger import init_logger; init_logger('airbyte'); raise 1"
-    expected_message = (
-        "exceptions must derive from BaseException\n"
-        "Traceback (most recent call last):\n"
-        '  File "<string>", line 1, in <module>\n'
-        "TypeError: exceptions must derive from BaseException"
-    )
-    log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level="FATAL", message=expected_message))
-    expected_output = log_message.json(exclude_unset=True)
-
-    with pytest.raises(subprocess.CalledProcessError) as err:
-        subprocess.check_output([sys.executable, "-c", cmd], stderr=subprocess.STDOUT)
-
-    assert not err.value.stderr, "nothing on the stderr"
-    assert err.value.output.decode("utf-8").strip() == expected_output, "Error should be printed in expected form"

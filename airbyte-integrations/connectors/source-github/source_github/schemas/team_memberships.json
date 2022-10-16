@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "state": {
+      "type": ["null", "string"]
+    },
+    "role": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": "string"
+    },
+    "organization": {
+      "type": "string"
+    },
+    "team_slug": {
+      "type": "string"
+    },
+    "username": {
+      "type": "string"
+    }
+  }
+}

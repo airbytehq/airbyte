@@ -6,11 +6,11 @@ This is a step-by-step guide for how to create an Airbyte source in Python to re
 
 ## Requirements
 
-* Python &gt;= 3.7
+* Python &gt;= 3.9
 * Docker
 * NodeJS \(only used to generate the connector\). We'll remove the NodeJS dependency soon.
 
-All the commands below assume that `python` points to a version of python &gt;=3.7.0. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3`.
+All the commands below assume that `python` points to a version of python &gt;=3.9.0. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3`.
 
 ## Checklist
 

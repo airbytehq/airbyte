@@ -1,5 +1,7 @@
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
+
 import { isDefined } from "utils/common";
+
 import { AirbyteJSONSchema, AirbyteJSONSchemaDefinition } from "./types";
 
 function removeNestedPaths(
@@ -8,6 +10,8 @@ function removeNestedPaths(
   ignoreProp = true
 ): AirbyteJSONSchema {
   if (typeof schema === "boolean") {
+    // TODO: Types need to be corrected here
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return null as any;
   }
 
@@ -18,13 +22,11 @@ function removeNestedPaths(
   const resultSchema: JSONSchema7 = schema;
 
   if (schema.oneOf) {
-    resultSchema.oneOf = schema.oneOf.map((o) =>
-      removeNestedPaths(o, pathList, ignoreProp)
-    );
+    resultSchema.oneOf = schema.oneOf.map((o) => removeNestedPaths(o, pathList, ignoreProp));
   }
 
   if (schema.properties) {
-    const properties = schema.properties;
+    const { properties } = schema;
     const filteredProperties: Record<string, JSONSchema7Definition> = {};
 
     for (const propertiesKey in properties) {
@@ -36,9 +38,7 @@ function removeNestedPaths(
 
       if (matchingPaths.some((p) => p.length === 1)) {
         if (schema.required) {
-          resultSchema.required = schema.required?.filter(
-            (requiredFiled) => requiredFiled !== propertiesKey
-          );
+          resultSchema.required = schema.required?.filter((requiredFiled) => requiredFiled !== propertiesKey);
         }
 
         if (!ignoreProp) {
@@ -51,11 +51,7 @@ function removeNestedPaths(
       } else {
         const innerPath = matchingPaths.map(([, ...rest]) => rest);
 
-        filteredProperties[propertiesKey] = removeNestedPaths(
-          properties[propertiesKey],
-          innerPath,
-          ignoreProp
-        );
+        filteredProperties[propertiesKey] = removeNestedPaths(properties[propertiesKey], innerPath, ignoreProp);
       }
     }
 
@@ -67,7 +63,7 @@ function removeNestedPaths(
 
 function applyFuncAt(
   schema: JSONSchema7Definition,
-  path: (string | number)[],
+  path: Array<string | number>,
   f: (schema: JSONSchema7Definition) => JSONSchema7
 ): JSONSchema7Definition {
   if (typeof schema === "boolean") {
@@ -84,9 +80,7 @@ function applyFuncAt(
 
   if (schema.oneOf) {
     const idx = typeof pathElem === "number" ? pathElem : parseInt(pathElem);
-    resultSchema.oneOf = schema.oneOf.map((o, index) =>
-      index === idx ? applyFuncAt(o, restPath, f) : o
-    );
+    resultSchema.oneOf = schema.oneOf.map((o, index) => (index === idx ? applyFuncAt(o, restPath, f) : o));
   }
 
   if (schema.properties && typeof pathElem === "string") {

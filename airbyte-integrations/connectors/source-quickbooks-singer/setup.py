@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -16,7 +16,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_quickbooks_singer",
-    description="Source implementation for Quickbooks, built on the Singer tap implementation.",
+    description="Source implementation for QuickBooks, built on the Singer tap implementation.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

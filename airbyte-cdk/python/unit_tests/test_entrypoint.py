@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,6 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk import AirbyteEntrypoint
+from airbyte_cdk import entrypoint as entrypoint_module
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -38,7 +39,8 @@ def _as_arglist(cmd: str, named_args: Mapping[str, Any]) -> List[str]:
     out = [cmd]
     for k, v in named_args.items():
         out.append(f"--{k}")
-        out.append(v)
+        if v:
+            out.append(v)
     return out
 
 
@@ -55,20 +57,34 @@ def entrypoint() -> AirbyteEntrypoint:
     return AirbyteEntrypoint(MockSource())
 
 
+def test_airbyte_entrypoint_init(mocker):
+    mocker.patch.object(entrypoint_module, "init_uncaught_exception_handler")
+    AirbyteEntrypoint(MockSource())
+    entrypoint_module.init_uncaught_exception_handler.assert_called_once_with(entrypoint_module.logger)
+
+
 @pytest.mark.parametrize(
-    ["cmd", "args"],
+    ["cmd", "args", "expected_args"],
     [
-        ("spec", dict()),
-        ("check", {"config": "config_path"}),
-        ("discover", {"config": "config_path"}),
-        ("read", {"config": "config_path", "catalog": "catalog_path", "state": "None"}),
-        ("read", {"config": "config_path", "catalog": "catalog_path", "state": "state_path"}),
+        ("spec", {"debug": ""}, {"command": "spec", "debug": True}),
+        ("check", {"config": "config_path"}, {"command": "check", "config": "config_path", "debug": False}),
+        ("discover", {"config": "config_path", "debug": ""}, {"command": "discover", "config": "config_path", "debug": True}),
+        (
+            "read",
+            {"config": "config_path", "catalog": "catalog_path", "state": "None"},
+            {"command": "read", "config": "config_path", "catalog": "catalog_path", "state": "None", "debug": False},
+        ),
+        (
+            "read",
+            {"config": "config_path", "catalog": "catalog_path", "state": "state_path", "debug": ""},
+            {"command": "read", "config": "config_path", "catalog": "catalog_path", "state": "state_path", "debug": True},
+        ),
     ],
 )
-def test_parse_valid_args(cmd: str, args: Mapping[str, Any], entrypoint: AirbyteEntrypoint):
+def test_parse_valid_args(cmd: str, args: Mapping[str, Any], expected_args, entrypoint: AirbyteEntrypoint):
     arglist = _as_arglist(cmd, args)
     parsed_args = entrypoint.parse_args(arglist)
-    assert {"command": cmd, **args} == vars(parsed_args)
+    assert vars(parsed_args) == expected_args
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.io;
@@ -75,7 +75,8 @@ public class FileTtlManager {
       }
     });
     sb.append("---\n");
-    LOGGER.info(sb.toString());
+    final String toLog = sb.toString();
+    LOGGER.info(toLog);
   }
 
 }

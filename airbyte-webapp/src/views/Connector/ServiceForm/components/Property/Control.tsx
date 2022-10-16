@@ -1,44 +1,38 @@
-import React from "react";
 import { FieldArray, useField } from "formik";
+import React from "react";
 
-import { DropDown, Input, Multiselect, TextArea, TagInput } from "components";
-import ConfirmationControl from "./ConfirmationControl";
+import { DropDown } from "components/ui/DropDown";
+import { Input } from "components/ui/Input";
+import { Multiselect } from "components/ui/Multiselect";
+import { SecretTextArea } from "components/ui/SecretTextArea";
+import { TagInput } from "components/ui/TagInput";
+import { TextArea } from "components/ui/TextArea";
+
 import { FormBaseItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
-type IProps = {
+import ConfirmationControl from "./ConfirmationControl";
+
+interface ControlProps {
   property: FormBaseItem;
   name: string;
   unfinishedFlows: Record<string, { startValue: string }>;
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedFlow: (key: string) => void;
-};
+  disabled?: boolean;
+  error?: boolean;
+}
 
-const Control: React.FC<IProps> = ({
+export const Control: React.FC<ControlProps> = ({
   property,
   name,
   addUnfinishedFlow,
   removeUnfinishedFlow,
   unfinishedFlows,
+  disabled,
+  error,
 }) => {
   const [field, meta, form] = useField(name);
-
-  // TODO: think what to do with other cases
-  let placeholder: string | undefined;
-
-  switch (typeof property.examples) {
-    case "object":
-      if (Array.isArray(property.examples)) {
-        placeholder = property.examples[0] + "";
-      }
-      break;
-    case "number":
-      placeholder = `${property.examples}`;
-      break;
-    case "string":
-      placeholder = property.examples;
-      break;
-  }
 
   if (property.type === "array" && !property.enum) {
     return (
@@ -55,6 +49,7 @@ const Control: React.FC<IProps> = ({
             onDelete={(item) => arrayHelpers.remove(Number.parseInt(item))}
             addOnBlur
             error={!!meta.error}
+            disabled={disabled}
           />
         )}
       />
@@ -69,10 +64,10 @@ const Control: React.FC<IProps> = ({
     return (
       <Multiselect
         name={name}
-        placeholder={placeholder}
         data={data}
         onChange={(dataItems) => form.setValue(dataItems)}
         value={field.value}
+        disabled={disabled}
       />
     );
   }
@@ -82,27 +77,17 @@ const Control: React.FC<IProps> = ({
     return (
       <DropDown
         {...field}
-        placeholder={placeholder}
         options={property.enum.map((dataItem) => ({
           label: dataItem?.toString() ?? "",
           value: dataItem?.toString() ?? "",
         }))}
-        onChange={(selectedItem) =>
-          selectedItem && form.setValue(selectedItem.value)
-        }
+        onChange={(selectedItem) => selectedItem && form.setValue(selectedItem.value)}
         value={value}
+        isDisabled={disabled}
       />
     );
   } else if (property.multiline && !property.isSecret) {
-    return (
-      <TextArea
-        {...field}
-        placeholder={placeholder}
-        autoComplete="off"
-        value={value ?? ""}
-        rows={3}
-      />
-    );
+    return <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} error={error} />;
   } else if (property.isSecret) {
     const unfinishedSecret = unfinishedFlows[name];
     const isEditInProgress = !!unfinishedSecret;
@@ -111,20 +96,22 @@ const Control: React.FC<IProps> = ({
       <ConfirmationControl
         component={
           property.multiline && (isEditInProgress || !isFormInEditMode) ? (
-            <TextArea
+            <SecretTextArea
               {...field}
               autoComplete="off"
-              placeholder={placeholder}
               value={value ?? ""}
               rows={3}
+              disabled={disabled}
+              error={error}
             />
           ) : (
             <Input
               {...field}
               autoComplete="off"
-              placeholder={placeholder}
               value={value ?? ""}
               type="password"
+              disabled={disabled}
+              error={error}
             />
           )
         }
@@ -137,28 +124,15 @@ const Control: React.FC<IProps> = ({
         }}
         onCancel={() => {
           removeUnfinishedFlow(name);
-          if (
-            unfinishedSecret &&
-            unfinishedSecret.hasOwnProperty("startValue")
-          ) {
+          if (unfinishedSecret && unfinishedSecret.hasOwnProperty("startValue")) {
             form.setValue(unfinishedSecret.startValue);
           }
         }}
-      />
-    );
-  } else {
-    const inputType = property.type === "integer" ? "number" : "text";
-
-    return (
-      <Input
-        {...field}
-        placeholder={placeholder}
-        autoComplete="off"
-        type={inputType}
-        value={value ?? ""}
+        disabled={disabled}
       />
     );
   }
-};
+  const inputType = property.type === "integer" ? "number" : "text";
 
-export { Control };
+  return <Input {...field} autoComplete="off" type={inputType} value={value ?? ""} disabled={disabled} error={error} />;
+};

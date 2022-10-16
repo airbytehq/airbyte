@@ -9,7 +9,6 @@
     "title": "MS SQL Server Destination Spec",
     "type": "object",
     "required": ["host", "port", "username", "database", "schema"],
-    "additionalProperties": true,
     "properties": {
       "host": {
         "title": "Host",
@@ -54,21 +53,27 @@
         "airbyte_secret": true,
         "order": 5
       },
+      "jdbc_url_params": {
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "type": "string",
+        "order": 6
+      },
       "ssl_method": {
         "title": "SSL Method",
         "type": "object",
         "description": "The encryption method which is used to communicate with the database.",
-        "order": 6,
+        "order": 7,
         "oneOf": [
           {
             "title": "Unencrypted",
-            "additionalProperties": false,
             "description": "The data transfer will not be encrypted.",
             "required": ["ssl_method"],
             "type": "object",
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "unencrypted",
                 "enum": ["unencrypted"],
                 "default": "unencrypted"
               }
@@ -76,13 +81,13 @@
           },
           {
             "title": "Encrypted (trust server certificate)",
-            "additionalProperties": false,
             "description": "Use the certificate provided by the server without verification. (For testing purposes only!)",
             "required": ["ssl_method"],
             "type": "object",
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "encrypted_trust_server_certificate",
                 "enum": ["encrypted_trust_server_certificate"],
                 "default": "encrypted_trust_server_certificate"
               }
@@ -90,13 +95,13 @@
           },
           {
             "title": "Encrypted (verify certificate)",
-            "additionalProperties": false,
             "description": "Verify and use the certificate provided by the server.",
             "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
             "type": "object",
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "encrypted_verify_certificate",
                 "enum": ["encrypted_verify_certificate"],
                 "default": "encrypted_verify_certificate"
               },
@@ -104,7 +109,7 @@
                 "title": "Host Name In Certificate",
                 "type": "string",
                 "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
-                "order": 7
+                "order": 8
               }
             }
           }

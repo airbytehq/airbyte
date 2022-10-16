@@ -1,2 +1,2 @@
-export * from "./TrackPageAnalytics";
 export * from "./useAnalyticsService";
+export * from "./pageTrackingCodes";

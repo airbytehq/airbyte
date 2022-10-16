@@ -12,13 +12,9 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-  # We cannot use these tests for testing Incremental,
-  # since for Surveymonkey the State is saved for each Survey separately,
-  # and the Acceptance Tests at this stage do not support this functionality.
-  #incremental:
-  #  - config_path: "secrets/config.json"
-  #    configured_catalog_path: "integration_tests/configured_catalog.json"
-  #    future_state_path: "integration_tests/abnormal_state.json"
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

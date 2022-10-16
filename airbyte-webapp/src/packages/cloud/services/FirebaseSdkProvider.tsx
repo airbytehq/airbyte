@@ -1,16 +1,16 @@
+import { getAuth, connectAuthEmulator } from "firebase/auth";
 import React from "react";
-import { getAuth } from "firebase/auth";
+
 import { useConfig } from "packages/cloud/services/config";
+import { FirebaseAppProvider, useFirebaseApp, AuthProvider } from "packages/firebaseReact";
 
-import {
-  FirebaseAppProvider,
-  useFirebaseApp,
-  AuthProvider,
-} from "packages/firebaseReact";
-
-const FirebaseAppSdksProvider: React.FC = ({ children }) => {
+const FirebaseAppSdksProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const config = useConfig();
   const firebaseApp = useFirebaseApp();
   const auth = getAuth(firebaseApp);
+  if (config.firebase.authEmulatorHost) {
+    connectAuthEmulator(auth, config.firebase.authEmulatorHost);
+  }
 
   return <AuthProvider sdk={auth}>{children}</AuthProvider>;
 };
@@ -19,7 +19,7 @@ const FirebaseAppSdksProvider: React.FC = ({ children }) => {
  * This Provider is responsible for injecting firebase app
  * based on airbyte app config and also injecting all required firebase sdks
  */
-const FirebaseSdkProvider: React.FC = ({ children }) => {
+const FirebaseSdkProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const config = useConfig();
 
   return (

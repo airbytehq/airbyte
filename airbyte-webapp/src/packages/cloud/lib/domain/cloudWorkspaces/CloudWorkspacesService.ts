@@ -2,15 +2,13 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 import { CloudWorkspace, CloudWorkspaceUsage } from "./types";
 
-class CloudWorkspacesService extends AirbyteRequestService {
-  get url() {
-    return `cloud_workspaces`;
+export class CloudWorkspacesService extends AirbyteRequestService {
+  get url(): string {
+    return "v1/cloud_workspaces";
   }
 
   public async list(): Promise<CloudWorkspace[]> {
-    const { workspaces } = await this.fetch<{ workspaces: CloudWorkspace[] }>(
-      `${this.url}/list`
-    );
+    const { workspaces } = await this.fetch<{ workspaces: CloudWorkspace[] }>(`${this.url}/list`);
 
     return workspaces;
   }
@@ -22,12 +20,9 @@ class CloudWorkspacesService extends AirbyteRequestService {
   }
 
   public async getUsage(workspaceId: string): Promise<CloudWorkspaceUsage> {
-    const usage = await this.fetch<CloudWorkspaceUsage>(
-      `${this.url}/get_usage`,
-      {
-        workspaceId,
-      }
-    );
+    const usage = await this.fetch<CloudWorkspaceUsage>(`${this.url}/get_usage`, {
+      workspaceId,
+    });
 
     return usage;
   }
@@ -47,19 +42,16 @@ class CloudWorkspacesService extends AirbyteRequestService {
 
   public async listByUser(userId: string): Promise<CloudWorkspace[]> {
     const { workspaces } = await this.fetch<{ workspaces: CloudWorkspace[] }>(
-      `web_backend/permissions/list_workspaces_by_user`,
+      `v1/web_backend/permissions/list_workspaces_by_user`,
       { userId }
     );
 
     return workspaces;
   }
 
-  public async create(cloudWorkspaceCreatePayload: {
-    name: string;
-    userId: string;
-  }): Promise<CloudWorkspace> {
+  public async create(cloudWorkspaceCreatePayload: { name: string; userId: string }): Promise<CloudWorkspace> {
     return this.fetch<CloudWorkspace>(
-      `web_backend/permissioned_cloud_workspace/create`,
+      `v1/web_backend/permissioned_cloud_workspace/create`,
       cloudWorkspaceCreatePayload
     );
   }
@@ -76,5 +68,3 @@ class CloudWorkspacesService extends AirbyteRequestService {
     });
   }
 }
-
-export { CloudWorkspacesService };

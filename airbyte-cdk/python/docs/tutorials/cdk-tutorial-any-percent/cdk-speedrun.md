@@ -4,7 +4,7 @@ This is a blazing fast guide to building an HTTP source connector. Think of it a
 
 # Dependencies
 
-1. Python &gt;= 3.7
+1. Python &gt;= 3.9
 2. Docker
 3. NodeJS
 
@@ -42,7 +42,6 @@ We're working with the Exchange Rates API, so we need to define our input schema
     "title": "Python Http Tutorial Spec",
     "type": "object",
     "required": ["start_date", "currency_base"],
-    "additionalProperties": false,
     "properties": {
       "start_date": {
         "type": "string",

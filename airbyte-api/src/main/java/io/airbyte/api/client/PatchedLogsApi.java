@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.api.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.api.client.invoker.ApiClient;
-import io.airbyte.api.client.invoker.ApiException;
-import io.airbyte.api.client.invoker.ApiResponse;
-import io.airbyte.api.client.model.LogsRequestBody;
+import io.airbyte.api.client.invoker.generated.ApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.invoker.generated.ApiResponse;
+import io.airbyte.api.client.model.generated.LogsRequestBody;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,9 +21,9 @@ import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 
 /**
- * This class is a copy of {@link LogsApi} except it allows Accept: text/plain. Without this
- * modification, {@link LogsApi} returns a 406 because the generated code requests the wrong
- * response type.
+ * This class is a copy of {@link io.airbyte.api.client.generated.LogsApi} except it allows Accept:
+ * text/plain. Without this modification, {@link io.airbyte.api.client.generated.LogsApi} returns a
+ * 406 because the generated code requests the wrong response type.
  */
 public class PatchedLogsApi {
 
@@ -75,7 +75,7 @@ public class PatchedLogsApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
-      if (localVarResponse.statusCode() / 100 != 2) {
+      if (isErrorResponse(localVarResponse)) {
         throw new ApiException(localVarResponse.statusCode(),
             "getLogs call received non-success response",
             localVarResponse.headers(),
@@ -98,6 +98,10 @@ public class PatchedLogsApi {
       Thread.currentThread().interrupt();
       throw new ApiException(e);
     }
+  }
+
+  private Boolean isErrorResponse(final HttpResponse<InputStream> httpResponse) {
+    return httpResponse.statusCode() / 100 != 2;
   }
 
   private HttpRequest.Builder getLogsRequestBuilder(final LogsRequestBody logsRequestBody) throws ApiException {

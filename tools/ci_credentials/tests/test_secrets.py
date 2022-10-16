@@ -166,3 +166,17 @@ def test_write(connector_name, secrets, expected_files):
                 has = True
                 break
         assert has, f"incorrect file data: {target_file}"
+
+
+@pytest.mark.parametrize(
+    "connector_name,dict_json_value,expected_secret",
+    (
+            ("source-default", "{\"org_id\": 111}", "::add-mask::111"),
+            ("source-default", "{\"org\": 111}", ""),
+    )
+)
+def test_validate_mask_values(connector_name, dict_json_value, expected_secret, capsys):
+    loader = SecretsLoader(connector_name=connector_name, gsm_credentials={})
+    json_value = json.loads(dict_json_value)
+    loader.mask_secrets_from_action_log(None, json_value)
+    assert expected_secret in capsys.readouterr().out

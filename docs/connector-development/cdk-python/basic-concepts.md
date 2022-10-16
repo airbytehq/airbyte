@@ -30,17 +30,15 @@ The Source contains one or more **Streams** \(or **Airbyte Streams**\). A **Stre
 
 Airbyte provides abstract base classes which make it much easier to perform certain categories of tasks e.g: `HttpStream` makes it easy to create HTTP API-based streams. However, if those do not satisfy your use case \(for example, if you're pulling data from a relational database\), you can always directly implement the Airbyte Protocol by subclassing the CDK's `Source` class.
 
+The `Source` class implements the `Spec` operation by looking for a file named `spec.yaml` (or `spec.json`) in the module's root by default. This is expected to be a json schema file that specifies the required configuration. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/spec.yaml) from the Exchange Rates source.
+
 Note that while this is the most flexible way to implement a source connector, it is also the most toilsome as you will be required to manually manage state, input validation, correctly conforming to the Airbyte Protocol message formats, and more. We recommend using a subclass of `Source` unless you cannot fulfill your use case otherwise.
 
 ## The `AbstractSource` Object
 
 `AbstractSource` is a more opinionated implementation of `Source`. It implements `Source`'s 4 methods as follows:
 
-`Spec` and `Check` are the `AbstractSource`'s simplest operations.
-
-`Spec` returns a checked in json schema file specifying the required configuration. The `AbstractSource` looks for a file named `spec.json` in the module's root by default. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/spec.json).
-
-`Check` delegates to the `AbstractSource`'s `check_connection` function. The function's `config` parameter contains the user-provided configuration, specified in the `spec.json` returned by `Spec`. `check_connection` uses this configuration to validate access and permissioning. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py#L90) from the same Exchange Rates API.
+`Check` delegates to the `AbstractSource`'s `check_connection` function. The function's `config` parameter contains the user-provided configuration, specified in the `spec.yaml` returned by `Spec`. `check_connection` uses this configuration to validate access and permissioning. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py#L90) from the same Exchange Rates API.
 
 ### The `Stream` Abstract Base Class
 
@@ -58,7 +56,7 @@ A summary of what we've covered so far on how to use the Airbyte CDK:
 * This involves,
   1. implementing the `check_connection`function.
   2. Creating the appropriate `Stream` classes and returning them in the `streams` function.
-  3. placing the above mentioned `spec.json` file in the right place.
+  3. placing the above mentioned `spec.yaml` file in the right place.
 
 ## HTTP Streams
 

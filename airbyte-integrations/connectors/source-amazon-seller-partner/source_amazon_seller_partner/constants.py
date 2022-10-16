@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 """
@@ -40,26 +40,26 @@ class AWSEnvironment(str, Enum):
 
 class AWSRegion(str, Enum):
     AE = "AE"
+    AU = "AU"
+    BR = "BR"
+    CA = "CA"
     DE = "DE"
-    PL = "PL"
     EG = "EG"
     ES = "ES"
     FR = "FR"
+    GB = "GB"
     IN = "IN"
     IT = "IT"
+    JP = "JP"
+    MX = "MX"
     NL = "NL"
+    PL = "PL"
     SA = "SA"
     SE = "SE"
+    SG = "SG"
     TR = "TR"
     UK = "UK"
-    AU = "AU"
-    JP = "JP"
-    SG = "SG"
     US = "US"
-    BR = "BR"
-    CA = "CA"
-    MX = "MX"
-    GB = "GB"
 
 
 def get_aws_base_url(aws_env: AWSEnvironment) -> str:

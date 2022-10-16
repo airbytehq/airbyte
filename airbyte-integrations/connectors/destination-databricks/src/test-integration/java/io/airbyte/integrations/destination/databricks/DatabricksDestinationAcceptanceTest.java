@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,17 +78,19 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     final String schemaName = StreamCopierFactory.getSchema(namespace, databricksConfig.getDatabaseSchema(), nameTransformer);
     final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
-    final Database database = getDatabase(databricksConfig);
-    return database.query(ctx -> ctx.select(asterisk())
-        .from(String.format("%s.%s", schemaName, tableName))
-        .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
-        .fetch().stream()
-        .map(record -> {
-          final JsonNode json = Jsons.deserialize(record.formatJSON(JdbcUtils.getDefaultJSONFormat()));
-          final JsonNode jsonWithOriginalFields = nameUpdater.getJsonWithOriginalFieldNames(json);
-          return AvroRecordHelper.pruneAirbyteJson(jsonWithOriginalFields);
-        })
-        .collect(Collectors.toList()));
+    try (final DSLContext dslContext = getDslContext(databricksConfig)) {
+      final Database database = new Database(dslContext);
+      return database.query(ctx -> ctx.select(asterisk())
+          .from(String.format("%s.%s", schemaName, tableName))
+          .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
+          .fetch().stream()
+          .map(record -> {
+            final JsonNode json = Jsons.deserialize(record.formatJSON(JdbcUtils.getDefaultJSONFormat()));
+            final JsonNode jsonWithOriginalFields = nameUpdater.getJsonWithOriginalFieldNames(json);
+            return AvroRecordHelper.pruneAirbyteJson(jsonWithOriginalFields);
+          })
+          .collect(Collectors.toList()));
+    }
   }
 
   @Override
@@ -131,7 +134,8 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
 
     // clean up database
     LOGGER.info("Dropping database schema {}", databricksConfig.getDatabaseSchema());
-    try (final Database database = getDatabase(databricksConfig)) {
+    try (final DSLContext dslContext = getDslContext(databricksConfig)) {
+      final Database database = new Database(dslContext);
       // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
       // Databricks, and it incorrectly quotes the schema name
       database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.getDatabaseSchema())));
@@ -140,13 +144,10 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     }
   }
 
-  private static Database getDatabase(final DatabricksDestinationConfig databricksConfig) {
-    return Databases.createDatabase(
-        DatabricksConstants.DATABRICKS_USERNAME,
-        databricksConfig.getDatabricksPersonalAccessToken(),
-        DatabricksDestination.getDatabricksConnectionString(databricksConfig),
-        DatabricksConstants.DATABRICKS_DRIVER_CLASS,
-        SQLDialect.DEFAULT);
+  private static DSLContext getDslContext(final DatabricksDestinationConfig databricksConfig) {
+    return DSLContextFactory.create(DatabricksConstants.DATABRICKS_USERNAME,
+        databricksConfig.getDatabricksPersonalAccessToken(), DatabricksConstants.DATABRICKS_DRIVER_CLASS,
+        DatabricksDestination.getDatabricksConnectionString(databricksConfig), SQLDialect.DEFAULT);
   }
 
 }

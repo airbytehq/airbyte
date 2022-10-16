@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.normalization;
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
@@ -15,17 +16,26 @@ import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.persistence.job.errorreporter.SentryExceptionHelper;
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.process.KubeProcessFactory;
+import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,10 +46,12 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       .setLogPrefix("normalization")
       .setPrefixColor(Color.GREEN_BACKGROUND);
 
-  private final WorkerConfigs workerConfigs;
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
+  private final NormalizationAirbyteStreamFactory streamFactory = new NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER);
+  private Map<Type, List<AirbyteMessage>> airbyteMessagesByType;
+  private String dbtErrorStack;
 
   private Process process = null;
 
@@ -51,14 +63,13 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     POSTGRES,
     REDSHIFT,
     SNOWFLAKE,
-    CLICKHOUSE
+    CLICKHOUSE,
+    TIDB
   }
 
-  public DefaultNormalizationRunner(final WorkerConfigs workerConfigs,
-                                    final DestinationType destinationType,
+  public DefaultNormalizationRunner(final DestinationType destinationType,
                                     final ProcessFactory processFactory,
                                     final String normalizationImageName) {
-    this.workerConfigs = workerConfigs;
     this.destinationType = destinationType;
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImageName;
@@ -111,6 +122,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private boolean runProcess(final String jobId,
                              final int attempt,
                              final Path jobRoot,
@@ -121,6 +133,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     try {
       LOGGER.info("Running with normalization version: {}", normalizationImageName);
       process = processFactory.create(
+          AirbyteIntegrationLauncher.NORMALIZE_STEP,
           jobId,
           attempt,
           jobRoot,
@@ -128,11 +141,39 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           false, files,
           null,
           resourceRequirements,
-          Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP),
+          Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
+              AirbyteIntegrationLauncher.NORMALIZE_STEP),
+          Collections.emptyMap(),
           Collections.emptyMap(),
           args);
 
-      LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
+      try (final InputStream stdout = process.getInputStream()) {
+        // finds and collects any AirbyteMessages from stdout
+        // also builds a list of raw dbt errors and stores in streamFactory
+        airbyteMessagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
+            .collect(Collectors.groupingBy(AirbyteMessage::getType));
+
+        // picks up error logs from dbt
+        dbtErrorStack = String.join("\n", streamFactory.getDbtErrors());
+
+        if (!"".equals(dbtErrorStack)) {
+          final AirbyteMessage dbtTraceMessage = new AirbyteMessage()
+              .withType(Type.TRACE)
+              .withTrace(new AirbyteTraceMessage()
+                  .withType(AirbyteTraceMessage.Type.ERROR)
+                  .withEmittedAt((double) System.currentTimeMillis())
+                  .withError(new AirbyteErrorTraceMessage()
+                      .withFailureType(FailureType.SYSTEM_ERROR) // TODO: decide on best FailureType for this
+                      .withMessage("Normalization failed during the dbt run. This may indicate a problem with the data itself.")
+                      .withInternalMessage(buildInternalErrorMessageFromDbtStackTrace())
+                      // due to the lack of consistent defining features in dbt errors we're injecting a breadcrumb to the
+                      // stacktrace so we can confidently identify all dbt errors when parsing and sending to Sentry
+                      // see dbt error examples: https://docs.getdbt.com/guides/legacy/debugging-errors for more context
+                      .withStackTrace("AirbyteDbtError: \n".concat(dbtErrorStack))));
+
+          airbyteMessagesByType.putIfAbsent(Type.TRACE, List.of(dbtTraceMessage));
+        }
+      }
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
 
       WorkerUtils.wait(process);
@@ -154,10 +195,23 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     }
 
     LOGGER.debug("Closing normalization process");
-    WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
       throw new WorkerException("Normalization process wasn't successful");
     }
+  }
+
+  @Override
+  public Stream<AirbyteTraceMessage> getTraceMessages() {
+    if (airbyteMessagesByType != null && airbyteMessagesByType.get(Type.TRACE) != null) {
+      return airbyteMessagesByType.get(Type.TRACE).stream().map(AirbyteMessage::getTrace);
+    }
+    return Stream.empty();
+  }
+
+  private String buildInternalErrorMessageFromDbtStackTrace() {
+    final Map<SentryExceptionHelper.ERROR_MAP_KEYS, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
+    return errorMap.get(SentryExceptionHelper.ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY);
   }
 
   @VisibleForTesting

@@ -36,5 +36,11 @@ _to_gradle_path() {
   echo ":$(echo "$path" | tr -s / :):${task}"
 }
 
+full_path_to_gradle_path() {
+  # converts any Airbyte repo path to gradle job
+  local path="$1/$2"
+  python -c "print(':airbyte-' + ':'.join(p for p in '${path}'.split('airbyte-')[-1].replace('/', ':').split(':') if p))"
+}
+
 VERSION=$(cat .env | grep "^VERSION=" | cut -d = -f 2); export VERSION
 SCRIPT_DIRECTORY=$(_script_directory); export SCRIPT_DIRECTORY

@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-json-validation')
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

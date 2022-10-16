@@ -16,16 +16,24 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams:
         [
-          "homepages",
-          "looks",
-          "run_looks",
-          "scheduled_plans",
-          "user_attribute_group_values",
-          "user_login_lockouts",
-          "user_sessions",
+            "scheduled_plans",
+            "user_attribute_group_values",
+            "user_login_lockouts",
+            "user_sessions",
         ]
   full_refresh:
+    # test streams except "run_looks"
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_without_dynamic_streams.json"
-      ignored_fields: 
-        "datagroups": ["properties", "trigger_check_at"]
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      ignored_fields:
+        datagroups: [ "properties", "trigger_check_at" ]
+        looks: [ "properties", "last_accessed_at" ]
+    # test the stream "run_looks" separately
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_run_looks_catalog.json"
+
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+

@@ -21,5 +21,5 @@ select
 from {{ ref('dedup_exchange_rate_ab1') }}
 -- dedup_exchange_rate
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

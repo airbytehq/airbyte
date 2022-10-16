@@ -9,11 +9,10 @@
     "title": "MongoDB Destination Spec",
     "type": "object",
     "required": ["database", "auth_type"],
-    "additionalProperties": true,
     "properties": {
       "instance_type": {
         "description": "MongoDb instance to connect to. For MongoDB Atlas and Replica Set TLS connection is used by default.",
-        "title": "MongoDb instance type",
+        "title": "MongoDb Instance Type",
         "type": "object",
         "order": 0,
         "oneOf": [
@@ -29,13 +28,13 @@
               "host": {
                 "title": "Host",
                 "type": "string",
-                "description": "Host of a Mongo database to be replicated.",
+                "description": "The Host of a Mongo database to be replicated.",
                 "order": 0
               },
               "port": {
                 "title": "Port",
                 "type": "integer",
-                "description": "Port of a Mongo database to be replicated.",
+                "description": "The Port of a Mongo database to be replicated.",
                 "minimum": 0,
                 "maximum": 65536,
                 "default": 27017,
@@ -70,7 +69,6 @@
           },
           {
             "title": "MongoDB Atlas",
-            "additionalProperties": false,
             "required": ["instance", "cluster_url"],
             "properties": {
               "instance": {
@@ -101,7 +99,6 @@
         "oneOf": [
           {
             "title": "None",
-            "additionalProperties": false,
             "description": "None.",
             "required": ["authorization"],
             "type": "object",
@@ -114,7 +111,6 @@
           },
           {
             "title": "Login/Password",
-            "additionalProperties": false,
             "description": "Login/Password.",
             "required": ["authorization", "username", "password"],
             "type": "object",

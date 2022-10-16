@@ -29,6 +29,7 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: ["epics", "screen_tab_fields", "sprint_issues", "sprints"]
+      timeout_seconds: 1800
 #  incremental:
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/inc_configured_catalog.json"

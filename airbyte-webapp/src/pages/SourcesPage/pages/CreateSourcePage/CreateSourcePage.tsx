@@ -1,73 +1,54 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
+import { useNavigate } from "react-router-dom";
 
-import PageTitle from "components/PageTitle";
-import SourceForm from "./components/SourceForm";
-import useRouter from "hooks/useRouter";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import useSource from "hooks/services/useSourceHook";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
-import useWorkspace from "hooks/services/useWorkspace";
-import { JobInfo } from "../../../../core/domain/job/Job";
+import { PageHeader } from "components/ui/PageHeader";
+
+import { ConnectionConfiguration } from "core/domain/connection";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useCreateSource } from "hooks/services/useSourceHook";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationWrapper";
+
+import { SourceForm } from "./components/SourceForm";
 
 const CreateSourcePage: React.FC = () => {
-  const { push } = useRouter();
+  useTrackPage(PageTrackingCodes.SOURCE_NEW);
+  const navigate = useNavigate();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    status: number;
-    response: JobInfo;
-  } | null>(null);
 
-  const { workspace } = useWorkspace();
-
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
-  const { createSource } = useSource();
+  const { sourceDefinitions } = useSourceDefinitionList();
+  const { mutateAsync: createSource } = useCreateSource();
 
   const onSubmitSourceStep = async (values: {
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    const connector = sourceDefinitions.find(
-      (item) => item.sourceDefinitionId === values.serviceType
-    );
-    setErrorStatusRequest(null);
-    try {
-      const result = await createSource({ values, sourceConnector: connector });
-      setSuccessRequest(true);
-      setTimeout(() => {
-        setSuccessRequest(false);
-        push(`../${result.sourceId}`);
-      }, 2000);
-    } catch (e) {
-      setErrorStatusRequest(e);
+    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
+    if (!connector) {
+      // Unsure if this can happen, but the types want it defined
+      throw new Error("No Connector Found");
     }
+    const result = await createSource({ values, sourceConnector: connector });
+    setSuccessRequest(true);
+    setTimeout(() => {
+      setSuccessRequest(false);
+      navigate(`../${result.sourceId}`);
+    }, 2000);
   };
 
   return (
     <>
-      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
-      <PageTitle
-        withLine
-        title={<FormattedMessage id="sources.newSourceTitle" />}
-      />
-      <FormPageContent>
-        <SourceForm
-          afterSelectConnector={() => setErrorStatusRequest(null)}
-          onSubmit={onSubmitSourceStep}
-          sourceDefinitions={sourceDefinitions}
-          hasSuccess={successRequest}
-          error={errorStatusRequest}
-        />
-      </FormPageContent>
+      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />{" "}
+      <ConnectorDocumentationWrapper>
+        <PageHeader title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
+        <FormPageContent>
+          <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />
+        </FormPageContent>
+      </ConnectorDocumentationWrapper>
     </>
   );
 };

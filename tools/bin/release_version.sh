@@ -14,31 +14,26 @@ if [[ -z "${CLOUDREPO_PASSWORD}" ]]; then
   exit 1;
 fi
 
-if [[ -z "${DOCKER_PASSWORD}" ]]; then
-  echo 'DOCKER_PASSWORD for airbytebot not set.';
+if [[ -z "${DOCKER_HUB_USERNAME}" ]]; then
+  echo 'DOCKER_HUB_USERNAME not set.';
   exit 1;
 fi
 
-docker login -u airbytebot -p "${DOCKER_PASSWORD}"
+if [[ -z "${DOCKER_HUB_PASSWORD}" ]]; then
+  echo 'DOCKER_HUB_PASSWORD for docker user not set.';
+  exit 1;
+fi
 
-PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
+docker login -u "${DOCKER_HUB_USERNAME}" -p "${DOCKER_HUB_PASSWORD}"
 
-[[ -z "$PART_TO_BUMP" ]] && echo "Usage ./tools/bin/release_version.sh (major|minor|patch)" && exit 1
+source ./tools/bin/bump_version.sh
 
-# uses .bumpversion.cfg to find files to bump
-# requires no git diffs to run
-# commits the bumped versions code to your branch
-pip install bumpversion
-bumpversion "$PART_TO_BUMP"
-
-NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
-GIT_REVISION=$(git rev-parse HEAD)
-[[ -z "$GIT_REVISION" ]] && echo "Couldn't get the git revision..." && exit 1
-
-echo "Bumped version from ${PREV_VERSION} to ${NEW_VERSION}"
-echo "Building and publishing version $NEW_VERSION for git revision $GIT_REVISION..."
-
+echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
 VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build
-SUB_BUILD=PLATFORM ./gradlew publish
-VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
-echo "Completed building and publishing..."
+VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew publish
+
+# Container should be running before build starts
+# It generates binaries to build images for different CPU architecture
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+VERSION=$NEW_VERSION ./tools/bin/publish_docker.sh
+echo "Completed building and publishing PLATFORM..."

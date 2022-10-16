@@ -5,6 +5,7 @@ Chartmogul is an online subscription analytics platform. It retrieves data from 
 
 Connector currently implements following full refresh streams:
 * [Customers](https://dev.chartmogul.com/reference/list-customers)
+* [CustomerCount] (https://dev.chartmogul.com/reference/retrieve-customer-count)
 * [Activities](https://dev.chartmogul.com/reference/list-activities)
 
 `start_date` config is used for retrieving `Activies`. `Customers` stream does not use this config. Even if it was possible to filter by `start_date`, it would cause issues when modeling data. That is because activies after `start_date` can be triggered by customers who were created way before that.

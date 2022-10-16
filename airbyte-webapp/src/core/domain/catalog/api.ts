@@ -1,55 +1,18 @@
 import { JSONSchema7 } from "json-schema";
-import { JobInfo } from "../job/Job";
 
-export interface SourceDiscoverSchemaRead {
-  catalog: SyncSchema;
-  jobInfo?: JobInfo;
-}
+import { AirbyteCatalog, AirbyteStreamAndConfiguration } from "../../request/AirbyteClient";
 
 export type SchemaFields = JSONSchema7;
 
-export enum SyncMode {
-  Incremental = "incremental",
-  FullRefresh = "full_refresh",
+export interface SyncSchemaStream extends AirbyteStreamAndConfiguration {
+  /**
+   * This field is not returned from API and is used to track unique objects
+   */
+  id?: string;
 }
 
-export enum DestinationSyncMode {
-  Overwrite = "overwrite",
-  Append = "append",
-  Dedupted = "append_dedup",
-}
-
-export type SyncSchemaStreamInner = {
-  stream: AirbyteStream;
-  config: AirbyteStreamConfiguration;
-};
-
-export type SyncSchemaStream = {
-  stream: AirbyteStream;
-  config: AirbyteStreamConfiguration;
-
-  id: string;
-};
-
-export type AirbyteStream = {
-  name: string;
-  namespace?: string;
-  jsonSchema: SchemaFields;
-  supportedSyncModes: SyncMode[];
-  sourceDefinedCursor: boolean | null;
-  sourceDefinedPrimaryKey: string[][];
-  defaultCursorField: string[];
-};
-
-export type AirbyteStreamConfiguration = {
-  cursorField: string[];
-  primaryKey: string[][];
-  selected: boolean;
-  syncMode: SyncMode;
-  destinationSyncMode: DestinationSyncMode;
-  aliasName: string;
-};
-
-export type SyncSchema = {
+export interface SyncSchema extends AirbyteCatalog {
   streams: SyncSchemaStream[];
-};
+}
+
+export type Path = string[];

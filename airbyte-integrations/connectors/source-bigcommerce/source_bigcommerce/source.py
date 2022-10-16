@@ -1,10 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from abc import ABC
-from email.utils import parsedate_tz
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -167,19 +166,6 @@ class Orders(IncrementalBigcommerceStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json() if len(response.content) > 0 else []
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        max_date = ""
-        if not current_stream_state.get(self.cursor_field):
-            max_date = latest_record.get(self.cursor_field, "")
-        elif latest_record.get(self.cursor_field) and current_stream_state.get(self.cursor_field):
-            latest_state_date_time = parsedate_tz(latest_record.get(self.cursor_field))
-            current_state_date_time = parsedate_tz(current_stream_state.get(self.cursor_field))
-            max_date = current_stream_state.get(self.cursor_field)
-            if current_state_date_time < latest_state_date_time:
-                max_date = latest_record.get(self.cursor_field)
-
-        return {self.cursor_field: max_date}
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if len(response.content) > 0 and len(response.json()) == self.limit:
             self.page = self.page + 1
@@ -197,12 +183,6 @@ class Pages(IncrementalBigcommerceStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
-
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit}
-        return params
 
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
@@ -227,6 +207,29 @@ class Transactions(OrderSubstream):
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         return params
+
+
+class Channels(IncrementalBigcommerceStream):
+    data_field = "channels"
+    # Override `order_field` bacause Channels API do not acept `asc` value
+    order_field = "date_modified"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}"
+
+
+class Store(BigcommerceStream):
+    data_field = "store"
+    cursor_field = "store_id"
+    api_version = "v2"
+    data = None
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = response.json()
+        yield from [json_response]
 
 
 class BigcommerceAuthenticator(HttpAuthenticator):
@@ -268,4 +271,6 @@ class SourceBigcommerce(AbstractSource):
             Orders(**args),
             Transactions(**args),
             Products(**args),
+            Channels(**args),
+            Store(**args),
         ]

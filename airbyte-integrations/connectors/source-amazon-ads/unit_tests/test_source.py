@@ -1,11 +1,13 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
 from jsonschema import Draft4Validator
 from source_amazon_ads import SourceAmazonAds
+
+from .utils import command_check, url_strip_query
 
 
 def setup_responses():
@@ -22,36 +24,57 @@ def setup_responses():
 
 
 @responses.activate
-def test_discover(test_config):
+def test_discover(config):
     setup_responses()
     source = SourceAmazonAds()
-    catalog = source.discover(None, test_config)
+    catalog = source.discover(None, config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
     for schema in schemas:
         Draft4Validator.check_schema(schema)
 
 
-def test_spec(test_config):
+def test_spec():
     source = SourceAmazonAds()
-    spec = source.spec()
+    spec = source.spec(None)
     assert isinstance(spec, ConnectorSpecification)
 
 
 @responses.activate
-def test_check(test_config):
+def test_check(config_gen):
     setup_responses()
     source = SourceAmazonAds()
-    assert source.check(None, test_config) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+    assert command_check(source, config_gen(start_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert len(responses.calls) == 2
+
+    assert command_check(source, config_gen(start_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert len(responses.calls) == 4
+
+    assert source.check(None, config_gen(start_date="2022-02-20")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert len(responses.calls) == 6
+
+    assert command_check(source, config_gen(start_date="2022-20-02")) == AirbyteConnectionStatus(
+        status=Status.FAILED, message="'month must be in 1..12'"
+    )
+    assert len(responses.calls) == 6
+
+    assert command_check(source, config_gen(start_date="no date")) == AirbyteConnectionStatus(
+        status=Status.FAILED, message="'String does not match format YYYY-MM-DD'"
+    )
+    assert len(responses.calls) == 6
+
+    assert command_check(source, config_gen(region=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert len(responses.calls) == 8
+    assert url_strip_query(responses.calls[7].request.url) == "https://advertising-api.amazon.com/v2/profiles"
 
 
 @responses.activate
-def test_source_streams(test_config):
+def test_source_streams(config):
     setup_responses()
     source = SourceAmazonAds()
-    streams = source.streams(test_config)
-    assert len(streams) == 18
+    streams = source.streams(config)
+    assert len(streams) == 22
     actual_stream_names = {stream.name for stream in streams}
     expected_stream_names = set(
         [
@@ -68,6 +91,10 @@ def test_source_streams(test_config):
             "sponsored_brands_ad_groups",
             "sponsored_brands_keywords",
             "sponsored_brands_report_stream",
+            "attribution_report_performance_adgroup",
+            "attribution_report_performance_campaign",
+            "attribution_report_performance_creative",
+            "attribution_report_products",
         ]
     )
     assert not expected_stream_names - actual_stream_names

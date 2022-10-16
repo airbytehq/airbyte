@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.e2e_test;
@@ -71,6 +71,7 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
         @CheckForNull
         @Override
         protected AirbyteMessage computeNext() {
+
           if (emittedMessages.get() >= feedConfig.getMaxMessages()) {
             return endOfData();
           }

@@ -8,7 +8,7 @@
 select
     {{ dbt_utils.surrogate_key([
         '_airbyte_conflict_stream_name_hashid',
-        'conflict_stream_name',
+        object_to_string('conflict_stream_name'),
     ]) }} as _airbyte_conflict_stream_name_2_hashid,
     tmp.*
 from {{ ref('conflict_stream_name_conflict_stream_name_ab2') }} tmp

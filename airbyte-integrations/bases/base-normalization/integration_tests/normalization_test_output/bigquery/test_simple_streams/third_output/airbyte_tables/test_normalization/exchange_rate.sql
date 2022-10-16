@@ -114,4 +114,4 @@ from __dbt__cte__exchange_rate_ab3
 -- exchange_rate from `dataline-integration-testing`.test_normalization._airbyte_raw_exchange_rate
 where 1 = 1
   );
-    
+  

@@ -5,9 +5,19 @@ set -e
 . tools/lib/lib.sh
 
 function docker_tag_exists() {
+  # Added check for images pushed to github container registry
+  if [[ $1 == ghcr* ]]
+  then
+    TOKEN_URL=https://ghcr.io/token\?scope\="repository:$1:pull"
+    token=$(curl $TOKEN_URL | jq -r '.token')
+    URL=https://ghcr.io/v2/$1/manifests/$2
+    printf "\tURL: %s\n" "$URL"
+    curl --silent -H "Authorization: Bearer $token" -f -lSL "$URL" > /dev/null
+  else
     URL=https://hub.docker.com/v2/repositories/"$1"/tags/"$2"
     printf "\tURL: %s\n" "$URL"
     curl --silent -f -lSL "$URL" > /dev/null
+  fi
 }
 
 checkPlatformImages() {
@@ -39,6 +49,9 @@ checkConnectorImages() {
       else
           printf "\tERROR: not found!\n" && exit 1
       fi
+      # Docker hub has a rate limit of 180 requests per minute, so slow down our rate of calling the API
+      # https://docs.docker.com/docker-hub/api/latest/#tag/rate-limiting
+      sleep 1
   done <<< "${CONNECTOR_DEFINITIONS}"
 
   echo "Success! All connector images exist!"

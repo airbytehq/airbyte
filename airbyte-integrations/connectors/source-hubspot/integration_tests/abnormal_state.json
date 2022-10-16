@@ -1,38 +1,121 @@
-{
-  "companies": {
-    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "companies" }
+    }
   },
-  "contact_lists": {
-    "timestamp": "2221-10-12T13:37:56.412000+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "contact_lists" }
+    }
   },
-  "contacts": {
-    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "contacts" }
+    }
   },
-  "deals": {
-    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "deals" }
+    }
   },
-  "email_events": {
-    "timestamp": "2221-10-12T13:37:56.412000+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "email_events" }
+    }
   },
-  "feedback_submissions": {
-    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "engagements_calls" }
+    }
   },
-  "engagements": {
-    "lastUpdated": 7945393076412
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "engagements_emails" }
+    }
   },
-  "line_items": {
-    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "engagements_meetings" }
+    }
   },
-  "products": {
-    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "engagements_notes" }
+    }
   },
-  "quotes": {
-    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "engagements_tasks" }
+    }
   },
-  "subscription_changes": {
-    "timestamp": "2221-10-12T13:37:56.412000+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastUpdated": 7945393076412 },
+      "stream_descriptor": { "name": "engagements" }
+    }
   },
-  "tickets": {
-    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "line_items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "products" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "quotes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "subscription_changes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" },
+      "stream_descriptor": { "name": "tickets" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "timestamp": 7966012325000 },
+      "stream_descriptor": { "name": "property_history" }
+    }
   }
-}
+]

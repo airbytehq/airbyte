@@ -1,30 +1,27 @@
 # Troubleshooting & FAQ
 
-Our FAQ is now a section on our Discourse forum. Check it out [here](https://discuss.airbyte.io/c/faq/15)! If you don't see your question answered, feel free to open up a new topic for it.
-
 The troubleshooting section is aimed at collecting common issues users have to provide quick solutions. There are some sections you can find:
 
-* [On Deploying](on-deploying.md): 
+* [On Deploying](on-deploying.md)
 * [On Setting up a New Connection](new-connection.md)
 * [On Running a Sync](running-sync.md)
 * [On Upgrading](on-upgrading.md)
 
-If you don't see your issue listed in those sections, you can send a message in our \#troubleshooting Slack channel. Using the template bellow will allow us to address your issue quickly and will give us full understanding of your situation.
+If you did not find a solution in the previous sections please head over to our online [forum](https://discuss.airbyte.io/).
 
-## Slack Issue Template
+## Our online forum 
+We are driving our community support from our [forum](https://discuss.airbyte.io/).
+Our User Success Engineering team is online to answer any question you may have about Airbyte and help you troubleshoot eventual issue you have with our Open Source version.
+The community is also welcomed to participate in the opened topic!
 
-**Is this your first time deploying Airbyte**: No / Yes   
- **OS Version / Instance**: Ubuntu 18.04, Mac OS, Windows, GCP , EC2 micro.a4   
- **Memory / Disk**: 16Gb / 1Tb SSD   
- **Deployment**: Docker / Kubernetes   
- **Airbyte Version**: 0.26.2-alpha   
- **Source name/version**: File 0.24   
- **Destination name/version**: Postgres 0.3.0   
- **Step**: Setting new connection, source / On sync   
- **Description**: I'm trying to sync for the first time and the process doesn't finish. I had enabled CDC and other cool features.   
+**Before posting on this forum please first check if a similar question was already answered.**
 
-
-Add the logs and other relevant information in the message thread. Below is an example:
-
-![](../.gitbook/assets/issue-example.png)
-
+**The existing categories**:
+* [Troubleshooting](https://discuss.airbyte.io/c/issues/11): Support requests on issues encountered while implementing or using Airbyte.
+* [Product and feedback ideas](https://discuss.airbyte.io/c/product-feedback-and-ideas/20): Suggestions on how to improve Airbyte’s product. Upvote to help with prioritization.
+* [Connector development](https://discuss.airbyte.io/c/connector-development/16): Anything related to connector development.
+* [Connector Job Board](https://discuss.airbyte.io/c/connector-job-board/10/none): Asks and offers for building custom connectors not yet supported by Airbyte.
+* [Contributing to Airbyte](https://discuss.airbyte.io/c/contributing-to-airbyte/21): Anything related to contributing to the open-source repo.
+* [Releases](https://discuss.airbyte.io/c/releases/19): Posts about new releases of Airbyte, including any migration instructions.
+* [Q&A](https://discuss.airbyte.io/c/faq/15): Ask anything that doesn’t belong to the other categories.
+* [Guides](https://discuss.airbyte.io/c/guides/17): Small tutorials and guides solving deployments or workarounds using connectors.

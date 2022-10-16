@@ -2,11 +2,11 @@
   "reports": [
     {
       "columnHeader": {
-        "dimensions": ["ga: date"],
+        "dimensions": ["ga:date"],
         "metricHeader": {
           "metricHeaderEntries": [
             {
-              "name": "ga: 14dayUsers",
+              "name": "ga:14dayUsers",
               "type": "INTEGER"
             }
           ]

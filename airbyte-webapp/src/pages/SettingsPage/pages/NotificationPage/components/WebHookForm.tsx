@@ -1,11 +1,14 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
-import { Label, Input, LoadingButton, LabeledToggle } from "components";
+import { Label, LabeledSwitch } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
+import { Button } from "components/ui/Button";
+import { Input } from "components/ui/Input";
+
 import { WebhookPayload } from "hooks/services/useWorkspace";
 import { equal } from "utils/objects";
 
@@ -50,28 +53,18 @@ const webhookValidationSchema = yup.object().shape({
   sendOnFailure: yup.boolean(),
 });
 
-type WebHookFormProps = {
+interface WebHookFormProps {
   webhook: WebhookPayload;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   onSubmit: (data: WebhookPayload) => void;
   onTest: (data: WebhookPayload) => void;
-};
+}
 
-const WebHookForm: React.FC<WebHookFormProps> = ({
-  webhook,
-  onSubmit,
-  successMessage,
-  errorMessage,
-  onTest,
-}) => {
-  const formatMessage = useIntl().formatMessage;
+const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMessage, errorMessage, onTest }) => {
+  const { formatMessage } = useIntl();
 
-  const feedBackBlock = (
-    dirty: boolean,
-    isSubmitting: boolean,
-    webhook?: string
-  ) => {
+  const feedBackBlock = (dirty: boolean, isSubmitting: boolean, webhook?: string) => {
     if (successMessage) {
       return <Success>{successMessage}</Success>;
     }
@@ -82,17 +75,17 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
 
     if (dirty) {
       return (
-        <LoadingButton isLoading={isSubmitting} type="submit">
+        <Button isLoading={isSubmitting} type="submit">
           <FormattedMessage id="form.saveChanges" />
-        </LoadingButton>
+        </Button>
       );
     }
 
     if (webhook) {
       return (
-        <LoadingButton isLoading={isSubmitting} type="submit">
+        <Button isLoading={isSubmitting} type="submit">
           <FormattedMessage id="settings.test" />
-        </LoadingButton>
+        </Button>
       );
     }
 
@@ -102,15 +95,15 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
   return (
     <Formik
       initialValues={webhook}
-      enableReinitialize={true}
-      validateOnBlur={true}
+      enableReinitialize
+      validateOnBlur
       validateOnChange={false}
       validationSchema={webhookValidationSchema}
-      onSubmit={async (values: WebhookPayload) => {
+      onSubmit={(values: WebhookPayload) => {
         if (equal(webhook, values)) {
-          await onTest(values);
+          onTest(values);
         } else {
-          await onSubmit(values);
+          onSubmit(values);
         }
       }}
     >
@@ -118,14 +111,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
         <Form>
           <Label
             error={!!errors.webhook}
-            message={
-              !!errors.webhook && (
-                <FormattedMessage
-                  id={errors.webhook}
-                  defaultMessage={errors.webhook}
-                />
-              )
-            }
+            message={!!errors.webhook && <FormattedMessage id={errors.webhook} defaultMessage={errors.webhook} />}
           >
             <FormattedMessage id="settings.webhookTitle" />
           </Label>
@@ -146,9 +132,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
                 )}
               </Field>
             </Cell>
-            <FeedbackCell>
-              {feedBackBlock(dirty, isSubmitting, initialValues.webhook)}
-            </FeedbackCell>
+            <FeedbackCell>{feedBackBlock(dirty, isSubmitting, initialValues.webhook)}</FeedbackCell>
           </InputRow>
           {initialValues.webhook ? (
             <Message>
@@ -159,7 +143,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
             <Cell flex={1}>
               <Field name="sendOnFailure">
                 {({ field }: FieldProps<boolean>) => (
-                  <LabeledToggle
+                  <LabeledSwitch
                     name={field.name}
                     checked={field.value}
                     onChange={field.onChange}
@@ -171,7 +155,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
             <Cell flex={1}>
               <Field name="sendOnSuccess">
                 {({ field }: FieldProps<boolean>) => (
-                  <LabeledToggle
+                  <LabeledSwitch
                     name={field.name}
                     checked={field.value}
                     onChange={field.onChange}

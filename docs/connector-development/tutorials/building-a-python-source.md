@@ -8,9 +8,11 @@ This article provides a checklist for how to create a python source. Each step i
 
 Docker, Python, and Java with the versions listed in the [tech stack section](../../understanding-airbyte/tech-stack.md).
 
-{% hint style="info" %}
+:::info
+
 All the commands below assume that `python` points to a version of python &gt;3.7. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
-{% endhint %}
+
+:::
 
 ## Checklist
 
@@ -19,7 +21,7 @@ All the commands below assume that `python` points to a version of python &gt;3.
 * Step 1: Create the source using template
 * Step 2: Build the newly generated source 
 * Step 3: Set up your Airbyte development environment 
-* Step 4: Implement `spec` \(and define the specification for the source `airbyte-integrations/connectors/source-<source-name>/spec.json`\)
+* Step 4: Implement `spec` \(and define the specification for the source `airbyte-integrations/connectors/source-<source-name>/spec.yaml`\)
 * Step 5: Implement `check`
 * Step 6: Implement `discover`
 * Step 7: Implement `read`
@@ -29,13 +31,17 @@ All the commands below assume that `python` points to a version of python &gt;3.
 * Step 11: Add the connector to the API/UI \(by adding an entry in `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`\)
 * Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
 
-{% hint style="info" %}
-Each step of the Creating a Source checklist is explained in more detail below.
-{% endhint %}
+:::info
 
-{% hint style="info" %}
+Each step of the Creating a Source checklist is explained in more detail below.
+
+:::
+
+:::info
+
 All `./gradlew` commands must be run from the root of the airbyte project.
-{% endhint %}
+
+:::
 
 ### Submitting a Source to Airbyte
 
@@ -45,9 +51,11 @@ All `./gradlew` commands must be run from the root of the airbyte project.
 * Once the config is stored in Github Secrets, edit `.github/workflows/test-command.yml` and `.github/workflows/publish-command.yml` to inject the config into the build environment.
 * Edit the `airbyte/tools/bin/ci_credentials.sh` script to pull the script from the build environment and write it to `secrets/config.json` during the build.
 
-{% hint style="info" %}
+:::info
+
 If you have a question about a step the Submitting a Source to Airbyte checklist include it in your PR or ask it on [slack](https://slack.airbyte.io).
-{% endhint %}
+
+:::
 
 ## Explaining Each Step
 
@@ -96,9 +104,11 @@ The commands we ran above created a virtual environment for your source. If you 
 
 Pretty much all it takes to create a source is to implement the `Source` interface. The template fills in a lot of information for you and has extensive docstrings describing what you need to do to implement each method. The next 4 steps are just implementing that interface.
 
-{% hint style="info" %}
+:::info
+
 All logging should be done through the `logger` object passed into each method. Otherwise, logs will not be shown in the Airbyte UI.
-{% endhint %}
+
+:::
 
 #### Iterating on your implementation
 
@@ -137,6 +147,24 @@ Note: Each time you make a change to your implementation you need to re-build th
 
 The nice thing about this approach is that you are running your source exactly as it will be run by Airbyte. The tradeoff is that iteration is slightly slower, because you need to re-build the connector between each change.
 
+**Detailed Debug Messages**
+
+During development of your connector, you can enable the printing of detailed debug information during a sync by specifying the `--debug` flag. This will allow you to get a better picture of what is happening during each step of your sync.
+```text
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
+```
+
+In addition to the preset CDK debug statements, you can also emit custom debug information from your connector by introducing your own debug statements:
+```python
+self.logger.debug(
+    "your debug message here",
+    extra={
+        "debug_field": self.value,
+        "custom_field": your_object.field
+    }
+)
+```
+
 **TDD using standard tests**
 
 Airbyte provides a standard test suite that is run against every source. The objective of these tests is to provide some "free" tests that can sanity check that the basic functionality of the source works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
@@ -147,15 +175,15 @@ The nice thing about this approach is that you are running your source exactly a
 
 ### Step 4: Implement `spec`
 
-Each source contains a specification that describes what inputs it needs in order for it to pull data. This file can be found in `airbyte-integrations/connectors/source-<source-name>/spec.json`. This is a good place to start when developing your source. Using JsonSchema define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres source.
+Each source contains a specification that describes what inputs it needs in order for it to pull data. This file can be found in `airbyte-integrations/connectors/source-<source-name>/spec.yaml`. This is a good place to start when developing your source. Using JsonSchema define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/spec.yaml) of what the `spec.yaml` looks like for the stripe source.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-specification.md).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-protocol.md).
 
-The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.json` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.json` you should be done with this step.
+The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.yaml` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.yaml` you should be done with this step.
 
 ### Step 5: Implement `check`
 
-As described in the template code, this method takes in a json object called config that has the values described in the `spec.json` filled in. In other words if the `spec.json` said that the source requires a `username` and `password` the config object might be `{ "username": "airbyte", "password": "password123" }`. It returns a json object that reports, given the credentials in the config, whether we were able to connect to the source. For example, with the given credentials could the source connect to the database server.
+As described in the template code, this method takes in a json object called config that has the values described in the `spec.yaml` filled in. In other words if the `spec.yaml` said that the source requires a `username` and `password` the config object might be `{ "username": "airbyte", "password": "password123" }`. It returns a json object that reports, given the credentials in the config, whether we were able to connect to the source. For example, with the given credentials could the source connect to the database server.
 
 While developing, we recommend storing this object in `secrets/config.json`. The `secrets` directory is gitignored by default.
 
@@ -175,9 +203,11 @@ The Standard Tests are a set of tests that run against all sources. These tests 
 
 You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
 
-{% hint style="info" %}
+:::info
+
 In some rare cases we make exceptions and allow a source to not need to pass all the standard tests. If for some reason you think your source cannot reasonably pass one of the tests cases, reach out to us on github or slack, and we can determine whether there's a change we can make so that the test will pass or if we should skip that test for your source.
-{% endhint %}
+
+:::
 
 ### Step 9: Write unit tests and/or integration tests
 
@@ -201,7 +231,7 @@ The template fills in most of the information for the readme for you. Unless the
 
 ### Step 11: Add the connector to the API/UI
 
-Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/).
+Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/). Note that modifications to source_definitions.yaml will only be picked-up the first time you start Airbyte, or when you upgrade Airbyte, or if you entirely wipe our your instance of Airbyte and start from scratch.
 
 Note that for simple and quick testing use cases, you can also do this step [using the UI](../../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
 
@@ -209,3 +239,7 @@ Note that for simple and quick testing use cases, you can also do this step [usi
 
 Each connector has its own documentation page. By convention, that page should have the following path: in `docs/integrations/sources/<source-name>.md`. For the documentation to get packaged with the docs, make sure to add a link to it in `docs/SUMMARY.md`. You can pattern match doing that from existing connectors.
 
+## Related tutorials
+For additional examples of how to use the Python CDK to build an Airbyte source connector, see the following tutorials:
+- [Python CDK Speedrun: Creating a Source](https://docs.airbyte.com/connector-development/tutorials/cdk-speedrun)
+- [Build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api) 

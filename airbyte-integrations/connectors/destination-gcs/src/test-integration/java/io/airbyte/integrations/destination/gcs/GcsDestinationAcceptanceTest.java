@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -12,15 +13,19 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.integrations.destination.s3.S3DestinationConstants;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
+import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -28,6 +33,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +61,8 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected JsonNode configJson;
   protected GcsDestinationConfig config;
   protected AmazonS3 s3Client;
+  protected NamingConventionTransformer nameTransformer;
+  protected S3StorageOperations s3StorageOperations;
 
   protected GcsDestinationAcceptanceTest(final S3Format outputFormat) {
     this.outputFormat = outputFormat;
@@ -74,12 +83,40 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
+  protected String getDefaultSchema(final JsonNode config) {
+    if (config.has("gcs_bucket_path")) {
+      return config.get("gcs_bucket_path").asText();
+    }
+    return null;
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode baseJson = getBaseConfigJson();
     final JsonNode failCheckJson = Jsons.clone(baseJson);
     // invalid credential
-    ((ObjectNode) failCheckJson).put("access_key_id", "fake-key");
-    ((ObjectNode) failCheckJson).put("secret_access_key", "fake-secret");
+    ((ObjectNode) failCheckJson).put("hmac_key_access_id", "fake-key");
+    ((ObjectNode) failCheckJson).put("hmac_key_secret", "fake-secret");
     return failCheckJson;
   }
 
@@ -87,13 +124,20 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
   protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
-    final String outputPrefix = S3OutputPathHelper
-        .getOutputPrefix(config.getBucketPath(), namespace, streamName);
+    final String namespaceStr = nameTransformer.getNamespace(namespace);
+    final String streamNameStr = nameTransformer.getIdentifier(streamName);
+    final String outputPrefix = s3StorageOperations.getBucketObjectPath(
+        namespaceStr,
+        streamNameStr,
+        DateTime.now(DateTimeZone.UTC),
+        config.getPathFormat());
+    // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
+    final String parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1);
     final List<S3ObjectSummary> objectSummaries = s3Client
-        .listObjects(config.getBucketName(), outputPrefix)
+        .listObjects(config.getBucketName(), parentFolder)
         .getObjectSummaries()
         .stream()
-        .filter(o -> o.getKey().contains(S3DestinationConstants.NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
+        .filter(o -> o.getKey().contains(streamNameStr + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(
@@ -125,7 +169,9 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     this.config = GcsDestinationConfig.getGcsDestinationConfig(configJson);
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
-    this.s3Client = GcsS3Helper.getGcsS3Client(config);
+    this.s3Client = config.getS3Client();
+    this.nameTransformer = new GcsNameTransformer();
+    this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, config);
   }
 
   /**
@@ -173,6 +219,54 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
         .set("format", getFormatConfig());
 
     assertEquals(Status.FAILED, runCheck(configJson).getStatus());
+  }
+
+  @Test
+  public void testCheckIncorrectHmacKeyAccessIdCredential() {
+    final JsonNode baseJson = getBaseConfigJson();
+    final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
+        .put("credential_type", "HMAC_KEY")
+        .put("hmac_key_access_id", "fake-key")
+        .put("hmac_key_secret", baseJson.get("credential").get("hmac_key_secret").asText())
+        .build());
+
+    ((ObjectNode) baseJson).put("credential", credential);
+    ((ObjectNode) baseJson).set("format", getFormatConfig());
+
+    final GcsDestination destination = new GcsDestination();
+    final AirbyteConnectionStatus status = destination.check(baseJson);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: SignatureDoesNotMatch;"));
+  }
+
+  @Test
+  public void testCheckIncorrectHmacKeySecretCredential() {
+    final JsonNode baseJson = getBaseConfigJson();
+    final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
+        .put("credential_type", "HMAC_KEY")
+        .put("hmac_key_access_id", baseJson.get("credential").get("hmac_key_access_id").asText())
+        .put("hmac_key_secret", "fake-secret")
+        .build());
+
+    ((ObjectNode) baseJson).put("credential", credential);
+    ((ObjectNode) baseJson).set("format", getFormatConfig());
+
+    final GcsDestination destination = new GcsDestination();
+    final AirbyteConnectionStatus status = destination.check(baseJson);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: SignatureDoesNotMatch;"));
+  }
+
+  @Test
+  public void testCheckIncorrectBucketCredential() {
+    final JsonNode baseJson = getBaseConfigJson();
+    ((ObjectNode) baseJson).put("gcs_bucket_name", "fake_bucket");
+    ((ObjectNode) baseJson).set("format", getFormatConfig());
+
+    final GcsDestination destination = new GcsDestination();
+    final AirbyteConnectionStatus status = destination.check(baseJson);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: NoSuchKey;"));
   }
 
 }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -176,6 +176,11 @@ class DriveAPI(ActivitiesAPI):
 class LoginsAPI(ActivitiesAPI):
     name = "Logins"
     application_name = "login"
+
+
+class MeetAPI(ActivitiesAPI):
+    name = "Meet"
+    application_name = "meet"
 
 
 class MobileAPI(ActivitiesAPI):

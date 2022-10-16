@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import lombok.AllArgsConstructor;
@@ -23,14 +23,23 @@ public interface GenerateInputActivity {
 
     private int attemptId;
     private long jobId;
-    private boolean reset;
 
   }
 
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  class SyncOutput {
+  class SyncInputWithAttemptNumber {
+
+    private int attemptNumber;
+    private long jobId;
+
+  }
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class GeneratedJobInput {
 
     private JobRunConfig jobRunConfig;
     private IntegrationLauncherConfig sourceLauncherConfig;
@@ -43,6 +52,12 @@ public interface GenerateInputActivity {
    * This generate the input needed by the child sync workflow
    */
   @ActivityMethod
-  SyncOutput getSyncWorkflowInput(SyncInput input);
+  GeneratedJobInput getSyncWorkflowInput(SyncInput input);
+
+  /**
+   * This generate the input needed by the child sync workflow
+   */
+  @ActivityMethod
+  GeneratedJobInput getSyncWorkflowInputWithAttemptNumber(SyncInputWithAttemptNumber input);
 
 }

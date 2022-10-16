@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from copy import deepcopy
 
-from source_facebook_marketing.common import deep_merge
+from source_facebook_marketing.streams.common import deep_merge
 
 
 def test_return_new_object():

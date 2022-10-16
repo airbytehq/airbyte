@@ -1,79 +1,41 @@
 import React, { useEffect, useState } from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
-import { useResource, useSubscription } from "rest-hooks";
 
-import VideoItem from "./VideoItem";
-import ProgressBlock from "./ProgressBlock";
-import HighlightedText from "./HighlightedText";
-import { H1 } from "components/base";
-import UseCaseBlock from "./UseCaseBlock";
-import ConnectionResource from "core/resources/Connection";
-import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
-import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
-import Status from "core/statuses";
-import useWorkspace from "hooks/services/useWorkspace";
+import { Text } from "components/ui/Text";
+
 import { useConfig } from "config";
+import Status from "core/statuses";
+import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
+import { useConnectionList, useGetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 
-type FinalStepProps = {
-  connectionId: string;
-  onSync: () => void;
-};
+import styles from "./FinalStep.module.scss";
+import { FirstSuccessfulSync } from "./FirstSuccessfulSync";
+import HighlightedText from "./HighlightedText";
+import ProgressBlock from "./ProgressBlock";
+import UseCaseBlock from "./UseCaseBlock";
+import VideoItem from "./VideoItem";
 
-const Title = styled(H1)`
-  margin: 21px 0;
-`;
-
-const Videos = styled.div`
-  width: 425px;
-  height: 205px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 20px 0 50px;
-  background: url("/video-background.svg") no-repeat;
-  padding: 0 27px;
-`;
-
-const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
+const FinalStep: React.FC = () => {
   const config = useConfig();
-  const { sendFeedback } = useWorkspace();
-  const {
-    feedbackPassed,
-    passFeedback,
-    useCases,
-    skipCase,
-  } = useOnboardingService();
-  const connection = useResource(ConnectionResource.detailShape(), {
-    connectionId,
+  const { visibleUseCases, useCaseLinks, skipCase } = useOnboardingService();
+  const { mutateAsync: syncConnection } = useSyncConnection();
+  const { connections } = useConnectionList();
+  const connection = useGetConnection(connections[0].connectionId, {
+    refetchInterval: 2500,
   });
-  useSubscription(ConnectionResource.detailShape(), {
-    connectionId: connectionId,
-  });
-  const [isOpen, setIsOpen] = useState(false);
+  const [isFirstSyncSuccessful, setIsFirstSyncSuccessful] = useState(false);
 
   useEffect(() => {
-    if (
-      connection.latestSyncJobStatus === Status.SUCCEEDED &&
-      !feedbackPassed
-    ) {
-      setIsOpen(true);
+    if (connection.latestSyncJobStatus === Status.SUCCEEDED) {
+      setIsFirstSyncSuccessful(true);
     }
-  }, [connection.latestSyncJobStatus, feedbackPassed]);
+  }, [connection.latestSyncJobStatus]);
 
-  const onSendFeedback = (feedback: string) => {
-    sendFeedback({
-      feedback,
-      source: connection.source,
-      destination: connection.destination,
-    });
-    passFeedback();
-    setIsOpen(false);
-  };
+  const onSync = () => syncConnection(connections[0]);
 
   return (
     <>
-      <Videos>
+      <div className={styles.videos}>
         <VideoItem
           small
           description={<FormattedMessage id="onboarding.watchVideo" />}
@@ -83,41 +45,24 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
         <VideoItem
           small
           description={<FormattedMessage id="onboarding.exploreDemo" />}
-          link={config.ui.demoLink}
+          link={config.links.demoLink}
           img="/videoCover.png"
         />
-      </Videos>
-      {!feedbackPassed && (
-        <ProgressBlock connection={connection} onSync={onSync} />
-      )}
-
-      <Title bold>
+      </div>
+      <ProgressBlock connection={connection} onSync={onSync} />
+      {isFirstSyncSuccessful && <FirstSuccessfulSync />}
+      <Text as="h2" className={styles.title}>
         <FormattedMessage
           id="onboarding.useCases"
           values={{
-            name: (...name: React.ReactNode[]) => (
-              <HighlightedText>{name}</HighlightedText>
-            ),
+            name: (name: React.ReactNode[]) => <HighlightedText>{name}</HighlightedText>,
           }}
         />
-      </Title>
+      </Text>
 
-      {useCases &&
-        useCases.map((item, key) => (
-          <UseCaseBlock
-            key={item}
-            count={key + 1}
-            onSkip={skipCase}
-            id={item}
-          />
-        ))}
-
-      {isOpen ? (
-        <SyncCompletedModal
-          onClose={() => setIsOpen(false)}
-          onPassFeedback={onSendFeedback}
-        />
-      ) : null}
+      {visibleUseCases?.map((item, key) => (
+        <UseCaseBlock key={item} count={key + 1} href={useCaseLinks[item]} onSkip={skipCase} id={item} />
+      ))}
     </>
   );
 };

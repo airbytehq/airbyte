@@ -1,0 +1,16 @@
+{
+  "type": ["object"],
+  "properties": {
+    "name": {
+      "type": ["string"]
+    },
+    "date_of_birth": {
+      "type": ["string"],
+      "format": "date"
+    },
+    "updated_at": {
+      "type": ["string"],
+      "format": "date-time"
+    }
+  }
+}

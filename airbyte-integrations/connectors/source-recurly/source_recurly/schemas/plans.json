@@ -3,31 +3,35 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
-    },
-    "object": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 13
     },
     "code": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "state": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "name": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "description": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 1024
     },
     "interval_unit": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "interval_length": {
       "type": ["null", "number"]
     },
     "trial_unit": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "trial_length": {
       "type": ["null", "number"]
@@ -42,16 +46,20 @@
       "type": ["null", "boolean"]
     },
     "accounting_code": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "revenue_schedule_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "setup_fee_revenue_schedule_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "setup_fee_accounting_code": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "avalara_transaction_type": {
       "type": ["null", "number"]
@@ -60,22 +68,52 @@
       "type": ["null", "number"]
     },
     "tax_code": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "tax_exempt": {
       "type": ["null", "boolean"]
     },
     "currencies": {
-      "type": "array"
+      "type": "array",
+      "title": "Pricing",
+      "items": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "3-letter ISO 4217 currency code.",
+            "maxLength": 3
+          },
+          "setup_fee": {
+            "type": "number",
+            "format": "float",
+            "title": "Setup fee",
+            "description": "Amount of one-time setup fee automatically charged at the beginning of a subscription billing cycle. For subscription plans with a trial, the setup fee will be charged at the time of signup. Setup fees do not increase with the quantity of a subscription plan.",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "unit_amount": {
+            "type": "number",
+            "format": "float",
+            "title": "Unit price",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        }
+      }
     },
     "hosted_pages": {
       "type": "object",
       "properties": {
         "success_url": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 2048
         },
         "cancel_url": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "maxLength": 2048
         },
         "bypass_confirmation": {
           "type": ["null", "boolean"]
@@ -89,16 +127,20 @@
       "type": ["null", "boolean"]
     },
     "dunning_campaign_id": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "deleted_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

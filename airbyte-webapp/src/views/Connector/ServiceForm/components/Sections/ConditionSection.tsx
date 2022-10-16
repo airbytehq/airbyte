@@ -1,42 +1,35 @@
-import React, { useCallback, useMemo } from "react";
-import styled from "styled-components";
 import { useFormikContext, setIn } from "formik";
+import React, { useCallback, useMemo } from "react";
 
-import { Label, DropDown } from "components";
+import GroupControls from "components/GroupControls";
+import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
+
+import { FormBlock, FormConditionItem } from "core/form/types";
+import { isDefined } from "utils/common";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { ServiceFormValues } from "../../types";
-
-import { FormBlock, FormConditionItem } from "core/form/types";
-import { IDataItem } from "components/base/DropDown/components/Option";
-import GroupControls from "components/GroupControls";
+import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
-import { isDefined } from "utils/common";
+import { GroupLabel } from "./GroupLabel";
 
-const GroupLabel = styled(Label)`
-  width: auto;
-  margin-right: 8px;
-  display: inline-block;
-`;
-
-const ConditionControls = styled.div`
-  padding-top: 25px;
-`;
+interface ConditionSectionProps {
+  formField: FormConditionItem;
+  path?: string;
+  disabled?: boolean;
+}
 
 /**
  * ConditionSection is responsible for handling oneOf sections of form
  */
-export const ConditionSection: React.FC<{
-  formField: FormConditionItem;
-  path?: string;
-}> = ({ formField, path }) => {
+export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
   const { widgetsInfo, setUiWidgetsInfo } = useServiceForm();
   const { values, setValues } = useFormikContext<ServiceFormValues>();
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
   const onOptionChange = useCallback(
-    (selectedItem: IDataItem) => {
+    (selectedItem: DropDownOptionDataItem) => {
       const newSelectedPath = formField.conditions[selectedItem.value];
 
       const newValues =
@@ -66,31 +59,30 @@ export const ConditionSection: React.FC<{
       })),
     [formField.conditions]
   );
-  const label = formField.title || formField.fieldKey;
 
   return (
     <GroupControls
       key={`form-field-group-${formField.fieldKey}`}
-      description={formField.description}
       title={
         <>
-          {label ? <GroupLabel>{label}:</GroupLabel> : null}
+          <GroupLabel formField={formField} />
           <DropDown
+            className={styles.groupDropdown}
             options={options}
             onChange={onOptionChange}
             value={currentlySelectedCondition}
             name={formField.path}
+            isDisabled={disabled}
           />
         </>
       }
     >
-      <ConditionControls>
-        <FormSection
-          blocks={formField.conditions[currentlySelectedCondition]}
-          path={path}
-          skipAppend
-        />
-      </ConditionControls>
+      <FormSection
+        blocks={formField.conditions[currentlySelectedCondition]}
+        path={path}
+        disabled={disabled}
+        skipAppend
+      />
     </GroupControls>
   );
 };

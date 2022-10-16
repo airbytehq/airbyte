@@ -20,5 +20,5 @@ select
 from {{ source('test_normalization', '_airbyte_raw_multiple_column_names_conflicts') }} as table_alias
 -- multiple_column_names_conflicts
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

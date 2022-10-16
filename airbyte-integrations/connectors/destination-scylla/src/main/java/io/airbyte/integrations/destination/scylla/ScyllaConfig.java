@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.scylla;
@@ -35,7 +35,7 @@ public class ScyllaConfig {
     this.username = jsonNode.get("username").asText();
     this.password = jsonNode.get("password").asText();
     this.address = jsonNode.get("address").asText();
-    this.port = jsonNode.get("port").asInt(9042);
+    this.port = jsonNode.get("port").asInt();
     this.replication = jsonNode.get("replication").asInt(1);
   }
 

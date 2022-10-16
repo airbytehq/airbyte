@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -21,6 +21,7 @@ class MondayStream(HttpStream, ABC):
     url_base: str = "https://api.monday.com/v2"
     primary_key: str = "id"
     page: int = 1
+    limit: Optional[int] = None
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -64,6 +65,8 @@ class MondayStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         graphql_params = {}
+        if self.limit:
+            graphql_params["limit"] = self.limit
         if next_page_token:
             graphql_params.update(next_page_token)
 
@@ -87,6 +90,13 @@ class Items(MondayStream):
     """
     API Documentation: https://api.developer.monday.com/docs/items-queries
     """
+
+    limit = 100
+
+    @property
+    def retry_factor(self) -> int:
+        # this stream has additional rate limits, please see https://api.developer.monday.com/docs/items-queries#additional-rate-limit
+        return 30
 
 
 class Boards(MondayStream):

@@ -1,14 +1,18 @@
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
-import { Connection } from "core/domain/connection";
 import Link from "components/Link";
-import { Button, H1 } from "components/base";
-import { RoutePaths } from "pages/routes";
+import { Button } from "components/ui/Button";
+import { Text } from "components/ui/Text";
+
+import { JobStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
+import { RoutePaths } from "pages/routePaths";
+
+import styles from "./ProgressBlock.module.scss";
 
 const run = keyframes`
   from {
@@ -51,21 +55,15 @@ const ControlBlock = styled.div`
   justify-content: center;
   align-items: center;
 `;
-const PaddedButton = styled(Button)`
-  margin-left: 10px;
-`;
 
-type ProgressBlockProps = {
-  connection: Connection;
+interface ProgressBlockProps {
+  connection: WebBackendConnectionRead;
   onSync: () => void;
-};
+}
 
-const ProgressBlock: React.FC<ProgressBlockProps> = ({
-  connection,
-  onSync,
-}) => {
-  const showMessage = (status: string | null) => {
-    if (status === null || !status) {
+const ProgressBlock: React.FC<ProgressBlockProps> = ({ connection, onSync }) => {
+  const showMessage = (status: JobStatus | undefined) => {
+    if (!status) {
       return <FormattedMessage id="onboarding.firstSync" />;
     }
     if (status === Status.FAILED) {
@@ -82,41 +80,36 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({
     return null;
   }
 
-  if (
-    connection.latestSyncJobStatus !== Status.RUNNING &&
-    connection.latestSyncJobStatus !== Status.INCOMPLETE
-  ) {
+  if (connection.latestSyncJobStatus !== Status.RUNNING && connection.latestSyncJobStatus !== Status.INCOMPLETE) {
     return (
       <ControlBlock>
-        <H1 bold>{showMessage(connection.latestSyncJobStatus)}</H1>
-        <PaddedButton onClick={onSync}>
-          <FormattedMessage id={"sources.syncNow"} />
-        </PaddedButton>
+        <Text as="h1" size="xl">
+          {showMessage(connection.latestSyncJobStatus)}
+        </Text>
+        <Button className={styles.paddedButton} onClick={onSync}>
+          <FormattedMessage id="sources.syncNow" />
+        </Button>
       </ControlBlock>
     );
   }
 
   return (
     <Bar>
-      <Img src={"/process-arrow.svg"} width={20} />
+      <Img src="/process-arrow.svg" width={20} />
       <FormattedMessage
         id="onboarding.synchronizationProgress"
         values={{
-          sr: (...sr: React.ReactNode[]) => (
+          source: (
             <>
-              <Lnk to={`${RoutePaths.Source}/${connection.sourceId}`}>{sr}</Lnk>{" "}
+              <Lnk to={`../${RoutePaths.Source}/${connection.sourceId}`}>{connection.source.name}</Lnk>{" "}
               <FontAwesomeIcon icon={faChevronRight} />
             </>
           ),
-          ds: (...ds: React.ReactNode[]) => (
-            <Lnk to={`${RoutePaths.Destination}/${connection.destinationId}`}>
-              {ds}
-            </Lnk>
+          destination: (
+            <Lnk to={`../${RoutePaths.Destination}/${connection.destinationId}`}>{connection.destination.name}</Lnk>
           ),
-          sync: (...sync: React.ReactNode[]) => (
-            <Lnk to={`${RoutePaths.Connections}/${connection.connectionId}`}>
-              {sync}
-            </Lnk>
+          sync: (sync: React.ReactNode) => (
+            <Lnk to={`../${RoutePaths.Connections}/${connection.connectionId}`}>{sync}</Lnk>
           ),
         }}
       />

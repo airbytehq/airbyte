@@ -99,4 +99,4 @@ def test_tool(tmp_path, toml_config_file, cmd, package_dir, expected_file):
             issue["primaryLocation"]["filePath"] = "/".join(issue["primaryLocation"]["filePath"].split("/")[-2:])
 
         expected_data = json.loads(Path(expected_file).read_text())
-        assert json.dumps(data, sort_keys=True) == json.dumps(expected_data, sort_keys=True)
+        assert json.dumps(data, sort_keys=True, separators=(',', ': ')) == json.dumps(expected_data, sort_keys=True, separators=(',', ': '))

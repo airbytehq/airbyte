@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import abc
@@ -70,14 +70,14 @@ class SourceConnectorsDefinitions(BaseListing):
     api = source_definition_api.SourceDefinitionApi
     fields_to_display = ["name", "dockerRepository", "dockerImageTag", "sourceDefinitionId"]
     list_field_in_response = "source_definitions"
-    list_function_name = "list_latest_source_definitions"
+    list_function_name = "list_source_definitions"
 
 
 class DestinationConnectorsDefinitions(BaseListing):
     api = destination_definition_api.DestinationDefinitionApi
     fields_to_display = ["name", "dockerRepository", "dockerImageTag", "destinationDefinitionId"]
     list_field_in_response = "destination_definitions"
-    list_function_name = "list_latest_destination_definitions"
+    list_function_name = "list_destination_definitions"
 
 
 class WorkspaceListing(BaseListing, abc.ABC):

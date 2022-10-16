@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage;
@@ -43,8 +43,6 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   private final AzureBlobStorageWriterFactory writerFactory;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, AzureBlobStorageWriter> streamNameAndNamespaceToWriters;
-
-  private AirbyteMessage lastStateMessage = null;
 
   public AzureBlobStorageConsumer(
                                   final AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig,
@@ -121,7 +119,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   @Override
   protected void acceptTracked(final AirbyteMessage airbyteMessage) throws Exception {
     if (airbyteMessage.getType() == Type.STATE) {
-      this.lastStateMessage = airbyteMessage;
+      outputRecordCollector.accept(airbyteMessage);
       return;
     } else if (airbyteMessage.getType() != Type.RECORD) {
       return;
@@ -153,10 +151,6 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   protected void close(final boolean hasFailed) throws Exception {
     for (final AzureBlobStorageWriter handler : streamNameAndNamespaceToWriters.values()) {
       handler.close(hasFailed);
-    }
-
-    if (!hasFailed) {
-      outputRecordCollector.accept(lastStateMessage);
     }
   }
 

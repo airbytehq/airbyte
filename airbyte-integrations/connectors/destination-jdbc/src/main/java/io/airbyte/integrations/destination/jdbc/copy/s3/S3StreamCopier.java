@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
@@ -11,9 +11,11 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -22,7 +24,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.slf4j.Logger;
@@ -38,16 +43,18 @@ public abstract class S3StreamCopier implements StreamCopier {
   protected final AmazonS3 s3Client;
   protected final S3DestinationConfig s3Config;
   protected final String tmpTableName;
-  private final DestinationSyncMode destSyncMode;
   protected final String schemaName;
   protected final String streamName;
   protected final JdbcDatabase db;
-  private final ExtendedNameTransformer nameTransformer;
-  private final SqlOperations sqlOperations;
-  private final ConfiguredAirbyteStream configuredAirbyteStream;
-  private final Timestamp uploadTime;
+  protected final ConfiguredAirbyteStream configuredAirbyteStream;
   protected final String stagingFolder;
   protected final Map<String, DestinationFileWriter> stagingWritersByFile = new HashMap<>();
+  private final DestinationSyncMode destSyncMode;
+  private final ExtendedNameTransformer nameTransformer;
+  private final SqlOperations sqlOperations;
+  private final Timestamp uploadTime;
+  protected final Set<String> activeStagingWriterFileNames = new HashSet<>();
+  protected final Set<String> stagingFileNames = new LinkedHashSet<>();
   private final boolean purgeStagingData;
 
   // The number of batches of records that will be inserted into each file.
@@ -56,13 +63,6 @@ public abstract class S3StreamCopier implements StreamCopier {
   private int partsAddedToCurrentFile;
   private String currentFile;
 
-  /**
-   * @param maxPartsPerFile The number of "chunks" of requests to add into each file. Each chunk can
-   *        be up to 256 MiB (see CopyConsumerFactory#MAX_BATCH_SIZE_BYTES). For example, Redshift
-   *        recommends at most 1 GiB per file, so you would want maxPartsPerFile = 4 (because 4 *
-   *        256MiB = 1 GiB).
-   *        {@link io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants#DEFAULT_MAX_BATCH_SIZE_BYTES}
-   */
   public S3StreamCopier(final String stagingFolder,
                         final String schema,
                         final AmazonS3 client,
@@ -94,13 +94,14 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public String prepareStagingFile() {
     if (partsAddedToCurrentFile == 0) {
-      LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
 
       try {
+        // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just
+        // pass in null.
+        final S3FormatConfig csvFormatConfig = new S3CsvFormatConfig(null, CompressionType.NO_COMPRESSION);
+        final S3DestinationConfig writerS3Config = S3DestinationConfig.create(s3Config).withFormatConfig(csvFormatConfig).get();
         final S3CsvWriter writer = new S3CsvWriter.Builder(
-            // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just
-            // pass in null.
-            s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(null, (long) s3Config.getPartSize())),
+            writerS3Config,
             s3Client,
             configuredAirbyteStream,
             uploadTime)
@@ -112,6 +113,8 @@ public abstract class S3StreamCopier implements StreamCopier {
                 .build();
         currentFile = writer.getOutputPath();
         stagingWritersByFile.put(currentFile, writer);
+        activeStagingWriterFileNames.add(currentFile);
+        stagingFileNames.add(currentFile);
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
@@ -125,6 +128,19 @@ public abstract class S3StreamCopier implements StreamCopier {
     if (stagingWritersByFile.containsKey(filename)) {
       stagingWritersByFile.get(filename).write(id, recordMessage);
     }
+  }
+
+  @Override
+  public void closeNonCurrentStagingFileWriters() throws Exception {
+    final Set<String> removedKeys = new HashSet<>();
+    for (final String key : activeStagingWriterFileNames) {
+      if (!key.equals(currentFile)) {
+        stagingWritersByFile.get(key).close(false);
+        stagingWritersByFile.remove(key);
+        removedKeys.add(key);
+      }
+    }
+    activeStagingWriterFileNames.removeAll(removedKeys);
   }
 
   @Override
@@ -149,9 +165,8 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    for (final Map.Entry<String, DestinationFileWriter> entry : stagingWritersByFile.entrySet()) {
-      final String objectKey = entry.getValue().getOutputPath();
-      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), objectKey), schemaName, tmpTableName, s3Config);
+    for (final String fileName : stagingFileNames) {
+      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), fileName), schemaName, tmpTableName, s3Config);
     }
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
@@ -181,21 +196,20 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
     if (purgeStagingData) {
-      for (final Map.Entry<String, DestinationFileWriter> entry : stagingWritersByFile.entrySet()) {
-        final String suffix = entry.getKey();
-        final String objectKey = entry.getValue().getOutputPath();
-
-        LOGGER.info("Begin cleaning s3 staging file {}.", objectKey);
-        if (s3Client.doesObjectExist(s3Config.getBucketName(), objectKey)) {
-          s3Client.deleteObject(s3Config.getBucketName(), objectKey);
-        }
-        LOGGER.info("S3 staging file {} cleaned.", suffix);
+      for (final String fileName : stagingFileNames) {
+        s3Client.deleteObject(s3Config.getBucketName(), fileName);
+        LOGGER.info("S3 staging file {} cleaned.", fileName);
       }
     }
 
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
     sqlOperations.dropTableIfExists(db, schemaName, tmpTableName);
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
+  }
+
+  @Override
+  public String getCurrentFile() {
+    return currentFile;
   }
 
   protected static String getFullS3Path(final String s3BucketName, final String s3StagingFile) {
@@ -210,6 +224,11 @@ public abstract class S3StreamCopier implements StreamCopier {
   @VisibleForTesting
   public Map<String, DestinationFileWriter> getStagingWritersByFile() {
     return stagingWritersByFile;
+  }
+
+  @VisibleForTesting
+  public Set<String> getStagingFiles() {
+    return stagingFileNames;
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,

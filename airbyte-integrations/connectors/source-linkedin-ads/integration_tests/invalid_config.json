@@ -1,5 +1,10 @@
 {
-  "start_date": "2020-01-01",
-  "access_token": "ACCESS_TOKEN",
-  "account_ids": [1, 2]
+  "start_date": "2021-08-01",
+  "account_ids": [1, 2],
+  "credentials": {
+    "auth_method": "oAuth2.0",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  }
 }

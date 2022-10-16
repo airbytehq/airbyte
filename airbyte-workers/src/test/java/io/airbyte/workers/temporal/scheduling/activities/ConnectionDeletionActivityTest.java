@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ConnectionDeletionActivityTest {
+class ConnectionDeletionActivityTest {
 
   @Mock
   private ConnectionHelper mConnectionHelper;
@@ -33,7 +33,7 @@ public class ConnectionDeletionActivityTest {
 
   @Test
   @DisplayName("Test that the proper helper method is called")
-  public void testSuccess() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testSuccess() throws JsonValidationException, ConfigNotFoundException, IOException {
     connectionDeletionActivity.deleteConnection(input);
 
     Mockito.verify(mConnectionHelper).deleteConnection(input.getConnectionId());
@@ -41,7 +41,7 @@ public class ConnectionDeletionActivityTest {
 
   @Test
   @DisplayName("Test that exception are properly wrapped")
-  public void testWrapException() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testWrapException() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.doThrow(new JsonValidationException(""), new ConfigNotFoundException("", ""), new IOException())
         .when(mConnectionHelper).deleteConnection(input.getConnectionId());
 

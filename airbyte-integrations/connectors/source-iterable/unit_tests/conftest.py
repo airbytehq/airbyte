@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -17,3 +17,8 @@ def catalog(request):
             )
         ]
     )
+
+
+@pytest.fixture(name="config")
+def config_fixture():
+    return {"api_key": 123, "start_date": "2019-10-10T00:00:00"}

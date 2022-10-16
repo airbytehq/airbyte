@@ -1,9 +1,14 @@
-import { ConnectionConfiguration } from "core/domain/connection";
+import { DestinationDefinitionReadWithLatestTag } from "services/connector/DestinationDefinitionService";
 
-type ServiceFormValues = {
+// TODO: This needs to be converted to interface, but has int he current state a problem with index signatures
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type ServiceFormValues<T = unknown> = {
   name: string;
   serviceType: string;
-  connectionConfiguration: ConnectionConfiguration;
+  connectionConfiguration: T;
 };
 
-export type { ServiceFormValues };
+export type DestinationConnectorCard = Pick<
+  DestinationDefinitionReadWithLatestTag,
+  "destinationDefinitionId" | "name" | "icon" | "releaseStage"
+>;

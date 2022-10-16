@@ -1,20 +1,24 @@
-import React from "react";
 import { Field, FieldProps, Formik } from "formik";
-import * as yup from "yup";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { NavigateOptions, To, useNavigate } from "react-router-dom";
+import * as yup from "yup";
 
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { LabeledInput, Link } from "components";
+import HeadTitle from "components/HeadTitle";
+import { Button } from "components/ui/Button";
 
-import { LabeledInput, Link, LoadingButton } from "components";
-import {
-  BottomBlock,
-  FieldItem,
-  Form,
-} from "packages/cloud/views/auth/components/FormComponents";
-import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
-import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
+import { useQuery } from "hooks/useQuery";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
-import useRouter from "hooks/useRouter";
+import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
+import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
+
+import { OAuthLogin } from "../OAuthLogin";
+import { Disclaimer } from "../SignupPage/components/SignupForm";
+import styles from "./LoginPage.module.scss";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -22,13 +26,17 @@ const LoginPageValidationSchema = yup.object().shape({
 });
 
 const LoginPage: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { login } = useAuthService();
-  const { location, replace } = useRouter();
+  const query = useQuery<{ from?: string }>();
+  const navigate = useNavigate();
+  const replace = (path: To, state?: NavigateOptions) => navigate(path, { ...state, replace: true });
+  useTrackPage(PageTrackingCodes.LOGIN);
 
   return (
     <div>
-      <FormTitle bold>
+      <HeadTitle titles={[{ id: "login.login" }]} />
+      <FormTitle>
         <FormattedMessage id="login.loginTitle" />
       </FormTitle>
 
@@ -40,7 +48,7 @@ const LoginPage: React.FC = () => {
         validationSchema={LoginPageValidationSchema}
         onSubmit={async (values, { setFieldError }) => {
           return login(values)
-            .then((_) => replace(location.state?.from ?? "/"))
+            .then(() => replace(query.from ?? "/"))
             .catch((err) => {
               if (err instanceof FieldError) {
                 setFieldError(err.field, err.message);
@@ -65,11 +73,7 @@ const LoginPage: React.FC = () => {
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -85,11 +89,7 @@ const LoginPage: React.FC = () => {
                     })}
                     type="password"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -98,19 +98,22 @@ const LoginPage: React.FC = () => {
               <>
                 <Link
                   to={CloudRoutes.ResetPassword}
+                  className={styles.forgotPassword}
                   $light
                   data-testid="reset-password-link"
                 >
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
-                <LoadingButton type="submit" isLoading={isSubmitting}>
+                <Button size="lg" type="submit" isLoading={isSubmitting}>
                   <FormattedMessage id="login.login" />
-                </LoadingButton>
+                </Button>
               </>
             </BottomBlock>
           </Form>
         )}
       </Formik>
+      <OAuthLogin />
+      <Disclaimer />
     </div>
   );
 };

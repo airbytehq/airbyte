@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -8,11 +8,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceTest {
@@ -27,21 +27,21 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
   }
 
   @Override
-  protected void setupDatabase(String dbName) {
-    JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
+  protected void setupDatabase(final String dbName) {
+    final JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", plainConfig.get("host"))
-        .put("port", plainConfig.get("port"))
-        .put("database", dbName)
-        .put("schemas", List.of(dbName))
-        .put("username", plainConfig.get("username"))
-        .put("password", plainConfig.get("password"))
-        .put("ssl", true)
+        .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
+        .put(JdbcUtils.PORT_KEY, plainConfig.get(JdbcUtils.PORT_KEY))
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(dbName))
+        .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
+        .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
+        .put(JdbcUtils.SSL_KEY, true)
         .put("replication_method", replicationMethod)
         .build());
   }
@@ -54,9 +54,9 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
    * use for Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte
    * Catalog. Each stream\table in DB should be names like "test_0", "test_1",..., test_n.
    */
-  @BeforeAll
-  public static void beforeAll() {
-    AbstractSourcePerformanceTest.testArgs = Stream.of(
+  @Override
+  protected Stream<Arguments> provideParameters() {
+    return Stream.of(
         Arguments.of(SCHEMAS.get(0), SCHEMAS.get(0), 200, 240, 1000),
         Arguments.of(SCHEMAS.get(1), SCHEMAS.get(1), 50000, 8, 25),
         Arguments.of(SCHEMAS.get(2), SCHEMAS.get(2), 10000, 8, 1000));

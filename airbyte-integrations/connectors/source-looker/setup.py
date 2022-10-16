@@ -1,12 +1,15 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
+    "types-requests",
     "airbyte-cdk~=0.1",
+    "prance~=0.21.8",
+    "openapi_spec_validator~=0.3.1",
 ]
 
 TEST_REQUIREMENTS = [

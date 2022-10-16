@@ -1,6 +1,6 @@
-# Source Quickbooks Singer
+# Source QuickBooks Singer
 
-This is the repository for the Quickbooks source connector, based on a Singer tap.
+This is the repository for the QuickBooks source connector, based on a Singer tap.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/quickbooks).
 
 ## Local development

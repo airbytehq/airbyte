@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -26,5 +26,5 @@ def test_streams(mocker):
     source = SourceChartmogul()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    expected_streams_number = 2
+    expected_streams_number = 3
     assert len(streams) == expected_streams_number

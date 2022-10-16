@@ -5,7 +5,7 @@
     "title": "BigCommerce Source CDK Specifications",
     "type": "object",
     "required": ["start_date", "store_hash", "access_token"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "start_date": {
         "type": "string",

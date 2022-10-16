@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,13 +9,11 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1"
-]
+TEST_REQUIREMENTS = ["pytest~=6.1"]
 
 setup(
     name="destination_{{snakeCase name}}",
-    description="Destination implementation for {{titleCase name}}.",
+    description="Destination implementation for {{capitalCase name}}.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

@@ -4,20 +4,24 @@
 
 ## Sync overview
 
-{% hint style="warning" %}
+:::caution
+
 You will only be able to connect to a self-hosted instance of Drupal using these instructions.
-{% endhint %}
+
+:::
 
 Drupal can run on MySQL, Percona, MariaDb, MSSQL, MongoDB, Postgres, or SQL-Lite. If you're not using SQL-lite, you can use Airbyte to sync your Drupal instance by connecting to the underlying database using the appropriate Airbyte connector:
 
 * [MySQL/Percona/MariaDB](mysql.md)
 * [MSSQL](mssql.md)
-* [Mongo]()
+* [Mongo](mongodb-v2.md)
 * [Postgres](postgres.md)
 
-{% hint style="info" %}
+:::info
+
 Reach out to your service representative or system admin to find the parameters required to connect to the underlying database
-{% endhint %}
+
+:::
 
 ### Output schema
 

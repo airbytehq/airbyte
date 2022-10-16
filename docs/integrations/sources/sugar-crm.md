@@ -4,9 +4,11 @@
 
 ## Sync overview
 
-{% hint style="warning" %}
+:::caution
+
 You will only be able to connect to a self-hosted instance of Sugar CRM using these instructions.
-{% endhint %}
+
+:::
 
 Sugar CRM can run on the MySQL, MSSQL, Oracle, or Db2 databases. You can use Airbyte to sync your Sugar CRM instance by connecting to the underlying database using the appropriate Airbyte connector:
 
@@ -15,13 +17,17 @@ Sugar CRM can run on the MySQL, MSSQL, Oracle, or Db2 databases. You can use Air
 * [MSSQL](mssql.md)
 * [Oracle](oracle.md)
 
-{% hint style="info" %}
-To use Oracle or DB2, you'll require an Enterprise or Ultimate Sugar subscription.
-{% endhint %}
+:::info
 
-{% hint style="info" %}
+To use Oracle or DB2, you'll require an Enterprise or Ultimate Sugar subscription.
+
+:::
+
+:::info
+
 Reach out to your service representative or system admin to find the parameters required to connect to the underlying database
-{% endhint %}
+
+:::
 
 ### Output schema
 

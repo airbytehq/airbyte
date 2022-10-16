@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.concurrency;
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class GracefulShutdownHandlerTest {
 
   @Test
-  public void testRun() throws InterruptedException {
+  void testRun() throws InterruptedException {
     final ExecutorService executorService = mock(ExecutorService.class);
     final GracefulShutdownHandler gracefulShutdownHandler = new GracefulShutdownHandler(Duration.ofSeconds(30), executorService);
     gracefulShutdownHandler.start();

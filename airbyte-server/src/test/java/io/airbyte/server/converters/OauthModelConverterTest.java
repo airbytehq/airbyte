@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.converters;
@@ -44,7 +44,7 @@ class OauthModelConverterTest {
 
   @ParameterizedTest
   @MethodSource("testProvider")
-  public void testIt(final List<List<String>> initParams, final List<List<String>> outputParams, final List<Object> rootObject) {
+  void testIt(final List<List<String>> initParams, final List<List<String>> outputParams, final List<Object> rootObject) {
     final ConnectorSpecification input = new ConnectorSpecification().withAuthSpecification(
         new AuthSpecification()
             .withAuthType(AuthSpecification.AuthType.OAUTH_2_0)
@@ -53,15 +53,15 @@ class OauthModelConverterTest {
                 .withOauthFlowOutputParameters(outputParams)
                 .withRootObject(rootObject)));
 
-    final io.airbyte.api.model.AuthSpecification expected = new io.airbyte.api.model.AuthSpecification()
-        .authType(io.airbyte.api.model.AuthSpecification.AuthTypeEnum.OAUTH2_0)
+    final io.airbyte.api.model.generated.AuthSpecification expected = new io.airbyte.api.model.generated.AuthSpecification()
+        .authType(io.airbyte.api.model.generated.AuthSpecification.AuthTypeEnum.OAUTH2_0)
         .oauth2Specification(
-            new io.airbyte.api.model.OAuth2Specification()
+            new io.airbyte.api.model.generated.OAuth2Specification()
                 .oauthFlowInitParameters(initParams)
                 .oauthFlowOutputParameters(outputParams)
                 .rootObject(rootObject));
 
-    final Optional<io.airbyte.api.model.AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(input);
+    final Optional<io.airbyte.api.model.generated.AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(input);
     assertTrue(authSpec.isPresent());
     assertEquals(expected, authSpec.get());
   }

@@ -67,6 +67,21 @@
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"
+    },
+    "campaign.bidding_strategy_type": {
+      "type": ["null", "string"]
+    },
+    "metrics.clicks": {
+      "type": ["null", "integer"]
+    },
+    "metrics.cost_micros": {
+      "type": ["null", "integer"]
+    },
+    "metrics.impressions": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.criterion_id": {
+      "type": ["null", "integer"]
     }
   }
 }

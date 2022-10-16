@@ -1,14 +1,18 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
-import { Field, FieldProps, Form, Formik } from "formik";
+
+import { LabeledInput, Link, StatusIcon } from "components";
+import { Button } from "components/ui/Button";
+import { Modal } from "components/ui/Modal";
 
 import { useConfig } from "config";
 
-import { Button, LabeledInput, Link, Modal, StatusIcon } from "components";
+import styles from "./CreateConnectorModal.module.scss";
 
-export type IProps = {
+export interface IProps {
   errorMessage?: string;
   onClose: () => void;
   onSubmit: (sourceDefinition: {
@@ -17,7 +21,7 @@ export type IProps = {
     dockerImageTag: string;
     dockerRepository: string;
   }) => void;
-};
+}
 
 const Content = styled.div`
   width: 585px;
@@ -29,10 +33,6 @@ const ButtonContent = styled.div`
   align-items: center;
   justify-content: space-between;
   min-height: 40px;
-`;
-
-const ButtonWithMargin = styled(Button)`
-  margin-right: 12px;
 `;
 
 const Label = styled.div`
@@ -89,26 +89,19 @@ const validationSchema = yup.object().shape({
   dockerRepository: yup.string().required("form.empty.error"),
 });
 
-const CreateConnectorModal: React.FC<IProps> = ({
-  onClose,
-  onSubmit,
-  errorMessage,
-}) => {
+const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessage }) => {
   const config = useConfig();
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
-    <Modal
-      onClose={onClose}
-      title={<FormattedMessage id="admin.addNewConnector" />}
-    >
+    <Modal onClose={onClose} title={<FormattedMessage id="admin.addNewConnector" />}>
       <Content>
         <Subtitle>
           <FormattedMessage
             id="admin.learnMore"
             values={{
-              lnk: (...lnk: React.ReactNode[]) => (
-                <DocLink target="_blank" href={config.ui.docsLink} as="a">
+              lnk: (lnk: React.ReactNode) => (
+                <DocLink target="_blank" href={config.links.docsLink} as="a">
                   {lnk}
                 </DocLink>
               ),
@@ -122,11 +115,11 @@ const CreateConnectorModal: React.FC<IProps> = ({
             dockerImageTag: "",
             dockerRepository: "",
           }}
-          validateOnBlur={true}
-          validateOnChange={true}
+          validateOnBlur
+          validateOnChange
           validationSchema={validationSchema}
-          onSubmit={async (values, { setSubmitting }) => {
-            await onSubmit(values);
+          onSubmit={(values, { setSubmitting }) => {
+            onSubmit(values);
             setSubmitting(false);
           }}
         >
@@ -217,13 +210,10 @@ const CreateConnectorModal: React.FC<IProps> = ({
                   <div />
                 )}
                 <div>
-                  <ButtonWithMargin onClick={onClose} type="button" secondary>
+                  <Button className={styles.buttonWithMargin} onClick={onClose} type="button" variant="secondary">
                     <FormattedMessage id="form.cancel" />
-                  </ButtonWithMargin>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || !dirty || !isValid}
-                  >
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid}>
                     <FormattedMessage id="form.add" />
                   </Button>
                 </div>

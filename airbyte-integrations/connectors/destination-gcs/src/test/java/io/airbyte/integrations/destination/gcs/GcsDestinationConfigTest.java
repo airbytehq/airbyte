@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -28,7 +28,7 @@ class GcsDestinationConfigTest {
     assertEquals("test_path", config.getBucketPath());
     assertEquals("us-west1", config.getBucketRegion());
 
-    final GcsCredentialConfig credentialConfig = config.getCredentialConfig();
+    final GcsCredentialConfig credentialConfig = config.getGcsCredentialConfig();
     assertTrue(credentialConfig instanceof GcsHmacKeyCredentialConfig);
 
     final GcsHmacKeyCredentialConfig hmacKeyConfig = (GcsHmacKeyCredentialConfig) credentialConfig;

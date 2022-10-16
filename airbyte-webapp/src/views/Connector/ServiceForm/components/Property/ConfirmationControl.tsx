@@ -1,8 +1,8 @@
 import React, { useRef } from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 const ComponentContainer = styled.div`
   display: flex;
@@ -10,19 +10,15 @@ const ComponentContainer = styled.div`
   align-items: center;
 `;
 
-const SmallButton = styled(Button)`
-  margin-left: 8px;
-  padding: 6px 8px 7px;
-`;
-
-type ConfirmationControlProps = {
+interface ConfirmationControlProps {
   component: React.ReactElement;
   showButtons?: boolean;
   isEditInProgress?: boolean;
   onStart: () => void;
   onCancel: () => void;
   onDone: () => void;
-};
+  disabled?: boolean;
+}
 
 const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
   isEditInProgress,
@@ -31,6 +27,7 @@ const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
   onCancel,
   onDone,
   component,
+  disabled,
 }) => {
   const controlRef = useRef<HTMLElement>(null);
 
@@ -51,21 +48,21 @@ const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
       {React.cloneElement(component, {
         ref: controlRef,
         autoFocus: isEditInProgress,
-        disabled: !isEditInProgress,
+        disabled: !isEditInProgress || disabled,
       })}
       {isEditInProgress ? (
         <>
-          <SmallButton onClick={onDone} type="button">
+          <Button size="xs" onClick={onDone} type="button" disabled={disabled}>
             <FormattedMessage id="form.done" />
-          </SmallButton>
-          <SmallButton onClick={onCancel} type="button" secondary>
+          </Button>
+          <Button size="xs" onClick={onCancel} type="button" variant="secondary" disabled={disabled}>
             <FormattedMessage id="form.cancel" />
-          </SmallButton>
+          </Button>
         </>
       ) : (
-        <SmallButton onClick={handleStartEdit} type="button">
+        <Button size="xs" onClick={handleStartEdit} type="button" disabled={disabled}>
           <FormattedMessage id="form.edit" />
-        </SmallButton>
+        </Button>
       )}
     </ComponentContainer>
   );

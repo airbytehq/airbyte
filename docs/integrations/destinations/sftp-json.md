@@ -13,11 +13,11 @@ Each file will contain a collection of `json` objects which correspond directly 
 
 #### Features
 
-| Feature | Supported |  |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Namespaces | No |  |
+| Feature | Supported |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental - Append Sync | Yes |
+| Namespaces | No |
 
 #### Performance considerations
 

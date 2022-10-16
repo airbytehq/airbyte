@@ -1,24 +1,25 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 
 class SnowflakeDestinationIntegrationTest {
@@ -31,67 +32,44 @@ class SnowflakeDestinationIntegrationTest {
     // schema
     // this connector should be updated with multiple credentials, each with a clear purpose (valid,
     // invalid: insufficient permissions, invalid: wrong password, etc..)
-    final JsonNode credentialsJsonString = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/config.json"))));
+    final JsonNode credentialsJsonString = Jsons.deserialize(Files.readString(Paths.get("secrets/config.json")));
     final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
   }
 
   @Test
-  public void testInvalidSchemaName() {
-    assertDoesNotThrow(this::syncWithNamingResolver);
-    assertThrows(SQLException.class, this::syncWithoutNamingResolver);
-
-  }
-
-  public void syncWithNamingResolver() throws IOException, SQLException {
+  public void testInvalidSchemaName() throws Exception {
     final JsonNode config = getConfig();
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", namingResolver.getIdentifier(config.get("schema").asText()));
-    Connection connection = null;
+    final String schema = config.get("schema").asText();
+    final DataSource dataSource = SnowflakeDatabase.createDataSource(config);
     try {
-      connection = SnowflakeDatabase.getConnection(config);
-      connection.createStatement().execute(createSchemaQuery);
+      final JdbcDatabase database = SnowflakeDatabase.getDatabase(dataSource);
+      assertDoesNotThrow(() -> syncWithNamingResolver(database, schema));
+      assertThrows(SQLException.class, () -> syncWithoutNamingResolver(database, schema));
     } finally {
-      if (connection != null) {
-        final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", namingResolver.getIdentifier(config.get("schema").asText()));
-        connection.createStatement().execute(dropSchemaQuery);
-        connection.close();
-      }
+      DataSourceFactory.close(dataSource);
     }
   }
 
-  private void syncWithoutNamingResolver() throws SQLException, IOException {
-    JsonNode config = getConfig();
-    String schemaName = config.get("schema").asText();
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
-
-    try (Connection connection = getConnection(config, false)) {
-      Statement statement = connection.createStatement();
-      statement.execute(createSchemaQuery);
+  public void syncWithNamingResolver(final JdbcDatabase database, final String schema) throws SQLException {
+    final String normalizedSchemaName = namingResolver.getIdentifier(schema);
+    try {
+      database.execute(String.format("CREATE SCHEMA %s", normalizedSchemaName));
+    } finally {
+      database.execute(String.format("DROP SCHEMA IF EXISTS %s", normalizedSchemaName));
     }
   }
 
-  public Connection getConnection(JsonNode config, boolean useNameTransformer) throws SQLException {
-
-    final String connectUrl = String.format("jdbc:snowflake://%s", config.get("host").asText());
-
-    final Properties properties = new Properties();
-
-    properties.put("user", config.get("username").asText());
-    properties.put("password", config.get("password").asText());
-    properties.put("warehouse", config.get("warehouse").asText());
-    properties.put("database", config.get("database").asText());
-    properties.put("role", config.get("role").asText());
-    properties.put("schema", useNameTransformer
-        ? namingResolver.getIdentifier(config.get("schema").asText())
-        : config.get("schema").asText());
-
-    properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
-
-    return DriverManager.getConnection(connectUrl, properties);
+  private void syncWithoutNamingResolver(final JdbcDatabase database, final String schema) throws SQLException {
+    try {
+      database.execute(String.format("CREATE SCHEMA %s", schema));
+    } finally {
+      database.execute(String.format("DROP SCHEMA IF EXISTS %s", schema));
+    }
   }
 
   private JsonNode getConfig() throws IOException {
-    final JsonNode config = Jsons.deserialize(new String(Files.readAllBytes(Paths.get("secrets/insert_config.json"))));
+    final JsonNode config = Jsons.deserialize(Files.readString(Paths.get("secrets/insert_config.json")));
     final String schemaName = "schemaName with whitespace " + Strings.addRandomSuffix("integration_test", "_", 5);
     ((ObjectNode) config).put("schema", schemaName);
     return config;

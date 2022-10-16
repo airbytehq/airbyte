@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
@@ -12,8 +12,8 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.SyncStats;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import java.util.Set;
 import java.util.UUID;
@@ -22,7 +22,7 @@ import org.assertj.core.util.Sets;
 public class SourceAndDestinationFailureSyncWorkflow implements SyncWorkflow {
 
   @VisibleForTesting
-  public static Set<FailureReason> FAILURE_REASONS = Sets.newLinkedHashSet(
+  public static final Set<FailureReason> FAILURE_REASONS = Sets.newLinkedHashSet(
       new FailureReason().withFailureOrigin(FailureOrigin.SOURCE).withTimestamp(System.currentTimeMillis()),
       new FailureReason().withFailureOrigin(FailureOrigin.DESTINATION).withTimestamp(System.currentTimeMillis()));
 

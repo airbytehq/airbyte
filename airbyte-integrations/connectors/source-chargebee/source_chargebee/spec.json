@@ -5,7 +5,7 @@
     "title": "Chargebee Spec",
     "type": "object",
     "required": ["site", "site_api_key", "start_date", "product_catalog"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "site": {
         "type": "string",

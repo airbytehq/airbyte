@@ -80,7 +80,7 @@
       "type": ["null", "number"]
     },
     "PauseReason": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "PaymentMethodId": {
       "type": ["null", "number"]

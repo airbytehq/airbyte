@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.gcs;
@@ -10,6 +10,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -50,21 +51,20 @@ public abstract class GcsStreamCopier implements StreamCopier {
   // QUERY_TIMEOUT when
   // the records from the file are copied to the staging table.
   public static final int MAX_PARTS_PER_FILE = 1000;
-
+  protected final GcsConfig gcsConfig;
+  protected final String tmpTableName;
+  protected final String schemaName;
+  protected final String streamName;
+  protected final JdbcDatabase db;
+  protected final Set<String> gcsStagingFiles = new HashSet<>();
+  protected final String stagingFolder;
+  protected StagingFilenameGenerator filenameGenerator;
   private final Storage storageClient;
-  private final GcsConfig gcsConfig;
-  private final String tmpTableName;
   private final DestinationSyncMode destSyncMode;
-  private final String schemaName;
-  private final String streamName;
-  private final JdbcDatabase db;
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
-  private final Set<String> gcsStagingFiles = new HashSet<>();
   private final HashMap<String, WriteChannel> channels = new HashMap<>();
   private final HashMap<String, CSVPrinter> csvPrinters = new HashMap<>();
-  private final String stagingFolder;
-  protected StagingFilenameGenerator filenameGenerator;
 
   public GcsStreamCopier(final String stagingFolder,
                          final DestinationSyncMode destSyncMode,
@@ -121,6 +121,11 @@ public abstract class GcsStreamCopier implements StreamCopier {
           Jsons.serialize(recordMessage.getData()),
           Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
     }
+  }
+
+  @Override
+  public void closeNonCurrentStagingFileWriters() throws Exception {
+    // TODO need to update this method when updating whole class for using GcsWriter
   }
 
   @Override
@@ -194,6 +199,12 @@ public abstract class GcsStreamCopier implements StreamCopier {
     return queries.toString();
   }
 
+  @Override
+  public String getCurrentFile() {
+    // TODO need to update this method when updating whole class for using GcsWriter
+    return null;
+  }
+
   private static String getFullGcsPath(final String bucketName, final String stagingFile) {
     // this is intentionally gcs:/ not gcs:// since the join adds the additional slash
     return String.join("/", "gcs:/", bucketName, stagingFile);
@@ -209,18 +220,28 @@ public abstract class GcsStreamCopier implements StreamCopier {
     final var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
     final var blobInfo = BlobInfo.newBuilder(blobId).build();
 
-    storage.create(blobInfo, "".getBytes());
+    storage.create(blobInfo, "".getBytes(StandardCharsets.UTF_8));
     storage.delete(blobId);
   }
 
   public static Storage getStorageClient(final GcsConfig gcsConfig) throws IOException {
-    final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
+    final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes(StandardCharsets.UTF_8));
     final GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
     return StorageOptions.newBuilder()
         .setCredentials(credentials)
         .setProjectId(gcsConfig.getProjectId())
         .build()
         .getService();
+  }
+
+  @VisibleForTesting
+  public String getTmpTableName() {
+    return tmpTableName;
+  }
+
+  @VisibleForTesting
+  public Set<String> getGcsStagingFiles() {
+    return gcsStagingFiles;
   }
 
   public abstract void copyGcsCsvFileIntoTable(JdbcDatabase database,

@@ -2,7 +2,10 @@ import React from "react";
 
 import { CommonRequestError } from "core/request/CommonRequestError";
 
-type BoundaryState = { hasError: boolean; message?: React.ReactNode | null };
+interface BoundaryState {
+  hasError: boolean;
+  message?: React.ReactNode | null;
+}
 
 const initialState: BoundaryState = {
   hasError: false,
@@ -10,15 +13,14 @@ const initialState: BoundaryState = {
 };
 
 export class InsufficientPermissionsErrorBoundary extends React.Component<
-  { errorComponent: React.ReactElement },
+  React.PropsWithChildren<{ errorComponent: React.ReactElement }>,
   BoundaryState
 > {
   static getDerivedStateFromError(error: CommonRequestError): BoundaryState {
     if (error.message.startsWith("Insufficient permissions")) {
       return { hasError: true, message: error.message };
-    } else {
-      throw error;
     }
+    throw error;
   }
 
   state = initialState;

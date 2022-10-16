@@ -1,13 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 
+import {
+  useCreateCloudWorkspace,
+  useListCloudWorkspaces,
+} from "packages/cloud/services/workspaces/CloudWorkspacesService";
+import { useWorkspaceService } from "services/workspaces/WorkspacesService";
+
 import WorkspaceItem from "./WorkspaceItem";
 import WorkspacesControl from "./WorkspacesControl";
-import {
-  useCreateWorkspace,
-  useListCloudWorkspaces,
-  useWorkspaceService,
-} from "packages/cloud/services/workspaces/WorkspacesService";
 
 const Content = styled.div`
   width: 100%;
@@ -19,20 +20,16 @@ const Content = styled.div`
 const WorkspacesList: React.FC = () => {
   const workspaces = useListCloudWorkspaces();
   const { selectWorkspace } = useWorkspaceService();
-  const createWorkspace = useCreateWorkspace();
+  const { mutateAsync: createCloudWorkspace } = useCreateCloudWorkspace();
 
   return (
     <Content>
       {workspaces.map((workspace) => (
-        <WorkspaceItem
-          key={workspace.workspaceId}
-          id={workspace.workspaceId}
-          onClick={selectWorkspace}
-        >
+        <WorkspaceItem key={workspace.workspaceId} id={workspace.workspaceId} onClick={selectWorkspace}>
           {workspace.name}
         </WorkspaceItem>
       ))}
-      <WorkspacesControl onSubmit={createWorkspace} />
+      <WorkspacesControl onSubmit={createCloudWorkspace} />
     </Content>
   );
 };

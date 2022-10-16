@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.e2e_test;
@@ -15,12 +15,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestingSources extends BaseConnector implements Source {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TestingSources.class);
 
   private final Map<TestingSourceType, Source> sourceMap;
 
@@ -67,9 +63,7 @@ public class TestingSources extends BaseConnector implements Source {
 
   public static void main(final String[] args) throws Exception {
     final Source source = new TestingSources();
-    LOGGER.info("Starting source: {}", TestingSources.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("Completed source: {}", TestingSources.class);
   }
 
 }

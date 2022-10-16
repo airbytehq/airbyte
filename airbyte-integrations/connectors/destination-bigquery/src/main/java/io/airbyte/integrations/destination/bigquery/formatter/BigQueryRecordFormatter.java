@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.formatter;
@@ -23,17 +23,25 @@ public abstract class BigQueryRecordFormatter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordFormatter.class);
 
-  private Schema bigQuerySchema;
-  private final Map<String, Set<String>> mapOfFailedFields = new HashMap<>();
+  protected Schema bigQuerySchema;
+  protected final Map<String, Set<String>> mapOfFailedFields = new HashMap<>();
   protected final StandardNameTransformer namingResolver;
-  protected final JsonNode jsonSchema;
+  protected final JsonNode originalJsonSchema;
+  protected JsonNode jsonSchema;
 
-  public BigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+  /**
+   * These parameters are required for the correct operation of denormalize version of the connector.
+   */
+  protected final Set<String> invalidKeys = new HashSet<>();
+  protected final Set<String> fieldsContainRefDefinitionValue = new HashSet<>();
+
+  public BigQueryRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     this.namingResolver = namingResolver;
+    this.originalJsonSchema = jsonSchema.deepCopy();
     this.jsonSchema = formatJsonSchema(jsonSchema.deepCopy());
   }
 
-  protected JsonNode formatJsonSchema(JsonNode jsonSchema) {
+  protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
     // Do nothing by default
     return jsonSchema;
   };
@@ -53,7 +61,7 @@ public abstract class BigQueryRecordFormatter {
 
   protected abstract Schema getBigQuerySchema(JsonNode jsonSchema);
 
-  protected void logFieldFail(String error, String fieldName) {
+  protected void logFieldFail(final String error, final String fieldName) {
     mapOfFailedFields.putIfAbsent(error, new HashSet<>());
     mapOfFailedFields.get(error).add(fieldName);
   }
@@ -66,8 +74,6 @@ public abstract class BigQueryRecordFormatter {
               error,
               String.join(", ", fieldNames)));
       mapOfFailedFields.clear();
-    } else {
-      LOGGER.info("No field fails during record format.");
     }
   }
 

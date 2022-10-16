@@ -48,8 +48,8 @@
     },
     "url": {
       "type": ["string", "null"],
-      "title": "The IP address.",
-      "description": "The IP address recorded for the action."
+      "title": "Click url",
+      "description": "If the action is a 'click', the URL on which the member clicked."
     },
     "ip": {
       "type": ["string", "null"],

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import io
@@ -16,7 +16,7 @@ def build_docker_image(text: str, tag: str) -> docker.models.images.Image:
     """
     client = docker.from_env()
     fileobj = io.BytesIO(bytes(text, "utf-8"))
-    image, iterools_tee = client.images.build(fileobj=fileobj, tag=tag, forcerm=True, rm=True)
+    image, _ = client.images.build(fileobj=fileobj, tag=tag, forcerm=True, rm=True)
     return image
 
 

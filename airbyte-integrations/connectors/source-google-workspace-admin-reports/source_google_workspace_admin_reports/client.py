@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,7 +7,7 @@ from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources.deprecated.client import BaseClient
 
-from .api import API, AdminAPI, DriveAPI, IncrementalStreamAPI, LoginsAPI, MobileAPI, OAuthTokensAPI
+from .api import API, AdminAPI, DriveAPI, IncrementalStreamAPI, LoginsAPI, MeetAPI, MobileAPI, OAuthTokensAPI
 
 
 class Client(BaseClient):
@@ -17,6 +17,7 @@ class Client(BaseClient):
             "admin": AdminAPI(self._api),
             "drive": DriveAPI(self._api),
             "logins": LoginsAPI(self._api),
+            "meet": MeetAPI(self._api),
             "mobile": MobileAPI(self._api),
             "oauth_tokens": OAuthTokensAPI(self._api),
         }

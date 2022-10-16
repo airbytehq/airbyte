@@ -1,0 +1,52 @@
+# Configuration for airbyte/destination-s3
+# Documentation about this connector can be found at https://docs.airbyte.io/integrations/destinations/s3
+resource_name: "my_s3_destination"
+definition_type: destination
+definition_id: foobar
+definition_image: airbyte/destination-s3
+definition_version: 0.2.5
+
+# EDIT THE CONFIGURATION BELOW!
+configuration:
+  s3_endpoint: # OPTIONAL | string | This is your S3 endpoint url.(if you are working with AWS S3, just leave empty). | Example: http://localhost:9000
+  s3_bucket_name: # REQUIRED | string | The name of the S3 bucket. | Example: airbyte_sync
+  s3_bucket_path: # REQUIRED | string | Directory under the S3 bucket where data will be written. | Example: data_sync/test
+  s3_bucket_region: # REQUIRED | string | The region of the S3 bucket.
+  access_key_id: ${ACCESS_KEY_ID} # SECRET (please store in environment variables) | OPTIONAL | string | The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket, if not set, Airbyte will rely on Instance Profile. | Example: A012345678910EXAMPLE
+  secret_access_key: ${SECRET_ACCESS_KEY} # SECRET (please store in environment variables) | OPTIONAL | string | The corresponding secret to the access key id, if S3 Key Id is set, then S3 Access Key must also be provided | Example: a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY
+  format:
+    ## -------- Pick one valid structure among the examples below: --------
+    format_type: "Avro" # REQUIRED | string}
+    compression_codec:
+      ## -------- Pick one valid structure among the examples below: --------
+      codec: "no compression" # REQUIRED | string
+      ## -------- Another valid structure for compression_codec: --------
+      # codec: "Deflate" # REQUIRED | string
+      # compression_level: # REQUIRED | integer | 0: no compression & fastest, 9: best compression & slowest.
+      ## -------- Another valid structure for compression_codec: --------
+      # codec: "bzip2" # REQUIRED | string
+      ## -------- Another valid structure for compression_codec: --------
+      # codec: "xz" # REQUIRED | string
+      # compression_level: 6 # REQUIRED | integer | See <a href="https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-">here</a> for details.
+      ## -------- Another valid structure for compression_codec: --------
+      # codec: "zstandard" # REQUIRED | string
+      # compression_level: 3 # REQUIRED | integer | Negative levels are 'fast' modes akin to lz4 or snappy, levels above 9 are generally for archival purposes, and levels above 18 use a lot of memory.
+      # include_checksum: # OPTIONAL | boolean | If true, include a checksum with each data block.
+      ## -------- Another valid structure for compression_codec: --------
+      # codec: "snappy" # REQUIRED | string
+    part_size_mb: 5 # OPTIONAL | integer | This is the size of a "Part" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes more memory. Allowed values: min=5MB, max=525MB Default: 5MB. | Example: 5
+    ## -------- Another valid structure for format: --------
+    # format_type: "CSV" # REQUIRED | string
+    # flattening: "No flattening" # REQUIRED | string | Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.
+    # part_size_mb: 5 # OPTIONAL | integer | This is the size of a "Part" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes more memory. Allowed values: min=5MB, max=525MB Default: 5MB. | Example: 5
+    ## -------- Another valid structure for format: --------
+    # format_type: "JSONL" # REQUIRED | string
+    # part_size_mb: 5 # OPTIONAL | integer | This is the size of a "Part" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes more memory. Allowed values: min=5MB, max=525MB Default: 5MB. | Example: 5
+    ## -------- Another valid structure for format: --------
+    # format_type: "Parquet" # REQUIRED | string
+    # compression_codec: "UNCOMPRESSED" # OPTIONAL | string | The compression algorithm used to compress data pages.
+    # block_size_mb: 128 # OPTIONAL | integer | This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB. | Example: 128
+    # max_padding_size_mb: 8 # OPTIONAL | integer | Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB. | Example: 8
+    # page_size_kb: 1024 # OPTIONAL | integer | The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB. | Example: 1024
+    # dictionary_page_size_kb: 1024 # OPTIONAL | integer | There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB. | Example: 1024
+    # dictionary_encoding: true # OPTIONAL | boolean | Default: true.

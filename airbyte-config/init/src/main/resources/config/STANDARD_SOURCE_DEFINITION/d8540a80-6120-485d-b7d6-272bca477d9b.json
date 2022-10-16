@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "d8540a80-6120-485d-b7d6-272bca477d9b",
-  "name": "OpenWeather",
-  "dockerRepository": "airbyte/source-openweather",
-  "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/openweather",
-  "icon": "openweather.svg"
-}

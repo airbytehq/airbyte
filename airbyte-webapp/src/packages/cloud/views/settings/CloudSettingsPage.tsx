@@ -2,17 +2,18 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 // import useConnector from "hooks/services/useConnector";
-import { PageConfig, SettingsRoute } from "pages/SettingsPage/SettingsPage";
+import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
+import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
+import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
+import SettingsPage from "pages/SettingsPage";
 import {
   DestinationsPage as SettingsDestinationPage,
   SourcesPage as SettingsSourcesPage,
 } from "pages/SettingsPage/pages/ConnectorsPage";
-import SettingsPage from "pages/SettingsPage";
 // import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
 import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
-import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
-import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
-import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
+import { PageConfig, SettingsRoute } from "pages/SettingsPage/SettingsPage";
+import { isOsanoActive, showOsanoDrawer } from "utils/dataPrivacy";
 
 const CloudSettingsRoutes = {
   Configuration: SettingsRoute.Configuration,
@@ -40,6 +41,15 @@ export const CloudSettingsPage: React.FC = () => {
               name: <FormattedMessage id="settings.account" />,
               component: AccountSettingsView,
             },
+            ...(isOsanoActive()
+              ? [
+                  {
+                    name: <FormattedMessage id="settings.cookiePreferences" />,
+                    path: "__COOKIE_PREFERENCES__", // Special path with no meaning, since the onClick will be triggered
+                    onClick: () => showOsanoDrawer(),
+                  },
+                ]
+              : []),
           ],
         },
         {

@@ -7,18 +7,17 @@ from enum import Enum
 from pathlib import Path
 from typing import Callable, TextIO, List, Optional, Mapping, Any
 
-try:
-    # these packages are not always needed
-    from mypy.errorcodes import error_codes as mypy_error_codes, ErrorCode
-    from unidiff import PatchSet
-except ModuleNotFoundError:
-    pass
+from mypy.errorcodes import error_codes as mypy_error_codes, ErrorCode
+from unidiff import PatchSet
 
 from .sonar_qube_api import SonarQubeApi
 
 HERE = Path(os.getcwd())
 RE_MYPY_LINE = re.compile(r"^(.+):(\d+):(\d+):")
 RE_MYPY_LINE_WO_COORDINATES = re.compile(r"^(.+): error: (.+)")
+
+FORMAT_TIP = "Please go to the repo root and run the command: './gradlew --no-daemon " \
+             ":airbyte-integrations:connectors:<connector_name>:airbytePythonFormat'"
 
 
 class IssueSeverity(Enum):
@@ -81,7 +80,7 @@ class LogParser(SonarQubeApi):
         rule_type=Rule.Type.code_smell,
         key="need_format",
         name="Should be formatted (black)",
-        description='Please run one of the commands: "black --config ./pyproject.toml <path_to_updated_folder>" or "./gradlew format"',
+        description=FORMAT_TIP,
         tool_name="black",
         severity=IssueSeverity.minor,
         template="python:CommentRegularExpression"
@@ -91,7 +90,7 @@ class LogParser(SonarQubeApi):
         rule_type=Rule.Type.code_smell,
         key="need_format",
         name="Should be formatted (isort)",
-        description='Please run one of the commands: "isort <path_to_updated_folder>" or "./gradlew format"',
+        description=FORMAT_TIP,
         tool_name="isort",
         severity=IssueSeverity.minor,
         template="python:CommentRegularExpression"
@@ -131,8 +130,8 @@ class LogParser(SonarQubeApi):
         def checked_path(self):
             if self.path.startswith(str(HERE) + "/"):
                 # remove a parent part of path
-                return self.path[len(str(HERE) + "/"):]
-            return self.path
+                return self.path[len(str(HERE) + "/"):].strip()
+            return self.path.strip()
 
     def __init__(self, output_file: str, host: str, token: str):
         super().__init__(host=host, token=token, pr_name="0")
@@ -148,7 +147,7 @@ class LogParser(SonarQubeApi):
                 data = self._issues2dict(issues)
                 with open(self.output_file, "w") as output_file:
                     output_file.write(json.dumps(data))
-                self.logger.info(f"the file {self.output_file} was updated")
+                self.logger.info(f"the file {self.output_file} was updated with {len(issues)} issues")
                 return 0
             return 1
 
@@ -263,7 +262,7 @@ class LogParser(SonarQubeApi):
                 others = re.sub(r"\s+", " ", others.replace(code, ". Code line: "))
                 break
         if not rule:
-            cls.logger.warning(f"couldn't parse the lines: {lines}")
+            cls.logger.warning(f"couldn't find the  rule with '{others}' and lines: {lines}, available rules: {cls._mypy_rules}")
             return None
 
         description = others.split("^")[0]

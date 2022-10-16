@@ -12,7 +12,7 @@
       "type": ["null", "string"]
     },
     "user": {
-      "$ref": "user.json"
+      "$ref": "user_graphql.json"
     },
     "body": {
       "type": ["null", "string"]
@@ -49,6 +49,14 @@
     },
     "submitted_at": {
       "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
       "format": "date-time"
     },
     "commit_id": {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows.facebook;
@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 // Instagram Graph API require Facebook API User token
 public class InstagramOAuthFlow extends FacebookMarketingOAuthFlow {
 
-  private static final String SCOPES = "ads_management,instagram_basic,instagram_manage_insights,read_insights";
+  private static final String SCOPES = "ads_management,instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement";
 
   public InstagramOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);

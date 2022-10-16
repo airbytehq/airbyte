@@ -2,35 +2,19 @@
   "streams": [
     {
       "stream": {
-        "name": "test",
+        "name": "aws_s3_sample",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "0": {
-              "type": ["null", "string", "number"]
-            },
-            "First Name": {
-              "type": ["null", "string"]
-            },
-            "Last Name": {
-              "type": ["null", "string"]
-            },
-            "Gender": {
-              "type": ["null", "number", "string"]
-            },
-            "Country": {
-              "type": ["null", "number", "string"]
-            },
-            "Age": {
-              "type": ["null", "string", "number"]
-            },
-            "Date": {
-              "type": ["null", "string"]
-            },
-            "Id": {
-              "type": ["null", "string", "number"]
-            }
+            "id": { "type": "string" },
+            "first_name": { "type": "string" },
+            "last_name": { "type": "string" },
+            "gender": { "type": "string" },
+            "ip_address": { "type": "string" },
+            "primary_email": { "type": "string" },
+            "dob": { "type": "string", "format": "date" },
+            "modifiedAt": { "type": "string", "format": "date-time" }
           }
         },
         "supported_sync_modes": ["full_refresh"]

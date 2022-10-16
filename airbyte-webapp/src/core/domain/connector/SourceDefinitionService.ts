@@ -1,14 +1,33 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { SourceDefinition } from "./types";
 
-class SourceDefinitionService extends AirbyteRequestService {
-  get url(): string {
-    return "source_definitions";
+import {
+  createSourceDefinition,
+  getSourceDefinition,
+  listLatestSourceDefinitions,
+  listSourceDefinitions,
+  SourceDefinitionCreate,
+  SourceDefinitionUpdate,
+  updateSourceDefinition,
+} from "../../request/AirbyteClient";
+
+export class SourceDefinitionService extends AirbyteRequestService {
+  public get(sourceDefinitionId: string) {
+    return getSourceDefinition({ sourceDefinitionId }, this.requestOptions);
   }
 
-  public update(body: SourceDefinition): Promise<SourceDefinition> {
-    return this.fetch<SourceDefinition>(`${this.url}/update`, body);
+  public list() {
+    return listSourceDefinitions(this.requestOptions);
+  }
+
+  public listLatest() {
+    return listLatestSourceDefinitions(this.requestOptions);
+  }
+
+  public update(body: SourceDefinitionUpdate) {
+    return updateSourceDefinition(body, this.requestOptions);
+  }
+
+  public create(body: SourceDefinitionCreate) {
+    return createSourceDefinition(body, this.requestOptions);
   }
 }
-
-export { SourceDefinitionService };

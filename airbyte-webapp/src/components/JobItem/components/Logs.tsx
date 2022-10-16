@@ -1,14 +1,12 @@
-import styled from "styled-components";
-import React from "react";
 import { FormattedMessage } from "react-intl";
 import { LazyLog } from "react-lazylog";
+import styled from "styled-components";
 
 const LogsView = styled.div<{ isEmpty?: boolean }>`
   padding: 11px ${({ isEmpty }) => (isEmpty ? 42 : 12)}px 20px;
   font-size: 12px;
   line-height: 18px;
   color: ${({ theme }) => theme.darkPrimaryColor};
-  font-family: ${({ theme }) => theme.codeFont};
   word-wrap: break-word;
   min-height: ${({ isEmpty }) => (isEmpty ? "auto" : "400px")};
 
@@ -32,14 +30,12 @@ const LogsView = styled.div<{ isEmpty?: boolean }>`
   }
 `;
 
-type LogsProps = {
+interface LogsProps {
   logsArray?: string[];
-};
+}
 
 const Logs: React.FC<LogsProps> = ({ logsArray }) => {
-  const logsJoin = logsArray?.length
-    ? logsArray.join("\n")
-    : "No logs available";
+  const logsJoin = logsArray?.length ? logsArray.join("\n") : "No logs available";
 
   return (
     <LogsView isEmpty={!logsArray}>
@@ -51,6 +47,8 @@ const Logs: React.FC<LogsProps> = ({ logsArray }) => {
           selectableLines
           follow
           style={{ background: "transparent" }}
+          scrollToLine={undefined}
+          highlight={[]}
         />
       ) : (
         <FormattedMessage id="sources.emptyLogs" />

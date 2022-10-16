@@ -7,6 +7,11 @@
     "required": ["start_date", "base"],
     "additionalProperties": false,
     "properties": {
+      "access_key": {
+        "title": "Access Key",
+        "type": "string",
+        "description": "API access key used to retrieve data from the Exchange Rates API."
+      },
       "start_date": {
         "title": "Start Date",
         "type": "string",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -8,10 +8,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {
@@ -24,15 +24,15 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
   }
 
   @Override
-  protected void setupDatabase(String dbName) {
-    JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
+  protected void setupDatabase(final String dbName) {
+    final JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", plainConfig.get("host"))
-        .put("port", plainConfig.get("port"))
-        .put("database", dbName)
-        .put("username", plainConfig.get("username"))
-        .put("password", plainConfig.get("password"))
+        .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
+        .put(JdbcUtils.PORT_KEY, plainConfig.get(JdbcUtils.PORT_KEY))
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
+        .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
         .build());
   }
 
@@ -44,9 +44,9 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
    * use for Airbyte Cataloq configuration 5th arg - a number of streams to read in configured airbyte
    * Catalog. Each stream\table in DB should be names like "test_0", "test_1",..., test_n.
    */
-  @BeforeAll
-  public static void beforeAll() {
-    AbstractSourcePerformanceTest.testArgs = Stream.of(
+  @Override
+  protected Stream<Arguments> provideParameters() {
+    return Stream.of(
         Arguments.of("t1000_c240_r200", "dbo", 200, 240, 1000),
         Arguments.of("t25_c8_r50k_s10kb", "dbo", 50000, 8, 25),
         Arguments.of("t1000_c8_r10k_s500b", "dbo", 10000, 8, 1000));

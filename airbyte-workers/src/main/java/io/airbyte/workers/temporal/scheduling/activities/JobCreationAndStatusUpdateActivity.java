@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -23,7 +23,6 @@ public interface JobCreationAndStatusUpdateActivity {
   class JobCreationInput {
 
     private UUID connectionId;
-    private boolean reset;
 
   }
 
@@ -75,10 +74,29 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  class AttemptNumberCreationOutput {
+
+    private int attemptNumber;
+
+  }
+
+  /**
+   * Create a new attempt for a given job ID
+   *
+   * @param input POJO containing the jobId
+   * @return A POJO containing the attemptNumber
+   */
+  @ActivityMethod
+  AttemptNumberCreationOutput createNewAttemptNumber(AttemptCreationInput input) throws RetryableException;
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class JobSuccessInput {
 
     private long jobId;
     private int attemptId;
+    private UUID connectionId;
     private StandardSyncOutput standardSyncOutput;
 
   }
@@ -92,9 +110,29 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  class JobSuccessInputWithAttemptNumber {
+
+    private long jobId;
+    private int attemptNumber;
+    private UUID connectionId;
+    private StandardSyncOutput standardSyncOutput;
+
+  }
+
+  /**
+   * Set a job status as successful
+   */
+  @ActivityMethod
+  void jobSuccessWithAttemptNumber(JobSuccessInputWithAttemptNumber input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class JobFailureInput {
 
     private long jobId;
+    private UUID connectionId;
+    private int attemptNumber;
     private String reason;
 
   }
@@ -112,6 +150,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptId;
+    private UUID connectionId;
     private StandardSyncOutput standardSyncOutput;
     private AttemptFailureSummary attemptFailureSummary;
 
@@ -126,10 +165,30 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  class AttemptNumberFailureInput {
+
+    private long jobId;
+    private int attemptNumber;
+    private UUID connectionId;
+    private StandardSyncOutput standardSyncOutput;
+    private AttemptFailureSummary attemptFailureSummary;
+
+  }
+
+  /**
+   * Set an attempt status as failed
+   */
+  @ActivityMethod
+  void attemptFailureWithAttemptNumber(AttemptNumberFailureInput input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class JobCancelledInput {
 
     private long jobId;
     private int attemptId;
+    private UUID connectionId;
     private AttemptFailureSummary attemptFailureSummary;
 
   }
@@ -143,13 +202,44 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  class JobCancelledInputWithAttemptNumber {
+
+    private long jobId;
+    private int attemptNumber;
+    private UUID connectionId;
+    private AttemptFailureSummary attemptFailureSummary;
+
+  }
+
+  /**
+   * Set a job status as cancelled
+   */
+  @ActivityMethod
+  void jobCancelledWithAttemptNumber(JobCancelledInputWithAttemptNumber input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class ReportJobStartInput {
 
     private long jobId;
+    private UUID connectionId;
 
   }
 
   @ActivityMethod
   void reportJobStart(ReportJobStartInput reportJobStartInput);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class EnsureCleanJobStateInput {
+
+    private UUID connectionId;
+
+  }
+
+  @ActivityMethod
+  void ensureCleanJobState(EnsureCleanJobStateInput input);
 
 }
