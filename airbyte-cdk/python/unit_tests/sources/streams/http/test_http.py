@@ -414,19 +414,31 @@ class CacheHttpStreamWithSlices(CacheHttpStream):
 
 
 @patch("airbyte_cdk.sources.streams.core.logging", MagicMock())
-def test_using_cache(mocker):
+def test_using_cache(mocker, requests_mock):
+    requests_mock.register_uri("GET", "https://google.com/", text="text")
+    requests_mock.register_uri("GET", "https://google.com/search", text="text")
+
     parent_stream = CacheHttpStreamWithSlices()
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")
 
+    assert requests_mock.call_count == 0
+    assert parent_stream._session.cache.response_count() == 0
+
     for _slice in parent_stream.stream_slices():
         list(parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice))
+
+    assert requests_mock.call_count == 2
+    assert parent_stream._session.cache.response_count() == 2
 
     child_stream = CacheHttpSubStream(parent=parent_stream)
 
     for _slice in child_stream.stream_slices(sync_mode=SyncMode.full_refresh):
         pass
 
-    assert parent_stream.cassete.play_count != 0
+    assert requests_mock.call_count == 2
+    assert parent_stream._session.cache.response_count() == 2
+    assert parent_stream._session.cache.has_url("https://google.com/")
+    assert parent_stream._session.cache.has_url("https://google.com/search")
 
 
 class AutoFailTrueHttpStream(StubBasicReadHttpStream):
