@@ -1,4 +1,4 @@
 {
-  "X-Api-Key": "<X-Api-Key>",
-  "workspaceId": "<workspaceId>"
+  "api_key": "<X-Api-Key>",
+  "workspace_id": "<workspace_id>"
 }
