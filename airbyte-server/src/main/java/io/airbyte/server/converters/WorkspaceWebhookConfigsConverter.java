@@ -34,8 +34,22 @@ public class WorkspaceWebhookConfigsConverter {
     return Jsons.jsonNode(configs);
   }
 
-  public static List<WebhookConfigRead> toApiReads(final JsonNode persistenceConfig) {
-    if (persistenceConfig == null) {
+  /**
+   * Extract the read-only properties from a set of persisted webhook operation configs.
+   * <p>
+   * Specifically, returns the id and name but excludes the secret auth token. Note that we "manually"
+   * deserialize the JSON tree instead of deserializing to our internal schema --
+   * WebhookOperationConfigs -- because the persisted JSON doesn't conform to that schema until we
+   * hydrate the secrets. Since we don't want to unnecessarily hydrate the secrets to read from the
+   * API, we do this instead.
+   * <p>
+   * TODO(mfsiega-airbyte): try find a cleaner way to handle this situation.
+   *
+   * @param persistedWebhookConfig - The JsonNode of the persisted webhook configs
+   * @return a list of (webhook id, name) pairs
+   */
+  public static List<WebhookConfigRead> toApiReads(final JsonNode persistedWebhookConfig) {
+    if (persistedWebhookConfig == null) {
       return Collections.emptyList();
     }
 
@@ -43,8 +57,10 @@ public class WorkspaceWebhookConfigsConverter {
     // into the usual shape.
     // TODO(mfsiega-airbyte): find a cleaner way to handle this situation.
     List<WebhookConfigRead> configReads = new ArrayList<>();
-    final JsonNode configArray = persistenceConfig.findPath("webhookConfigs");
-    for (Iterator<JsonNode> it = configArray.elements(); it.hasNext();) {
+
+    final JsonNode configArray = persistedWebhookConfig.findPath("webhookConfigs");
+    Iterator<JsonNode> it = configArray.elements();
+    while (it.hasNext()) {
       JsonNode webhookConfig = it.next();
       configReads.add(toApiRead(webhookConfig));
     }

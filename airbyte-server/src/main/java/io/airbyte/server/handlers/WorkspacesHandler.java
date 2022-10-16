@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.github.slugify.Slugify;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -63,12 +64,13 @@ public class WorkspacesHandler {
     this(configRepository, secretsRepositoryWriter, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
   }
 
-  public WorkspacesHandler(final ConfigRepository configRepository,
-                           final SecretsRepositoryWriter secretsRepositoryWriter,
-                           final ConnectionsHandler connectionsHandler,
-                           final DestinationHandler destinationHandler,
-                           final SourceHandler sourceHandler,
-                           final Supplier<UUID> uuidSupplier) {
+  @VisibleForTesting
+  WorkspacesHandler(final ConfigRepository configRepository,
+                    final SecretsRepositoryWriter secretsRepositoryWriter,
+                    final ConnectionsHandler connectionsHandler,
+                    final DestinationHandler destinationHandler,
+                    final SourceHandler sourceHandler,
+                    final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.connectionsHandler = connectionsHandler;
