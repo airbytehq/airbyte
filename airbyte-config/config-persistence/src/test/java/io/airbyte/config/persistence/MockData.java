@@ -19,6 +19,7 @@ import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
+import io.airbyte.config.OperatorWebhook;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
@@ -128,6 +129,10 @@ public class MockData {
   private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
 
   private static final String CONNECTION_SPECIFICATION = "'{\"name\":\"John\", \"age\":30, \"car\":null}'";
+  private static final UUID OPERATION_ID_4 = UUID.randomUUID();
+  private static final UUID WEBHOOK_CONFIG_ID = UUID.randomUUID();
+  private static final String WEBHOOK_OPERATION_EXECUTION_URL = "test-webhook-url";
+  private static final String WEBHOOK_OPERATION_EXECUTION_BODY = "test-webhook-body";
 
   public static List<StandardWorkspace> standardWorkspaces() {
     final Notification notification = new Notification()
@@ -429,7 +434,20 @@ public class MockData {
         .withOperatorDbt(null)
         .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC))
         .withOperatorType(OperatorType.NORMALIZATION);
-    return Arrays.asList(standardSyncOperation1, standardSyncOperation2, standardSyncOperation3);
+    final StandardSyncOperation standardSyncOperation4 = new StandardSyncOperation()
+        .withName("webhook-operation")
+        .withTombstone(false)
+        .withOperationId(OPERATION_ID_4)
+        .withWorkspaceId(WORKSPACE_ID_1)
+        .withOperatorType(OperatorType.WEBHOOK)
+        .withOperatorDbt(null)
+        .withOperatorNormalization(null)
+        .withOperatorWebhook(
+            new OperatorWebhook()
+                .withWebhookConfigId(WEBHOOK_CONFIG_ID)
+                .withExecutionUrl(WEBHOOK_OPERATION_EXECUTION_URL)
+                .withExecutionBody(WEBHOOK_OPERATION_EXECUTION_BODY));
+    return Arrays.asList(standardSyncOperation1, standardSyncOperation2, standardSyncOperation3, standardSyncOperation4);
   }
 
   public static List<StandardSync> standardSyncs() {
