@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1.33", "vcrpy==4.1.1", "pendulum~=2.1.2", "sgqlc"]
+MAIN_REQUIREMENTS = ["airbyte-cdk @ git+https://git@github.com/airbytehq/airbyte.git@grubberr/17919-airbyte_cdk#egg=airbyte_cdk&subdirectory=airbyte-cdk/python", "vcrpy==4.1.1", "pendulum~=2.1.2", "sgqlc"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "responses~=0.19.0"]
 
