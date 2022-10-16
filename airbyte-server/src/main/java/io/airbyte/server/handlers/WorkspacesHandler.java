@@ -267,7 +267,6 @@ public class WorkspacesHandler {
         .defaultGeography(Enums.convertTo(workspace.getDefaultGeography(), Geography.class));
     // Add read-only webhook configs.
     if (workspace.getWebhookOperationConfigs() != null) {
-      LOGGER.info("webhook configs: {}", workspace.getWebhookOperationConfigs());
       result.setWebhookConfigs(WorkspaceWebhookConfigsConverter.toApiReads(workspace.getWebhookOperationConfigs()));
     }
     return result;
