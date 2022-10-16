@@ -7,4 +7,4 @@ import pytest
 
 @pytest.fixture(scope="session", name="config")
 def config_fixture():
-    return {"X-Api-Key": "test_api_key", "workspaceId": "workspaceId"}
+    return {"api_key": "test_api_key", "workspace_id": "workspace_id"}
