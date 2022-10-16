@@ -53,7 +53,7 @@ setup(
         "pydantic~=1.9.2",
         "PyYAML~=5.4",
         "requests",
-        "vcrpy",
+        "requests_cache",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
     ],

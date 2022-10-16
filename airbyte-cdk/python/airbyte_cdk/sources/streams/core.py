@@ -5,6 +5,7 @@
 
 import inspect
 import logging
+import weakref
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -61,16 +62,17 @@ class Stream(ABC):
     """
 
     def __new__(cls, *args, **kwargs):
-        obj = super().__new__(cls)
-        if "_total_number" not in cls.__dict__:
-            cls._total_number = 0
-        cls._total_number += 1
-        obj._instance_number = cls._total_number
-        return obj
+        instance = super().__new__(cls)
+        if "_instances" not in cls.__dict__:
+            cls._instances = []
+        cls._instances.append(weakref.ref(instance))
+        return instance
 
     def get_instance_number(self) -> int:
         ":return: sequential number of instance of the same class"
-        return self._instance_number
+        for n, ref in enumerate(self._instances):
+            if ref() is self:
+                return n + 1
 
     # Use self.logger in subclasses to log any messages
     @property
