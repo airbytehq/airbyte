@@ -51,6 +51,7 @@ def test_campaigns_request_params(mocked_client, config):
     request_params = campaigns.request_params(stream_slice={"account_id": "account_id"})
     assert request_params == {
         "AccountId": "account_id",
+        "CampaignType": "Audience DynamicSearchAds Search Shopping",
         "ReturnAdditionalFields": "AdScheduleUseSearcherTimeZone BidStrategyId CpvCpmBiddingScheme DynamicDescriptionSetting DynamicFeedSetting MaxConversionValueBiddingScheme MultimediaAdsBidAdjustment TargetImpressionShareBiddingScheme TargetSetting VerifiedTrackingSetting",
     }
 

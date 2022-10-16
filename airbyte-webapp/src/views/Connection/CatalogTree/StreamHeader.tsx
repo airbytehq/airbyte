@@ -5,7 +5,10 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Cell, CheckBox, DropDownRow, Row, Switch } from "components";
+import { Cell, Row } from "components";
+import { CheckBox } from "components/ui/CheckBox";
+import { DropDownOptionDataItem } from "components/ui/DropDown";
+import { Switch } from "components/ui/Switch";
 
 import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
@@ -34,7 +37,7 @@ interface StreamHeaderProps {
   availableSyncModes: Array<{
     value: SyncSchema;
   }>;
-  onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
+  onSelectSyncMode: (selectedMode: DropDownOptionDataItem) => void;
   onSelectStream: () => void;
   primitiveFields: SyncSchemaField[];
   pkType: IndexerType;
