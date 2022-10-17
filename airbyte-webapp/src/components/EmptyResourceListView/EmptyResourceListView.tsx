@@ -5,6 +5,7 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
+import { ReactComponent as BowtieHalf } from "./bowtie-half.svg";
 import styles from "./EmptyResourceListView.module.scss";
 
 interface EmptyResourceListViewProps {
@@ -34,10 +35,10 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
       </Text>
       <div className={classNames(styles.container, styles.illustration)}>
         {resourceType !== "destinations" && (
-          <img src="/images/bowtie-half.svg" alt="" className={classNames(styles.bowtie, styles.left)} />
+          <BowtieHalf aria-hidden="true" className={classNames(styles.bowtie, styles.left)} />
         )}
         {resourceType !== "sources" && (
-          <img src="/images/bowtie-half.svg" alt="" className={classNames(styles.bowtie, styles.right)} />
+          <BowtieHalf aria-hidden="true" className={classNames(styles.bowtie, styles.right)} />
         )}
         <img
           className={styles.octavia}
