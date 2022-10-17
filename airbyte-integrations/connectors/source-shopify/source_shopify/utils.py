@@ -10,17 +10,40 @@ from typing import Dict
 import requests
 
 SCOPES_MAPPING = {
-    "read_customers": ["Customers"],
-    "read_orders": ["Orders", "AbandonedCheckouts", "TenderTransactions", "Transactions", "Fulfillments", "OrderRefunds", "OrderRisks"],
-    "read_draft_orders": ["DraftOrders"],
-    "read_products": ["Products", "CustomCollections", "Collects"],
-    "read_content": ["Pages"],
+    "read_customers": ["Customers", "MetafieldCustomers"],
+    "read_orders": [
+        "Orders",
+        "AbandonedCheckouts",
+        "TenderTransactions",
+        "Transactions",
+        "Fulfillments",
+        "OrderRefunds",
+        "OrderRisks",
+        "MetafieldOrders",
+    ],
+    "read_draft_orders": ["DraftOrders", "MetafieldDraftOrders"],
+    "read_products": [
+        "Products",
+        "MetafieldProducts",
+        "ProductImages",
+        "MetafieldProductImages",
+        "MetafieldProductVariants",
+        "CustomCollections",
+        "Collects",
+        "Collections",
+        "ProductVariants",
+        "MetafieldCollections",
+        "SmartCollections",
+        "MetafieldSmartCollections",
+    ],
+    "read_content": ["Pages", "MetafieldPages"],
     "read_price_rules": ["PriceRules"],
     "read_discounts": ["DiscountCodes"],
-    "read_locations": ["Locations"],
+    "read_locations": ["Locations", "MetafieldLocations"],
     "read_inventory": ["InventoryItems", "InventoryLevels"],
     "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
     "read_shopify_payments_payouts": ["BalanceTransactions"],
+    "read_online_store_pages": ["Articles", "MetafieldArticles", "Blogs", "MetafieldBlogs"],
 }
 
 
