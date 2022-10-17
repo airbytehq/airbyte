@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.check.connection;
 
+import io.airbyte.commons.temporal.scheduling.CheckConnectionWorkflow;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.StandardCheckConnectionInput;
