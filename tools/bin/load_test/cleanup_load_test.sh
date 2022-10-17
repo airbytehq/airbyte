@@ -8,11 +8,6 @@ comment
 cd "$(dirname "$0")"
 . load_test_utils.sh
 
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-CLEAR='\033[0m'
-
 function showhelp {
   echo -e """Usage $(dirname $0)/cleanup_load_test [OPTIONS]
 
@@ -35,22 +30,16 @@ function showhelp {
     will be set up for the airbyte-server deployment using the provided <port> (ie. '8001:8001').
     Defaults to '8001'.
 
-  ${CLEAR}-k
-    ${GREEN}Indicate that the script is running against a kubernetes instance of Airbyte
-
-  ${CLEAR}-N <namespace>
-    ${GREEN}Specify the kubernetes namespace where the airbyte-server deployment exists g (ex. "ab").
-    Only use with '-k' option.
-    Defaults to 'default'.
+  ${CLEAR}-X <header>
+    ${GREEN}Specify the X-Endpoint-API-UserInfo header value for API authentication. Cloud-only.
   """ && exit 1
 }
 
 hostname=localhost
 api_port=8001
-kube=false
-kube_namespace=default
+x_endpoint_header=
 
-while getopts "hW:H:P:kN:" options ; do
+while getopts "hW:H:P:X:kN:" options ; do
   case "${options}" in
     h)
       showhelp
@@ -64,16 +53,8 @@ while getopts "hW:H:P:kN:" options ; do
     P)
       api_port="${OPTARG}"
       ;;
-    k)
-      kube=true
-      ;;
-    N)
-      if test "$kube" = true; then
-        kube_namespace="${OPTARG}"
-      else
-        echo "error: -k must be set to use option -N"
-        exit 1
-      fi
+    X)
+      x_endpoint_header="${OPTARG}"
       ;;
     *)
       showhelp
@@ -102,12 +83,6 @@ function callApi {
   #    callApi "destinations/list" "{\"workspaceId\":\"${workspace}\"}"
 
   curl -s -X POST -H 'Content-Type: application/json' -H "X-Endpoint-API-UserInfo: ${api_header}" -d "$2" "${hostname}:${api_port}/api/v1/$1"
-}
-
-function portForward {
-  # if running against kubernetes, set up "kubectl port-forward airbyte-server 8001:8001 -n ab" or something similar
-  # note that local kube doesn't run in the ab namespace, so that should be optional
-  echo "implement me"
 }
 
 function deleteConnections {
@@ -176,5 +151,9 @@ fi
 setup
 
 deleteConnections
+
 deleteSources
+
 deleteDestinations
+
+echo "Finished!"

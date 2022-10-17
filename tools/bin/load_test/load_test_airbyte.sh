@@ -38,6 +38,9 @@ function showhelp {
     will be set up for the airbyte-server deployment using the provided <port> (ie. '8001:8001').
     Defaults to '8001'.
 
+  ${CLEAR}-X <header>
+    ${GREEN}Specify the X-Endpoint-API-UserInfo header value for API authentication. Cloud-only.
+
   ${CLEAR}-C <count>
     ${GREEN}Specify the number of connections that should be created by the script.
     Defaults to '1'.
@@ -58,13 +61,11 @@ function showhelp {
 
 hostname=localhost
 api_port=8001
+x_endpoint_header=
 num_connections=1
 sync_minutes=10
-kube=false
-kube_namespace=default
-cleanup_mode=false
 
-while getopts "hW:H:P:C:T:kN:" options ; do
+while getopts "hW:H:P:X:C:T:kN:" options ; do
   case "${options}" in
     h)
       showhelp
@@ -78,22 +79,14 @@ while getopts "hW:H:P:C:T:kN:" options ; do
     P)
       api_port="${OPTARG}"
       ;;
+    X)
+      x_endpoint_header="${OPTARG}"
+      ;;
     C)
       num_connections="${OPTARG}"
       ;;
     T)
       sync_minutes="${OPTARG}"
-      ;;
-    k)
-      kube=true
-      ;;
-    N)
-      if test "$kube" = true; then
-        kube_namespace="${OPTARG}"
-      else
-        echo "error: -k must be set to use option -N"
-        exit 1
-      fi
       ;;
     *)
       showhelp
@@ -110,10 +103,9 @@ function setup {
   echo "set workspace_id to ${workspace_id}"
   echo "set hostname to ${hostname}"
   echo "set api_port to ${api_port}"
+  echo "set x_endpoint_header to ${x_endpoint_header}"
   echo "set num_connections to ${num_connections}"
   echo "set sync_minutes to ${sync_minutes}"
-  echo "set kube to ${kube}"
-  echo "set kube_namespace to ${kube_namespace}"
 
   setCleanupFilesForWorkspace $workspace_id
 
@@ -223,12 +215,6 @@ function createConnection {
   echo $connectionId >> $connection_cleanup_file
 }
 
-function portForward {
-  # if running against kubernetes, set up "kubectl port-forward airbyte-server 8001:8001 -n ab" or something similar
-  # note that local kube doesn't run in the ab namespace, so that should be optional
-  echo "implement me"
-}
-
 ############
 ##  MAIN  ##
 ############
@@ -256,3 +242,5 @@ discoverSource
 echo "Retrieved sourceCatalogId: ${sourceCatalogId}"
 
 createMultipleConnections
+
+echo "Finished!"
