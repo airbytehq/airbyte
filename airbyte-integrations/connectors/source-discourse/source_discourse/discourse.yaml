@@ -27,7 +27,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "posts"
-      primary_key: "updated_at"
+      primary_key: "created_at"
       path: "/posts.json"
 
 streams:
