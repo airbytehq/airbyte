@@ -9,13 +9,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestinationAcceptanceTest.class);
 
   private ObjectMapper mapper = new ObjectMapper();
   private static ElasticsearchContainer container;
@@ -82,18 +87,16 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected JsonNode getConfig() throws Exception {
+  protected JsonNode getConfig() {
     var configJson = mapper.createObjectNode();
     configJson.put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)));
     return configJson;
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() throws Exception {
+  protected JsonNode getFailCheckConfig() {
     // should result in a failed connection check
-    var configJson = mapper.createObjectNode();
-    configJson.put("endpoint", String.format("htp::/%s:-%s", container.getHost(), container.getMappedPort(9200)));
-    return configJson;
+    return mapper.createObjectNode();
   }
 
   @Override
@@ -101,7 +104,7 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema)
-      throws Exception {
+      throws IOException {
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
     final String indexName = new ElasticsearchWriteConfig()
@@ -114,13 +117,12 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {}
+  protected void setup(TestDestinationEnv testEnv) {}
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(TestDestinationEnv testEnv) {
     ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     connection.allIndices().forEach(connection::deleteIndexIfPresent);
-    connection.close();
   }
 
 }

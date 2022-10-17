@@ -83,5 +83,9 @@ def test_streams(mocker):
     ]
     assert [props["_ts"] == {"type": "number"} for props in properties]
     assert [props["_creationTime"] == {"type": "number"} for props in properties]
-    assert set(properties[0].keys()) == set(["_id", "_ts", "_creationTime", "author", "body"])
-    assert set(properties[1].keys()) == set(["_id", "_ts", "_creationTime", "name", "tokenIdentifier"])
+    assert set(properties[0].keys()) == set(
+        ["_id", "_ts", "_creationTime", "author", "body", "_ab_cdc_lsn", "_ab_cdc_updated_at", "_ab_cdc_deleted_at"]
+    )
+    assert set(properties[1].keys()) == set(
+        ["_id", "_ts", "_creationTime", "name", "tokenIdentifier", "_ab_cdc_lsn", "_ab_cdc_updated_at", "_ab_cdc_deleted_at"]
+    )

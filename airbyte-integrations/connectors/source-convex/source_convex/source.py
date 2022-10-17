@@ -3,6 +3,7 @@
 #
 
 
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -63,7 +64,10 @@ class ConvexStream(HttpStream, IncrementalMixin):
         self.instance_name = instance_name
         self.table_name = table_name
         if json_schema:
-            json_schema["properties"]["_ts"] = {"type": "number"}
+            json_schema["properties"]["_ts"] = {"type": "integer"}
+            json_schema["properties"]["_ab_cdc_lsn"] = {"type": "number"}
+            json_schema["properties"]["_ab_cdc_updated_at"] = {"type": "string"}
+            json_schema["properties"]["_ab_cdc_deleted_at"] = {"type": "string"}
         else:
             json_schema = {}
         self.json_schema = json_schema
@@ -139,3 +143,18 @@ class ConvexStream(HttpStream, IncrementalMixin):
         This is supposedly deprecated, but it's still used by AbstractSource to update state between calls to `read_records`.
         """
         return self.state
+
+    def read_records(self, *args, **kwargs):
+        for record in super().read_records(*args, **kwargs):
+            ts_ns = record["_ts"]
+            ts_seconds = ts_ns / 1000000000.0  # convert from nanoseconds.
+            # equivalent of java's `new Timestamp(transactionMillis).toInstant().toString()`
+            ts_datetime = datetime.fromtimestamp(ts_seconds)
+            ts = ts_datetime.isoformat()
+            # DebeziumEventUtils.CDC_LSN
+            record["_ab_cdc_lsn"] = ts_ns
+            # DebeziumEventUtils.CDC_DELETED_AT
+            record["_ab_cdc_updated_at"] = ts
+            # DebeziumEventUtils.CDC_DELETED_AT
+            record["_ab_cdc_deleted_at"] = ts if ("_deleted" in record and record["_deleted"]) else None
+            yield record
