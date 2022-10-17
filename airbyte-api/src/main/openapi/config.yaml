@@ -2454,6 +2454,10 @@ components:
             $ref: "#/components/schemas/Notification"
         defaultGeography:
           $ref: "#/components/schemas/Geography"
+        webhookConfigs:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookConfigWrite"
     WorkspaceGiveFeedback:
       type: object
       required:
