@@ -2,8 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from contextlib import nullcontext as does_not_raise
 from typing import Dict, List
-from unittest.mock import MagicMock
 
 import pytest
 from _pytest.outcomes import Failed
@@ -45,15 +45,22 @@ def get_default_catalog(schema, **kwargs):
     )
 
 
+fail_context = pytest.raises(
+    Failed,
+    match="the two sequential reads should produce either equal set of records or one of them is a strict subset of the other",
+)
+no_fail_context = does_not_raise()
+
+
 ignored_fields_test_cases = [
-    (
+    pytest.param(
         {"type": "object", "properties": {"created": {"type": "string"}}},
         {"created": "23"},
         {"created": "23"},
-        False,
-        "no_ignored_fields_present",
+        no_fail_context,
+        id="no_ignored_fields_present",
     ),
-    (
+    pytest.param(
         {
             "type": "object",
             "properties": {
@@ -63,10 +70,10 @@ ignored_fields_test_cases = [
         },
         {"created": "23"},
         {"created": "23", "ignore_me": "23"},
-        False,
-        "with_ignored_field",
+        no_fail_context,
+        id="with_ignored_field",
     ),
-    (
+    pytest.param(
         {
             "type": "object",
             "required": ["created", "DONT_ignore_me"],
@@ -78,21 +85,20 @@ ignored_fields_test_cases = [
         },
         {"created": "23"},
         {"created": "23", "DONT_ignore_me": "23", "ignore_me": "hello"},
-        True,
-        "ignore_field_present_but_a_required_is_not",
+        fail_context,
+        id="ignore_field_present_but_a_required_is_not",
     ),
 ]
 
 
 @pytest.mark.parametrize(
-    "schema, record, expected_record, should_fail, test_case_name",
+    "schema, record, expected_record, fail_context",
     ignored_fields_test_cases,
-    ids=[test_case[-1] for test_case in ignored_fields_test_cases],
 )
-def test_read_with_ignore_fields(schema, record, expected_record, should_fail, test_case_name):
+def test_read_with_ignore_fields(mocker, schema, record, expected_record, fail_context):
     catalog = get_default_catalog(schema)
     input_config = ReadTestConfigWithIgnoreFields()
-    docker_runner_mock = MagicMock()
+    docker_runner_mock = mocker.MagicMock()
 
     sequence_of_docker_callread_results = [record, expected_record]
 
@@ -104,107 +110,94 @@ def test_read_with_ignore_fields(schema, record, expected_record, should_fail, t
         docker_runner_mock.call_read.side_effect = [record_message_from_record([first]), record_message_from_record([second])]
 
         t = _TestFullRefresh()
-        if should_fail:
-            with pytest.raises(
-                Failed,
-                match="the two sequential reads should produce either equal set of records or one of them is a strict subset of the other",
-            ):
-                t.test_sequential_reads(
-                    inputs=input_config,
-                    connector_config=MagicMock(),
-                    configured_catalog=catalog,
-                    docker_runner=docker_runner_mock,
-                    detailed_logger=MagicMock(),
-                )
-        else:
+        with fail_context:
             t.test_sequential_reads(
                 inputs=input_config,
-                connector_config=MagicMock(),
+                connector_config=mocker.MagicMock(),
                 configured_catalog=catalog,
                 docker_runner=docker_runner_mock,
-                detailed_logger=MagicMock(),
+                detailed_logger=mocker.MagicMock(),
             )
 
 
 recordset_comparison_test_cases = [
-    (
+    pytest.param(
         [["id"]],
         [{"id": 1, "first_name": "Thomas", "last_name": "Edison"}, {"id": 2, "first_name": "Nicola", "last_name": "Tesla"}],
         [{"id": 1, "first_name": "Albert", "last_name": "Einstein"}, {"id": 2, "first_name": "Joseph", "last_name": "Lagrange"}],
-        False,
-        "pk_sets_equal_success",
+        no_fail_context,
+        id="pk_sets_equal_success",
     ),
-    (
+    pytest.param(
         [["id"]],
         [
             {"id": 1, "first_name": "Thomas", "last_name": "Edison"},
         ],
         [{"id": 1, "first_name": "Albert", "last_name": "Einstein"}, {"id": 2, "first_name": "Joseph", "last_name": "Lagrange"}],
-        False,
-        "pk_first_is_subset_success",
+        no_fail_context,
+        id="pk_first_is_subset_success",
     ),
-    (
+    pytest.param(
         [["id"]],
         [{"id": 1, "first_name": "Thomas", "last_name": "Edison"}, {"id": 2, "first_name": "Nicola", "last_name": "Tesla"}],
         [{"id": 1, "first_name": "Albert", "last_name": "Einstein"}],
-        True,
-        "pk_second_is_subset_fail",
+        fail_context,
+        id="pk_second_is_subset_fail",
     ),
-    (
+    pytest.param(
         [["id"]],
         [{"id": 1, "first_name": "Thomas", "last_name": "Edison"}, {"id": 2, "first_name": "Nicola", "last_name": "Tesla"}],
         [{"id": 2, "first_name": "Thomas", "last_name": "Edison"}, {"id": 3, "first_name": "Nicola", "last_name": "Tesla"}],
-        True,
-        "pk_no_subsets_fail",
+        fail_context,
+        id="pk_no_subsets_fail",
     ),
-    (
+    pytest.param(
         None,
         [{"id": 1, "first_name": "Thomas", "last_name": "Edison"}, {"id": 2, "first_name": "Nicola", "last_name": "Tesla"}],
         [{"id": 1, "first_name": "Thomas", "last_name": "Edison"}, {"id": 2, "first_name": "Nicola", "last_name": "Tesla"}],
-        False,
-        "no_pk_sets_equal_success",
+        no_fail_context,
+        id="no_pk_sets_equal_success",
     ),
-    (
+    pytest.param(
         None,
         [
             {"id": 1, "first_name": "Thomas", "last_name": "Edison"},
         ],
         [{"id": 1, "first_name": "Thomas", "last_name": "Edison"}, {"id": 2, "first_name": "Nicola", "last_name": "Tesla"}],
-        False,
-        "no_pk_first_is_subset_success",
+        no_fail_context,
+        id="no_pk_first_is_subset_success",
     ),
-    (
+    pytest.param(
         None,
         [{"id": 1, "first_name": "Thomas", "last_name": "Edison"}, {"id": 2, "first_name": "Nicola", "last_name": "Tesla"}],
         [
             {"id": 1, "first_name": "Thomas", "last_name": "Edison"},
         ],
-        True,
-        "no_pk_second_is_subset_fail",
+        fail_context,
+        id="no_pk_second_is_subset_fail",
     ),
-    (
+    pytest.param(
         None,
         [{"id": 1, "first_name": "Thomas", "last_name": "Edison"}, {"id": 2, "first_name": "Nicola", "last_name": "Tesla"}],
         [{"id": 2, "first_name": "Nicola", "last_name": "Tesla"}, {"id": 3, "first_name": "Albert", "last_name": "Einstein"}],
-        True,
-        "no_pk_no_subsets_fail",
+        fail_context,
+        id="no_pk_no_subsets_fail",
     ),
 ]
 
 
 @pytest.mark.parametrize(
-    "primary_key, first_read_records, second_read_records, should_fail, test_case_name",
+    "primary_key, first_read_records, second_read_records, fail_context",
     recordset_comparison_test_cases,
-    ids=[test_case[-1] for test_case in recordset_comparison_test_cases],
 )
-def test_recordset_comparison(primary_key, first_read_records, second_read_records, should_fail, test_case_name):
+def test_recordset_comparison(mocker, primary_key, first_read_records, second_read_records, fail_context):
     schema = {
         "type": "object",
         "properties": {"id": {"type": "integer"}, "first_name": {"type": "string"}, "last_name": {"type": "string"}},
     }
     catalog = get_default_catalog(schema, primary_key=primary_key)
     input_config = ReadTestConfigWithIgnoreFields()
-    docker_runner_mock = MagicMock()
+    docker_runner_mock = mocker.MagicMock()
 
     docker_runner_mock.call_read.side_effect = [
         record_message_from_record(first_read_records),
@@ -212,23 +205,11 @@ def test_recordset_comparison(primary_key, first_read_records, second_read_recor
     ]
 
     t = _TestFullRefresh()
-    if should_fail:
-        with pytest.raises(
-            Failed,
-            match="the two sequential reads should produce either equal set of records or one of them is a strict subset of the other",
-        ):
-            t.test_sequential_reads(
-                inputs=input_config,
-                connector_config=MagicMock(),
-                configured_catalog=catalog,
-                docker_runner=docker_runner_mock,
-                detailed_logger=MagicMock(),
-            )
-    else:
+    with fail_context:
         t.test_sequential_reads(
             inputs=input_config,
-            connector_config=MagicMock(),
+            connector_config=mocker.MagicMock(),
             configured_catalog=catalog,
             docker_runner=docker_runner_mock,
-            detailed_logger=MagicMock(),
+            detailed_logger=mocker.MagicMock(),
         )
