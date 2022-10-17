@@ -206,7 +206,6 @@ class IVRs(ZendeskTalkStream):
     name = "ivrs"
     data_field = "ivrs"
     use_cache = True
-    cache_filename = "ivrs.yml"
 
     def path(self, **kwargs) -> str:
         return "ivr.json"
