@@ -301,6 +301,8 @@ class MetafieldShopifySubstream(ShopifySubstream):
 
 class Articles(IncrementalShopifyStream):
     data_field = "articles"
+    cursor_field = "id"
+    order_field = "id"
     filter_field = "since_id"
 
     def path(self, **kwargs) -> str:
@@ -312,6 +314,8 @@ class MetafieldArticles(MetafieldShopifySubstream):
 
 
 class Blogs(IncrementalShopifyStream):
+    cursor_field = "id"
+    order_field = "id"
     data_field = "blogs"
     filter_field = "since_id"
 

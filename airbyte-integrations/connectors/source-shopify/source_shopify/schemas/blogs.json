@@ -19,7 +19,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "tags": {
       "type": ["null", "string"]

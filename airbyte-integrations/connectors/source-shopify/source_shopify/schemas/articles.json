@@ -2,7 +2,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "title": {
       "type": ["null", "string"]
