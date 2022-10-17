@@ -4,15 +4,14 @@
 
 package io.airbyte.integrations.destination.bigquery.formatter.arrayformater;
 
-import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.NESTED_ARRAY_FIELD;
-import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.TYPE_FIELD;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaArrays;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaArrays;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -23,57 +22,76 @@ class DefaultArrayFormatterTest {
 
   @Test
   void surroundArraysByObjects() {
-    JsonNode schemaArrays = getSchemaArrays();
-    JsonNode expectedSchemaArrays = getExpectedSchemaArrays();
+    final JsonNode schemaArrays = getSchemaArrays();
+    final JsonNode expectedSchemaArrays = getExpectedSchemaArrays();
     formatter.surroundArraysByObjects(schemaArrays);
     assertEquals(expectedSchemaArrays, schemaArrays);
   }
 
   @Test
-  void formatArrayItems() {
-    JsonNode arrayFirst = mapper.createArrayNode().add("one").add("two");
-    JsonNode arraySecond = mapper.createArrayNode().add("one").add("two");
-    List<JsonNode> arrayItems = List.of(arrayFirst, arraySecond);
+  void formatArrayItems() throws JsonProcessingException {
+    final JsonNode expectedArrayNode = mapper.readTree(
+        """
+            [
+              {"big_query_array": ["one", "two"]},
+              {"big_query_array": ["one", "two"]}
+            ]
+            """);
+    final List<JsonNode> arrayNodes = List.of(
+        mapper.readTree(""" 
+            ["one", "two"]"""),
+        mapper.readTree(""" 
+            ["one", "two"]"""));
 
-    JsonNode result = formatter.formatArrayItems(arrayItems);
+    final JsonNode result = formatter.formatArrayItems(arrayNodes);
 
-    assertNotNull(result);
-    assertTrue(result.isArray());
-    assertEquals(2, result.size());
-    assertTrue(result.get(0).hasNonNull(NESTED_ARRAY_FIELD));
-    assertTrue(result.get(1).hasNonNull(NESTED_ARRAY_FIELD));
-    assertTrue(result.get(0).get(NESTED_ARRAY_FIELD).isArray());
-    assertTrue(result.get(1).get(NESTED_ARRAY_FIELD).isArray());
+    assertEquals(expectedArrayNode, result);
   }
 
   @Test
-  void formatArrayItems_notArray() {
-    JsonNode objectNode = mapper.createObjectNode().put("name", "value");
+  void formatArrayItems_notArray() throws JsonProcessingException {
+    final JsonNode objectNodeInput = mapper.readTree(""" 
+            {"type":"object","items":{"type":"integer"}}""");
+    final JsonNode expectedResult = mapper.readTree(""" 
+            {"type":"object","items":{"type":"integer"}}""");
 
-    JsonNode result = formatter.formatArrayItems(List.of(objectNode));
+    final JsonNode result = formatter.formatArrayItems(List.of(objectNodeInput));
 
-    assertNotNull(result);
-    assertEquals(objectNode, result.get(0));
+    assertEquals(expectedResult, result);
   }
 
   @Test
-  void findArrays() {
-    JsonNode schemaArrays = getSchemaArrays();
+  void findArrays() throws JsonProcessingException {
+    final JsonNode schemaArrays = getSchemaArrays();
+    final List<JsonNode> expectedResult = List.of(
+        mapper.readTree(""" 
+            {"type":["array"],"items":{"type":"integer"}}"""),
+        mapper.readTree(""" 
+            {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+        mapper.readTree(""" 
+            {"type":["array"],"items":{"type":"integer"}}"""),
+        mapper.readTree(""" 
+            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
+        mapper.readTree(""" 
+            {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+        mapper.readTree(""" 
+            {"type":["array"],"items":{"type":"integer"}}"""),
+        mapper.readTree(""" 
+            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}}"""),
+        mapper.readTree(""" 
+            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
+        mapper.readTree(""" 
+            {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+        mapper.readTree(""" 
+            {"type":["array"],"items":{"type":"integer"}}"""));
 
-    List<JsonNode> result = formatter.findArrays(schemaArrays);
-
-    assertNotNull(result);
-    assertFalse(result.isEmpty());
-    assertEquals(10, result.size());
-    result.forEach(node -> {
-      assertTrue(node.has(TYPE_FIELD));
-      assertEquals(JsonNodeType.ARRAY, node.get(TYPE_FIELD).getNodeType());
-    });
+    final List<JsonNode> result = formatter.findArrays(schemaArrays);
+    assertEquals(expectedResult, result);
   }
 
   @Test
   void findArrays_null() {
-    List<JsonNode> result = formatter.findArrays(null);
+    final List<JsonNode> result = formatter.findArrays(null);
     assertTrue(result.isEmpty());
   }
 

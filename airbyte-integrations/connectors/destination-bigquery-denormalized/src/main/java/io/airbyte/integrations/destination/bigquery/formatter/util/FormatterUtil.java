@@ -13,11 +13,11 @@ public class FormatterUtil {
   public static final String ARRAY_ITEMS_FIELD = "items";
   public static final String TYPE_FIELD = "type";
 
-  public static boolean isAirbyteArray(final JsonNode node) {
-    if (node == null || node.get("type") == null) {
+  public static boolean isAirbyteArray(final JsonNode jsonSchemaNode) {
+    if (jsonSchemaNode == null || jsonSchemaNode.get("type") == null) {
       return false;
     }
-    final JsonNode type = node.get("type");
+    final JsonNode type = jsonSchemaNode.get("type");
     if (type.isArray()) {
       final ArrayNode typeNode = (ArrayNode) type;
       for (final JsonNode arrayTypeNode : typeNode) {
@@ -26,7 +26,7 @@ public class FormatterUtil {
         }
       }
     } else if (type.isTextual()) {
-      return node.asText().equals("array");
+      return jsonSchemaNode.asText().equals("array");
     }
     return false;
   }

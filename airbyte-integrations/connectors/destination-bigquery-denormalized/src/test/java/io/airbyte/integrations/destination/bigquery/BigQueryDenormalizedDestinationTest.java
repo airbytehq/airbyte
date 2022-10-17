@@ -18,6 +18,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.atLeastOnce;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
@@ -31,6 +32,7 @@ import com.google.cloud.bigquery.TableDefinition;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsBigQueryDenormalizedRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.LegacyArrayFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
@@ -47,6 +49,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -72,6 +76,9 @@ class BigQueryDenormalizedDestinationTest {
   @InjectMocks
   BigQueryDenormalizedDestination bqdd;
 
+  @Captor
+  private ArgumentCaptor<Runnable> registerMessageLambdaCaptor;
+
   @BeforeEach
   void init() {
     uploaderFactoryMock = Mockito.mockStatic(BigQueryUploaderFactory.class, Mockito.CALLS_REAL_METHODS);
@@ -85,10 +92,10 @@ class BigQueryDenormalizedDestinationTest {
 
   @Test
   void getTargetTableName() {
-    final String streamName = "stream_name";
-    BigQuerySQLNameTransformer nameTransformerMock = mock(BigQuerySQLNameTransformer.class);
-    bqdd.getTargetTableName(streamName);
-    verify(nameTransformerMock, times(0)).getIdentifier(streamName);
+    final String streamName = "stream name";
+    final String expectedResult = "stream_name";
+    String result = bqdd.getTargetTableName(streamName);
+    assertEquals(expectedResult, result);
   }
 
   @Test
@@ -109,7 +116,17 @@ class BigQueryDenormalizedDestinationTest {
 
   @Test
   void getAvroSchemaCreator() {
-    assertNotNull(bqdd.getAvroSchemaCreator());
+    DefaultBigQueryRecordFormatter recordFormatterMock = mock(DefaultBigQueryRecordFormatter.class);
+    AirbyteStreamNameNamespacePair namespacePairMock = mock(AirbyteStreamNameNamespacePair.class);
+    when(recordFormatterMock.getJsonSchema()).thenReturn(mock(JsonNode.class));
+    when(namespacePairMock.getName()).thenReturn("name_test");
+    when(namespacePairMock.getNamespace()).thenReturn("name_space_test");
+
+    bqdd.getAvroSchemaCreator().apply(recordFormatterMock, namespacePairMock);
+
+    verify(recordFormatterMock, atLeastOnce()).getJsonSchema();
+    verify(namespacePairMock, atLeastOnce()).getName();
+    verify(namespacePairMock, atLeastOnce()).getNamespace();
   }
 
   @Test
@@ -130,10 +147,7 @@ class BigQueryDenormalizedDestinationTest {
     final Schema schemaMock = mock(Schema.class);
     final TableDefinition tableDefinitionMock = mock(TableDefinition.class);
 
-    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
-    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
-    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
-    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
+    mockBigqueryStream();
     when(tableMock.getDefinition()).thenReturn(tableDefinitionMock);
     when(uploaderConfigMock.getTargetTableName()).thenReturn("target_table");
     when(airbyteStreamMock.getNamespace()).thenReturn(nameSpace);
@@ -156,10 +170,7 @@ class BigQueryDenormalizedDestinationTest {
     final Table tableMock = mock(Table.class);
     final TableDefinition tableDefinitionMock = mock(TableDefinition.class);
 
-    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
-    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
-    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
-    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
+    mockBigqueryStream();
     when(uploaderConfigMock.getTargetTableName()).thenReturn("target_table");
     when(airbyteStreamMock.getNamespace()).thenReturn("name_space");
     when(airbyteStreamMock.getName()).thenReturn("stream_name");
@@ -183,14 +194,10 @@ class BigQueryDenormalizedDestinationTest {
     final Schema schemaMock = mock(Schema.class);
     final TableDefinition tableDefinitionMock = mock(TableDefinition.class);
 
-    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
-    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
-    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
-    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
+    mockBigqueryStream();
     when(tableMock.getDefinition()).thenReturn(tableDefinitionMock);
     when(uploaderConfigMock.getTargetTableName()).thenReturn("target_table");
     when(bigQueryMock.getTable(anyString(), anyString())).thenReturn(tableMock);
-    when(uploaderConfigMock.getTargetTableName()).thenReturn("target_table");
     when(airbyteStreamMock.getNamespace()).thenReturn("name_space");
     when(airbyteStreamMock.getName()).thenReturn("stream_name");
     when(bigQueryMock.getTable(anyString(), anyString())).thenReturn(tableMock);
@@ -213,10 +220,7 @@ class BigQueryDenormalizedDestinationTest {
     final Schema existingSchemaMock = mock(Schema.class);
     final Schema expectedSchemaMock = mock(Schema.class);
 
-    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
-    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
-    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
-    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
+    mockBigqueryStream();
     when(tableMock.getDefinition()).thenReturn(tableDefinitionMock);
     when(tableDefinitionMock.getSchema()).thenReturn(existingSchemaMock);
     when(bigQueryRecordFormatterMock.getBigQuerySchema()).thenReturn(expectedSchemaMock);
@@ -243,10 +247,7 @@ class BigQueryDenormalizedDestinationTest {
     final Schema existingSchemaMock = mock(Schema.class);
     final Schema expectedSchemaMock = mock(Schema.class);
 
-    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
-    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
-    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
-    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
+    mockBigqueryStream();
     when(tableMock.getDefinition()).thenReturn(tableDefinitionMock);
     when(tableDefinitionMock.getSchema()).thenReturn(existingSchemaMock);
     when(bigQueryRecordFormatterMock.getBigQuerySchema()).thenReturn(expectedSchemaMock);
@@ -274,10 +275,7 @@ class BigQueryDenormalizedDestinationTest {
     final Schema existingSchemaMock = mock(Schema.class);
     final Schema expectedSchemaMock = mock(Schema.class);
 
-    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
-    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
-    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
-    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
+    mockBigqueryStream();
     when(tableMock.getDefinition()).thenReturn(tableDefinitionMock);
     when(tableDefinitionMock.getSchema()).thenReturn(existingSchemaMock);
     when(bigQueryRecordFormatterMock.getBigQuerySchema()).thenReturn(expectedSchemaMock);
@@ -309,10 +307,7 @@ class BigQueryDenormalizedDestinationTest {
     when(tableMock.getDefinition()).thenReturn(tableDefinitionMock);
     when(tableDefinitionMock.getSchema()).thenReturn(existingSchemaMock);
     when(bigQueryRecordFormatterMock.getBigQuerySchema()).thenReturn(expectedSchemaMock);
-    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
-    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
-    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
-    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
+    mockBigqueryStream();
     when(uploaderConfigMock.getTargetTableName()).thenReturn("target_table");
     when(airbyteStreamMock.getNamespace()).thenReturn("name_space");
     when(airbyteStreamMock.getName()).thenReturn("stream_name");
@@ -341,10 +336,7 @@ class BigQueryDenormalizedDestinationTest {
     when(tableMock.getDefinition()).thenReturn(tableDefinitionMock);
     when(tableDefinitionMock.getSchema()).thenReturn(existingSchemaMock);
     when(bigQueryRecordFormatterMock.getBigQuerySchema()).thenReturn(expectedSchemaMock);
-    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
-    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
-    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
-    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
+    mockBigqueryStream();
     when(uploaderConfigMock.getTargetTableName()).thenReturn("target_table");
     when(airbyteStreamMock.getNamespace()).thenReturn(nameSpace);
     when(airbyteStreamMock.getName()).thenReturn(streamName);
@@ -375,10 +367,7 @@ class BigQueryDenormalizedDestinationTest {
     when(tableMock.getDefinition()).thenReturn(tableDefinitionMock);
     when(tableDefinitionMock.getSchema()).thenReturn(existingSchemaMock);
     when(bigQueryRecordFormatterMock.getBigQuerySchema()).thenReturn(expectedSchemaMock);
-    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
-    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
-    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
-    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
+    mockBigqueryStream();
     when(uploaderConfigMock.getTargetTableName()).thenReturn("target_table");
     when(airbyteStreamMock.getNamespace()).thenReturn(nameSpace);
     when(airbyteStreamMock.getName()).thenReturn(streamName);
@@ -404,10 +393,7 @@ class BigQueryDenormalizedDestinationTest {
     final String targetTableName = "target_table";
     final AirbyteStreamNameNamespacePair expectedResult = new AirbyteStreamNameNamespacePair(streamName, nameSpace);
 
-    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
-    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
-    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
-    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
+    mockBigqueryStream();
     when(uploaderConfigMock.getTargetTableName()).thenReturn(targetTableName);
     when(airbyteStreamMock.getNamespace()).thenReturn(nameSpace);
     when(airbyteStreamMock.getName()).thenReturn(streamName);
@@ -419,6 +405,13 @@ class BigQueryDenormalizedDestinationTest {
 
     verify(bigQueryRecordFormatterMock, times(0)).setArrayFormatter(any(LegacyArrayFormatter.class));
     assertTrue(uploaderMap.containsKey(expectedResult));
+  }
+
+  private void mockBigqueryStream() {
+    when(uploaderConfigMock.getConfigStream()).thenReturn(configuredStreamMock);
+    when(uploaderConfigMock.getBigQuery()).thenReturn(bigQueryMock);
+    when(uploaderConfigMock.getFormatter()).thenReturn(bigQueryRecordFormatterMock);
+    when(configuredStreamMock.getStream()).thenReturn(airbyteStreamMock);
   }
 
 }
