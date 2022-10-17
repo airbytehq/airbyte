@@ -74,10 +74,7 @@ public class LegacyArrayFormatterTest {
   void formatArrayItems() throws JsonProcessingException {
     final JsonNode expectedArrayNode = mapper.readTree(
         """
-            [
-              {"big_query_array": ["one", "two"]},
-              {"big_query_array": ["one", "two"]}
-            ]
+              {"big_query_array": [["one", "two"], ["one", "two"]]}
             """);
     final List<JsonNode> arrayNodes = List.of(
         mapper.readTree(""" 

@@ -53,7 +53,7 @@ class DefaultArrayFormatterTest {
     final JsonNode objectNodeInput = mapper.readTree(""" 
             {"type":"object","items":{"type":"integer"}}""");
     final JsonNode expectedResult = mapper.readTree(""" 
-            {"type":"object","items":{"type":"integer"}}""");
+            [{"type":"object","items":{"type":"integer"}}]""");
 
     final JsonNode result = formatter.formatArrayItems(List.of(objectNodeInput));
 
