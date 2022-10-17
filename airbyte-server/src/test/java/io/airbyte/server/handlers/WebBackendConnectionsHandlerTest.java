@@ -328,7 +328,6 @@ class WebBackendConnectionsHandlerTest {
         .namespaceFormat(expected.getNamespaceFormat())
         .prefix(expected.getPrefix())
         .syncCatalog(modifiedCatalog)
-        .catalogId(connectionRead.getSourceCatalogId())
         .status(expected.getStatus())
         .schedule(expected.getSchedule())
         .scheduleType(expected.getScheduleType())
@@ -464,12 +463,15 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testWebBackendGetConnectionWithDiscoveryAndNewSchema() throws ConfigNotFoundException, IOException, JsonValidationException {
-    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(expectedWithNewSchema.getCatalogDiff());
+  void testWebBackendGetConnectionWithDiscoveryAndNewSchema() throws ConfigNotFoundException,
+      IOException, JsonValidationException {
+    when(connectionsHandler.getDiff(any(), any(),
+        any())).thenReturn(expectedWithNewSchema.getCatalogDiff());
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
         .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID())));
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
-    final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead, operationReadList);
+    final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
+        operationReadList);
     verify(schedulerHandler).discoverSchemaForSourceFromSourceId(any());
     assertEquals(expectedWithNewSchema, result);
   }

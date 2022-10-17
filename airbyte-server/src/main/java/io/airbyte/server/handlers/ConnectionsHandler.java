@@ -142,7 +142,7 @@ public class ConnectionsHandler {
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()))
         .withSourceCatalogId(connectionCreate.getSourceCatalogId())
         .withGeography(getGeographyFromConnectionCreateOrWorkspace(connectionCreate))
-        .withIsBreaking(false);
+        .withBreakingChange(false);
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
     }
