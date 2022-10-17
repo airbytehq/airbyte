@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.102
+
+- Low-code: added hash filter to jinja template
+
 ## 0.1.101
 
 - Low-code: $options do not overwrite parameters that are already set
