@@ -184,7 +184,8 @@ public class SshTunnel implements AutoCloseable {
         Jsons.replaceNestedInt(clone, portKey, tunnelLocalPort);
       }
       if (endPointKey != null) {
-        final URL tunnelEndPointURL = new URL(remoteServiceProtocol, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), tunnelLocalPort, remoteServicePath);
+        final URL tunnelEndPointURL =
+            new URL(remoteServiceProtocol, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), tunnelLocalPort, remoteServicePath);
         Jsons.replaceNestedString(clone, Arrays.asList(endPointKey), tunnelEndPointURL.toString());
       }
       return clone;
