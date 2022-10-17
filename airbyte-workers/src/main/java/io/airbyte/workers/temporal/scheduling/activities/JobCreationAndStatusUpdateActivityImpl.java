@@ -354,7 +354,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       List<Job> jobList = jobPersistence.listJobsIncludingId(configTypes, input.getConnectionId().toString(), input.getJobId(), limit);
       Optional<Job> optionalActiveJob = jobList.stream().filter(job -> job.getId() == input.getJobId()).findFirst();
       if (optionalActiveJob.isPresent()) {
-        lastAttemptCheck = checkPreviousActiveJobAttempt(optionalActiveJob.get(), input.getAttemptId());
+        lastAttemptCheck = checkActiveJobPreviousAttempt(optionalActiveJob.get(), input.getAttemptId());
       }
 
       OptionalLong previousJobId = getPreviousJobId(input.getJobId(), jobList.stream().map(Job::getId).toList());
@@ -377,7 +377,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         .mapToLong(jobId -> jobId).max();
   }
 
-  private boolean checkPreviousActiveJobAttempt(Job activeJob, int attemptId) {
+  private boolean checkActiveJobPreviousAttempt(Job activeJob, int attemptId) {
     final int minAttemptSize = 1;
     boolean result = false;
 
