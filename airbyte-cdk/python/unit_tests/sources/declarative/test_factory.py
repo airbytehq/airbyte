@@ -414,31 +414,31 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         (
             "test_option_in_selector",
             """
-          extractor:
-            type: DpathExtractor
-            field_pointer: ["{{ options['name'] }}"]
-          selector:
-            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-            $options:
-              name: "selector"
-            extractor: "*ref(extractor)"
-        """,
+              extractor:
+                type: DpathExtractor
+                field_pointer: ["{{ options['name'] }}"]
+              selector:
+                class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+                $options:
+                  name: "selector"
+                extractor: "*ref(extractor)"
+            """,
             "selector",
         ),
         (
             "test_option_in_extractor",
             """
-          extractor:
-            type: DpathExtractor
-            $options:
-              name: "extractor"
-            field_pointer: ["{{ options['name'] }}"]
-          selector:
-            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-            $options:
-              name: "selector"
-            extractor: "*ref(extractor)"
-        """,
+              extractor:
+                type: DpathExtractor
+                $options:
+                  name: "extractor"
+                field_pointer: ["{{ options['name'] }}"]
+              selector:
+                class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+                $options:
+                  name: "selector"
+                extractor: "*ref(extractor)"
+            """,
             "extractor",
         ),
     ],
@@ -450,8 +450,22 @@ def test_options_propagation(test_name, content, expected_field_pointer_value):
     assert selector.extractor.field_pointer[0].eval(input_config) == expected_field_pointer_value
 
 
-def test_create_requester():
-    content = """
+@pytest.mark.parametrize(
+    "test_name, error_handler",
+    [
+        (
+            "test_create_request_constant",
+            """
+  error_handler:
+    backoff_strategies:
+      - type: "ConstantBackoffStrategy"
+        backoff_time_in_seconds: 5
+    """,
+        )
+    ],
+)
+def test_create_requester(test_name, error_handler):
+    content = f"""
   requester:
     type: HttpRequester
     path: "/v3/marketing/lists"
@@ -460,17 +474,14 @@ def test_create_requester():
     url_base: "https://api.sendgrid.com"
     authenticator:
       type: "BasicHttpAuthenticator"
-      username: "{{ options.name }}"
-      password: "{{ config.apikey }}"
+      username: "{{{{ options.name}}}}"
+      password: "{{{{ config.apikey }}}}"
     request_options_provider:
       request_parameters:
         a_parameter: "something_here"
       request_headers:
         header: header_value
-    error_handler:
-      backoff_strategies:
-        - type: "ConstantBackoffStrategy"
-          backoff_time_in_seconds: 5
+    {error_handler}
     """
     config = parser.parse(content)
 
