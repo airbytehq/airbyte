@@ -29,8 +29,8 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
+import io.airbyte.workers.test_utils.TestConfigHelpers;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
 import io.temporal.activity.ActivityCancellationType;
@@ -204,8 +204,9 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary),
-        actualOutput);
+    assertEquals(
+        replicationSuccessOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
+        actualOutput.getStandardSyncSummary());
   }
 
   @Test
@@ -244,8 +245,9 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    assertEquals(replicationFailOutput.withNormalizationSummary(normalizationSummary),
-        actualOutput);
+    assertEquals(
+        replicationFailOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
+        actualOutput.getStandardSyncSummary());
   }
 
   @Test

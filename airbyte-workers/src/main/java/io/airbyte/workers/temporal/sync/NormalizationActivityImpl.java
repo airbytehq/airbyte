@@ -29,6 +29,7 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultNormalizationWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.sync.NormalizationLauncherWorker;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
