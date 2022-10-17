@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
@@ -48,7 +47,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
             raise ValueError("RequestOptionsProvider should only contain either 'request_body_data' or 'request_body_json' not both")
 
         self._parameter_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_parameters, options=deepcopy(options)
+            config=self.config, request_inputs=self.request_parameters, options=options
         )
         self._headers_interpolator = InterpolatedRequestInputProvider(
             config=self.config, request_inputs=self.request_headers, options=options
