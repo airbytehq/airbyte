@@ -106,13 +106,13 @@ components:
         stream:
           type: string
           description: Name of the stream to read
+        state:
+          $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
         # --- Potential addition for a later phase ---
         # numPages:
         #   type: integer
         #   description: Number of pages to read from the source for each slice
         #   default: 1
-        state:
-          $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
     HttpRequest:
       type: object
       required:
