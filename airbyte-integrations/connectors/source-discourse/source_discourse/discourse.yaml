@@ -1,0 +1,38 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://discuss.airbyte.io"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "api_key"
+      api_token: "{{ config['api_key'] }}"
+      header: "api_username"
+      api_token: "{{ config['api_username'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  posts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "posts"
+      primary_key: "updated_at"
+      path: "/posts.json"
+
+streams:
+  - "*ref(definitions.posts_stream)"
+
+check:
+  stream_names:
+    - "posts"
