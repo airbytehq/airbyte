@@ -4,6 +4,7 @@ plugins {
 
 configurations.all {
     exclude group: 'io.micronaut.jaxrs'
+    exclude group: 'io.micronaut.sql'
 }
 
 dependencies {
