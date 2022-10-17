@@ -2,28 +2,113 @@ import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Field, Form, Formik, FieldArray, FieldProps } from "formik";
+import isEmpty from "lodash/isEmpty";
 import { Link } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Input } from "components/ui/Input";
 
+import {
+  /* webBackendUpdateConnection, */
+  WebBackendConnectionUpdate,
+  OperatorType,
+  /* OperatorWebhook, */
+} from "core/request/AirbyteClient";
+// eslint-disable-next-line
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+
 import { RoutePaths } from "pages/routePaths";
 
 import styles from "./DbtCloudTransformationsCard.module.scss";
 
+// TODO rename project->account
 interface Transformation {
   project: string;
   job: string;
 }
+const _transformations: Transformation[] = [
+  { project: "1", job: "1234" },
+  { project: "2", job: "2134" },
+  { project: "3", job: "3214" },
+];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const updateConnection = (obj: WebBackendConnectionUpdate) => console.info(`updating with`, obj);
+// without including the index, duplicate data causes annoying render bugs for the list
+const transformationKey = (t: Transformation, i: number) => `${i}:${t.project}/${t.job}`;
+
+const useSaveJobsFn = () => {
+  const { workspaceId } = useCurrentWorkspace();
+
+  const dbtCloudDomain = "https://cloud.getdbt.com";
+  const urlForJob = (job: Transformation) => `${dbtCloudDomain}/api/v2/accounts/${job.project}/jobs/${job.job}`;
+  const executionBody = `{"cause": "airbyte"}`;
+  // TODO dynamically use the workspace's configured dbt cloud domain
+  const webhookConfigName = "dbt cloud";
+
+  return (jobs: Transformation[]) =>
+    // TODO query and add the actual connectionId and operationId values
+    updateConnection({
+      connectionId: workspaceId, // lmao I know, right?
+      operations: [
+        // TODO include all non-dbt-cloud operations in the payload
+        ...jobs.map((job, index) => ({
+          workspaceId,
+          name: transformationKey(job, index),
+          // TODO add `operationId` if present
+          operatorConfiguration: {
+            operatorType: OperatorType.webhook,
+            webhook: {
+              executionUrl: urlForJob(job),
+              webhookConfigName,
+              executionBody,
+            },
+          },
+        })),
+      ],
+    });
+};
+
+export const DbtCloudTransformationsCard = () => {
+  // Possible render paths:
+  // 1) IF the workspace has no dbt cloud account linked
+  //    THEN show "go to your settings to connect your dbt Cloud Account" text
+  //    and the "Don't have a dbt account?" hero/media element
+  // 2) IF the workspace has a dbt cloud account linked...
+  //   2.1) AND the connection has no saved dbt jobs (cf: operations)
+  //        THEN show empty jobs list and the "+ Add transformation" button
+  //   2.2) AND the connection has saved dbt jobs
+  //        THEN show the "no jobs" card body and the "+ Add transformation" button
+  /* const transformations: Transformation[] = []; */
+
+  const workspace = useCurrentWorkspace();
+  const hasDbtIntegration = !isEmpty(workspace.webhookConfigs);
+
+  return (
+    <Card
+      title={
+        <span className={styles.cloudTransformationsListTitle}>
+          Transformations
+          <Button variant="secondary" icon={<FontAwesomeIcon icon={faPlus} />}>
+            Add transformation
+          </Button>
+        </span>
+      }
+    >
+      {hasDbtIntegration ? (
+        <TransformationsList transformations={_transformations} className={styles.cloudTransformationsListContainer} />
+      ) : (
+        <NoDbtIntegration className={styles.cloudTransformationsListContainer} workspaceId={workspace.workspaceId} />
+      )}
+    </Card>
+  );
+};
 
 // This won't be used by the first prototype, but it is the UI specced in
 // follow-up designs which can support multiple integrations; it's also a small,
 // self-contained set of components and scss which will only trivially affect
 // bundle size.
-// eslint-disable-next-line: @typescript-eslint/no-usused-vars @typescript-eslint/ban-ts-comment
-// @ts-ignore: no unused locals
 const TransformationsList = ({
   className,
   transformations,
@@ -31,11 +116,10 @@ const TransformationsList = ({
   className?: string;
   transformations: Transformation[];
 }) => {
-  const onSubmit = (fields: { transformations: Transformation[] }) => {
-    console.info(`Saving with this job list: ${JSON.stringify(fields)}`);
+  const saveJobs = useSaveJobsFn();
+  const onSubmit = ({ transformations }: { transformations: Transformation[] }) => {
+    saveJobs(transformations);
   };
-
-  const transformationKey = (t: Transformation, i: number) => `${i}:${t.project}/${t.job}`;
 
   return (
     <div className={classNames(className, styles.emptyListContent)}>
@@ -125,44 +209,3 @@ const NoDbtIntegration = ({ className, workspaceId }: { className: string; works
 };
 
 const DbtCloudSignupBanner = () => <div />;
-
-export const DbtCloudTransformationsCard = () => {
-  // Possible render paths:
-  // 1) IF the workspace has no dbt cloud account linked
-  //    THEN show "go to your settings to connect your dbt Cloud Account" text
-  //    and the "Don't have a dbt account?" hero/media element
-  // 2) IF the workspace has a dbt cloud account linked...
-  //   2.1) AND the connection has no saved dbt jobs (cf: operations)
-  //        THEN show empty jobs list and the "+ Add transformation" button
-  //   2.2) AND the connection has saved dbt jobs
-  //        THEN show the "no jobs" card body and the "+ Add transformation" button
-  /* const transformations: Transformation[] = []; */
-  const transformations: Transformation[] = [
-    { project: "Project #1", job: "Job #1" },
-    { project: "Project #1", job: "Job #2" },
-    { project: "Project #1", job: "Job #3" },
-  ];
-
-  const { workspaceId } = useCurrentWorkspace();
-  const hasDbtIntegration = true;
-  /* const hasDbtIntegration = false; */
-
-  return (
-    <Card
-      title={
-        <span className={styles.cloudTransformationsListTitle}>
-          Transformations
-          <Button variant="secondary" icon={<FontAwesomeIcon icon={faPlus} />}>
-            Add transformation
-          </Button>
-        </span>
-      }
-    >
-      {hasDbtIntegration ? (
-        <TransformationsList transformations={transformations} className={styles.cloudTransformationsListContainer} />
-      ) : (
-        <NoDbtIntegration className={styles.cloudTransformationsListContainer} workspaceId={workspaceId} />
-      )}
-    </Card>
-  );
-};
