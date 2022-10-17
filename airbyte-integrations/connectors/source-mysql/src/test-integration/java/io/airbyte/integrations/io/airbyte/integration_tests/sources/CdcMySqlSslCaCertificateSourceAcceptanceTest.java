@@ -111,8 +111,8 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
         .put("client_key_password", "Passw0rd")
         .build();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-            .put("method", "CDC")
-            .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
+        .put("method", "CDC")
+        .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
