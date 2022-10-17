@@ -23,7 +23,9 @@ public interface SynchronousSchedulerClient {
                                                                                     Version protocolVersion)
       throws IOException;
 
-  SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
+  SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination,
+                                                                                         String dockerImage,
+                                                                                         Version protocolVersion)
       throws IOException;
 
   SynchronousResponse<UUID> createDiscoverSchemaJob(SourceConnection source, String dockerImage, String connectorVersion) throws IOException;
