@@ -581,7 +581,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withOperatorType(Enums.toEnum(record.get(OPERATION.OPERATOR_TYPE, String.class), OperatorType.class).orElseThrow())
         .withOperatorNormalization(Jsons.deserialize(record.get(OPERATION.OPERATOR_NORMALIZATION).data(), OperatorNormalization.class))
         .withOperatorDbt(Jsons.deserialize(record.get(OPERATION.OPERATOR_DBT).data(), OperatorDbt.class))
-        .withOperatorWebhook(Jsons.deserialize(record.get(OPERATION.OPERATOR_WEBHOOK).data(), OperatorWebhook.class))
+        .withOperatorWebhook(record.get(OPERATION.OPERATOR_WEBHOOK) == null ? null
+            : Jsons.deserialize(record.get(OPERATION.OPERATOR_WEBHOOK).data(), OperatorWebhook.class))
         .withTombstone(record.get(OPERATION.TOMBSTONE));
   }
 
