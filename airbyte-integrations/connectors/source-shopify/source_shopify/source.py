@@ -301,6 +301,7 @@ class MetafieldShopifySubstream(ShopifySubstream):
 
 class Articles(IncrementalShopifyStream):
     data_field = "articles"
+    filter_field = "since_id"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
@@ -312,6 +313,7 @@ class MetafieldArticles(MetafieldShopifySubstream):
 
 class Blogs(IncrementalShopifyStream):
     data_field = "blogs"
+    filter_field = "since_id"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
@@ -379,6 +381,7 @@ class ProductImages(ShopifySubstream):
     slice_key = "id"
     data_field = "images"
     nested_substream = "images"
+    filter_field = "since_id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         product_id = stream_slice[self.slice_key]
@@ -402,6 +405,7 @@ class ProductVariants(ShopifySubstream):
     slice_key = "id"
     data_field = "variants"
     nested_substream = "variants"
+    filter_field = "since_id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         product_id = stream_slice[self.slice_key]

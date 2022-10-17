@@ -1,15 +1,9 @@
 {
   "articles": {
-    "updated_at": "2025-07-08T05:40:38-07:00"
-  },
-  "metafield_articles": {
-    "updated_at": "2025-07-08T05:40:38-07:00"
+    "id": 99999999999999
   },
   "blogs": {
-    "updated_at": "2025-07-08T05:40:38-07:00"
-  },
-  "metafield_blogs": {
-    "updated_at": "2025-07-08T05:40:38-07:00"
+    "id": 99999999999999
   },
   "customers": {
     "updated_at": "2025-07-08T05:40:38-07:00"
