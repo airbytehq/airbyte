@@ -12,7 +12,7 @@
   }
 
   &.error {
-    border-color: colors.$red-300;
+    border-color: colors.$red-100;
   }
 
   &:not(.disabled, .focused):hover {
