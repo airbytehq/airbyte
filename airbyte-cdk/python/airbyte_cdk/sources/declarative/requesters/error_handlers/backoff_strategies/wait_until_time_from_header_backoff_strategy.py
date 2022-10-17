@@ -31,14 +31,14 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
     header: Union[InterpolatedString, str]
     options: InitVar[Mapping[str, Any]]
     config: Config
-    min_wait: Optional[float] = None
+    min_wait: Optional[Union[float, InterpolatedString, str]] = None
     regex: Optional[Union[InterpolatedString, str]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         self.header = InterpolatedString.create(self.header, options=options)
-        self.regex = (
-            InterpolatedString.create(self.regex, options=options) if self.regex else None
-        )  # re.compile(self.regex) if self.regex else None
+        self.regex = InterpolatedString.create(self.regex, options=options) if self.regex else None
+        if not isinstance(self.min_wait, InterpolatedString):
+            self.min_wait = InterpolatedString.create(str(self.min_wait), options=options)
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         now = time.time()
@@ -49,14 +49,15 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
         else:
             regex = None
         wait_until = get_numeric_value_from_header(response, header, regex)
+        min_wait = self.min_wait.eval(self.config)
         if wait_until is None or not wait_until:
-            return self.min_wait
+            return min_wait
         if (isinstance(wait_until, str) and wait_until.isnumeric()) or isinstance(wait_until, numbers.Number):
             wait_time = float(wait_until) - now
         else:
             return self.min_wait
-        if self.min_wait:
-            return max(wait_time, self.min_wait)
+        if min_wait:
+            return max(wait_time, min_wait)
         elif wait_time < 0:
             return None
         return wait_time

@@ -31,6 +31,22 @@ REGEX = "[-+]?\\d+"
         ("test_wait_until_time_from_header_with_regex_from_config", "wait_until", "1600000060,60", None, "{{config['regex']}}", 60),  # noqa
         ("test_wait_until_time_from_header_with_regex_no_match", "wait_time", "...", None, "[-+]?\d+", None),  # noqa
         ("test_wait_until_no_header_with_min", "absent_header", "1600000000.0", SOME_BACKOFF_TIME, None, SOME_BACKOFF_TIME),
+        (
+            "test_wait_until_no_header_with_min_from_options",
+            "absent_header",
+            "1600000000.0",
+            "{{options['min_wait']}}",
+            None,
+            SOME_BACKOFF_TIME,
+        ),
+        (
+            "test_wait_until_no_header_with_min_from_config",
+            "absent_header",
+            "1600000000.0",
+            "{{config['min_wait']}}",
+            None,
+            SOME_BACKOFF_TIME,
+        ),
     ],
 )
 @patch("time.time", return_value=1600000000.0)
@@ -41,8 +57,8 @@ def test_wait_untiltime_from_header(time_mock, test_name, header, wait_until, mi
         header=header,
         min_wait=min_wait,
         regex=regex,
-        options={"wait_until": "wait_until", "regex": REGEX},
-        config={"wait_until": "wait_until", "regex": REGEX},
+        options={"wait_until": "wait_until", "regex": REGEX, "min_wait": SOME_BACKOFF_TIME},
+        config={"wait_until": "wait_until", "regex": REGEX, "min_wait": SOME_BACKOFF_TIME},
     )
     backoff = backoff_stratery.backoff(response_mock, 1)
     assert backoff == expected_backoff_time
