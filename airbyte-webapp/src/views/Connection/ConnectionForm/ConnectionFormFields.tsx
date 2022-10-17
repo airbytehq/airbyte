@@ -21,7 +21,7 @@ import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField"
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
 import ScheduleField from "./components/ScheduleField";
 import { Section } from "./components/Section";
-import SchemaField from "./components/SyncCatalogField";
+import { SyncCatalogField } from "./components/SyncCatalogField";
 import styles from "./ConnectionFormFields.module.scss";
 import { FormikConnectionFormValues } from "./formConfig";
 
@@ -119,7 +119,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
         <Section>
           <Field
             name="syncCatalog.streams"
-            component={SchemaField}
+            component={SyncCatalogField}
             isSubmitting={isSubmitting}
             additionalControl={
               <Button onClick={refreshSchema} type="button" variant="secondary">

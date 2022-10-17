@@ -1,7 +1,3 @@
-// These are utility classes that will be used by multiple sub-components
-// of the CatalogTree component once we finish migrating to scss,
-// not only styles used directly in CatalogTree
-
 %headerCell {
   font-size: 10px;
   line-height: 13px;
@@ -12,6 +8,41 @@
 
   max-width: 43px;
   text-align: center;
-  display: flex;
-  flex-direction: row;
+}
+
+.catalogHeader,
+%catalogHeader {
+  min-height: 33px;
+  margin-bottom: 0 !important;
+  margin-left: 20px;
+}
+
+.readonlyCatalogHeader {
+  @extend %catalogHeader;
+
+  margin-left: 50px;
+}
+
+.catalogSubheader {
+  @extend %catalogHeader;
+
+  padding-top: 10px;
+  margin-left: 155px;
+}
+
+.readonlyCatalogSubheader {
+  @extend %catalogHeader;
+
+  padding-top: 10px;
+  margin-left: 115px;
+}
+
+.catalogTreeContainer {
+  margin-bottom: 29px;
+  max-height: 600px;
+  overflow-y: auto;
+
+  --webkit-overlay: true;
+
+  width: 100%;
 }
