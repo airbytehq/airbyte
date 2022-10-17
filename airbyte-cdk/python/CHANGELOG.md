@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.103
+
+- Replace caching method: vcr.py -> requests_cache with SQLite backend
+
 ## 0.1.102
 
 - Low-code: Fix check for streams that do not define a stream slicer
