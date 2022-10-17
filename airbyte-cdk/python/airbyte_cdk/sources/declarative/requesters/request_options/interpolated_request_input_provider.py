@@ -33,7 +33,7 @@ class InterpolatedRequestInputProvider:
         else:
             self._interpolator = InterpolatedMapping(self._request_inputs, options=options)
 
-    def request_inputs_fn(
+    def eval_request_inputs(
         self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
