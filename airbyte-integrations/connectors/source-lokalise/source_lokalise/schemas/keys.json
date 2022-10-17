@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "key_id": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "created_at": {
       "type": ["null", "string"]
@@ -202,7 +202,7 @@
         "type": "number"
     },
     "custom_attributes": {
-        "type": "array"
+        "type": "string"
     },
     "modified_at": {
         "type": "string"
