@@ -14,17 +14,17 @@
   justify-content: center;
   align-items: center;
 
-.cloudTransformationsListContainer {
+.jobListContainer {
   padding: 25px 25px 22px;
   background-color: colors.$grey-50;
 }
 
-.cloudTransformationsListTitle {
+.jobListTitle {
   display: flex;
   justify-content: space-between;
 }
 
-.transformationListForm {
+.jobListForm {
   width: 100%;
 }
 
@@ -49,17 +49,17 @@
   }
 }
 
-.transformationListButtonGroup {
+.jobListButtonGroup {
   display: flex;
   justify-content: flex-end;
   margin-top: 20px;
 }
 
-.transformationListButton {
+.jobListButton {
   margin-left: 10px;
 }
 
-.transformationListItem {
+.jobListItem {
   margin-top: 10px;
   padding: 18px;
   width: 100%;
@@ -73,23 +73,23 @@
   }
 }
 
-.transformationListItemIntegrationName {
+.jobListItemIntegrationName {
   display: flex;
   align-items: center;
 }
 
-.transformationListItemInputGroup {
+.jobListItemInputGroup {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.transformationListItemInput {
+.jobListItemInput {
   height: fit-content;
   margin-left: 1em;
 }
 
-.transformationListItemDelete {
+.jobListItemDelete {
   color: colors.$grey-200;
   font-size: large;
   margin: 0 1em;

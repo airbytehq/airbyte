@@ -21,30 +21,30 @@ import { RoutePaths } from "pages/routePaths";
 
 import styles from "./DbtCloudTransformationsCard.module.scss";
 
-// TODO rename project->account
-interface Transformation {
+interface DbtCloudJob {
+  // TODO rename project->account
   project: string;
   job: string;
 }
-const _transformations: Transformation[] = [
+const _jobs: DbtCloudJob[] = [
   { project: "1", job: "1234" },
   { project: "2", job: "2134" },
   { project: "3", job: "3214" },
 ];
+/* const _jobs: DbtCloudJob[] = []; */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const updateConnection = (obj: WebBackendConnectionUpdate) => console.info(`updating with`, obj);
 // without including the index, duplicate data causes annoying render bugs for the list
-const transformationKey = (t: Transformation, i: number) => `${i}:${t.project}/${t.job}`;
+const jobKey = (t: DbtCloudJob, i: number) => `${i}:${t.project}/${t.job}`;
 
 const useSaveJobsFn = () => {
   const { workspaceId } = useCurrentWorkspace();
 
   // TODO dynamically use the workspace's configured dbt cloud domain
   const dbtCloudDomain = "https://cloud.getdbt.com";
-  const urlForJob = (job: Transformation) => `${dbtCloudDomain}/api/v2/accounts/${job.project}/jobs/${job.job}`;
+  const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.project}/jobs/${job.job}`;
 
-  return (jobs: Transformation[]) =>
+  return (jobs: DbtCloudJob[]) =>
     // TODO query and add the actual connectionId and operationId values
     updateConnection({
       connectionId: workspaceId, // lmao I know, right?
@@ -52,7 +52,7 @@ const useSaveJobsFn = () => {
         // TODO include all non-dbt-cloud operations in the payload
         ...jobs.map((job, index) => ({
           workspaceId,
-          name: transformationKey(job, index),
+          name: jobKey(job, index),
           // TODO add `operationId` if present
           operatorConfiguration: {
             operatorType: OperatorType.webhook,
@@ -77,7 +77,6 @@ export const DbtCloudTransformationsCard = () => {
   //        THEN show empty jobs list and the "+ Add transformation" button
   //   2.2) AND the connection has saved dbt jobs
   //        THEN show the "no jobs" card body and the "+ Add transformation" button
-  /* const transformations: Transformation[] = []; */
 
   const workspace = useCurrentWorkspace();
   const hasDbtIntegration = !isEmpty(workspace.webhookConfigs);
@@ -85,7 +84,7 @@ export const DbtCloudTransformationsCard = () => {
   return (
     <Card
       title={
-        <span className={styles.cloudTransformationsListTitle}>
+        <span className={styles.jobListTitle}>
           Transformations
           <Button variant="secondary" icon={<FontAwesomeIcon icon={faPlus} />}>
             Add transformation
@@ -94,56 +93,42 @@ export const DbtCloudTransformationsCard = () => {
       }
     >
       {hasDbtIntegration ? (
-        <TransformationsList transformations={_transformations} className={styles.cloudTransformationsListContainer} />
+        <DbtJobsList jobs={_jobs} className={styles.jobListContainer} />
       ) : (
-        <NoDbtIntegration className={styles.cloudTransformationsListContainer} workspaceId={workspace.workspaceId} />
+        <NoDbtIntegration className={styles.jobListContainer} />
       )}
     </Card>
   );
 };
 
-// This won't be used by the first prototype, but it is the UI specced in
-// follow-up designs which can support multiple integrations; it's also a small,
-// self-contained set of components and scss which will only trivially affect
-// bundle size.
-const TransformationsList = ({
-  className,
-  transformations,
-}: {
-  className?: string;
-  transformations: Transformation[];
-}) => {
+const DbtJobsList = ({ className, jobs }: { className?: string; jobs: DbtCloudJob[] }) => {
   const saveJobs = useSaveJobsFn();
-  const onSubmit = ({ transformations }: { transformations: Transformation[] }) => {
-    saveJobs(transformations);
+  const onSubmit = ({ jobs }: { jobs: DbtCloudJob[] }) => {
+    saveJobs(jobs);
   };
 
   return (
     <div className={classNames(className, styles.emptyListContent)}>
       <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
-      {transformations.length ? (
+      {jobs.length ? (
         <Formik
           onSubmit={onSubmit}
-          initialValues={{ transformations }}
+          initialValues={{ jobs }}
           render={({ values }) => (
-            <Form className={styles.transformationListForm}>
+            <Form className={styles.jobListForm}>
               <FieldArray
-                name="transformations"
+                name="jobs"
                 render={(arrayHelpers) =>
-                  values.transformations.map((t, i) => (
-                    <TransformationListItem
-                      key={transformationKey(t, i)}
-                      transformationIndex={i}
-                      deleteTransformation={() => arrayHelpers.remove(i)}
-                    />
+                  values.jobs.map((t, i) => (
+                    <JobsListItem key={jobKey(t, i)} jobIndex={i} removeJob={() => arrayHelpers.remove(i)} />
                   ))
                 }
               />
-              <div className={styles.transformationListButtonGroup}>
-                <Button className={styles.transformationListButton} type="reset" variant="secondary">
+              <div className={styles.jobListButtonGroup}>
+                <Button className={styles.jobListButton} type="reset" variant="secondary">
                   Cancel
                 </Button>
-                <Button className={styles.transformationListButton} type="submit" variant="primary">
+                <Button className={styles.jobListButton} type="submit" variant="primary">
                   Save changes
                 </Button>
               </div>
@@ -160,31 +145,25 @@ const TransformationsList = ({
   );
 };
 
-const TransformationListItem = ({
-  transformationIndex,
-  deleteTransformation,
-}: {
-  transformationIndex: number;
-  deleteTransformation: () => void;
-}) => {
+const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: () => void }) => {
   return (
-    <Card className={styles.transformationListItem}>
-      <div className={styles.transformationListItemIntegrationName}>
+    <Card className={styles.jobListItem}>
+      <div className={styles.jobListItemIntegrationName}>
         <img src="/images/external/dbt-bit_tm.png" alt="dbt logo" />
         dbt Cloud transform
       </div>
-      <div className={styles.transformationListItemInputGroup}>
-        <div className={styles.transformationListItemInput}>
-          <Field name={`transformations.${transformationIndex}.project`}>
+      <div className={styles.jobListItemInputGroup}>
+        <div className={styles.jobListItemInput}>
+          <Field name={`jobs.${jobIndex}.project`}>
             {({ field }: FieldProps<string>) => <Input {...field} type="text" placeholder="Project name" />}
           </Field>
         </div>
-        <div className={styles.transformationListItemInput}>
-          <Field name={`transformations.${transformationIndex}.job`}>
+        <div className={styles.jobListItemInput}>
+          <Field name={`jobs.${jobIndex}.job`}>
             {({ field }: FieldProps<string>) => <Input {...field} type="text" placeholder="Job name" />}
           </Field>
         </div>
-        <button type="button" className={styles.transformationListItemDelete} onClick={deleteTransformation}>
+        <button type="button" className={styles.jobListItemDelete} onClick={removeJob}>
           <FontAwesomeIcon icon={faXmark} />
         </button>
       </div>
@@ -192,7 +171,8 @@ const TransformationListItem = ({
   );
 };
 
-const NoDbtIntegration = ({ className, workspaceId }: { className: string; workspaceId: string }) => {
+const NoDbtIntegration = ({ className }: { className: string }) => {
+  const { workspaceId } = useCurrentWorkspace();
   const dbtSettingsPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Settings}/dbt-cloud`;
   return (
     <div className={classNames(className, styles.emptyListContent)}>
