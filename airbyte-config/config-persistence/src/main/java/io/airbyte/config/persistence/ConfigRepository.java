@@ -70,6 +70,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.Data;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -973,6 +974,42 @@ public class ConfigRepository {
     if (records.size() >= 1) {
       return Optional.of(DbConverter.buildActorCatalogFetchEvent(records.get(0)));
     }
+    return Optional.empty();
+  }
+
+  @Data
+  private class TodoRename {
+    private final UUID actorId;
+    private final UUID actorCatalogId;
+    private final OffsetDateTime createdAt;
+  }
+
+  public Optional<ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSource(final List<UUID> sourceIds) throws IOException {
+
+    /*final Stream<ActorCatalogFetchEvent>*/ var records = database.query(ctx ->
+
+        ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
+        .from(ACTOR_CATALOG_FETCH_EVENT)
+        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.in(sourceIds)).fetch())
+        .stream()
+        .map(record -> new TodoRename(
+            record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID),
+            record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID),
+            record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT)
+        ))
+        .collect(() -> new HashMap<UUID, TodoRename>(),
+            (acc, value) -> {
+              if (acc.containsKey(value.getActorId())) {
+
+              }
+            },
+            (left, right) ->  {
+              var test = "";
+            }
+        );
+
+
+
     return Optional.empty();
   }
 

@@ -148,6 +148,15 @@ public class WebBackendConnectionsHandler {
     return sourceReads.stream().collect(Collectors.toMap(SourceRead::getSourceId, Function.identity()));
   }
 
+  private Map<UUID, SourceRead> getActorCatalogBySourceIds(final List<UUID> sourceIds) throws IOException {
+    final List<SourceRead> sourceReads = configRepository.getMostRecentActorCatalogFetchEventForSource(sourceIds)
+        .stream()
+        .map(sourceAndDefinition -> SourceHandler.toSourceRead(sourceAndDefinition.source(), sourceAndDefinition.definition()))
+        .toList();
+
+    return sourceReads.stream().collect(Collectors.toMap(SourceRead::getSourceId, Function.identity()));
+  }
+
   private Map<UUID, DestinationRead> getDestinationReadById(final List<UUID> destinationIds) throws IOException {
     final List<DestinationRead> destinationReads = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds)
         .stream()
