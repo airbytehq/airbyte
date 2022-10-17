@@ -3397,7 +3397,7 @@ components:
         - destinationId
         - syncCatalog
         - status
-        - isBreaking
+        - breakingChange
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -3438,7 +3438,7 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
-        isBreaking:
+        breakingChange:
           type: boolean
     SchemaChange:
       enum:
