@@ -8,8 +8,9 @@ import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Input } from "components/ui/Input";
 
+import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useSaveJobsFn, DbtCloudJob, useDbtIntegration } from "packages/cloud/services/dbtCloud";
+import { DbtCloudJob, useDbtIntegration } from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
 
 import styles from "./DbtCloudTransformationsCard.module.scss";
@@ -24,7 +25,7 @@ const _jobs: DbtCloudJob[] = [
 // without including the index, duplicate data causes annoying render bugs for the list
 const jobKey = (t: DbtCloudJob, i: number) => `${i}:${t.account}/${t.job}`;
 
-export const DbtCloudTransformationsCard = () => {
+export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBackendConnectionRead }) => {
   // Possible render paths:
   // 1) IF the workspace has no dbt cloud account linked
   //    THEN show "go to your settings to connect your dbt Cloud Account" text
@@ -35,7 +36,7 @@ export const DbtCloudTransformationsCard = () => {
   //   2.2) AND the connection has saved dbt jobs
   //        THEN show the "no jobs" card body and the "+ Add transformation" button
 
-  const { hasDbtIntegration } = useDbtIntegration();
+  const { hasDbtIntegration, saveJobs } = useDbtIntegration(connection);
 
   return (
     <Card
@@ -49,7 +50,7 @@ export const DbtCloudTransformationsCard = () => {
       }
     >
       {hasDbtIntegration ? (
-        <DbtJobsList jobs={_jobs} className={styles.jobListContainer} />
+        <DbtJobsList jobs={_jobs} className={styles.jobListContainer} saveJobs={saveJobs} />
       ) : (
         <NoDbtIntegration className={styles.jobListContainer} />
       )}
@@ -57,8 +58,15 @@ export const DbtCloudTransformationsCard = () => {
   );
 };
 
-const DbtJobsList = ({ className, jobs }: { className?: string; jobs: DbtCloudJob[] }) => {
-  const saveJobs = useSaveJobsFn();
+const DbtJobsList = ({
+  className,
+  jobs,
+  saveJobs,
+}: {
+  className?: string;
+  jobs: DbtCloudJob[];
+  saveJobs: (jobs: DbtCloudJob[]) => void;
+}) => {
   const onSubmit = ({ jobs }: { jobs: DbtCloudJob[] }) => {
     saveJobs(jobs);
   };

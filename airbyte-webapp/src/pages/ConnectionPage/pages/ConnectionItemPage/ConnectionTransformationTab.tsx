@@ -24,6 +24,7 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
+import styles from "./ConnectionTransformationTab.module.scss";
 import { DbtCloudTransformationsCard } from "./ConnectionTransformationTab/DbtCloudTransformationsCard";
 
 const CustomTransformationsCard: React.FC<{
@@ -136,7 +137,7 @@ export const ConnectionTransformationTab: React.FC = () => {
       >
         {supportsNormalization && <NormalizationCard operations={connection.operations} onSubmit={onSubmit} />}
         {supportsDbt && <CustomTransformationsCard operations={connection.operations} onSubmit={onSubmit} />}
-        {supportsCloudDbtIntegration && <DbtCloudTransformationsCard />}
+        {supportsCloudDbtIntegration && <DbtCloudTransformationsCard connection={connection} />}
         {noSupportedTransformations && (
           <Card className={styles.customCard}>
             <Text as="p" size="lg" centered>
