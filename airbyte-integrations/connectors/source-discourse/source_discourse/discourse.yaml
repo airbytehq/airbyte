@@ -5,7 +5,7 @@ definitions:
     extractor:
       field_pointer: []
   requester:
-    url_base: "https://discuss.airbyte.io"
+    url_base: "{{ config['url_base'] }}"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
@@ -27,7 +27,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "posts"
-      primary_key: "created_at"
+      primary_key: "id"
       path: "/posts.json"
 
 streams:

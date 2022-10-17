@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - api_key
     - api_username
+    - url_base
   additionalProperties: true
   properties:
     api_key:
@@ -15,4 +16,8 @@ connectionSpecification:
     api_username:
       type: string
       description: API Username
+      airbyte_secret: true
+    url_base:
+      type: string
+      description: Base URL
       airbyte_secret: true
