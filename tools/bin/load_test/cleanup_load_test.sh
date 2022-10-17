@@ -77,14 +77,6 @@ function setup {
   setCleanupFilesForWorkspace $workspace_id
 }
 
-function callApi {
-  # call the API with the endpoint passed as arg $1, and (optional) payload passed as arg $2
-  # example of calling the API with a payload:
-  #    callApi "destinations/list" "{\"workspaceId\":\"${workspace}\"}"
-
-  curl -s -X POST -H 'Content-Type: application/json' -H "X-Endpoint-API-UserInfo: ${api_header}" -d "$2" "${hostname}:${api_port}/api/v1/$1"
-}
-
 function deleteConnections {
   while test -s $connection_cleanup_file
   do

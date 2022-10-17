@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -o errexit
+set -o nounset
 
 <<comment
 This script performs a load test against an existing Airbyte instance by calling the instance's API to create and sync new connections.
@@ -65,8 +67,18 @@ x_endpoint_header=
 num_connections=1
 sync_minutes=10
 
-while getopts "hW:H:P:X:C:T:kN:" options ; do
+while getopts "hW:H:P:X:C:T:kN:-:" options ; do
   case "${options}" in
+     -)
+        case "${OPTARG}" in
+            debug)
+                PS4="$GREEN"'${BASH_SOURCE}:${LINENO}:$CLEAR '
+                set -o xtrace #xtrace calls the PS4 string and show all lines as executed
+                ;;
+            *)
+                showhelp
+                ;;
+        esac;;
     h)
       showhelp
       ;;
@@ -95,17 +107,18 @@ while getopts "hW:H:P:X:C:T:kN:" options ; do
 done
 
 function setup {
+  set -e
   if test -z "$workspace_id"; then
     echo "error: must set a workspace id with -W"
     exit 1
   fi
 
-  echo "set workspace_id to ${workspace_id}"
-  echo "set hostname to ${hostname}"
-  echo "set api_port to ${api_port}"
-  echo "set x_endpoint_header to ${x_endpoint_header}"
-  echo "set num_connections to ${num_connections}"
-  echo "set sync_minutes to ${sync_minutes}"
+  echo "set workspace_id to              ${workspace_id}"
+  echo "set hostname to                      ${hostname}"
+  echo "set api_port to                      ${api_port}"
+  echo "set x_endpoint_header to    ${x_endpoint_header}"
+  echo "set num_connections to        ${num_connections}"
+  echo "set sync_minutes to              ${sync_minutes}"
 
   setCleanupFilesForWorkspace $workspace_id
 
@@ -119,7 +132,7 @@ function setup {
 function getE2ETestSourceDefinitionId {
   # call source_definitions/list and search response for the E2E Test dockerRepository to get the ID.
   # local uses `source-e2e-test`, while cloud uses `source-e2e-test-cloud`
-  export sourceDefinitionId=$(
+  sourceDefinitionId=$(
     callApi "source_definitions/list" |
       jq -r '.sourceDefinitions[] |
         select(
@@ -128,12 +141,13 @@ function getE2ETestSourceDefinitionId {
         ) |
         .sourceDefinitionId'
   )
+  export sourceDefinitionId
 }
 
 function getE2ETestDestinationDefinition {
   # call destination_definitions/list and search response for the E2E Test dockerRepository to get the ID.
   # local uses `destination-dev-null`, while cloud uses `destination-e2e-test-cloud`
-  export destinationDefinitionId=$(
+  destinationDefinitionId=$(
     callApi "destination_definitions/list" |
       jq -r '.destinationDefinitions[] |
         select(
@@ -142,6 +156,7 @@ function getE2ETestDestinationDefinition {
         ) |
         .destinationDefinitionId'
   )
+  export destinationDefinitionId
 }
 
 function createSource {
@@ -154,11 +169,11 @@ function createSource {
     tr -d ' '
   )
 
-  export sourceId=$(
+  sourceId=$(
     callApi "sources/create" $body |
     jq -r '.sourceId'
   )
-
+  export sourceId
   echo $sourceId >> $source_cleanup_file
 }
 
@@ -170,19 +185,20 @@ function createDestination {
     tr -d '\n' |
     tr -d ' '
   )
-  export destinationId=$(
+  destinationId=$(
     callApi "destinations/create" $body |
     jq -r '.destinationId'
   )
-
+  export destinationId
   echo $destinationId >> $destination_cleanup_file
 }
 
 function discoverSource {
-  export sourceCatalogId=$(
+  sourceCatalogId=$(
     callApi "sources/discover_schema" "{\"sourceId\":\"$sourceId\",\"disable_cache\":true}" |
       jq -r '.catalogId'
   )
+  export sourceCatalogId
 }
 
 function createMultipleConnections {
@@ -207,11 +223,10 @@ function createConnection {
     tr -d ' '
   )
 
-  export connectionId=$(
+  connectionId=$(
     callApi "web_backend/connections/create" $body |
       jq -r '.connectionId'
   )
-
   echo $connectionId >> $connection_cleanup_file
 }
 

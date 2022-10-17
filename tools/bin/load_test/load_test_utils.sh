@@ -13,8 +13,21 @@ function callApi {
   # call the API with the endpoint passed as arg $1, and (optional) payload passed as arg $2
   # example of calling the API with a payload:
   #    callApi "destinations/list" "{\"workspaceId\":\"${workspace}\"}"
+  endpoint=$1
+  if [ -z "${2-}" ] ; then
+    payload=""
+  else
+    payload=$2
+  fi
 
-  curl -s -X POST -H 'Content-Type: application/json' -H "X-Endpoint-API-UserInfo: ${x_endpoint_header}" -d "$2" "${hostname}:${api_port}/api/v1/$1"
+  curl --silent \
+   --request POST \
+   --fail-with-body \
+   --show-error \
+   --header 'Content-Type: application/json' \
+   --header "X-Endpoint-API-UserInfo: ${x_endpoint_header}" \
+   --data "${payload}" \
+    "${hostname}:${api_port}/api/v1/${endpoint}"
 }
 
 function readFirstLineFromFile {
