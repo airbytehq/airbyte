@@ -86,7 +86,7 @@ public class CsvDestination extends BaseConnector implements Destination {
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
-      CSVFormat csvFormat = CSVFormat.newFormat(delimiter).withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+      CSVFormat csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter).withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
           JavaBaseConstants.COLUMN_NAME_DATA);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       if (syncMode == null) {
