@@ -106,7 +106,7 @@ public class ConnectionHelpers {
         .withManual(true);
   }
 
-  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId) {
+  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId, final boolean isBroken) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -122,26 +122,7 @@ public class ConnectionHelpers {
         .withDestinationId(destinationId)
         .withOperationIds(List.of(UUID.randomUUID()))
         .withManual(true)
-        .withBreakingChange(false);
-  }
-
-  public static StandardSync generateBrokenSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId) {
-    final UUID connectionId = UUID.randomUUID();
-
-    return new StandardSync()
-        .withConnectionId(connectionId)
-        .withName(STANDARD_SYNC_NAME)
-        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
-        .withNamespaceFormat(null)
-        .withPrefix(STANDARD_SYNC_PREFIX)
-        .withStatus(StandardSync.Status.ACTIVE)
-        .withCatalog(generateBasicConfiguredAirbyteCatalog())
-        .withSourceCatalogId(UUID.randomUUID())
-        .withSourceId(sourceId)
-        .withDestinationId(destinationId)
-        .withOperationIds(List.of(UUID.randomUUID()))
-        .withManual(true)
-        .withBreakingChange(true);
+        .withBreakingChange(isBroken);
   }
 
   public static ConnectionSchedule generateBasicConnectionSchedule() {
