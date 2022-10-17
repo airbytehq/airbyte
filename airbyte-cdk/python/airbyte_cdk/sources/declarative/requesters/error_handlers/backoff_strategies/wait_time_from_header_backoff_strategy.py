@@ -35,6 +35,5 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         header = self.header.eval(config=self.config)
-        print(f"header: {header}")
         header_value = get_numeric_value_from_header(response, header, self.regex)
         return header_value
