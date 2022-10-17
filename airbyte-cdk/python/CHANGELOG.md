@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.99
+
+- Low-code: Fix default stream schema loader
+
 ## 0.1.98
 
 - Low-code: Expose WaitUntilTimeFromHeader strategy and WaitTimeFromHeader as component type

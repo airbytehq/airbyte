@@ -58,7 +58,7 @@ public class JobNotifier {
   private void notifyJob(final String reason, final String action, final Job job) {
     try {
       final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
-      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+      final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, true);
       notifyJob(reason, action, job, workspaceId, workspace, workspace.getNotifications());
     } catch (final Exception e) {
       LOGGER.error("Unable to read configuration:", e);
@@ -146,7 +146,7 @@ public class JobNotifier {
     emailNotification.setNotificationType(NotificationType.CUSTOMERIO);
     try {
       final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
-      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+      final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, true);
       notifyJob(reason, action, job, workspaceId, workspace, Collections.singletonList(emailNotification));
     } catch (final Exception e) {
       LOGGER.error("Unable to read configuration:", e);

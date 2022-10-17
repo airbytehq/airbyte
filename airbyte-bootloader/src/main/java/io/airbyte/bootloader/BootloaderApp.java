@@ -12,11 +12,11 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.Geography;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.init.LocalDefinitionsProvider;
-import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -205,7 +205,7 @@ public class BootloaderApp {
   }
 
   private static DefinitionsProvider getLocalDefinitionsProvider() throws IOException {
-    return new LocalDefinitionsProvider(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+    return new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
   }
 
   private static Database getJobDatabase(final DSLContext dslContext) throws IOException {
@@ -286,8 +286,11 @@ public class BootloaderApp {
         .withSlug(workspaceId.toString())
         .withInitialSetupComplete(false)
         .withDisplaySetupWizard(true)
-        .withTombstone(false);
-    configRepository.writeStandardWorkspace(workspace);
+        .withTombstone(false)
+        .withDefaultGeography(Geography.AUTO);
+    // NOTE: it's safe to use the NoSecrets version since we know that the user hasn't supplied any
+    // secrets yet.
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
   }
 
   private static void assertNonBreakingMigration(final JobPersistence jobPersistence, final AirbyteVersion airbyteVersion)

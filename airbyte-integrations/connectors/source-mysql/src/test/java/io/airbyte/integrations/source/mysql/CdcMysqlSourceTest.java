@@ -82,6 +82,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
+        .put("time_zone", "America/Los_Angeles")
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
