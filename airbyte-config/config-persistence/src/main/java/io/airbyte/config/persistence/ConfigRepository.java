@@ -973,7 +973,7 @@ public class ConfigRepository {
     if (records.size() >= 1) {
       return Optional.of(DbConverter.buildActorCatalogFetchEvent(records.get(0)));
     }
-    return Optional.ofNullable(null);
+    return Optional.empty();
   }
 
   /**

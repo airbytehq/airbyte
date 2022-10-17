@@ -183,11 +183,8 @@ public class WebBackendConnectionsHandler {
           configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
 
       if (mostRecentFetchEvent.isPresent()) {
-        log.info("most recent actor catalog fetch event actor catalog id is: " + mostRecentFetchEvent.get().getActorCatalogId());
         final ActorCatalog currentCatalog = configRepository.getActorCatalogById(currentSourceCatalogId.get());
-        log.info("current ActorCatalog for connection: " + currentCatalog);
         if (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentCatalog.getId())) {
-          log.info("these two catalog ids are not equal");
           if (connectionRead.getBreakingChange()) {
             schemaChange = SchemaChange.BREAKING;
           } else {
