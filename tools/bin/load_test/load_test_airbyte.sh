@@ -8,13 +8,14 @@ which means the script will delete every connector and connection ID that it cre
 comment
 
 cd "$(dirname "$0")"
+. load_test_utils.sh
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 CLEAR='\033[0m'
 
-showhelp() {
+function showhelp {
   echo -e """Usage $(dirname $0)/load_test_airbyte [OPTIONS]
 
   load_test_airbyte performs a load-test against an existing Airbyte instance.
@@ -55,17 +56,13 @@ showhelp() {
   """ && exit 1
 }
 
-if [[ $# -eq 0 ]] ; then
-    showhelp
-    exit 0
-fi
-
 hostname=localhost
 api_port=8001
 num_connections=1
 sync_minutes=10
 kube=false
 kube_namespace=default
+cleanup_mode=false
 
 while getopts "hW:H:P:C:T:kN:" options ; do
   case "${options}" in
@@ -104,31 +101,31 @@ while getopts "hW:H:P:C:T:kN:" options ; do
   esac
 done
 
-if test -z "$workspace_id"; then
-  echo "error: must set a workspace id with -W"
-  exit 1
-fi
+function setup {
+  if test -z "$workspace_id"; then
+    echo "error: must set a workspace id with -W"
+    exit 1
+  fi
 
-echo "set workspace_id to ${workspace_id}"
-echo "set hostname to ${hostname}"
-echo "set api_port to ${api_port}"
-echo "set num_connections to ${num_connections}"
-echo "set sync_minutes to ${sync_minutes}"
-echo "set kube to ${kube}"
-echo "set kube_namespace to ${kube_namespace}"
+  echo "set workspace_id to ${workspace_id}"
+  echo "set hostname to ${hostname}"
+  echo "set api_port to ${api_port}"
+  echo "set num_connections to ${num_connections}"
+  echo "set sync_minutes to ${sync_minutes}"
+  echo "set kube to ${kube}"
+  echo "set kube_namespace to ${kube_namespace}"
 
-# base64-encoded: {"user_id": "cloud-api", "email_verified": "true"}
-api_header="eyJ1c2VyX2lkIjogImNsb3VkLWFwaSIsICJlbWFpbF92ZXJpZmllZCI6ICJ0cnVlIn0K"
+  setCleanupFilesForWorkspace $workspace_id
 
-# call the API with the endpoint passed as arg $1, and (optional) payload passed as arg $2
-# example of calling the API with a payload:
-#    callApi "destinations/list" "{\"workspaceId\":\"${workspace}\"}"
-function callApi {
-  curl -s -X POST -H 'Content-Type: application/json' -H "X-Endpoint-API-UserInfo: ${api_header}" -d "$2" "${hostname}:${api_port}/api/v1/$1"
+  mkdir -p cleanup
+
+  touch $connection_cleanup_file
+  touch $source_cleanup_file
+  touch $destination_cleanup_file
 }
 
 function getE2ETestSourceDefinitionId {
-  # call source_definitions/list and search response for E2E Test, get the ID.
+  # call source_definitions/list and search response for the E2E Test dockerRepository to get the ID.
   # local uses `source-e2e-test`, while cloud uses `source-e2e-test-cloud`
   export sourceDefinitionId=$(
     callApi "source_definitions/list" |
@@ -142,6 +139,8 @@ function getE2ETestSourceDefinitionId {
 }
 
 function getE2ETestDestinationDefinition {
+  # call destination_definitions/list and search response for the E2E Test dockerRepository to get the ID.
+  # local uses `destination-dev-null`, while cloud uses `destination-e2e-test-cloud`
   export destinationDefinitionId=$(
     callApi "destination_definitions/list" |
       jq -r '.destinationDefinitions[] |
@@ -168,8 +167,7 @@ function createSource {
     jq -r '.sourceId'
   )
 
-  #TODO write ID to file for future cleanup
-
+  echo $sourceId >> $source_cleanup_file
 }
 
 function createDestination {
@@ -185,8 +183,7 @@ function createDestination {
     jq -r '.destinationId'
   )
 
-  #TODO write ID to file for future cleanup
-
+  echo $destinationId >> $destination_cleanup_file
 }
 
 function discoverSource {
@@ -223,7 +220,7 @@ function createConnection {
       jq -r '.connectionId'
   )
 
-  #TODO write ID to file for future cleanup
+  echo $connectionId >> $connection_cleanup_file
 }
 
 function portForward {
@@ -232,11 +229,17 @@ function portForward {
   echo "implement me"
 }
 
-
-
 ############
 ##  MAIN  ##
 ############
+
+if [[ $# -eq 0 ]] ; then
+    showhelp
+    exit 0
+fi
+
+setup
+
 getE2ETestSourceDefinitionId
 echo "Retrieved E2E Test Source Definition ID: ${sourceDefinitionId}"
 
