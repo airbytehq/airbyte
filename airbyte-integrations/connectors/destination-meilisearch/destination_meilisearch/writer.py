@@ -33,9 +33,15 @@ class MeiliWriter:
         self.write_buffer.clear()
 
     def wait_for_job(self, task_uid: str):
+        timer = 1
         while True:
-            time.sleep(1)
-            task = self.client.get_task(task_uid)
-            status = task["status"]
-            if status == "succeeded" or status == "failed":
-                break
+            time.sleep(timer)
+            if timer < 60:
+                timer = timer * 2
+            try:
+                task = self.client.get_task(task_uid)
+                status = task["status"]
+                if status == "succeeded" or status == "failed":
+                    break
+            except:
+                timer = 60
