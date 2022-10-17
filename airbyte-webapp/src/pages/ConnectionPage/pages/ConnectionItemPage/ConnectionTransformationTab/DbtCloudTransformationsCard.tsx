@@ -15,9 +15,8 @@ import {
   OperatorType,
   /* OperatorWebhook, */
 } from "core/request/AirbyteClient";
-// eslint-disable-next-line
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-
+import { webhookConfigName, executionBody } from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
 
 import styles from "./DbtCloudTransformationsCard.module.scss";
@@ -41,11 +40,9 @@ const transformationKey = (t: Transformation, i: number) => `${i}:${t.project}/$
 const useSaveJobsFn = () => {
   const { workspaceId } = useCurrentWorkspace();
 
+  // TODO dynamically use the workspace's configured dbt cloud domain
   const dbtCloudDomain = "https://cloud.getdbt.com";
   const urlForJob = (job: Transformation) => `${dbtCloudDomain}/api/v2/accounts/${job.project}/jobs/${job.job}`;
-  const executionBody = `{"cause": "airbyte"}`;
-  // TODO dynamically use the workspace's configured dbt cloud domain
-  const webhookConfigName = "dbt cloud";
 
   return (jobs: Transformation[]) =>
     // TODO query and add the actual connectionId and operationId values
