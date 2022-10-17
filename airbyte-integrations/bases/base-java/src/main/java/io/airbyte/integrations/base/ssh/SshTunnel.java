@@ -142,7 +142,7 @@ public class SshTunnel implements AutoCloseable {
         URL urlObject = null;
         try {
           urlObject = new URL(remoteServiceUrl);
-        } catch (MalformedURLException e) {
+        } catch (final MalformedURLException e) {
           AirbyteTraceMessageUtility.emitConfigErrorTrace(e,
               String.format("Provided value for remote service URL is not valid: %s", remoteServiceUrl));
         }
@@ -184,7 +184,8 @@ public class SshTunnel implements AutoCloseable {
         Jsons.replaceNestedInt(clone, portKey, tunnelLocalPort);
       }
       if (endPointKey != null) {
-        URL tunnelEndPointURL = new URL(remoteServiceProtocol, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), tunnelLocalPort, remoteServicePath);
+        final URL tunnelEndPointURL =
+            new URL(remoteServiceProtocol, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), tunnelLocalPort, remoteServicePath);
         Jsons.replaceNestedString(clone, Arrays.asList(endPointKey), tunnelEndPointURL.toString());
       }
       return clone;
@@ -306,7 +307,10 @@ public class SshTunnel implements AutoCloseable {
         .getKeyPairResourceParser()
         .loadKeyPairs(null, null, null, new StringReader(validatedKey));
 
-    return (keyPairs == null) ? null : keyPairs.iterator().next();
+    if (keyPairs != null && keyPairs.iterator().hasNext()) {
+      return keyPairs.iterator().next();
+    }
+    return null;
   }
 
   private String validateKey() {
