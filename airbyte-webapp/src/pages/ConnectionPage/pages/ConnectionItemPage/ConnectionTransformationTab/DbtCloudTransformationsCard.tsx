@@ -2,30 +2,18 @@ import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Field, Form, Formik, FieldArray, FieldProps } from "formik";
-import isEmpty from "lodash/isEmpty";
 import { Link } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Input } from "components/ui/Input";
 
-import {
-  /* webBackendUpdateConnection, */
-  WebBackendConnectionUpdate,
-  OperatorType,
-  /* OperatorWebhook, */
-} from "core/request/AirbyteClient";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { webhookConfigName, executionBody } from "packages/cloud/services/dbtCloud";
+import { useSaveJobsFn, DbtCloudJob, useDbtIntegration } from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
 
 import styles from "./DbtCloudTransformationsCard.module.scss";
 
-interface DbtCloudJob {
-  // TODO rename project->account
-  project: string;
-  job: string;
-}
 const _jobs: DbtCloudJob[] = [
   { project: "1", job: "1234" },
   { project: "2", job: "2134" },
@@ -33,39 +21,8 @@ const _jobs: DbtCloudJob[] = [
 ];
 /* const _jobs: DbtCloudJob[] = []; */
 
-const updateConnection = (obj: WebBackendConnectionUpdate) => console.info(`updating with`, obj);
 // without including the index, duplicate data causes annoying render bugs for the list
 const jobKey = (t: DbtCloudJob, i: number) => `${i}:${t.project}/${t.job}`;
-
-const useSaveJobsFn = () => {
-  const { workspaceId } = useCurrentWorkspace();
-
-  // TODO dynamically use the workspace's configured dbt cloud domain
-  const dbtCloudDomain = "https://cloud.getdbt.com";
-  const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.project}/jobs/${job.job}`;
-
-  return (jobs: DbtCloudJob[]) =>
-    // TODO query and add the actual connectionId and operationId values
-    updateConnection({
-      connectionId: workspaceId, // lmao I know, right?
-      operations: [
-        // TODO include all non-dbt-cloud operations in the payload
-        ...jobs.map((job, index) => ({
-          workspaceId,
-          name: jobKey(job, index),
-          // TODO add `operationId` if present
-          operatorConfiguration: {
-            operatorType: OperatorType.webhook,
-            webhook: {
-              executionUrl: urlForJob(job),
-              webhookConfigName,
-              executionBody,
-            },
-          },
-        })),
-      ],
-    });
-};
 
 export const DbtCloudTransformationsCard = () => {
   // Possible render paths:
@@ -79,7 +36,7 @@ export const DbtCloudTransformationsCard = () => {
   //        THEN show the "no jobs" card body and the "+ Add transformation" button
 
   const workspace = useCurrentWorkspace();
-  const hasDbtIntegration = !isEmpty(workspace.webhookConfigs);
+  const { hasDbtIntegration } = useDbtIntegration();
 
   return (
     <Card
