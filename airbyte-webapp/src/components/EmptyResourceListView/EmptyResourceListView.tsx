@@ -8,21 +8,23 @@ import { Text } from "components/ui/Text";
 import styles from "./EmptyResourceListView.module.scss";
 
 interface EmptyResourceListViewProps {
+  buttonLabel: string;
   resourceType: "connections" | "destinations" | "sources";
   onCreateClick: () => void;
 }
 
-export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({ resourceType, onCreateClick }) => {
-  const { headingMessageId, buttonMessageId, singularResourceType } = useMemo(() => {
+export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
+  resourceType,
+  onCreateClick,
+  buttonLabel,
+}) => {
+  const { headingMessageId, singularResourceType } = useMemo(() => {
     const singularResourceType = resourceType.substring(0, resourceType.length - 1);
     const baseMessageId = resourceType === "connections" ? singularResourceType : resourceType;
 
     const headingMessageId = `${baseMessageId}.description`;
-    const buttonMessageId = `${baseMessageId}.new${
-      singularResourceType.substring(0, 1).toUpperCase() + singularResourceType.substring(1)
-    }`;
 
-    return { headingMessageId, buttonMessageId, singularResourceType };
+    return { headingMessageId, singularResourceType };
   }, [resourceType]);
 
   return (
@@ -32,20 +34,20 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({ re
       </Text>
       <div className={classNames(styles.container, styles.illustration)}>
         {resourceType !== "destinations" && (
-          <img src="/images/bowtie-half.svg" alt="Left Bowtie" className={classNames(styles.bowtie, styles.left)} />
+          <img src="/images/bowtie-half.svg" alt="" className={classNames(styles.bowtie, styles.left)} />
         )}
         {resourceType !== "sources" && (
-          <img src="/images/bowtie-half.svg" alt="Right Bowtie" className={classNames(styles.bowtie, styles.right)} />
+          <img src="/images/bowtie-half.svg" alt="" className={classNames(styles.bowtie, styles.right)} />
         )}
         <img
           className={styles.octavia}
           src={`/images/octavia/empty-${resourceType}.png`}
-          alt="Octavia"
+          alt=""
           resource={resourceType}
         />
       </div>
       <Button onClick={onCreateClick} size="lg" data-id={`new-${singularResourceType}`}>
-        <FormattedMessage id={buttonMessageId} />
+        {buttonLabel}
       </Button>
     </div>
   );
