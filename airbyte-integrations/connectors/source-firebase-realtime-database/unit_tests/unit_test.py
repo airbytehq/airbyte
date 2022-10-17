@@ -2,11 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import string
 
 import pytest
-
 from source_firebase_realtime_database.firebase_rtdb import Records
 from source_firebase_realtime_database.source import SourceFirebaseRealtimeDatabase
 
@@ -34,7 +32,7 @@ from source_firebase_realtime_database.source import SourceFirebaseRealtimeDatab
             {"database_name": "my-database", "path": ""},
             "my_database",
         ),
-    ]
+    ],
 )
 def test_stream_name_from(config, stream_name):
 
@@ -49,12 +47,13 @@ class PseudoClient:
     Pseudo client producing records which keys and values are ordered ASCII chcaracter
     ex. {"a": "a", "b": "b", "c": "c"}
     """
+
     def __init__(self, buffer_size):
         self._buffer_size = buffer_size
 
     def fetch_records(self, start_key=None):
         if start_key:
-            start = ord(start_key)- ord("a")
+            start = ord(start_key) - ord("a")
         else:
             start = 0
 
@@ -68,7 +67,7 @@ def test_records():
     client = PseudoClient(buffer_size)
     records = Records(client)
 
-    expected = [{"key": c, "value": f"\"{c}\""} for c in string.ascii_lowercase]
+    expected = [{"key": c, "value": f'"{c}"'} for c in string.ascii_lowercase]
     actual = list(records)
 
     assert actual == expected

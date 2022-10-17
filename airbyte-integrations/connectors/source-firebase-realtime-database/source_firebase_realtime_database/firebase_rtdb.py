@@ -1,9 +1,11 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import json
 
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import db
-
+from firebase_admin import credentials, db
 
 
 class Client:
@@ -17,9 +19,12 @@ class Client:
 
         cred = credentials.Certificate(sa_key)
 
-        firebase_admin.initialize_app(cred, {
-            'databaseURL': database_url,
-        })
+        firebase_admin.initialize_app(
+            cred,
+            {
+                "databaseURL": database_url,
+            },
+        )
         self._ref = db.reference(self._path)
 
     def check_connection(self):
@@ -27,7 +32,7 @@ class Client:
 
     def fetch_records(self, start_key=None):
         if start_key:
-            return self._ref.order_by_key().start_at(self.start_key).limit_to_first(self._buffer_size).get()
+            return self._ref.order_by_key().start_at(start_key).limit_to_first(self._buffer_size).get()
         else:
             return self._ref.order_by_key().limit_to_first(self._buffer_size).get()
 

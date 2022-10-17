@@ -116,7 +116,7 @@ class SourceFirebaseRealtimeDatabase(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        
+
         stream = catalog.streams[0].stream
         stream_name = stream.name
 
@@ -124,10 +124,10 @@ class SourceFirebaseRealtimeDatabase(Source):
         path = config.get("path", self.DEFAULT_PATH)
         database_name = config["database_name"]
         google_application_credentials = config["google_application_credentials"]
-        
+
         client = Client(path, buffer_size)
         client.initialize(database_name, google_application_credentials)
-        
+
         for data in client.extract():
             yield AirbyteMessage(
                 type=Type.RECORD,
