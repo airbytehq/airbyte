@@ -12,6 +12,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.WebhookOperationSummary;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -99,13 +100,22 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         } else if (standardSyncOperation.getOperatorType() == OperatorType.WEBHOOK) {
           LOGGER.info("running webhook operation");
           LOGGER.debug("webhook operation input: {}", standardSyncOperation);
-          webhookOperationActivity
+          boolean success = webhookOperationActivity
               .invokeWebhook(new OperatorWebhookInput()
                   .withExecutionUrl(standardSyncOperation.getOperatorWebhook().getExecutionUrl())
                   .withExecutionBody(standardSyncOperation.getOperatorWebhook().getExecutionBody())
                   .withWebhookConfigId(standardSyncOperation.getOperatorWebhook().getWebhookConfigId())
                   .withWorkspaceWebhookConfigs(syncInput.getWebhookOperationConfigs()));
-          // TODO(mfsiega-airbyte): check if the webhook got a 2xx-response and populate the output.
+          LOGGER.info("webhook {} completed {}", standardSyncOperation.getOperatorWebhook().getWebhookConfigId(),
+              success ? "successfully" : "unsuccessfully");
+          if (syncOutput.getWebhookOperationSummary() == null) {
+            syncOutput.withWebhookOperationSummary(new WebhookOperationSummary());
+          }
+          if (success) {
+            syncOutput.getWebhookOperationSummary().getSuccesses().add(standardSyncOperation.getOperatorWebhook().getWebhookConfigId());
+          } else {
+            syncOutput.getWebhookOperationSummary().getFailures().add(standardSyncOperation.getOperatorWebhook().getWebhookConfigId());
+          }
         } else {
           final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
           LOGGER.error(message);

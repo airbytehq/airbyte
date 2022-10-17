@@ -14,8 +14,6 @@ properties:
       type: object
       required:
         - id
-        - name
-        - authToken
       properties:
         id:
           type: string

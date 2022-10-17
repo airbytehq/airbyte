@@ -48,13 +48,18 @@ public class WebhookOperationActivityImpl implements WebhookOperationActivity {
     }
 
     LOGGER.debug("Found webhook config: {}", webhookConfig.get());
-    final HttpRequest req = HttpRequest.newBuilder()
-        .uri(URI.create(input.getExecutionUrl()))
-        .POST(HttpRequest.BodyPublishers.ofString(input.getExecutionBody()))
-        .header("Content-Type", "application/json")
-        .header("Authorization", "Bearer " + webhookConfig.get().getAuthToken()).build();
+    final HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+        .uri(URI.create(input.getExecutionUrl()));
+    if (input.getExecutionBody() != null) {
+      requestBuilder.POST(HttpRequest.BodyPublishers.ofString(input.getExecutionBody()));
+    }
+    if (webhookConfig.get().getAuthToken() != null) {
+      requestBuilder
+          .header("Content-Type", "application/json")
+          .header("Authorization", "Bearer " + webhookConfig.get().getAuthToken()).build();
+    }
     try {
-      HttpResponse<String> response = this.httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+      HttpResponse<String> response = this.httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
       LOGGER.debug("Webhook response: {}", response == null ? null : response.body());
       // Return true if the request was successful.
       return response != null && response.statusCode() >= 200 && response.statusCode() <= 300;

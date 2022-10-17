@@ -18,6 +18,7 @@ properties:
     description: Message body to be POSTed.
     type: string
   webhookConfigId:
+    description: An id used to index into the workspaceWebhookConfigs, which has a list of webhook configs.
     type: string
     format: uuid
   workspaceWebhookConfigs:
