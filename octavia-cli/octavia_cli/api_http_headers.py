@@ -23,9 +23,11 @@ class ApiHttpHeader:
     value: str
 
     def __post_init__(self):
+        self.name = str(self.name)
+        self.value = str(self.value)
         try:
-            assert isinstance(self.name, str) and self.name
-            assert isinstance(self.value, str) and self.value
+            assert len(self.name) > 0
+            assert len(self.value) > 0
         except AssertionError:
             raise AttributeError("Header name and value must be non empty string.")
         self.name = self.name.strip()
