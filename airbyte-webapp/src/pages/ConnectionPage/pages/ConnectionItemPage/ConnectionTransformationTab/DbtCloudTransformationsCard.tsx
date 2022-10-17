@@ -15,14 +15,14 @@ import { RoutePaths } from "pages/routePaths";
 import styles from "./DbtCloudTransformationsCard.module.scss";
 
 const _jobs: DbtCloudJob[] = [
-  { project: "1", job: "1234" },
-  { project: "2", job: "2134" },
-  { project: "3", job: "3214" },
+  { account: "1", job: "1234" },
+  { account: "2", job: "2134" },
+  { account: "3", job: "3214" },
 ];
 /* const _jobs: DbtCloudJob[] = []; */
 
 // without including the index, duplicate data causes annoying render bugs for the list
-const jobKey = (t: DbtCloudJob, i: number) => `${i}:${t.project}/${t.job}`;
+const jobKey = (t: DbtCloudJob, i: number) => `${i}:${t.account}/${t.job}`;
 
 export const DbtCloudTransformationsCard = () => {
   // Possible render paths:
@@ -35,7 +35,6 @@ export const DbtCloudTransformationsCard = () => {
   //   2.2) AND the connection has saved dbt jobs
   //        THEN show the "no jobs" card body and the "+ Add transformation" button
 
-  const workspace = useCurrentWorkspace();
   const { hasDbtIntegration } = useDbtIntegration();
 
   return (
@@ -111,8 +110,8 @@ const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: ()
       </div>
       <div className={styles.jobListItemInputGroup}>
         <div className={styles.jobListItemInput}>
-          <Field name={`jobs.${jobIndex}.project`}>
-            {({ field }: FieldProps<string>) => <Input {...field} type="text" placeholder="Project name" />}
+          <Field name={`jobs.${jobIndex}.account`}>
+            {({ field }: FieldProps<string>) => <Input {...field} type="text" placeholder="Account name" />}
           </Field>
         </div>
         <div className={styles.jobListItemInput}>

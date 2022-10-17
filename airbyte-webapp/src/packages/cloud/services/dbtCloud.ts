@@ -15,13 +15,13 @@ import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 export interface DbtCloudJob {
   // TODO rename project->account
-  project: string;
+  account: string;
   job: string;
 }
 
 const webhookConfigName = "dbt cloud";
 const executionBody = `{"cause": "airbyte"}`;
-const jobName = (t: DbtCloudJob) => `${t.project}/${t.job}`;
+const jobName = (t: DbtCloudJob) => `${t.account}/${t.job}`;
 
 const updateConnection = (obj: WebBackendConnectionUpdate) => console.info(`updating with`, obj);
 
@@ -31,7 +31,7 @@ export const useSaveJobsFn = () => {
 
   // TODO dynamically use the workspace's configured dbt cloud domain
   const dbtCloudDomain = "https://cloud.getdbt.com";
-  const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.project}/jobs/${job.job}`;
+  const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}`;
 
   return (jobs: DbtCloudJob[]) =>
     // TODO query and add the actual connectionId and operationId values
