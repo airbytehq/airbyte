@@ -34,16 +34,16 @@ class HttpStream(Stream, ABC):
 
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
-        self._session = requests.Session()
+        if self.use_cache:
+            self._session = self.request_cache()
+        else:
+            self._session = requests.Session()
 
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
         elif authenticator:
             self._authenticator = authenticator
-
-        if self.use_cache:
-            self.request_cache()
 
     @property
     def cache_filename(self):
@@ -69,7 +69,7 @@ class HttpStream(Stream, ABC):
         except FileNotFoundError:
             pass
 
-        self._session = requests_cache.CachedSession(self.cache_filename)
+        return requests_cache.CachedSession(self.cache_filename)
 
     @property
     @abstractmethod
