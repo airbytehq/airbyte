@@ -7,6 +7,8 @@ that requires port-forwarding. It stores connector and connection IDs that it cr
 which means the script will delete every connector and connection ID that it created and stored in that file.
 comment
 
+cd "$(dirname "$0")"
+
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
@@ -126,56 +128,102 @@ function callApi {
 }
 
 function getE2ETestSourceDefinitionId {
-  # call source_definitions/list and search response for E2E Test, get the ID
-  # uses startswith because Cloud's dockerRepository for the E2E Test source is actually airbyte/source-e2e-test-cloud
+  # call source_definitions/list and search response for E2E Test, get the ID.
+  # local uses `source-e2e-test`, while cloud uses `source-e2e-test-cloud`
   export sourceDefinitionId=$(
     callApi "source_definitions/list" |
-      jq '.sourceDefinitions[]
-        | select(.dockerRepository | startswith("airbyte/source-e2e-test"))
-        | .sourceDefinitionId'
+      jq -r '.sourceDefinitions[] |
+        select(
+          (.dockerRepository == "airbyte/source-e2e-test") or
+          (.dockerRepository == "airbyte/source-e2e-test-cloud")
+        ) |
+        .sourceDefinitionId'
   )
 }
-function getE2ETestDestinationDefinitionId {
-  # call source_definitions/list and search response for E2E Test, get the ID
-  # uses startswith because Cloud's dockerRepository for the E2E Test source is actually airbyte/source-e2e-test-cloud
+
+function getE2ETestDestinationDefinition {
   export destinationDefinitionId=$(
     callApi "destination_definitions/list" |
-      jq '.destinationDefinitions[]
-        | select(.dockerRepository | startswith("airbyte/destination-dev-null"))
-        | .destinationDefinitionId'
+      jq -r '.destinationDefinitions[] |
+        select(
+          (.dockerRepository == "airbyte/destination-e2e-test") or
+          (.dockerRepository == "airbyte/destination-dev-null")
+        ) |
+        .destinationDefinitionId'
   )
 }
 
-
 function createSource {
-  # based on sync_minutes, figure out what to set for max_messages in the source spec's connectionConfiguration
-  # write created sourceId to file for later cleanup
-  raw_seed_data=`cat source_spec.json`
-  sync_seconds=$(( 60*sync_minutes ))
-  seed_data="${raw_seed_data/source_read_secs/${sync_seconds}}"
-  seed_data="${seed_data/source_definition_id_variable/$1}"
-  seed_data="${seed_data/workspace_id/${workspace_id}}"
+  body=$(
+    sed "
+      s/replace_source_read_secs/$(( 60*sync_minutes ))/g ;
+      s/replace_source_definition_id/$sourceDefinitionId/g ;
+      s/replace_workspace_id/$workspace_id/g" source_spec.json |
+    tr -d '\n' |
+    tr -d ' '
+  )
 
-  export sourceId=$(callApi "sources/create" "$seed_data" | jq '.sourceId')
+  export sourceId=$(
+    callApi "sources/create" $body |
+    jq -r '.sourceId'
+  )
+
+  #TODO write ID to file for future cleanup
 
 }
 
 function createDestination {
-  # get the destination Definition ID, set it in the spec
-  # write created destinationId to file for later cleanup
-  raw_seed_data=`cat destination_spec.json`
-  seed_data="${raw_seed_data/destination_definition_id_variable/$1}"
-  seed_data="${seed_data/workspace_id/${workspace_id}}"
-  export destinationId=$(callApi "destinations/create" "$seed_data" | jq '.destinationId')
+  body=$(
+    sed "
+      s/replace_destination_definition_id/$destinationDefinitionId/g ;
+      s/replace_workspace_id/$workspace_id/g" destination_spec.json |
+    tr -d '\n' |
+    tr -d ' '
+  )
+  export destinationId=$(
+    callApi "destinations/create" $body |
+    jq -r '.destinationId'
+  )
+
+  #TODO write ID to file for future cleanup
+
 }
 
+function discoverSource {
+  export sourceCatalogId=$(
+    callApi "sources/discover_schema" "{\"sourceId\":\"$sourceId\",\"disable_cache\":true}" |
+      jq -r '.catalogId'
+  )
+}
+
+function createMultipleConnections {
+  for i in $(seq 1 $num_connections)
+  do
+    echo "Creating connection number $i..."
+    createConnection $i
+  done
+  echo "Finished creating $num_connections connections."
+}
+
+# Call the API to create a connection. Replace strings in connection_spec.json with real IDs.
+# $1 arg is the connection count, which is used in the name of the created connection
 function createConnection {
-  # straightforward, just use the sourceId and destinationId that we created
-  # two options: either make them 'manual' and have the script start it manually, or set a schedule of
-  # something like 24 hours so that the sync starts as soon as it is created
-  # in the future, could get fancy with cron scheduling and set them up to all start at the exact same moment,
-  # maybe out of scope for MVP
-  echo "implement me"
+  body=$(
+    sed "
+      s/replace_source_id/$sourceId/g ;
+      s/replace_destination_id/$destinationId/g ;
+      s/replace_catalog_id/$sourceCatalogId/g ;
+      s/replace_connection_name/load_test_connection_$1/g" connection_spec.json |
+    tr -d '\n' |
+    tr -d ' '
+  )
+
+  export connectionId=$(
+    callApi "web_backend/connections/create" $body |
+      jq -r '.connectionId'
+  )
+
+  #TODO write ID to file for future cleanup
 }
 
 function portForward {
@@ -186,25 +234,22 @@ function portForward {
 
 
 
-function getMockApiDestinationDefinition {
-  # call destination_definitions/list and search response for E2E Test, get the ID
-  echo "implement me"
-}
-
-function createMultipleConnections {
-  # based on input, call `createConnection()` n times
-  echo "implement me"
-}
-
 ############
 ##  MAIN  ##
 ############
-
 getE2ETestSourceDefinitionId
-createSource ${sourceDefinitionId}
-getE2ETestDestinationDefinitionId
-createDestination ${destinationDefinitionId}
-echo "E2E Test Source Definition ID is ${sourceDefinitionId}"
-echo "E2E Test Destination Definition ID is ${destinationDefinitionId}"
-echo "Created Source Id is " ${sourceId}
-echo "Created Destination Id is " ${destinationId}
+echo "Retrieved E2E Test Source Definition ID: ${sourceDefinitionId}"
+
+getE2ETestDestinationDefinition
+echo "Retrieved E2E Test Destination Definition ID: ${destinationDefinitionId}"
+
+createSource
+echo "Created Source with ID: ${sourceId}"
+
+createDestination
+echo "Created Destination with ID: ${destinationId}"
+
+discoverSource
+echo "Retrieved sourceCatalogId: ${sourceCatalogId}"
+
+createMultipleConnections
