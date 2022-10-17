@@ -26,6 +26,6 @@ SOME_BACKOFF_TIME = 60
 def test_wait_time_from_header(test_name, header, header_value, regex, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.headers = {"wait_time": header_value}
-    backoff_stratery = WaitTimeFromHeaderBackoffStrategy(header, regex)
+    backoff_stratery = WaitTimeFromHeaderBackoffStrategy(header=header, regex=regex, options={}, config={})
     backoff = backoff_stratery.backoff(response_mock, 1)
     assert backoff == expected_backoff_time
