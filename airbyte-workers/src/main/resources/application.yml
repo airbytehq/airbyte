@@ -88,7 +88,7 @@ airbyte:
     check:
       enabled: ${SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS:true}
       kube:
-        annotations: ${CHECK_JOB_KUBE_ANNOTATION:}
+        annotations: ${CHECK_JOB_KUBE_ANNOTATIONS:}
         node-selectors: ${CHECK_JOB_KUBE_NODE_SELECTORS:}
       max-workers: ${MAX_CHECK_WORKERS:5}
       main:
