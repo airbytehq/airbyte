@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;

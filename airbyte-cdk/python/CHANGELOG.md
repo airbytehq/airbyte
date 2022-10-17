@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.102
+
+- Low-code: Fix check for streams that do not define a stream slicer
+
+## 0.1.101
+
+- Low-code: $options do not overwrite parameters that are already set
+
 ## 0.1.100
 
 - Low-code: Pass stream_slice to read_records when reading from CheckStream

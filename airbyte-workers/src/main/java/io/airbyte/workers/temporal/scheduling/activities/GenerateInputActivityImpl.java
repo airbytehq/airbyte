@@ -6,6 +6,8 @@ package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
@@ -16,8 +18,6 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.config.WorkerMode;
-import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.util.List;
