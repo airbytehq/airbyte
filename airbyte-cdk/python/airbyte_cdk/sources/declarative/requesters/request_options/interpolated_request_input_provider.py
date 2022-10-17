@@ -40,13 +40,12 @@ class InterpolatedRequestInputProvider:
         Returns the request inputs to set on an outgoing HTTP request
 
         :param stream_state: The stream state
-        :param stream_slice: The stream slicex
+        :param stream_slice: The stream slice
         :param next_page_token: The pagination token
         :return: The request inputs to set on an outgoing HTTP request
         """
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         interpolated_value = self._interpolator.eval(self._config, **kwargs)
-        print(f"interpolated_values: {interpolated_value}")
 
         if isinstance(interpolated_value, dict):
             non_null_tokens = {k: v for k, v in interpolated_value.items() if v}

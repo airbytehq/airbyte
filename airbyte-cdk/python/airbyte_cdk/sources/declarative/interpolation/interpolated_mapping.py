@@ -35,8 +35,6 @@ class InterpolatedMapping(JsonSchemaMixin):
         :param additional_options: Optional parameters used for interpolation
         :return: The interpolated string
         """
-        print(f"self.options: {self._options}")
-        print(f"options['api_token']: {self._options.get('api_token')}")
         interpolated_values = {
             self._interpolation.eval(name, config, options=self._options, **additional_options): self._eval(
                 value, config, **additional_options
