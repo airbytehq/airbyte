@@ -4,7 +4,23 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.integrations.source.postgres.PostgresType.*;
+import static io.airbyte.integrations.source.postgres.PostgresType.BIGINT;
+import static io.airbyte.integrations.source.postgres.PostgresType.DATE;
+import static io.airbyte.integrations.source.postgres.PostgresType.DECIMAL;
+import static io.airbyte.integrations.source.postgres.PostgresType.DOUBLE;
+import static io.airbyte.integrations.source.postgres.PostgresType.FLOAT;
+import static io.airbyte.integrations.source.postgres.PostgresType.INTEGER;
+import static io.airbyte.integrations.source.postgres.PostgresType.LONGVARCHAR;
+import static io.airbyte.integrations.source.postgres.PostgresType.NUMERIC;
+import static io.airbyte.integrations.source.postgres.PostgresType.NVARCHAR;
+import static io.airbyte.integrations.source.postgres.PostgresType.REAL;
+import static io.airbyte.integrations.source.postgres.PostgresType.SMALLINT;
+import static io.airbyte.integrations.source.postgres.PostgresType.TIME;
+import static io.airbyte.integrations.source.postgres.PostgresType.TIMESTAMP;
+import static io.airbyte.integrations.source.postgres.PostgresType.TIMESTAMP_WITH_TIMEZONE;
+import static io.airbyte.integrations.source.postgres.PostgresType.TIME_WITH_TIMEZONE;
+import static io.airbyte.integrations.source.postgres.PostgresType.TINYINT;
+import static io.airbyte.integrations.source.postgres.PostgresType.VARCHAR;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Duration;

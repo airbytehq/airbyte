@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.protocol.models.JsonSchemaType.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -15,10 +13,11 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
-import java.sql.SQLException;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+
+import java.sql.SQLException;
 
 public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
 

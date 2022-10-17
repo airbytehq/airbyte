@@ -4,7 +4,11 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.protocol.models.JsonSchemaType.*;
+import static io.airbyte.protocol.models.JsonSchemaType.STRING_DATE;
+import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
