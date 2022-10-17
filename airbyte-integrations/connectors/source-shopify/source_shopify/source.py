@@ -383,7 +383,7 @@ class MetafieldProducts(MetafieldShopifySubstream):
 class ProductImages(ShopifySubstream):
     parent_stream_class: object = Products
     cursor_field = "id"
-    slice_key = "id"
+    slice_key = "product_id"
     data_field = "images"
     nested_substream = "images"
     filter_field = "since_id"
@@ -408,7 +408,7 @@ class MetafieldProductImages(MetafieldShopifySubstream):
 class ProductVariants(ShopifySubstream):
     parent_stream_class: object = Products
     cursor_field = "id"
-    slice_key = "id"
+    slice_key = "product_id"
     data_field = "variants"
     nested_substream = "variants"
     filter_field = "since_id"
