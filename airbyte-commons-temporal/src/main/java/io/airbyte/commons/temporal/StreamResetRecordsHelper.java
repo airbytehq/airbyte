@@ -2,14 +2,14 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal;
+package io.airbyte.commons.temporal;
 
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.workers.temporal.exception.RetryableException;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
