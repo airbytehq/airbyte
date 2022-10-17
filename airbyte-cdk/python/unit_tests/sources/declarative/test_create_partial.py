@@ -33,6 +33,12 @@ def test_pass_parameter_to_create_function():
     assert object.another_param == "B"
 
 
+def test_parameter_not_overwritten_by_options():
+    object = create(AClass, parameter="A", another_param="B", **{"$options": {"parameter": "C"}})()
+    assert object.parameter == "A"
+    assert object.another_param == "B"
+
+
 def test_overwrite_param():
     object = create(AClass, parameter="A", another_param="B")(parameter="C")
     assert object.parameter == "C"
@@ -46,7 +52,7 @@ def test_string_interpolation():
     assert interpolated_string.string == s
 
 
-def test_string_interpolation_through_kwargs():
+def test_string_interpolation_through_options():
     s = "{{ options['name'] }}"
     options = {"name": "airbyte"}
     partial = create(InterpolatedString, string=s, **options)
