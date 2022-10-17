@@ -305,7 +305,17 @@ class Stream(HttpStream, ABC):
         )
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-        response = self._send_request(request, request_kwargs)
+        if self.use_cache:
+            # use context manager to handle and store cassette metadata
+            with self.cache_file as cass:
+                self.cassete = cass
+                # vcr tries to find records based on the request, if such records exist, return from cache file
+                # else make a request and save record in cache file
+                response = self._send_request(request, request_kwargs)
+
+        else:
+            response = self._send_request(request, request_kwargs)
+
         return response
 
     def _read_stream_records(

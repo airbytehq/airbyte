@@ -464,7 +464,7 @@ def test_stream_pull_request_commits():
 
 
 @responses.activate
-def test_stream_project_columns(monkeypatch):
+def test_stream_project_columns():
 
     repository_args_with_start_date = {
         "repositories": ["organization/repository"],
@@ -495,8 +495,6 @@ def test_stream_project_columns(monkeypatch):
 
     ProjectsResponsesAPI.register(data)
 
-    monkeypatch.setattr(Projects, "use_cache", False)
-    monkeypatch.setattr(ProjectColumns, "use_cache", False)
     stream = ProjectColumns(Projects(**repository_args_with_start_date), **repository_args_with_start_date)
 
     stream_state = {}
@@ -909,12 +907,9 @@ def test_stream_team_members_full_refresh():
 
 
 @responses.activate
-def test_stream_commit_comment_reactions_incremental_read(monkeypatch):
+def test_stream_commit_comment_reactions_incremental_read():
 
     repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
-
-    monkeypatch.setattr(CommitCommentReactions, "use_cache", False)
-    monkeypatch.setattr(CommitComments, "use_cache", False)
     stream = CommitCommentReactions(**repository_args)
 
     responses.add(

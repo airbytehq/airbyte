@@ -8,7 +8,7 @@ WORKDIR /airbyte/integration_code
 RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
     && apk --no-cache add tzdata \
-    && apk --no-cache add build-base git
+    && apk --no-cache add build-base
 
 
 COPY setup.py ./
