@@ -70,13 +70,13 @@ def _get_kwargs_to_pass_to_func(func, options, keywords):
     kwargs_to_pass_down = set(argspec.kwonlyargs)
     args_to_pass_down = set(argspec.args)
     all_args = args_to_pass_down.union(kwargs_to_pass_down)
-    kwargs_to_pass_down = {k: v for k, v in options.items() if k in all_args and _key_is_not_already_set(k, v, keywords)}
+    kwargs_to_pass_down = {k: v for k, v in options.items() if k in all_args and _key_is_unset_or_identical(k, v, keywords)}
     if "options" in all_args:
         kwargs_to_pass_down["options"] = options
     return kwargs_to_pass_down
 
 
-def _key_is_not_already_set(key: str, value: Any, mapping: Mapping[str, Any]):
+def _key_is_unset_or_identical(key: str, value: Any, mapping: Mapping[str, Any]):
     return key not in mapping or mapping[key] == value
 
 
