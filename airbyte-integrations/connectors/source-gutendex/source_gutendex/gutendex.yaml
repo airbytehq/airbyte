@@ -1,0 +1,40 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://gutendex.com/"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        author_year_start: "{{ config['author_year_start'] }}"
+        author_year_end: "{{ config['author_year_end'] }}"
+        copyright: "{{ config['copyright'] }}"
+        languages: "{{ config['languages'] }}"
+        search: "{{ config['search'] }}"
+        sort: "{{ config['sort'] }}"
+        topic: "{{ config['topic'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  results_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "results"
+      path: "/books"
+
+streams:
+  - "*ref(definitions.results_stream)"
+
+check:
+  stream_names:
+    - "results"
