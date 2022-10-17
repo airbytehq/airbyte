@@ -43,7 +43,7 @@ public class WebhookOperationActivityImpl implements WebhookOperationActivity {
     final WebhookOperationConfigs webhookConfigs = Jsons.object(fullWebhookConfigJson, WebhookOperationConfigs.class);
     final Optional<WebhookConfig> webhookConfig =
         webhookConfigs.getWebhookConfigs().stream().filter((config) -> config.getId().equals(input.getWebhookConfigId())).findFirst();
-    if (!webhookConfig.isPresent()) {
+    if (webhookConfig.isEmpty()) {
       throw new RuntimeException(String.format("Cannot find webhook config %s", input.getWebhookConfigId().toString()));
     }
 
