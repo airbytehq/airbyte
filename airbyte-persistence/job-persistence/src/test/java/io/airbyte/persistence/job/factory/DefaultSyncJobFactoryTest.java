@@ -11,7 +11,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -40,6 +42,11 @@ class DefaultSyncJobFactoryTest {
     final UUID sourceId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
     final UUID operationId = UUID.randomUUID();
+    final UUID workspaceWebhookConfigId = UUID.randomUUID();
+    final String workspaceWebhookName = "test-webhook-name";
+    final JsonNode persistedWebhookConfigs = Jsons.deserialize(
+        String.format("{\"webhookConfigs\": [{\"id\": \"%s\", \"name\": \"%s\", \"authToken\": {\"_secret\": \"a-secret_v1\"}}]}",
+            workspaceWebhookConfigId, workspaceWebhookName));
     final DefaultJobCreator jobCreator = mock(DefaultJobCreator.class);
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final WorkspaceHelper workspaceHelper = mock(WorkspaceHelper.class);
@@ -68,8 +75,9 @@ class DefaultSyncJobFactoryTest {
     when(configRepository.getDestinationConnection(destinationId)).thenReturn(destinationConnection);
     when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
     when(
-        jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, null, null, null))
-            .thenReturn(Optional.of(jobId));
+        jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations,
+            persistedWebhookConfigs, null, null))
+                .thenReturn(Optional.of(jobId));
     when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
             .withDockerImageTag(srcDockerTag));
@@ -78,14 +86,16 @@ class DefaultSyncJobFactoryTest {
         .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinitionId).withDockerRepository(dstDockerRepo)
             .withDockerImageTag(dstDockerTag));
 
-    when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(true))).thenReturn(new StandardWorkspace());
+    when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(true))).thenReturn(
+        new StandardWorkspace().withWebhookOperationConfigs(persistedWebhookConfigs));
 
     final SyncJobFactory factory = new DefaultSyncJobFactory(true, jobCreator, configRepository, mock(OAuthConfigSupplier.class), workspaceHelper);
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 
     verify(jobCreator)
-        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, null, null, null);
+        .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, dstDockerImage, operations, persistedWebhookConfigs,
+            null, null);
   }
 
 }

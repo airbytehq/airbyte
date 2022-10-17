@@ -12,6 +12,6 @@ import io.temporal.activity.ActivityMethod;
 public interface WebhookOperationActivity {
 
   @ActivityMethod
-  void invokeWebhook(OperatorWebhookInput input);
+  boolean invokeWebhook(OperatorWebhookInput input);
 
 }

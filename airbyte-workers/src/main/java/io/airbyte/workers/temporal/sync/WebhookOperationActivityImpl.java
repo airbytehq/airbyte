@@ -36,15 +36,13 @@ public class WebhookOperationActivityImpl implements WebhookOperationActivity {
   }
 
   @Override
-  public void invokeWebhook(OperatorWebhookInput input) {
+  public boolean invokeWebhook(OperatorWebhookInput input) {
     LOGGER.info("Invoking webhook operation {}", input.getName());
     LOGGER.debug("Webhook operation input: {}", input);
     final JsonNode fullWebhookConfigJson = secretsHydrator.hydrate(input.getWorkspaceWebhookConfigs());
     final WebhookOperationConfigs webhookConfigs = Jsons.object(fullWebhookConfigJson, WebhookOperationConfigs.class);
     final Optional<WebhookConfig> webhookConfig =
-        webhookConfigs.getWebhookConfigs().stream().filter((config) -> {
-          return config.getId().equals(input.getWebhookConfigId());
-        }).findFirst();
+        webhookConfigs.getWebhookConfigs().stream().filter((config) -> config.getId().equals(input.getWebhookConfigId())).findFirst();
     if (!webhookConfig.isPresent()) {
       throw new RuntimeException(String.format("Can find webhook config %s", input.getWebhookConfigId().toString()));
     }
@@ -54,10 +52,12 @@ public class WebhookOperationActivityImpl implements WebhookOperationActivity {
         .uri(URI.create(input.getExecutionUrl()))
         .POST(HttpRequest.BodyPublishers.ofString(input.getExecutionBody()))
         .header("Content-Type", "application/json")
-        .header("Authorization", "Token " + webhookConfig.get().getAuthToken()).build();
+        .header("Authorization", "Bearer " + webhookConfig.get().getAuthToken()).build();
     try {
       HttpResponse<String> response = this.httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-      LOGGER.debug("Webhook response: {}", response.body());
+      LOGGER.debug("Webhook response: {}", response == null ? null : response.body());
+      // Return true if the request was successful.
+      return response != null && response.statusCode() >= 200 && response.statusCode() <= 300;
     } catch (IOException | InterruptedException e) {
       LOGGER.error(e.getMessage());
       throw new RuntimeException(e);
