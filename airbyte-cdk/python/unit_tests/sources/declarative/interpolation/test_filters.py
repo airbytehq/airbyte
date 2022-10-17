@@ -20,7 +20,7 @@ def test_hash_md5_no_salt():
 
 def test_hash_md5_on_numeric_value():
     input_value = 123.456
-    s = "{{ '%s' | hash('md5') }}" % input_value
+    s = "{{ %f | hash('md5') }}" % input_value
     filter_hash = interpolation.eval(s, config={})
 
     # compute expected hash calling hashlib directly
