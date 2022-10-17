@@ -12,7 +12,7 @@ required:
   - manual
   - namespaceDefinition
   - geography
-  - isBreaking
+  - breakingChange
 additionalProperties: false
 properties:
   namespaceDefinition:
@@ -118,5 +118,5 @@ properties:
     "$ref": ResourceRequirements.yaml
   geography:
     "$ref": Geography.yaml
-  isBreaking:
+  breakingChange:
     type: boolean

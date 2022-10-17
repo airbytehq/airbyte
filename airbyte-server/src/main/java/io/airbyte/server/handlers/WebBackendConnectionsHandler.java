@@ -187,7 +187,8 @@ public class WebBackendConnectionsHandler {
         final ActorCatalog currentCatalog = configRepository.getActorCatalogById(currentSourceCatalogId.get());
         log.info("current ActorCatalog for connection: " + currentCatalog);
         if (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentCatalog.getId())) {
-          if (connectionRead.getIsBreaking()) {
+          log.info("these two catalog ids are not equal");
+          if (connectionRead.getBreakingChange()) {
             schemaChange = SchemaChange.BREAKING;
           } else {
             schemaChange = SchemaChange.NON_BREAKING;

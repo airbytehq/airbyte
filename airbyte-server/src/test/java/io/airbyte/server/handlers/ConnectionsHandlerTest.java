@@ -151,7 +151,7 @@ class ConnectionsHandlerTest {
         .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
         .withSourceCatalogId(UUID.randomUUID())
         .withGeography(Geography.AUTO)
-        .withIsBreaking(false);
+        .withBreakingChange(false);
     standardSyncDeleted = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi2")
@@ -711,7 +711,7 @@ class ConnectionsHandlerTest {
           .withManual(true)
           .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
           .withGeography(Geography.US)
-          .withIsBreaking(false);
+          .withBreakingChange(false);
       final ConnectionRead connectionRead2 = ConnectionHelpers.connectionReadFromStandardSync(standardSync2);
       final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
           .withName(SOURCE_TEST)

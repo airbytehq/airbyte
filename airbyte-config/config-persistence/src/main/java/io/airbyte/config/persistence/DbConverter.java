@@ -76,7 +76,7 @@ public class DbConverter {
         .withResourceRequirements(
             Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
         .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID))
-        .withIsBreaking(record.get(CONNECTION.BREAKING_CHANGE))
+        .withBreakingChange(record.get(CONNECTION.BREAKING_CHANGE))
         .withGeography(Enums.toEnum(record.get(CONNECTION.GEOGRAPHY, String.class), Geography.class).orElseThrow());
   }
 
