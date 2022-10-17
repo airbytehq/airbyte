@@ -192,10 +192,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   }
 
   private int getTimePrecision(final RelationalColumn field) {
-    final int i = field.scale().orElse(-1);
-    LOGGER.error("TYPE: " + field.typeName() + " scale:" + i);
-
-    return i;
+    return field.scale().orElse(-1);
   }
 
   // Ref :
