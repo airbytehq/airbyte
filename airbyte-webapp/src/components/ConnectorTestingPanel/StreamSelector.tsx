@@ -7,12 +7,12 @@ import { Text } from "components/ui/Text";
 
 import styles from "./StreamSelector.module.scss";
 interface StreamSelectorProps {
-  streams: string[];
+  streamNames: string[];
   selectedStream: string;
   onSelect: (stream: string) => void;
 }
 
-export const StreamSelector: React.FC<StreamSelectorProps> = ({ streams, selectedStream, onSelect }) => {
+export const StreamSelector: React.FC<StreamSelectorProps> = ({ streamNames, selectedStream, onSelect }) => {
   return (
     <Listbox value={selectedStream} onChange={onSelect}>
       <Listbox.Button className={classNames(styles.button, styles.centered)}>
@@ -21,17 +21,20 @@ export const StreamSelector: React.FC<StreamSelectorProps> = ({ streams, selecte
         </Text>
         <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
       </Listbox.Button>
-      <Listbox.Options className={classNames(styles.optionsMenu, styles.centered)}>
-        {streams.map((stream) => (
-          <Listbox.Option key={stream} value={stream} className={styles.option}>
-            {({ active }) => (
-              <div className={classNames(styles.optionValue, { [styles.active]: active })}>
-                <Text size="lg">{stream}</Text>
-              </div>
-            )}
-          </Listbox.Option>
-        ))}
-      </Listbox.Options>
+      {/* wrap in div to make `position: absolute` on Listbox.Options result in correct vertical positioning */}
+      <div>
+        <Listbox.Options className={classNames(styles.optionsMenu, styles.centered)}>
+          {streamNames.map((streamName) => (
+            <Listbox.Option key={streamName} value={streamName} className={styles.option}>
+              {({ active }) => (
+                <div className={classNames(styles.optionValue, { [styles.active]: active })}>
+                  <Text size="lg">{streamName}</Text>
+                </div>
+              )}
+            </Listbox.Option>
+          ))}
+        </Listbox.Options>
+      </div>
     </Listbox>
   );
 };

@@ -20,7 +20,7 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ yaml, cl
 
   return (
     <Button className={className} onClick={downloadYaml}>
-      {formatMessage({ id: "builder.downloadYaml" })}
+      {formatMessage({ id: "connectorBuilder.downloadYaml" })}
     </Button>
   );
 };

@@ -8,8 +8,13 @@ import { YamlEditor } from "components/YamlEditor";
 import styles from "./ConnectorBuilderPage.module.scss";
 
 export const ConnectorBuilderPage: React.FC = () => {
-  const streamNames = ["Customers", "Users", "Applications"];
-  const [selectedStream, setSelectedStream] = useState(streamNames[0]);
+  const urlBase = "https://my.url.api.com";
+  const streams = [
+    { name: "Customers", url: `${urlBase}/customers` },
+    { name: "Users", url: `${urlBase}/users` },
+    { name: "Applications", url: `${urlBase}/applications` },
+  ];
+  const [selectedStream, setSelectedStream] = useState(streams[0].name);
 
   const handleStreamSelection = (selectedStreamName: string) => {
     setSelectedStream(selectedStreamName);
@@ -19,13 +24,13 @@ export const ConnectorBuilderPage: React.FC = () => {
     <ResizablePanels
       leftPanel={{
         children: <YamlEditor />,
-        smallWidthHeader: <FormattedMessage id="builder.expandConfiguration" />,
+        smallWidthHeader: <FormattedMessage id="connectorBuilder.expandConfiguration" />,
         className: styles.leftPanel,
       }}
       rightPanel={{
         children: (
           <ConnectorTestingPanel
-            streams={streamNames}
+            streams={streams}
             selectedStream={selectedStream}
             onStreamSelect={handleStreamSelection}
           />

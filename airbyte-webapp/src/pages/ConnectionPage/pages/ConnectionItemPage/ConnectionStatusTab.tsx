@@ -179,7 +179,7 @@ export const ConnectionStatusTab: React.FC<ConnectionStatusTabProps> = ({ connec
                       onClick={onSyncNowButtonClick}
                       icon={
                         <div className={styles.iconRotate}>
-                          <RotateIcon />
+                          <RotateIcon height={styles.syncIconHeight} width={styles.syncIconHeight} />
                         </div>
                       }
                     >
