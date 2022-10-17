@@ -341,6 +341,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request | Subject                                                                                                |
 |:--------|:-----------| :----------------------------------------------------- |:-------------------------------------------------------------------------------------------------------|
+|         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.4.20  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage  |
 | 0.4.19  | 2022-09-05 | [16002](https://github.com/airbytehq/airbyte/pull/16002) | Added ability to specify schemas for discovery during setting connector up |
 | 0.4.18  | 2022-09-03 | [14910](https://github.com/airbytehq/airbyte/pull/14910) | Standardize spec for CDC replication. Replace the `replication_method` enum with a config object with a `method` enum field. |

@@ -115,7 +115,7 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
         .required("form.empty.error"),
       namespaceFormat: yup.string().when("namespaceDefinition", {
         is: NamespaceDefinitionType.customformat,
-        then: yup.string().required("form.empty.error"),
+        then: yup.string().trim().required("form.empty.error"),
       }),
       prefix: yup.string(),
       syncCatalog: yup.object({
