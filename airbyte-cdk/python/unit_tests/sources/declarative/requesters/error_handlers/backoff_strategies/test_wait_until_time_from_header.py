@@ -11,6 +11,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 )
 
 SOME_BACKOFF_TIME = 60
+REGEX = "[-+]?\\d+"
 
 
 @pytest.mark.parametrize(
@@ -25,6 +26,9 @@ SOME_BACKOFF_TIME = 60
         ("test_wait_until_time_from_header_not_numeric", "wait_until", "1600000000,1600000000", None, None, None),
         ("test_wait_until_time_from_header_is_numeric", "wait_until", "1600000060", None, None, 60),
         ("test_wait_until_time_from_header_with_regex", "wait_until", "1600000060,60", None, "[-+]?\d+", 60),  # noqa
+        ("test_wait_until_time_from_header_with_regex_from_options", "wait_until", "1600000060,60", None, "{{options['regex']}}", 60),
+        # noqa
+        ("test_wait_until_time_from_header_with_regex_from_config", "wait_until", "1600000060,60", None, "{{config['regex']}}", 60),  # noqa
         ("test_wait_until_time_from_header_with_regex_no_match", "wait_time", "...", None, "[-+]?\d+", None),  # noqa
         ("test_wait_until_no_header_with_min", "absent_header", "1600000000.0", SOME_BACKOFF_TIME, None, SOME_BACKOFF_TIME),
     ],
@@ -34,7 +38,11 @@ def test_wait_untiltime_from_header(time_mock, test_name, header, wait_until, mi
     response_mock = MagicMock()
     response_mock.headers = {"wait_until": wait_until}
     backoff_stratery = WaitUntilTimeFromHeaderBackoffStrategy(
-        header=header, min_wait=min_wait, regex=regex, options={"wait_until": "wait_until"}, config={"wait_until": "wait_until"}
+        header=header,
+        min_wait=min_wait,
+        regex=regex,
+        options={"wait_until": "wait_until", "regex": REGEX},
+        config={"wait_until": "wait_until", "regex": REGEX},
     )
     backoff = backoff_stratery.backoff(response_mock, 1)
     assert backoff == expected_backoff_time
