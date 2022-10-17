@@ -67,7 +67,7 @@ class ShopifyStream(HttpStream, ABC):
 
     @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json_response = response.json()
+        json_response = response.json() or {}
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
         # transform method was implemented according to issue 4841
         # Shopify API returns price fields as a string and it should be converted to number
@@ -88,6 +88,7 @@ class ShopifyStream(HttpStream, ABC):
         if response.status_code == 404:
             self.logger.warn(f"Stream `{self.name}` is not available, skipping.")
             setattr(self, "raise_on_http_errors", False)
+            return False
         return super().should_retry(response)
 
     @property
@@ -244,12 +245,17 @@ class ShopifySubstream(IncrementalShopifyStream):
             # and corresponds to the data of child_substream we need.
             if self.nested_substream and self.nested_substream_list_field_id:
                 if record.get(self.nested_substream):
-                    sorted_substream_slices.extend([
-                        {
-                            self.slice_key: rec[self.nested_substream_list_field_id],
-                            self.cursor_field: record[self.nested_substream][0].get(self.cursor_field, self.default_state_comparison_value),
-                        } for rec in record[self.nested_record]
-                    ])
+                    sorted_substream_slices.extend(
+                        [
+                            {
+                                self.slice_key: sub_record[self.nested_substream_list_field_id],
+                                self.cursor_field: record[self.nested_substream][0].get(
+                                    self.cursor_field, self.default_state_comparison_value
+                                ),
+                            }
+                            for sub_record in record[self.nested_record]
+                        ]
+                    )
             elif self.nested_substream:
                 if record.get(self.nested_substream):
                     sorted_substream_slices.append(
@@ -497,7 +503,7 @@ class Collections(ShopifySubstream):
 class MetafieldCollections(MetafieldShopifySubstream):
     parent_stream_class: object = Collects
     slice_key = "collection_id"
-    nested_record = 'collection_id'
+    nested_record = "collection_id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         object_id = stream_slice[self.slice_key]
@@ -517,7 +523,7 @@ class BalanceTransactions(IncrementalShopifyStream):
     filter_field = "since_id"
 
     def path(self, **kwargs) -> str:
-        return f"shopify_payments/balance/{self.data_field}.json"
+        return f"shopify_payments/balanc/{self.data_field}.json"
 
 
 class OrderRefunds(ShopifySubstream):
@@ -748,7 +754,7 @@ class SourceShopify(AbstractSource):
             Shop(config),
             SmartCollections(config),
             TenderTransactions(config),
-            Transactions(config)
+            Transactions(config),
         ]
 
         return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]

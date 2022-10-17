@@ -68,7 +68,7 @@ def test_filter_records_newer_than_state(basic_config):
         # missing cursor, record should be present
         {"id": 2},
         # cursor is set to null
-        {"id": 3, "updated_at": 'null'},
+        {"id": 3, "updated_at": "null"},
         # cursor is set to null
         {"id": 4, "updated_at": None},
     ]
@@ -76,6 +76,6 @@ def test_filter_records_newer_than_state(basic_config):
 
     # we expect records with: id = 2, 3, 4. We output them `As Is`,
     # because we cannot compare them to the STATE and SKIPPING them leads to data loss,
-    expected = [{"id": 2}, {'id': 3, 'updated_at': 'null'}, {'id': 4, 'updated_at': None}]
+    expected = [{"id": 2}, {"id": 3, "updated_at": "null"}, {"id": 4, "updated_at": None}]
     result = list(stream.filter_records_newer_than_state(state, records_slice))
     assert result == expected
