@@ -135,6 +135,17 @@ function getE2ETestSourceDefinitionId {
         | .sourceDefinitionId'
   )
 }
+function getE2ETestDestinationDefinitionId {
+  # call source_definitions/list and search response for E2E Test, get the ID
+  # uses startswith because Cloud's dockerRepository for the E2E Test source is actually airbyte/source-e2e-test-cloud
+  export destinationDefinitionId=$(
+    callApi "destination_definitions/list" |
+      jq '.destinationDefinitions[]
+        | select(.dockerRepository | startswith("airbyte/destination-dev-null"))
+        | .destinationDefinitionId'
+  )
+}
+
 
 function createSource {
   # based on sync_minutes, figure out what to set for max_messages in the source spec's connectionConfiguration
@@ -152,7 +163,10 @@ function createSource {
 function createDestination {
   # get the destination Definition ID, set it in the spec
   # write created destinationId to file for later cleanup
-  echo "implement me"
+  raw_seed_data=`cat destination_spec.json`
+  seed_data="${raw_seed_data/destination_definition_id_variable/$1}"
+  seed_data="${seed_data/workspace_id/${workspace_id}}"
+  export destinationId=$(callApi "destinations/create" "$seed_data" | jq '.destinationId')
 }
 
 function createConnection {
@@ -188,5 +202,9 @@ function createMultipleConnections {
 
 getE2ETestSourceDefinitionId
 createSource ${sourceDefinitionId}
+getE2ETestDestinationDefinitionId
+createDestination ${destinationDefinitionId}
 echo "E2E Test Source Definition ID is ${sourceDefinitionId}"
-echo "created Source Id" is ${sourceId}
+echo "E2E Test Destination Definition ID is ${destinationDefinitionId}"
+echo "Created Source Id is " ${sourceId}
+echo "Created Destination Id is " ${destinationId}
