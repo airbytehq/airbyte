@@ -21,8 +21,10 @@ def create(func, /, *args, **keywords):
     :param keywords:
     :return: partially created object
     """
+    print("create")
 
     def newfunc(*fargs, **fkeywords):
+
         all_keywords = {**keywords}
         all_keywords.update(fkeywords)
 
@@ -39,8 +41,10 @@ def create(func, /, *args, **keywords):
         if config is not None:
             all_keywords["config"] = config
 
-        kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options)
-        all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
+        print(f"keywords: {keywords}")
+        print(f"fkeywords: {fkeywords}")
+        kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options, all_keywords)
+        all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords, all_keywords)
 
         # options is required as part of creation of all declarative components
         dynamic_args = {**all_keywords_to_pass_down, **kwargs_to_pass_down}
@@ -63,12 +67,12 @@ def create(func, /, *args, **keywords):
     return newfunc
 
 
-def _get_kwargs_to_pass_to_func(func, options):
+def _get_kwargs_to_pass_to_func(func, options, keywords):
     argspec = inspect.getfullargspec(func)
     kwargs_to_pass_down = set(argspec.kwonlyargs)
     args_to_pass_down = set(argspec.args)
     all_args = args_to_pass_down.union(kwargs_to_pass_down)
-    kwargs_to_pass_down = {k: v for k, v in options.items() if k in all_args}
+    kwargs_to_pass_down = {k: v for k, v in options.items() if k in all_args and (k not in keywords or keywords[k] == options[k])}
     if "options" in all_args:
         kwargs_to_pass_down["options"] = options
     return kwargs_to_pass_down
