@@ -692,7 +692,7 @@ $ octavia apply
 3. Activate the virtualenv: `source .venv/bin/activate`.
 4. Install dev dependencies: `pip install -e .\[tests\]`.
 5. Install `pre-commit` hooks: `pre-commit install`.
-6. Run the unittest suite: `pytest --cov=octavia_cli`.
+6. Run the unittest suite: `pytest --cov=octavia_cli`. Note, a local version of airbyte needs to be running (e.g. `docker compose up` from the root directory of the project)
 7. Make sure the build passes (step 0) before opening a PR.
 
 ## Telemetry

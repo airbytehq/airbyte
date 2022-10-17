@@ -3,9 +3,24 @@
 #
 
 import os
+from unittest.mock import MagicMock
 
 import pytest
 from octavia_cli import api_http_headers
+
+
+# Monkeypatch for test
+def new_post_init(self):
+    try:
+        assert isinstance(self.name, str) and self.name
+        assert (isinstance(self.value, str) or isinstance(self.value, MagicMock)) and self.value
+    except AssertionError:
+        raise AttributeError("Header name and value must be non empty string.")
+    self.name = self.name.strip()
+    self.value = self.value.strip()
+
+
+api_http_headers.ApiHttpHeader.__post_init__ = new_post_init
 
 
 class TestApiHttpHeader:
