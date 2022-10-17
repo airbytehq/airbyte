@@ -4,8 +4,6 @@ plugins {
     id "java-library"
     id 'com.github.eirnym.js2p' version '1.0'
 }
-dependencies {
-}
 
 jsonSchema2Pojo {
     sourceType = SourceType.YAMLSCHEMA
