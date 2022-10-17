@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from "react";
+import React, { createContext, useContext, useMemo } from "react";
 import { useToggle } from "react-use";
 
 import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
@@ -19,7 +19,7 @@ export const useInviteUsersModalService = () => {
   return ctx;
 };
 
-export const InviteUsersModalServiceProvider: React.FC = ({ children }) => {
+export const InviteUsersModalServiceProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const [isOpen, toggleIsOpen] = useToggle(false);
 
   const contextValue = useMemo<InviteUsersModalServiceContext>(
