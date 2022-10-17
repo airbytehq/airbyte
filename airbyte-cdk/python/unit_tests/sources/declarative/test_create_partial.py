@@ -2,7 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.declarative.create_partial import create
+import pytest
+from airbyte_cdk.sources.declarative.create_partial import _key_is_unset_or_identical, create
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 
 
@@ -33,6 +34,12 @@ def test_pass_parameter_to_create_function():
     assert object.another_param == "B"
 
 
+def test_parameter_not_overwritten_by_options():
+    object = create(AClass, parameter="A", another_param="B", **{"$options": {"parameter": "C"}})()
+    assert object.parameter == "A"
+    assert object.another_param == "B"
+
+
 def test_overwrite_param():
     object = create(AClass, parameter="A", another_param="B")(parameter="C")
     assert object.parameter == "C"
@@ -46,7 +53,7 @@ def test_string_interpolation():
     assert interpolated_string.string == s
 
 
-def test_string_interpolation_through_kwargs():
+def test_string_interpolation_through_options():
     s = "{{ options['name'] }}"
     options = {"name": "airbyte"}
     partial = create(InterpolatedString, string=s, **options)
@@ -60,3 +67,17 @@ def test_string_interpolation_through_options_keyword():
     partial = create(InterpolatedString, string=s, **options)
     interpolated_string = partial()
     assert interpolated_string.eval({}) == "airbyte"
+
+
+@pytest.mark.parametrize(
+    "test_name, key, value, expected_result",
+    [
+        ("test", "key", "value", True),
+        ("test", "key", "a_different_value", False),
+        ("test", "a_different_key", "value", True),
+    ],
+)
+def test_key_is_unset_or_identical(test_name, key, value, expected_result):
+    mapping = {"key": "value"}
+    result = _key_is_unset_or_identical(key, value, mapping)
+    assert expected_result == result
