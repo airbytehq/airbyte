@@ -1,0 +1,10 @@
+micronaut:
+  application:
+    name: airbyteApiServer
+netty:
+  default:
+    allocator:
+      max-order: 3
+
+airbyte:
+  configServerUrl: "localhost:8080"

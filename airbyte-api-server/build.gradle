@@ -1,0 +1,109 @@
+plugins {
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("io.micronaut.minimal.application") version "3.6.2"
+    id("io.micronaut.graalvm") version "3.6.2"
+    id 'org.openapi.generator' version '6.2.0'
+}
+
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+version = "0.1"
+group = "io.airbyte.api.server"
+
+def specFile = "$projectDir/src/main/openapi/api.yaml"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor("io.micronaut:micronaut-http-validation")
+    annotationProcessor("io.micronaut.jaxrs:micronaut-jaxrs-processor")
+    annotationProcessor("io.micronaut.data:micronaut-data-processor")
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut:micronaut-jackson-databind")
+    implementation("io.micronaut.jaxrs:micronaut-jaxrs-server")
+    implementation("jakarta.annotation:jakarta.annotation-api")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    testAnnotationProcessor("io.micronaut.jaxrs:micronaut-jaxrs-processor")
+    implementation("io.micronaut:micronaut-validation")
+
+
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
+
+    implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2'
+
+    implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
+    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
+    implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+
+    implementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.1'
+}
+
+
+application {
+    mainClass.set("io.airbyte.api.server.Application")
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("11")
+    targetCompatibility = JavaVersion.toVersion("11")
+}
+
+graalvmNative.toolchainDetection = false
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("io.airbyte.api.server.*")
+    }
+}
+
+
+task generateApiServer(type: GenerateTask) {
+    def serverOutputDir = "$buildDir/generated/api/server"
+
+    inputs.file specFile
+    outputs.dir serverOutputDir
+
+    generatorName = "jaxrs-spec"
+    inputSpec = specFile
+    outputDir = serverOutputDir
+
+    apiPackage = "io.airbyte.api.server.generated"
+    invokerPackage = "io.airbyte.api.server.invoker.generated"
+    modelPackage = "io.airbyte.api.server.model.generated"
+
+    generateApiDocumentation = false
+
+    configOptions = [
+            dateLibrary  : "java8",
+            generatePom  : "false",
+            interfaceOnly: "true",
+            /*
+            JAX-RS generator does not respect nullable properties defined in the OpenApi Spec.
+            It means that if a field is not nullable but not set it is still returning a null value for this field in the serialized json.
+            The below Jackson annotation is made to only keep non null values in serialized json.
+            We are not yet using nullable=true properties in our OpenApi so this is a valid workaround at the moment to circumvent the default JAX-RS behavior described above.
+            Feel free to read the conversation on https://github.com/airbytehq/airbyte/pull/13370 for more details.
+            */
+//            additionalModelTypeAnnotations: "\n@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)",
+
+            // Generate separate classes for each endpoint "domain"
+            useTags: "true"
+    ]
+}
+
+compileJava.dependsOn tasks.generateApiServer
+
+sourceSets {
+    main {
+        java {
+            srcDirs "$buildDir/generated/api/server/src/gen/java", "$projectDir/src/main/java"
+        }
+        resources {
+            srcDir "$projectDir/src/main/openapi/"
+        }
+    }
+}
+

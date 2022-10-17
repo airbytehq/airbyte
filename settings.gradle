@@ -87,6 +87,7 @@ include ':airbyte-notification' // transitively used by airbyte-workers.
 
 // platform
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+    include ':airbyte-api-server'
     include ':airbyte-bootloader'
     include ':airbyte-cli'
     include ':airbyte-config:specs'
