@@ -29,11 +29,6 @@ spec:
         {{ include "airbyte.minioSelectorLabels" . | nindent 8 }}
     spec:
       # Refer to the PVC created earlier
-      volumes:
-        - name: storage
-          persistentVolumeClaim:
-            # Name of the PVC created earlier
-            claimName: airbyte-minio-pv-claim
       containers:
         - name: airbyte-minio
           # Pulls the default Minio image from Docker Hub
@@ -51,7 +46,7 @@ spec:
             - containerPort: 9000
           # Mount the volume into the pod
           volumeMounts:
-            - name: storage # must match the volume name, above
+            - name: airbyte-minio-pv-claim # must match the volume name, above
               mountPath: "/data"
 ---
 apiVersion: v1
