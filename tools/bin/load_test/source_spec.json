@@ -1,7 +1,7 @@
 {
   "name": "End-to-End Testing (Mock API)",
-  "sourceDefinitionId": "50bd8338-7c4e-46f1-8c7f-3ef95de19fdd",
-  "workspaceId": "decf427c-0bd2-404a-b304-b3395e1b0584",
+  "sourceDefinitionId": source_definition_id_variable,
+  "workspaceId": "workspace_id",
   "connectionConfiguration": {
     "type": "CONTINUOUS_FEED",
     "mock_catalog": {
@@ -11,7 +11,7 @@
       "stream_duplication": 1
     },
     "seed": 0,
-    "max_messages": 600000,
+    "max_messages": source_read_secs,
     "message_interval_ms": 1000
   }
 }

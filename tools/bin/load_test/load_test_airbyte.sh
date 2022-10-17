@@ -139,7 +139,13 @@ function getE2ETestSourceDefinitionId {
 function createSource {
   # based on sync_minutes, figure out what to set for max_messages in the source spec's connectionConfiguration
   # write created sourceId to file for later cleanup
-  echo "implement me"
+  raw_seed_data=`cat source_spec.json`
+  sync_seconds=$(( 60*sync_minutes ))
+  seed_data="${raw_seed_data/source_read_secs/${sync_seconds}}"
+  seed_data="${seed_data/source_definition_id_variable/$1}"
+  seed_data="${seed_data/workspace_id/${workspace_id}}"
+
+  export sourceId=$(callApi "sources/create" "$seed_data" | jq '.sourceId')
 
 }
 
@@ -181,4 +187,6 @@ function createMultipleConnections {
 ############
 
 getE2ETestSourceDefinitionId
+createSource ${sourceDefinitionId}
 echo "E2E Test Source Definition ID is ${sourceDefinitionId}"
+echo "created Source Id" is ${sourceId}
