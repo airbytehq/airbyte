@@ -21,7 +21,6 @@ def create(func, /, *args, **keywords):
     :param keywords:
     :return: partially created object
     """
-    print("create")
 
     def newfunc(*fargs, **fkeywords):
 
@@ -41,8 +40,6 @@ def create(func, /, *args, **keywords):
         if config is not None:
             all_keywords["config"] = config
 
-        print(f"keywords: {keywords}")
-        print(f"fkeywords: {fkeywords}")
         kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options, all_keywords)
         all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords, all_keywords)
 
