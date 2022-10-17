@@ -4,11 +4,10 @@ import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 
-import { Table } from "components/ui/Table";
+import { Table, SortableTableHeader } from "components/ui/Table";
 
 import { useQuery } from "hooks/useQuery";
 
-import { ColumnSortButton } from "../ColumnSortButton";
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
 import ConnectorCell from "./components/ConnectorCell";
@@ -69,12 +68,13 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
     () => [
       {
         Header: (
-          <ColumnSortButton
+          <SortableTableHeader
             onClick={() => onSortClick("entity")}
-            formattedMessageId="tables.name"
             wasActive={sortBy === "entity"}
             lowToLarge={sortOrder === SortOrderEnum.ASC}
-          />
+          >
+            <FormattedMessage id="tables.name" />
+          </SortableTableHeader>
         ),
         headerHighlighted: true,
         accessor: "entityName",
@@ -85,12 +85,13 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
       },
       {
         Header: (
-          <ColumnSortButton
+          <SortableTableHeader
             onClick={() => onSortClick("connector")}
-            formattedMessageId="tables.connector"
             wasActive={sortBy === "connector"}
             lowToLarge={sortOrder === SortOrderEnum.ASC}
-          />
+          >
+            <FormattedMessage id="tables.connector" />
+          </SortableTableHeader>
         ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
@@ -106,12 +107,13 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
       },
       {
         Header: (
-          <ColumnSortButton
+          <SortableTableHeader
             onClick={() => onSortClick("lastSync")}
-            formattedMessageId="tables.lastSync"
             wasActive={sortBy === "lastSync"}
             lowToLarge={sortOrder === SortOrderEnum.ASC}
-          />
+          >
+            <FormattedMessage id="tables.lastSync" />
+          </SortableTableHeader>
         ),
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (

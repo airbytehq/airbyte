@@ -1,12 +1,12 @@
 import queryString from "query-string";
 import React, { useCallback } from "react";
+import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
-import { ColumnSortButton } from "components/ColumnSortButton";
 import { SortOrderEnum } from "components/EntityTable/types";
-import { Table } from "components/ui/Table";
+import { Table, SortableTableHeader } from "components/ui/Table";
 
 import { useQuery } from "hooks/useQuery";
 import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
@@ -110,12 +110,13 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     () => [
       {
         Header: (
-          <ColumnSortButton
+          <SortableTableHeader
             onClick={() => onSortClick("connection")}
-            formattedMessageId="credits.connection"
             wasActive={sortBy === "connection"}
             lowToLarge={sortOrder === SortOrderEnum.ASC}
-          />
+          >
+            <FormattedMessage id="credits.connection" />
+          </SortableTableHeader>
         ),
         customWidth: 30,
         accessor: "sourceDefinitionName",
@@ -130,12 +131,13 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
       },
       {
         Header: (
-          <ColumnSortButton
+          <SortableTableHeader
             onClick={() => onSortClick("usage")}
-            formattedMessageId="credits.usage"
             wasActive={sortBy === "usage"}
             lowToLarge={sortOrder === SortOrderEnum.ASC}
-          />
+          >
+            <FormattedMessage id="credits.usage" />
+          </SortableTableHeader>
         ),
         accessor: "creditsConsumed",
         collapse: true,
