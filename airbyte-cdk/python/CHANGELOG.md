@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.101
+
+- Low-code: $options do not overwrite parameters that are already set
+
+## 0.1.100
+
+- Low-code: Pass stream_slice to read_records when reading from CheckStream
+
 ## 0.1.99
 
 - Low-code: Fix default stream schema loader

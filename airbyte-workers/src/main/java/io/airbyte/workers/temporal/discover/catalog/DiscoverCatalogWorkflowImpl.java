@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.discover.catalog;
 
+import io.airbyte.commons.temporal.scheduling.DiscoverCatalogWorkflow;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
