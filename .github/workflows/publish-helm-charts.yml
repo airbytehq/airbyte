@@ -105,21 +105,34 @@ jobs:
           add: '.'
           cwd: './airbyte-oss/'
       
-      - name: Commit and push changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: 'Bump release to ${{ needs.generate-semantic-version.outputs.tag }}'
-          add: '.'
-          tag: ${{ needs.generate-semantic-version.outputs.tag }}
-          new_branch: update-helm-chart-version-ref
-      
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
           path: ./airbyte/
           branch: update-helm-chart-version-ref
+          branch-suffix: random
           title: Bump helm chart version reference to ${{ needs.generate-semantic-version.outputs.next-version }}
           body: |
             ## What
             Bump version reference in all Chart.yaml files to ${{ needs.generate-semantic-version.outputs.next-version }}
           commit-message: Bump helm chart version reference to ${{ needs.generate-semantic-version.outputs.next-version }}
+          delete-branch: true
+
+      - name: "Generate changelog"
+        shell: bash
+        id: changelog
+        run: |
+          echo "::set-output name=changelog::$(PAGER=cat git log $(git describe --tags --match "*-helm" $(git rev-list --tags --max-count=1))..HEAD --oneline --decorate=no)"
+
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          body: |
+            ## What
+            Bump version reference in all Chart.yaml files to ${{ needs.generate-semantic-version.outputs.next-version }}
+            CHANGELOG:
+            ${{ steps.changelog.outputs.changelog }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.generate-semantic-version.outputs.tag }}
