@@ -1,3 +1,14 @@
+.header {
+  margin: 10px 0 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+}
+
 %headerCell {
   font-size: 10px;
   line-height: 13px;
@@ -35,4 +46,14 @@
 
   padding-top: 10px;
   margin-left: 115px;
+}
+
+.catalogTreeContainer {
+  margin-bottom: 29px;
+  max-height: 600px;
+  overflow-y: auto;
+
+  --webkit-overlay: true;
+
+  width: 100%;
 }

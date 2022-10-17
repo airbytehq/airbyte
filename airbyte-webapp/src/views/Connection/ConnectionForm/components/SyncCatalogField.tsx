@@ -4,10 +4,10 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { H5 } from "components/base/Titles";
 import { Cell, Header } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { LoadingBackdrop } from "components/ui/LoadingBackdrop";
+import { Text } from "components/ui/Text";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { SyncSchemaStream } from "core/domain/catalog";
@@ -22,15 +22,6 @@ import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
 import Search from "./Search";
 import styles from "./SyncCatalogField.module.scss";
 
-const TreeViewContainer = styled.div`
-  margin-bottom: 29px;
-  max-height: 600px;
-  overflow-y: auto;
-  --webkit-overlay: true;
-
-  width: 100%;
-`;
-
 const SubtitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
   font-size: 10px;
   line-height: 12px;
@@ -40,17 +31,6 @@ const SubtitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
 
 const ClearSubtitleCell = styled(SubtitleCell)`
   border-top: none;
-`;
-
-const HeaderBlock = styled.div`
-  margin: 10px 0 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 17px;
 `;
 
 const NextLineText = styled.div`
@@ -197,27 +177,19 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({ additionalControl, field,
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
       <LoadingBackdrop loading={isSubmitting}>
-        <HeaderBlock>
-          {mode !== "readonly" ? (
-            <>
-              <H5 bold>
-                <FormattedMessage id="form.dataSync" />
-              </H5>
-              {additionalControl}
-            </>
-          ) : (
-            <H5 bold>
-              <FormattedMessage id="form.dataSync.readonly" />
-            </H5>
-          )}
-        </HeaderBlock>
+        <div className={styles.header}>
+          <Text as="h2" size="sm">
+            <FormattedMessage id={mode === "readonly" ? "form.dataSync.readonly" : "form.dataSync"} />
+          </Text>
+          {mode !== "readonly" && additionalControl}
+        </div>
         {mode !== "readonly" && <Search onSearch={setSearchString} />}
         <CatalogHeader />
         <CatalogSubheader />
         <BulkHeader />
-        <TreeViewContainer>
+        <div className={styles.catalogTreeContainer}>
           <CatalogTree streams={filteredStreams} onChangeStream={onChangeStream} />
-        </TreeViewContainer>
+        </div>
       </LoadingBackdrop>
     </BatchEditProvider>
   );

@@ -55,7 +55,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
           <ScheduleField />
         </Section>
         <Section>
-          <Text as="h5">
+          <Text as="h2" size="sm">
             <FormattedMessage id="connection.streams" />
           </Text>
           <span className={readonlyClass}>
