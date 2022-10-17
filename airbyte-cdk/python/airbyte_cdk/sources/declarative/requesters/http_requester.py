@@ -60,7 +60,7 @@ class HttpRequester(Requester, JsonSchemaMixin):
         if type(self.http_method) == str:
             self.http_method = HttpMethod[self.http_method]
         self._method = self.http_method
-        self.error_handler = self.error_handler or DefaultErrorHandler(options=options)
+        self.error_handler = self.error_handler or DefaultErrorHandler(options=options, config=self.config)
         self._options = options
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
