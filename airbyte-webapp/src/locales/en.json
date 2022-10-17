@@ -495,7 +495,7 @@
   "settings.accountSettings.updateEmailSuccess": "Email updated",
   "settings.cookiePreferences": "Cookie Preferences",
 
-  "connector.requestConnectorBlock": "+ Request a new connector",
+  "connector.requestConnectorBlock": "Request a new connector",
   "connector.requestConnector": "Request a new connector",
   "connector.request": "Request",
   "connector.requested": "Requested",
