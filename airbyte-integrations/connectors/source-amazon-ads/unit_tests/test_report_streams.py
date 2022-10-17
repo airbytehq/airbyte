@@ -612,4 +612,3 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
         assert params["stateFilter"] == ",".join(state_filter)
     else:
         assert state_filter is None
-

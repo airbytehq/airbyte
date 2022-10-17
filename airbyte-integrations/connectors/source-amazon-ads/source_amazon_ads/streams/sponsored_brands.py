@@ -13,8 +13,8 @@ class SponsoredBrandsCampaigns(SubProfilesStream):
     """
 
     def __init__(self, *args, **kwargs):
-        self.state_filter = kwargs.get("config", {}).get("state_filter")
         super().__init__(*args, **kwargs)
+        self.state_filter = kwargs.get("config", {}).get("state_filter")
 
     primary_key = "campaignId"
     state_filter = None
