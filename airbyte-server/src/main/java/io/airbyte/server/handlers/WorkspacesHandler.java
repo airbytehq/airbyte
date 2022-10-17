@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.github.slugify.Slugify;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -24,9 +25,7 @@ import io.airbyte.api.model.generated.WorkspaceReadList;
 import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.WebhookOperationConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
@@ -39,7 +38,6 @@ import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -66,12 +64,13 @@ public class WorkspacesHandler {
     this(configRepository, secretsRepositoryWriter, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
   }
 
-  public WorkspacesHandler(final ConfigRepository configRepository,
-                           final SecretsRepositoryWriter secretsRepositoryWriter,
-                           final ConnectionsHandler connectionsHandler,
-                           final DestinationHandler destinationHandler,
-                           final SourceHandler sourceHandler,
-                           final Supplier<UUID> uuidSupplier) {
+  @VisibleForTesting
+  WorkspacesHandler(final ConfigRepository configRepository,
+                    final SecretsRepositoryWriter secretsRepositoryWriter,
+                    final ConnectionsHandler connectionsHandler,
+                    final DestinationHandler destinationHandler,
+                    final SourceHandler sourceHandler,
+                    final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.connectionsHandler = connectionsHandler;
@@ -108,7 +107,7 @@ public class WorkspacesHandler {
         .withTombstone(false)
         .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()))
         .withDefaultGeography(defaultGeography)
-        .withWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspaceCreate.getWebhookConfigs()));
+        .withWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspaceCreate.getWebhookConfigs(), uuidSupplier));
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
@@ -269,12 +268,8 @@ public class WorkspacesHandler {
         .notifications(NotificationConverter.toApiList(workspace.getNotifications()))
         .defaultGeography(Enums.convertTo(workspace.getDefaultGeography(), Geography.class));
     // Add read-only webhook configs.
-    final Optional<WebhookOperationConfigs> persistedConfigs = Jsons.tryObject(
-        workspace.getWebhookOperationConfigs(),
-        WebhookOperationConfigs.class);
-    if (persistedConfigs.isPresent()) {
-      result.setWebhookConfigs(WorkspaceWebhookConfigsConverter.toApiReads(
-          persistedConfigs.get().getWebhookConfigs()));
+    if (workspace.getWebhookOperationConfigs() != null) {
+      result.setWebhookConfigs(WorkspaceWebhookConfigsConverter.toApiReads(workspace.getWebhookOperationConfigs()));
     }
     return result;
   }
@@ -308,6 +303,9 @@ public class WorkspacesHandler {
     if (workspacePatch.getDefaultGeography() != null) {
       workspace.setDefaultGeography(
           Enums.convertTo(workspacePatch.getDefaultGeography(), io.airbyte.config.Geography.class));
+    }
+    if (workspacePatch.getWebhookConfigs() != null) {
+      workspace.setWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspacePatch.getWebhookConfigs(), uuidSupplier));
     }
   }
 
