@@ -24,13 +24,14 @@ class InterpolatedRequestInputProvider:
         """
 
         self._config = config
+        self._options = options.get("options") or {}
 
         if request_inputs is None:
             request_inputs = {}
         if isinstance(request_inputs, str):
-            self._interpolator = InterpolatedString(request_inputs, default="", options=options)
+            self._interpolator = InterpolatedString(request_inputs, default="", options=self._options)
         else:
-            self._interpolator = InterpolatedMapping(request_inputs, options=options)
+            self._interpolator = InterpolatedMapping(request_inputs, options=self._options)
 
     def request_inputs(
         self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Mapping[str, Any] = None
@@ -39,12 +40,13 @@ class InterpolatedRequestInputProvider:
         Returns the request inputs to set on an outgoing HTTP request
 
         :param stream_state: The stream state
-        :param stream_slice: The stream slice
+        :param stream_slice: The stream slicex
         :param next_page_token: The pagination token
         :return: The request inputs to set on an outgoing HTTP request
         """
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         interpolated_value = self._interpolator.eval(self._config, **kwargs)
+        print(f"interpolated_values: {interpolated_value}")
 
         if isinstance(interpolated_value, dict):
             non_null_tokens = {k: v for k, v in interpolated_value.items() if v}
