@@ -170,7 +170,8 @@ class WebBackendConnectionsHandlerTest {
     final DestinationConnection destination = DestinationHelpers.generateDestination(destinationDefinition.getDestinationDefinitionId());
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
-    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), false);
+    final StandardSync standardSync =
+        ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), false);
     final StandardSync brokenStandardSync =
         ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), true);
     when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
@@ -252,64 +253,12 @@ class WebBackendConnectionsHandlerTest {
         jobRead.getJob().getCreatedAt(),
         jobRead.getJob().getStatus());
 
-    expected = new WebBackendConnectionRead()
-        .connectionId(connectionRead.getConnectionId())
-        .sourceId(connectionRead.getSourceId())
-        .destinationId(connectionRead.getDestinationId())
-        .operationIds(connectionRead.getOperationIds())
-        .name(connectionRead.getName())
-        .namespaceDefinition(connectionRead.getNamespaceDefinition())
-        .namespaceFormat(connectionRead.getNamespaceFormat())
-        .prefix(connectionRead.getPrefix())
-        .syncCatalog(connectionRead.getSyncCatalog())
-        .catalogId(connectionRead.getSourceCatalogId())
-        .status(connectionRead.getStatus())
-        .schedule(connectionRead.getSchedule())
-        .scheduleType(connectionRead.getScheduleType())
-        .scheduleData(connectionRead.getScheduleData())
-        .source(sourceRead)
-        .destination(destinationRead)
-        .operations(operationReadList.getOperations())
-        .latestSyncJobCreatedAt(now.getEpochSecond())
-        .latestSyncJobStatus(JobStatus.SUCCEEDED)
-        .isSyncing(false)
-        .schemaChange(SchemaChange.NO_CHANGE)
-        .resourceRequirements(new ResourceRequirements()
-            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
-            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
-            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
-
-    expectedNoDiscoveryWithNewSchema = new WebBackendConnectionRead()
-        .connectionId(connectionRead.getConnectionId())
-        .sourceId(connectionRead.getSourceId())
-        .destinationId(connectionRead.getDestinationId())
-        .operationIds(connectionRead.getOperationIds())
-        .name(connectionRead.getName())
-        .namespaceDefinition(connectionRead.getNamespaceDefinition())
-        .namespaceFormat(connectionRead.getNamespaceFormat())
-        .prefix(connectionRead.getPrefix())
-        .syncCatalog(connectionRead.getSyncCatalog())
-        .catalogId(connectionRead.getSourceCatalogId())
-        .status(connectionRead.getStatus())
-        .schedule(connectionRead.getSchedule())
-        .scheduleType(connectionRead.getScheduleType())
-        .scheduleData(connectionRead.getScheduleData())
-        .source(sourceRead)
-        .destination(destinationRead)
-        .operations(operationReadList.getOperations())
-        .latestSyncJobCreatedAt(now.getEpochSecond())
-        .latestSyncJobStatus(JobStatus.SUCCEEDED)
-        .isSyncing(false)
-        .schemaChange(SchemaChange.NON_BREAKING)
-        .resourceRequirements(new ResourceRequirements()
-            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
-            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
-            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+    expected = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead, operationReadList, SchemaChange.NO_CHANGE, now,
+        connectionRead.getSyncCatalog(), connectionRead.getSourceCatalogId());
+    expectedNoDiscoveryWithNewSchema = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead, operationReadList,
+        SchemaChange.NON_BREAKING, now, connectionRead.getSyncCatalog(), connectionRead.getSourceCatalogId());
 
     final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateMultipleStreamsApiCatalog(2);
-
     final SourceDiscoverSchemaRequestBody sourceDiscoverSchema = new SourceDiscoverSchemaRequestBody();
     sourceDiscoverSchema.setSourceId(connectionRead.getSourceId());
     sourceDiscoverSchema.setDisableCache(true);
@@ -318,67 +267,55 @@ class WebBackendConnectionsHandlerTest {
             .jobInfo(mock(SynchronousJobRead.class))
             .catalog(modifiedCatalog));
 
-    expectedWithNewSchema = new WebBackendConnectionRead()
-        .connectionId(expected.getConnectionId())
-        .sourceId(expected.getSourceId())
-        .destinationId(expected.getDestinationId())
-        .operationIds(expected.getOperationIds())
-        .name(expected.getName())
-        .namespaceDefinition(expected.getNamespaceDefinition())
-        .namespaceFormat(expected.getNamespaceFormat())
-        .prefix(expected.getPrefix())
-        .syncCatalog(modifiedCatalog)
-        .status(expected.getStatus())
-        .schedule(expected.getSchedule())
-        .scheduleType(expected.getScheduleType())
-        .scheduleData(expected.getScheduleData())
-        .source(expected.getSource())
-        .destination(expected.getDestination())
-        .operations(expected.getOperations())
-        .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
-        .latestSyncJobStatus(expected.getLatestSyncJobStatus())
-        .isSyncing(expected.getIsSyncing())
-        .schemaChange(SchemaChange.NON_BREAKING)
-        .catalogDiff(new CatalogDiff().transforms(List.of(
-            new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
-                .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
-                .updateStream(null))))
-        .resourceRequirements(new ResourceRequirements()
-            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
-            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
-            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+    expectedWithNewSchema = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead,
+        new OperationReadList().operations(expected.getOperations()), SchemaChange.NON_BREAKING, now, modifiedCatalog, null)
+            .catalogDiff(new CatalogDiff().transforms(List.of(
+                new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
+                    .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
+                    .updateStream(null))));
 
-    expectedWithNewSchemaBroken = new WebBackendConnectionRead()
-        .connectionId(brokenConnectionRead.getConnectionId())
-        .sourceId(brokenConnectionRead.getSourceId())
-        .destinationId(brokenConnectionRead.getDestinationId())
-        .operationIds(brokenConnectionRead.getOperationIds())
-        .name(brokenConnectionRead.getName())
-        .namespaceDefinition(brokenConnectionRead.getNamespaceDefinition())
-        .namespaceFormat(brokenConnectionRead.getNamespaceFormat())
-        .prefix(brokenConnectionRead.getPrefix())
-        .syncCatalog(brokenConnectionRead.getSyncCatalog())
-        .catalogId(brokenConnectionRead.getSourceCatalogId())
-        .status(brokenConnectionRead.getStatus())
-        .schedule(brokenConnectionRead.getSchedule())
-        .scheduleType(brokenConnectionRead.getScheduleType())
-        .scheduleData(brokenConnectionRead.getScheduleData())
-        .source(sourceRead)
-        .destination(destinationRead)
-        .operations(brokenOperationReadList.getOperations())
-        .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
-        .latestSyncJobStatus(expected.getLatestSyncJobStatus())
-        .isSyncing(false)
-        .schemaChange(SchemaChange.BREAKING)
-        .resourceRequirements(new ResourceRequirements()
-            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
-            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
-            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
-
+    expectedWithNewSchemaBroken = expectedWebBackendConnectionReadObject(brokenConnectionRead, sourceRead, destinationRead, brokenOperationReadList,
+        SchemaChange.BREAKING, now, connectionRead.getSyncCatalog(), brokenConnectionRead.getSourceCatalogId());
     when(schedulerHandler.resetConnection(any(ConnectionIdRequestBody.class)))
         .thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
+  }
+
+  WebBackendConnectionRead expectedWebBackendConnectionReadObject(
+                                                                  final ConnectionRead connectionRead,
+                                                                  final SourceRead sourceRead,
+                                                                  final DestinationRead destinationRead,
+                                                                  final OperationReadList operationReadList,
+                                                                  final SchemaChange schemaChange,
+                                                                  final Instant now,
+                                                                  final AirbyteCatalog syncCatalog,
+                                                                  final UUID catalogId) {
+    return new WebBackendConnectionRead()
+        .connectionId(connectionRead.getConnectionId())
+        .sourceId(connectionRead.getSourceId())
+        .destinationId(connectionRead.getDestinationId())
+        .operationIds(connectionRead.getOperationIds())
+        .name(connectionRead.getName())
+        .namespaceDefinition(connectionRead.getNamespaceDefinition())
+        .namespaceFormat(connectionRead.getNamespaceFormat())
+        .prefix(connectionRead.getPrefix())
+        .syncCatalog(syncCatalog)
+        .catalogId(catalogId)
+        .status(connectionRead.getStatus())
+        .schedule(connectionRead.getSchedule())
+        .scheduleType(connectionRead.getScheduleType())
+        .scheduleData(connectionRead.getScheduleData())
+        .source(sourceRead)
+        .destination(destinationRead)
+        .operations(operationReadList.getOperations())
+        .latestSyncJobCreatedAt(now.getEpochSecond())
+        .latestSyncJobStatus(JobStatus.SUCCEEDED)
+        .isSyncing(false)
+        .schemaChange(schemaChange)
+        .resourceRequirements(new ResourceRequirements()
+            .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
+            .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
   }
 
   @Test
