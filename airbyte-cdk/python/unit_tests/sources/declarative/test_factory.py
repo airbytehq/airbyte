@@ -414,31 +414,31 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         (
             "test_option_in_selector",
             """
-      extractor:
-        type: DpathExtractor
-        field_pointer: ["{{ options['name'] }}"]
-      selector:
-        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-        $options:
-          name: "selector"
-        extractor: "*ref(extractor)"
-    """,
+          extractor:
+            type: DpathExtractor
+            field_pointer: ["{{ options['name'] }}"]
+          selector:
+            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+            $options:
+              name: "selector"
+            extractor: "*ref(extractor)"
+        """,
             "selector",
         ),
         (
             "test_option_in_extractor",
             """
-      extractor:
-        type: DpathExtractor
-        $options:
-          name: "extractor"
-        field_pointer: ["{{ options['name'] }}"]
-      selector:
-        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-        $options:
-          name: "selector"
-        extractor: "*ref(extractor)"
-    """,
+          extractor:
+            type: DpathExtractor
+            $options:
+              name: "extractor"
+            field_pointer: ["{{ options['name'] }}"]
+          selector:
+            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+            $options:
+              name: "selector"
+            extractor: "*ref(extractor)"
+        """,
             "extractor",
         ),
     ],
@@ -467,6 +467,10 @@ def test_create_requester():
         a_parameter: "something_here"
       request_headers:
         header: header_value
+    error_handler:
+      backoff_strategies:
+        - type: "ConstantBackoffStrategy"
+          backoff_time_in_seconds: 5
     """
     config = parser.parse(content)
 
