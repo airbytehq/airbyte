@@ -126,7 +126,7 @@ final class NumUnusuallyLongSyncs extends Emitter {
 
   @Override
   public Duration getDuration() {
-    return Duration.ofHours(1);
+    return Duration.ofMinutes(15);
   }
 
 }

@@ -13,6 +13,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,6 +24,7 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.AttemptStatus;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobConfigType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
@@ -92,6 +94,7 @@ class MetricRepositoryTest {
     ctx.truncate(ACTOR).execute();
     ctx.truncate(CONNECTION).cascade().execute();
     ctx.truncate(JOBS).cascade().execute();
+    ctx.truncate(ATTEMPTS).cascade().execute();
     ctx.truncate(WORKSPACE).cascade().execute();
   }
 
@@ -511,7 +514,8 @@ class MetricRepositoryTest {
       final var connectionId = UUID.randomUUID();
       final var syncConfigType = JobConfigType.sync;
 
-      // Latest job runs 12 hours while the previous 4 jobs runs 2 hours. Avg will be 4 hours.
+      // Current job has been running for 12 hours while the previous 5 jobs runs 2 hours. Avg will be 2
+      // hours.
       // Thus latest job will be counted as an unusually long-running job.
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
           .values(100L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS),
@@ -523,7 +527,24 @@ class MetricRepositoryTest {
           .values(3L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(16, ChronoUnit.HOURS),
               OffsetDateTime.now().minus(14, ChronoUnit.HOURS), syncConfigType)
           .values(4L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(14, ChronoUnit.HOURS),
-              OffsetDateTime.now().minus(2, ChronoUnit.HOURS), syncConfigType)
+              OffsetDateTime.now().minus(12, ChronoUnit.HOURS), syncConfigType)
+          .values(5L, connectionId.toString(), JobStatus.running, OffsetDateTime.now().minus(12, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(12, ChronoUnit.HOURS), syncConfigType)
+          .execute();
+
+      ctx.insertInto(ATTEMPTS, ATTEMPTS.ID, ATTEMPTS.JOB_ID, ATTEMPTS.STATUS, ATTEMPTS.CREATED_AT, ATTEMPTS.UPDATED_AT)
+          .values(100L, 100L, AttemptStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(26, ChronoUnit.HOURS))
+          .values(1L, 1L, AttemptStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(18, ChronoUnit.HOURS))
+          .values(2L, 2L, AttemptStatus.succeeded, OffsetDateTime.now().minus(18, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(16, ChronoUnit.HOURS))
+          .values(3L, 3L, AttemptStatus.succeeded, OffsetDateTime.now().minus(16, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(14, ChronoUnit.HOURS))
+          .values(4L, 4L, AttemptStatus.succeeded, OffsetDateTime.now().minus(14, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(12, ChronoUnit.HOURS))
+          .values(5L, 5L, AttemptStatus.running, OffsetDateTime.now().minus(12, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(12, ChronoUnit.HOURS))
           .execute();
 
       final var numOfJubsRunningUnusallyLong = db.numberOfJobsRunningUnusuallyLong();
@@ -535,8 +556,9 @@ class MetricRepositoryTest {
       final var connectionId = UUID.randomUUID();
       final var syncConfigType = JobConfigType.sync;
 
-      // Latest job runs 12 minutes while the previous 2 jobs runs 3 minutes.
-      // Despite it's more than 2x than avg it's still within 15 minutes threshold, thus this shouldn't be
+      // Latest job runs 14 minutes while the previous 5 jobs runs average about 3 minutes.
+      // Despite it has been more than 2x than avg it's still within 15 minutes threshold, thus this
+      // shouldn't be
       // counted in.
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
           .values(100L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.MINUTES),
@@ -549,6 +571,23 @@ class MetricRepositoryTest {
               OffsetDateTime.now().minus(14, ChronoUnit.MINUTES), syncConfigType)
           .values(4L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(14, ChronoUnit.MINUTES),
               OffsetDateTime.now().minus(2, ChronoUnit.MINUTES), syncConfigType)
+          .values(5L, connectionId.toString(), JobStatus.running, OffsetDateTime.now().minus(14, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(2, ChronoUnit.MINUTES), syncConfigType)
+          .execute();
+
+      ctx.insertInto(ATTEMPTS, ATTEMPTS.ID, ATTEMPTS.JOB_ID, ATTEMPTS.STATUS, ATTEMPTS.CREATED_AT, ATTEMPTS.UPDATED_AT)
+          .values(100L, 100L, AttemptStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(26, ChronoUnit.MINUTES))
+          .values(1L, 1L, AttemptStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(18, ChronoUnit.MINUTES))
+          .values(2L, 2L, AttemptStatus.succeeded, OffsetDateTime.now().minus(18, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(16, ChronoUnit.MINUTES))
+          .values(3L, 3L, AttemptStatus.succeeded, OffsetDateTime.now().minus(26, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(14, ChronoUnit.MINUTES))
+          .values(4L, 4L, AttemptStatus.succeeded, OffsetDateTime.now().minus(18, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(17, ChronoUnit.MINUTES))
+          .values(5L, 5L, AttemptStatus.running, OffsetDateTime.now().minus(14, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(14, ChronoUnit.MINUTES))
           .execute();
 
       final var numOfJubsRunningUnusallyLong = db.numberOfJobsRunningUnusuallyLong();
@@ -566,8 +605,17 @@ class MetricRepositoryTest {
               OffsetDateTime.now().minus(26, ChronoUnit.HOURS), syncConfigType)
           .values(1L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS),
               OffsetDateTime.now().minus(18, ChronoUnit.HOURS), syncConfigType)
-          .values(2L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(18, ChronoUnit.HOURS),
-              OffsetDateTime.now().minus(16, ChronoUnit.HOURS), syncConfigType)
+          .values(2L, connectionId.toString(), JobStatus.running, OffsetDateTime.now().minus(18, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(1, ChronoUnit.HOURS), syncConfigType)
+          .execute();
+
+      ctx.insertInto(ATTEMPTS, ATTEMPTS.ID, ATTEMPTS.JOB_ID, ATTEMPTS.STATUS, ATTEMPTS.CREATED_AT, ATTEMPTS.UPDATED_AT)
+          .values(100L, 100L, AttemptStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(26, ChronoUnit.HOURS))
+          .values(1L, 1L, AttemptStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(18, ChronoUnit.HOURS))
+          .values(2L, 2L, AttemptStatus.running, OffsetDateTime.now().minus(18, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(1, ChronoUnit.HOURS))
           .execute();
 
       final var numOfJubsRunningUnusallyLong = db.numberOfJobsRunningUnusuallyLong();
