@@ -2,7 +2,7 @@
 
 ## 0.1.103
 
-- Replace caching method: vcr.py -> requests_cache with SQLite backend
+- Replace caching method: VCR.py -> requests-cache with SQLite backend
 
 ## 0.1.102
 
