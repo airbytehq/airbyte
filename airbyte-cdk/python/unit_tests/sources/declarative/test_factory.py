@@ -414,31 +414,31 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         (
             "test_option_in_selector",
             """
-              extractor:
-                type: DpathExtractor
-                field_pointer: ["{{ options['name'] }}"]
-              selector:
-                class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-                $options:
-                  name: "selector"
-                extractor: "*ref(extractor)"
-            """,
+                  extractor:
+                    type: DpathExtractor
+                    field_pointer: ["{{ options['name'] }}"]
+                  selector:
+                    class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+                    $options:
+                      name: "selector"
+                    extractor: "*ref(extractor)"
+                """,
             "selector",
         ),
         (
             "test_option_in_extractor",
             """
-              extractor:
-                type: DpathExtractor
-                $options:
-                  name: "extractor"
-                field_pointer: ["{{ options['name'] }}"]
-              selector:
-                class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-                $options:
-                  name: "selector"
-                extractor: "*ref(extractor)"
-            """,
+                  extractor:
+                    type: DpathExtractor
+                    $options:
+                      name: "extractor"
+                    field_pointer: ["{{ options['name'] }}"]
+                  selector:
+                    class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+                    $options:
+                      name: "selector"
+                    extractor: "*ref(extractor)"
+                """,
             "extractor",
         ),
     ],
@@ -454,14 +454,45 @@ def test_options_propagation(test_name, content, expected_field_pointer_value):
     "test_name, error_handler",
     [
         (
-            "test_create_request_constant",
+            "test_create_requester_constant_error_handler",
             """
-  error_handler:
-    backoff_strategies:
-      - type: "ConstantBackoffStrategy"
-        backoff_time_in_seconds: 5
-    """,
-        )
+      error_handler:
+        backoff_strategies:
+          - type: "ConstantBackoffStrategy"
+            backoff_time_in_seconds: 5
+        """,
+        ),
+        (
+            "test_create_requester_exponential_error_handler",
+            """
+      error_handler:
+        backoff_strategies:
+          - type: "ExponentialBackoffStrategy"
+            factor: 5
+        """,
+        ),
+        (
+            "test_create_requester_wait_time_from_header_error_handler",
+            """
+      error_handler:
+        backoff_strategies:
+          - type: "WaitTimeFromHeader"
+            header: "a_header"
+        """,
+        ),
+        (
+            "test_create_requester_wait_time_until_from_header_error_handler",
+            """
+      error_handler:
+        backoff_strategies:
+          - type: "WaitUntilTimeFromHeader"
+            header: "a_header"
+        """,
+        ),
+        (
+            "test_create_requester_no_error_handler",
+            """""",
+        ),
     ],
 )
 def test_create_requester(test_name, error_handler):
