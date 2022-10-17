@@ -10,4 +10,5 @@ def test():
     iterator = SingleSlice(options={})
 
     stream_slices = iterator.stream_slices(SyncMode.incremental, None)
-    assert stream_slices == [dict()]
+    next_slice = next(stream_slices)
+    assert next_slice == dict()
