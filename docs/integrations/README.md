@@ -189,8 +189,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Amazon Datalake](destinations/aws-datalake.md)            | Alpha                | No                  |
 | [AzureBlobStorage](destinations/azureblobstorage.md)       | Alpha                | Yes                 |
 | [BigQuery](destinations/bigquery.md)                       | Generally Available  | Yes                 |
-| [bit.io](destinations/bitdotio.md)                         | Alpha                | No                  |
-| [Cassandra](destinations/cassandra.md)                     | Alpha                | Yes                 |
+| [Cassandra](destinations/cassandra.md)                     | Alpha                | No                  |
 | [Chargify (Keen)](destinations/chargify.md)                | Alpha                | Yes                 |
 | [ClickHouse](destinations/clickhouse.md)                   | Alpha                | Yes                 |
 | [Databricks](destinations/databricks.md)                   | Alpha                | No                  |

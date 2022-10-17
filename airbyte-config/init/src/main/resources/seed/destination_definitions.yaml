@@ -50,13 +50,6 @@
           memory_limit: "1Gi"
           memory_request: "1Gi"
   releaseStage: beta
-- name: bit.io
-  destinationDefinitionId: 592af2e0-882c-4ed8-b0fe-a31761146a8d
-  dockerRepository: airbyte/destination-bitdotio
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/bitdotio
-  icon: bitdotio.svg
-  releaseStage: alpha
 - name: Cassandra
   destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
   dockerRepository: airbyte/destination-cassandra
@@ -87,7 +80,7 @@
 - name: Databricks Lakehouse
   destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-databricks
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.3.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
   icon: databricks.svg
   releaseStage: alpha
@@ -107,7 +100,7 @@
 - destinationDefinitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
   name: ElasticSearch
   dockerRepository: airbyte/destination-elasticsearch
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
   icon: elasticsearch.svg
   releaseStage: alpha
