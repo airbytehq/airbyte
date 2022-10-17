@@ -182,7 +182,7 @@ public class WorkspaceHelper {
       if (e.getCause() instanceof JsonValidationException) {
         throw (JsonValidationException) e.getCause();
       }
-      throw new RuntimeException(e.getCause());
+      throw new RuntimeException(e.getCause().toString(), e);
     }
   }
 

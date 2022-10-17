@@ -98,6 +98,8 @@ Verify that a spec operation issued to the connector returns a valid spec.
 | Input | Type | Default | Note                                                                                             |
 | :--- | :--- | :--- |:-------------------------------------------------------------------------------------------------|
 | `spec_path` | string | `secrets/spec.json` | Path to a YAML or JSON file representing the spec expected to be output by this connector |
+| `backward_compatibility_tests_config.previous_connector_version` | string | `latest` | Previous connector version to use for backward compatibility tests. |
+| `backward_compatibility_tests_config.run_backward_compatibility_tests` | boolean | True | Flag to run or skip backward compatibility tests. |
 | `timeout_seconds` | int | 10 | Test execution timeout in seconds                                                                |
 
 ## Test Connection

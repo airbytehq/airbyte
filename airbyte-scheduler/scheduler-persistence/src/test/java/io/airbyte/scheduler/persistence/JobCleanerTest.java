@@ -29,7 +29,7 @@ class JobCleanerTest {
   Path folder;
 
   @Test
-  public void testNotDeletingFilesInMinimum() throws IOException {
+  void testNotDeletingFilesInMinimum() throws IOException {
     createFile(folder.resolve("1"), "A", 1, 10);
 
     final JobPersistence jobPersistence = mock(JobPersistence.class);
@@ -48,7 +48,7 @@ class JobCleanerTest {
   }
 
   @Test
-  public void testDeletingOldFiles() throws IOException {
+  void testDeletingOldFiles() throws IOException {
     createFile(folder.resolve("1"), "A", 1, 100);
 
     final JobPersistence jobPersistence = mock(JobPersistence.class);
@@ -69,7 +69,7 @@ class JobCleanerTest {
   }
 
   @Test
-  public void testDeletingLargeFiles() throws IOException {
+  void testDeletingLargeFiles() throws IOException {
     createFile(folder.resolve("1"), "A", 1, 10);
     createFile(folder.resolve("1"), "B", 1, 10);
     createFile(folder.resolve("1"), "C", 1, 10);
@@ -92,7 +92,7 @@ class JobCleanerTest {
   }
 
   @Test
-  public void testNotDeletingRunning() throws IOException {
+  void testNotDeletingRunning() throws IOException {
     createFile(folder.resolve("1"), "A", 1, 10);
     createFile(folder.resolve("1"), "B", 1, 10);
     createFile(folder.resolve("1"), "C", 1, 10);

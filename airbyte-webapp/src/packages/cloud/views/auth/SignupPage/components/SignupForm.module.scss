@@ -1,0 +1,15 @@
+@use "../../../../../../scss/colors";
+@use "../../../../../../scss/variables";
+
+.signUpButton {
+  width: 100% !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  line-height: 19px !important;
+  height: 44px !important;
+}
+
+.statusMessage {
+  margin-top: variables.$spacing-md;
+  color: colors.$red;
+}

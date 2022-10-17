@@ -17,6 +17,72 @@ from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting import ReportingDownloadParameters
 from suds import sudsobject
 
+AVERAGE_FIELD_TYPES = {
+    "AverageCpc": "number",
+    "AveragePosition": "number",
+    "AverageCpm": "number",
+}
+AVERAGE_FIELDS = list(AVERAGE_FIELD_TYPES.keys())
+
+CONVERSION_FIELD_TYPES = {
+    "Conversions": "number",
+    "ConversionRate": "number",
+    "ConversionsQualified": "number",
+}
+CONVERSION_FIELDS = list(CONVERSION_FIELD_TYPES.keys())
+
+ALL_CONVERSION_FIELD_TYPES = {
+    "AllConversions": "integer",
+    "AllConversionRate": "number",
+}
+ALL_CONVERSION_FIELDS = list(ALL_CONVERSION_FIELD_TYPES.keys())
+
+LOW_QUALITY_FIELD_TYPES = {
+    "LowQualityClicks": "integer",
+    "LowQualityClicksPercent": "number",
+    "LowQualityImpressions": "integer",
+    "LowQualitySophisticatedClicks": "integer",
+    "LowQualityConversions": "integer",
+    "LowQualityConversionRate": "number",
+}
+LOW_QUALITY_FIELDS = list(LOW_QUALITY_FIELD_TYPES.keys())
+
+REVENUE_FIELD_TYPES = {
+    "Revenue": "number",
+    "RevenuePerConversion": "number",
+    "RevenuePerAssist": "number",
+}
+REVENUE_FIELDS = list(REVENUE_FIELD_TYPES.keys())
+
+ALL_REVENUE_FIELD_TYPES = {
+    "AllRevenue": "number",
+    "AllRevenuePerConversion": "number",
+}
+ALL_REVENUE_FIELDS = list(ALL_REVENUE_FIELD_TYPES.keys())
+
+IMPRESSION_FIELD_TYPES = {
+    "ImpressionSharePercent": "number",
+    "ImpressionLostToBudgetPercent": "number",
+    "ImpressionLostToRankAggPercent": "number",
+}
+IMPRESSION_FIELDS = list(IMPRESSION_FIELD_TYPES.keys())
+
+
+HISTORICAL_FIELD_TYPES = {
+    "HistoricalQualityScore": "number",
+    "HistoricalExpectedCtr": "number",
+    "HistoricalAdRelevance": "number",
+    "HistoricalLandingPageExperience": "number",
+}
+HISTORICAL_FIELDS = list(HISTORICAL_FIELD_TYPES.keys())
+
+BUDGET_FIELD_TYPES = {
+    "BudgetName": "string",
+    "BudgetStatus": "string",
+    "BudgetAssociationStatus": "string",
+}
+BUDGET_FIELDS = list(BUDGET_FIELD_TYPES.keys())
+
 REPORT_FIELD_TYPES = {
     "AccountId": "integer",
     "AdId": "integer",
@@ -24,15 +90,13 @@ REPORT_FIELD_TYPES = {
     "AdGroupId": "integer",
     "AdRelevance": "number",
     "Assists": "integer",
-    "AverageCpc": "number",
-    "AveragePosition": "number",
+    "AllCostPerConversion": "number",
+    "AllReturnOnAdSpend": "number",
     "BusinessCategoryId": "integer",
     "BusinessListingId": "integer",
     "CampaignId": "integer",
     "ClickCalls": "integer",
     "Clicks": "integer",
-    "ConversionRate": "number",
-    "Conversions": "number",
     "CostPerAssist": "number",
     "CostPerConversion": "number",
     "Ctr": "number",
@@ -45,29 +109,36 @@ REPORT_FIELD_TYPES = {
     "EstimatedImpressionPercent": "number",
     "EstimatedImpressions": "integer",
     "ExactMatchImpressionSharePercent": "number",
-    "HistoricAdRelevance": "number",
     "Impressions": "integer",
     "ImpressionSharePercent": "number",
     "KeywordId": "integer",
     "LandingPageExperience": "number",
-    "LowQualityClicks": "integer",
-    "LowQualityClicksPercent": "number",
-    "LowQualityImpressions": "integer",
-    "LowQualitySophisticatedClicks": "integer",
     "PhoneCalls": "integer",
     "PhoneImpressions": "integer",
+    "Ptr": "number",
     "QualityImpact": "number",
     "QualityScore": "number",
     "ReturnOnAdSpend": "number",
-    "Revenue": "number",
-    "RevenuePerAssist": "number",
-    "RevenuePerConversion": "number",
     "SidebarBid": "number",
     "Spend": "number",
     "MonthlyBudget": "number",
     "DailySpend": "number",
     "MonthToDateSpend": "number",
     "AbsoluteTopImpressionRatePercent": "number",
+    "ViewThroughConversions": "integer",
+    "ViewThroughConversionsQualified": "number",
+    "MainlineBid": "number",
+    "Mainline1Bid": "number",
+    "FirstPageBid": "number",
+    **AVERAGE_FIELD_TYPES,
+    **CONVERSION_FIELD_TYPES,
+    **ALL_CONVERSION_FIELD_TYPES,
+    **LOW_QUALITY_FIELD_TYPES,
+    **REVENUE_FIELD_TYPES,
+    **ALL_REVENUE_FIELD_TYPES,
+    **IMPRESSION_FIELD_TYPES,
+    **HISTORICAL_FIELD_TYPES,
+    **BUDGET_FIELD_TYPES,
 }
 
 

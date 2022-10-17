@@ -11,7 +11,7 @@ import ToolTip from "components/ToolTip";
 import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
 import { useListJobs } from "services/job/JobService";
@@ -22,10 +22,6 @@ interface StatusViewProps {
   connection: WebBackendConnectionRead;
   isStatusUpdating?: boolean;
 }
-
-const Content = styled.div`
-  margin: 0 10px;
-`;
 
 const StyledContentCard = styled(ContentCard)`
   margin-bottom: 20px;
@@ -53,8 +49,7 @@ const SyncButton = styled(LoadingButton)`
 const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { isLoading, showFeedback, startAction } = useLoadingState();
-  const { hasFeature } = useFeatureService();
-  const allowSync = hasFeature(FeatureItem.AllowSync);
+  const allowSync = useFeature(FeatureItem.AllowSync);
 
   const jobs = useListJobs({
     configId: connection.connectionId,
@@ -110,27 +105,25 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
   );
 
   return (
-    <Content>
-      <StyledContentCard
-        title={
-          <Title>
-            <FormattedMessage id="sources.syncHistory" />
-            {connection.status === ConnectionStatus.active && (
-              <div>
-                <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                  <FormattedMessage id="connection.pendingSync" />
-                </ToolTip>
-                <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                  <FormattedMessage id="connection.pendingSync" />
-                </ToolTip>
-              </div>
-            )}
-          </Title>
-        }
-      >
-        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
-      </StyledContentCard>
-    </Content>
+    <StyledContentCard
+      title={
+        <Title>
+          <FormattedMessage id="sources.syncHistory" />
+          {connection.status === ConnectionStatus.active && (
+            <div>
+              <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                <FormattedMessage id="connection.pendingSync" />
+              </ToolTip>
+              <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                <FormattedMessage id="connection.pendingSync" />
+              </ToolTip>
+            </div>
+          )}
+        </Title>
+      }
+    >
+      {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
+    </StyledContentCard>
   );
 };
 

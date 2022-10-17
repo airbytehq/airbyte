@@ -344,6 +344,44 @@ class TestTransformConfig:
         assert expected == actual
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
+    def test_transform_snowflake_key_pair(self):
+
+        input = {
+            "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
+            "role": "AIRBYTE_ROLE",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "database": "AIRBYTE_DATABASE",
+            "schema": "AIRBYTE_SCHEMA",
+            "username": "AIRBYTE_USER",
+            "credentials": {
+                "private_key": "AIRBYTE_PRIVATE_KEY",
+                "private_key_password": "AIRBYTE_PRIVATE_KEY_PASSWORD",
+            },
+        }
+
+        actual = TransformConfig().transform_snowflake(input)
+        expected = {
+            "account": "123abc.us-east-7.aws",
+            "client_session_keep_alive": False,
+            "database": "AIRBYTE_DATABASE",
+            "query_tag": "normalization",
+            "role": "AIRBYTE_ROLE",
+            "schema": "AIRBYTE_SCHEMA",
+            "threads": 5,
+            "retry_all": True,
+            "retry_on_database_errors": True,
+            "connect_retries": 3,
+            "connect_timeout": 15,
+            "type": "snowflake",
+            "user": "AIRBYTE_USER",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "private_key_path": "private_key_path.txt",
+            "private_key_passphrase": "AIRBYTE_PRIVATE_KEY_PASSWORD",
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "AIRBYTE_SCHEMA"
+
     def test_transform_mysql(self):
         input = {
             "type": "mysql5",

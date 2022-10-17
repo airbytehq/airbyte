@@ -1,7 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 
-import Header from "./Header";
+import { useExperiment } from "hooks/services/Experiment";
+
+import { GitBlock } from "./GitBlock";
+import { Header } from "./Header";
 
 const MainBlock = styled.div`
   width: 100%;
@@ -16,21 +19,20 @@ const FormContainer = styled.div`
   width: 100%;
 `;
 
-const Logo = styled.img`
-  margin-bottom: 37px;
-  display: block;
-`;
+interface FormContentProps {
+  toLogin?: boolean;
+}
 
-const FormContent: React.FC<{ toLogin?: boolean }> = (props) => {
+const FormContent: React.FC<FormContentProps> = ({ toLogin, children }) => {
+  const hideSelfHostedCTA = useExperiment("authPage.hideSelfHostedCTA", false);
+
   return (
     <>
-      <Header toLogin={props.toLogin} />
+      <Header toLogin={toLogin} />
       <MainBlock>
-        <FormContainer>
-          <Logo src="/cloud-main-logo.svg" width={186} />
-          {props.children}
-        </FormContainer>
+        <FormContainer>{children}</FormContainer>
       </MainBlock>
+      {!hideSelfHostedCTA && <GitBlock />}
     </>
   );
 };

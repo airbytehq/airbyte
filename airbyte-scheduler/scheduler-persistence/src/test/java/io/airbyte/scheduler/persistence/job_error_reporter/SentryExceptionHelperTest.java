@@ -13,7 +13,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class SentryExceptionHelperTest {
+class SentryExceptionHelperTest {
 
   final SentryExceptionHelper exceptionHelper = new SentryExceptionHelper();
 
@@ -292,28 +292,38 @@ public class SentryExceptionHelperTest {
         }
         	at com.google.api.client.googleapis.json.GoogleJsonResponseException.from(GoogleJsonResponseException.java:146)
           ... 22 more
+        Caused by: org.postgresql.util.PSQLException: ERROR: publication "airbyte_publication" does not exist
+          Where: slot "airbyte_slot", output plugin "pgoutput", in the change callback, associated LSN 0/48029520
+        	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2675)
         """;
 
     final Optional<List<SentryException>> optionalSentryExceptions = exceptionHelper.buildSentryExceptions(stacktrace);
     Assertions.assertTrue(optionalSentryExceptions.isPresent());
     final List<SentryException> exceptionList = optionalSentryExceptions.get();
-    Assertions.assertEquals(1, exceptionList.size());
+    Assertions.assertEquals(2, exceptionList.size());
 
-    final String expectedValue =
+    assertExceptionContent(exceptionList.get(0), "io.temporal.failure.ApplicationFailure",
         """
         GET https://storage.googleapis.com/
         {
           "code" : 401,
           "message" : "Invalid Credentials"
-        }""";
-
-    assertExceptionContent(exceptionList.get(0), "io.temporal.failure.ApplicationFailure",
-        expectedValue, List.of(
+        }""", List.of(
             Map.of(
                 "filename", "GoogleJsonResponseException.java",
                 "lineno", 146,
                 "module", "com.google.api.client.googleapis.json.GoogleJsonResponseException",
                 "function", "from")));
+
+    assertExceptionContent(exceptionList.get(1), "org.postgresql.util.PSQLException",
+        """
+        ERROR: publication "airbyte_publication" does not exist
+          Where: slot "airbyte_slot", output plugin "pgoutput", in the change callback, associated LSN 0/48029520""", List.of(
+            Map.of(
+                "filename", "QueryExecutorImpl.java",
+                "lineno", 2675,
+                "module", "org.postgresql.core.v3.QueryExecutorImpl",
+                "function", "receiveErrorResponse")));
   }
 
   private void assertExceptionContent(final SentryException exception,

@@ -405,7 +405,6 @@ class SourceDefinitionsHandlerTest {
     final String newDockerImageTag = "averydifferenttag";
     final SourceDefinitionRead sourceDefinition = sourceDefinitionsHandler
         .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()));
-    final String dockerRepository = sourceDefinition.getDockerRepository();
     final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 

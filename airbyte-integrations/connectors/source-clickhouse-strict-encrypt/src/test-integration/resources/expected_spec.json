@@ -5,7 +5,6 @@
     "title": "ClickHouse Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username"],
-    "additionalProperties": false,
     "properties": {
       "host": {
         "description": "The host endpoint of the Clickhouse cluster.",

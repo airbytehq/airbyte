@@ -132,11 +132,12 @@ Using this feature requires additional configuration, when creating the destinat
 
 ## CHANGELOG destination-mysql-strict-encrypt
 
-| Version | Date | Pull Request                                             | Subject |
-|:--------| :---  |:---------------------------------------------------------| :--- |
-| 0.1.5   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
+| Version | Date       | Pull Request                                             | Subject                                                                                             |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.1.20 | 2022-08-03 | [15258](https://github.com/airbytehq/airbyte/pull/15258) | Align versions of strict encrypt and regular connectors                                             |
+| 0.1.5   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                              |
 | 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
-| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.1.2   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
+| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                        |
+| 0.1.2   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                            |
 | 0.1.1   | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)  | Improve handling of wide rows by buffering records based on their byte size rather than their count |
-| 0.1.0   | 06.10.2021 | [\#6763](https://github.com/airbytehq/airbyte/pull/6763) | Added destination-mysql-strict-encrypt that supports SSL connections only. |
+| 0.1.0   | 06.10.2021 | [\#6763](https://github.com/airbytehq/airbyte/pull/6763) | Added destination-mysql-strict-encrypt that supports SSL connections only.                          |

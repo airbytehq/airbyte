@@ -88,4 +88,5 @@ public class AbstractDbSourceTest {
       throw new IllegalStateException("Failed to set environment variable", e);
     }
   }
+
 }

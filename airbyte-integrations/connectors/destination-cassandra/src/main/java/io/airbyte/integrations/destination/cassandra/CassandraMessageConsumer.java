@@ -27,14 +27,13 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private final CassandraCqlProvider cassandraCqlProvider;
 
-  private AirbyteMessage lastMessage = null;
-
-  public CassandraMessageConsumer(CassandraConfig cassandraConfig,
-                                  ConfiguredAirbyteCatalog configuredCatalog,
-                                  Consumer<AirbyteMessage> outputRecordCollector) {
+  public CassandraMessageConsumer(final CassandraConfig cassandraConfig,
+                                  final ConfiguredAirbyteCatalog configuredCatalog,
+                                  final CassandraCqlProvider provider,
+                                  final Consumer<AirbyteMessage> outputRecordCollector) {
     this.cassandraConfig = cassandraConfig;
     this.outputRecordCollector = outputRecordCollector;
-    this.cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
+    this.cassandraCqlProvider = provider;
     var nameTransformer = new CassandraNameTransformer(cassandraConfig);
     this.cassandraStreams = configuredCatalog.getStreams().stream()
         .collect(Collectors.toUnmodifiableMap(
@@ -55,7 +54,7 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage message) {
+  protected void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == AirbyteMessage.Type.RECORD) {
       var messageRecord = message.getRecord();
       var streamConfig =
@@ -66,14 +65,14 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
       var data = Jsons.serialize(messageRecord.getData());
       cassandraCqlProvider.insert(streamConfig.getKeyspace(), streamConfig.getTempTableName(), data);
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
-      this.lastMessage = message;
+      outputRecordCollector.accept(message);
     } else {
       LOGGER.warn("Unsupported airbyte message type: {}", message.getType());
     }
   }
 
   @Override
-  protected void close(boolean hasFailed) {
+  protected void close(final boolean hasFailed) {
     if (!hasFailed) {
       cassandraStreams.forEach((k, v) -> {
         try {
@@ -88,17 +87,16 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
             }
             default -> throw new UnsupportedOperationException();
           }
-        } catch (Exception e) {
+        } catch (final Exception e) {
           LOGGER.error("Error while copying data to table {}: : ", v.getTableName(), e);
         }
       });
-      outputRecordCollector.accept(lastMessage);
     }
 
     cassandraStreams.forEach((k, v) -> {
       try {
         cassandraCqlProvider.dropTableIfExists(v.getKeyspace(), v.getTempTableName());
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOGGER.error("Error while deleting temp table {} with reason: ", v.getTempTableName(), e);
       }
     });

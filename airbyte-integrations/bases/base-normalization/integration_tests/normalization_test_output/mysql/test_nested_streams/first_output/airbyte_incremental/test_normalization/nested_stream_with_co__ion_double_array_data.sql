@@ -56,7 +56,7 @@ with numbers as (
 select
     _airbyte_partition_hashid,
     json_value(_airbyte_nested_data, 
-    '$."id"') as id,
+    '$."id"' RETURNING CHAR) as id,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     

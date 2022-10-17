@@ -62,6 +62,7 @@ import org.slf4j.MDC;
  * next replication can pick up where it left off instead of starting from the beginning)</li>
  * </ul>
  */
+@SuppressWarnings("PMD.AvoidPrintStackTrace")
 public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
@@ -366,9 +367,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static void validateSchema(RecordSchemaValidator recordSchemaValidator,
-                                     Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
-                                     AirbyteMessage message) {
+  private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
+                                     final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
+                                     final AirbyteMessage message) {
     if (message.getRecord() == null) {
       return;
     }

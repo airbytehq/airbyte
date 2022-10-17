@@ -709,7 +709,7 @@ public class DefaultJobPersistence implements JobPersistence {
       final String JOB_HISTORY_PURGE_SQL = MoreResources.readResource("job_history_purge.sql");
       // interval '?' days cannot use a ? bind, so we're using %d instead.
       final String sql = String.format(JOB_HISTORY_PURGE_SQL, (JOB_HISTORY_MINIMUM_AGE_IN_DAYS - 1));
-      final Integer rows = jobDatabase.query(ctx -> ctx.execute(sql,
+      jobDatabase.query(ctx -> ctx.execute(sql,
           asOfDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
           JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
           JOB_HISTORY_MINIMUM_RECENCY));
@@ -742,7 +742,7 @@ public class DefaultJobPersistence implements JobPersistence {
     try (final Stream<Record> records = jobDatabase.query(ctx -> ctx.select(DSL.asterisk()).from(tableSql).fetchStream())) {
       return records.map(record -> {
         final Set<String> jsonFieldNames = Arrays.stream(record.fields())
-            .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
+            .filter(f -> "jsonb".equals(f.getDataType().getTypeName()))
             .map(Field::getName)
             .collect(Collectors.toSet());
         final JsonNode row = Jsons.deserialize(record.formatJSON(JdbcUtils.getDefaultJSONFormat()));
@@ -834,7 +834,7 @@ public class DefaultJobPersistence implements JobPersistence {
           ctx.batch(insertStep).execute();
         }
       });
-      final Optional<Field<?>> idColumn = columns.stream().filter(f -> f.getName().equals("id")).findFirst();
+      final Optional<Field<?>> idColumn = columns.stream().filter(f -> "id".equals(f.getName())).findFirst();
       if (idColumn.isPresent())
         resetIdentityColumn(ctx, schema, tableType);
     }
@@ -877,6 +877,7 @@ public class DefaultJobPersistence implements JobPersistence {
   /**
    * Read @param jsonSchema and @returns a list of properties (converted as Field objects)
    */
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
   private static List<Field<?>> getFields(final JsonNode jsonSchema) {
     final List<Field<?>> result = new ArrayList<>();
     final JsonNode properties = jsonSchema.get("properties");

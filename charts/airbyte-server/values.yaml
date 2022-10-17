@@ -1,0 +1,188 @@
+
+global:
+  serviceAccountName: placeholderServiceAccount
+  deploymentMode: oss
+  configMapName: ""
+  secretName: ""
+  credVolumeOverride: ""
+  extraContainers: []
+  database:
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
+    port: "5432"
+  logs:
+    ## @param logs.accessKey.password Logs Access Key
+    ## @param logs.accessKey.existingSecret
+    ## @param logs.accessKey.existingSecretKey
+    accessKey:
+      password: minio
+      existingSecret: ""
+      existingSecretKey: ""
+    ## @param logs.secretKey.password Logs Secret Key
+    ## @param logs.secretKey.existingSecret
+    ## @param logs.secretKey.existingSecretKey
+    secretKey:
+      password: minio123
+      existingSecret: ""
+      existingSecretKey: ""
+
+    ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
+    minio:
+      enabled: true
+
+    ## @param logs.externalMinio.enabled Switch to enable or disable an external Minio instance
+    ## @param logs.externalMinio.host External Minio Host
+    ## @param logs.externalMinio.port External Minio Port
+    externalMinio:
+      enabled: false
+      host: localhost
+      port: 9000
+
+    ## @param logs.s3.enabled Switch to enable or disable custom S3 Log location
+    ## @param logs.s3.bucket Bucket name where logs should be stored
+    ## @param logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
+    s3:
+      enabled: false
+      bucket: airbyte-dev-logs
+      bucketRegion: ""
+
+    ## Google Cloud Storage (GCS) Log Location Configuration
+    ## @param logs.gcs.bucket GCS bucket name
+    ## @param logs.gcs.credentials The path the GCS creds are written to
+    ## @param logs.gcs.credentialsJson Base64 encoded json GCP credentials file contents
+    gcs:
+      bucket: ""
+      # If you are mounting an existing secret to extraVolumes on scheduler, server and worker
+      # deployments, then set credentials to the path of the mounted JSON file
+      credentials: ""
+      # If credentialsJson is set then credentials auto resolves (to /secrets/gcs-log-creds/gcp.json)
+      credentialsJson: ""
+
+enabled: true
+## @param server.replicaCount Number of server replicas
+replicaCount: 1
+
+## @param server.image.repository The repository to use for the airbyte server image.
+## @param server.image.pullPolicy the pull policy to use for the airbyte server image
+## @param server.image.tag The airbyte server image tag. Defaults to the chart's AppVersion
+image:
+  repository: airbyte/server
+  pullPolicy: IfNotPresent
+
+## @param server.podAnnotations [object] Add extra annotations to the server pod
+##
+podAnnotations: {}
+
+## @param server.containerSecurityContext Security context for the container
+## Examples:
+## containerSecurityContext:
+##    runAsNonRoot: true
+##    runAsUser: 1000
+##    readOnlyRootFilesystem: true
+containerSecurityContext: {}
+
+## Configure extra options for the server containers' liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+## @param server.livenessProbe.enabled Enable livenessProbe on the server
+## @param server.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+## @param server.livenessProbe.periodSeconds Period seconds for livenessProbe
+## @param server.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+## @param server.livenessProbe.failureThreshold Failure threshold for livenessProbe
+## @param server.livenessProbe.successThreshold Success threshold for livenessProbe
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+## @param server.readinessProbe.enabled Enable readinessProbe on the server
+## @param server.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+## @param server.readinessProbe.periodSeconds Period seconds for readinessProbe
+## @param server.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+## @param server.readinessProbe.failureThreshold Failure threshold for readinessProbe
+## @param server.readinessProbe.successThreshold Success threshold for readinessProbe
+##
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+## Server app resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param server.resources.limits [object] The resources limits for the server container
+## @param server.resources.requests [object] The requested resources for the server container
+resources:
+  ## Example:
+  ## limits:
+  ##    cpu: 200m
+  ##    memory: 1Gi
+  limits: {}
+  ## Examples:
+  ## requests:
+  ##    memory: 256Mi
+  ##    cpu: 250m
+  requests: {}
+
+## @param server.service.type The service type to use for the API server
+## @param server.service.port The service port to expose the API server on
+service:
+  type: ClusterIP
+  port: 8001
+
+## @param server.nodeSelector [object] Node labels for pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+## @param server.tolerations [array] Tolerations for server pod assignment.
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+## @param server.affinity [object] Affinity and anti-affinity for server pod assignment.
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+## @param server.log.level The log level to log at
+log:
+  level: "INFO"
+
+## @param server.extraEnv [array] Additional env vars for server pod(s).
+## Example:
+##
+## extraEnv:
+## - name: SAMPLE_ENV_VAR
+##   value: "key=sample-value"
+extraEnv: []
+
+## @param server.extraVolumeMounts [array] Additional volumeMounts for server container(s).
+## Examples (when using `server.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumeMounts:
+##   - name: tmpdir
+##     mountPath: /tmp
+##
+extraVolumeMounts: []
+
+## @param server.extraVolumes [array] Additional volumes for server pod(s).
+## Examples (when using `server.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumes:
+##   - name: tmpdir
+##     emptyDir: {}
+##
+extraVolumes: []
+
+extraContainers: []
+
+extraInitContainers: []

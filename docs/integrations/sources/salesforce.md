@@ -119,6 +119,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                                                          |
 |:--------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.11   | 2022-07-07 | [13729](https://github.com/airbytehq/airbyte/pull/13729)     | Improve configuration field descriptions   |
 | 1.0.10   | 2022-06-09 | [13658](https://github.com/airbytehq/airbyte/pull/13658)     | Correct logic to sync stream larger than page size   |
 | 1.0.9   | 2022-05-06 | [12685](https://github.com/airbytehq/airbyte/pull/12685)     | Update CDK to v0.1.56 to emit an `AirbyeTraceMessage` on uncaught exceptions                                                     |
 | 1.0.8   | 2022-05-04 | [12576](https://github.com/airbytehq/airbyte/pull/12576)     | Decode responses as utf-8 and fallback to ISO-8859-1 if needed                                                                   |

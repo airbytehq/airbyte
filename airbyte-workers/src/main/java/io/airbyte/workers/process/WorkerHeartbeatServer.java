@@ -55,14 +55,17 @@ public class WorkerHeartbeatServer {
 
   public static class WorkerHeartbeatServlet extends HttpServlet {
 
+    @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
       this.serveDefaultRequest(response);
     }
 
+    @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
       this.serveDefaultRequest(response);
     }
 
+    @Override
     public void doOptions(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
       this.addCorsHeaders(response);
     }

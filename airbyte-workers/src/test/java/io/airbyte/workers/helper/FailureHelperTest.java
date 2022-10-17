@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-public class FailureHelperTest {
+class FailureHelperTest {
 
   private static final FailureReason TRACE_FAILURE_REASON = new FailureReason()
       .withInternalMessage("internal message")
@@ -45,7 +45,7 @@ public class FailureHelperTest {
           .withAdditionalProperty("attempt", 1));
 
   @Test
-  public void testGenericFailureFromTrace() throws Exception {
+  void testGenericFailureFromTrace() throws Exception {
     final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Double.valueOf(123),
         AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR);
     final FailureReason failureReason = FailureHelper.genericFailure(traceMessage, Long.valueOf(12345), 1);
@@ -53,14 +53,14 @@ public class FailureHelperTest {
   }
 
   @Test
-  public void testGenericFailureFromTraceNoFailureType() throws Exception {
+  void testGenericFailureFromTraceNoFailureType() throws Exception {
     final AirbyteTraceMessage traceMessage = AirbyteMessageUtils.createErrorTraceMessage("trace message error", Double.valueOf(123));
     final FailureReason failureReason = FailureHelper.genericFailure(traceMessage, Long.valueOf(12345), 1);
     assertEquals(failureReason.getFailureType(), FailureType.SYSTEM_ERROR);
   }
 
   @Test
-  public void testOrderedFailures() throws Exception {
+  void testOrderedFailures() throws Exception {
     final List<FailureReason> failureReasonList =
         FailureHelper.orderedFailures(Set.of(TRACE_FAILURE_REASON_2, TRACE_FAILURE_REASON, EXCEPTION_FAILURE_REASON));
     assertEquals(failureReasonList.get(0), TRACE_FAILURE_REASON);

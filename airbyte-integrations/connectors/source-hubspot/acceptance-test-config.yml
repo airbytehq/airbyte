@@ -68,8 +68,6 @@ tests:
         "tickets": [ "properties", "hs_time_in_2" ]
         "tickets": [ "properties", "hs_time_in_3" ]
         "tickets": [ "properties", "hs_time_in_4" ]
-        "property_history": [ "property", "hs_time_in_lead" ]
-        "property_history": [ "property", "hs_time_in_subscriber" ]
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "sample_files/full_refresh_oauth_catalog.json"
       ignored_fields:
@@ -103,5 +101,3 @@ tests:
         "tickets": [ "properties", "hs_time_in_2" ]
         "tickets": [ "properties", "hs_time_in_3" ]
         "tickets": [ "properties", "hs_time_in_4" ]
-        "property_history": [ "property", "hs_time_in_lead" ]
-        "property_history": [ "property", "hs_time_in_subscriber" ]

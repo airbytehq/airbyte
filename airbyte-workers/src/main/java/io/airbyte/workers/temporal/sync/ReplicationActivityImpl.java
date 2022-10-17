@@ -207,7 +207,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
       // reset jobs use an empty source to induce resetting all data in destination.
       final AirbyteSource airbyteSource =
-          sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
+          WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage())
               ? new EmptyAirbyteSource(useStreamCapableState)
               : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
 

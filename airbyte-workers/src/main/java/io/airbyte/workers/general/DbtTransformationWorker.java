@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.AvoidPrintStackTrace")
 public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationWorker.class);

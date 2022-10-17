@@ -34,12 +34,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DestinationHandler {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationHandler.class);
 
   private final ConnectionsHandler connectionsHandler;
   private final Supplier<UUID> uuidGenerator;

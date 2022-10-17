@@ -49,6 +49,9 @@ checkConnectorImages() {
       else
           printf "\tERROR: not found!\n" && exit 1
       fi
+      # Docker hub has a rate limit of 180 requests per minute, so slow down our rate of calling the API
+      # https://docs.docker.com/docker-hub/api/latest/#tag/rate-limiting
+      sleep 1
   done <<< "${CONNECTOR_DEFINITIONS}"
 
   echo "Success! All connector images exist!"

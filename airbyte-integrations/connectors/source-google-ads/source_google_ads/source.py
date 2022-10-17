@@ -3,10 +3,10 @@
 #
 
 
+import logging
 import traceback
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -79,7 +79,7 @@ class SourceGoogleAds(AbstractSource):
                 return True
         return False
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             logger.info("Checking the config")
             google_api = GoogleAds(credentials=self.get_credentials(config))
@@ -121,7 +121,6 @@ class SourceGoogleAds(AbstractSource):
             AdGroups(**incremental_config),
             AdGroupLabels(google_api, customers=customers),
             Accounts(**incremental_config),
-            Campaigns(**incremental_config),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
         ]
@@ -129,6 +128,7 @@ class SourceGoogleAds(AbstractSource):
         if non_manager_accounts:
             streams.extend(
                 [
+                    Campaigns(**non_manager_incremental_config),
                     UserLocationReport(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),
                     DisplayTopicsPerformanceReport(**non_manager_incremental_config),

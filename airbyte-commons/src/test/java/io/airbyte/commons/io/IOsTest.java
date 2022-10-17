@@ -47,20 +47,20 @@ class IOsTest {
   }
 
   @Test
-  public void testWriteFileToRandomDir() throws IOException {
+  void testWriteFileToRandomDir() throws IOException {
     final String contents = "something to remember";
     final String tmpFilePath = IOs.writeFileToRandomTmpDir("file.txt", contents);
     assertEquals(contents, Files.readString(Path.of(tmpFilePath)));
   }
 
   @Test
-  public void testGetTailDoesNotExist() throws IOException {
+  void testGetTailDoesNotExist() throws IOException {
     final List<String> tail = IOs.getTail(100, Path.of(RandomStringUtils.randomAlphanumeric(100)));
     assertEquals(Collections.emptyList(), tail);
   }
 
   @Test
-  public void testGetTailExists() throws IOException {
+  void testGetTailExists() throws IOException {
     final Path stdoutFile = Files.createTempFile("job-history-handler-test", "stdout");
 
     final List<String> head = List.of(

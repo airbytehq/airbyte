@@ -19,6 +19,7 @@ export const buildConnectionUpdate = (
   connection: WebBackendConnectionRead,
   connectionUpdate: Partial<WebBackendConnectionUpdate>
 ): WebBackendConnectionUpdate => ({
+  skipReset: true,
   ...toWebBackendConnectionUpdate(connection),
   ...connectionUpdate,
 });

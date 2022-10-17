@@ -89,9 +89,7 @@
   },
   "pull_request_comment_reactions": {
     "airbytehq/integration-test": {
-      "699253726": {
-        "created_at": "2121-12-31T23:59:59Z"
-      }
+      "created_at": "2121-12-31T23:59:59Z"
     }
   },
   "pull_request_stats": {

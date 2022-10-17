@@ -11,6 +11,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
@@ -47,7 +48,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
       // the state is persisted immediately after the replication succeeded, because the
       // state is a checkpoint of the raw data that has been copied to the destination;
       // normalization & dbt does not depend on it
-      persistActivity.persist(connectionId, syncOutput);
+      final ConfiguredAirbyteCatalog configuredCatalog = syncInput.getCatalog();
+      persistActivity.persist(connectionId, syncOutput, configuredCatalog);
     }
 
     if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {

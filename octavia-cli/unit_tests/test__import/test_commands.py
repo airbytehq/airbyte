@@ -169,7 +169,7 @@ def test_import_connection(mocker, context_object, source_exists, source_was_cre
             commands.import_connection(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], "resource_to_get")
 
 
-@pytest.mark.parametrize("command", [commands.source, commands.destination, commands.connection])
+@pytest.mark.parametrize("command", [commands.source, commands.destination, commands.connection, commands.all])
 def test_import_not_initialized(command):
     runner = CliRunner()
     result = runner.invoke(command, obj={"PROJECT_IS_INITIALIZED": False})
@@ -196,3 +196,38 @@ def test_import_commands(mocker, context_object, ResourceClass, command, import_
     else:
         mock_import_function.assert_called_with(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], "resource_to_import")
     assert result.exit_code == 0
+
+
+def test_import_all(mocker, context_object):
+    runner = CliRunner()
+    mock_manager = mocker.Mock()
+    mocker.patch.object(commands, "import_source_or_destination", mock_manager.import_source_or_destination)
+    mocker.patch.object(commands, "import_connection", mock_manager.import_connection)
+    mocker.patch.object(
+        commands, "UnmanagedSources", return_value=mocker.Mock(get_listing=mocker.Mock(return_value=[("_", "_", "source_resource_id")]))
+    )
+    mocker.patch.object(
+        commands,
+        "UnmanagedDestinations",
+        return_value=mocker.Mock(get_listing=mocker.Mock(return_value=[("_", "_", "destination_resource_id")])),
+    )
+    mocker.patch.object(
+        commands,
+        "UnmanagedConnections",
+        return_value=mocker.Mock(get_listing=mocker.Mock(return_value=[("_", "connection_resource_id", "_", "_", "_")])),
+    )
+    result = runner.invoke(commands.all, obj=context_object)
+
+    commands.UnmanagedSources.return_value.get_listing.assert_called_once()
+    commands.UnmanagedDestinations.return_value.get_listing.assert_called_once()
+    commands.UnmanagedConnections.return_value.get_listing.assert_called_once()
+    assert result.exit_code == 0
+    assert mock_manager.mock_calls[0] == mocker.call.import_source_or_destination(
+        context_object["API_CLIENT"], "workspace_id", commands.UnmanagedSource, "source_resource_id"
+    )
+    assert mock_manager.mock_calls[1] == mocker.call.import_source_or_destination(
+        context_object["API_CLIENT"], "workspace_id", commands.UnmanagedDestination, "destination_resource_id"
+    )
+    assert mock_manager.mock_calls[2] == mocker.call.import_connection(
+        context_object["API_CLIENT"], "workspace_id", "connection_resource_id"
+    )

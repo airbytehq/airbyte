@@ -5,7 +5,9 @@ import StatusIconComponent from "./StatusIcon";
 export default {
   title: "Ui/StatusIcon",
   component: StatusIconComponent,
-  argTypes: {},
+  argTypes: {
+    value: { type: { name: "number", required: false } },
+  },
 } as ComponentMeta<typeof StatusIconComponent>;
 
 const Template: ComponentStory<typeof StatusIconComponent> = (args) => <StatusIconComponent {...args} />;

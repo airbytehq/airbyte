@@ -1,0 +1,74 @@
+{
+  "type": "object",
+  "properties": {
+    "credentials": {
+      "title": "Authorization Method",
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "OAuth2.0",
+          "required": [
+            "client_id",
+            "client_secret",
+            "access_token",
+            "refresh_token"
+          ],
+          "properties": {
+            "auth_method": {
+              "type": "string",
+              "const": "oauth2.0",
+              "enum": ["oauth2.0"],
+              "default": "oauth2.0",
+              "order": 0
+            },
+            "client_id": {
+              "type": "string",
+              "title": "Client ID",
+              "description": "The Client ID of your application.",
+              "airbyte_secret": true
+            },
+            "client_secret": {
+              "type": "string",
+              "title": "Client Secret",
+              "description": "The Client Secret of your application.",
+              "airbyte_secret": true
+            },
+            "access_token": {
+              "type": "string",
+              "title": "Access Token",
+              "description": "Access Token for making authenticated requests.",
+              "airbyte_secret": true
+            },
+            "refresh_token": {
+              "type": "string",
+              "title": "Refresh Token",
+              "description": "Refresh Token to renew the expired Access Token.",
+              "default": "",
+              "airbyte_secret": true
+            }
+          }
+        },
+        {
+          "title": "Access Token",
+          "type": "object",
+          "required": ["access_token"],
+          "properties": {
+            "auth_method": {
+              "type": "string",
+              "const": "access_token",
+              "enum": ["access_token"],
+              "default": "access_token",
+              "order": 0
+            },
+            "access_token": {
+              "type": "string",
+              "title": "Access Token",
+              "airbyte_secret": true
+            }
+          }
+        }
+      ]
+    }
+  }
+}

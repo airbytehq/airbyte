@@ -78,7 +78,6 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3Destinati
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
   }
 
-
   @Test
   void testIfSuperTmpTableWasCreatedAfterVarcharTmpTable() throws Exception {
     setup();

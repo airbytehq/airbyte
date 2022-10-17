@@ -23,23 +23,16 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
   const screenWidth = useWindowSize().width;
 
   return (
-    <>
-      {screenWidth > 500 && width < 450 && (
+    <div className={classNames(styles.container)}>
+      {screenWidth > 500 && width < 550 && (
         <div className={styles.darkOverlay}>
           <h3>
             <FormattedMessage id="connectorForm.expandForm" />
           </h3>
         </div>
       )}
-      <div
-        className={classNames(styles.container, {
-          [styles.noScroll]: width < 550,
-          [styles.fullHeight]: width > 550,
-        })}
-      >
-        {children}
-      </div>
-    </>
+      <div>{children}</div>
+    </div>
   );
 };
 

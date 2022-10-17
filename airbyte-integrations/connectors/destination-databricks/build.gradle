@@ -35,11 +35,17 @@ dependencies {
     implementation group: 'com.databricks', name: 'databricks-jdbc', version: '2.6.25'
 
     // parquet
-    implementation group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.3.3'
-    implementation group: 'org.apache.hadoop', name: 'hadoop-aws', version: '3.3.3'
-    implementation group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.3.3'
-    implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
-    implementation group: 'com.github.airbytehq', name: 'json-avro-converter', version: '1.0.1'
+    implementation ('org.apache.hadoop:hadoop-common:3.3.3') {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    }
+    implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    }
+    implementation ('org.apache.parquet:parquet-avro:1.12.0') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+    implementation ('com.github.airbytehq:json-avro-converter:1.0.1') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-databricks')

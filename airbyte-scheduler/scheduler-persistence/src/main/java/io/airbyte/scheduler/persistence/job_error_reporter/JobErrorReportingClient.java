@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardWorkspace;
 import java.util.Map;
@@ -16,6 +17,9 @@ public interface JobErrorReportingClient {
   /**
    * Report a job failure reason
    */
-  void reportJobFailureReason(StandardWorkspace workspace, final FailureReason reason, final String dockerImage, Map<String, String> metadata);
+  void reportJobFailureReason(@Nullable StandardWorkspace workspace,
+                              final FailureReason reason,
+                              final String dockerImage,
+                              Map<String, String> metadata);
 
 }

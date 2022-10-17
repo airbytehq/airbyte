@@ -25,6 +25,9 @@
     },
     {
       "SIMPLE_STREAMS_SECOND_RUN_ROW_COUNTS": "simple_streams_second_run_row_counts"
+    },
+    {
+      "TYPES_TESTING_INCORRECT_VALUES": "types_testing_incorrect_values"
     }
   ],
   "redshift": [],

@@ -193,7 +193,7 @@ public class WorkspacesHandler {
         return new NotificationRead().status(StatusEnum.SUCCEEDED);
       }
     } catch (final IllegalArgumentException e) {
-      throw new IdNotFoundKnownException(e.getMessage(), notification.getNotificationType().name());
+      throw new IdNotFoundKnownException(e.getMessage(), notification.getNotificationType().name(), e);
     } catch (final IOException | InterruptedException e) {
       return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
     }

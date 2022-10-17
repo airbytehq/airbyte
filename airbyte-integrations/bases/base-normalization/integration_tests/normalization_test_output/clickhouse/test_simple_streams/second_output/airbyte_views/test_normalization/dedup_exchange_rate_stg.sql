@@ -33,7 +33,7 @@ select
     BIGINT
 ') as id,
     nullif(accurateCastOrNull(trim(BOTH '"' from currency), 'String'), 'null') as currency,
-    parseDateTimeBestEffortOrNull(trim(BOTH '"' from nullif(date, ''))) as date,
+    toDate(parseDateTimeBestEffortOrNull(trim(BOTH '"' from nullif(date, '')))) as date,
     parseDateTime64BestEffortOrNull(trim(BOTH '"' from nullif(timestamp_col, ''))) as timestamp_col,
     accurateCastOrNull("HKD@spéçiäl & characters", '
     Float64

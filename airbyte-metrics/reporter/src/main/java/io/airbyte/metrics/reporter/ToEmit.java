@@ -6,6 +6,7 @@ package io.airbyte.metrics.reporter;
 
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
+import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.metrics.lib.MetricTags;
@@ -52,7 +53,8 @@ public enum ToEmit {
     final var times = ReporterApp.configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
     for (Pair<JobStatus, Double> pair : times) {
       MetricClientFactory.getMetricClient().distribution(
-          OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(), MetricTags.getJobStatus(pair.getLeft()));
+          OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(),
+          new MetricAttribute(MetricTags.JOB_STATUS, MetricTags.getJobStatus(pair.getLeft())));
     }
   }), 1, TimeUnit.HOURS);
 

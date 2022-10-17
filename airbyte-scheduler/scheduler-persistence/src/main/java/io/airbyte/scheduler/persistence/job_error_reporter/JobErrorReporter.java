@@ -4,18 +4,24 @@
 
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
+import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
-import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.WebUrlHelper;
+import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +42,8 @@ public class JobErrorReporter {
   private static final String CONNECTOR_REPOSITORY_META_KEY = "connector_repository";
   private static final String CONNECTOR_DEFINITION_ID_META_KEY = "connector_definition_id";
   private static final String CONNECTOR_RELEASE_STAGE_META_KEY = "connector_release_stage";
+  private static final String CONNECTOR_COMMAND_META_KEY = "connector_command";
+  private static final String JOB_ID_KEY = "job_id";
 
   private final ConfigRepository configRepository;
   private final DeploymentMode deploymentMode;
@@ -61,53 +69,169 @@ public class JobErrorReporter {
    *
    * @param connectionId - connection that had the failure
    * @param failureSummary - final attempt failure summary
-   * @param jobSyncConfig - config for the sync job
+   * @param jobContext - sync job reporting context
    */
-  public void reportSyncJobFailure(final UUID connectionId, final AttemptFailureSummary failureSummary, final JobSyncConfig jobSyncConfig) {
-    final List<FailureReason> traceMessageFailures = failureSummary.getFailures().stream()
-        .filter(failure -> failure.getMetadata() != null && failure.getMetadata().getAdditionalProperties().containsKey(FROM_TRACE_MESSAGE))
-        .toList();
+  public void reportSyncJobFailure(final UUID connectionId, final AttemptFailureSummary failureSummary, final SyncJobReportingContext jobContext) {
+    Exceptions.swallow(() -> {
+      final List<FailureReason> traceMessageFailures = failureSummary.getFailures().stream()
+          .filter(failure -> failure.getMetadata() != null && failure.getMetadata().getAdditionalProperties().containsKey(FROM_TRACE_MESSAGE))
+          .toList();
 
-    final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionId, true);
-    final String connectionUrl = webUrlHelper.getConnectionUrl(workspace.getWorkspaceId(), connectionId);
+      final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionId, true);
+      final Map<String, String> commonMetadata = MoreMaps.merge(
+          Map.of(JOB_ID_KEY, String.valueOf(jobContext.jobId())),
+          getConnectionMetadata(workspace.getWorkspaceId(), connectionId));
 
-    for (final FailureReason failureReason : traceMessageFailures) {
-      final FailureOrigin failureOrigin = failureReason.getFailureOrigin();
+      for (final FailureReason failureReason : traceMessageFailures) {
+        final FailureOrigin failureOrigin = failureReason.getFailureOrigin();
 
-      final HashMap<String, String> metadata = new HashMap<>();
-      metadata.put(WORKSPACE_ID_META_KEY, workspace.getWorkspaceId().toString());
-      metadata.put(CONNECTION_ID_META_KEY, connectionId.toString());
-      metadata.put(CONNECTION_URL_META_KEY, connectionUrl);
-      metadata.put(AIRBYTE_VERSION_META_KEY, airbyteVersion);
-      metadata.put(DEPLOYMENT_MODE_META_KEY, deploymentMode.name());
-      metadata.put(FAILURE_ORIGIN_META_KEY, failureOrigin.value());
-      metadata.put(FAILURE_TYPE_META_KEY, failureReason.getFailureType().value());
-
-      try {
         if (failureOrigin == FailureOrigin.SOURCE) {
           final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
-          final String dockerImage = jobSyncConfig.getSourceDockerImage();
+          final String dockerImage = jobContext.sourceDockerImage();
+          final Map<String, String> metadata = MoreMaps.merge(commonMetadata, getSourceMetadata(sourceDefinition));
 
-          metadata.put(CONNECTOR_DEFINITION_ID_META_KEY, sourceDefinition.getSourceDefinitionId().toString());
-          metadata.put(CONNECTOR_NAME_META_KEY, sourceDefinition.getName());
-          metadata.put(CONNECTOR_REPOSITORY_META_KEY, sourceDefinition.getDockerRepository());
-          metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value());
-
-          jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+          reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
         } else if (failureOrigin == FailureOrigin.DESTINATION) {
           final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
-          final String dockerImage = jobSyncConfig.getDestinationDockerImage();
+          final String dockerImage = jobContext.destinationDockerImage();
+          final Map<String, String> metadata = MoreMaps.merge(commonMetadata, getDestinationMetadata(destinationDefinition));
 
-          metadata.put(CONNECTOR_DEFINITION_ID_META_KEY, destinationDefinition.getDestinationDefinitionId().toString());
-          metadata.put(CONNECTOR_NAME_META_KEY, destinationDefinition.getName());
-          metadata.put(CONNECTOR_REPOSITORY_META_KEY, destinationDefinition.getDockerRepository());
-          metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, destinationDefinition.getReleaseStage().value());
-
-          jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+          reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
         }
-      } catch (final Exception e) {
-        LOGGER.error("Error when reporting job failure reason: {}", failureReason, e);
       }
+    });
+  }
+
+  /**
+   * Reports a FailureReason from a connector Check job for a Source to the JobErrorReportingClient
+   *
+   * @param workspaceId - workspace for which the check failed
+   * @param failureReason - failure reason from the check connection job
+   * @param jobContext - connector job reporting context
+   */
+  public void reportSourceCheckJobFailure(final UUID sourceDefinitionId,
+                                          final UUID workspaceId,
+                                          final FailureReason failureReason,
+                                          final ConnectorJobReportingContext jobContext)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+    final Map<String, String> metadata = MoreMaps.merge(
+        getSourceMetadata(sourceDefinition),
+        Map.of(
+            JOB_ID_KEY, jobContext.jobId().toString(),
+            CONNECTOR_COMMAND_META_KEY, "check"));
+    reportJobFailureReason(workspace, failureReason.withFailureOrigin(FailureOrigin.SOURCE), jobContext.dockerImage(), metadata);
+  }
+
+  /**
+   * Reports a FailureReason from a connector Check job for a Destination to the
+   * JobErrorReportingClient
+   *
+   * @param workspaceId - workspace for which the check failed
+   * @param failureReason - failure reason from the check connection job
+   * @param jobContext - connector job reporting context
+   */
+  public void reportDestinationCheckJobFailure(final UUID destinationDefinitionId,
+                                               final UUID workspaceId,
+                                               final FailureReason failureReason,
+                                               final ConnectorJobReportingContext jobContext)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+    final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+    final Map<String, String> metadata = MoreMaps.merge(
+        getDestinationMetadata(destinationDefinition),
+        Map.of(
+            JOB_ID_KEY, jobContext.jobId().toString(),
+            CONNECTOR_COMMAND_META_KEY, "check"));
+    reportJobFailureReason(workspace, failureReason.withFailureOrigin(FailureOrigin.DESTINATION), jobContext.dockerImage(), metadata);
+  }
+
+  /**
+   * Reports a FailureReason from a connector Deploy job for a Source to the JobErrorReportingClient
+   *
+   * @param workspaceId - workspace for which the Discover job failed
+   * @param failureReason - failure reason from the Discover job
+   * @param jobContext - connector job reporting context
+   */
+  public void reportDiscoverJobFailure(final UUID sourceDefinitionId,
+                                       final UUID workspaceId,
+                                       final FailureReason failureReason,
+                                       final ConnectorJobReportingContext jobContext)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+    final Map<String, String> metadata = MoreMaps.merge(
+        getSourceMetadata(sourceDefinition),
+        Map.of(
+            JOB_ID_KEY, jobContext.jobId().toString(),
+            CONNECTOR_COMMAND_META_KEY, "discover"));
+    reportJobFailureReason(workspace, failureReason, jobContext.dockerImage(), metadata);
+  }
+
+  /**
+   * Reports a FailureReason from a connector Spec job to the JobErrorReportingClient
+   *
+   * @param failureReason - failure reason from the Deploy job
+   * @param jobContext - connector job reporting context
+   */
+  public void reportSpecJobFailure(final FailureReason failureReason, final ConnectorJobReportingContext jobContext) {
+    final String dockerImage = jobContext.dockerImage();
+    final String connectorRepository = dockerImage.split(":")[0];
+    final Map<String, String> metadata = Map.of(
+        JOB_ID_KEY, jobContext.jobId().toString(),
+        CONNECTOR_REPOSITORY_META_KEY, connectorRepository,
+        CONNECTOR_COMMAND_META_KEY, "spec");
+    reportJobFailureReason(null, failureReason, dockerImage, metadata);
+  }
+
+  private Map<String, String> getConnectionMetadata(final UUID workspaceId, final UUID connectionId) {
+    final String connectionUrl = webUrlHelper.getConnectionUrl(workspaceId, connectionId);
+    return Map.ofEntries(
+        Map.entry(CONNECTION_ID_META_KEY, connectionId.toString()),
+        Map.entry(CONNECTION_URL_META_KEY, connectionUrl));
+  }
+
+  private Map<String, String> getDestinationMetadata(final StandardDestinationDefinition destinationDefinition) {
+    return Map.ofEntries(
+        Map.entry(CONNECTOR_DEFINITION_ID_META_KEY, destinationDefinition.getDestinationDefinitionId().toString()),
+        Map.entry(CONNECTOR_NAME_META_KEY, destinationDefinition.getName()),
+        Map.entry(CONNECTOR_REPOSITORY_META_KEY, destinationDefinition.getDockerRepository()),
+        Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, destinationDefinition.getReleaseStage().value()));
+  }
+
+  private Map<String, String> getSourceMetadata(final StandardSourceDefinition sourceDefinition) {
+    return Map.ofEntries(
+        Map.entry(CONNECTOR_DEFINITION_ID_META_KEY, sourceDefinition.getSourceDefinitionId().toString()),
+        Map.entry(CONNECTOR_NAME_META_KEY, sourceDefinition.getName()),
+        Map.entry(CONNECTOR_REPOSITORY_META_KEY, sourceDefinition.getDockerRepository()),
+        Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value()));
+  }
+
+  private void reportJobFailureReason(@Nullable final StandardWorkspace workspace,
+                                      final FailureReason failureReason,
+                                      final String dockerImage,
+                                      final Map<String, String> metadata) {
+    final Map<String, String> commonMetadata = new HashMap<>(Map.ofEntries(
+        Map.entry(AIRBYTE_VERSION_META_KEY, airbyteVersion),
+        Map.entry(DEPLOYMENT_MODE_META_KEY, deploymentMode.name())));
+
+    if (workspace != null) {
+      commonMetadata.put(WORKSPACE_ID_META_KEY, workspace.getWorkspaceId().toString());
+    }
+
+    if (failureReason.getFailureOrigin() != null) {
+      commonMetadata.put(FAILURE_ORIGIN_META_KEY, failureReason.getFailureOrigin().value());
+    }
+
+    if (failureReason.getFailureType() != null) {
+      commonMetadata.put(FAILURE_TYPE_META_KEY, failureReason.getFailureType().value());
+    }
+
+    try {
+      jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, MoreMaps.merge(commonMetadata, metadata));
+    } catch (final Exception e) {
+      LOGGER.error("Error when reporting job failure reason: {}", failureReason, e);
     }
   }
 

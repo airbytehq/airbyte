@@ -39,11 +39,17 @@ module.exports = {
           {
             type: 'category',
             label: 'Sources',
+            link: {
+              type: 'generated-index',
+            },
             items: getSourceConnectors()
           },
           {
             type: 'category',
             label: 'Destinations',
+            link: {
+              type: 'generated-index',
+            },
             items: getDestinationConnectors()
           },
           {
@@ -294,15 +300,6 @@ module.exports = {
           href: 'https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap',
         },
         'project-overview/product-release-stages',
-        {
-          type: 'category',
-          label: 'Changelog',
-          items: [
-            'project-overview/changelog/README',
-            'project-overview/changelog/platform',
-            'project-overview/changelog/connectors',
-          ]
-        },
         'project-overview/slack-code-of-conduct',
         'project-overview/security',
         {

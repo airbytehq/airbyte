@@ -1,0 +1,41 @@
+schema_loader:
+  type: JsonSchema
+  file_path: "./source_{{snakeCase name}}/schemas/\{{ options.name }}.json"
+selector:
+  type: RecordSelector
+  extractor:
+    type: JelloExtractor
+    transform: "_"
+requester:
+  type: HttpRequester
+  name: "\{{ options['name'] }}"
+  url_base: TODO "your_api_base_url"
+  http_method: "GET"
+  authenticator:
+    type: TokenAuthenticator
+    token: "\{{ config['api_key'] }}"
+retriever:
+  type: SimpleRetriever
+  name: "\{{ options['name'] }}"
+  primary_key: "\{{ options['primary_key'] }}"
+  record_selector:
+    $ref: "*ref(selector)"
+  paginator:
+    type: NoPagination
+customers_stream:
+  type: DeclarativeStream
+  $options:
+    name: "customers"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: TODO "your_endpoint_path"
+streams:
+  - "*ref(customers_stream)"
+check:
+  type: CheckStream
+  stream_names: ["customers_stream"]

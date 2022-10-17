@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery;
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Job;
@@ -176,14 +175,14 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     if (!BigQueryUtils.isUsingJsonCredentials(config)) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");
-      return ServiceAccountCredentials.getApplicationDefault();
+      return GoogleCredentials.getApplicationDefault();
     }
 
     // The JSON credential can either be a raw JSON object, or a serialized JSON object.
     final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
         ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
         : config.get(BigQueryConsts.CONFIG_CREDS).asText();
-    return ServiceAccountCredentials.fromStream(
+    return GoogleCredentials.fromStream(
         new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
 

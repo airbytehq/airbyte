@@ -5,7 +5,7 @@ import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 
@@ -16,8 +16,7 @@ const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
 
   const { connections } = useConnectionList();
-  const { hasFeature } = useFeatureService();
-  const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
+  const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
   const onCreateClick = () => push(`${RoutePaths.ConnectionNew}`);
 

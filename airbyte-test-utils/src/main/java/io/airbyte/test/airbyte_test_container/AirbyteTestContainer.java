@@ -4,7 +4,6 @@
 
 package io.airbyte.test.airbyte_test_container;
 
-import com.google.api.client.util.Preconditions;
 import com.google.common.collect.Maps;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.HealthApi;
@@ -12,7 +11,6 @@ import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.concurrency.WaitingUtils;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -81,15 +79,6 @@ public class AirbyteTestContainer {
     serviceLogConsumer(dockerComposeContainer, "server");
 
     dockerComposeContainer.start();
-  }
-
-  private static Map<String, String> prepareDockerComposeEnvVariables(final File envFile) throws IOException {
-    LOGGER.info("Searching for environment in {}", envFile);
-    Preconditions.checkArgument(envFile.exists(), "could not find docker compose environment");
-
-    final Properties prop = new Properties();
-    prop.load(new FileInputStream(envFile));
-    return Maps.fromProperties(prop);
   }
 
   /**
@@ -166,10 +155,11 @@ public class AirbyteTestContainer {
         final String message = prependService(service, log.replace("\n", ""));
         switch (c.getType()) {
           // prefer matching log levels from docker containers with log levels in logger.
-          case STDOUT -> LOGGER.info(message);
           case STDERR -> LOGGER.error(message);
           // assumption that this is an empty frame that connotes the container exiting.
           case END -> LOGGER.error(service + " stopped!!!");
+          // default includes STDOUT and anything else
+          default -> LOGGER.info(message);
         }
       }
     };

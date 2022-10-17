@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
@@ -38,23 +39,23 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   @Override
   protected Database setupDatabase(final String dbName) throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "your_host")
-        .put("port", 3306)
-        .put("database", dbName) // set your db name
-        .put("username", "your_username")
-        .put("password", "your_pass")
+        .put(JdbcUtils.HOST_KEY, "your_host")
+        .put(JdbcUtils.PORT_KEY, 3306)
+        .put(JdbcUtils.DATABASE_KEY, dbName) // set your db name
+        .put(JdbcUtils.USERNAME_KEY, "your_username")
+        .put(JdbcUtils.PASSWORD_KEY, "your_pass")
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
     final Database database = new Database(
         DSLContextFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.MYSQL.getDriverClassName(),
             String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("database").asText()),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.MYSQL,
             Map.of("zeroDateTimeBehavior", "convertToNull")));
 

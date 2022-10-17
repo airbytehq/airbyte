@@ -18,6 +18,7 @@ public class PostgresTestDataComparator extends AdvancedTestDataComparator {
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
+  private static final String AIRBYTE_DATETIME_PARSED_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
   private static final String POSTGRES_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
   private static final String POSTGRES_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
@@ -34,15 +35,6 @@ public class PostgresTestDataComparator extends AdvancedTestDataComparator {
     return result;
   }
 
-  private LocalDate parseLocalDate(String dateTimeValue) {
-    if (dateTimeValue != null) {
-      var format = (dateTimeValue.matches(".+Z") ? POSTGRES_DATETIME_FORMAT : AIRBYTE_DATETIME_FORMAT);
-      return LocalDate.parse(dateTimeValue, DateTimeFormatter.ofPattern(format));
-    } else {
-      return null;
-    }
-  }
-
   @Override
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     var destinationDate = parseLocalDate(actualValue);
@@ -52,7 +44,29 @@ public class PostgresTestDataComparator extends AdvancedTestDataComparator {
 
   @Override
   protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
-    return ZonedDateTime.of(LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(POSTGRES_DATETIME_WITH_TZ_FORMAT)), ZoneOffset.UTC);
+    return ZonedDateTime.of(LocalDateTime.parse(destinationValue,
+        DateTimeFormatter.ofPattern(POSTGRES_DATETIME_WITH_TZ_FORMAT)), ZoneOffset.UTC);
+  }
+
+  private LocalDate parseLocalDate(String dateTimeValue) {
+    if (dateTimeValue != null) {
+      return LocalDate.parse(dateTimeValue,
+          DateTimeFormatter.ofPattern(getFormat(dateTimeValue)));
+    } else {
+      return null;
+    }
+  }
+
+  private String getFormat(String dateTimeValue) {
+    if (dateTimeValue.matches(".+Z")) {
+      return POSTGRES_DATETIME_FORMAT;
+    } else if (dateTimeValue.contains("T")) {
+      // Postgres stores array of objects as a jsobb type, i.e. array of string for all cases
+      return AIRBYTE_DATETIME_FORMAT;
+    } else {
+      // Postgres stores datetime as datetime type after normalization
+      return AIRBYTE_DATETIME_PARSED_FORMAT;
+    }
   }
 
 }

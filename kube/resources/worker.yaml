@@ -250,6 +250,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
+            - name: USE_STREAM_CAPABLE_STATE
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: USE_STREAM_CAPABLE_STATE
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool
