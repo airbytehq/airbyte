@@ -91,9 +91,12 @@ class ConnectorConfig:
         bucket_name: str = None,
         bucket_prefix: str = None,
         lakeformation_database_name: str = None,
+        lakeformation_database_default_tag_key: str = None,
+        lakeformation_database_default_tag_values: str = None,
+        glue_catalog_float_as_decimal: bool = False,
         table_name: str = None,
         format: dict = None,
-        partitioning: dict = None,
+        partitioning: PartitionOptions = None,
     ):
         self.aws_account_id = aws_account_id
         self.credentials = credentials
@@ -102,6 +105,9 @@ class ConnectorConfig:
         self.bucket_name = bucket_name
         self.bucket_prefix = bucket_prefix
         self.lakeformation_database_name = lakeformation_database_name
+        self.lakeformation_database_default_tag_key = lakeformation_database_default_tag_key
+        self.lakeformation_database_default_tag_values = lakeformation_database_default_tag_values
+        self.glue_catalog_float_as_decimal = glue_catalog_float_as_decimal
         self.table_name = table_name
 
         self.format_type = OutputFormat.from_string(format.get("format_type"))

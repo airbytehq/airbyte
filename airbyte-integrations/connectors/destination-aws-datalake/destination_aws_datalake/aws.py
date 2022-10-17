@@ -71,6 +71,7 @@ class AwsHandler:
         self.create_session()
         self.glue_client = self._session.client("glue")
         self.s3_client = self._session.client("s3")
+        self.lf_client = self._session.client("lakeformation")
 
     @retry(stop_max_attempt_number=10, wait_random_min=1000, wait_random_max=2000)
     def create_session(self):
@@ -105,7 +106,10 @@ class AwsHandler:
         else:
             return None
 
-    def _pyarrow_types_from_pandas(self, df: pd.DataFrame): # pylint: disable=too-many-branches
+    def _get_float_columns(self, df: pd.DataFrame):
+        return list(df.select_dtypes(include=["float64", "float32"]).columns)
+
+    def _pyarrow_types_from_pandas(self, df: pd.DataFrame):  # pylint: disable=too-many-branches
         """
         Extract the related Pyarrow data types from any Pandas DataFrame
         and account for data types that can't be automatically casted.
@@ -136,9 +140,7 @@ class AwsHandler:
 
             except (pa.ArrowInvalid, TypeError) as ex:
                 # Handle arrays with objects of mixed types
-                logger.warning(
-                    f"Unable able to infer data type for column {col}, casting column type to string: {ex}"
-                )
+                logger.warning(f"Unable able to infer data type for column {col}, casting column type to string: {ex}")
 
                 cols_dtypes[col] = pa.string()
                 df[col].fillna("", inplace=True)
@@ -179,7 +181,7 @@ class AwsHandler:
                 df[k].fillna("", inplace=True)
                 df[k] = df[k].astype(str)
 
-    def _write_parquet(self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, partition_cols: list = None):
+    def _write_parquet(self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, dtype: Optional[Dict[str, str]], partition_cols: list = None):
         return wr.s3.to_parquet(
             df=df,
             path=path,
@@ -194,9 +196,10 @@ class AwsHandler:
             concurrent_partitioning=True,
             partition_cols=partition_cols,
             compression=self._get_compression_type(self._config.compression_codec),
+            dtype=dtype,
         )
 
-    def _write_json(self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, partition_cols: list = None):
+    def _write_json(self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, dtype: Optional[Dict[str, str]], partition_cols: list = None):
         return wr.s3.to_json(
             df=df,
             path=path,
@@ -212,6 +215,7 @@ class AwsHandler:
             boto3_session=self._session,
             concurrent_partitioning=True,
             partition_cols=partition_cols,
+            dtype=dtype,
             # Compression causes error: https://github.com/aws/aws-sdk-pandas/pull/1585
             # compression=self._get_compression_type(self._config.compression_codec),
         )
@@ -220,17 +224,34 @@ class AwsHandler:
         self._validate_athena_types(df)
         self._create_database_if_not_exists(database)
 
+        dtype = None
+        if self._config.glue_catalog_float_as_decimal:
+            float_cols = self._get_float_columns(df)
+            if float_cols:
+                dtype = {col: "decimal(38, 18)" for col in float_cols}
+
         if self._config.format_type == OutputFormat.JSONL:
-            return self._write_json(df, path, database, table, mode, partition_cols)
+            return self._write_json(df, path, database, table, mode, dtype, partition_cols)
 
         elif self._config.format_type == OutputFormat.PARQUET:
-            return self._write_parquet(df, path, database, table, mode, partition_cols)
+            return self._write_parquet(df, path, database, table, mode, dtype, partition_cols)
 
         else:
             raise Exception(f"Unsupported output format: {self._config.format_type}")
 
     def _create_database_if_not_exists(self, database: str):
-        return wr.catalog.create_database(name=database, boto3_session=self._session, exist_ok=True)
+        tag_key = self._config.lakeformation_database_default_tag_key
+        tag_values = self._config.lakeformation_database_default_tag_values
+
+        wr.catalog.create_database(name=database, boto3_session=self._session, exist_ok=True)
+
+        if tag_key and tag_values:
+            self.lf_client.add_lf_tags_to_resource(
+                Resource={
+                    "Database": {"Name": database},
+                },
+                LFTags=[{"TagKey": tag_key, "TagValues": tag_values.split(",")}],
+            )
 
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def head_bucket(self):

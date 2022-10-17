@@ -137,8 +137,22 @@
       "lakeformation_database_name": {
         "title": "Lake Formation Database Name",
         "type": "string",
-        "description": "The default database this destination will create tables per stream. Can be changed per connection by changing the namespace per connection.",
+        "description": "The default database this destination will use to create tables in per stream. Can be changed per connection by customizing the namespace.",
         "order": 6
+      },
+      "lakeformation_database_default_tag_key": {
+        "title": "Lake Formation Database Tag Key",
+        "description": "Add a default tag key to databases created by this destination",
+        "examples": ["pii_level"],
+        "type": "string",
+        "order": 7
+      },
+      "lakeformation_database_default_tag_values": {
+        "title": "Lake Formation Database Tag Values",
+        "description": "Add default values for the `Tag Key` to databases created by this destination. Comma separate for multiple values.",
+        "examples": ["private,public"],
+        "type": "string",
+        "order": 8
       },
       "format": {
         "title": "Output Format *",
@@ -184,7 +198,7 @@
             }
           }
         ],
-        "order": 7
+        "order": 9
       },
       "partitioning": {
         "title": "Choose how to partition data",
@@ -199,7 +213,15 @@
           "YEAR/MONTH",
           "YEAR/MONTH/DAY"
         ],
-        "default": "NO PARTITIONING"
+        "default": "NO PARTITIONING",
+        "order": 10
+      },
+      "glue_catalog_float_as_decimal": {
+        "title": "Glue Catalog: Float as Decimal",
+        "description": "Cast float/double as decimal(38,18). This can help achieve higher accuracy and represent numbers correctly as received from the source.",
+        "type": "boolean",
+        "default": false,
+        "order": 11
       }
     }
   }
