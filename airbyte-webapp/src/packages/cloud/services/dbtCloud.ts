@@ -16,7 +16,7 @@ import {
   OperatorType,
   WebBackendConnectionRead,
   OperationRead,
-  WorkspaceUpdate,
+  // WorkspaceUpdate,
 } from "core/request/AirbyteClient";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
@@ -32,7 +32,7 @@ const executionBody = `{"cause": "airbyte"}`;
 const jobName = (t: DbtCloudJob) => `${t.account}/${t.job}`;
 
 const updateConnection = (obj: WebBackendConnectionUpdate) => console.info(`updating connection with`, obj);
-const updateWorkspace = (obj: WorkspaceUpdate) => console.info(`updating workspace with`, obj);
+// const updateWorkspace = (obj: WorkspaceUpdate) => console.info(`updating workspace with`, obj);
 const toDbtCloudJob = (operation: OperationRead): DbtCloudJob => {
   const { operationId } = operation;
   const { executionUrl } = operation.operatorConfiguration.webhook || {};
@@ -54,6 +54,10 @@ const toDbtCloudJob = (operation: OperationRead): DbtCloudJob => {
 };
 const isDbtCloudJob = (operation: OperationRead): boolean =>
   operation.operatorConfiguration.operatorType === OperatorType.webhook;
+
+// export const configureDbtIntegration = (authToken: string, singleTenantUrl?: string) => {
+//     updateWorkspace(...)
+// }
 
 export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
   const workspace = useCurrentWorkspace();
