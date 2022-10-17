@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.temporal.TemporalUtils;
+import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
@@ -204,8 +205,9 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary),
-        actualOutput);
+    assertEquals(
+        replicationSuccessOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
+        actualOutput.getStandardSyncSummary());
   }
 
   @Test
@@ -244,8 +246,9 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    assertEquals(replicationFailOutput.withNormalizationSummary(normalizationSummary),
-        actualOutput);
+    assertEquals(
+        replicationFailOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
+        actualOutput.getStandardSyncSummary());
   }
 
   @Test

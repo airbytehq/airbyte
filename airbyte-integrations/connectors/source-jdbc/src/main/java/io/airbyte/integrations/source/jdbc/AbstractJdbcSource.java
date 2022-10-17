@@ -41,6 +41,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
@@ -49,6 +50,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -328,20 +330,37 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                                                                final List<String> columnNames,
                                                                final String schemaName,
                                                                final String tableName,
-                                                               final String cursorField,
-                                                               final Datatype cursorFieldType,
-                                                               final String cursorValue) {
+                                                               final CursorInfo cursorInfo,
+                                                               final Datatype cursorFieldType) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
-              final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorField);
-              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s > ?",
-                  sourceOperations.enquoteIdentifierList(connection, columnNames),
-                  sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  quotedCursorField));
+              final String fullTableName = sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName);
+              final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorInfo.getCursorField());
+
+              final String operator;
+              if (cursorInfo.getCursorRecordCount() <= 0L) {
+                operator = ">";
+              } else {
+                final long actualRecordCount = getActualCursorRecordCount(
+                    connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
+                LOGGER.info("Table {} cursor count: expected {}, actual {}", tableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
+                if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
+                  operator = ">";
+                } else {
+                  operator = ">=";
+                }
+              }
+
+              final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, tableName);
+              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s %s ?",
+                  wrappedColumnNames,
+                  fullTableName,
+                  quotedCursorField,
+                  operator));
               // if the connector emits intermediate states, the incremental query must be sorted by the cursor
               // field
               if (getStateEmissionFrequency() > 0) {
@@ -349,8 +368,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
               }
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorValue);
-              LOGGER.info("Executing query for table: {}", tableName);
+              LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
               return preparedStatement;
             },
             sourceOperations::rowToJson);
@@ -359,6 +378,51 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         throw new RuntimeException(e);
       }
     });
+  }
+
+  /**
+   * Some databases need special column names in the query.
+   */
+  protected String getWrappedColumnNames(final JdbcDatabase database,
+                                         final Connection connection,
+                                         final List<String> columnNames,
+                                         final String schemaName,
+                                         final String tableName) throws SQLException {
+    return sourceOperations.enquoteIdentifierList(connection, columnNames);
+  }
+
+  protected String getCountColumnName() {
+    return "record_count";
+  }
+
+  private long getActualCursorRecordCount(final Connection connection,
+                                          final String fullTableName,
+                                          final String quotedCursorField,
+                                          final Datatype cursorFieldType,
+                                          final String cursor)
+      throws SQLException {
+    final String columnName = getCountColumnName();
+    final PreparedStatement cursorRecordStatement;
+    if (cursor == null) {
+      final String cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s IS NULL",
+          columnName,
+          fullTableName,
+          quotedCursorField);
+      cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);
+    } else {
+      final String cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s = ?",
+          columnName,
+          fullTableName,
+          quotedCursorField);
+      cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);;
+      sourceOperations.setStatementField(cursorRecordStatement, 1, cursorFieldType, cursor);
+    }
+    final ResultSet resultSet = cursorRecordStatement.executeQuery();
+    if (resultSet.next()) {
+      return resultSet.getLong(columnName);
+    } else {
+      return 0L;
+    }
   }
 
   protected DataSource createDataSource(final JsonNode config) {
