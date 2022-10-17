@@ -8,6 +8,8 @@ on:
       - 'master'
     paths:
       - 'charts/**'
+      - '!charts/**/Chart.yaml'
+      - '!charts/**/Chart.lock'
   workflow_dispatch:
 
 jobs:
