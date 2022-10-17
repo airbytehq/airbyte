@@ -450,6 +450,7 @@ class BasicAcceptanceTests {
   }
 
   @Test
+  @Order(19)
   void testWebhookOperationExecutesSuccessfully() throws Exception {
     // create workspace webhook config
     final WorkspaceRead workspaceRead = apiClient.getWorkspaceApi().updateWorkspace(
@@ -463,6 +464,8 @@ class BasicAcceptanceTests {
             .operatorType(OperatorType.WEBHOOK)
             .webhook(new OperatorWebhook()
                 .webhookConfigId(workspaceRead.getWebhookConfigs().get(0).getId())
+                // NOTE: reqres.in is free service that hosts a REST API intended for testing frontend/client code.
+                // We use it here as an endpoint that will accept an HTTP POST.
                 .executionUrl("https://reqres.in/api/users")
                 .executionBody("{\"name\": \"morpheus\", \"job\": \"leader\"}"))));
     // create a connection with the new operation.

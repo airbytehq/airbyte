@@ -109,6 +109,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                   .withWorkspaceWebhookConfigs(syncInput.getWebhookOperationConfigs()));
           LOGGER.info("webhook {} completed {}", standardSyncOperation.getOperatorWebhook().getWebhookConfigId(),
               success ? "successfully" : "unsuccessfully");
+          // TODO(mfsiega-airbyte): clean up this logic to be returned from the webhook invocation.
           if (syncOutput.getWebhookOperationSummary() == null) {
             syncOutput.withWebhookOperationSummary(new WebhookOperationSummary());
           }
