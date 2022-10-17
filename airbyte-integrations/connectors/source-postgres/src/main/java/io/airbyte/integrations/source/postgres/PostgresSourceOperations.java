@@ -42,7 +42,6 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
-
 import org.postgresql.geometric.PGbox;
 import org.postgresql.geometric.PGcircle;
 import org.postgresql.geometric.PGline;
@@ -55,7 +54,8 @@ import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperations<PostgresType> implements SourceOperations<ResultSet, PostgresType> {
+public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperations<PostgresType>
+    implements SourceOperations<ResultSet, PostgresType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSourceOperations.class);
   private static final String TIMESTAMPTZ = "timestamptz";
@@ -197,11 +197,11 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "path" -> putObject(json, columnName, resultSet, colIndex, PGpath.class);
         case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
         case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
-        case "_varchar","_char","_bpchar","_text","_name" -> putArray(json, columnName, resultSet, colIndex);
-        case "_int2","_int4","_int8","_oid" -> putLongArray(json, columnName, resultSet, colIndex);
-        case "_numeric","_decimal" -> putBigDecimalArray(json, columnName, resultSet, colIndex);
+        case "_varchar", "_char", "_bpchar", "_text", "_name" -> putArray(json, columnName, resultSet, colIndex);
+        case "_int2", "_int4", "_int8", "_oid" -> putLongArray(json, columnName, resultSet, colIndex);
+        case "_numeric", "_decimal" -> putBigDecimalArray(json, columnName, resultSet, colIndex);
         case "_money" -> putMoneyArray(json, columnName, resultSet, colIndex);
-        case "_float4","_float8" -> putDoubleArray(json, columnName, resultSet, colIndex);
+        case "_float4", "_float8" -> putDoubleArray(json, columnName, resultSet, colIndex);
         case "_bool" -> putBooleanArray(json, columnName, resultSet, colIndex);
         case "_bit" -> putBitArray(json, columnName, resultSet, colIndex);
         case "_bytea" -> putByteaArray(json, columnName, resultSet, colIndex);
@@ -209,7 +209,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_timestamptz" -> putTimestampTzArray(json, columnName, resultSet, colIndex);
         case "_timestamp" -> putTimestampArray(json, columnName, resultSet, colIndex);
         case "_timetz" -> putTimeTzArray(json, columnName, resultSet, colIndex);
-        case "_time"-> putTimeArray(json, columnName, resultSet, colIndex);
+        case "_time" -> putTimeArray(json, columnName, resultSet, colIndex);
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -238,9 +238,9 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final LocalTime time = getObject(arrayResultSet, 2, LocalTime.class);
-      if (time==null){
+      if (time == null) {
         arrayNode.add(NullNode.getInstance());
-      }else {
+      } else {
         arrayNode.add(DateTimeConverter.convertToTime(time));
       }
     }
@@ -252,7 +252,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final OffsetTime timetz = getObject(arrayResultSet, 2, OffsetTime.class);
-      if (timetz==null){
+      if (timetz == null) {
         arrayNode.add(NullNode.getInstance());
       } else {
         arrayNode.add(timetz.format(TIMETZ_FORMATTER));
@@ -266,7 +266,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final LocalDateTime timestamp = getObject(arrayResultSet, 2, LocalDateTime.class);
-      if (timestamp==null){
+      if (timestamp == null) {
         arrayNode.add(NullNode.getInstance());
       } else {
         arrayNode.add(DateTimeConverter.convertToTimestamp(timestamp));
@@ -280,7 +280,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final OffsetDateTime timestamptz = getObject(arrayResultSet, 2, OffsetDateTime.class);
-      if (timestamptz==null){
+      if (timestamptz == null) {
         arrayNode.add(NullNode.getInstance());
       } else {
         final LocalDate localDate = timestamptz.toLocalDate();
@@ -295,9 +295,9 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final LocalDate date = getObject(arrayResultSet, 2, LocalDate.class);
-      if (date==null){
+      if (date == null) {
         arrayNode.add(NullNode.getInstance());
-      }else{
+      } else {
         arrayNode.add(DateTimeConverter.convertToDate(date));
       }
     }
@@ -308,7 +308,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      arrayNode.add(new BinaryNode( arrayResultSet.getBytes(2)));
+      arrayNode.add(new BinaryNode(arrayResultSet.getBytes(2)));
     }
     node.set(columnName, arrayNode);
   }
@@ -318,7 +318,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final String res = arrayResultSet.getString(2);
-      if (res==null){
+      if (res == null) {
         arrayNode.add(NullNode.getInstance());
       } else {
         arrayNode.add("1".equals(res));
@@ -332,7 +332,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final String res = arrayResultSet.getString(2);
-      if (res==null){
+      if (res == null) {
         arrayNode.add(NullNode.getInstance());
       } else {
         arrayNode.add("t".equalsIgnoreCase(res));
@@ -359,7 +359,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      arrayNode.add( DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(colIndex), Double::isFinite));
+      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(colIndex), Double::isFinite));
     }
     node.set(columnName, arrayNode);
   }
@@ -369,7 +369,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final String moneyValue = parseMoneyValue(arrayResultSet.getString(colIndex));
-      arrayNode.add( DataTypeUtils.returnNullIfInvalid(() -> DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
+      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
     }
     node.set(columnName, arrayNode);
   }
@@ -454,100 +454,81 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
       case ARRAY -> JsonSchemaType.ARRAY;
       case BIT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
-                      .withAirbyteType("bit")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
+              .build())
+          .build();
       case BOOL_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
-                      .withAirbyteType("bool")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
+              .build())
+          .build();
       case BYTEA_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-                      .withAirbyteType("bytea")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+              .build())
+          .build();
       case NAME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-                      .withAirbyteType("name")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+              .build())
+          .build();
       case VARCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-                      .withAirbyteType("varchar")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+              .build())
+          .build();
       case CHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-                      .withAirbyteType("char")
-                      .build())
-              .build();
-      case BPCHAR_ARRAY-> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-                      .withAirbyteType("bpchar")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+              .build())
+          .build();
+      case BPCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+              .build())
+          .build();
       case TEXT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-                      .withAirbyteType("text")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+              .build())
+          .build();
       case INT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                      .withAirbyteType("int4")
-                      .build())
-              .build();
-      case INT2_ARRAY-> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                      .withAirbyteType("int2")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.INTEGER)
+          .build();
+      case INT2_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+          .withItems(JsonSchemaType.INTEGER)
+          .build();
       case INT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                      .withAirbyteType("int8")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.INTEGER)
+          .build();
       case MONEY_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                      .withAirbyteType("money")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+              .build())
+          .build();
       case OID_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                      .withAirbyteType("oid")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+              .build())
+          .build();
       case NUMERIC_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                      .withAirbyteType("numeric")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+              .build())
+          .build();
       case FLOAT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                      .withAirbyteType("float4")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+              .build())
+          .build();
       case FLOAT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                      .withAirbyteType("float8")
-                      .build())
-              .build();
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+              .build())
+          .build();
       case TIMESTAMPTZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
-              .build();
+          .withItems(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
+          .build();
       case TIMESTAMP_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .build();
+          .withItems(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+          .build();
       case TIMETZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
-              .build();
+          .withItems(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
+          .build();
       case TIME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
-              .build();
+          .withItems(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
+          .build();
       case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-              .withItems(JsonSchemaType.STRING_DATE)
-              .build();
+          .withItems(JsonSchemaType.STRING_DATE)
+          .build();
 
       case DATE -> JsonSchemaType.STRING_DATE;
       case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;

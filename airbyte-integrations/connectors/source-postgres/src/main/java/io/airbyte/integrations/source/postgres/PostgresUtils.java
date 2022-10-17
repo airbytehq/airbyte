@@ -4,14 +4,14 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.source.postgres.PostgresType.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.source.postgres.PostgresType.*;
 
 public class PostgresUtils {
 
