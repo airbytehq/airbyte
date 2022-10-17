@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.config;
+package io.airbyte.commons.temporal.config;
 
 /**
  * Defines the different execution modes for the workers application.
