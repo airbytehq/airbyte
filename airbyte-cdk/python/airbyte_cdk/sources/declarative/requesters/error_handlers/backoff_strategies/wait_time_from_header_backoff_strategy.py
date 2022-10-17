@@ -3,8 +3,8 @@
 #
 
 import re
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import InitVar, dataclass
+from typing import Any, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
@@ -23,9 +23,10 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
     """
 
     header: str
+    options: InitVar[Mapping[str, Any]]
     regex: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self, options: Mapping[str, Any]):
         self.regex = re.compile(self.regex) if self.regex else None
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
