@@ -1,6 +1,4 @@
-import pytest
 import hashlib
-
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 interpolation = JinjaInterpolation()
