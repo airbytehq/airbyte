@@ -71,7 +71,7 @@
             }
         },
         "manufacturer": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -157,7 +157,7 @@
                     "example": "Admin"
                 },
                 "last_name": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "example": "User"
                 },
                 "employee_number": {

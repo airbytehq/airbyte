@@ -13,7 +13,7 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "catalogs/configured_catalog.json"
+      configured_catalog_path: "catalogs/all.json"
       empty_streams: ["maintenances"]
 # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
 #      expect_records:
@@ -27,4 +27,4 @@ tests:
       future_state_path: "catalogs/sample_state_bad.json"
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "catalogs/configured_catalog.json"
+      configured_catalog_path: "catalogs/all.json"
