@@ -2,7 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.declarative.create_partial import create
+import pytest
+from airbyte_cdk.sources.declarative.create_partial import _key_is_unset_or_identical, create
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 
 
@@ -66,3 +67,17 @@ def test_string_interpolation_through_options_keyword():
     partial = create(InterpolatedString, string=s, **options)
     interpolated_string = partial()
     assert interpolated_string.eval({}) == "airbyte"
+
+
+@pytest.mark.parametrize(
+    "test_name, key, value, expected_result",
+    [
+        ("test", "key", "value", True),
+        ("test", "key", "a_different_value", False),
+        ("test", "a_different_key", "value", True),
+    ],
+)
+def test_key_is_unset_or_identical(test_name, key, value, expected_result):
+    mapping = {"key": "value"}
+    result = _key_is_unset_or_identical(key, value, mapping)
+    assert expected_result == result
