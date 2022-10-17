@@ -42,7 +42,7 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
   @AfterAll
   static void stop() {
     redisContainer.close();
-    bastion.stop();
+    bastion.stopAndClose();
   }
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();

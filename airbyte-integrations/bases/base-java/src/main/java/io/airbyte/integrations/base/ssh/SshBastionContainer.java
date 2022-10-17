@@ -78,7 +78,7 @@ public class SshBastionContainer {
     db.close();
   }
 
-  public void stop() {
+  public void stopAndClose() {
     bastion.close();
   }
 
