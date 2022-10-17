@@ -16,3 +16,6 @@ properties:
     type: integer
   dockerImage:
     type: string
+  protocolVersion:
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
