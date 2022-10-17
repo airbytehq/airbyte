@@ -87,7 +87,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
   @Override
   public SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(final DestinationConnection destination,
-                                                                                                final String dockerImage)
+                                                                                                final String dockerImage,
+                                                                                                final Version protocolVersion)
       throws IOException {
     final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
         destination.getDestinationDefinitionId(),
@@ -95,7 +96,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         destination.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destinationConfiguration)
-        .withDockerImage(dockerImage);
+        .withDockerImage(dockerImage)
+        .withProtocolVersion(protocolVersion);
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);

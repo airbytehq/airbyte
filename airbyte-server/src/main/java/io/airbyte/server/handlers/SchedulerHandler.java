@@ -177,7 +177,8 @@ public class SchedulerHandler {
     final DestinationConnection destination = configRepository.getDestinationConnection(destinationIdRequestBody.getDestinationId());
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-    return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
+    final Version protocolVersion = new Version(destinationDef.getProtocolVersion());
+    return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion));
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(final DestinationCoreConfig destinationConfig)
@@ -195,7 +196,8 @@ public class SchedulerHandler {
         .withWorkspaceId(destinationConfig.getWorkspaceId());
 
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
-    return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
+    final Version protocolVersion = new Version(destDef.getProtocolVersion());
+    return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion));
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(final DestinationUpdate destinationUpdate)
