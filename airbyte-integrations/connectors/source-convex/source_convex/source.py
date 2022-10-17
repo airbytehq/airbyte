@@ -67,7 +67,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
             json_schema["properties"]["_ts"] = {"type": "integer"}
             json_schema["properties"]["_ab_cdc_lsn"] = {"type": "number"}
             json_schema["properties"]["_ab_cdc_updated_at"] = {"type": "string"}
-            json_schema["properties"]["_ab_cdc_deleted_at"] = {"type": "string"}
+            json_schema["properties"]["_ab_cdc_deleted_at"] = {"anyOf": [{"type": "string"}, {"type": "null"}]}
         else:
             json_schema = {}
         self.json_schema = json_schema
