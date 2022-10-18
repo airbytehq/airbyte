@@ -17,7 +17,8 @@
         "examples": ["/local"]
       },
       "delimiter": {
-        "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string.",
+        "title": "Delimiter",
+        "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimiter data enter '\\t'",
         "type": "string",
         "examples": [","],
         "default":","
