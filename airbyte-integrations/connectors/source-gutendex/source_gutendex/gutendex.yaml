@@ -3,7 +3,8 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_pointer:
+        - results
   requester:
     url_base: "https://gutendex.com/"
     http_method: "GET"
@@ -26,15 +27,15 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  results_stream:
+  books_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "results"
+      name: "books"
       path: "/books"
 
 streams:
-  - "*ref(definitions.results_stream)"
+  - "*ref(definitions.books_stream)"
 
 check:
   stream_names:
-    - "results"
+    - "books"
