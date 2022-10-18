@@ -8,10 +8,12 @@ import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
+import io.airbyte.config.OperatorWebhookInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.WebhookOperationSummary;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -42,6 +44,9 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private PersistStateActivity persistActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
+
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private WebhookOperationActivity webhookOperationActivity;
 
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
@@ -93,6 +98,26 @@ public class SyncWorkflowImpl implements SyncWorkflow {
               .withOperatorDbt(standardSyncOperation.getOperatorDbt());
 
           dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, syncInput.getResourceRequirements(), operatorDbtInput);
+        } else if (standardSyncOperation.getOperatorType() == OperatorType.WEBHOOK) {
+          LOGGER.info("running webhook operation");
+          LOGGER.debug("webhook operation input: {}", standardSyncOperation);
+          boolean success = webhookOperationActivity
+              .invokeWebhook(new OperatorWebhookInput()
+                  .withExecutionUrl(standardSyncOperation.getOperatorWebhook().getExecutionUrl())
+                  .withExecutionBody(standardSyncOperation.getOperatorWebhook().getExecutionBody())
+                  .withWebhookConfigId(standardSyncOperation.getOperatorWebhook().getWebhookConfigId())
+                  .withWorkspaceWebhookConfigs(syncInput.getWebhookOperationConfigs()));
+          LOGGER.info("webhook {} completed {}", standardSyncOperation.getOperatorWebhook().getWebhookConfigId(),
+              success ? "successfully" : "unsuccessfully");
+          // TODO(mfsiega-airbyte): clean up this logic to be returned from the webhook invocation.
+          if (syncOutput.getWebhookOperationSummary() == null) {
+            syncOutput.withWebhookOperationSummary(new WebhookOperationSummary());
+          }
+          if (success) {
+            syncOutput.getWebhookOperationSummary().getSuccesses().add(standardSyncOperation.getOperatorWebhook().getWebhookConfigId());
+          } else {
+            syncOutput.getWebhookOperationSummary().getFailures().add(standardSyncOperation.getOperatorWebhook().getWebhookConfigId());
+          }
         } else {
           final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
           LOGGER.error(message);
