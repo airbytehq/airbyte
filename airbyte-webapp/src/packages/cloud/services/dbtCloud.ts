@@ -10,34 +10,27 @@
 
 import isEmpty from "lodash/isEmpty";
 
-import {
-  /* webBackendUpdateConnection, */
-  WebBackendConnectionUpdate,
-  OperatorType,
-  WebBackendConnectionRead,
-  OperationRead,
-  // WorkspaceUpdate,
-} from "core/request/AirbyteClient";
+import { OperatorType, WebBackendConnectionRead, OperationRead } from "core/request/AirbyteClient";
+import { useWebConnectionService } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useUpdateWorkspace } from "services/workspaces/WorkspacesService";
 
 export interface DbtCloudJob {
-  // TODO rename project->account
   account: string;
   job: string;
   operationId?: string;
 }
 
+const dbtCloudDomain = "https://cloud.getdbt.com";
 const webhookConfigName = "dbt cloud";
 const executionBody = `{"cause": "airbyte"}`;
 const jobName = (t: DbtCloudJob) => `${t.account}/${t.job}`;
 
-const updateConnection = (obj: WebBackendConnectionUpdate) => console.info(`updating connection with`, obj);
-// const updateWorkspace = (obj: WorkspaceUpdate) => console.info(`updating workspace with`, obj);
 const toDbtCloudJob = (operation: OperationRead): DbtCloudJob => {
   const { operationId } = operation;
   const { executionUrl } = operation.operatorConfiguration.webhook || {};
 
-  const matches = executionUrl?.match(/\/accounts\/([^/]+)\/jobs\/([^]+)\/run/);
+  const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\//);
 
   if (!matches) {
     throw new Error(`Cannot extract dbt cloud job params from executionUrl ${executionUrl}`);
@@ -55,36 +48,56 @@ const toDbtCloudJob = (operation: OperationRead): DbtCloudJob => {
 const isDbtCloudJob = (operation: OperationRead): boolean =>
   operation.operatorConfiguration.operatorType === OperatorType.webhook;
 
-// export const configureDbtIntegration = (authToken: string, singleTenantUrl?: string) => {
-//     updateWorkspace(...)
-// }
+export const useSubmitDbtCloudIntegrationConfig = () => {
+  const { workspaceId } = useCurrentWorkspace();
+  const { mutate: updateWorkspace } = useUpdateWorkspace();
+
+  return (authToken: string, singleTenantUrl?: string) => {
+    const domain = singleTenantUrl || dbtCloudDomain;
+    const validationUrl = `${domain}/api/v2/accounts`;
+
+    updateWorkspace({
+      workspaceId,
+      webhookConfigs: [
+        {
+          name: webhookConfigName,
+          authToken,
+          validationUrl,
+        },
+      ],
+    });
+  };
+};
 
 export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
   const workspace = useCurrentWorkspace();
   const { workspaceId } = workspace;
-  const hasDbtIntegration = !isEmpty(workspace.webhookConfigs);
+  const connectionService = useWebConnectionService();
+  // TODO extract isDbtWebhookConfig predicate
+  const hasDbtIntegration = !isEmpty(workspace.webhookConfigs?.filter((config) => /dbt/.test(config.name || "")));
+  const webhookConfigId = workspace.webhookConfigs?.find((config) => /dbt/.test(config.name || ""))?.id;
   const dbtCloudJobs = [...(connection.operations?.filter((operation) => isDbtCloudJob(operation)) || [])].map(
     toDbtCloudJob
   );
   const otherOperations = [...(connection.operations?.filter((operation) => !isDbtCloudJob(operation)) || [])];
   const saveJobs = (jobs: DbtCloudJob[]) => {
-    // TODO dynamically use the workspace's configured dbt cloud domain
-    const dbtCloudDomain = "https://cloud.getdbt.com";
-    const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}`;
+    // TODO dynamically use the workspace's configured dbt cloud domain when it gets returned by backend
+    const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}/run`;
 
-    updateConnection({
+    connectionService.update({
       connectionId: connection.connectionId,
       operations: [
         ...otherOperations,
         ...jobs.map((job) => ({
           workspaceId,
-          operationId: job.operationId,
+          ...(job.operationId ? { operationId: job.operationId } : {}),
           name: jobName(job),
           operatorConfiguration: {
             operatorType: OperatorType.webhook,
             webhook: {
               executionUrl: urlForJob(job),
-              webhookConfigName,
+              // if `hasDbtIntegration` is true, webhookConfigId is guaranteed to exist
+              ...(webhookConfigId ? { webhookConfigId } : {}),
               executionBody,
             },
           },

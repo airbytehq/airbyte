@@ -15,11 +15,11 @@ import { RoutePaths } from "pages/routePaths";
 
 import styles from "./DbtCloudTransformationsCard.module.scss";
 
-const _jobs: DbtCloudJob[] = [
-  { account: "1", job: "1234" },
-  { account: "2", job: "2134" },
-  { account: "3", job: "3214" },
-];
+/* const _jobs: DbtCloudJob[] = [
+ *   { account: "1", job: "1234" },
+ *   { account: "2", job: "2134" },
+ *   { account: "3", job: "3214" },
+ * ]; */
 /* const _jobs: DbtCloudJob[] = []; */
 
 // without including the index, duplicate data causes annoying render bugs for the list
@@ -36,7 +36,7 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   //   2.2) AND the connection has saved dbt jobs
   //        THEN show the "no jobs" card body and the "+ Add transformation" button
 
-  const { hasDbtIntegration, saveJobs } = useDbtIntegration(connection);
+  const { hasDbtIntegration, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
 
   return (
     <Card
@@ -50,7 +50,7 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
       }
     >
       {hasDbtIntegration ? (
-        <DbtJobsList jobs={_jobs} className={styles.jobListContainer} saveJobs={saveJobs} />
+        <DbtJobsList jobs={dbtCloudJobs} className={styles.jobListContainer} saveJobs={saveJobs} />
       ) : (
         <NoDbtIntegration className={styles.jobListContainer} />
       )}
