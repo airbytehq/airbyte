@@ -298,7 +298,9 @@ public class AirbyteAcceptanceTestHarness {
       for (final UUID destinationId : destinationIds) {
         deleteDestination(destinationId);
       }
-      destinationPsql.stop();
+      if (!isGke) {
+        destinationPsql.stop();
+      }
     } catch (final Exception e) {
       LOGGER.error("Error tearing down test fixtures:", e);
     }
