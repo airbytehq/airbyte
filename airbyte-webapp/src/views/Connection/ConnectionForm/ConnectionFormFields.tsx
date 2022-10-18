@@ -122,7 +122,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             component={SyncCatalogField}
             isSubmitting={isSubmitting}
             additionalControl={
-              <Button onClick={refreshSchema} type="button" variant="secondary">
+              <Button onClick={refreshSchema} type="button" variant="secondary" disabled={isSubmitting}>
                 <FontAwesomeIcon icon={faSyncAlt} className={styles.tryArrow} />
                 <FormattedMessage id="connection.updateSchema" />
               </Button>
