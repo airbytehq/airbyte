@@ -12,8 +12,7 @@ from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-
-API_VERSION = "egress"
+API_VERSION = "egress-0.1.0"
 
 
 def convex_url_base(instance_name) -> str:

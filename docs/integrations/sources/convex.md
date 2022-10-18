@@ -57,6 +57,7 @@ please reach out to [Convex support](mailto:support@convex.dev).
 ### Setup guide
 
 On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the project that you want to sync.
+
 In the Data tab, you should see the tables and a sample of the data that will be synced.
 
 The URL should be in the format
@@ -68,8 +69,6 @@ https://dashboard.convex.dev/{team}/{project}/{instance_name}/data
 1. Copy the `instance_name` from the URL to the `instance_name` field in Airbyte.
 2. Navigate to the Settings tab and click "Generate a deploy key".
 3. Copy the generated deploy key into the `access_key` field in Airbyte.
-
-That's it!
 
 ## Changelog
 
