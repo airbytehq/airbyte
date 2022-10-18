@@ -9,17 +9,17 @@ assert_root
 
 # Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
 # See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
-# if [ -n "$CI" ]; then
-#   echo "Loading images into KIND..."
-#   kind load docker-image airbyte/server:dev --name helm-testing &
-#   kind load docker-image airbyte/webapp:dev --name helm-testing &
-#   kind load docker-image airbyte/worker:dev --name helm-testing &
-#   kind load docker-image airbyte/db:dev --name helm-testing &
-#   kind load docker-image airbyte/container-orchestrator:dev --name helm-testing &
-#   kind load docker-image airbyte/bootloader:dev --name helm-testing &
-#   kind load docker-image airbyte/cron:dev --name helm-testing &
-#   wait
-# fi
+if [ -n "$CI" ]; then
+  echo "Loading images into KIND..."
+  kind load docker-image airbyte/server:dev --name helm-testing &
+  kind load docker-image airbyte/webapp:dev --name helm-testing &
+  kind load docker-image airbyte/worker:dev --name helm-testing &
+  kind load docker-image airbyte/db:dev --name helm-testing &
+  kind load docker-image airbyte/container-orchestrator:dev --name helm-testing &
+  kind load docker-image airbyte/bootloader:dev --name helm-testing &
+  kind load docker-image airbyte/cron:dev --name helm-testing &
+  wait
+fi
 
 # eval $(minikube docker-env)
 
