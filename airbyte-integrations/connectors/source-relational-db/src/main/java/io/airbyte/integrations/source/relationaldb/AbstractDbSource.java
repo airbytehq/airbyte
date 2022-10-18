@@ -8,7 +8,6 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
@@ -136,7 +135,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
-    throws Exception {
+      throws Exception {
     final StateManager stateManager =
         StateManagerFactory.createStateManager(getSupportedStateType(config), deserializeInitialState(state, config), catalog);
     final Instant emittedAt = Instant.now();
