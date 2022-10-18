@@ -16,7 +16,10 @@ CONFIG_BACKOFF_TIME = 30
     "test_name, attempt_count, backofftime, expected_backoff_time",
     [
         ("test_constant_backoff_first_attempt", 1, BACKOFF_TIME, BACKOFF_TIME),
-        ("test_constant_backoff_second_attempt", 2, BACKOFF_TIME, BACKOFF_TIME),
+        ("test_constant_backoff_first_attempt_float", 1, 6.7, 6.7),
+        ("test_constant_backoff_attempt_float", 1.0, 6.7, 6.7),
+        ("test_constant_backoff_first_attempt_round_float", 1, 10.0, BACKOFF_TIME),
+        ("test_constant_backoff_second_attempt_round_float", 2, 10.0, BACKOFF_TIME),
         ("test_constant_backoff_from_options", 1, "{{ options['backoff'] }}", OPTIONS_BACKOFF_TIME),
         ("test_constant_backoff_from_config", 1, "{{ config['backoff'] }}", CONFIG_BACKOFF_TIME),
     ],
