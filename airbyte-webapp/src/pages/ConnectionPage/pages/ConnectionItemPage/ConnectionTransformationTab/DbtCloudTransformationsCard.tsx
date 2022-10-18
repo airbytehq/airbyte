@@ -65,30 +65,7 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
                     }
                   >
                     {hasDbtIntegration ? (
-                      <div className={classNames(styles.jobListContainer, styles.emptyListContent)}>
-                        <p className={styles.contextExplanation}>
-                          After an Airbyte sync job has completed, the following jobs will run
-                        </p>
-                        {values.jobs.length ? (
-                          values.jobs.map((_j, i) => <JobsListItem key={i} jobIndex={i} removeJob={() => remove(i)} />)
-                        ) : (
-                          <>
-                            <img
-                              src="/images/octavia/worker.png"
-                              alt="An octopus wearing a hard hat, tools at the ready"
-                            />
-                            No transformations
-                          </>
-                        )}
-                        <div className={styles.jobListButtonGroup}>
-                          <Button className={styles.jobListButton} type="reset" variant="secondary">
-                            Cancel
-                          </Button>
-                          <Button className={styles.jobListButton} type="submit" variant="primary">
-                            Save changes
-                          </Button>
-                        </div>
-                      </div>
+                      <DbtJobsList jobs={values.jobs} remove={remove} />
                     ) : (
                       <NoDbtIntegration className={styles.jobListContainer} />
                     )}
@@ -102,6 +79,28 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
     />
   );
 };
+
+const DbtJobsList = ({ jobs, remove }: { jobs: DbtCloudJob[]; remove: (i: number) => void }) => (
+  <div className={classNames(styles.jobListContainer, styles.emptyListContent)}>
+    <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
+    {jobs.length ? (
+      jobs.map((_j, i) => <JobsListItem key={i} jobIndex={i} removeJob={() => remove(i)} />)
+    ) : (
+      <>
+        <img src="/images/octavia/worker.png" alt="An octopus wearing a hard hat, tools at the ready" />
+        No transformations
+      </>
+    )}
+    <div className={styles.jobListButtonGroup}>
+      <Button className={styles.jobListButton} type="reset" variant="secondary">
+        Cancel
+      </Button>
+      <Button className={styles.jobListButton} type="submit" variant="primary">
+        Save changes
+      </Button>
+    </div>
+  </div>
+);
 
 const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: () => void }) => {
   return (
