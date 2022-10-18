@@ -47,8 +47,10 @@ public class RecordMetricActivityImpl implements RecordMetricActivity {
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public void recordWorkflowCountMetric(final RecordMetricInput metricInput) {
-    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, metricInput.getConnectionUpdaterInput().getConnectionId(), JOB_ID_KEY,
-        metricInput.getConnectionUpdaterInput().getJobId()));
+    if (metricInput.getConnectionUpdaterInput() != null) {
+      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, metricInput.getConnectionUpdaterInput().getConnectionId(), JOB_ID_KEY,
+          metricInput.getConnectionUpdaterInput().getJobId()));
+    }
     final List<MetricAttribute> baseMetricAttributes = generateMetricAttributes(metricInput.getConnectionUpdaterInput());
     if (metricInput.getMetricAttributes() != null) {
       baseMetricAttributes.addAll(Stream.of(metricInput.getMetricAttributes()).collect(Collectors.toList()));
