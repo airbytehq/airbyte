@@ -12,17 +12,16 @@ from .streams import Applications, Interviews, Notes, Offers, Opportunities, Ref
 
 
 def _auth_from_config(config):
-    if config["auth_type"] == 'Api Key':
+    if config and config["credentials"] and 'api_key' in config["credentials"]:
         return BasicHttpAuthenticator(username=config["credentials"]["api_key"], password = None, auth_method="Basic")
-    elif config["auth_type"] == 'Client':
+    else:
         return Oauth2Authenticator(
             client_id=config["credentials"]["client_id"],
             client_secret=config["credentials"]["client_secret"],
             refresh_token=config["credentials"]["refresh_token"],
-            token_refresh_endpoint=f"{SourceLeverHiring.URL_MAP_ACCORDING_ENVIRONMENT[config['environment']]['login']}oauth/token")
-    else:
-        print("Auth type was not configured properly")
-        return None
+            token_refresh_endpoint=f"{SourceLeverHiring.URL_MAP_ACCORDING_ENVIRONMENT[config['environment']]['login']}oauth/token",
+    )
+
 
 class SourceLeverHiring(AbstractSource):
     URL_MAP_ACCORDING_ENVIRONMENT = {
