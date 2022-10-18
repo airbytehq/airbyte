@@ -343,10 +343,10 @@ def setup_schema_change_data(destination_type: DestinationType, test_resource_na
     catalog_file = os.path.join("resources", test_resource_name, "data_input", "catalog_schema_change.json")
     message_file = os.path.join("resources", test_resource_name, "data_input", "messages_schema_change.txt")
     dbt_test_utils.copy_replace(
-         catalog_file,
-         os.path.join(test_root_dir, "reset_catalog.json"),
-         pattern='"destination_sync_mode": ".*"',
-         replace_value='"destination_sync_mode": "overwrite"',
+        catalog_file,
+        os.path.join(test_root_dir, "reset_catalog.json"),
+        pattern='"destination_sync_mode": ".*"',
+        replace_value='"destination_sync_mode": "overwrite"',
     )
     dbt_test_utils.copy_replace(catalog_file, os.path.join(test_root_dir, "destination_catalog.json"))
     dbt_test_utils.copy_replace(
