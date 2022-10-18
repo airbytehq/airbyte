@@ -30,17 +30,17 @@
     "disjunctive": {
       "type": ["null", "boolean"]
     },
-    "rules" : {
-      "type" : ["null", "array"],
-      "items" : {
-        "type" : ["null", "string"]
+    "rules": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
       }
     },
-    "published_scope" : {
-      "type" : ["null", "string"]
+    "published_scope": {
+      "type": ["null", "string"]
     },
-    "admin_graphql_api_id" : {
-      "type" : ["null", "string"]
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
     },
     "shop_url": {
       "type": ["null", "string"]

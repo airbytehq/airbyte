@@ -1,8 +1,12 @@
 # Changelog
 
-## 0.1.103
+## 0.1.104
 
 - Low-code: Always convert stream slices output to an iterator
+
+## 0.1.103
+
+- Low-code: added hash filter to jinja template
 
 ## 0.1.102
 

@@ -24,7 +24,7 @@
       "type": ["null", "string"]
     },
     "width": {
-          "type": ["null", "integer"]
+      "type": ["null", "integer"]
     },
     "height": {
       "type": ["null", "integer"]

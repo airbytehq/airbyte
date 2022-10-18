@@ -2,8 +2,11 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cron;
+package io.airbyte.cron.selfhealing;
 
+import static io.airbyte.cron.MicronautCronRunner.SCHEDULED_TRACE_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
@@ -43,6 +46,7 @@ public class DefinitionsUpdater {
     deploymentMode = envConfigs.getDeploymentMode();
   }
 
+  @Trace(operationName = SCHEDULED_TRACE_OPERATION_NAME)
   @Scheduled(fixedRate = "30s",
              initialDelay = "1m")
   void updateDefinitions() {
