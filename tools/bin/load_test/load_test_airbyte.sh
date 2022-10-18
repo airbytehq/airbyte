@@ -36,8 +36,7 @@ function showhelp {
     Defaults to 'localhost'.
 
   ${CLEAR}-P <port>
-    ${GREEN}Specify the port for the Airbyte server. If kube (ie. '-k' is provided), port-forwarding
-    will be set up for the airbyte-server deployment using the provided <port> (ie. '8001:8001').
+    ${GREEN}Specify the port for the Airbyte server.
     Defaults to '8001'.
 
   ${CLEAR}-X <header>
@@ -50,14 +49,6 @@ function showhelp {
   ${CLEAR}-T <minutes>
     ${GREEN}Specify the time in minutes that each connection should sync for.
     Defaults to '10'.
-
-  ${CLEAR}-k
-    ${GREEN}Indicate that the script is running against a kubernetes instance of Airbyte
-
-  ${CLEAR}-N <namespace>
-    ${GREEN}Specify the kubernetes namespace where the airbyte-server deployment exists g (ex. "ab").
-    Only use with '-k' option.
-    Defaults to 'default'.
   """ && exit 1
 }
 
@@ -114,10 +105,10 @@ function setup {
   fi
 
   echo "set workspace_id to              ${workspace_id}"
-  echo "set hostname to                      ${hostname}"
-  echo "set api_port to                      ${api_port}"
-  echo "set x_endpoint_header to    ${x_endpoint_header}"
-  echo "set num_connections to        ${num_connections}"
+  echo "set hostname to                  ${hostname}"
+  echo "set api_port to                  ${api_port}"
+  echo "set x_endpoint_header to         ${x_endpoint_header}"
+  echo "set num_connections to           ${num_connections}"
   echo "set sync_minutes to              ${sync_minutes}"
 
   setCleanupFilesForWorkspace $workspace_id
