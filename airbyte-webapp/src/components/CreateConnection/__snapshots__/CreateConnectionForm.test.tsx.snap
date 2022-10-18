@@ -999,7 +999,7 @@ exports[`CreateConnectionForm should render with an error 1`] = `
         <p
           class="<removed-for-snapshot-test>"
         >
-          Error: {value}
+          Error: Test Error
         </p>
         <button
           class="<removed-for-snapshot-test>"
