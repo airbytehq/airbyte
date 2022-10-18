@@ -1,0 +1,15 @@
+@use "scss/colors";
+
+.openModalButton.openModalButton {
+  color: colors.$grey-50;
+
+  &:hover {
+    color: colors.$grey-200;
+  }
+}
+
+.modalContent {
+  width: 800px;
+  height: 700px;
+  background-color: colors.$dark-blue;
+}

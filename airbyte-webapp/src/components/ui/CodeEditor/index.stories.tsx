@@ -18,6 +18,6 @@ const code = `{
 
 export const Primary = Template.bind({});
 Primary.args = {
-  code,
+  value: code,
   language: "json",
 };
