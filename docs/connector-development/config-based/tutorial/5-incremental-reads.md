@@ -125,7 +125,6 @@ streams:
 ```
 
 We'll also update the retriever to user the stream slicer:
-> > > > > > > master
 
 ```yaml
 definitions:

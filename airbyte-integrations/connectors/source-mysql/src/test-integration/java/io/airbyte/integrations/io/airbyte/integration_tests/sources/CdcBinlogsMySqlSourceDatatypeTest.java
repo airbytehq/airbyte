@@ -84,8 +84,8 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-            .put("method", "CDC")
-            .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
+        .put("method", "CDC")
+        .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())

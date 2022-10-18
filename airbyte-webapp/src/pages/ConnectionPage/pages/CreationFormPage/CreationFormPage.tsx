@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components";
+import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { CreateConnectionForm } from "components/CreateConnection/CreateConnectionForm";
@@ -10,6 +11,12 @@ import HeadTitle from "components/HeadTitle";
 import { PageHeader } from "components/ui/PageHeader";
 import { StepsMenu } from "components/ui/StepsMenu";
 
+import {
+  DestinationDefinitionRead,
+  DestinationRead,
+  SourceDefinitionRead,
+  SourceRead,
+} from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useGetDestination } from "hooks/services/useDestinationHook";
@@ -18,15 +25,9 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
-import {
-  DestinationDefinitionRead,
-  DestinationRead,
-  SourceDefinitionRead,
-  SourceRead,
-} from "../../../../core/request/AirbyteClient";
-import { ConnectionCreateDestinationForm } from "./DestinationForm";
+import { ConnectionCreateDestinationForm } from "./ConnectionCreateDestinationForm";
+import { ConnectionCreateSourceForm } from "./ConnectionCreateSourceForm";
 import ExistingEntityForm from "./ExistingEntityForm";
-import { ConnectionCreateSourceForm } from "./SourceForm";
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -144,6 +145,7 @@ export const CreationFormPage: React.FC = () => {
                 }
               }}
             />
+            <CloudInviteUsersHint connectorType="source" />
           </>
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
@@ -158,6 +160,7 @@ export const CreationFormPage: React.FC = () => {
                 setCurrentStep(StepsTypes.CREATE_CONNECTION);
               }}
             />
+            <CloudInviteUsersHint connectorType="destination" />
           </>
         );
       }

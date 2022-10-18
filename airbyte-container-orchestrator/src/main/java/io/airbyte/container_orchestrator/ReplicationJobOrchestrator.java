@@ -6,6 +6,7 @@ package io.airbyte.container_orchestrator;
 
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
@@ -30,7 +31,7 @@ import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
+import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -112,7 +113,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         metricReporter);
 
     log.info("Running replication worker...");
-    final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     final ReplicationOutput replicationOutput = replicationWorker.run(syncInput, jobRoot);
 
     log.info("Returning output...");
