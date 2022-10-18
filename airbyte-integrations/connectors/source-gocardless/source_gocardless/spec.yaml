@@ -42,4 +42,4 @@ connectionSpecification:
         before this date will not be replicated.
       examples:
       - '2017-01-25T00:00:00Z'
-      order: 3
+      order: 4
