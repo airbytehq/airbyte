@@ -49,7 +49,8 @@ public class JobErrorReporter {
   private static final String NORMALIZATION_REPOSITORY_META_KEY = "normalization_repository";
   private static final String JOB_ID_KEY = "job_id";
 
-  private static final ImmutableSet<FailureType> SUPPORTED_FAILURETYPES = ImmutableSet.of(FailureType.SYSTEM_ERROR);
+  private static final ImmutableSet<FailureType> UNSUPPORTED_FAILURETYPES =
+      ImmutableSet.of(FailureType.CONFIG_ERROR, FailureType.MANUAL_CANCELLATION);
 
   private final ConfigRepository configRepository;
   private final DeploymentMode deploymentMode;
@@ -272,8 +273,8 @@ public class JobErrorReporter {
                                       final FailureReason failureReason,
                                       final String dockerImage,
                                       final Map<String, String> metadata) {
-    // Only failure types associated with a system-error should be reported.
-    if (SUPPORTED_FAILURETYPES.contains(failureReason.getFailureType())) {
+    // Failure types associated with a config-error or a manual-cancellation should NOT be reported.
+    if (!UNSUPPORTED_FAILURETYPES.contains(failureReason.getFailureType())) {
       final Map<String, String> commonMetadata = new HashMap<>(Map.ofEntries(
           Map.entry(AIRBYTE_VERSION_META_KEY, airbyteVersion),
           Map.entry(DEPLOYMENT_MODE_META_KEY, deploymentMode.name())));
