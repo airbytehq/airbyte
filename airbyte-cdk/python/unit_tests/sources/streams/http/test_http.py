@@ -376,11 +376,12 @@ def test_caching_filename():
     assert stream.cache_filename == f"{stream.name}.sqlite"
 
 
-def test_caching_filenames_are_different():
+def test_caching_sessions_are_different():
     stream_1 = CacheHttpStream()
     stream_2 = CacheHttpStream()
 
-    assert stream_1.cache_filename != stream_2.cache_filename
+    assert stream_1._session != stream_2._session
+    assert stream_1.cache_filename == stream_2.cache_filename
 
 
 def test_parent_attribute_exist():

@@ -50,9 +50,6 @@ class HttpStream(Stream, ABC):
         """
         Override if needed. Return the name of cache file
         """
-        number = get_instance_number(self)
-        if number > 1:
-            return f"{self.name}.{number}.sqlite"
         return f"{self.name}.sqlite"
 
     @property
@@ -63,12 +60,6 @@ class HttpStream(Stream, ABC):
         return False
 
     def request_cache(self):
-
-        try:
-            os.remove(self.cache_filename)
-        except FileNotFoundError:
-            pass
-
         return requests_cache.CachedSession(self.cache_filename)
 
     @property
