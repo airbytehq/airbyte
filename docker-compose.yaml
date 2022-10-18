@@ -195,6 +195,15 @@ services:
       - MICRONAUT_ENVIRONMENTS=${CRON_MICRONAUT_ENVIRONMENTS}
     volumes:
       - workspace:${WORKSPACE_ROOT}
+  airbyte-connector-builder:
+    image: airbyte/connector-builder:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-connector-builder
+    restart: unless-stopped
+    ports:
+      - 8080:80
+    environment:
+      - AIRBYTE_VERSION=${VERSION}
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
