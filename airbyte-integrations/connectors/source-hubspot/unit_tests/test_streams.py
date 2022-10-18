@@ -288,18 +288,6 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
 
 
 def test_custom_object_stream_calls_hubspot_to_get_json_schema(requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params):
-    expected_schema = {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "additionalProperties": True,
-        "properties": {
-            "id": {"type": ["null", "string"]},
-            "createdAt": {"type": ["null", "string"], "format": "date-time"},
-            "updatedAt": {"type": ["null", "string"], "format": "date-time"},
-            "archived": {"type": ["null", "boolean"]},
-            "properties": {"name": {"type": ["null", "string"]}}
-        }
-    }
     stream = CustomObject(entity="animals", schema=None, **common_params)
 
     adapter = requests_mock.register_uri("GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
