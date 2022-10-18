@@ -1,0 +1,36 @@
+@use "../../../scss/colors";
+
+.text {
+  color: colors.$dark-blue;
+  margin: 0;
+  padding: 0;
+}
+
+.sm,
+.md {
+  font-weight: 400;
+  line-height: 1.2em;
+}
+
+.sm {
+  font-size: 12px;
+}
+
+.md {
+  font-size: 13px;
+}
+
+.lg {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3em;
+}
+
+.centered {
+  text-align: center;
+}
+
+.bold,
+.text > strong {
+  font-weight: 600;
+}

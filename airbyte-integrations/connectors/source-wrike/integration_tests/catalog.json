@@ -1,0 +1,320 @@
+{
+  "streams": [
+    [
+      {
+        "name": "tasks",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "accountId": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "importance": {
+              "type": ["null", "string"]
+            },
+            "scope": {
+              "type": ["null", "string"]
+            },
+            "briefDescription": {
+              "type": ["null", "string"]
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "customStatusId": {
+              "type": ["null", "string"]
+            },
+            "permalink": {
+              "type": ["null", "string"]
+            },
+            "priority": {
+              "type": ["null", "string"]
+            },
+            "createdDate": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "responsibleIds": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["string", "null"]
+              }
+            },
+            "parentIds": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["string", "null"]
+              }
+            },
+            "superTaskIds": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["string", "null"]
+              }
+            },
+            "authorIds": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["string", "null"]
+              }
+            },
+            "customFields": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "properties": {
+                  "id": {
+                    "type": ["string"]
+                  },
+                  "value": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "dates": {
+              "type": ["object", "null"],
+              "properties": {
+                "type": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "updatedDate": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      {
+        "name": "customfields",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "accountId": {
+              "type": ["null", "string"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "spaceId": {
+              "type": ["null", "string"]
+            },
+            "sharedIds": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["string", "null"]
+              }
+            },
+            "settings": {
+              "type": ["object", "null"],
+              "properties": {
+                "inheritanceType": {
+                  "type": ["string", "null"]
+                },
+                "values": {
+                  "type": ["array", "null"],
+                  "items": {
+                    "type": ["string", "integer", "number", "boolean", "null"]
+                  }
+                },
+                "decimalPlaces": {
+                  "type": ["integer", "null"]
+                },
+                "useThousandsSeparator": {
+                  "type": ["boolean", "null"]
+                },
+                "readOnly": {
+                  "type": ["boolean", "null"]
+                },
+                "allowTime": {
+                  "type": ["boolean", "null"]
+                },
+                "allowOtherValues": {
+                  "type": ["boolean", "null"]
+                },
+                "aggregation": {
+                  "type": ["string", "null"]
+                },
+                "currency": {
+                  "type": ["string", "null"]
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      {
+        "name": "contacts",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "firstName": {
+              "type": ["null", "string"]
+            },
+            "lastName": {
+              "type": ["null", "string"]
+            },
+            "avatarUrl": {
+              "type": ["null", "string"]
+            },
+            "timezone": {
+              "type": ["null", "string"]
+            },
+            "locale": {
+              "type": ["null", "string"]
+            },
+            "deleted": {
+              "type": ["null", "boolean"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "profiles": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "properties": {
+                  "accountId": {
+                    "type": ["string"]
+                  },
+                  "role": {
+                    "type": ["string"]
+                  },
+                  "external": {
+                    "type": ["boolean", "null"]
+                  },
+                  "admin": {
+                    "type": ["boolean", "null"]
+                  },
+                  "owner": {
+                    "type": ["boolean", "null"]
+                  },
+                  "email": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "title": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      {
+        "name": "folders",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "scope": {
+              "type": ["null", "string"]
+            },
+            "customStatusId": {
+              "type": ["null", "string"]
+            },
+            "createdDate": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "childIds": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["string", "null"]
+              }
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "project": {
+              "type": ["object", "null"],
+              "properties": {
+                "authorId": {
+                  "type": ["string", "null"]
+                },
+                "customStatusId": {
+                  "type": ["string", "null"]
+                },
+                "createdDate": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "ownerIds": {
+                  "type": ["array", "null"],
+                  "items": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      {
+        "name": "comments",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "authorId": {
+              "type": ["null", "string"]
+            },
+            "text": {
+              "type": ["null", "string"]
+            },
+            "taskId": {
+              "type": ["null", "string"]
+            },
+            "createdDate": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updatedDate": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      }
+    ]
+  ]
+}

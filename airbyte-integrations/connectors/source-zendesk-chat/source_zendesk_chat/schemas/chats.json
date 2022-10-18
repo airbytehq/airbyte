@@ -73,7 +73,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "department_id": {
       "type": ["null", "integer"]
@@ -204,7 +204,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "session": {
       "properties": {
@@ -293,7 +293,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "webpath": {
       "items": {
@@ -313,7 +313,7 @@
           }
         },
         "type": ["null", "object"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     },

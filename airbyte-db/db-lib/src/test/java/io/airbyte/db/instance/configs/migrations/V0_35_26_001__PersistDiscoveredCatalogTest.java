@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 
 class V0_35_26_001__PersistDiscoveredCatalogTest extends AbstractConfigsDatabaseTest {
 
+  private static final String NAME = "name";
+
   @Test
   void test() throws SQLException, IOException {
     final DSLContext context = getDslContext();
@@ -36,7 +38,7 @@ class V0_35_26_001__PersistDiscoveredCatalogTest extends AbstractConfigsDatabase
       ctx.insertInto(DSL.table("workspace"))
           .columns(
               DSL.field("id"),
-              DSL.field("name"),
+              DSL.field(NAME),
               DSL.field("slug"),
               DSL.field("initial_setup_complete"))
           .values(
@@ -48,14 +50,14 @@ class V0_35_26_001__PersistDiscoveredCatalogTest extends AbstractConfigsDatabase
       ctx.insertInto(DSL.table("actor_definition"))
           .columns(
               DSL.field("id"),
-              DSL.field("name"),
+              DSL.field(NAME),
               DSL.field("docker_repository"),
               DSL.field("docker_image_tag"),
               DSL.field("actor_type"),
               DSL.field("spec"))
           .values(
               actorDefinitionId,
-              "name",
+              NAME,
               "repo",
               "1.0.0",
               ActorType.source,
@@ -66,7 +68,7 @@ class V0_35_26_001__PersistDiscoveredCatalogTest extends AbstractConfigsDatabase
               DSL.field("id"),
               DSL.field("workspace_id"),
               DSL.field("actor_definition_id"),
-              DSL.field("name"),
+              DSL.field(NAME),
               DSL.field("configuration"),
               DSL.field("actor_type"),
               DSL.field("created_at"),

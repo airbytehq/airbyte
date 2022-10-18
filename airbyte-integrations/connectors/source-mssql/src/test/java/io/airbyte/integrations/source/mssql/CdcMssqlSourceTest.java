@@ -58,6 +58,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   private MSSQLServerContainer<?> container;
 
   private String dbName;
+  private String dbNamewithDot;
   private Database database;
   private JdbcDatabase testJdbcDatabase;
   private MssqlSource source;
@@ -81,10 +82,11 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     container.start();
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    dbNamewithDot = Strings.addRandomSuffix("db", ".", 10).toLowerCase();
     source = new MssqlSource();
 
     final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
-        "replication_type", "CDC",
+        "method", "CDC",
         "data_to_sync", "Existing and New",
         "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -94,7 +96,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
-        .put("replication", replicationConfig)
+        .put("replication_method", replicationConfig)
         .build());
 
     dataSource = DataSourceFactory.create(
@@ -120,6 +122,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     testJdbcDatabase = new DefaultJdbcDatabase(testDataSource);
 
     executeQuery("CREATE DATABASE " + dbName + ";");
+    executeQuery("CREATE DATABASE [" + dbNamewithDot + "];");
     switchSnapshotIsolation(true, dbName);
   }
 
@@ -158,7 +161,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private void switchCdcOnDatabase(final Boolean enable, final String db) {
     final String storedProc = enable ? "sys.sp_cdc_enable_db" : "sys.sp_cdc_disable_db";
-    executeQuery("USE " + db + "\n" + "EXEC " + storedProc);
+    executeQuery("USE [" + db + "]\n" + "EXEC " + storedProc);
   }
 
   @Override
@@ -276,7 +279,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @Test
   void testAssertSnapshotIsolationDisabled() {
     final JsonNode replicationConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("replication_type", "CDC")
+        .put("method", "CDC")
         .put("data_to_sync", "New Changes Only")
         // set snapshot_isolation level to "Read Committed" to disable snapshot
         .put("snapshot_isolation", "Read Committed")
@@ -311,6 +314,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     switchSnapshotIsolation(false, dbName);
     status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
+  }
+
+  @Test
+  void testCdcCheckOperationsWithDot() throws Exception {
+    // assertCdcEnabledInDb and validate escape with special character
+    switchCdcOnDatabase(true, dbNamewithDot);
+    AirbyteConnectionStatus status = getSource().check(getConfig());
+    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
   // todo: check LSN returned is actually the max LSN

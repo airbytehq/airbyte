@@ -5,9 +5,4 @@
 from .oauth import Oauth2Authenticator
 from .token import BasicHttpAuthenticator, MultipleTokenAuthenticator, TokenAuthenticator
 
-__all__ = [
-    "BasicHttpAuthenticator",
-    "Oauth2Authenticator",
-    "TokenAuthenticator",
-    "MultipleTokenAuthenticator",
-]
+__all__ = ["Oauth2Authenticator", "TokenAuthenticator", "MultipleTokenAuthenticator", "BasicHttpAuthenticator"]

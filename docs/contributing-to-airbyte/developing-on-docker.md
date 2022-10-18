@@ -4,42 +4,46 @@
 
 The docker build is fully incremental for the platform build, which means that it will only build an image if it is needed. We need to keep it that 
 way.
-A task generator, `getDockerBuildTask`, is available for building a docker image for any given module. Behind the scene, it will generate a 
-task which will run the build of a docker image in a specific folder. The goal is to make sure that we have an isolated 
-context which helps with incrementality. All files that need to be present in the docker image will need to be copy into this folder. The generate 
-method takes 2 arguments:
-- The image name, for example if `foo` is given as an image name, the image `airbyte/foo` will be created
-- The project directory folder. It is needed because the `getDockerBuildTask` is declared in the rootProject
+The top level `build.gradle` file defines several convenient tasks for building a docker image.
+1) The `copyGeneratedTar` task copies a generated TAR file from a default location into the default location used by the [docker plugin](https://github.com/bmuschko/gradle-docker-plugin).
+2) The `buildDockerImage` task is a convenience class for configuring the above linked docker plugin that centralizes configuration logic commonly found in our dockerfiles.
+3) Makes the `buildDockerImage` task depend on the Gradle `assemble` task.
+
+These tasks are created in a subproject if the subproject has a `gradle.properties` file with the `dockerImageName` property. This property sets the built docker image's name.
 
 ## Adding a new docker build
 
 Once you have a `Dockerfile`, generating the docker image is done in the following way:
-- specify the artifact name, the project directory, the version, and the tag.
-- make sure that the Dockerfile is properly copied to the docker context dir before building the image
-- make the build docker task to depend on the `assemble` task.
+1. Create a `gradle.properties` file in the subproject with the `dockerImageName` property set to the docker image name.
 
 For example:
 ```groovy
-Task dockerBuildTask = getDockerBuildTask("cli", project.projectDir, rootProject.ext.version, rootProject.ext.image_tag)
-dockerBuildTask.dependsOn(copyDocker)
-assemble.dependsOn(dockerBuildTask)
+// In the gradle.properties file.
+dockerImageName=cron
 ```
 
-If you need to add files in your image you need to copy them in `build/docker/bin` first. The need to happen after the `copyDocker` task.
-The `copyDocker` task clean up the `build/docker` folder as a first step.
+2. If this is a subproject producing a TAR, take advantage of the pre-provided task by configuring the build docker task to
+   depend on the copy TAR task in the subproject's build.gradle.
 
 For example:
+```groovy
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
+}
+```
+
+3. If this is a subproject with a more custom copy strategy, define your own task to copy the necessary files and configure
+   the build docker task to depend on this custom copy task in the subproject's build.gradle.
 ```groovy
 task copyScripts(type: Copy) {
     dependsOn copyDocker
-
     from('scripts')
     into 'build/docker/bin/scripts'
 }
 
-Task dockerBuildTask = getDockerBuildTask("init", project.projectDir, rootProject.ext.version, rootProject.ext.image_tag)
-dockerBuildTask.dependsOn(copyScripts)
-assemble.dependsOn(dockerBuildTask)
+tasks.named("buildDockerImage") {
+    dependsOn copyScripts
+}
 ```
 
 ## Building the docker images

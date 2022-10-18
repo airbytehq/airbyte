@@ -14,14 +14,14 @@ class Interpolation(ABC):
     """
 
     @abstractmethod
-    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **kwargs):
+    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_options):
         """
-        Interpolates the input string using the config, and kwargs passed as paramter.
+        Interpolates the input string using the config, and additional options passed as parameter.
 
         :param input_str: The string to interpolate
         :param config: The user-provided configuration as specified by the source's spec
         :param default: Default value to return if the evaluation returns an empty string
-        :param kwargs: Optional parameters used for interpolation
+        :param additional_options: Optional parameters used for interpolation
         :return: The interpolated string
         """
         pass

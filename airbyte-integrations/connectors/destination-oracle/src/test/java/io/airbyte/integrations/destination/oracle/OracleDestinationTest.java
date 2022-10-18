@@ -108,4 +108,35 @@ public class OracleDestinationTest {
     assertThrows(RuntimeException.class, () -> destination.obtainConnectionProtocol(inputConfig));
   }
 
+  @Test
+  void testEmptyExtraParams() {
+    final String extraParam = "";
+    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    final JsonNode jdbcConfig = new OracleDestination().toJdbcConfig(config);
+    assertNotNull(jdbcConfig.get(OracleDestination.JDBC_URL_PARAMS_KEY).asText());
+    assertEquals(extraParam, jdbcConfig.get(OracleDestination.JDBC_URL_PARAMS_KEY).asText());
+  }
+
+  @Test
+  void testExtraParams() {
+    final String extraParam = "key1=value1&key2=value2&key3=value3";
+    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    final JsonNode jdbcConfig = new OracleDestination().toJdbcConfig(config);
+    assertNotNull(jdbcConfig.get(OracleDestination.JDBC_URL_PARAMS_KEY).asText());
+    assertEquals(extraParam, jdbcConfig.get(OracleDestination.JDBC_URL_PARAMS_KEY).asText());
+
+  }
+
+  private JsonNode buildConfigWithExtraJdbcParameters(String extraParam) {
+
+    return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
+        "host", "localhost",
+        "port", 1773,
+        "sid", "ORCL",
+        "database", "db",
+        "username", "username",
+        "password", "verysecure",
+        "jdbc_url_params", extraParam));
+  }
+
 }

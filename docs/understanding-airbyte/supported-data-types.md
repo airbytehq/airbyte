@@ -2,7 +2,7 @@
 
 AirbyteRecords are required to conform to the Airbyte type system. This means that all sources must produce schemas and records within these types, and all destinations must handle records that conform to this type system.
 
-Because Airybet's interfaces are JSON-based, this type system is realized using [JSON schemas](https://json-schema.org/). In order to work around some limitations of JSON schemas, schemas may declare an additional `airbyte_type` annotation. This is used to disambiguate certain types that JSON schema does not explicitly differentiate between. See the [specific types](#specific-types) section for details.
+Because Airbyte's interfaces are JSON-based, this type system is realized using [JSON schemas](https://json-schema.org/). In order to work around some limitations of JSON schemas, schemas may declare an additional `airbyte_type` annotation. This is used to disambiguate certain types that JSON schema does not explicitly differentiate between. See the [specific types](#specific-types) section for details.
 
 This type system does not (generally) constrain values. Sources may declare streams using additional features of JSON schema (such as the `length` property for strings), but those constraints will be ignored by all other Airbyte components. The exception is in numeric types; `integer` and `number` fields must be representable within 64-bit primitives.
 
@@ -12,6 +12,7 @@ This table summarizes the available types. See the [Specific Types](#specific-ty
 
 | Airbyte type                                                   | JSON Schema                                                                              | Examples                                                                        |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Boolean                                                         | `{"type": "boolean"}`                                                                     | `true` or `false`                                                               |
 | String                                                         | `{"type": "string"}`                                                                     | `"foo bar"`                                                                     |
 | Date                                                           | `{"type": "string", "format": "date"}`                                                   | `"2021-01-23"`                                                                  |
 | Datetime with timezone                                         | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}`    | `"2022-11-22T01:23:45+05:00"`                                                   |
@@ -127,6 +128,8 @@ And emitted this record:
 ```
 
 ### Specific types
+#### Boolean
+Airbyte boolean type represents one of the two values `true` or `false` and they are are lower case. Note that values that evaluates to true or false such as data type String `"true"` or `"false"` or Integer like `1` or `0` are not accepted by the Schema.
 
 #### Dates and timestamps
 Airbyte has three temporal types: `date`, `timestamp_with_timezone`, and `timestamp_without_timezone`. These are represented as strings with specific `format` (either `date` or `date-time`).

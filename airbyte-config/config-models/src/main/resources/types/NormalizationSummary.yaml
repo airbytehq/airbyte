@@ -13,3 +13,7 @@ properties:
     type: integer
   endTime:
     type: integer
+  failures:
+    type: array
+    items:
+      "$ref": FailureReason.yaml

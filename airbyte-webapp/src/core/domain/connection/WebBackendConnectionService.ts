@@ -4,7 +4,7 @@ import {
   webBackendCreateConnection,
   webBackendGetConnection,
   webBackendListConnectionsForWorkspace,
-  webBackendUpdateConnectionNew as webBackendUpdateConnection,
+  webBackendUpdateConnection,
 } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 

@@ -1,33 +1,38 @@
-.headerCell {
+%headerCell {
   font-size: 10px;
   line-height: 13px;
 }
 
 .checkboxCell {
-  @extend .headerCell;
+  @extend %headerCell;
+
   max-width: 43px;
   text-align: center;
 }
 
-.catalogHeader {
+.catalogHeader,
+%catalogHeader {
   min-height: 33px;
-  margin-bottom: 0px !important;
+  margin-bottom: 0 !important;
   margin-left: 20px;
 }
 
 .readonlyCatalogHeader {
-  @extend .catalogHeader;
+  @extend %catalogHeader;
+
   margin-left: 50px;
 }
 
 .catalogSubheader {
-  @extend .catalogHeader;
+  @extend %catalogHeader;
+
   padding-top: 10px;
   margin-left: 155px;
 }
 
 .readonlyCatalogSubheader {
-  @extend .catalogHeader;
+  @extend %catalogHeader;
+
   padding-top: 10px;
   margin-left: 115px;
 }

@@ -22,7 +22,7 @@ class FlexportStream(HttpStream, ABC):
     url_base = "https://api.flexport.com/"
     raise_on_http_errors = False
     primary_key = "id"
-    page_size = 500
+    page_size = 100
 
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, start_date: str = None):
         super().__init__(authenticator=authenticator)
@@ -31,7 +31,7 @@ class FlexportStream(HttpStream, ABC):
         self.start_date = start_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # https://apidocs.flexport.com/reference/pagination
+        # https://apidocs.flexport.com/v3/tag/Pagination/
         # All list endpoints return paginated responses. The response object contains
         # elements of the current page, and links to the previous and next pages.
         data = response.json()["data"]
@@ -56,7 +56,7 @@ class FlexportStream(HttpStream, ABC):
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # https://apidocs.flexport.com/reference/response-layout
+        # https://apidocs.flexport.com/v3/tag/Response-Semantics
         json = response.json()
 
         http_error = None

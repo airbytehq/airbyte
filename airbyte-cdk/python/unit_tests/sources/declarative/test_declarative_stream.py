@@ -9,6 +9,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 
+from .schema.source_test import SourceTest  # noqa #pylint: disable=unused-import
+
 
 def test_declarative_stream():
     name = "stream"
@@ -38,12 +40,13 @@ def test_declarative_stream():
     stream = DeclarativeStream(
         name=name,
         primary_key=primary_key,
-        cursor_field=cursor_field,
+        stream_cursor_field=cursor_field,
         schema_loader=schema_loader,
         retriever=retriever,
         config=config,
         transformations=transformations,
         checkpoint_interval=checkpoint_interval,
+        options={},
     )
 
     assert stream.name == name

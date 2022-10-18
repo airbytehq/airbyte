@@ -23,48 +23,15 @@
     "authenticationContext": {
       "properties": {
         "authenticationProvider": {
-          "enum": [
-            "OKTA_AUTHENTICATION_PROVIDER",
-            "ACTIVE_DIRECTORY",
-            "LDAP",
-            "FEDERATION",
-            "SOCIAL",
-            "FACTOR_PROVIDER",
-            null
-          ],
           "type": ["string", "null"]
         },
         "authenticationStep": {
           "type": ["integer"]
         },
         "credentialProvider": {
-          "enum": [
-            "OKTA_CREDENTIAL_PROVIDER",
-            "RSA",
-            "SYMANTEC",
-            "GOOGLE",
-            "DUO",
-            "YUBIKEY",
-            null
-          ],
           "type": ["string", "null"]
         },
         "credentialType": {
-          "enum": [
-            "OTP",
-            "SMS",
-            "PASSWORD",
-            "ASSERTION",
-            "IWA",
-            "EMAIL",
-            "OAUTH2",
-            "JWT",
-            "CERTIFICATE",
-            "PRE_SHARED_SYMMETRIC_KEY",
-            "OKTA_CLIENT_SESSION",
-            "DEVICE_UDID",
-            null
-          ],
           "type": ["string", "null"]
         },
         "externalSessionId": {
@@ -103,11 +70,9 @@
             "geolocation": {
               "properties": {
                 "lat": {
-                  "format": "double",
                   "type": ["number", "null"]
                 },
                 "lon": {
-                  "format": "double",
                   "type": ["number", "null"]
                 }
               },
@@ -160,7 +125,7 @@
       "type": ["string", "null"]
     },
     "eventType": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "legacyEventType": {
       "type": ["string", "null"]
@@ -171,23 +136,14 @@
           "type": ["string", "null"]
         },
         "result": {
-          "enum": [
-            "SUCCESS",
-            "FAILURE",
-            "SKIPPED",
-            "ALLOW",
-            "DENY",
-            "CHALLENGE",
-            "UNKNOWN"
-          ],
-          "type": "string"
+          "type": ["string", "null"]
         }
       },
       "type": ["object", "null"]
     },
     "published": {
       "format": "date-time",
-      "type": "string"
+      "type": ["string", "null"]
     },
     "request": {
       "properties": {
@@ -205,11 +161,9 @@
                   "geolocation": {
                     "properties": {
                       "lat": {
-                        "format": "double",
                         "type": ["number", "null"]
                       },
                       "lon": {
-                        "format": "double",
                         "type": ["number", "null"]
                       }
                     },
@@ -262,8 +216,7 @@
       "type": ["object", "null"]
     },
     "severity": {
-      "enum": ["DEBUG", "INFO", "WARN", "ERROR"],
-      "type": "string"
+      "type": ["string", "null"]
     },
     "target": {
       "items": {
@@ -278,10 +231,10 @@
             "type": ["string", "null"]
           },
           "id": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "type": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": ["object", "null"]
@@ -303,11 +256,11 @@
       "type": ["object", "null"]
     },
     "uuid": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "version": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   },
-  "type": "object"
+  "type": ["object", "null"]
 }

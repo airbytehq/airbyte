@@ -7,49 +7,57 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
+import io.airbyte.persistence.job.JobCreator;
+import io.airbyte.persistence.job.JobNotifier;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
+import io.airbyte.persistence.job.errorreporter.SyncJobReportingContext;
+import io.airbyte.persistence.job.factory.SyncJobFactory;
+import io.airbyte.persistence.job.models.Attempt;
+import io.airbyte.persistence.job.models.Job;
+import io.airbyte.persistence.job.tracker.JobTracker;
+import io.airbyte.persistence.job.tracker.JobTracker.JobState;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.scheduler.models.Attempt;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobCreator;
-import io.airbyte.scheduler.persistence.JobNotifier;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
-import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
-import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import io.airbyte.workers.run.WorkerRun;
-import io.airbyte.workers.temporal.exception.RetryableException;
+import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor
 @Slf4j
+@Singleton
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndStatusUpdateActivity {
 
   private final SyncJobFactory jobFactory;
@@ -63,6 +71,30 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private final JobCreator jobCreator;
   private final StreamResetPersistence streamResetPersistence;
   private final JobErrorReporter jobErrorReporter;
+
+  public JobCreationAndStatusUpdateActivityImpl(final SyncJobFactory jobFactory,
+                                                final JobPersistence jobPersistence,
+                                                final TemporalWorkerRunFactory temporalWorkerRunFactory,
+                                                final WorkerEnvironment workerEnvironment,
+                                                final LogConfigs logConfigs,
+                                                final JobNotifier jobNotifier,
+                                                final JobTracker jobTracker,
+                                                final ConfigRepository configRepository,
+                                                final JobCreator jobCreator,
+                                                final StreamResetPersistence streamResetPersistence,
+                                                final JobErrorReporter jobErrorReporter) {
+    this.jobFactory = jobFactory;
+    this.jobPersistence = jobPersistence;
+    this.temporalWorkerRunFactory = temporalWorkerRunFactory;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.jobNotifier = jobNotifier;
+    this.jobTracker = jobTracker;
+    this.configRepository = configRepository;
+    this.jobCreator = jobCreator;
+    this.streamResetPersistence = streamResetPersistence;
+    this.jobErrorReporter = jobErrorReporter;
+  }
 
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
@@ -119,7 +151,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1,
+            new MetricAttribute(MetricTags.RELEASE_STAGE, MetricTags.getReleaseStage(stage)));
       }
     }
   }
@@ -168,7 +201,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
-        jobPersistence.writeOutput(jobId, attemptId, jobOutput);
+        final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
+        final NormalizationSummary normalizationSummary = jobOutput.getSync().getNormalizationSummary();
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats, normalizationSummary);
       } else {
         log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
@@ -180,6 +215,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.SUCCEEDED);
     } catch (final IOException e) {
+      trackCompletionForInternalFailure(input.getJobId(), input.getConnectionId(), input.getAttemptId(), JobStatus.SUCCEEDED, e);
       throw new RetryableException(e);
     }
   }
@@ -189,24 +225,29 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     jobSuccess(new JobSuccessInput(
         input.getJobId(),
         input.getAttemptNumber(),
+        input.getConnectionId(),
         input.getStandardSyncOutput()));
   }
 
   @Override
   public void jobFailure(final JobFailureInput input) {
     try {
-      final var jobId = input.getJobId();
+      final long jobId = input.getJobId();
       jobPersistence.failJob(jobId);
       final Job job = jobPersistence.getJob(jobId);
 
       jobNotifier.failJob(input.getReason(), job);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
-      trackCompletion(job, JobStatus.FAILED);
 
       final UUID connectionId = UUID.fromString(job.getScope());
+      final JobSyncConfig jobSyncConfig = job.getConfig().getSync();
+      final SyncJobReportingContext jobContext =
+          new SyncJobReportingContext(jobId, jobSyncConfig.getSourceDockerImage(), jobSyncConfig.getDestinationDockerImage());
       job.getLastFailedAttempt().flatMap(Attempt::getFailureSummary)
-          .ifPresent(failureSummary -> jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, job.getConfig().getSync()));
+          .ifPresent(failureSummary -> jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, jobContext));
+      trackCompletion(job, JobStatus.FAILED);
     } catch (final IOException e) {
+      trackCompletionForInternalFailure(input.getJobId(), input.getConnectionId(), input.getAttemptNumber(), JobStatus.FAILED, e);
       throw new RetryableException(e);
     }
   }
@@ -223,13 +264,15 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
-        jobPersistence.writeOutput(jobId, attemptId, jobOutput);
+        final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
+        final NormalizationSummary normalizationSummary = jobOutput.getSync().getNormalizationSummary();
+        jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats, normalizationSummary);
       }
 
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
       for (final FailureReason reason : failureSummary.getFailures()) {
         MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
-            MetricTags.getFailureOrigin(reason.getFailureOrigin()));
+            new MetricAttribute(MetricTags.FAILURE_ORIGIN, MetricTags.getFailureOrigin(reason.getFailureOrigin())));
       }
 
     } catch (final IOException e) {
@@ -242,6 +285,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     attemptFailure(new AttemptFailureInput(
         input.getJobId(),
         input.getAttemptNumber(),
+        input.getConnectionId(),
         input.getStandardSyncOutput(),
         input.getAttemptFailureSummary()));
   }
@@ -256,10 +300,11 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       jobPersistence.cancelJob(jobId);
 
       final Job job = jobPersistence.getJob(jobId);
-      trackCompletion(job, JobStatus.FAILED);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_CANCELLED_BY_RELEASE_STAGE, jobId);
       jobNotifier.failJob("Job was cancelled", job);
+      trackCompletion(job, JobStatus.FAILED);
     } catch (final IOException e) {
+      trackCompletionForInternalFailure(input.getJobId(), input.getConnectionId(), input.getAttemptId(), JobStatus.FAILED, e);
       throw new RetryableException(e);
     }
   }
@@ -269,6 +314,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     jobCancelled(new JobCancelledInput(
         input.getJobId(),
         input.getAttemptNumber(),
+        input.getConnectionId(),
         input.getAttemptFailureSummary()));
   }
 
@@ -290,7 +336,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private void failNonTerminalJobs(final UUID connectionId) {
     try {
       final List<Job> jobs = jobPersistence.listJobsForConnectionWithStatuses(connectionId, Job.REPLICATION_TYPES,
-          io.airbyte.scheduler.models.JobStatus.NON_TERMINAL_STATUSES);
+          io.airbyte.persistence.job.models.JobStatus.NON_TERMINAL_STATUSES);
       for (final Job job : jobs) {
         final long jobId = job.getId();
 
@@ -328,13 +374,22 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        MetricClientFactory.getMetricClient().count(metric, 1, MetricTags.getReleaseStage(stage));
+        MetricClientFactory.getMetricClient().count(metric, 1,
+            new MetricAttribute(MetricTags.RELEASE_STAGE, MetricTags.getReleaseStage(stage)));
       }
     }
   }
 
   private void trackCompletion(final Job job, final io.airbyte.workers.JobStatus status) {
     jobTracker.trackSync(job, Enums.convertTo(status, JobState.class));
+  }
+
+  private void trackCompletionForInternalFailure(final Long jobId,
+                                                 final UUID connectionId,
+                                                 final Integer attemptId,
+                                                 final io.airbyte.workers.JobStatus status,
+                                                 final Exception e) {
+    jobTracker.trackSyncForInternalFailure(jobId, connectionId, attemptId, Enums.convertTo(status, JobState.class), e);
   }
 
 }

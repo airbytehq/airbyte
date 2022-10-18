@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { JobInfo } from "core/domain/job";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
-import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
@@ -22,18 +20,9 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
   const { destinationDefinitions } = useDestinationDefinitionList();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [error, setError] = useState<{
-    status: number;
-    response: JobInfo;
-    message: string;
-  } | null>(null);
+  const [error, setError] = useState<FormError | null>(null);
 
   const { mutateAsync: createDestination } = useCreateDestination();
-
-  const trackNewDestinationAction = useTrackAction(
-    TrackActionNamespace.DESTINATION,
-    TrackActionLegacyType.NEW_DESTINATION
-  );
 
   const getDestinationDefinitionById = (id: string) =>
     destinationDefinitions.find((item) => item.destinationDefinitionId === id);
@@ -75,11 +64,6 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
     setDocumentationUrl(destinationConnector?.documentationUrl || "");
 
-    trackNewDestinationAction("Select a connector", TrackActionType.SELECT, {
-      connector_destination: destinationConnector?.name,
-      connector_destination_definition_id: destinationConnector?.destinationDefinitionId,
-    });
-
     setError(null);
     setDestinationDefinitionId(destinationDefinitionId);
   };
@@ -90,7 +74,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     });
   };
 
-  const errorMessage = error ? createFormErrorMessage(error) : null;
+  const errorMessage = error ? generateMessageFromError(error) : null;
 
   return (
     <ConnectorCard
@@ -103,6 +87,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
       errorMessage={errorMessage}
       selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
       isLoading={isLoading}
+      formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
     />
   );
 };

@@ -2,19 +2,20 @@ import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 import { useConfig } from "config";
+import { Action, Namespace } from "core/analytics";
 import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceService } from "core/domain/connector/SourceService";
 import { JobInfo } from "core/domain/job";
-import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-import { SourceRead, SynchronousJobRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { SourceRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useAnalyticsService } from "./Analytics";
+import { useRemoveConnectionsFromList } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const sourcesKeys = {
@@ -98,14 +99,16 @@ const useCreateSource = () => {
 const useDeleteSource = () => {
   const service = useSourceService();
   const queryClient = useQueryClient();
-  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.SOURCE);
+  const analyticsService = useAnalyticsService();
+  const removeConnectionsFromList = useRemoveConnectionsFromList();
 
   return useMutation(
-    (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionRead[] }) =>
+    (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionListItem[] }) =>
       service.delete(payload.source.sourceId),
     {
       onSuccess: (_data, ctx) => {
-        trackSourceAction("Delete source", TrackActionType.DELETE, {
+        analyticsService.track(Namespace.SOURCE, Action.DELETE, {
+          actionDescription: "Source deleted",
           connector_source: ctx.source.sourceName,
           connector_source_definition_id: ctx.source.sourceDefinitionId,
         });
@@ -119,12 +122,8 @@ const useDeleteSource = () => {
             } as SourceList)
         );
 
-        // To delete connections with current source from local store
         const connectionIds = ctx.connectionsWithSource.map((item) => item.connectionId);
-
-        queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
-          connections: ls?.connections.filter((c) => connectionIds.includes(c.connectionId)) ?? [],
-        }));
+        removeConnectionsFromList(connectionIds);
       },
     }
   );
@@ -150,12 +149,15 @@ const useUpdateSource = () => {
   );
 };
 
+export type SchemaError = (Error & { status: number; response: JobInfo }) | null;
+
 const useDiscoverSchema = (
-  sourceId?: string
+  sourceId: string,
+  disableCache?: boolean
 ): {
   isLoading: boolean;
   schema: SyncSchema;
-  schemaErrorStatus: { status: number; response: SynchronousJobRead } | null;
+  schemaErrorStatus: SchemaError;
   catalogId: string | undefined;
   onDiscoverSchema: () => Promise<void>;
 } => {
@@ -163,16 +165,13 @@ const useDiscoverSchema = (
   const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
   const [catalogId, setCatalogId] = useState<string | undefined>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
-    status: number;
-    response: JobInfo;
-  } | null>(null);
+  const [schemaErrorStatus, setSchemaErrorStatus] = useState<SchemaError>(null);
 
   const onDiscoverSchema = useCallback(async () => {
     setIsLoading(true);
     setSchemaErrorStatus(null);
     try {
-      const data = await service.discoverSchema(sourceId || "");
+      const data = await service.discoverSchema(sourceId || "", disableCache);
       setSchema(data.catalog);
       setCatalogId(data.catalogId);
     } catch (e) {
@@ -180,15 +179,12 @@ const useDiscoverSchema = (
     } finally {
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceId]);
+  }, [disableCache, service, sourceId]);
 
   useEffect(() => {
-    (async () => {
-      if (sourceId) {
-        await onDiscoverSchema();
-      }
-    })();
+    if (sourceId) {
+      onDiscoverSchema();
+    }
   }, [onDiscoverSchema, sourceId]);
 
   return { schemaErrorStatus, isLoading, schema, catalogId, onDiscoverSchema };

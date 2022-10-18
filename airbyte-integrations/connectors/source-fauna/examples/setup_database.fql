@@ -1,0 +1,79 @@
+If(
+  Exists(Collection("foo")),
+  "OK",
+  CreateCollection({
+    name: "foo",
+  })
+)
+
+If(
+  Exists(Collection("other")),
+  "OK",
+  CreateCollection({
+    name: "other",
+  })
+)
+
+If(
+  Exists(Ref(Collection("other"), "123")),
+  "OK",
+  Create(Ref(Collection("other"), "123"))
+)
+
+Do(
+  Create(Collection("foo"), {
+    data: {
+      a: 5,
+      nested: {
+        value: 15,
+      },
+    },
+  }),
+  Create(Collection("foo"), {
+    data: {
+      a: 6,
+      nested: {
+        value: 20,
+      },
+    },
+  }),
+  Create(Collection("foo"), {
+    data: {
+      a: 7,
+      nested: {
+        value: 25,
+      },
+    },
+  }),
+  Create(Collection("foo"), {
+    data: {
+      a: 8,
+      nested: {
+        value: 30,
+      },
+    },
+  }),
+  Create(Collection("foo"), {
+    data: {
+      a: 9,
+      nested: {
+        value: 30,
+      },
+      "my-ref": Ref(Collection("other"), "123"),
+      string: "cat",
+      timestamp: Now(),
+      number: 12,
+      date: Date('2012-02-01')
+    },
+  }),
+)
+
+CreateIndex({
+  name: "ts",
+  source: Collection("foo"),
+  terms: [],
+  values: [
+    { field: "ts" },
+    { field: "ref" },
+  ],
+})

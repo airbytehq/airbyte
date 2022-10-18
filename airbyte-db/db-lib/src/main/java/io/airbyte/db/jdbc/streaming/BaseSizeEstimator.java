@@ -52,6 +52,7 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
    * This method ensures that the fetch size is between {@code minFetchSize} and {@code maxFetchSize},
    * inclusively.
    */
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   protected int getBoundedFetchSize() {
     if (maxRowByteSize <= 0.0) {
       return defaultFetchSize;

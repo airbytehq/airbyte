@@ -47,7 +47,7 @@ class SourceZendeskException(Exception):
 
 class SourceZendeskSupportFuturesSession(FuturesSession):
     """
-    Check the docs at https://github.com/ross/requests-futures.
+    Check the docs at https://github.com/ross/requests-futures
     Used to async execute a set of requests.
     """
 
@@ -534,7 +534,7 @@ class TicketFields(SourceZendeskSupportStream):
 
 
 class TicketForms(SourceZendeskSupportCursorPaginationStream):
-    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms/"""
+    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
 
 
 class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
@@ -582,6 +582,8 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
 
     # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
     response_list_name = "audits"
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -644,3 +646,23 @@ class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
         for resp in self.read_records(SyncMode.full_refresh):
             return resp
         raise SourceZendeskException("not found settings")
+
+
+class UserSubscriptionStream(SourceZendeskSupportFullRefreshStream):
+    """Stream for checking read permissions for streams"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "/api/v2/account/subscription.json"
+
+    def next_page_token(self, *args, **kwargs) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        subscription_plan = response.json().get("subscription").get("plan_name")
+        if subscription_plan:
+            yield subscription_plan
+
+    def get_subscription_plan(self) -> Mapping[str, Any]:
+        for result in self.read_records(SyncMode.full_refresh):
+            return result
+        raise SourceZendeskException("Could not read User's Subscription Plan.")

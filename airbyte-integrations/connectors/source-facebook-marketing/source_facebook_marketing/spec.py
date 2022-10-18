@@ -3,16 +3,13 @@
 #
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Type
 
-import pendulum
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
-from pydantic import BaseModel, Field, PositiveInt, validator
-
-from .utils import validate_date_field
+from pydantic import BaseModel, Field, PositiveInt
 
 logger = logging.getLogger("airbyte")
 
@@ -21,6 +18,7 @@ ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+EMPTY_PATTERN = "^$"
 
 
 class InsightConfig(BaseModel):
@@ -87,20 +85,16 @@ class InsightConfig(BaseModel):
         default=28,
     )
 
-    @validator("start_date")
-    def set_start_date(cls, start_date):
-        return validate_date_field("Start date", start_date)
-
-    @validator("end_date")
-    def set_end_date(cls, end_date):
-        return validate_date_field("End date", end_date)
-
 
 class ConnectorConfig(BaseConfig):
     """Connector config"""
 
     class Config:
         title = "Source Facebook Marketing"
+
+        @staticmethod
+        def schema_extra(schema: Dict[str, Any], model: Type["ConnectorConfig"]) -> None:
+            schema["properties"]["end_date"].pop("format")
 
     account_id: str = Field(
         title="Account ID",
@@ -128,9 +122,9 @@ class ConnectorConfig(BaseConfig):
             "All data generated between start_date and this date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
-        pattern=DATE_TIME_PATTERN,
+        pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
-        default_factory=pendulum.now,
+        default_factory=lambda: datetime.now(tz=timezone.utc),
     )
 
     access_token: str = Field(
@@ -138,7 +132,7 @@ class ConnectorConfig(BaseConfig):
         order=3,
         description=(
             "The value of the access token generated. "
-            'See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information'
+            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information'
         ),
         airbyte_secret=True,
     )
@@ -189,11 +183,3 @@ class ConnectorConfig(BaseConfig):
         description="Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
         default=50,
     )
-
-    @validator("start_date")
-    def set_start_date(cls, start_date):
-        return validate_date_field("Start date", start_date)
-
-    @validator("end_date")
-    def set_end_date(cls, end_date):
-        return validate_date_field("End date", end_date)
