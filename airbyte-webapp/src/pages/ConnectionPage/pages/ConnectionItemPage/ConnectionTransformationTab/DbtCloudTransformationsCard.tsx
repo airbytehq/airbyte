@@ -5,6 +5,7 @@ import { Field, Form, Formik, FieldArray, FieldProps } from "formik";
 import { Link } from "react-router-dom";
 import { array, object, number } from "yup";
 
+import { FormChangeTracker } from "components/FormChangeTracker";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Input } from "components/ui/Input";
@@ -46,9 +47,10 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
       onSubmit={onSubmit}
       initialValues={{ jobs: dbtCloudJobs }}
       validationSchema={dbtCloudJobListSchema}
-      render={({ values, isValid }) => {
+      render={({ values, isValid, dirty }) => {
         return (
           <Form className={styles.jobListForm}>
+            <FormChangeTracker changed={dirty} />
             <FieldArray
               name="jobs"
               render={({ remove, push }) => {
@@ -69,7 +71,7 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
                     }
                   >
                     {hasDbtIntegration ? (
-                      <DbtJobsList jobs={values.jobs} remove={remove} isValid={isValid} />
+                      <DbtJobsList jobs={values.jobs} remove={remove} isValid={isValid} dirty={dirty} />
                     ) : (
                       <NoDbtIntegration className={styles.jobListContainer} />
                     )}
@@ -88,10 +90,12 @@ const DbtJobsList = ({
   jobs,
   remove,
   isValid,
+  dirty,
 }: {
   jobs: DbtCloudJob[];
   remove: (i: number) => void;
   isValid: boolean;
+  dirty: boolean;
 }) => (
   <div className={classNames(styles.jobListContainer, styles.emptyListContent)}>
     <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
@@ -107,7 +111,7 @@ const DbtJobsList = ({
       <Button className={styles.jobListButton} type="reset" variant="secondary">
         Cancel
       </Button>
-      <Button className={styles.jobListButton} type="submit" variant="primary" disabled={!isValid}>
+      <Button className={styles.jobListButton} type="submit" variant="primary" disabled={!dirty || !isValid}>
         Save changes
       </Button>
     </div>
