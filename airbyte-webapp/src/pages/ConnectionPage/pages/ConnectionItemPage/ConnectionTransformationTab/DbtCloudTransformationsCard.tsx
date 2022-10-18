@@ -34,7 +34,7 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   //   2.1) AND the connection has no saved dbt jobs (cf: operations)
   //        THEN show empty jobs list and the "+ Add transformation" button
   //   2.2) AND the connection has saved dbt jobs
-  //        THEN show the "no jobs" card body and the "+ Add transformation" button
+  //        THEN show the jobs list and the "+ Add transformation" button
 
   const { hasDbtIntegration, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
   const onSubmit = ({ jobs }: { jobs: DbtCloudJob[] }) => {
