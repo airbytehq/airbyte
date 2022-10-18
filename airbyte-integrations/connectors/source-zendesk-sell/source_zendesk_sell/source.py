@@ -36,7 +36,7 @@ class ZendeskSellStream(HttpStream, ABC):
             if 'next_page' in meta_links.keys():
                 return {'page' : int(re.findall(regex_page, meta_links['next_page'])[0])}
         except Exception as e:
-            print(f"{e.__class__} occurred, while trying to get next page information from the following dict {meta_links}") 
+            self.logger.error(f"{e.__class__} occurred, while trying to get next page information from the following dict {meta_links}")
             return None
 
     def request_params(
