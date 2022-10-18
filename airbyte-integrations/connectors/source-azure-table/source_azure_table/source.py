@@ -9,12 +9,10 @@ from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
-    AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     Status,
     SyncMode,
-    Type,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -34,14 +32,6 @@ class SourceAzureTable(AbstractSource):
 
     def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
         return data
-
-    def _checkpoint_state(self, stream, stream_state, connector_state):
-        try:
-            connector_state[stream.name] = stream.state
-        except AttributeError:
-            connector_state[stream.name] = stream_state
-
-        return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=connector_state))
 
     @property
     def get_typed_schema(self) -> object:
