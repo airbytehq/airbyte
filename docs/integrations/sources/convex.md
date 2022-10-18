@@ -56,6 +56,8 @@ please reach out to [Convex support](mailto:support@convex.dev).
 
 ### Setup guide
 
+Contact Convex via [email](mailto:support@convex.dev) or [Discord](https://convex.dev/community) to request Airbyte support.
+
 On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the project that you want to sync.
 
 In the Data tab, you should see the tables and a sample of the data that will be synced.
