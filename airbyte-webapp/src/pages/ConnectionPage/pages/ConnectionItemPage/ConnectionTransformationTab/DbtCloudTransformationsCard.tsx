@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Field, Form, Formik, FieldArray, FieldProps } from "formik";
 import { Link } from "react-router-dom";
+import { array, object, number } from "yup";
 
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
@@ -15,12 +16,14 @@ import { RoutePaths } from "pages/routePaths";
 
 import styles from "./DbtCloudTransformationsCard.module.scss";
 
-/* const _jobs: DbtCloudJob[] = [
- *   { account: "1", job: "1234" },
- *   { account: "2", job: "2134" },
- *   { account: "3", job: "3214" },
- * ]; */
-/* const _jobs: DbtCloudJob[] = []; */
+const dbtCloudJobListSchema = object({
+  jobs: array().of(
+    object({
+      account: number().required().positive().integer(),
+      job: number().required().positive().integer(),
+    })
+  ),
+});
 
 export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBackendConnectionRead }) => {
   // Possible render paths:
@@ -42,7 +45,8 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
     <Formik // TODO extract to parent component, see if that helps with input focus issues
       onSubmit={onSubmit}
       initialValues={{ jobs: dbtCloudJobs }}
-      render={({ values }) => {
+      validationSchema={dbtCloudJobListSchema}
+      render={({ values, isValid }) => {
         return (
           <Form className={styles.jobListForm}>
             <FieldArray
@@ -65,7 +69,7 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
                     }
                   >
                     {hasDbtIntegration ? (
-                      <DbtJobsList jobs={values.jobs} remove={remove} />
+                      <DbtJobsList jobs={values.jobs} remove={remove} isValid={isValid} />
                     ) : (
                       <NoDbtIntegration className={styles.jobListContainer} />
                     )}
@@ -80,7 +84,15 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   );
 };
 
-const DbtJobsList = ({ jobs, remove }: { jobs: DbtCloudJob[]; remove: (i: number) => void }) => (
+const DbtJobsList = ({
+  jobs,
+  remove,
+  isValid,
+}: {
+  jobs: DbtCloudJob[];
+  remove: (i: number) => void;
+  isValid: boolean;
+}) => (
   <div className={classNames(styles.jobListContainer, styles.emptyListContent)}>
     <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
     {jobs.length ? (
@@ -95,13 +107,14 @@ const DbtJobsList = ({ jobs, remove }: { jobs: DbtCloudJob[]; remove: (i: number
       <Button className={styles.jobListButton} type="reset" variant="secondary">
         Cancel
       </Button>
-      <Button className={styles.jobListButton} type="submit" variant="primary">
+      <Button className={styles.jobListButton} type="submit" variant="primary" disabled={!isValid}>
         Save changes
       </Button>
     </div>
   </div>
 );
 
+// TODO give feedback on validation errors (red outline and validation message)
 const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: () => void }) => {
   return (
     <Card className={styles.jobListItem}>
