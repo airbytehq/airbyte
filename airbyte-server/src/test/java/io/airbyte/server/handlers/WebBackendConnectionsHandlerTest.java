@@ -251,7 +251,8 @@ class WebBackendConnectionsHandlerTest {
         destinationRead,
         false,
         jobRead.getJob().getCreatedAt(),
-        jobRead.getJob().getStatus());
+        jobRead.getJob().getStatus(),
+        SchemaChange.NO_CHANGE);
 
     expected = new WebBackendConnectionRead()
         .connectionId(connectionRead.getConnectionId())
@@ -1193,6 +1194,53 @@ class WebBackendConnectionsHandlerTest {
     assertTrue(
         resultList.stream().anyMatch(
             streamDescriptor -> streamDescriptor.getName() == "updated_stream"));
+  }
+
+  @Test
+  void testGetSchemaChangeNoChange() throws ConfigNotFoundException, IOException {
+    ConnectionRead connectionReadWithoutSourceId = new ConnectionRead();
+    ConnectionRead connectionReadWithSourceId = new ConnectionRead().sourceId(UUID.randomUUID());
+
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(null, Optional.of(UUID.randomUUID())));
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(connectionReadWithoutSourceId, Optional.of(UUID.randomUUID())));
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(connectionReadWithSourceId, Optional.empty()));
+  }
+
+  @Test
+  void testGetSchemaChangeNoFetchNoChange() throws ConfigNotFoundException, IOException {
+    UUID sourceId = UUID.randomUUID();
+    ConnectionRead connectionReadWithSourceId = new ConnectionRead().sourceId(sourceId);
+
+    when(configRepository.getMostRecentActorCatalogFetchEventForSource(sourceId))
+        .thenReturn(Optional.empty());
+
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(connectionReadWithSourceId, Optional.empty()));
+  }
+
+  @Test
+  void testGetSchemaChangeBreaking() throws ConfigNotFoundException, IOException {
+    UUID sourceId = UUID.randomUUID();
+    ConnectionRead connectionReadWithSourceId = new ConnectionRead().sourceId(sourceId).breakingChange(true);
+
+    ActorCatalogFetchEvent actorCatalogFetchEvent = new ActorCatalogFetchEvent()
+        .withActorCatalogId(UUID.randomUUID());
+    when(configRepository.getMostRecentActorCatalogFetchEventForSource(sourceId))
+        .thenReturn(Optional.of(actorCatalogFetchEvent));
+
+    assertEquals(SchemaChange.BREAKING, wbHandler.getSchemaChange(connectionReadWithSourceId, Optional.of(UUID.randomUUID())));
+  }
+
+  @Test
+  void testGetSchemaChangeNotBreaking() throws ConfigNotFoundException, IOException {
+    UUID sourceId = UUID.randomUUID();
+    ConnectionRead connectionReadWithSourceId = new ConnectionRead().sourceId(sourceId).breakingChange(false);
+
+    ActorCatalogFetchEvent actorCatalogFetchEvent = new ActorCatalogFetchEvent()
+        .withActorCatalogId(UUID.randomUUID());
+    when(configRepository.getMostRecentActorCatalogFetchEventForSource(sourceId))
+        .thenReturn(Optional.of(actorCatalogFetchEvent));
+
+    assertEquals(SchemaChange.NON_BREAKING, wbHandler.getSchemaChange(connectionReadWithSourceId, Optional.of(UUID.randomUUID())));
   }
 
 }

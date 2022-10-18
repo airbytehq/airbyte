@@ -1003,8 +1003,7 @@ public class ConfigRepository {
               right.forEach((actorId, value) -> {
                 insertInAccumulatorIfNeeded(left, value);
               });
-            })
-    );
+            }));
   }
 
   private void insertInAccumulatorIfNeeded(Map<UUID, ActorCatalogFetchEventWithCreationDate> acc, ActorCatalogFetchEventWithCreationDate value) {

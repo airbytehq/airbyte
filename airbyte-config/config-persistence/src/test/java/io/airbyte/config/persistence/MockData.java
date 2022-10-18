@@ -655,8 +655,7 @@ public class MockData {
     return Arrays.asList(
         new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent1, now),
         new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent2, yesterday),
-        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent3, now)
-    );
+        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent3, now));
   }
 
   public static List<WorkspaceServiceAccount> workspaceServiceAccounts() {
@@ -669,8 +668,6 @@ public class MockData {
 
     return Arrays.asList(workspaceServiceAccount);
   }
-
-
 
   private static Map<String, String> sortMap(final Map<String, String> originalMap) {
     return originalMap.entrySet().stream()

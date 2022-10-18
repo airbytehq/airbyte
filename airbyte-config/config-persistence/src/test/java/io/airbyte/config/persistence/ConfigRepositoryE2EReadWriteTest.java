@@ -4,7 +4,6 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
@@ -61,7 +60,6 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
-import org.jooq.JSONB;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -504,18 +502,18 @@ class ConfigRepositoryE2EReadWriteTest {
     }
 
     database.transaction(ctx -> {
-      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEventWithCreationDate ->
-          insertCatalogFetchEvent(
-              ctx,
-              actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent().getActorId(),
-              actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent().getActorCatalogId(),
-              actorCatalogFetchEventWithCreationDate.getCreatedAt()));
+      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEventWithCreationDate -> insertCatalogFetchEvent(
+          ctx,
+          actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent().getActorId(),
+          actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent().getActorCatalogId(),
+          actorCatalogFetchEventWithCreationDate.getCreatedAt()));
 
       return null;
     });
 
-    Map<UUID, ActorCatalogFetchEventWithCreationDate> result = configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
-        MockData.SOURCE_ID_2));
+    Map<UUID, ActorCatalogFetchEventWithCreationDate> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
+            MockData.SOURCE_ID_2));
 
     assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogFetchEvent().getActorCatalogId());
     assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogFetchEvent().getActorCatalogId());
@@ -530,8 +528,7 @@ class ConfigRepositoryE2EReadWriteTest {
             ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH,
             ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION,
             ACTOR_CATALOG_FETCH_EVENT.CREATED_AT,
-            ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT
-        )
+            ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT)
         .values(UUID.randomUUID(), sourceId, catalogId, "", "", creationDate, creationDate)
         .execute();
   }

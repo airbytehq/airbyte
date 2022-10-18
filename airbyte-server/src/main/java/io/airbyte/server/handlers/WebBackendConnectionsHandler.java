@@ -44,7 +44,6 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
-import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -182,23 +181,7 @@ public class WebBackendConnectionsHandler {
       webBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
     });
 
-    SchemaChange schemaChange = SchemaChange.NO_CHANGE;
-
-    if (connectionRead.getSourceId() != null && currentSourceCatalogId.isPresent()) {
-      final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
-          configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
-
-      if (mostRecentFetchEvent.isPresent()) {
-        final ActorCatalog currentCatalog = configRepository.getActorCatalogById(currentSourceCatalogId.get());
-        if (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentCatalog.getId())) {
-          if (connectionRead.getBreakingChange()) {
-            schemaChange = SchemaChange.BREAKING;
-          } else {
-            schemaChange = SchemaChange.NON_BREAKING;
-          }
-        }
-      }
-    }
+    SchemaChange schemaChange = getSchemaChange(connectionRead, currentSourceCatalogId);
 
     webBackendConnectionRead.setSchemaChange(schemaChange);
 
@@ -247,17 +230,17 @@ public class WebBackendConnectionsHandler {
     return listItem;
   }
 
-  private SchemaChange getSchemaChange(ConnectionRead connectionRead, Optional<UUID> currentSourceCatalogId)
+  @VisibleForTesting
+  SchemaChange getSchemaChange(ConnectionRead connectionRead, Optional<UUID> currentSourceCatalogId)
       throws IOException, ConfigNotFoundException {
     SchemaChange schemaChange = SchemaChange.NO_CHANGE;
 
-    if (connectionRead.getSourceId() != null && currentSourceCatalogId.isPresent()) {
+    if (connectionRead != null && connectionRead.getSourceId() != null && currentSourceCatalogId.isPresent()) {
       final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
           configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
 
       if (mostRecentFetchEvent.isPresent()) {
-        final ActorCatalog currentCatalog = configRepository.getActorCatalogById(currentSourceCatalogId.get());
-        if (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentCatalog.getId())) {
+        if (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentSourceCatalogId.get())) {
           if (connectionRead.getBreakingChange()) {
             schemaChange = SchemaChange.BREAKING;
           } else {
