@@ -337,7 +337,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      var recordsRead = 0;
+      Long recordsRead = 0L;
       final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       try {
         while (!cancelled.get() && !source.isFinished()) {
