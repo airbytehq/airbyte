@@ -10,7 +10,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -21,6 +20,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.atLeastOnce;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
@@ -49,8 +49,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -76,8 +74,7 @@ class BigQueryDenormalizedDestinationTest {
   @InjectMocks
   BigQueryDenormalizedDestination bqdd;
 
-  @Captor
-  private ArgumentCaptor<Runnable> registerMessageLambdaCaptor;
+  final ObjectMapper mapper = new ObjectMapper();
 
   @BeforeEach
   void init() {
@@ -118,7 +115,7 @@ class BigQueryDenormalizedDestinationTest {
   void getAvroSchemaCreator() {
     DefaultBigQueryRecordFormatter recordFormatterMock = mock(DefaultBigQueryRecordFormatter.class);
     AirbyteStreamNameNamespacePair namespacePairMock = mock(AirbyteStreamNameNamespacePair.class);
-    when(recordFormatterMock.getJsonSchema()).thenReturn(mock(JsonNode.class));
+    when(recordFormatterMock.getJsonSchema()).thenReturn(mapper.createObjectNode());
     when(namespacePairMock.getName()).thenReturn("name_test");
     when(namespacePairMock.getNamespace()).thenReturn("name_space_test");
 
@@ -133,7 +130,7 @@ class BigQueryDenormalizedDestinationTest {
   void getRecordFormatterCreator() {
     final BigQuerySQLNameTransformer nameTransformerMock = mock(BigQuerySQLNameTransformer.class);
     final BigQueryRecordFormatter resultFormatter = bqdd.getRecordFormatterCreator(nameTransformerMock)
-        .apply(mock(JsonNode.class));
+        .apply(mapper.createObjectNode());
 
     assertThat(resultFormatter, instanceOf(GcsBigQueryDenormalizedRecordFormatter.class));
   }
