@@ -22,9 +22,6 @@ import styles from "./DbtCloudTransformationsCard.module.scss";
  * ]; */
 /* const _jobs: DbtCloudJob[] = []; */
 
-// without including the index, duplicate data causes annoying render bugs for the list
-const jobKey = (t: DbtCloudJob, i: number) => `${i}:${t.account}/${t.job}`;
-
 export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBackendConnectionRead }) => {
   // Possible render paths:
   // 1) IF the workspace has no dbt cloud account linked
@@ -73,9 +70,7 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
                           After an Airbyte sync job has completed, the following jobs will run
                         </p>
                         {values.jobs.length ? (
-                          values.jobs.map((t, i) => (
-                            <JobsListItem key={jobKey(t, i)} jobIndex={i} removeJob={() => remove(i)} />
-                          ))
+                          values.jobs.map((_j, i) => <JobsListItem key={i} jobIndex={i} removeJob={() => remove(i)} />)
                         ) : (
                           <>
                             <img
