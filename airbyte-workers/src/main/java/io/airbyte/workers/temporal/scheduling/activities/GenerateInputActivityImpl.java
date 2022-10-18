@@ -87,6 +87,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withSourceConfiguration(config.getSourceConfiguration())
           .withDestinationConfiguration(config.getDestinationConfiguration())
           .withOperationSequence(config.getOperationSequence())
+          .withWebhookOperationConfigs(config.getWebhookOperationConfigs())
           .withCatalog(config.getConfiguredAirbyteCatalog())
           .withState(config.getState())
           .withResourceRequirements(config.getResourceRequirements())
