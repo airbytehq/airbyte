@@ -112,12 +112,26 @@ const JobsListItem = ({ jobIndex, removeJob }: { jobIndex: number; removeJob: ()
       <div className={styles.jobListItemInputGroup}>
         <div className={styles.jobListItemInput}>
           <Field name={`jobs.${jobIndex}.account`}>
-            {({ field }: FieldProps<string>) => <Input {...field} type="text" placeholder="Account name" />}
+            {({ field }: FieldProps<string>) => (
+              <>
+                <label htmlFor={`jobs.${jobIndex}.account`} className={styles.jobListItemInputLabel}>
+                  Account ID
+                </label>
+                <Input {...field} type="text" />
+              </>
+            )}
           </Field>
         </div>
         <div className={styles.jobListItemInput}>
           <Field name={`jobs.${jobIndex}.job`}>
-            {({ field }: FieldProps<string>) => <Input {...field} type="text" placeholder="Job name" />}
+            {({ field }: FieldProps<string>) => (
+              <>
+                <label htmlFor={`jobs.${jobIndex}.job`} className={styles.jobListItemInputLabel}>
+                  Job ID
+                </label>
+                <Input {...field} type="text" />
+              </>
+            )}
           </Field>
         </div>
         <button type="button" className={styles.jobListItemDelete} onClick={removeJob}>
