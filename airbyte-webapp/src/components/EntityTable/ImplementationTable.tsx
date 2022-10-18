@@ -70,8 +70,8 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         Header: (
           <SortableTableHeader
             onClick={() => onSortClick("entity")}
-            wasActive={sortBy === "entity"}
-            lowToLarge={sortOrder === SortOrderEnum.ASC}
+            isActive={sortBy === "entity"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
           >
             <FormattedMessage id="tables.name" />
           </SortableTableHeader>
@@ -87,8 +87,8 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         Header: (
           <SortableTableHeader
             onClick={() => onSortClick("connector")}
-            wasActive={sortBy === "connector"}
-            lowToLarge={sortOrder === SortOrderEnum.ASC}
+            isActive={sortBy === "connector"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
           >
             <FormattedMessage id="tables.connector" />
           </SortableTableHeader>
@@ -109,8 +109,8 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         Header: (
           <SortableTableHeader
             onClick={() => onSortClick("lastSync")}
-            wasActive={sortBy === "lastSync"}
-            lowToLarge={sortOrder === SortOrderEnum.ASC}
+            isActive={sortBy === "lastSync"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
           >
             <FormattedMessage id="tables.lastSync" />
           </SortableTableHeader>

@@ -76,8 +76,8 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         Header: (
           <SortableTableHeader
             onClick={() => onSortClick("name")}
-            wasActive={sortBy === "name"}
-            lowToLarge={sortOrder === SortOrderEnum.ASC}
+            isActive={sortBy === "name"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
           >
             <FormattedMessage id="tables.name" />
           </SortableTableHeader>
@@ -93,8 +93,8 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         Header: (
           <SortableTableHeader
             onClick={() => onSortClick("entityName")}
-            wasActive={sortBy === "entityName"}
-            lowToLarge={sortOrder === SortOrderEnum.ASC}
+            isActive={sortBy === "entityName"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
           >
             <FormattedMessage
               id={entity === "connection" ? "tables.destinationConnectionToName" : `tables.${entity}ConnectionToName`}
@@ -116,8 +116,8 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         Header: (
           <SortableTableHeader
             onClick={() => onSortClick("connectorName")}
-            wasActive={sortBy === "connectorName"}
-            lowToLarge={sortOrder === SortOrderEnum.ASC}
+            isActive={sortBy === "connectorName"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
           >
             <FormattedMessage id={entity === "connection" ? "tables.sourceConnectionToName" : "tables.connector"} />
           </SortableTableHeader>
@@ -139,8 +139,8 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         Header: (
           <SortableTableHeader
             onClick={() => onSortClick("lastSync")}
-            wasActive={sortBy === "lastSync"}
-            lowToLarge={sortOrder === SortOrderEnum.ASC}
+            isActive={sortBy === "lastSync"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
           >
             <FormattedMessage id="tables.lastSync" />
           </SortableTableHeader>

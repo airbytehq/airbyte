@@ -112,8 +112,8 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         Header: (
           <SortableTableHeader
             onClick={() => onSortClick("connection")}
-            wasActive={sortBy === "connection"}
-            lowToLarge={sortOrder === SortOrderEnum.ASC}
+            isActive={sortBy === "connection"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
           >
             <FormattedMessage id="credits.connection" />
           </SortableTableHeader>
@@ -133,8 +133,8 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         Header: (
           <SortableTableHeader
             onClick={() => onSortClick("usage")}
-            wasActive={sortBy === "usage"}
-            lowToLarge={sortOrder === SortOrderEnum.ASC}
+            isActive={sortBy === "usage"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
           >
             <FormattedMessage id="credits.usage" />
           </SortableTableHeader>
