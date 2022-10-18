@@ -121,7 +121,7 @@ def test_full_refresh_settings(authenticator, config, requests_mock):
         (SatisfactionRatings, "surveys/satisfaction_ratings"),
     ],
 )
-def test_incremental(stream, resource, authenticator, config, requests_mock):
+def test_incremental(stream, resource, authenticator, config, requests_mock, monkeypatch):
     highest_updated_at = "2022-04-25T22:00:00Z"
     other_updated_at = "2022-04-01T00:00:00Z"
     highest_index = random.randint(0, 24)
@@ -131,6 +131,7 @@ def test_incremental(stream, resource, authenticator, config, requests_mock):
         json=[{"id": x, "updated_at": highest_updated_at if x == highest_index else other_updated_at} for x in range(25)],
     )
 
+    monkeypatch.setattr(Tickets, "use_cache", False)
     stream = stream(authenticator=authenticator, config=config)
     records, state = _read_incremental(stream, {})
 
