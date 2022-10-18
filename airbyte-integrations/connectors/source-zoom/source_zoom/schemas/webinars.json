@@ -1,0 +1,203 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "uuid": {
+        "type": ["string"]
+      },
+      "id": {
+        "type": ["string"]
+      },
+      "host_id": {
+        "type": ["null", "string"]
+      },
+      "topic": {
+        "type": ["null", "string"]
+      },
+      "type": {
+        "type": ["null", "integer"]
+      },
+      "start_time": {
+        "format": "date-time",
+        "type": ["null", "string"]
+      },
+      "duration": {
+        "type": ["null", "integer"]
+      },
+      "timezone": {
+        "type": ["null", "string"]
+      },
+      "agenda": {
+        "type": ["null", "string"]
+      },
+      "created_at": {
+        "format": "date-time",
+        "type": ["null", "string"]
+      },
+      "start_url": {
+        "type": ["null", "string"]
+      },
+      "join_url": {
+        "type": ["null", "string"]
+      },
+      "tracking_fields": {
+        "items": {
+          "properties": {
+            "field": {
+              "type": ["null", "string"]
+            },
+            "value": {
+              "type": ["null", "string"]
+            }
+          },
+          "type": ["object"],
+          "additionalProperties": false
+        },
+        "type": ["null", "array"]
+      },
+      "occurences": {
+        "items": {
+          "properties": {
+            "occurence_id": {
+              "type": ["null", "string"]
+            },
+            "start_time": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            },
+            "duration": {
+              "type": ["null", "integer"]
+            },
+            "status": {
+              "type": ["null", "string"]
+            }
+          },
+          "type": ["object"],
+          "additionalProperties": false
+        },
+        "type": ["null", "array"]
+      },
+      "settings": {
+        "properties": {
+          "host_video": {
+            "type": ["null", "boolean"]
+          },
+          "panelists_video": {
+            "type": ["null", "boolean"]
+          },
+          "practice_session": {
+            "type": ["null", "boolean"]
+          },
+          "hd_video": {
+            "type": ["null", "boolean"]
+          },
+          "approval_type": {
+            "type": ["null", "integer"]
+          },
+          "registration_type": {
+            "type": ["null", "integer"]
+          },
+          "audio": {
+            "type": ["null", "string"]
+          },
+          "auto_recording": {
+            "type": ["null", "string"]
+          },
+          "enforce_login": {
+            "type": ["null", "boolean"]
+          },
+          "enforce_login_domains": {
+            "type": ["null", "string"]
+          },
+          "alternative_hosts": {
+            "type": ["null", "string"]
+          },
+          "close_registration": {
+            "type": ["null", "boolean"]
+          },
+          "show_share_button": {
+            "type": ["null", "boolean"]
+          },
+          "allow_multiple_devices": {
+            "type": ["null", "boolean"]
+          },
+          "on_demand": {
+            "type": ["null", "boolean"]
+          },
+          "global_dial_in_countries": {
+            "items": {
+              "type": ["string"]
+            },
+            "type": ["null", "array"]
+          },
+          "contact_name": {
+            "type": ["null", "boolean"]
+          },
+          "contact_email": {
+            "type": ["null", "boolean"]
+          },
+          "registrants_confirmation_email": {
+            "type": ["null", "boolean"]
+          },
+          "registrants_restrict_number": {
+            "type": ["null", "integer"]
+          },
+          "notify_registrants": {
+            "type": ["null", "boolean"]
+          },
+          "post_webinar_survey": {
+            "type": ["null", "boolean"]
+          },
+          "survey_url": {
+            "type": ["null", "string"]
+          },
+          "registrants_email_notification": {
+            "type": ["null", "boolean"]
+          },
+          "meeting_authentication": {
+            "type": ["null", "boolean"]
+          },
+          "authentication_option": {
+            "type": ["null", "string"]
+          },
+          "authentication_domains": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"],
+        "additionalProperties": false
+      },
+      "recurrence": {
+        "properties": {
+          "type": {
+            "type": ["null", "integer"]
+          },
+          "repeat_interval": {
+            "type": ["null", "integer"]
+          },
+          "weekly_days": {
+            "type": ["null", "integer"]
+          },
+          "monthly_day": {
+            "type": ["null", "integer"]
+          },
+          "monthly_week": {
+            "type": ["null", "integer"]
+          },
+          "monthly_week_day": {
+            "type": ["null", "integer"]
+          },
+          "end_times": {
+            "type": ["null", "integer"]
+          },
+          "end_date_time": {
+            "format": "date-time",
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"],
+        "additionalProperties": false
+      }
+    }
+  }
+  

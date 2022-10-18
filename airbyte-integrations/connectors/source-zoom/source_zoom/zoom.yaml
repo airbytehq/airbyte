@@ -14,7 +14,7 @@ definitions:
       type: "CursorPagination"
       cursor_value: "{{ response.next_page_token }}"
       stop_condition: "{{ response.next_page_token == '' }}"
-      page_size: 10 # TODO: make it 30
+      page_size: 30
     page_size_option:
       field_name: "page_size"
       inject_into: "request_parameter"
@@ -101,7 +101,6 @@ definitions:
                 # - http_codes: [400]
                 - predicate: "{{ response.code == 300 }}"
                   action: IGNORE
-            - type: DefaultErrorHandler        
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -140,7 +139,6 @@ definitions:
               response_filters:
                 - http_codes: [400] # TODO: fix this error
                   action: IGNORE
-            - type: DefaultErrorHandler        
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -178,7 +176,6 @@ definitions:
               response_filters:
                 - http_codes: [400, 404] # code 3001 gives HTTP 404
                   action: IGNORE
-            - type: DefaultErrorHandler        
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -217,7 +214,6 @@ definitions:
               response_filters:
                 - http_codes: [400]
                   action: IGNORE
-            - type: DefaultErrorHandler        
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -230,7 +226,535 @@ definitions:
           - path: ["meeting_id"]
             value: "{{ stream_slice.parent_id }}"
 
- 
+
+  webinars_list_tmp_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "webinars_list_tmp"
+      primary_key: "id"
+    retriever:
+      paginator:
+        $ref: "*ref(definitions.zoom_paginator)"    
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["webinars"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/users/{{ stream_slice.parent_id }}/webinars"
+        error_handler:
+          type: CompositeErrorHandler
+          # ignore 400 error; We get this error if Meeting is more than created an year ago
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.users_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+
+  webinars_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "webinars"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: []
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/webinars/{{ stream_slice.parent_id }}"
+        error_handler:
+          type: CompositeErrorHandler
+          # ignore 400 error
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                # TODO: WHen parent stream throws error; then ideally we should have an empty array, and no /webinars/{id} should be called. But somehow we're calling it right now with None. :( 
+                - http_codes: [400,404]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+
+  webinar_panelists_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "webinar_panelists"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["panelists"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/webinars/{{ stream_slice.parent_id }}/panelists"
+        error_handler:
+          type: CompositeErrorHandler
+          # ignore 400 error
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                # TODO: Same problem as webinars_stream for 404! 400 is okay. :)
+                - http_codes: [400,404]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["webinar_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+  webinar_registrants_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "webinar_registrants"
+      primary_key: "id"
+    retriever:
+      paginator:
+        $ref: "*ref(definitions.zoom_paginator)"    
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["registrants"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/webinars/{{ stream_slice.parent_id }}/registrants"
+        error_handler:
+          type: CompositeErrorHandler
+          # ignore 400 error
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                # TODO: Same problem as webinars_stream for 404! 400 is okay. :)
+                - http_codes: [400,404]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["webinar_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+  webinar_absentees_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "webinar_absentees"
+      primary_key: "id"
+    retriever:
+      paginator:
+        $ref: "*ref(definitions.zoom_paginator)"    
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["registrants"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/past_webinars/{{ stream_slice.parent_uuid }}/absentees"
+        error_handler:
+          type: CompositeErrorHandler
+          # ignore 400 error
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                # TODO: Same problem as webinars_stream for 404! 400 is okay. :)
+                - http_codes: [400,404]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_stream)"
+            parent_key: "uuid"
+            stream_slice_field: "parent_uuid"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["webinar_uuid"]
+            value: "{{ stream_slice.parent_uuid }}"
+
+
+  webinar_polls_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "webinar_polls"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["polls"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/webinars/{{ stream_slice.parent_id }}/polls"
+        error_handler:
+          type: CompositeErrorHandler
+          # ignore 400 error; We get this error if Meeting poll is not enabled for the meeting
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400] # TODO: fix this error
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["webinar_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+
+  webinar_poll_results_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "webinar_poll_results"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["questions"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/past_webinars/{{ stream_slice.parent_id }}/polls"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400, 404] # code 3001 gives HTTP 404
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["webinar_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+  webinar_registration_questions_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "webinar_registration_questions"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: []        
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/webinars/{{ stream_slice.parent_id }}/registrants/questions"
+        error_handler:
+          type: CompositeErrorHandler
+          # ignore 400 error; We get this error if Meeting is more than created an year ago
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["webinar_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+
+  webinar_tracking_sources_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "webinar_tracking_sources"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["tracking_sources"]        
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/webinars/{{ stream_slice.parent_id }}/tracking_sources"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["webinar_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+  webinar_qna_results_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "webinar_qna_results"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["questions"]        
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/past_webinars/{{ stream_slice.parent_id }}/qa"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400,404]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["webinar_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+
+
+  report_meetings_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "report_meetings"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["tracking_sources"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/report/meetings/{{ stream_slice.parent_id }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.meetings_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["meeting_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+
+
+  report_meeting_participants_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "report_meeting_participants"
+      primary_key: "id"
+    retriever:
+      paginator:
+        $ref: "*ref(definitions.zoom_paginator)"    
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["participants"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/report/meetings/{{ stream_slice.parent_id }}/participants"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.meetings_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["meeting_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+
+
+
+  report_webinars_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "report_webinars"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: []
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/report/webinars/{{ stream_slice.parent_id }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["webinar_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+
+  report_webinar_participants_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "report_webinar_participants"
+      primary_key: "id"
+    retriever:
+      paginator:
+        $ref: "*ref(definitions.zoom_paginator)"    
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: ["participants"]
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/report/webinars/{{ stream_slice.parent_id }}/participants"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [400]
+                  action: IGNORE
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.webinars_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["webinar_id"]
+            value: "{{ stream_slice.parent_id }}"
+
+
+
 
 streams:
   - "*ref(definitions.users_stream)"
@@ -239,6 +763,27 @@ streams:
   - "*ref(definitions.meeting_polls_stream)"
   - "*ref(definitions.meeting_poll_results_stream)"
   - "*ref(definitions.meeting_registration_questions_stream)"
+  - "*ref(definitions.webinars_stream)"
+  - "*ref(definitions.webinar_panelists_stream)"
+  - "*ref(definitions.webinar_registrants_stream)"
+  - "*ref(definitions.webinar_absentees_stream)"
+  - "*ref(definitions.webinar_polls_stream)"
+  - "*ref(definitions.webinar_poll_results_stream)"
+  - "*ref(definitions.webinar_registration_questions_stream)"
+  - "*ref(definitions.webinar_tracking_sources_stream)"
+  - "*ref(definitions.webinar_qna_results_stream)"
+  - "*ref(definitions.report_meetings_stream)"
+  - "*ref(definitions.report_meeting_participants_stream)"
+  - "*ref(definitions.report_webinars_stream)"
+  - "*ref(definitions.report_webinar_participants_stream)"
+
+
+
+
+
+
+
+
 
 
 check:

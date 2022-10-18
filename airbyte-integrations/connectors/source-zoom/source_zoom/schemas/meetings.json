@@ -8,9 +8,6 @@
         "meeting_id": {
           "type": ["string"]
         },
-        "uuid12":{
-          "type": ["string"]
-        },
         "uuid": {
           "type": ["string"]
         },

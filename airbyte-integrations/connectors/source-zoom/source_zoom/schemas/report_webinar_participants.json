@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": ["string"]
+      },
+      "user_id": {
+        "type": ["string"]
+      },
+      "webinar_id": {
+        "type": ["string"]
+      },
+      "name": {
+        "type": ["null", "string"]
+      },
+      "user_email": {
+        "type": ["null", "string"]
+      },
+      "join_time": {
+        "format": "date-time",
+        "type": ["null", "string"]
+      },
+      "leave_time": {
+        "format": "date-time",
+        "type": ["null", "string"]
+      },
+      "duration": {
+        "type": ["null", "string"]
+      },
+      "attentiveness_score": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+  

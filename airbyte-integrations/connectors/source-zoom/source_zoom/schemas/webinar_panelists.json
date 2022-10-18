@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": ["string"]
+      },
+      "webinar_id": {
+        "type": ["string"]
+      },
+      "name": {
+        "type": ["null", "string"]
+      },
+      "email": {
+        "type": ["null", "string"]
+      },
+      "join_url": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+  
