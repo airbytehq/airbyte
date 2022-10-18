@@ -75,7 +75,8 @@ public class CsvDestination extends BaseConnector implements Destination {
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Path destinationDir = getDestinationPath(config);
-    final char delimiter = getDelimiter(config);
+    final Character delimiter = getDelimiter(config);
+    CSVFormat csvFormat;
 
     FileUtils.forceMkdir(destinationDir.toFile());
 
@@ -86,8 +87,13 @@ public class CsvDestination extends BaseConnector implements Destination {
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
-      CSVFormat csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter).withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-          JavaBaseConstants.COLUMN_NAME_DATA);
+      if (delimiter.equals('\t')) {
+        csvFormat = CSVFormat.TDF;
+      } else {
+        csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter);
+      }
+      csvFormat = csvFormat.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+            JavaBaseConstants.COLUMN_NAME_DATA);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       if (syncMode == null) {
         throw new IllegalStateException("Undefined destination sync mode");
@@ -131,8 +137,14 @@ public class CsvDestination extends BaseConnector implements Destination {
    * @param config - csv config object
    * @return delimiter.
    */
-  protected char getDelimiter(final JsonNode config) {
-    char delimiter = config.get(DELIMITER_FIELD).asText().charAt(0);
+  protected Character getDelimiter(final JsonNode config) {
+    String tempDelimiter = config.get(DELIMITER_FIELD).asText();
+    Character delimiter;
+    if(tempDelimiter.contains("\\t")) {
+      delimiter = '\t';
+    } else {
+      delimiter = tempDelimiter.charAt(0);
+    }
     Preconditions.checkNotNull(delimiter);
 
     return delimiter;
@@ -230,9 +242,9 @@ public class CsvDestination extends BaseConnector implements Destination {
     private final CSVPrinter writer;
     private final Path tmpPath;
     private final Path finalPath;
-    private final char delimiter;
+    private final Character delimiter;
 
-    public WriteConfig(final CSVPrinter writer, final Path tmpPath, final Path finalPath, final char delimiter) {
+    public WriteConfig(final CSVPrinter writer, final Path tmpPath, final Path finalPath, final Character delimiter) {
       this.writer = writer;
       this.tmpPath = tmpPath;
       this.finalPath = finalPath;
@@ -251,7 +263,7 @@ public class CsvDestination extends BaseConnector implements Destination {
       return finalPath;
     }
 
-    public char getDelimiter() {
+    public Character getDelimiter() {
       return delimiter;
     }
 
