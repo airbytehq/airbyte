@@ -13,6 +13,9 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
+API_VERSION = "egress"
+
+
 def convex_url_base(instance_name) -> str:
     return f"https://{instance_name}.convex.cloud"
 
@@ -22,7 +25,7 @@ class SourceConvex(AbstractSource):
     def _json_schemas(self, config) -> requests.Response:
         instance_name = config["instance_name"]
         access_key = config["access_key"]
-        url = f"{convex_url_base(instance_name)}/api/0.2.0/json_schemas"
+        url = f"{convex_url_base(instance_name)}/api/{API_VERSION}/json_schemas?deltaSchema=true"
         headers = {"Authorization": f"Convex {access_key}"}
         return requests.get(url, headers=headers)
 
@@ -64,7 +67,6 @@ class ConvexStream(HttpStream, IncrementalMixin):
         self.instance_name = instance_name
         self.table_name = table_name
         if json_schema:
-            json_schema["properties"]["_ts"] = {"type": "integer"}
             json_schema["properties"]["_ab_cdc_lsn"] = {"type": "number"}
             json_schema["properties"]["_ab_cdc_updated_at"] = {"type": "string"}
             json_schema["properties"]["_ab_cdc_deleted_at"] = {"anyOf": [{"type": "string"}, {"type": "null"}]}
@@ -111,7 +113,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "/api/0.2.0/document_deltas"
+        return f"/api/{API_VERSION}/document_deltas"
 
     def parse_response(
         self,
