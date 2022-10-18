@@ -81,7 +81,8 @@ public class ContinuousFeedConfig {
         checkSchema(streamName, streamSchema.get());
 
         if (streamDuplication == 1) {
-          final AirbyteStream stream = new AirbyteStream().withName(streamName).withJsonSchema(streamSchema.get()).withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
+          final AirbyteStream stream = new AirbyteStream().withName(streamName).withJsonSchema(streamSchema.get())
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
           return new AirbyteCatalog().withStreams(Collections.singletonList(stream));
         } else {
           final List<AirbyteStream> streams = new ArrayList<>(streamDuplication);
@@ -107,7 +108,8 @@ public class ContinuousFeedConfig {
           final String streamName = entry.getKey();
           final JsonNode streamSchema = entry.getValue();
           checkSchema(streamName, streamSchema);
-          streams.add(new AirbyteStream().withName(streamName).withJsonSchema(streamSchema).withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)));
+          streams.add(new AirbyteStream().withName(streamName).withJsonSchema(streamSchema)
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)));
         }
         return new AirbyteCatalog().withStreams(streams);
       }

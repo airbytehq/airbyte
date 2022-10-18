@@ -22,7 +22,8 @@ class DynamodbDestinationTest {
 
   @Test
   void testGetOutputTableNameWithStream() throws Exception {
-    final var stream = new AirbyteStream().withName("test_stream").withNamespace("test_namespace").withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
+    final var stream =
+        new AirbyteStream().withName("test_stream").withNamespace("test_namespace").withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
     final var actual = DynamodbOutputTableHelper.getOutputTableName("test_table", stream);
     assertEquals("test_table_test_namespace_test_stream", actual);
   }
