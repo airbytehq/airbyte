@@ -37,7 +37,6 @@ public class WebhookOperationActivityImpl implements WebhookOperationActivity {
 
   @Override
   public boolean invokeWebhook(OperatorWebhookInput input) {
-    LOGGER.info("Invoking webhook operation {}", input.getName());
     LOGGER.debug("Webhook operation input: {}", input);
     final JsonNode fullWebhookConfigJson = secretsHydrator.hydrate(input.getWorkspaceWebhookConfigs());
     final WebhookOperationConfigs webhookConfigs = Jsons.object(fullWebhookConfigJson, WebhookOperationConfigs.class);
@@ -46,6 +45,8 @@ public class WebhookOperationActivityImpl implements WebhookOperationActivity {
     if (webhookConfig.isEmpty()) {
       throw new RuntimeException(String.format("Cannot find webhook config %s", input.getWebhookConfigId().toString()));
     }
+
+    LOGGER.info("Invoking webhook operation {}", webhookConfig.get().getName());
 
     LOGGER.debug("Found webhook config: {}", webhookConfig.get());
     final HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
@@ -61,8 +62,11 @@ public class WebhookOperationActivityImpl implements WebhookOperationActivity {
     try {
       HttpResponse<String> response = this.httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
       LOGGER.debug("Webhook response: {}", response == null ? null : response.body());
+      LOGGER.info("Webhook response status: {}", response == null ? "empty response" : response.statusCode());
       // Return true if the request was successful.
-      return response != null && response.statusCode() >= 200 && response.statusCode() <= 300;
+      boolean isSuccessful = response != null && response.statusCode() >= 200 && response.statusCode() <= 300;
+      LOGGER.info("Webhook {} execution status {}", webhookConfig.get().getName(), isSuccessful ? "successful" : "failed");
+      return isSuccessful;
     } catch (IOException | InterruptedException e) {
       LOGGER.error(e.getMessage());
       throw new RuntimeException(e);

@@ -5,12 +5,9 @@ title: OperatorWebhookInput
 description: Execution input for a webhook operation
 type: object
 required:
-  - name
   - executionUrl
+  - webhookConfigId
 properties:
-  name:
-    description: The user-friendly name of the operation, used for logging.
-    type: string
   executionUrl:
     description: URL to invoke the webhook via POST.
     type: string
