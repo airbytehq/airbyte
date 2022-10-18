@@ -312,11 +312,17 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     // this is where the bifurcation between full refresh and incremental
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
-      final Optional<String> cursorOptional = stateManager.getCursor(pair);
+      final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
 
       final AutoCloseableIterator<AirbyteMessage> airbyteMessageIterator;
-      if (cursorOptional.isPresent()) {
-        airbyteMessageIterator = getIncrementalStream(database, airbyteStream, selectedDatabaseFields, table, cursorOptional.get(), emittedAt);
+      if (cursorInfo.map(CursorInfo::getCursor).isPresent()) {
+        airbyteMessageIterator = getIncrementalStream(
+            database,
+            airbyteStream,
+            selectedDatabaseFields,
+            table,
+            cursorInfo.get(),
+            emittedAt);
       } else {
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
         airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
@@ -329,7 +335,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           stateManager,
           pair,
           cursorField,
-          cursorOptional.orElse(null),
+          cursorInfo.map(CursorInfo::getCursor).orElse(null),
           cursorType,
           getStateEmissionFrequency()),
           airbyteMessageIterator);
@@ -356,7 +362,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param airbyteStream represents an ingestion source (e.g. API endpoint or database table)
    * @param selectedDatabaseFields subset of database fields selected for replication
    * @param table information in tabular format
-   * @param cursor state of where to start the sync from
+   * @param cursorInfo state of where to start the sync from
    * @param emittedAt Time when data was emitted from the Source database
    * @return AirbyteMessage Iterator that
    */
@@ -364,7 +370,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                        final ConfiguredAirbyteStream airbyteStream,
                                                                        final List<String> selectedDatabaseFields,
                                                                        final TableInfo<CommonField<DataType>> table,
-                                                                       final String cursor,
+                                                                       final CursorInfo cursorInfo,
                                                                        final Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
@@ -383,9 +389,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         selectedDatabaseFields,
         table.getNameSpace(),
         table.getName(),
-        cursorField,
-        cursorType,
-        cursor);
+        cursorInfo,
+        cursorType);
 
     return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli());
   }
@@ -606,9 +611,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                         List<String> columnNames,
                                                                         String schemaName,
                                                                         String tableName,
-                                                                        String cursorField,
-                                                                        DataType cursorFieldType,
-                                                                        String cursorValue);
+                                                                        CursorInfo cursorInfo,
+                                                                        DataType cursorFieldType);
 
   /**
    * When larger than 0, the incremental iterator will emit intermediate state for every N records.

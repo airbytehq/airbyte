@@ -4,11 +4,11 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricTags;
-import io.airbyte.workers.config.WorkerMode;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.util.ArrayList;

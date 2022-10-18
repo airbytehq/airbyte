@@ -18,6 +18,7 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-metrics:metrics-lib')
+    implementation project(':airbyte-persistence:job-persistence')
 
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor
