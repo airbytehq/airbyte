@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - apikey
     - start_date
+    - n_days_availability_horizon
   properties:
     apikey:
       title: API token
@@ -21,3 +22,10 @@ connectionSpecification:
         - "2022-10-03"
       default: "2022-10-12"
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    n_days_availability_horizon:
+      title: N das availability horizon
+      type: integer
+      description: N das availability horizon
+      examples:
+        - 30
+      default: 3

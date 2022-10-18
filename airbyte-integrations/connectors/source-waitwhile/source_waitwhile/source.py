@@ -14,10 +14,12 @@ class WaitwhileStreamAvailability(HttpStream, ABC):
 
     primary_key = None
 
-    def __init__(self, location_ids: Optional[Iterable[str]], **kwargs):
+    def __init__(self, start_date: str, location_ids: Optional[Iterable[str]], n_days_availability_horizon: str, **kwargs):
         super().__init__(**kwargs)
         self.location_ids = location_ids
-
+        self.location_id = next(self.location_ids)
+        self.start_date = pendulum.parse(start_date)
+        self.stop_date = pendulum.today().add(days=n_days_availability_horizon)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -25,24 +27,41 @@ class WaitwhileStreamAvailability(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        try:
-            location_id = next(self.location_ids)
-            return {"locationId": location_id}
-        except:
-            return None
+
+        params = {}
+
+        resp_records = response.json()
+        last_date = None
+
+        if len(resp_records) == 0:
+            self.location_id = next(self.location_ids, None)
+        else:
+            last_date = pendulum.parse(resp_records[-1].get("date")).add(minutes=1)
+            if last_date >= self.stop_date:
+                self.location_id = next(self.location_ids, None)
+                last_date = None
+
+        if self.location_id:
+            params["locationId"] = self.location_id
+            if last_date:
+                params["fromDate"] = str(last_date)[:16]
+            return params
+
+        return None
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {}
+        params = {"locationId": self.location_id}
         if next_page_token:
             params.update(**next_page_token)
-        else:
-            try:
-                params.update(**{"locationId": next(self.location_ids)})
-            except:
-                pass
 
+        if "fromDate" in params:
+            return params
+
+        stream_start_date = str(self.start_date)[:16]
+        last_stream_date = stream_state.get("date", {}).get(self.location_id, stream_start_date)
+        params["fromDate"] = str(last_stream_date)[:16] if last_stream_date else stream_start_date
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -53,16 +72,52 @@ class WaitwhileStreamAvailability(HttpStream, ABC):
             return []
 
         response_json = response.json()
+        response_json = [dict(x, **{"locationId": self.location_id}) for x in response_json]
         if response_json:
             yield from response_json
 
         return []
 
 
-class LocationsAvailability(WaitwhileStreamAvailability):
+class IncrementalWaitwhileStreamAvailability(WaitwhileStreamAvailability, ABC):
+    state_checkpoint_interval = 1
+
+    @property
+    def cursor_field(self) -> str:
+        """
+        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
+        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
+
+        :return str: The name of the cursor field.
+        """
+        return "date"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        """
+
+        state_mapping = current_stream_state.get(self.cursor_field, {})
+        if state_mapping:
+            state_value = state_mapping.get(self.location_id, self.start_date)
+        else:
+            state_mapping = {}
+            state_value = self.start_date
+
+        last_record_value = latest_record.get(self.cursor_field)
+        if last_record_value:
+            state_mapping.update({self.location_id: last_record_value})
+
+        return {self.cursor_field: state_mapping}
+
+
+class LocationsAvailability(IncrementalWaitwhileStreamAvailability):
     """
     List locations availability data source.
     """
+
+    cursor_field = "date"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -332,13 +387,20 @@ class SourceWaitwhile(AbstractSource):
         """
         auth = TokenAuthenticator(config["apikey"])
         location_ids = self.get_location_ids(config)
+        start_date = config["start_date"]
+        n_days_availability_horizon = config["n_days_availability_horizon"]
         return [
             Locations(authenticator=auth),
             Services(authenticator=auth),
             Resources(authenticator=auth),
             Users(authenticator=auth),
             LocationStatus(authenticator=auth),
-            Customers(authenticator=auth, start_date=config["start_date"]),
-            Visits(authenticator=auth, start_date=config["start_date"]),
-            LocationsAvailability(authenticator=auth, location_ids=location_ids),
+            Customers(authenticator=auth, start_date=start_date),
+            Visits(authenticator=auth, start_date=start_date),
+            LocationsAvailability(
+                authenticator=auth,
+                start_date=start_date,
+                location_ids=location_ids,
+                n_days_availability_horizon=n_days_availability_horizon
+            ),
         ]
