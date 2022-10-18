@@ -1,13 +1,12 @@
 version: "0.1.0"
 
 definitions:
-  page_size: 1
   schema_loader:
     type: JsonSchema
     file_path: "./source_sentry/schemas/{{ options.name }}.json"
   selector:
     extractor:
-      field_pointer: [ ]
+      field_pointer: []
   requester:
     url_base: "https://api.lokalise.com"
     http_method: "GET"
@@ -19,17 +18,7 @@ definitions:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      type: DefaultPaginator
-      url_base: "*ref(definitions.requester.url_base)"
-      pagination_strategy:
-        type: PageIncrement
-        page_size: "*ref(definitions.page_size)"
-      page_size_option:
-        inject_into: "request_parameter"
-        field_name: "limit"
-      page_token_option:
-        inject_into: "request_parameter"
-        field_name: "page"
+      type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
