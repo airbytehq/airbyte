@@ -1319,7 +1319,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-azure-table:0.1.2"
+- dockerImage: "airbyte/source-azure-table:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -1329,7 +1329,6 @@
       required:
       - "storage_account_name"
       - "storage_access_key"
-      additionalProperties: false
       properties:
         storage_account_name:
           title: "Account Name"
