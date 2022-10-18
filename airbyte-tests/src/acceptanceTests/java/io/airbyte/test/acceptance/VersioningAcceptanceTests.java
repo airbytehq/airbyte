@@ -39,19 +39,13 @@ class VersioningAcceptanceTests {
   static void init() throws ApiException, URISyntaxException, IOException, InterruptedException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
-            .setHost(getApiServerHost())
+            .setHost("localhost")
             .setPort(8001)
             .setBasePath("/api"));
 
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
 
     testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId);
-  }
-
-  private static String getApiServerHost() {
-    final var host = System.getenv(TEST_API_HOST);
-
-    return (host == null) ? "localhost" : host;
   }
 
   @AfterAll

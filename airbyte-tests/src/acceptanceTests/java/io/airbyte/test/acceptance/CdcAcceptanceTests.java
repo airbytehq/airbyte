@@ -123,12 +123,12 @@ class CdcAcceptanceTests {
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
-            .setHost(getApiServerHost())
+            .setHost("localhost")
             .setPort(8001)
             .setBasePath("/api"));
     webBackendApi = new WebBackendApi(
         new ApiClient().setScheme("http")
-            .setHost(getApiServerHost())
+            .setHost("localhost")
             .setPort(8001)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
@@ -150,12 +150,6 @@ class CdcAcceptanceTests {
   void setup() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
     testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId, POSTGRES_INIT_SQL_FILE);
     testHarness.setup();
-  }
-
-  private static String getApiServerHost() {
-    final var host = System.getenv(TEST_API_HOST);
-
-    return (host == null) ? "localhost" : host;
   }
 
   @AfterEach
