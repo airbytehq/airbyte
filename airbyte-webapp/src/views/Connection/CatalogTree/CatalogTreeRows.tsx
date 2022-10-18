@@ -7,6 +7,7 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import { ConnectionFormValues, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import { CatalogSection } from "./CatalogSection";
+import styles from "./CatalogTreeRows.module.scss";
 
 interface CatalogTreeRowsProps {
   streams: SyncSchemaStream[];
@@ -36,7 +37,7 @@ export const CatalogTreeRows: React.FC<CatalogTreeRowsProps> = ({ streams, onStr
   });
 
   return (
-    <>
+    <div className={styles.container}>
       {streams.map((streamNode) => (
         <Field key={`schema.streams[${streamNode.id}].config`} name={`schema.streams[${streamNode.id}].config`}>
           {({ form }: FieldProps<FormikConnectionFormValues>) => (
@@ -53,6 +54,6 @@ export const CatalogTreeRows: React.FC<CatalogTreeRowsProps> = ({ streams, onStr
           )}
         </Field>
       ))}
-    </>
+    </div>
   );
 };

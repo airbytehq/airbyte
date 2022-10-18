@@ -23,26 +23,6 @@
   margin-left: 50px;
 }
 
-.catalogSubheader {
-  @extend %catalogHeader;
-
-  padding-top: 10px;
-  margin-left: 155px;
-}
-
-.readonlyCatalogSubheader {
-  @extend %catalogHeader;
-
-  padding-top: 10px;
-  margin-left: 115px;
-}
-
-.catalogTreeContainer {
-  margin-bottom: 29px;
-  max-height: 600px;
-  overflow-y: auto;
-
-  --webkit-overlay: true;
-
-  width: 100%;
+.nextLineText {
+  margin-top: 10px;
 }
