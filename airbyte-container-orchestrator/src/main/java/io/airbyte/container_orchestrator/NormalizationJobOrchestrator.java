@@ -5,12 +5,12 @@
 package io.airbyte.container_orchestrator;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.Configs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultNormalizationWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.normalization.NormalizationWorker;
@@ -62,7 +62,7 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
         configs.getWorkerEnvironment());
 
     log.info("Running normalization worker...");
-    final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     final NormalizationSummary normalizationSummary = normalizationWorker.run(normalizationInput, jobRoot);
 
     return Optional.of(Jsons.serialize(normalizationSummary));
