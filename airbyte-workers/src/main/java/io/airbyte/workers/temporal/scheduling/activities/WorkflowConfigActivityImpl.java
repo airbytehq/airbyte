@@ -4,6 +4,9 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
@@ -27,6 +30,7 @@ public class WorkflowConfigActivityImpl implements WorkflowConfigActivity {
     this.workflowRestartDelaySeconds = workflowRestartDelaySeconds;
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public Duration getWorkflowRestartDelaySeconds() {
     return Duration.ofSeconds(workflowRestartDelaySeconds);
