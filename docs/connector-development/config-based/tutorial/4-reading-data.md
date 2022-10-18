@@ -1,7 +1,7 @@
 # Step 4: Reading data
 
 Now that we're able to authenticate to the source API, we'll want to select data from the HTTP responses.
-Let's first add the stream to the configured catalog in `source-exchange_rates-tutorial/integration_tests/configured_catalog.json`
+Let's first add the stream to the configured catalog in `source-exchange-rates-tutorial/integration_tests/configured_catalog.json`
 
 ```json
 {
