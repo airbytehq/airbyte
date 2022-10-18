@@ -74,7 +74,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     BaseConnector implements Source, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
-
   // TODO: Remove when the flag is not use anymore
   private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
@@ -176,7 +175,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   private boolean showEnhancedErrorDetails(final Exception exception) {
-    // For now, enhanced error details should only be shown for InvalidCursorException. In the future, enhanced error can be made available for
+    // For now, enhanced error details should only be shown for InvalidCursorException. In the future, enhanced error messages will exist for
     // additional error types.
     return exception instanceof InvalidCursorException;
   }
