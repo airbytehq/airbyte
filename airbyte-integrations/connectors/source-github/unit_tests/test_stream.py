@@ -200,8 +200,9 @@ def test_stream_organizations_read():
 
 
 @responses.activate
-def test_stream_teams_read():
+def test_stream_teams_read(monkeypatch):
     organization_args = {"organizations": ["org1", "org2"]}
+    monkeypatch.setattr(Teams, "use_cache", False)
     stream = Teams(**organization_args)
     responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
@@ -878,7 +879,7 @@ def test_stream_reviews_incremental_read():
 
 
 @responses.activate
-def test_stream_team_members_full_refresh():
+def test_stream_team_members_full_refresh(monkeypatch):
     organization_args = {"organizations": ["org1"]}
     repository_args = {"repositories": [], "page_size_for_large_streams": 100}
 
@@ -889,6 +890,7 @@ def test_stream_team_members_full_refresh():
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/members", json=[{"login": "login2"}])
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/memberships/login2", json={"username": "login2"})
 
+    monkeypatch.setattr(Teams, "use_cache", False)
     stream = TeamMembers(parent=Teams(**organization_args), **repository_args)
     records = list(read_full_refresh(stream))
 
