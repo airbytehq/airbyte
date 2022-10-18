@@ -274,25 +274,27 @@ public class JobErrorReporter {
                                       final String dockerImage,
                                       final Map<String, String> metadata) {
     // Failure types associated with a config-error or a manual-cancellation should NOT be reported.
-    if (!UNSUPPORTED_FAILURETYPES.contains(failureReason.getFailureType())) {
-      final Map<String, String> commonMetadata = new HashMap<>(Map.ofEntries(
-          Map.entry(AIRBYTE_VERSION_META_KEY, airbyteVersion),
-          Map.entry(DEPLOYMENT_MODE_META_KEY, deploymentMode.name())));
+    if (UNSUPPORTED_FAILURETYPES.contains(failureReason.getFailureType())) {
+      return;
+    }
 
-      if (workspace != null) {
-        commonMetadata.putAll(getWorkspaceMetadata(workspace.getWorkspaceId()));
-      }
+    final Map<String, String> commonMetadata = new HashMap<>(Map.ofEntries(
+        Map.entry(AIRBYTE_VERSION_META_KEY, airbyteVersion),
+        Map.entry(DEPLOYMENT_MODE_META_KEY, deploymentMode.name())));
 
-      final Map<String, String> allMetadata = MoreMaps.merge(
-          commonMetadata,
-          getFailureReasonMetadata(failureReason),
-          metadata);
+    if (workspace != null) {
+      commonMetadata.putAll(getWorkspaceMetadata(workspace.getWorkspaceId()));
+    }
 
-      try {
-        jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, allMetadata);
-      } catch (final Exception e) {
-        LOGGER.error("Error when reporting job failure reason: {}", failureReason, e);
-      }
+    final Map<String, String> allMetadata = MoreMaps.merge(
+        commonMetadata,
+        getFailureReasonMetadata(failureReason),
+        metadata);
+
+    try {
+      jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, allMetadata);
+    } catch (final Exception e) {
+      LOGGER.error("Error when reporting job failure reason: {}", failureReason, e);
     }
   }
 
