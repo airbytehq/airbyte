@@ -129,10 +129,8 @@ def test_check_invalid_config(source, invalid_config):
     assert actual.status == expected.status
 
 
-def test_check_non_direct_url_provided_config(source, non_direct_url_provided_config):
-    expected = AirbyteConnectionStatus(status=Status.FAILED)
-    actual = source.check(logger=logger, config=non_direct_url_provided_config)
-    assert actual.status == expected.status
+def test_discover_dropbox_link(source, config_dropbox_link):
+    source.discover(logger=logger, config=config_dropbox_link)
 
 
 def test_discover(source, config, client):

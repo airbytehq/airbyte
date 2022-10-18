@@ -23,6 +23,7 @@ from airbyte_cdk.sources import Source
 from pandas.errors import ParserError
 
 from .client import Client
+from .utils import dropbox_force_download
 
 
 class SourceFile(Source):
@@ -86,6 +87,7 @@ class SourceFile(Source):
                 raise Exception("reader_options is not valid JSON")
         else:
             config["reader_options"] = {}
+        config["url"] = dropbox_force_download(config["url"])
         return config
 
     def check(self, logger, config: Mapping) -> AirbyteConnectionStatus:
