@@ -978,44 +978,43 @@ public class ConfigRepository {
   }
 
   @Data
-  private class TodoRename {
-    private final UUID actorId;
-    private final UUID actorCatalogId;
+  public static class ActorCatalogFetchEventWithCreationDate {
+
+    private final ActorCatalogFetchEvent actorCatalogFetchEvent;
     private final OffsetDateTime createdAt;
+
   }
 
-  public Map<UUID, TodoRename> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds) throws IOException {
+  public Map<UUID, ActorCatalogFetchEventWithCreationDate> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds)
+      throws IOException {
 
-     return database.query(ctx ->
-
-        ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
+    return database.query(ctx -> ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
         .from(ACTOR_CATALOG_FETCH_EVENT)
-        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.in(sourceIds)).fetch())
+        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.in(sourceIds))
+        .fetch()
         .stream()
-        .map(record -> new TodoRename(
-            record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID),
-            record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID),
-            record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT)
-        ))
+        .map(record -> new ActorCatalogFetchEventWithCreationDate(
+            DbConverter.buildActorCatalogFetchEvent(record),
+            record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT)))
         .collect(
-            () -> new HashMap<UUID, TodoRename>(),
+            () -> new HashMap<>(),
             this::insertInAccumulatorIfNeeded,
-            (left, right) ->  {
+            (left, right) -> {
               right.forEach((actorId, value) -> {
                 insertInAccumulatorIfNeeded(left, value);
               });
-            }
-        );
+            })
+    );
   }
 
-  private void insertInAccumulatorIfNeeded(Map<UUID, TodoRename> acc, TodoRename value) {
-    if (acc.containsKey(value.getActorId())) {
-      TodoRename currentNewest = acc.get(value.actorId);
+  private void insertInAccumulatorIfNeeded(Map<UUID, ActorCatalogFetchEventWithCreationDate> acc, ActorCatalogFetchEventWithCreationDate value) {
+    if (acc.containsKey(value.getActorCatalogFetchEvent().getActorId())) {
+      ActorCatalogFetchEventWithCreationDate currentNewest = acc.get(value.actorCatalogFetchEvent.getActorId());
       if (currentNewest.getCreatedAt().isBefore(value.getCreatedAt())) {
-        acc.put(value.getActorId(), value);
+        acc.put(value.getActorCatalogFetchEvent().getActorId(), value);
       }
     } else {
-      acc.put(value.actorId, value);
+      acc.put(value.actorCatalogFetchEvent.getActorId(), value);
     }
   }
 

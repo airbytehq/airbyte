@@ -4,7 +4,9 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,6 +18,7 @@ import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
@@ -26,6 +29,7 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigRepository.ActorCatalogFetchEventWithCreationDate;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -45,6 +49,7 @@ import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +61,7 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -489,6 +495,45 @@ class ConfigRepositoryE2EReadWriteTest {
 
     final List<DestinationAndDefinition> actual = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds);
     assertThat(actual).hasSameElementsAs(expected);
+  }
+
+  @Test
+  void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException, JsonValidationException {
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+    }
+
+    database.transaction(ctx -> {
+      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEventWithCreationDate ->
+          insertCatalogFetchEvent(
+              ctx,
+              actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent().getActorId(),
+              actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent().getActorCatalogId(),
+              actorCatalogFetchEventWithCreationDate.getCreatedAt()));
+
+      return null;
+    });
+
+    Map<UUID, ActorCatalogFetchEventWithCreationDate> result = configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
+        MockData.SOURCE_ID_2));
+
+    assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogFetchEvent().getActorCatalogId());
+    assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogFetchEvent().getActorCatalogId());
+  }
+
+  private void insertCatalogFetchEvent(DSLContext ctx, UUID sourceId, UUID catalogId, OffsetDateTime creationDate) {
+    ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
+        .columns(
+            ACTOR_CATALOG_FETCH_EVENT.ID,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID,
+            ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION,
+            ACTOR_CATALOG_FETCH_EVENT.CREATED_AT,
+            ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT
+        )
+        .values(UUID.randomUUID(), sourceId, catalogId, "", "", creationDate, creationDate)
+        .execute();
   }
 
 }
