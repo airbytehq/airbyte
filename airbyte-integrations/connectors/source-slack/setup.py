@@ -15,7 +15,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-cdk", "pendulum>=2,<3"],
+    install_requires=["airbyte-cdk @ git+https://git@github.com/airbytehq/airbyte.git@grubberr/17919-airbyte_cdk#egg=airbyte_cdk&subdirectory=airbyte-cdk/python", "pendulum>=2,<3"],
     package_data={"": ["*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
