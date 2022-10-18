@@ -13,14 +13,28 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 class XkcdStream(HttpStream):
     url_base = "https://xkcd.com"
+    last_comic = 0
+    comic_number = 0
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
     
-    def path(self, **kwargs) -> str:
+    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
+        if next_page_token:
+            next_token: str = next_page_token["next_token"]
+            return f"/{next_token}/info.0.json"
         return "/info.0.json"
     
+    
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self.last_comic < response.json().get("num"):
+            self.last_comic = response.json().get("num")
+        # There is not a comic 404
+        if self.comic_number == 403:
+            self.comic_number = 405
+        if self.comic_number < self.last_comic:
+            self.comic_number = self.comic_number + 1
+            return {"next_token": self.comic_number}
         return None
 
     def parse_response(
@@ -30,27 +44,11 @@ class XkcdStream(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        num_records = response.json().get("num")
-        for num in range(1, num_records):
-            try:
-                record = self._get_comic_metadata(num)
-            except Exception:
-                continue
-            yield record
-    
-    def _get_comic_metadata(self, comic_num: str) -> Dict:
-        path = f"https://xkcd.com/{comic_num}/info.0.json"
-
-        request = self._create_prepared_request(
-            path=path
-        )
-
-        response = self._send_request(request, {})
-        return response.json()
-
+        record = response.json()
+        yield record
 
 class Xkcd(XkcdStream):
-    primary_key = None
+    primary_key = "num"
 
 # Source
 class SourceXkcd(AbstractSource):
