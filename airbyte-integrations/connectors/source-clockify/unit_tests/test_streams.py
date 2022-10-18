@@ -2,12 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
 from unittest.mock import MagicMock
-from airbyte_cdk.models import SyncMode
 
 import pytest
+from airbyte_cdk.models import SyncMode
 from source_clockify.streams import ClockifyStream
+
 
 @pytest.fixture
 def patch_base_class(mocker):
@@ -20,20 +20,20 @@ def patch_base_class(mocker):
 def test_request_params(patch_base_class):
     stream = ClockifyStream(workspace_id=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {'page-size': 50}
+    expected_params = {"page-size": 50}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = ClockifyStream(workspace_id=MagicMock())
     inputs = {"response": MagicMock()}
-    expected_token = {'page': 2}
+    expected_token = {"page": 2}
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_read_records(patch_base_class):
     stream = ClockifyStream(workspace_id=MagicMock())
-    assert stream.read_records(sync_mode=SyncMode.full_refresh) 
+    assert stream.read_records(sync_mode=SyncMode.full_refresh)
 
 
 def test_request_headers(patch_base_class):
@@ -47,5 +47,3 @@ def test_http_method(patch_base_class):
     stream = ClockifyStream(workspace_id=MagicMock())
     expected_method = "GET"
     assert stream.http_method == expected_method
-
-

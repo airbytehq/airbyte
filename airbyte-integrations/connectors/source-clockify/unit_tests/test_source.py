@@ -4,8 +4,8 @@
 
 from unittest.mock import MagicMock
 
-from source_clockify.source import SourceClockify
 import responses
+from source_clockify.source import SourceClockify
 
 
 def setup_responses():

@@ -1,12 +1,15 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 
 from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.auth import AuthBase
-
-import requests
 
 
 class ClockifyStream(HttpStream, ABC):
@@ -25,9 +28,7 @@ class ClockifyStream(HttpStream, ABC):
         if next_page:
             return {"page": self.page}
 
-    def request_params(
-        self, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {
             "page-size": self.page_size,
         }
@@ -37,9 +38,7 @@ class ClockifyStream(HttpStream, ABC):
 
         return params
 
-    def parse_response(self,
-                       response: requests.Response, **kwargs
-                       ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
 
 
@@ -79,21 +78,19 @@ class UserGroups(ClockifyStream):
 class TimeEntries(HttpSubStream, ClockifyStream):
     def __init__(self, authenticator: AuthBase, workspace_id: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator, workspace_id=workspace_id, parent=Users(
-                authenticator=authenticator, workspace_id=workspace_id, **kwargs)
+            authenticator=authenticator,
+            workspace_id=workspace_id,
+            parent=Users(authenticator=authenticator, workspace_id=workspace_id, **kwargs),
         )
 
-    def stream_slices(
-        self, **kwargs
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        self.authenticator (which should be used as the 
-        authenticator for Users) is object of NoAuth() 
+        self.authenticator (which should be used as the
+        authenticator for Users) is object of NoAuth()
 
         so self._session.auth is used instead
         """
-        users_stream = Users(authenticator=self._session.auth,
-                             workspace_id=self.workspace_id)
+        users_stream = Users(authenticator=self._session.auth, workspace_id=self.workspace_id)
         for user in users_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"user_id": user["id"]}
 
@@ -105,21 +102,19 @@ class TimeEntries(HttpSubStream, ClockifyStream):
 class Tasks(HttpSubStream, ClockifyStream):
     def __init__(self, authenticator: AuthBase, workspace_id: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator, workspace_id=workspace_id, parent=Projects(
-                authenticator=authenticator, workspace_id=workspace_id, **kwargs)
+            authenticator=authenticator,
+            workspace_id=workspace_id,
+            parent=Projects(authenticator=authenticator, workspace_id=workspace_id, **kwargs),
         )
 
-    def stream_slices(
-        self, **kwargs
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        self.authenticator (which should be used as the 
-        authenticator for Projects) is object of NoAuth() 
+        self.authenticator (which should be used as the
+        authenticator for Projects) is object of NoAuth()
 
         so self._session.auth is used instead
         """
-        projects_stream = Projects(
-            authenticator=self._session.auth, workspace_id=self.workspace_id)
+        projects_stream = Projects(authenticator=self._session.auth, workspace_id=self.workspace_id)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"project_id": project["id"]}
 
