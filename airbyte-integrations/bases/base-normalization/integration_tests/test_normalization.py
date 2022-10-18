@@ -38,12 +38,9 @@ def before_all_tests(request):
         if integration_type in destinations_to_test:
             test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
             shutil.rmtree(test_root_dir, ignore_errors=True)
-
-    # handle environment based overwrite of target schema name
     if os.getenv("RANDOM_TEST_SCHEMA"):
         target_schema = dbt_test_utils.generate_random_string("test_normalization_ci_")
         dbt_test_utils.set_target_schema(target_schema)
-
     dbt_test_utils.change_current_test_dir(request)
     dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
@@ -346,10 +343,10 @@ def setup_schema_change_data(destination_type: DestinationType, test_resource_na
     catalog_file = os.path.join("resources", test_resource_name, "data_input", "catalog_schema_change.json")
     message_file = os.path.join("resources", test_resource_name, "data_input", "messages_schema_change.txt")
     dbt_test_utils.copy_replace(
-       catalog_file,
-       os.path.join(test_root_dir, "reset_catalog.json"),
-       pattern='"destination_sync_mode": ".*"',
-       replace_value='"destination_sync_mode": "overwrite"',
+         catalog_file,
+         os.path.join(test_root_dir, "reset_catalog.json"),
+         pattern='"destination_sync_mode": ".*"',
+         replace_value='"destination_sync_mode": "overwrite"',
     )
     dbt_test_utils.copy_replace(catalog_file, os.path.join(test_root_dir, "destination_catalog.json"))
     dbt_test_utils.copy_replace(
@@ -509,7 +506,6 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
     Copy file while hacking snowflake identifiers that needs to be uppercased...
     (so we can share these dbt tests files accross destinations)
     """
-    print(f"Copying test files from {src} to {dst} for {destination_type} ")
     if os.path.exists(src):
         temp_dir = tempfile.mkdtemp(dir="/tmp/", prefix="normalization_test_")
         temporary_folders.add(temp_dir)
