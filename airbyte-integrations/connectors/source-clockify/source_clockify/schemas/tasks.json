@@ -17,7 +17,7 @@
       "type": "null"
     },
     "duration": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "estimate": {
       "type": "string"
