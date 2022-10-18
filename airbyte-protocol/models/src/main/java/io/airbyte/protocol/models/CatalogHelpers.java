@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import io.airbyte.protocol.models.SyncMode;
 /**
  * Helper class for Catalog and Stream related operations. Generally only used in tests.
  */
@@ -37,7 +37,7 @@ public class CatalogHelpers {
   }
 
   public static AirbyteStream createAirbyteStream(final String streamName, final String namespace, final List<Field> fields) {
-    return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields));
+    return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields)).withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
   }
 
   public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String streamName, final String namespace, final Field... fields) {
