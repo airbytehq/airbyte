@@ -11,6 +11,7 @@ import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
+import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
@@ -82,7 +83,9 @@ public class JobErrorReporter {
   public void reportSyncJobFailure(final UUID connectionId, final AttemptFailureSummary failureSummary, final SyncJobReportingContext jobContext) {
     Exceptions.swallow(() -> {
       final List<FailureReason> traceMessageFailures = failureSummary.getFailures().stream()
-          .filter(failure -> failure.getMetadata() != null && failure.getMetadata().getAdditionalProperties().containsKey(FROM_TRACE_MESSAGE))
+          .filter(failure -> failure.getMetadata() != null &&
+              failure.getMetadata().getAdditionalProperties().containsKey(FROM_TRACE_MESSAGE) &&
+              failure.getFailureType() != FailureType.CONFIG_ERROR)
           .toList();
 
       final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionId, true);
