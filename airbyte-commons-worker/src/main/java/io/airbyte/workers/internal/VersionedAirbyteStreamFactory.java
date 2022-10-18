@@ -5,6 +5,7 @@
 package io.airbyte.workers.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
@@ -13,7 +14,12 @@ import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
 import io.airbyte.commons.protocol.serde.AirbyteMessageDeserializer;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.AirbyteMessage;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,10 +32,17 @@ import org.slf4j.LoggerFactory;
 public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VersionedAirbyteStreamFactory.class);
+  private static final Version fallbackVersion = new Version("0.2.0");
+  private static final int BUFFER_READ_AHEAD_LIMIT = 4096;
+  private static final int MESSAGES_LOOK_AHEAD_FOR_DETECTION = 10;
 
-  private final AirbyteMessageDeserializer<T> deserializer;
-  private final AirbyteMessageVersionedMigrator<T> migrator;
-  private final Version protocolVersion;
+  private final AirbyteMessageSerDeProvider serDeProvider;
+  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private AirbyteMessageDeserializer<T> deserializer;
+  private AirbyteMessageVersionedMigrator<T> migrator;
+  private Version protocolVersion;
+
+  private boolean shouldDetectVersion = false;
 
   public VersionedAirbyteStreamFactory(final AirbyteMessageSerDeProvider serDeProvider,
                                        final AirbyteMessageVersionedMigratorFactory migratorFactory,
@@ -43,6 +56,79 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
                                        final MdcScope.Builder containerLogMdcBuilder) {
     // TODO AirbyteProtocolPredicate needs to be updated to be protocol version aware
     super(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder);
+    Preconditions.checkNotNull(protocolVersion);
+    this.serDeProvider = serDeProvider;
+    this.migratorFactory = migratorFactory;
+    this.initializeForProtocolVersion(protocolVersion);
+  }
+
+  /**
+   * Create the AirbyteMessage stream.
+   *
+   * If detectVersion is set to true, it will decide which protocol version to use from the content of
+   * the stream rather than the one passed from the constructor.
+   */
+  @SneakyThrows
+  @Override
+  public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
+    if (shouldDetectVersion) {
+      final Optional<Version> versionMaybe = detectVersion(bufferedReader);
+      if (versionMaybe.isPresent()) {
+        logger.info("Detected Protocol Version {}", versionMaybe.get().serialize());
+        initializeForProtocolVersion(versionMaybe.get());
+      } else {
+        // No version found, use the default as a fallback
+        logger.info("Unable to detect Protocol Version, assuming protocol version {}", fallbackVersion.serialize());
+        initializeForProtocolVersion(fallbackVersion);
+      }
+    }
+    return super.create(bufferedReader);
+  }
+
+  /**
+   * Attempt to detect the version by scanning the stream
+   *
+   * Using the BufferedReader reset/mark feature to get a look-ahead. We will attempt to find the
+   * first SPEC message and decide on a protocol version from this message.
+   *
+   * @param bufferedReader the stream to read
+   * @return The Version if found
+   * @throws IOException
+   */
+  private Optional<Version> detectVersion(final BufferedReader bufferedReader) throws IOException {
+    bufferedReader.mark(BUFFER_READ_AHEAD_LIMIT);
+    // Cap detection to the first 10 messages
+    for (int i = 0; i < MESSAGES_LOOK_AHEAD_FOR_DETECTION; ++i) {
+      final String line = bufferedReader.readLine();
+      final Optional<JsonNode> jsonOpt = Jsons.tryDeserialize(line);
+      if (jsonOpt.isPresent()) {
+        final JsonNode json = jsonOpt.get();
+        if (isSpecMessage(json)) {
+          final JsonNode protocolVersionNode = json.at("/spec/protocol_version");
+          bufferedReader.reset();
+          return Optional.ofNullable(protocolVersionNode).filter(Predicate.not(JsonNode::isMissingNode)).map(node -> new Version(node.asText()));
+        }
+      }
+    }
+    bufferedReader.reset();
+    return Optional.empty();
+  }
+
+  private boolean isSpecMessage(final JsonNode json) {
+    final String typeFieldName = "type";
+    return json.has(typeFieldName) && "spec".equalsIgnoreCase(json.get(typeFieldName).asText());
+  }
+
+  public boolean setDetectVersion(final boolean detectVersion) {
+    return this.shouldDetectVersion = detectVersion;
+  }
+
+  public VersionedAirbyteStreamFactory<T> withDetectVersion(final boolean detectVersion) {
+    setDetectVersion(detectVersion);
+    return this;
+  }
+
+  final protected void initializeForProtocolVersion(final Version protocolVersion) {
     this.deserializer = (AirbyteMessageDeserializer<T>) serDeProvider.getDeserializer(protocolVersion).orElseThrow();
     this.migrator = migratorFactory.getVersionedMigrator(protocolVersion);
     this.protocolVersion = protocolVersion;

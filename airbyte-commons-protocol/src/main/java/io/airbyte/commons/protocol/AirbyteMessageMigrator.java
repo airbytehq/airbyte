@@ -75,6 +75,10 @@ public class AirbyteMessageMigrator {
     return (CurrentVersion) result;
   }
 
+  public Version getMostRecentVersion() {
+    return new Version(mostRecentVersion, "0", "0");
+  }
+
   private Collection<AirbyteMessageMigration<?, ?>> selectMigrations(final Version version) {
     final Collection<AirbyteMessageMigration<?, ?>> results = migrations.tailMap(version.getMajorVersion()).values();
     if (results.isEmpty()) {

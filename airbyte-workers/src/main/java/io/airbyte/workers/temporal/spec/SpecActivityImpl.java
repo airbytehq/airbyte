@@ -93,8 +93,7 @@ public class SpecActivityImpl implements SpecActivity {
   private CheckedSupplier<Worker<JobGetSpecConfig, ConnectorJobOutput>, Exception> getWorkerFactory(
                                                                                                     final IntegrationLauncherConfig launcherConfig) {
     return () -> {
-      final Version protocolVersion = launcherConfig.getProtocolVersion();
-      final AirbyteStreamFactory streamFactory = new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion);
+      final AirbyteStreamFactory streamFactory = getStreamFactory(launcherConfig);
       final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
           launcherConfig.getJobId(),
           launcherConfig.getAttemptId().intValue(),
@@ -104,6 +103,13 @@ public class SpecActivityImpl implements SpecActivity {
 
       return new DefaultGetSpecWorker(integrationLauncher, streamFactory);
     };
+  }
+
+  private AirbyteStreamFactory getStreamFactory(final IntegrationLauncherConfig launcherConfig) {
+    final Version protocolVersion =
+        launcherConfig.getProtocolVersion() != null ? launcherConfig.getProtocolVersion() : migratorFactory.getMostRecentVersion();
+    // Try to detect version from the stream
+    return new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion).withDetectVersion(true);
   }
 
 }
