@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "QUOTATION_ITEM_ID": {
+      "type": "integer"
+    },
+    "QUOTE_ID": {
+      "type": "integer"
+    },
+    "OPPORTUNITY_ITEM_ID": {
+      "type": "integer"
+    },
+    "PRICEBOOK_ENTRY_ID": {
+      "type": "integer"
+    },
+    "DESCRIPTION": {
+      "type": "string"
+    },
+    "CURRENCY_CODE": {
+      "type": "string"
+    },
+    "QUANTITY": {
+      "type": "integer"
+    },
+    "LIST_PRICE": {
+      "type": "integer"
+    },
+    "UNIT_PRICE": {
+      "type": "integer"
+    },
+    "SUBTOTAL": {
+      "type": "integer"
+    },
+    "DISCOUNT": {
+      "type": "integer"
+    },
+    "TOTAL_PRICE": {
+      "type": "integer"
+    },
+    "DATE_CREATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "SORT_ORDER": {
+      "type": "integer"
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "FIELD_NAME": {
+              "type": "string"
+            },
+            "FIELD_VALUE": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

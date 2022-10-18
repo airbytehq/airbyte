@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "ARTICLE_ID": {
+      "type": "integer"
+    },
+    "CATEGORY_ID": {
+      "type": "integer"
+    },
+    "FOLDER_ID": {
+      "type": "integer"
+    },
+    "ARTICLE_NO": {
+      "type": "integer"
+    },
+    "ArticleVersion": {
+      "type": "string"
+    },
+    "Status": {
+      "type": "string"
+    },
+    "Language": {
+      "type": "string"
+    },
+    "Title": {
+      "type": "string"
+    },
+    "Body": {
+      "type": "string"
+    },
+    "URL_SLUG": {
+      "type": "string"
+    },
+    "DOWNVOTE_COUNT": {
+      "type": "integer"
+    },
+    "UPVOTE_COUNT": {
+      "type": "integer"
+    },
+    "PROMOTED": {
+      "type": "boolean"
+    },
+    "FIRST_PUBLISHED_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "LAST_PUBLISHED_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ARCHIVED_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_CREATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "OWNER_USER_ID": {
+      "type": "integer"
+    },
+    "CREATED_USER_ID": {
+      "type": "integer"
+    },
+    "ExternalLinkCount": {
+      "type": "string"
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "FIELD_NAME": {
+              "type": "string"
+            },
+            "FIELD_VALUE": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "TAGS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "TAG_NAME": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

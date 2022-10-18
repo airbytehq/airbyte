@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "PROSPECT_ID": {
+      "type": "integer"
+    },
+    "LEAD_ID": {
+      "type": "integer"
+    },
+    "CONTACT_ID": {
+      "type": "integer"
+    },
+    "ORGANISATION_ID": {
+      "type": "integer"
+    },
+    "SALUTATION": {
+      "type": "string"
+    },
+    "FIRST_NAME": {
+      "type": "string"
+    },
+    "LAST_NAME": {
+      "type": "string"
+    },
+    "ORGANISATION_NAME": {
+      "type": "string"
+    },
+    "TITLE": {
+      "type": "string"
+    },
+    "EMAIL_ADDRESS": {
+      "type": "string"
+    },
+    "PHONE": {
+      "type": "string"
+    },
+    "MOBILE": {
+      "type": "string"
+    },
+    "FAX": {
+      "type": "string"
+    },
+    "WEBSITE": {
+      "type": "string"
+    },
+    "ADDRESS_STREET": {
+      "type": "string"
+    },
+    "ADDRESS_CITY": {
+      "type": "string"
+    },
+    "ADDRESS_STATE": {
+      "type": "string"
+    },
+    "ADDRESS_POSTCODE": {
+      "type": "string"
+    },
+    "ADDRESS_COUNTRY": {
+      "type": "string"
+    },
+    "INDUSTRY": {
+      "type": "string"
+    },
+    "EMPLOYEE_COUNT": {
+      "type": "integer"
+    },
+    "SCORE": {
+      "type": "integer"
+    },
+    "GRADE": {
+      "type": "string"
+    },
+    "DESCRIPTION": {
+      "type": "string"
+    },
+    "DO_NOT_EMAIL": {
+      "type": "boolean"
+    },
+    "DO_NOT_CALL": {
+      "type": "boolean"
+    },
+    "OPTED_OUT": {
+      "type": "boolean"
+    },
+    "LAST_ACTIVITY_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "CREATED_USER_ID": {
+      "type": "integer"
+    },
+    "OWNER_USER_ID": {
+      "type": "integer"
+    },
+    "DATE_CREATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DO_NOT_SYNC": {
+      "type": "boolean"
+    },
+    "LEAD_CONVERSION_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "GRADE_PROFILE_ID": {
+      "type": "integer"
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "FIELD_NAME": {
+              "type": "string"
+            },
+            "FIELD_VALUE": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "TAGS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "TAG_NAME": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

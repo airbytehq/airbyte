@@ -1,0 +1,13 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "users"
+      },
+      "stream_state": {
+        "bad_identifier": "so-bad"
+      }
+    }
+  }
+]

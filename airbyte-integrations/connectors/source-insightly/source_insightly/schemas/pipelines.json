@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "PIPELINE_ID": {
+      "type": "integer"
+    },
+    "PIPELINE_NAME": {
+      "type": "string"
+    },
+    "FOR_OPPORTUNITIES": {
+      "type": "boolean"
+    },
+    "FOR_PROJECTS": {
+      "type": "boolean"
+    },
+    "OWNER_USER_ID": {
+      "type": "integer"
+    }
+  }
+}

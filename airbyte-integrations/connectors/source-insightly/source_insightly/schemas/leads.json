@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "LEAD_ID": {
+      "type": "integer"
+    },
+    "SALUTATION": {
+      "type": "string"
+    },
+    "FIRST_NAME": {
+      "type": "string"
+    },
+    "LAST_NAME": {
+      "type": "string"
+    },
+    "LEAD_SOURCE_ID": {
+      "type": "integer"
+    },
+    "LEAD_STATUS_ID": {
+      "type": "integer"
+    },
+    "TITLE": {
+      "type": "string"
+    },
+    "CONVERTED": {
+      "type": "boolean"
+    },
+    "CONVERTED_CONTACT_ID": {
+      "type": "integer"
+    },
+    "CONVERTED_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "CONVERTED_OPPORTUNITY_ID": {
+      "type": "integer"
+    },
+    "CONVERTED_ORGANISATION_ID": {
+      "type": "integer"
+    },
+    "DATE_CREATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "EMAIL": {
+      "type": "string"
+    },
+    "EMPLOYEE_COUNT": {
+      "type": "integer"
+    },
+    "FAX": {
+      "type": "string"
+    },
+    "INDUSTRY": {
+      "type": "string"
+    },
+    "LEAD_DESCRIPTION": {
+      "type": "string"
+    },
+    "LEAD_RATING": {
+      "type": "integer"
+    },
+    "MOBILE": {
+      "type": "string"
+    },
+    "OWNER_USER_ID": {
+      "type": "integer"
+    },
+    "PHONE": {
+      "type": "string"
+    },
+    "RESPONSIBLE_USER_ID": {
+      "type": "integer"
+    },
+    "WEBSITE": {
+      "type": "string"
+    },
+    "ADDRESS_STREET": {
+      "type": "string"
+    },
+    "ADDRESS_CITY": {
+      "type": "string"
+    },
+    "ADDRESS_STATE": {
+      "type": "string"
+    },
+    "ADDRESS_POSTCODE": {
+      "type": "string"
+    },
+    "ADDRESS_COUNTRY": {
+      "type": "string"
+    },
+    "LAST_ACTIVITY_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "NEXT_ACTIVITY_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ORGANISATION_NAME": {
+      "type": "string"
+    },
+    "CREATED_USER_ID": {
+      "type": "integer"
+    },
+    "IMAGE_URL": {
+      "type": "string"
+    },
+    "EMAIL_OPTED_OUT": {
+      "type": "boolean"
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "FIELD_NAME": {
+              "type": "string"
+            },
+            "FIELD_VALUE": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "TAGS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "TAG_NAME": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "LINKS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "LINK_ID": {
+              "type": "integer"
+            },
+            "OBJECT_NAME": {
+              "type": "string"
+            },
+            "OBJECT_ID": {
+              "type": "integer"
+            },
+            "LINK_OBJECT_NAME": {
+              "type": "string"
+            },
+            "LINK_OBJECT_ID": {
+              "type": "integer"
+            },
+            "ROLE": {
+              "type": "string"
+            },
+            "DETAILS": {
+              "type": "string"
+            },
+            "RELATIONSHIP_ID": {
+              "type": "integer"
+            },
+            "IS_FORWARD": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

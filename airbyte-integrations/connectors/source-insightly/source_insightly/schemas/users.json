@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "USER_ID": {
+      "type": "integer"
+    },
+    "CONTACT_ID": {
+      "type": "integer"
+    },
+    "FIRST_NAME": {
+      "type": "string"
+    },
+    "LAST_NAME": {
+      "type": "string"
+    },
+    "TIMEZONE_ID": {
+      "type": "string"
+    },
+    "EMAIL_ADDRESS": {
+      "type": "string"
+    },
+    "EMAIL_DROPBOX_IDENTIFIER": {
+      "type": "string"
+    },
+    "EMAIL_DROPBOX_ADDRESS": {
+      "type": "string"
+    },
+    "ADMINISTRATOR": {
+      "type": "boolean"
+    },
+    "ACCOUNT_OWNER": {
+      "type": "boolean"
+    },
+    "ACTIVE": {
+      "type": "boolean"
+    },
+    "DATE_CREATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "USER_CURRENCY": {
+      "type": "string"
+    },
+    "CONTACT_DISPLAY": {
+      "type": "string"
+    },
+    "CONTACT_ORDER": {
+      "type": "string"
+    },
+    "TASK_WEEK_START": {
+      "type": "integer"
+    },
+    "INSTANCE_ID": {
+      "type": "integer"
+    },
+    "PROFILE_ID": {
+      "type": "integer"
+    },
+    "ROLE_ID": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "Starting syncing SourceInsightly"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "{'token': '668e4c8f-bebf-4b45-8783-e2a37bc1fc35'}"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "Syncing stream: activity_sets "
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "ParseResult(scheme='https', netloc='api.insightly.com', path='/v3.1/ActivitySets', params='', query='count_total=True&top=50&skip=0', fragment='')"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "{'count_total': ['True'], 'top': ['50'], 'skip': ['0']}"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "Read 0 records from activity_sets stream"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "Finished syncing activity_sets"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "SourceInsightly runtimes:\nSyncing stream activity_sets 0:00:00.280308"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "Syncing stream: users "
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "ParseResult(scheme='https', netloc='api.insightly.com', path='/v3.1/Users/Search', params='', query='count_total=True&top=50&skip=0&updated_after_utc=2022-10-17T19%3A10%3A15Z', fragment='')"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "{'count_total': ['True'], 'top': ['50'], 'skip': ['0'], 'updated_after_utc': ['2022-10-17T19:10:15Z']}"
+  }
+}
+{
+  "type": "STATE",
+  "state": {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "users"
+      },
+      "stream_state": {
+        "DATE_UPDATED_UTC": "2022-10-17T19:10:14+00:00"
+      }
+    },
+    "data": {
+      "users": {
+        "DATE_UPDATED_UTC": "2022-10-17T19:10:14+00:00"
+      }
+    }
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "Read 0 records from users stream"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "Finished syncing users"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "SourceInsightly runtimes:\nSyncing stream activity_sets 0:00:00.280308\nSyncing stream users 0:00:00.330647"
+  }
+}
+{
+  "type": "LOG",
+  "log": {
+    "level": "INFO",
+    "message": "Finished syncing SourceInsightly"
+  }
+}

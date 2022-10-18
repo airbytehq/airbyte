@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "EVENT_ID": {
+      "type": "integer"
+    },
+    "TITLE": {
+      "type": "string"
+    },
+    "LOCATION": {
+      "type": "string"
+    },
+    "START_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "END_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ALL_DAY": {
+      "type": "boolean"
+    },
+    "DETAILS": {
+      "type": "string"
+    },
+    "DATE_CREATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "REMINDER_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "REMINDER_SENT": {
+      "type": "boolean"
+    },
+    "OWNER_USER_ID": {
+      "type": "integer"
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "FIELD_NAME": {
+              "type": "string"
+            },
+            "FIELD_VALUE": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "LINKS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "LINK_ID": {
+              "type": "integer"
+            },
+            "OBJECT_NAME": {
+              "type": "string"
+            },
+            "OBJECT_ID": {
+              "type": "integer"
+            },
+            "LINK_OBJECT_NAME": {
+              "type": "string"
+            },
+            "LINK_OBJECT_ID": {
+              "type": "integer"
+            },
+            "ROLE": {
+              "type": "string"
+            },
+            "DETAILS": {
+              "type": "string"
+            },
+            "RELATIONSHIP_ID": {
+              "type": "integer"
+            },
+            "IS_FORWARD": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

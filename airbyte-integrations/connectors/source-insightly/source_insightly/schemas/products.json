@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "PRODUCT_ID": {
+      "type": "integer"
+    },
+    "PRODUCT_NAME": {
+      "type": "string"
+    },
+    "PRODUCT_CODE": {
+      "type": "string"
+    },
+    "PRODUCT_SKU": {
+      "type": "string"
+    },
+    "DESCRIPTION": {
+      "type": "string"
+    },
+    "PRODUCT_FAMILY": {
+      "type": "string"
+    },
+    "PRODUCT_IMAGE_URL": {
+      "type": "string"
+    },
+    "CURRENCY_CODE": {
+      "type": "string"
+    },
+    "DEFAULT_PRICE": {
+      "type": "integer"
+    },
+    "DATE_CREATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "CREATED_USER_ID": {
+      "type": "integer"
+    },
+    "OWNER_USER_ID": {
+      "type": "integer"
+    },
+    "ACTIVE": {
+      "type": "boolean"
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "FIELD_NAME": {
+              "type": "string"
+            },
+            "FIELD_VALUE": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

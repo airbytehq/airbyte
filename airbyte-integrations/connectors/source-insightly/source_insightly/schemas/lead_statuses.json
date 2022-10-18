@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "LEAD_STATUS_ID": {
+      "type": "integer"
+    },
+    "LEAD_STATUS": {
+      "type": "string"
+    },
+    "DEFAULT_STATUS": {
+      "type": "boolean"
+    },
+    "STATUS_TYPE": {
+      "type": "integer"
+    },
+    "FIELD_ORDER": {
+      "type": "integer"
+    }
+  }
+}

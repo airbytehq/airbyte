@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ACTIVITYSET_ID": {
+      "type": "integer"
+    },
+    "NAME": {
+      "type": "string"
+    },
+    "FOR_CONTACTS": {
+      "type": "boolean"
+    },
+    "FOR_ORGANISATIONS": {
+      "type": "boolean"
+    },
+    "FOR_OPPORTUNITIES": {
+      "type": "boolean"
+    },
+    "FOR_PROJECTS": {
+      "type": "boolean"
+    },
+    "FOR_LEADS": {
+      "type": "boolean"
+    },
+    "OWNER_USER_ID": {
+      "type": "integer"
+    },
+    "ACTIVITIES": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "ACTIVITY_ID": {
+              "type": "integer"
+            },
+            "ACTIVITYSET_ID": {
+              "type": "integer"
+            },
+            "ACTIVITY_NAME": {
+              "type": "string"
+            },
+            "ACTIVITY_DETAILS": {
+              "type": "string"
+            },
+            "ACTIVITY_TYPE": {
+              "type": "string"
+            },
+            "CATEGORY_ID": {
+              "type": "integer"
+            },
+            "REMINDER": {
+              "type": "boolean"
+            },
+            "REMINDER_DAYS_BEFORE_DUE": {
+              "type": "integer"
+            },
+            "REMINDER_TIME": {
+              "type": "string"
+            },
+            "PUBLICLY_VISIBLE": {
+              "type": "boolean"
+            },
+            "OWNER_VISIBLE": {
+              "type": "boolean"
+            },
+            "OWNER_USER_ID": {
+              "type": "integer"
+            },
+            "RESPONSIBLE_USER_ID": {
+              "type": "integer"
+            },
+            "ASSIGNED_TEAM_ID": {
+              "type": "integer"
+            },
+            "SKIP_SUN": {
+              "type": "boolean"
+            },
+            "SKIP_MON": {
+              "type": "boolean"
+            },
+            "SKIP_TUE": {
+              "type": "boolean"
+            },
+            "SKIP_WED": {
+              "type": "boolean"
+            },
+            "SKIP_THU": {
+              "type": "boolean"
+            },
+            "SKIP_FRI": {
+              "type": "boolean"
+            },
+            "SKIP_SAT": {
+              "type": "boolean"
+            },
+            "DUE_DAYS_AFTER_START": {
+              "type": "integer"
+            },
+            "DUE_DAYS_BEFORE_END": {
+              "type": "integer"
+            },
+            "EVENT_DAYS_AFTER_START": {
+              "type": "integer"
+            },
+            "EVENT_DAYS_BEFORE_END": {
+              "type": "integer"
+            },
+            "EVENT_TIME": {
+              "type": "string"
+            },
+            "ALL_DAY": {
+              "type": "boolean"
+            },
+            "DURATION": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "PROJECT_ID": {
+      "type": "integer"
+    },
+    "PROJECT_NAME": {
+      "type": "string"
+    },
+    "STATUS": {
+      "type": "string"
+    },
+    "PROJECT_DETAILS": {
+      "type": "string"
+    },
+    "STARTED_DATE": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "COMPLETED_DATE": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "OPPORTUNITY_ID": {
+      "type": "integer"
+    },
+    "CATEGORY_ID": {
+      "type": "integer"
+    },
+    "PIPELINE_ID": {
+      "type": "integer"
+    },
+    "STAGE_ID": {
+      "type": "integer"
+    },
+    "IMAGE_URL": {
+      "type": "string"
+    },
+    "OWNER_USER_ID": {
+      "type": "integer"
+    },
+    "DATE_CREATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "LAST_ACTIVITY_DATE_UTC": {
+      "type": "string"
+    },
+    "NEXT_ACTIVITY_DATE_UTC": {
+      "type": "string"
+    },
+    "CREATED_USER_ID": {
+      "type": "integer"
+    },
+    "RESPONSIBLE_USER_ID": {
+      "type": "integer"
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "FIELD_NAME": {
+              "type": "string"
+            },
+            "FIELD_VALUE": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "TAGS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "TAG_NAME": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "LINKS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "LINK_ID": {
+              "type": "integer"
+            },
+            "OBJECT_NAME": {
+              "type": "string"
+            },
+            "OBJECT_ID": {
+              "type": "integer"
+            },
+            "LINK_OBJECT_NAME": {
+              "type": "string"
+            },
+            "LINK_OBJECT_ID": {
+              "type": "integer"
+            },
+            "ROLE": {
+              "type": "string"
+            },
+            "DETAILS": {
+              "type": "string"
+            },
+            "RELATIONSHIP_ID": {
+              "type": "integer"
+            },
+            "IS_FORWARD": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

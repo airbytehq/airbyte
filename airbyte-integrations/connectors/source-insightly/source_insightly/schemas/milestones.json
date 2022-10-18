@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "MILESTONE_ID": {
+      "type": "integer"
+    },
+    "TITLE": {
+      "type": "string"
+    },
+    "COMPLETED": {
+      "type": "boolean"
+    },
+    "DUE_DATE": {
+      "type": "string"
+    },
+    "OWNER_USER_ID": {
+      "type": "integer"
+    },
+    "DATE_CREATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "COMPLETED_DATE_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "PROJECT_ID": {
+      "type": "integer"
+    },
+    "RESPONSIBLE_USER": {
+      "type": "integer"
+    }
+  }
+}

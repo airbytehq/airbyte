@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "PRICEBOOK_ENTRY_ID": {
+      "type": "integer"
+    },
+    "PRICEBOOK_ID": {
+      "type": "integer"
+    },
+    "PRODUCT_ID": {
+      "type": "integer"
+    },
+    "CURRENCY_CODE": {
+      "type": "string"
+    },
+    "PRICE": {
+      "type": "integer"
+    },
+    "USE_STANDARD_PRICE": {
+      "type": "boolean"
+    },
+    "ACTIVE": {
+      "type": "boolean"
+    },
+    "CREATED_USER_ID": {
+      "type": "integer"
+    },
+    "DATE_CREATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "FIELD_NAME": {
+              "type": "string"
+            },
+            "FIELD_VALUE": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
