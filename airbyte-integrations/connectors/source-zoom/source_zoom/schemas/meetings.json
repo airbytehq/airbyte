@@ -1,239 +1,485 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-        "id": {
-          "type": ["integer"]
-        },
-        "meeting_id": {
-          "type": ["string"]
-        },
-        "uuid": {
-          "type": ["string"]
-        },
-        "host_id": {
-          "type": ["null", "string"]
-        },
-        "topic": {
-          "type": ["null", "string"]
-        },
-        "type": {
-          "type": ["null", "integer"]
-        },
-        "status": {
-          "type": ["null", "string"]
-        },
-        "start_time": {
-          "format": "date-time",
-          "type": ["null", "string"]
-        },
-        "duration": {
-          "type": ["null", "integer"]
-        },
-        "timezone": {
-          "type": ["null", "string"]
-        },
-        "created_at": {
-          "format": "date-time",
-          "type": ["null", "string"]
-        },
-        "agenda": {
-          "type": ["null", "string"]
-        },
-        "start_url": {
-          "type": ["null", "string"]
-        },
-        "join_url": {
-          "type": ["null", "string"]
-        },
-        "password": {
-          "type": ["null", "string"]
-        },
-        "h323_password": {
-          "type": ["null", "string"]
-        },
-        "encrypted_Password": {
-          "type": ["null", "string"]
-        },
-        "pmi": {
-          "type": ["null", "integer"]
-        },
-        "tracking_fields": {
-          "items": {
-            "properties": {
-              "field": {
-                "type": ["null", "string"]
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/Stream",
+  "definitions": {
+      "Stream": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "assistant_id": {
+                  "type": "string"
               },
-              "value": {
-                "type": ["null", "string"]
-              }
-            },
-            "type": ["object"],
-            "additionalProperties": false
-          },
-          "type": ["null", "array"]
-        },
-        "occurences": {
-          "items": {
-            "properties": {
-              "occurence_id": {
-                "type": ["null", "string"]
+              "host_email": {
+                  "type": "string"
               },
-              "start_time": {
-                "format": "date-time",
-                "type": ["null", "string"]
+              "host_id": {
+                  "type": "string"
+              },
+              "id": {
+                  "type": "integer"
+              },
+              "uuid": {
+                  "type": "string"
+              },
+              "agenda": {
+                  "type": "string"
+              },
+              "created_at": {
+                  "type": "string",
+                  "format": "date-time"
               },
               "duration": {
-                "type": ["null", "integer"]
+                  "type": "integer"
+              },
+              "encrypted_password": {
+                  "type": "string"
+              },
+              "h323_password": {
+                  "type": "string",
+                  "format": "integer"
+              },
+              "join_url": {
+                  "type": "string",
+                  "format": "uri",
+                  "qt-uri-protocols": [
+                      "https"
+                  ]
+              },
+              "occurrences": {
+                  "type": "array",
+                  "items": {
+                      "$ref": "#/definitions/Occurrence"
+                  }
+              },
+              "password": {
+                  "type": "string",
+                  "format": "integer"
+              },
+              "pmi": {
+                  "type": "string"
+              },
+              "pre_schedule": {
+                  "type": "boolean"
+              },
+              "recurrence": {
+                  "$ref": "#/definitions/Recurrence"
+              },
+              "settings": {
+                  "$ref": "#/definitions/Settings"
+              },
+              "start_time": {
+                  "type": "string",
+                  "format": "date-time"
+              },
+              "start_url": {
+                  "type": "string",
+                  "format": "uri",
+                  "qt-uri-protocols": [
+                      "https"
+                  ]
               },
               "status": {
-                "type": ["null", "string"]
-              }
-            },
-            "type": ["object"],
-            "additionalProperties": false
-          },
-          "type": ["null", "array"]
-        },
-        "settings": {
-          "properties": {
-            "host_video": {
-              "type": ["null", "boolean"]
-            },
-            "participant_video": {
-              "type": ["null", "boolean"]
-            },
-            "cn_meeting": {
-              "type": ["null", "boolean"]
-            },
-            "in_meeting": {
-              "type": ["null", "boolean"]
-            },
-            "join_before_host": {
-              "type": ["null", "boolean"]
-            },
-            "mute_upon_entry": {
-              "type": ["null", "boolean"]
-            },
-            "watermark": {
-              "type": ["null", "boolean"]
-            },
-            "use_pmi": {
-              "type": ["null", "boolean"]
-            },
-            "approval_type": {
-              "type": ["null", "integer"]
-            },
-            "registration_type": {
-              "type": ["null", "integer"]
-            },
-            "audio": {
-              "type": ["null", "string"]
-            },
-            "auto_recording": {
-              "type": ["null", "string"]
-            },
-            "enforce_login": {
-              "type": ["null", "boolean"]
-            },
-            "enforce_login_domains": {
-              "type": ["null", "string"]
-            },
-            "alternative_hosts": {
-              "type": ["null", "string"]
-            },
-            "close_registration": {
-              "type": ["null", "boolean"]
-            },
-            "waiting_room": {
-              "type": ["null", "boolean"]
-            },
-            "global_dial_in_countries": {
-              "items": {
-                "type": ["string"]
+                  "type": "string"
               },
-              "type": ["null", "array"]
-            },
-            "global_dial_in_numbers": {
-              "items": {
-                "properties": {
-                  "country": {
-                    "type": ["null", "string"]
-                  },
-                  "country_name": {
-                    "type": ["null", "string"]
-                  },
-                  "city": {
-                    "type": ["null", "string"]
-                  },
-                  "number": {
-                    "type": ["null", "string"]
-                  },
-                  "type": {
-                    "type": ["null", "string"]
+              "timezone": {
+                  "type": "string"
+              },
+              "topic": {
+                  "type": "string"
+              },
+              "tracking_fields": {
+                  "type": "array",
+                  "items": {
+                      "$ref": "#/definitions/TrackingField"
                   }
-                },
-                "type": ["object"],
-                "additionalProperties": false
               },
-              "type": ["null", "array"]
-            },
-            "contact_name": {
-              "type": ["null", "boolean"]
-            },
-            "contact_email": {
-              "type": ["null", "boolean"]
-            },
-            "registrants_confirmation_email": {
-              "type": ["null", "boolean"]
-            },
-            "registrants_email_notification": {
-              "type": ["null", "boolean"]
-            },
-            "meeting_authentication": {
-              "type": ["null", "boolean"]
-            },
-            "authentication_option": {
-              "type": ["null", "string"]
-            },
-            "authentication_domains": {
-              "type": ["null", "string"]
-            }
+              "type": {
+                  "type": "integer"
+              }
           },
-          "type": ["null", "object"],
-          "additionalProperties": false
-        },
-        "recurrence": {
+          "required": [],
+          "title": "Stream"
+      },
+      "Occurrence": {
+          "type": "object",
+          "additionalProperties": false,
           "properties": {
-            "type": {
-              "type": ["null", "integer"]
-            },
-            "repeat_interval": {
-              "type": ["null", "integer"]
-            },
-            "weekly_days": {
-              "type": ["null", "integer"]
-            },
-            "monthly_day": {
-              "type": ["null", "integer"]
-            },
-            "monthly_week": {
-              "type": ["null", "integer"]
-            },
-            "monthly_week_day": {
-              "type": ["null", "integer"]
-            },
-            "end_times": {
-              "type": ["null", "integer"]
-            },
-            "end_date_time": {
-              "format": "date-time",
-              "type": ["null", "string"]
-            }
+              "duration": {
+                  "type": "integer"
+              },
+              "occurrence_id": {
+                  "type": "string"
+              },
+              "start_time": {
+                  "type": "string",
+                  "format": "date-time"
+              },
+              "status": {
+                  "type": "string"
+              }
           },
-          "type": ["null", "object"],
-          "additionalProperties": false
-        }
+          "required": [],
+          "title": "Occurrence"
+      },
+      "Recurrence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "end_date_time": {
+                  "type": "string",
+                  "format": "date-time"
+              },
+              "end_times": {
+                  "type": "integer"
+              },
+              "monthly_day": {
+                  "type": "integer"
+              },
+              "monthly_week": {
+                  "type": "integer"
+              },
+              "monthly_week_day": {
+                  "type": "integer"
+              },
+              "repeat_interval": {
+                  "type": "integer"
+              },
+              "type": {
+                  "type": "integer"
+              },
+              "weekly_days": {
+                  "type": "string",
+                  "format": "integer"
+              }
+          },
+          "required": [],
+          "title": "Recurrence"
+      },
+      "Settings": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "allow_multiple_devices": {
+                  "type": "boolean"
+              },
+              "alternative_hosts": {
+                  "type": "string"
+              },
+              "alternative_hosts_email_notification": {
+                  "type": "boolean"
+              },
+              "alternative_host_update_polls": {
+                  "type": "boolean"
+              },
+              "approval_type": {
+                  "type": "integer"
+              },
+              "approved_or_denied_countries_or_regions": {
+                  "$ref": "#/definitions/ApprovedOrDeniedCountriesOrRegions"
+              },
+              "audio": {
+                  "type": "string"
+              },
+              "authentication_domains": {
+                  "type": "string"
+              },
+              "authentication_exception": {
+                  "type": "array",
+                  "items": {
+                      "$ref": "#/definitions/AuthenticationException"
+                  }
+              },
+              "authentication_name": {
+                  "type": "string"
+              },
+              "authentication_option": {
+                  "type": "string"
+              },
+              "auto_recording": {
+                  "type": "string"
+              },
+              "breakout_room": {
+                  "$ref": "#/definitions/BreakoutRoom"
+              },
+              "calendar_type": {
+                  "type": "integer"
+              },
+              "close_registration": {
+                  "type": "boolean"
+              },
+              "contact_email": {
+                  "type": "string"
+              },
+              "contact_name": {
+                  "type": "string"
+              },
+              "custom_keys": {
+                  "type": "array",
+                  "items": {
+                      "$ref": "#/definitions/CustomKey"
+                  }
+              },
+              "email_notification": {
+                  "type": "boolean"
+              },
+              "encryption_type": {
+                  "type": "string"
+              },
+              "focus_mode": {
+                  "type": "boolean"
+              },
+              "global_dial_in_countries": {
+                  "type": "array",
+                  "items": {
+                      "type": "string"
+                  }
+              },
+              "global_dial_in_numbers": {
+                  "type": "array",
+                  "items": {
+                      "$ref": "#/definitions/GlobalDialInNumber"
+                  }
+              },
+              "host_video": {
+                  "type": "boolean"
+              },
+              "jbh_time": {
+                  "type": "integer"
+              },
+              "join_before_host": {
+                  "type": "boolean"
+              },
+              "language_interpretation": {
+                  "$ref": "#/definitions/LanguageInterpretation"
+              },
+              "meeting_authentication": {
+                  "type": "boolean"
+              },
+              "mute_upon_entry": {
+                  "type": "boolean"
+              },
+              "participant_video": {
+                  "type": "boolean"
+              },
+              "private_meeting": {
+                  "type": "boolean"
+              },
+              "registrants_confirmation_email": {
+                  "type": "boolean"
+              },
+              "registrants_email_notification": {
+                  "type": "boolean"
+              },
+              "registration_type": {
+                  "type": "integer"
+              },
+              "show_share_button": {
+                  "type": "boolean"
+              },
+              "use_pmi": {
+                  "type": "boolean"
+              },
+              "waiting_room": {
+                  "type": "boolean"
+              },
+              "waiting_room_options": {
+                  "$ref": "#/definitions/WaitingRoomOptions"
+              },
+              "watermark": {
+                  "type": "boolean"
+              },
+              "host_save_video_order": {
+                  "type": "boolean"
+              }
+          },
+          "required": [],
+          "title": "Settings"
+      },
+      "ApprovedOrDeniedCountriesOrRegions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "approved_list": {
+                  "type": "array",
+                  "items": {
+                      "type": "string"
+                  }
+              },
+              "denied_list": {
+                  "type": "array",
+                  "items": {
+                      "type": "string"
+                  }
+              },
+              "enable": {
+                  "type": "boolean"
+              },
+              "method": {
+                  "type": "string"
+              }
+          },
+          "required": [],
+          "title": "ApprovedOrDeniedCountriesOrRegions"
+      },
+      "AuthenticationException": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "email": {
+                  "type": "string"
+              },
+              "name": {
+                  "type": "string"
+              },
+              "join_url": {
+                  "type": "string",
+                  "format": "uri",
+                  "qt-uri-protocols": [
+                      "https"
+                  ]
+              }
+          },
+          "required": [],
+          "title": "AuthenticationException"
+      },
+      "BreakoutRoom": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "enable": {
+                  "type": "boolean"
+              },
+              "rooms": {
+                  "type": "array",
+                  "items": {
+                      "$ref": "#/definitions/Room"
+                  }
+              }
+          },
+          "required": [],
+          "title": "BreakoutRoom"
+      },
+      "Room": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "name": {
+                  "type": "string"
+              },
+              "participants": {
+                  "type": "array",
+                  "items": {
+                      "type": "string"
+                  }
+              }
+          },
+          "required": [],
+          "title": "Room"
+      },
+      "CustomKey": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "key": {
+                  "type": "string"
+              },
+              "value": {
+                  "type": "string"
+              }
+          },
+          "required": [],
+          "title": "CustomKey"
+      },
+      "GlobalDialInNumber": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "city": {
+                  "type": "string"
+              },
+              "country": {
+                  "type": "string"
+              },
+              "country_name": {
+                  "type": "string"
+              },
+              "number": {
+                  "type": "string"
+              },
+              "type": {
+                  "type": "string"
+              }
+          },
+          "required": [],
+          "title": "GlobalDialInNumber"
+      },
+      "LanguageInterpretation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "enable": {
+                  "type": "boolean"
+              },
+              "interpreters": {
+                  "type": "array",
+                  "items": {
+                      "$ref": "#/definitions/Interpreter"
+                  }
+              }
+          },
+          "required": [],
+          "title": "LanguageInterpretation"
+      },
+      "Interpreter": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "email": {
+                  "type": "string"
+              },
+              "languages": {
+                  "type": "string"
+              }
+          },
+          "required": [],
+          "title": "Interpreter"
+      },
+      "WaitingRoomOptions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "enable": {
+                  "type": "boolean"
+              },
+              "admit_type": {
+                  "type": "integer"
+              },
+              "auto_admit": {
+                  "type": "integer"
+              },
+              "internal_user_auto_admit": {
+                  "type": "integer"
+              }
+          },
+          "required": [],
+          "title": "WaitingRoomOptions"
+      },
+      "TrackingField": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "field": {
+                  "type": "string"
+              },
+              "value": {
+                  "type": "string"
+              },
+              "visible": {
+                  "type": "boolean"
+              }
+          },
+          "required": [],
+          "title": "TrackingField"
       }
   }
-  
+}

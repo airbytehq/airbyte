@@ -33,6 +33,7 @@ definitions:
     file_path: "./source_zoom/schemas/{{ options['name'] }}.json"
     
 
+  # https://marketplace.zoom.us/docs/api-reference/zoom-api/methods/#operation/users
   users_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"  
@@ -50,11 +51,11 @@ definitions:
       path: "/users"
 
 
-  meetings_stream:
+  meetings_list_tmp_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     $options:
-      name: "meetings"
+      name: "meetings_list_tmp"
       primary_key: "id"
     retriever:
       paginator:
@@ -71,6 +72,32 @@ definitions:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "*ref(definitions.users_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+
+
+
+  meetings_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    $options:
+      name: "meetings"
+      primary_key: "id"
+    retriever:
+      paginator:
+        type: NoPagination
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_pointer: []
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/meetings/{{ stream_slice.parent_id }}"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.meetings_list_tmp_stream)"
             parent_key: "id"
             stream_slice_field: "parent_id"
 
@@ -101,10 +128,11 @@ definitions:
                 # - http_codes: [400]
                 - predicate: "{{ response.code == 300 }}"
                   action: IGNORE
+            - type: DefaultErrorHandler # we're adding this DefaultErrorHandler for 429, 5XX errors etc;
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_stream)"
+          - stream: "*ref(definitions.meetings_list_tmp_stream)"
             parent_key: "id"
             stream_slice_field: "parent_id"
     transformations:
@@ -139,10 +167,11 @@ definitions:
               response_filters:
                 - http_codes: [400] # TODO: fix this error
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_stream)"
+          - stream: "*ref(definitions.meetings_list_tmp_stream)"
             parent_key: "id"
             stream_slice_field: "parent_id"
     transformations:
@@ -157,7 +186,7 @@ definitions:
       $ref: "*ref(definitions.schema_loader)"
     $options:
       name: "meeting_poll_results"
-      primary_key: "id"
+      primary_key: "meeting_id"
     retriever:
       paginator:
         type: NoPagination
@@ -176,10 +205,11 @@ definitions:
               response_filters:
                 - http_codes: [400, 404] # code 3001 gives HTTP 404
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_stream)"
+          - stream: "*ref(definitions.meetings_list_tmp_stream)"
             parent_key: "id"
             stream_slice_field: "parent_id"
     transformations:
@@ -214,10 +244,11 @@ definitions:
               response_filters:
                 - http_codes: [400]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_stream)"
+          - stream: "*ref(definitions.meetings_list_tmp_stream)"
             parent_key: "id"
             stream_slice_field: "parent_id"
     transformations:
@@ -252,6 +283,7 @@ definitions:
               response_filters:
                 - http_codes: [400]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -285,6 +317,7 @@ definitions:
                 # TODO: WHen parent stream throws error; then ideally we should have an empty array, and no /webinars/{id} should be called. But somehow we're calling it right now with None. :( 
                 - http_codes: [400,404]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -318,6 +351,7 @@ definitions:
                 # TODO: Same problem as webinars_stream for 404! 400 is okay. :)
                 - http_codes: [400,404]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -357,6 +391,7 @@ definitions:
                 # TODO: Same problem as webinars_stream for 404! 400 is okay. :)
                 - http_codes: [400,404]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -396,6 +431,7 @@ definitions:
                 # TODO: Same problem as webinars_stream for 404! 400 is okay. :)
                 - http_codes: [400,404]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -434,6 +470,7 @@ definitions:
               response_filters:
                 - http_codes: [400] # TODO: fix this error
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -472,6 +509,7 @@ definitions:
               response_filters:
                 - http_codes: [400, 404] # code 3001 gives HTTP 404
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -510,6 +548,7 @@ definitions:
               response_filters:
                 - http_codes: [400]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -548,6 +587,7 @@ definitions:
               response_filters:
                 - http_codes: [400]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -585,6 +625,7 @@ definitions:
               response_filters:
                 - http_codes: [400,404]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -600,7 +641,7 @@ definitions:
 
 
 
-  report_meetings_stream:
+  report_meetings_list_tmp_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
     $options:
@@ -624,10 +665,11 @@ definitions:
               response_filters:
                 - http_codes: [400]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_stream)"
+          - stream: "*ref(definitions.meetings_list_tmp_stream)"
             parent_key: "id"
             stream_slice_field: "parent_id"
     transformations:
@@ -663,10 +705,11 @@ definitions:
               response_filters:
                 - http_codes: [400]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_stream)"
+          - stream: "*ref(definitions.meetings_list_tmp_stream)"
             parent_key: "id"
             stream_slice_field: "parent_id"
     transformations:
@@ -703,6 +746,7 @@ definitions:
               response_filters:
                 - http_codes: [400]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -741,6 +785,7 @@ definitions:
               response_filters:
                 - http_codes: [400]
                   action: IGNORE
+            - type: DefaultErrorHandler
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -758,6 +803,7 @@ definitions:
 
 streams:
   - "*ref(definitions.users_stream)"
+  # - "*ref(definitions.meetings_list_tmp_stream)"
   - "*ref(definitions.meetings_stream)"
   - "*ref(definitions.meeting_registrants_stream)"
   - "*ref(definitions.meeting_polls_stream)"
@@ -772,7 +818,7 @@ streams:
   - "*ref(definitions.webinar_registration_questions_stream)"
   - "*ref(definitions.webinar_tracking_sources_stream)"
   - "*ref(definitions.webinar_qna_results_stream)"
-  - "*ref(definitions.report_meetings_stream)"
+  - "*ref(definitions.report_meetings_list_tmp_stream)"
   - "*ref(definitions.report_meeting_participants_stream)"
   - "*ref(definitions.report_webinars_stream)"
   - "*ref(definitions.report_webinar_participants_stream)"

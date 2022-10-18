@@ -14,10 +14,19 @@
     "email": {
       "type": ["null", "string"]
     },
+    "employee_unique_id": {
+      "type": ["null", "string"]
+    },
     "type": {
       "type": ["null", "integer"]
     },
+    "plan_united_type": {
+      "type": ["null", "integer"]
+    },
     "status": {
+      "type": ["null", "string"]
+    },
+    "role_id": {
       "type": ["null", "string"]
     },
     "pmi": {
@@ -54,6 +63,24 @@
     },
     "verified": {
       "type": ["null", "integer"]
+    },
+    "custom_attributes": {
+      "items": {
+        "properties": {
+          "key": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["object"],
+        "additionalProperties": false
+      },
+      "type": ["null", "array"]
     }
   }
 }

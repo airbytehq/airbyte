@@ -33,9 +33,6 @@ COPY source_zoom ./source_zoom
 
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-RUN ls -al
-
-# ENTRYPOINT ["sleep", "infinity"]
 
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
