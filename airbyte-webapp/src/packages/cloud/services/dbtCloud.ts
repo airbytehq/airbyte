@@ -83,7 +83,7 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
     // TODO dynamically use the workspace's configured dbt cloud domain when it gets returned by backend
     const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}/run`;
 
-    connectionService.update({
+    return connectionService.update({
       connectionId: connection.connectionId,
       operations: [
         ...otherOperations,

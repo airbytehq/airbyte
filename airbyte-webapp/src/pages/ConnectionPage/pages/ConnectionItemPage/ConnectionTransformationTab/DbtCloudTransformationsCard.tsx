@@ -1,7 +1,7 @@
 import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { Field, Form, Formik, FieldArray, FieldProps } from "formik";
+import { Field, Form, Formik, FieldArray, FieldProps, FormikHelpers } from "formik";
 import { Link } from "react-router-dom";
 import { array, object, number } from "yup";
 
@@ -16,6 +16,10 @@ import { DbtCloudJob, useDbtIntegration } from "packages/cloud/services/dbtCloud
 import { RoutePaths } from "pages/routePaths";
 
 import styles from "./DbtCloudTransformationsCard.module.scss";
+
+interface DbtJobListValues {
+  jobs: DbtCloudJob[];
+}
 
 const dbtCloudJobListSchema = object({
   jobs: array().of(
@@ -38,8 +42,8 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   //        THEN show the jobs list and the "+ Add transformation" button
 
   const { hasDbtIntegration, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
-  const onSubmit = ({ jobs }: { jobs: DbtCloudJob[] }) => {
-    saveJobs(jobs);
+  const onSubmit = (values: DbtJobListValues, { resetForm }: FormikHelpers<DbtJobListValues>) => {
+    saveJobs(values.jobs).then(() => resetForm({ values }));
   };
 
   return (
@@ -59,14 +63,15 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
                     title={
                       <span className={styles.jobListTitle}>
                         Transformations
-                        <Button
-                          variant="secondary"
-                          disabled={!!values.jobs.find((job: DbtCloudJob) => !job.operationId)}
-                          onClick={() => push({ account: "", job: "" })}
-                          icon={<FontAwesomeIcon icon={faPlus} />}
-                        >
-                          Add transformation
-                        </Button>
+                        {hasDbtIntegration && (
+                          <Button
+                            variant="secondary"
+                            onClick={() => push({ account: "", job: "" })}
+                            icon={<FontAwesomeIcon icon={faPlus} />}
+                          >
+                            Add transformation
+                          </Button>
+                        )}
                       </span>
                     }
                   >
