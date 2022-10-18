@@ -9,6 +9,5 @@ connectionSpecification:
   properties:
     api_key:
       type: string
-      description: >-
-        Courier API key
+      description: Courier API Key to retrieve your data.
       airbyte_secret: true
