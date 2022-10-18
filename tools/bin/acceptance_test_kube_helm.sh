@@ -21,7 +21,7 @@ assert_root
 #   wait
 # fi
 
-eval $(minikube docker-env)
+# eval $(minikube docker-env)
 
 # echo "Deploying filebeat to collect logs"
 # kubectl apply -f elastic/filebeat-kubernetes.yaml
