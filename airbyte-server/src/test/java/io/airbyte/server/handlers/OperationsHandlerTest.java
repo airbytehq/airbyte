@@ -6,6 +6,7 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -22,6 +23,7 @@ import io.airbyte.api.model.generated.OperatorDbt;
 import io.airbyte.api.model.generated.OperatorNormalization;
 import io.airbyte.api.model.generated.OperatorNormalization.OptionEnum;
 import io.airbyte.api.model.generated.OperatorType;
+import io.airbyte.api.model.generated.OperatorWebhook;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.StandardSync;
@@ -41,9 +43,14 @@ import org.junit.jupiter.api.Test;
 
 class OperationsHandlerTest {
 
+  private static final String WEBHOOK_OPERATION_NAME = "fake-operation-name";
+  private static final UUID WEBHOOK_CONFIG_ID = UUID.randomUUID();
+  private static final String WEBHOOK_EXECUTION_URL = "fake-execution-url";
+  private static final String WEBHOOK_EXECUTION_BODY = "fake-execution-body";
+  private static final UUID WEBHOOK_OPERATION_ID = UUID.randomUUID();
+  public static final String NEW_EXECUTION_URL = "new-execution-url";
   private ConfigRepository configRepository;
   private Supplier<UUID> uuidGenerator;
-
   private OperationsHandler operationsHandler;
   private StandardSyncOperation standardSyncOperation;
 
@@ -93,6 +100,43 @@ class OperationsHandlerTest {
   }
 
   @Test
+  void testCreateWebhookOperation() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(uuidGenerator.get()).thenReturn(WEBHOOK_OPERATION_ID);
+    final OperatorWebhook webhookConfig = new OperatorWebhook()
+        .webhookConfigId(WEBHOOK_CONFIG_ID)
+        .executionUrl(WEBHOOK_EXECUTION_URL)
+        .executionBody(WEBHOOK_EXECUTION_BODY);
+    final OperationCreate operationCreate = new OperationCreate()
+        .workspaceId(standardSyncOperation.getWorkspaceId())
+        .name(WEBHOOK_OPERATION_NAME)
+        .operatorConfiguration(new OperatorConfiguration()
+            .operatorType(OperatorType.WEBHOOK).webhook(webhookConfig));
+
+    final StandardSyncOperation expectedPersistedOperation = new StandardSyncOperation()
+        .withWorkspaceId(standardSyncOperation.getWorkspaceId())
+        .withOperationId(WEBHOOK_OPERATION_ID)
+        .withName(WEBHOOK_OPERATION_NAME)
+        .withOperatorType(StandardSyncOperation.OperatorType.WEBHOOK)
+        .withOperatorWebhook(new io.airbyte.config.OperatorWebhook()
+            .withWebhookConfigId(WEBHOOK_CONFIG_ID)
+            .withExecutionUrl(WEBHOOK_EXECUTION_URL)
+            .withExecutionBody(WEBHOOK_EXECUTION_BODY))
+        .withTombstone(false);
+
+    when(configRepository.getStandardSyncOperation(WEBHOOK_OPERATION_ID)).thenReturn(expectedPersistedOperation);
+
+    final OperationRead actualOperationRead = operationsHandler.createOperation(operationCreate);
+
+    assertEquals(operationCreate.getWorkspaceId(), actualOperationRead.getWorkspaceId());
+    assertEquals(WEBHOOK_OPERATION_ID, actualOperationRead.getOperationId());
+    assertEquals(WEBHOOK_OPERATION_NAME, actualOperationRead.getName());
+    assertEquals(OperatorType.WEBHOOK, actualOperationRead.getOperatorConfiguration().getOperatorType());
+    assertEquals(webhookConfig, actualOperationRead.getOperatorConfiguration().getWebhook());
+
+    verify(configRepository).writeStandardSyncOperation(eq(expectedPersistedOperation));
+  }
+
+  @Test
   void testUpdateOperation() throws JsonValidationException, ConfigNotFoundException, IOException {
     final OperationUpdate operationUpdate = new OperationUpdate()
         .operationId(standardSyncOperation.getOperationId())
@@ -138,6 +182,43 @@ class OperationsHandlerTest {
     assertEquals(expectedOperationRead, actualOperationRead);
 
     verify(configRepository).writeStandardSyncOperation(updatedStandardSyncOperation);
+  }
+
+  @Test
+  void testUpdateWebhookOperation() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(uuidGenerator.get()).thenReturn(WEBHOOK_OPERATION_ID);
+    final OperatorWebhook webhookConfig = new OperatorWebhook()
+        .webhookConfigId(WEBHOOK_CONFIG_ID)
+        .executionUrl(NEW_EXECUTION_URL)
+        .executionBody(WEBHOOK_EXECUTION_BODY);
+    final OperationUpdate operationUpdate = new OperationUpdate()
+        .name(WEBHOOK_OPERATION_NAME)
+        .operationId(WEBHOOK_OPERATION_ID)
+        .operatorConfiguration(new OperatorConfiguration()
+            .operatorType(OperatorType.WEBHOOK).webhook(webhookConfig));
+
+    final StandardSyncOperation persistedOperation = new StandardSyncOperation()
+        .withWorkspaceId(standardSyncOperation.getWorkspaceId())
+        .withOperationId(WEBHOOK_OPERATION_ID)
+        .withName(WEBHOOK_OPERATION_NAME)
+        .withOperatorType(StandardSyncOperation.OperatorType.WEBHOOK)
+        .withOperatorWebhook(new io.airbyte.config.OperatorWebhook()
+            .withWebhookConfigId(WEBHOOK_CONFIG_ID)
+            .withExecutionUrl(WEBHOOK_EXECUTION_URL)
+            .withExecutionBody(WEBHOOK_EXECUTION_BODY));
+
+    when(configRepository.getStandardSyncOperation(WEBHOOK_OPERATION_ID)).thenReturn(persistedOperation);
+
+    final OperationRead actualOperationRead = operationsHandler.updateOperation(operationUpdate);
+
+    assertEquals(WEBHOOK_OPERATION_ID, actualOperationRead.getOperationId());
+    assertEquals(WEBHOOK_OPERATION_NAME, actualOperationRead.getName());
+    assertEquals(OperatorType.WEBHOOK, actualOperationRead.getOperatorConfiguration().getOperatorType());
+    assertEquals(webhookConfig, actualOperationRead.getOperatorConfiguration().getWebhook());
+
+    verify(configRepository)
+        .writeStandardSyncOperation(persistedOperation.withOperatorWebhook(persistedOperation.getOperatorWebhook().withExecutionUrl(
+            NEW_EXECUTION_URL)));
   }
 
   @Test
