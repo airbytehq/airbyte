@@ -4,19 +4,14 @@
 
 package io.airbyte.integrations.destination.bigquery.formatter.arrayformater;
 
-import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.NESTED_ARRAY_FIELD;
-import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.TYPE_FIELD;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaArraysLegacy;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaArrays;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -38,26 +33,27 @@ public class LegacyArrayFormatterTest {
   void findArrays() throws JsonProcessingException {
     final JsonNode schemaArrays = getSchemaArrays();
     final List<JsonNode> expectedResult = List.of(
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":"integer"}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":"integer"}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":"integer"}}"""),
-        mapper.readTree(""" 
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":"integer"}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":"integer"}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":"integer"}}"""),
+        mapper.readTree(
+            """
             {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":"integer"}}"""));
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":"integer"}}"""));
 
     final List<JsonNode> result = formatter.findArrays(schemaArrays);
 
@@ -74,13 +70,13 @@ public class LegacyArrayFormatterTest {
   void formatArrayItems() throws JsonProcessingException {
     final JsonNode expectedArrayNode = mapper.readTree(
         """
-              {"big_query_array": [["one", "two"], ["one", "two"]]}
-            """);
+          {"big_query_array": [["one", "two"], ["one", "two"]]}
+        """);
     final List<JsonNode> arrayNodes = List.of(
-        mapper.readTree(""" 
-            ["one", "two"]"""),
-        mapper.readTree(""" 
-            ["one", "two"]"""));
+        mapper.readTree("""
+                        ["one", "two"]"""),
+        mapper.readTree("""
+                        ["one", "two"]"""));
 
     final JsonNode result = formatter.formatArrayItems(arrayNodes);
 

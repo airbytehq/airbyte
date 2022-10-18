@@ -32,16 +32,16 @@ class DefaultArrayFormatterTest {
   void formatArrayItems() throws JsonProcessingException {
     final JsonNode expectedArrayNode = mapper.readTree(
         """
-            [
-              {"big_query_array": ["one", "two"]},
-              {"big_query_array": ["one", "two"]}
-            ]
-            """);
+        [
+          {"big_query_array": ["one", "two"]},
+          {"big_query_array": ["one", "two"]}
+        ]
+        """);
     final List<JsonNode> arrayNodes = List.of(
-        mapper.readTree(""" 
-            ["one", "two"]"""),
-        mapper.readTree(""" 
-            ["one", "two"]"""));
+        mapper.readTree("""
+                        ["one", "two"]"""),
+        mapper.readTree("""
+                        ["one", "two"]"""));
 
     final JsonNode result = formatter.formatArrayItems(arrayNodes);
 
@@ -50,10 +50,10 @@ class DefaultArrayFormatterTest {
 
   @Test
   void formatArrayItems_notArray() throws JsonProcessingException {
-    final JsonNode objectNodeInput = mapper.readTree(""" 
-            {"type":"object","items":{"type":"integer"}}""");
-    final JsonNode expectedResult = mapper.readTree(""" 
-            [{"type":"object","items":{"type":"integer"}}]""");
+    final JsonNode objectNodeInput = mapper.readTree("""
+                                                     {"type":"object","items":{"type":"integer"}}""");
+    final JsonNode expectedResult = mapper.readTree("""
+                                                    [{"type":"object","items":{"type":"integer"}}]""");
 
     final JsonNode result = formatter.formatArrayItems(List.of(objectNodeInput));
 
@@ -64,26 +64,27 @@ class DefaultArrayFormatterTest {
   void findArrays() throws JsonProcessingException {
     final JsonNode schemaArrays = getSchemaArrays();
     final List<JsonNode> expectedResult = List.of(
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":"integer"}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":"integer"}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":"integer"}}"""),
-        mapper.readTree(""" 
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":"integer"}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":"integer"}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":"integer"}}"""),
+        mapper.readTree(
+            """
             {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
-        mapper.readTree(""" 
-            {"type":["array"],"items":{"type":"integer"}}"""));
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+        mapper.readTree("""
+                        {"type":["array"],"items":{"type":"integer"}}"""));
 
     final List<JsonNode> result = formatter.findArrays(schemaArrays);
     assertEquals(expectedResult, result);
