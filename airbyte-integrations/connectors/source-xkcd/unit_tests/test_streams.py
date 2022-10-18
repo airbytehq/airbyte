@@ -26,15 +26,17 @@ def test_request_params(patch_base_class):
 
 def test_next_page_token(patch_base_class):
     stream = XkcdStream()
-    inputs = {"response": MagicMock()}
-    expected_token = None
+    response = MagicMock()
+    response.json.return_value = {"month": "10", "num": 2685, "link": "", "year": "2022", "news": "", "safe_title": "2045", "transcript": "", "alt": "\"Sorry, doctor, I'm going to have to come in on a different day--I have another appointment that would be really hard to move, in terms of the kinetic energy requirements.\"", "img": "https://imgs.xkcd.com/comics/2045.png", "title": "2045", "day": "14"}
+    inputs = {"response": response}
+    expected_token = {'next_token': 1}
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_parse_response(patch_base_class):
     stream = XkcdStream()
     response = MagicMock()
-    response.json.return_value = {"month": "10", "num": 2685, "link": "", "year": "2022", "news": "", "safe_title": "2045", "transcript": "", "alt": "\"Sorry, doctor, I'm going to have to come in on a different day--I have another appointment that would be really hard to move, in terms of the kinetic energy requirements.\"", "img": "https://imgs.xkcd.com/comics/2045.png", "title": "2045", "day": "14"}
+    response.json.return_value = {"month": "1", "num": 1, "link": "", "year": "2006", "news": "", "safe_title": "Barrel - Part 1", "transcript": "[[A boy sits in a barrel which is floating in an ocean.]]\nBoy: I wonder where I'll float next?\n[[The barrel drifts into the distance. Nothing else can be seen.]]\n{{Alt: Don't we all.}}", "alt": "Don't we all.", "img": "https://imgs.xkcd.com/comics/barrel_cropped_(1).jpg", "title": "Barrel - Part 1", "day": "1"}
     inputs = {"response": response, "stream_state": None}
     expected_parsed_object = {"month": "1", "num": 1, "link": "", "year": "2006", "news": "", "safe_title": "Barrel - Part 1", "transcript": "[[A boy sits in a barrel which is floating in an ocean.]]\nBoy: I wonder where I'll float next?\n[[The barrel drifts into the distance. Nothing else can be seen.]]\n{{Alt: Don't we all.}}", "alt": "Don't we all.", "img": "https://imgs.xkcd.com/comics/barrel_cropped_(1).jpg", "title": "Barrel - Part 1", "day": "1"}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
