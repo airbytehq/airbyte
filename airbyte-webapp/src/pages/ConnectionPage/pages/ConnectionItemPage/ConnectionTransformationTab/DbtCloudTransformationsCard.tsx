@@ -36,21 +36,31 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   //   2.2) AND the connection has saved dbt jobs
   //        THEN show the "no jobs" card body and the "+ Add transformation" button
 
-  const { hasDbtIntegration, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
+  const { hasDbtIntegration, saveJobs, dbtCloudJobs, addNewJob, setAddNewJobFn } = useDbtIntegration(connection);
 
   return (
     <Card
       title={
         <span className={styles.jobListTitle}>
           Transformations
-          <Button variant="secondary" icon={<FontAwesomeIcon icon={faPlus} />}>
+          <Button
+            variant="secondary"
+            disabled={!!dbtCloudJobs.find((job: DbtCloudJob) => !job.operationId)}
+            onClick={addNewJob}
+            icon={<FontAwesomeIcon icon={faPlus} />}
+          >
             Add transformation
           </Button>
         </span>
       }
     >
       {hasDbtIntegration ? (
-        <DbtJobsList jobs={dbtCloudJobs} className={styles.jobListContainer} saveJobs={saveJobs} />
+        <DbtJobsList
+          jobs={dbtCloudJobs}
+          className={styles.jobListContainer}
+          saveJobs={saveJobs}
+          setAddNewJobFn={setAddNewJobFn}
+        />
       ) : (
         <NoDbtIntegration className={styles.jobListContainer} />
       )}
@@ -62,10 +72,12 @@ const DbtJobsList = ({
   className,
   jobs,
   saveJobs,
+  setAddNewJobFn,
 }: {
   className?: string;
   jobs: DbtCloudJob[];
   saveJobs: (jobs: DbtCloudJob[]) => void;
+  setAddNewJobFn: (addNewJobFn: (job: DbtCloudJob) => void) => void;
 }) => {
   const onSubmit = ({ jobs }: { jobs: DbtCloudJob[] }) => {
     saveJobs(jobs);
@@ -75,18 +87,19 @@ const DbtJobsList = ({
     <div className={classNames(className, styles.emptyListContent)}>
       <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
       {jobs.length ? (
-        <Formik
+        <Formik // TODO extract to parent component, see if that helps with input focus issues
           onSubmit={onSubmit}
           initialValues={{ jobs }}
           render={({ values }) => (
             <Form className={styles.jobListForm}>
               <FieldArray
                 name="jobs"
-                render={(arrayHelpers) =>
-                  values.jobs.map((t, i) => (
-                    <JobsListItem key={jobKey(t, i)} jobIndex={i} removeJob={() => arrayHelpers.remove(i)} />
-                  ))
-                }
+                render={({ remove, push }) => {
+                  setAddNewJobFn(push);
+                  return values.jobs.map((t, i) => (
+                    <JobsListItem key={jobKey(t, i)} jobIndex={i} removeJob={() => remove(i)} />
+                  ));
+                }}
               />
               <div className={styles.jobListButtonGroup}>
                 <Button className={styles.jobListButton} type="reset" variant="secondary">
