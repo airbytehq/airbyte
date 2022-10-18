@@ -60,13 +60,13 @@ python main.py read --config secrets/config.json --catalog sample_files/configur
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-waitwhile:0.2.0
+docker build . -t airbyte/source-waitwhile:0.2.1
 ```
 
 #### Push docker image
 ```shell
-docker tag airbyte/source-waitwhile:0.2.0 askeladden/airbyte-waitwhile-source:0.2.0
-docker push askeladden/airbyte-waitwhile-source:0.2.0
+docker tag airbyte/source-waitwhile:0.2.1 askeladden/airbyte-waitwhile-source:0.2.1
+docker push askeladden/airbyte-waitwhile-source:0.2.1
 ```
 
 You can also build the connector image via Gradle:

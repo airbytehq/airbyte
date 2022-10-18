@@ -102,13 +102,13 @@ class IncrementalWaitwhileStreamAvailability(WaitwhileStreamAvailability, ABC):
         if state_mapping:
             state_value = state_mapping.get(self.location_id, self.start_date)
         else:
+            state_mapping = {}
             state_value = self.start_date
 
         last_record_value = latest_record.get(self.cursor_field)
-
         if last_record_value:
             state_mapping.update({self.location_id: last_record_value})
-            return {self.cursor_field: state_mapping}
+
         return {self.cursor_field: state_mapping}
 
 
