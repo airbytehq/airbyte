@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.source import (
@@ -19,13 +21,14 @@ from source_shopify.source import (
     PriceRules,
     Products,
     Shop,
+    SourceShopify,
     TenderTransactions,
     Transactions,
 )
 
 
 @pytest.fixture
-def test_config(basic_config):
+def config(basic_config):
     basic_config["start_date"] = "2020-11-01"
     basic_config["authenticator"] = ShopifyAuthenticator(basic_config)
     return basic_config
@@ -49,8 +52,8 @@ def test_config(basic_config):
         (CustomCollections, "custom_collections.json"),
     ],
 )
-def test_customers_path(stream, expected_path, test_config):
-    stream = stream(test_config)
+def test_customers_path(stream, expected_path, config):
+    stream = stream(config)
     assert stream.path() == expected_path
 
 
@@ -66,6 +69,30 @@ def test_customers_path(stream, expected_path, test_config):
         (Fulfillments, {"order_id": 12345}, "orders/12345/fulfillments.json"),
     ],
 )
-def test_customers_path_with_stream_slice_param(stream, stream_slice, expected_path, test_config):
-    stream = stream(test_config)
+def test_customers_path_with_stream_slice_param(stream, stream_slice, expected_path, config):
+    stream = stream(config)
     assert stream.path(stream_slice) == expected_path
+
+
+def test_check_connection(config, mocker):
+    mocker.patch("source_shopify.source.Shop.read_records", return_value=[{"id": 1}])
+    source = SourceShopify()
+    logger_mock = MagicMock()
+    assert source.check_connection(logger_mock, config) == (True, None)
+
+
+# def test_read_records(config, mocker):
+#     records = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
+#     stream_slice = records[0]
+#     stream = OrderRefunds(config)
+#     mocker.patch("source_shopify.source.IncrementalShopifyStream.read_records", return_value=records)
+#     assert next(stream.read_records(stream_slice=stream_slice)) == records[0]
+
+
+# def test_get_updated_state(config, mocker):
+#     current_stream_state = [{"created_at": "2022-10-10T06:21:53-07:00"}]
+#     latest_record = {"created_at": "2022-10-10T06:22:53-07:00"}
+#     parent_state = {"orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}
+#     updated_state = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
+#     stream = OrderRefunds(config)
+#     assert stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record) == updated_state
