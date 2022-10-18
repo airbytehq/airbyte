@@ -62,7 +62,6 @@ const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
 );
 
 const App: React.FC = () => {
-  console.log("started");
   return (
     <React.StrictMode>
       <StyleProvider>
