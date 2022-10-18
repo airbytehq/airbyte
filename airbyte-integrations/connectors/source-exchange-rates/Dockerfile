@@ -10,6 +10,8 @@ WORKDIR $WORKDIR
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
 COPY main.py ./
+COPY spec.patch.json ./
+COPY documentation_url.patch.json ./
 
 RUN pip install .
 
