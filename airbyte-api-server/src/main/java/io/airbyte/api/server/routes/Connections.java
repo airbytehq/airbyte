@@ -9,34 +9,37 @@ import io.airbyte.api.server.repositories.ConnectionsRepository;
 
 import javax.ws.rs.Path;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Path("/connections")
+@Slf4j
 public class Connections implements ConnectionApi {
 
     final ConnectionsRepository connectionsRepository;
 
-    Connections(ConnectionsRepository connectionsRepository) {
+    Connections(final ConnectionsRepository connectionsRepository) {
         this.connectionsRepository = connectionsRepository;
     }
 
     @Override
-    public Connection createConnection(ConnectionCreate connectionCreate) {
+    public Connection createConnection(final ConnectionCreate connectionCreate) {
         return null;
     }
 
     @Override
-    public ConnectionList listConnectionsForWorkspace(Identifier identifiers, UUID workspaceId, String slug, String cursor) {
+    public ConnectionList listConnectionsForWorkspace(final Identifier identifiers, final UUID workspaceId, final String slug, final String cursor) {
         return null;
     }
 
     @Override
-    public void resetConnection(UUID connectionId) {
+    public void resetConnection(final UUID connectionId) {
         connectionsRepository.reset(connectionId);
     }
 
     @Override
-    public void syncConnection(UUID connectionId) {
+    public void syncConnection(final UUID connectionId) {
+        log.info("test: connections.java");
         connectionsRepository.sync(connectionId);
     }
 }
