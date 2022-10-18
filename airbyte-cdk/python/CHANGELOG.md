@@ -1,8 +1,12 @@
 # Changelog
 
-## 0.1.103
+## 0.2.0
 
 - Replace caching method: VCR.py -> requests-cache with SQLite backend
+
+## 0.1.103
+
+- Low-code: added hash filter to jinja template
 
 ## 0.1.102
 
