@@ -8,7 +8,6 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
@@ -170,7 +169,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           });
     } catch (final Exception exception) {
       if (showEnhancedErrorDetails(exception)) {
-        AirbyteTraceMessageUtility.emitSystemErrorTrace(exception, exception.getMessage());
+        AirbyteTraceMessageUtility.emitConfigErrorTrace(exception, exception.getMessage());
       }
       throw exception;
     }
