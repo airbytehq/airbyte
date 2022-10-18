@@ -32,17 +32,12 @@ class WaitwhileStreamAvailability(HttpStream, ABC):
 
         resp_records = response.json()
         last_date = None
-        print(f"n_recs: {len(resp_records)}")
-        print(f"0_location_id: {self.location_id}")
 
         if len(resp_records) == 0:
             self.location_id = next(self.location_ids, None)
         else:
             last_date = pendulum.parse(resp_records[-1].get("date")).add(minutes=1)
             if last_date >= self.stop_date:
-                print(f"location_id: {self.location_id}")
-                print(f"last_date: {last_date}")
-                print(f"stop_date: {self.stop_date}")
                 self.location_id = next(self.location_ids, None)
                 last_date = None
 
@@ -61,15 +56,12 @@ class WaitwhileStreamAvailability(HttpStream, ABC):
         if next_page_token:
             params.update(**next_page_token)
 
-        print(f"params_0: {params}")
-
         if "fromDate" in params:
             return params
 
         stream_start_date = str(self.start_date)[:16]
         last_stream_date = stream_state.get("date", {}).get(self.location_id, stream_start_date)
         params["fromDate"] = str(last_stream_date)[:16] if last_stream_date else stream_start_date
-        print(f"params_1: {params}")
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
