@@ -25,6 +25,7 @@ import {
 import { FormCard } from "views/Connection/FormCard";
 
 import styles from "./ConnectionTransformationTab.module.scss";
+import { DbtCloudTransformationsCard } from "./ConnectionTransformationTab/DbtCloudTransformationsCard";
 
 const CustomTransformationsCard: React.FC<{
   operations?: OperationCreate[];
@@ -100,6 +101,8 @@ export const ConnectionTransformationTab: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_TRANSFORMATION);
   const { supportsNormalization } = definition;
   const supportsDbt = useFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
+  const supportsCloudDbtIntegration = useFeature(FeatureItem.AllowDBTCloudIntegration) && definition.supportsDbt;
+  const noSupportedTransformations = !supportsNormalization && !supportsDbt && !supportsCloudDbtIntegration;
 
   const onSubmit: FormikOnSubmit<{ transformations?: OperationRead[]; normalization?: NormalizationType }> = async (
     values,
@@ -134,7 +137,8 @@ export const ConnectionTransformationTab: React.FC = () => {
       >
         {supportsNormalization && <NormalizationCard operations={connection.operations} onSubmit={onSubmit} />}
         {supportsDbt && <CustomTransformationsCard operations={connection.operations} onSubmit={onSubmit} />}
-        {!supportsNormalization && !supportsDbt && (
+        {supportsCloudDbtIntegration && <DbtCloudTransformationsCard connection={connection} />}
+        {noSupportedTransformations && (
           <Card className={styles.customCard}>
             <Text as="p" size="lg" centered>
               <FormattedMessage id="connectionForm.operations.notSupported" />
