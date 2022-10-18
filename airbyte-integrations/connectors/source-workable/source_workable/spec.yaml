@@ -6,7 +6,7 @@ connectionSpecification:
   required:
     - api_key
     - account_subdomain
-    - created_after_date
+    - start_date
   additionalProperties: true
   properties:
     api_key:
@@ -16,7 +16,7 @@ connectionSpecification:
     account_subdomain:
       type: string
       description: Your Workable account subdomain, e.g. https://your_account_subdomain.workable.com.
-    created_after_date:
+    start_date:
       type: string
       description: "Get data that was created since this date (format: YYYYMMDDTHHMMSSZ)."
       pattern: ^[0-9]{8}T[0-9]{6}Z$
