@@ -149,7 +149,7 @@ public class WebBackendConnectionsHandler {
   }
 
   private Map<UUID, SourceRead> getActorCatalogBySourceIds(final List<UUID> sourceIds) throws IOException {
-    final List<SourceRead> sourceReads = configRepository.getMostRecentActorCatalogFetchEventForSource(sourceIds)
+    final List<SourceRead> sourceReads = configRepository.getMostRecentActorCatalogFetchEventForSources(sourceIds)
         .stream()
         .map(sourceAndDefinition -> SourceHandler.toSourceRead(sourceAndDefinition.source(), sourceAndDefinition.definition()))
         .toList();

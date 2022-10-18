@@ -984,9 +984,9 @@ public class ConfigRepository {
     private final OffsetDateTime createdAt;
   }
 
-  public Optional<ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSource(final List<UUID> sourceIds) throws IOException {
+  public Map<UUID, TodoRename> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds) throws IOException {
 
-    /*final Stream<ActorCatalogFetchEvent>*/ var records = database.query(ctx ->
+     return database.query(ctx ->
 
         ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
         .from(ACTOR_CATALOG_FETCH_EVENT)
@@ -997,20 +997,26 @@ public class ConfigRepository {
             record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID),
             record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT)
         ))
-        .collect(() -> new HashMap<UUID, TodoRename>(),
-            (acc, value) -> {
-              if (acc.containsKey(value.getActorId())) {
-
-              }
-            },
+        .collect(
+            () -> new HashMap<UUID, TodoRename>(),
+            this::insertInAccumulatorIfNeeded,
             (left, right) ->  {
-              var test = "";
+              right.forEach((actorId, value) -> {
+                insertInAccumulatorIfNeeded(left, value);
+              });
             }
         );
+  }
 
-
-
-    return Optional.empty();
+  private void insertInAccumulatorIfNeeded(Map<UUID, TodoRename> acc, TodoRename value) {
+    if (acc.containsKey(value.getActorId())) {
+      TodoRename currentNewest = acc.get(value.actorId);
+      if (currentNewest.getCreatedAt().isBefore(value.getCreatedAt())) {
+        acc.put(value.getActorId(), value);
+      }
+    } else {
+      acc.put(value.actorId, value);
+    }
   }
 
   /**
