@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.103
+
+- Low-code: Always convert stream slices output to an iterator
+
 ## 0.1.102
 
 - Low-code: Fix check for streams that do not define a stream slicer
