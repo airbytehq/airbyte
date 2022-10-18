@@ -22,4 +22,4 @@ XKCD does not perform rate limiting.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.0   | 2022-10-16 | [18034](https://github.com/airbytehq/airbyte/pull/18034) | Initial version/release of the connector.
+| 0.1.0   | 2022-10-17 | [18049](https://github.com/airbytehq/airbyte/pull/18049) | Initial version/release of the connector.
