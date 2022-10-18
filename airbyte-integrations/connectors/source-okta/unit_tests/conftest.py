@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import pendulum
 import pytest
 
 
@@ -73,9 +74,9 @@ def wrong_oauth_config_bad_auth_type():
 @pytest.fixture()
 def token_config():
     """
-    Just test 'tolen'
+    Just test 'token'
     """
-    return {"token": "test_token"}
+    return {"token": "test_token", "start_date": "2021-03-21T20:49:13Z"}
 
 
 @pytest.fixture()
@@ -83,7 +84,7 @@ def auth_token_config():
     """
     Credentials for Token Authorization connect
     """
-    return {"credentials": {"auth_type": "api_token", "api_token": "test_token"}}
+    return {"start_date": "2021-03-21T20:49:13Z", "credentials": {"auth_type": "api_token", "api_token": "test_token"}}
 
 
 @pytest.fixture()
@@ -246,7 +247,7 @@ def group_role_assignments_instance():
         "displayMessage": "Add assigned application to group",
         "eventType": "group.application_assignment.add",
         "outcome": {"result": "SUCCESS", "reason": None},
-        "published": "2022-07-18T07:58:55.625Z",
+        "published": "2022-07-18T07:58:55Z",
         "securityContext": {"asNumber": None, "asOrg": None, "isp": None, "domain": None, "isProxy": None},
         "severity": "INFO",
         "debugContext": {"debugData": {"groupAppAssignmentId": "test_group_app_assignment_id"}},
@@ -326,7 +327,7 @@ def logs_instance():
         "displayMessage": "OIDC access token is granted",
         "eventType": "app.oauth2.token.grant.access_token",
         "outcome": {"result": "SUCCESS", "reason": None},
-        "published": "2022-07-19T15:54:11.545Z",
+        "published": "2022-07-19T15:54:11Z",
         "securityContext": {"asNumber": 0, "asOrg": "Test Org", "isp": "TestProvider", "domain": "test-domain.com", "isProxy": False},
         "severity": "INFO",
         "debugContext": {
@@ -378,6 +379,26 @@ def logs_instance():
 
 
 @pytest.fixture()
+def resource_set_instance(api_url):
+    """
+    Resource set object instance
+    """
+    _id = "iam5xyzmibarA6Afoo7"
+    return {
+        "id": _id,
+        "label": "all users",
+        "description": "all users",
+        "created": "2022-07-09T20:58:41.000Z",
+        "lastUpdated": "2022-07-09T20:58:41.000Z",
+        "_links": {
+            "bindings": {"href": f"{url_base}/iam/resource-sets/{_id}/bindings"},
+            "self": {"href": f"{url_base}/iam/resource-sets/{_id}"},
+            "resources": {"href": f"{url_base}/iam/resource-sets/{_id}/resources"},
+        },
+    }
+
+
+@pytest.fixture()
 def latest_record_instance(url_base, api_url):
     """
     Last Record instance object response
@@ -415,3 +436,8 @@ def error_failed_to_authorize_with_provided_credentials():
     Error raised when using incorrect oauth2.0 credentials
     """
     return "Failed to authenticate with the provided credentials"
+
+
+@pytest.fixture()
+def start_date():
+    return pendulum.parse("2021-03-21T20:49:13Z")

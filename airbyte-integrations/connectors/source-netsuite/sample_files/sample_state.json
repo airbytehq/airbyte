@@ -1,0 +1,36 @@
+{
+  "customer": {
+    "lastModifiedDate": "2022-08-19T14:01:00Z"
+  },
+  "customersubsidiaryrelationship": {
+    "lastModifiedDate": "2022-08-19T14:01:00Z"
+  },
+  "vendorsubsidiaryrelationship": {
+    "lastModifiedDate": "2022-08-22T09:21:00Z"
+  },
+  "charge": {},
+  "vendorbill": {
+    "lastModifiedDate": "2022-08-22T09:21:00Z"
+  },
+  "contact": {
+    "lastModifiedDate": "2022-08-19T14:13:00Z"
+  },
+  "message": {},
+  "subsidiary": {
+    "lastModifiedDate": "2022-08-22T08:21:00Z"
+  },
+  "task": {
+    "lastModifiedDate": "2022-08-18T08:11:00Z"
+  },
+  "salesorder": {},
+  "employee": {
+    "lastModifiedDate": "2022-08-18T12:05:00Z"
+  },
+  "billingaccount": {},
+  "journalentry": {
+    "lastModifiedDate": "2022-08-22T10:57:00Z"
+  },
+  "vendor": {
+    "lastModifiedDate": "2022-08-22T08:21:00Z"
+  }
+}

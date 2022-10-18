@@ -40,10 +40,10 @@ def prod_config():
     """
     return {
         "client_id": "some_client_id",
-        "secret": "some_secret",
+        "client_secret": "some_secret",
         "start_date": "2021-07-01T00:00:00+00:00",
         "end_date": "2021-07-10T00:00:00+00:00",
-        "is_sandbox": False
+        "is_sandbox": False,
     }
 
 
@@ -54,10 +54,10 @@ def sandbox_config():
     """
     return {
         "client_id": "some_client_id",
-        "secret": "some_secret",
+        "client_secret": "some_secret",
         "start_date": "2021-07-01T00:00:00+00:00",
         "end_date": "2021-07-10T00:00:00+00:00",
-        "is_sandbox": True
+        "is_sandbox": True,
     }
 
 
@@ -71,11 +71,11 @@ def new_prod_config():
             "auth_type": "oauth2.0",
             "client_id": "some_client_id",
             "client_secret": "some_client_secret",
-            "refresh_token": "some_refresh_token"
+            "refresh_token": "some_refresh_token",
         },
         "start_date": "2021-07-01T00:00:00+00:00",
         "end_date": "2021-07-10T00:00:00+00:00",
-        "is_sandbox": False
+        "is_sandbox": False,
     }
 
 

@@ -55,6 +55,7 @@ Please follow these [steps](https://posthog.com/docs/api/overview#how-to-obtain-
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.7 | 2022-07-26 | [14585](https://github.com/airbytehq/airbyte/pull/14585) | Add missing 'properties' field to event attributes |
 | 0.1.6 | 2022-01-20 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
 | 0.1.5 | 2021-12-24 | [9082](https://github.com/airbytehq/airbyte/pull/9082) | Remove obsolete session_events and insights streams |
 | 0.1.4 | 2021-09-14 | [6058](https://github.com/airbytehq/airbyte/pull/6058) | Support self-hosted posthog instances |

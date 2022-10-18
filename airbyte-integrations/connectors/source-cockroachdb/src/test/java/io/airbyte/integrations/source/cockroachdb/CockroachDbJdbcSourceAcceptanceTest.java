@@ -189,6 +189,26 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Test
+  protected void testDiscoverWithNonCursorFields() throws Exception {
+    /*
+     * this test is not valid for cockroach db, when table has no introduced PK it will add a hidden
+     * rowid which will be taken from db , it as well present on airbyte UI thus there will be no case
+     * to create a table without cursor field.
+     * https://www.cockroachlabs.com/docs/stable/serial.html#auto-incrementing-is-not-always-sequential
+     */
+  }
+
+  @Test
+  protected void testDiscoverWithNullableCursorFields() throws Exception {
+    /*
+     * this test is not valid for cockroach db, when table has no introduced PK it will add a hidden
+     * rowid which will be taken from db , it as well present on airbyte UI thus there will be no case
+     * to create a table without cursor field.
+     * https://www.cockroachlabs.com/docs/stable/serial.html#auto-incrementing-is-not-always-sequential
+     */
+  }
+
+  @Test
   void testCheckFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
@@ -311,7 +331,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     .withStreamName(streamName)
                     .withStreamNamespace(namespace)
                     .withCursorField(ImmutableList.of(COL_ID))
-                    .withCursor("5")))))));
+                    .withCursor("5")
+                    .withCursorRecordCount(1L)))))));
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
@@ -443,7 +464,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                         .withStreamName(streamName)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
-                        .withCursor("3"),
+                        .withCursor("3")
+                        .withCursorRecordCount(1L),
                     new DbStreamState()
                         .withStreamName(streamName2)
                         .withStreamNamespace(namespace)
@@ -461,12 +483,14 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                         .withStreamName(streamName)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
-                        .withCursor("3"),
+                        .withCursor("3")
+                        .withCursorRecordCount(1L),
                     new DbStreamState()
                         .withStreamName(streamName2)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
-                        .withCursor("3")))))));
+                        .withCursor("3")
+                        .withCursorRecordCount(1L)))))));
 
     setEmittedAtToNull(actualMessagesFirstSync);
 

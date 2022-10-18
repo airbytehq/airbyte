@@ -235,7 +235,8 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
-| (unpublished)  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiply log bindings |
+| 0.2.11  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
+| 0.2.10  | 2022-08-05 | [\#14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings |
 | 0.2.9   | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging  |
 | 0.2.8   | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager  |
 | 0.2.7   | 2022-06-14 | [\#13483](https://github.com/airbytehq/airbyte/pull/13483) | Added support for int, long, float data types to Avro/Parquet formats. |
@@ -258,4 +259,4 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 | 0.1.13  | 2021-11-03 | [\#7288](https://github.com/airbytehq/airbyte/issues/7288) | Support Json `additionalProperties`. |
 | 0.1.2   | 2021-09-12 | [\#5720](https://github.com/airbytehq/airbyte/issues/5720) | Added configurable block size for stream. Each stream is limited to 10,000 by GCS |
 | 0.1.1   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added storing gcsCsvFileLocation property for CSV format. This is used by destination-bigquery \(GCS Staging upload type\) |
-| 0.1.0   | 2021-07-16 | [\#4329](https://github.com/airbytehq/airbyte/pull/4784) | Initial release. |
+| 0.1.0   | 2021-07-16 | [\#4329](https://github.com/airbytehq/airbyte/pull/4784) | Initial release.                                                                                                           |

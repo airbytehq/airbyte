@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from "react";
 
-import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { JobInfo } from "core/domain/job";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
@@ -21,16 +18,10 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
   const { sourceDefinitions } = useSourceDefinitionList();
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(null);
   const [successRequest, setSuccessRequest] = useState(false);
-  const [error, setError] = useState<{
-    status: number;
-    response: JobInfo;
-    message: string;
-  } | null>(null);
+  const [error, setError] = useState<FormError | null>(null);
 
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { mutateAsync: createSource } = useCreateSource();
-
-  const analyticsService = useAnalyticsService();
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
@@ -76,12 +67,6 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
     const sourceDefinition = getSourceDefinitionById(sourceId);
     setDocumentationUrl(sourceDefinition?.documentationUrl || "");
 
-    analyticsService.track(Namespace.SOURCE, Action.SELECT, {
-      actionDescription: "Source connector type selected",
-      connector_source: sourceDefinition?.name,
-      connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
-    });
-
     setError(null);
     setSourceDefinitionId(sourceId);
   };
@@ -91,7 +76,7 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
       ...values,
     });
 
-  const errorMessage = error ? createFormErrorMessage(error) : "";
+  const errorMessage = error ? generateMessageFromError(error) : "";
 
   return (
     <ConnectorCard
@@ -105,6 +90,7 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
       errorMessage={errorMessage}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       isLoading={isLoading}
+      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId } : undefined}
     />
   );
 };

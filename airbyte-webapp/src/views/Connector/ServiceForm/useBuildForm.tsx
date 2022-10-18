@@ -129,11 +129,7 @@ export const useConstructValidationSchema = (jsonSchema: JSONSchema7, uiWidgetsI
   useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [uiWidgetsInfo, jsonSchema]);
 
 export const usePatchFormik = (): void => {
-  const { setFieldTouched, isSubmitting, isValidating, validationSchema, validateForm, errors } = useFormikContext();
-  // Formik doesn't validate values again, when validationSchema was changed on the fly.
-  useEffect(() => {
-    validateForm();
-  }, [validateForm, validationSchema]);
+  const { setFieldTouched, isSubmitting, isValidating, errors } = useFormikContext();
 
   /* Fixes issue https://github.com/airbytehq/airbyte/issues/1978
      Problem described here https://github.com/formium/formik/issues/445

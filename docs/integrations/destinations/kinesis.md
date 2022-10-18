@@ -1,5 +1,8 @@
 # Kinesis
 
+## Prerequisites
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Kinesis connector to version `0.1.4` or newer
+
 ## Sync overview
 
 
@@ -32,8 +35,8 @@ The connector buffer size should also be tweaked according to your data size and
 
 * The connector is compatible with the latest Kinesis service version at the time of this writing. 
 * Configuration
-    * **_Endpoint_**(`Optional`): Aws Kinesis endpoint to connect to. Default endpoint if not provided   
-    * **_Region_**(`Optional`): Aws Kinesis region to connect to. Default region if not provided.  
+    * **_Endpoint_**: Aws Kinesis endpoint to connect to. Default endpoint if not provided   
+    * **_Region_**: Aws Kinesis region to connect to. Default region if not provided.  
     * **_shardCount_**: The number of shards with which the stream should be created. The amount of shards affects the throughput of your stream. 
     * **_accessKey_**: Access key credential for authenticating with the service.  
     * **_privateKey_**: Private key credential for authenticating with the service.

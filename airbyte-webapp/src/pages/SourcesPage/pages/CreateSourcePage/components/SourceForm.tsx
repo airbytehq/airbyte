@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation } from "react-router-dom";
 
-import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalyticsService } from "hooks/services/Analytics";
-import useRouter from "hooks/useRouter";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
@@ -19,10 +17,9 @@ interface SourceFormProps {
     sourceDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
-  afterSelectConnector?: () => void;
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
   hasSuccess?: boolean;
-  error?: { message?: string; status?: number } | null;
+  error?: FormError | null;
 }
 
 const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
@@ -33,15 +30,8 @@ const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: s
   );
 };
 
-export const SourceForm: React.FC<SourceFormProps> = ({
-  onSubmit,
-  sourceDefinitions,
-  error,
-  hasSuccess,
-  afterSelectConnector,
-}) => {
-  const { location } = useRouter();
-  const analyticsService = useAnalyticsService();
+export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefinitions, error, hasSuccess }) => {
+  const location = useLocation();
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
     hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
@@ -55,28 +45,16 @@ export const SourceForm: React.FC<SourceFormProps> = ({
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
-
-    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
-
-    if (afterSelectConnector) {
-      afterSelectConnector();
-    }
-
-    analyticsService.track(Namespace.SOURCE, Action.SELECT, {
-      actionDescription: "Source connector type selected",
-      connector_source: connector?.name,
-      connector_source_definition_id: sourceDefinitionId,
-    });
   };
 
-  const onSubmitForm = async (values: ServiceFormValues) => {
-    await onSubmit({
+  const onSubmitForm = (values: ServiceFormValues) => {
+    onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
     });
   };
 
-  const errorMessage = error ? createFormErrorMessage(error) : null;
+  const errorMessage = error ? generateMessageFromError(error) : null;
 
   return (
     <ConnectorCard

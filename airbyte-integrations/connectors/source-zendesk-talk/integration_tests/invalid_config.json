@@ -1,6 +1,8 @@
 {
-  "email": "integration-test@airbyte.io",
-  "access_token": "some_token",
-  "subdomain": "domain",
-  "start_date": "2021-04-01T00:00:00Z"
+  "credentials": {
+    "auth_type": "oauth2.0",
+    "access_token": "sometoken"
+  },
+  "subdomain": "d3v-airbyte",
+  "start_date": "2221-04-01T00:00:00Z"
 }

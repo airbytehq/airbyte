@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class Source{{properCase name}}(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "./source_{{snakeCase name}}/{{snakeCase name}}.yaml"})
+        super().__init__(**{"path_to_yaml": "{{snakeCase name}}.yaml"})

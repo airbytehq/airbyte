@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/meilisearch",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/meilisearch",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -20,7 +20,7 @@
       "api_key": {
         "title": "API Key",
         "airbyte_secret": true,
-        "description": "MeiliSearch API Key. See the <a href=\"https://docs.airbyte.io/integrations/destinations/meilisearch\">docs</a> for more information on how to obtain this key.",
+        "description": "MeiliSearch API Key. See the <a href=\"https://docs.airbyte.com/integrations/destinations/meilisearch\">docs</a> for more information on how to obtain this key.",
         "type": "string",
         "order": 1
       }

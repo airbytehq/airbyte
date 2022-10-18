@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "url": {
+      "type": ["string", "null"]
+    },
+    "company": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
+        },
+        "ref_object": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "vacation_requests": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
+        },
+        "ref_object": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "count_as": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    }
+  }
+}

@@ -5,19 +5,19 @@ This page guides you through setting up the Zendesk Support source connector.
 ## Prerequisites
 
 - Locate your Zendesk subdomain found in your account URL. For example, if your account URL is `https://{MY_SUBDOMAIN}.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
-- (For Airbyte OSS) Find the email address associated with your Zendesk account. Also, generate an [API token](https://support.zendesk.com/hc/en-us/articles/4408889192858-Generating-a-new-API-token) for the account.
+- (For Airbyte Open Source) Find the email address associated with your Zendesk account. Also, generate an [API token](https://support.zendesk.com/hc/en-us/articles/4408889192858-Generating-a-new-API-token) for the account.
 
 ## Set up the Zendesk Support source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Zendesk Support** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Subdomain**, enter your [Zendesk subdomain](#prerequisites).
 6. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-7. You can use OAuth or an API key to authenticate your Zendesk Support account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte OSS.
+7. You can use OAuth or an API key to authenticate your Zendesk Support account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
     - To authenticate using OAuth for Airbyte Cloud, click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account. 
-    - To authenticate using an API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter your [API key](#prerequisites). Enter the **Email** associated with your Zendesk Support account.   
+    - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter your [API key](#prerequisites). Enter the **Email** associated with your Zendesk Support account.   
 8. Click **Set up source**.
 
 ## Supported sync modes
@@ -59,7 +59,9 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
-|:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0.2.16` | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                                                                                                                                      |
+| `0.2.15` | 2022-08-03 | [15233](https://github.com/airbytehq/airbyte/pull/15233) | Added `subscription plan` check on `streams discovery` step to remove streams that are not accessible for fetch due to subscription plan restrictions                                                                              |
 | `0.2.14` | 2022-07-27 | [15036](https://github.com/airbytehq/airbyte/pull/15036) | Convert `ticket_audits.previous_value` values to string                                                                                                                                                                            |
 | `0.2.13` | 2022-07-21 | [14829](https://github.com/airbytehq/airbyte/pull/14829) | Convert `tickets.custom_fields` values to string                                                                                                                                                                                   |
 | `0.2.12` | 2022-06-30 | [14304](https://github.com/airbytehq/airbyte/pull/14304) | Fixed Pagination for Group Membership stream                                                                                                                                                                                       |

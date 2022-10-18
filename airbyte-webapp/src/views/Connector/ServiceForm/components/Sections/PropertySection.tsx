@@ -1,13 +1,16 @@
 import { useField } from "formik";
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
-import { LabeledSwitch, TextWithHTML } from "components";
+import { LabeledSwitch } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { Control } from "../Property/Control";
-import { Label } from "../Property/Label";
+import { PropertyError } from "../Property/PropertyError";
+import { PropertyLabel } from "../Property/PropertyLabel";
+import styles from "./PropertySection.module.scss";
 
 interface PropertySectionProps {
   property: FormBaseItem;
@@ -26,20 +29,36 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
     return <>{overriddenComponent(property, { disabled })}</>;
   }
 
+  const labelText = property.title || property.fieldKey;
+
   if (property.type === "boolean") {
+    const switchId = `switch-${field.name}`;
     return (
       <LabeledSwitch
         {...field}
-        label={property.title || property.fieldKey}
-        message={<TextWithHTML text={property.description} />}
+        id={switchId}
+        label={
+          <PropertyLabel
+            className={styles.switchLabel}
+            property={property}
+            label={labelText}
+            optional={false}
+            htmlFor={switchId}
+          />
+        }
         value={field.value ?? property.default}
         disabled={disabled}
       />
     );
   }
 
+  const hasError = !!meta.error && meta.touched;
+
+  const errorValues = meta.error === "form.pattern.error" ? { pattern: property.pattern } : undefined;
+  const errorMessage = <FormattedMessage id={meta.error} values={errorValues} />;
+
   return (
-    <Label property={property} touched={meta.touched} error={meta.error}>
+    <PropertyLabel className={styles.defaultLabel} property={property} label={labelText}>
       <Control
         property={property}
         name={propertyPath}
@@ -47,8 +66,10 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
         removeUnfinishedFlow={removeUnfinishedFlow}
         unfinishedFlows={unfinishedFlows}
         disabled={disabled}
+        error={hasError}
       />
-    </Label>
+      {hasError && <PropertyError>{errorMessage}</PropertyError>}
+    </PropertyLabel>
   );
 };
 

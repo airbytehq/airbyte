@@ -16,7 +16,7 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-relational-db')
     implementation project(':airbyte-protocol:protocol-models')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.13.9'
+    implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.13.22'
     implementation 'com.zaxxer:HikariCP:5.0.1'
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))

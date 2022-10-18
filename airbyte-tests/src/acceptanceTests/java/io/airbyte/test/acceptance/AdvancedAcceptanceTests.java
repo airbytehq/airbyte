@@ -24,6 +24,7 @@ import io.airbyte.api.client.model.generated.AirbyteCatalog;
 import io.airbyte.api.client.model.generated.AirbyteStream;
 import io.airbyte.api.client.model.generated.AttemptInfoRead;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
@@ -83,6 +84,8 @@ import org.slf4j.LoggerFactory;
 class AdvancedAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdvancedAcceptanceTests.class);
+  private static final String TYPE = "type";
+  private static final String COLUMN1 = "column1";
 
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
@@ -140,7 +143,8 @@ class AdvancedAcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.MANUAL, null)
+            .getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     testHarness.assertSourceAndDestinationDbInSync(false);
@@ -157,7 +161,7 @@ class AdvancedAcceptanceTests {
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "EXCEPTION_AFTER_N")
+            .put(TYPE, "EXCEPTION_AFTER_N")
             .put("throw_after_n_records", 100)
             .build()));
 
@@ -165,7 +169,7 @@ class AdvancedAcceptanceTests {
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
-        Jsons.jsonNode(ImmutableMap.of("type", "SILENT")));
+        Jsons.jsonNode(ImmutableMap.of(TYPE, "SILENT")));
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
@@ -185,7 +189,7 @@ class AdvancedAcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, ConnectionScheduleType.MANUAL, null)
             .getConnectionId();
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -197,7 +201,9 @@ class AdvancedAcceptanceTests {
     // now cancel it so that we freeze state!
     try {
       apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
-    } catch (final Exception e) {}
+    } catch (final Exception e) {
+      LOGGER.error("error:", e);
+    }
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
 
@@ -205,10 +211,10 @@ class AdvancedAcceptanceTests {
     // nature, we can't guarantee exactly what checkpoint will be registered. what we can do is send
     // enough messages to make sure that we checkpoint at least once.
     assertNotNull(connectionState.getState());
-    assertTrue(connectionState.getState().get("column1").isInt());
-    LOGGER.info("state value: {}", connectionState.getState().get("column1").asInt());
-    assertTrue(connectionState.getState().get("column1").asInt() > 0);
-    assertEquals(0, connectionState.getState().get("column1").asInt() % 5);
+    assertTrue(connectionState.getState().get(COLUMN1).isInt());
+    LOGGER.info("state value: {}", connectionState.getState().get(COLUMN1).asInt());
+    assertTrue(connectionState.getState().get(COLUMN1).asInt() > 0);
+    assertEquals(0, connectionState.getState().get(COLUMN1).asInt() % 5);
   }
 
   @RetryingTest(3)
@@ -246,7 +252,7 @@ class AdvancedAcceptanceTests {
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "INFINITE_FEED")
+            .put(TYPE, "INFINITE_FEED")
             .put("max_records", 5000)
             .build()));
 
@@ -255,7 +261,7 @@ class AdvancedAcceptanceTests {
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "THROTTLED")
+            .put(TYPE, "THROTTLED")
             .put("millis_per_record", 1)
             .build()));
 
@@ -265,7 +271,7 @@ class AdvancedAcceptanceTests {
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, ConnectionScheduleType.MANUAL, null)
             .getConnectionId();
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));

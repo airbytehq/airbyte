@@ -241,13 +241,13 @@ See the documentation for [`kubectl cp`](https://kubernetes.io/docs/reference/ge
 ### Listing Files
 
 ```bash
-kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx ls /tmp/workspace/8
+kubectl exec -it airbyte-server-6b5747df5c-bj4fx ls /tmp/workspace/8
 ```
 
 ### Reading Files
 
 ```bash
-kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
+kubectl exec -it airbyte-server-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
 ```
 
 ### Persistent storage on GKE regional cluster

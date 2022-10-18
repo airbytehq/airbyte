@@ -290,7 +290,13 @@ class HttpStream(Stream, ABC):
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
         response: requests.Response = self._session.send(request, **request_kwargs)
-        self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
+
+        # Evaluation of response.text can be heavy, for example, if streaming a large response
+        # Do it only in debug mode
+        if self.logger.isEnabledFor(logging.DEBUG):
+            self.logger.debug(
+                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+            )
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
             if custom_backoff_time:

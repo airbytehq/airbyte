@@ -2,13 +2,15 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 from requests.auth import AuthBase
 
 
@@ -21,7 +23,7 @@ class HttpMethod(Enum):
     POST = "POST"
 
 
-class Requester(ABC):
+class Requester(RequestOptionsProvider, JsonSchemaMixin):
     @abstractmethod
     def get_authenticator(self) -> AuthBase:
         """
@@ -54,9 +56,10 @@ class Requester(ABC):
         """
 
     @abstractmethod
-    def request_params(
+    def get_request_params(
         self,
-        stream_state: StreamState,
+        *,
+        stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
@@ -79,17 +82,22 @@ class Requester(ABC):
         """
 
     @abstractmethod
-    def request_headers(
-        self, stream_state: StreamSlice, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         """
         Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
         """
 
     @abstractmethod
-    def request_body_data(
+    def get_request_body_data(
         self,
-        stream_state: StreamState,
+        *,
+        stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
@@ -104,9 +112,10 @@ class Requester(ABC):
         """
 
     @abstractmethod
-    def request_body_json(
+    def get_request_body_json(
         self,
-        stream_state: StreamState,
+        *,
+        stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
@@ -119,7 +128,8 @@ class Requester(ABC):
     @abstractmethod
     def request_kwargs(
         self,
-        stream_state: StreamState,
+        *,
+        stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:

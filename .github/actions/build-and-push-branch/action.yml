@@ -29,5 +29,5 @@ runs:
       run: |
         GIT_REVISION=$(git rev-parse HEAD)
         [ [ -z "$GIT_REVISION" ] ] && echo "Couldn't get the git revision..." && exit 1
-        VERSION=${{ steps.build.outputs.branch_version_tag }} GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose-cloud.build.yaml push
+        VERSION=${{ steps.build.outputs.branch_version_tag }} GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose-cloud.buildx.yaml push
       shell: bash
