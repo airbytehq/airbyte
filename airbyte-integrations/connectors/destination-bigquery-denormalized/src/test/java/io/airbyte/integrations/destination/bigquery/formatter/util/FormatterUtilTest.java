@@ -20,7 +20,7 @@ class FormatterUtilTest {
   void isAirbyteArray_typeIsNull() throws JsonProcessingException {
     final JsonNode arrayNode = mapper.readTree(
         """
-            ["one", "two"]""");
+        ["one", "two"]""");
 
     final boolean result = FormatterUtil.isAirbyteArray(arrayNode);
     assertFalse(result);
@@ -28,8 +28,8 @@ class FormatterUtilTest {
 
   @Test
   void isAirbyteArray_typeFieldIsArray() throws JsonProcessingException {
-    final JsonNode arrayNode = mapper.readTree(""" 
-        {"type":["array"],"items":{"type":"integer"}}""");
+    final JsonNode arrayNode = mapper.readTree("""
+                                               {"type":["array"],"items":{"type":"integer"}}""");
 
     boolean result = FormatterUtil.isAirbyteArray(arrayNode);
     assertTrue(result);
@@ -37,16 +37,16 @@ class FormatterUtilTest {
 
   @Test
   void isAirbyteArray_typeFieldIsNotArray() throws JsonProcessingException {
-    final JsonNode objectNode = mapper.readTree(""" 
-        {"type":"object"}""");
+    final JsonNode objectNode = mapper.readTree("""
+                                                {"type":"object"}""");
     final boolean result = FormatterUtil.isAirbyteArray(objectNode);
     assertFalse(result);
   }
 
   @Test
   void isAirbyteArray_textIsNotArray() throws JsonProcessingException {
-    final JsonNode arrayNode = mapper.readTree(""" 
-        {"type":["notArrayText"]}""");
+    final JsonNode arrayNode = mapper.readTree("""
+                                               {"type":["notArrayText"]}""");
     final boolean result = FormatterUtil.isAirbyteArray(arrayNode);
     assertFalse(result);
   }

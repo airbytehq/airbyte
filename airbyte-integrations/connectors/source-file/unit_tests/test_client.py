@@ -17,6 +17,7 @@ def wrong_format_client():
         format="wrong",
     )
 
+
 @pytest.fixture
 def csv_format_client():
     return Client(
@@ -25,6 +26,7 @@ def csv_format_client():
         provider={"provider": {"storage": "HTTPS", "reader_impl": "gcsfs", "user_agent": False}},
         format="csv",
     )
+
 
 @pytest.mark.parametrize(
     "storage, expected_scheme",
