@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.spec;
 
+import io.airbyte.commons.temporal.scheduling.SpecWorkflow;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
