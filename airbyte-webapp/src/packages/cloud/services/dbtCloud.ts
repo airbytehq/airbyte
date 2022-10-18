@@ -9,6 +9,7 @@
 // - custom domains aren't yet supported
 
 import isEmpty from "lodash/isEmpty";
+import { useMutation } from "react-query";
 
 import { OperatorType, WebBackendConnectionRead, OperationRead } from "core/request/AirbyteClient";
 import { useWebConnectionService } from "hooks/services/useConnectionHook";
@@ -49,23 +50,19 @@ const isDbtCloudJob = (operation: OperationRead): boolean =>
 
 export const useSubmitDbtCloudIntegrationConfig = () => {
   const { workspaceId } = useCurrentWorkspace();
-  const { mutate: updateWorkspace } = useUpdateWorkspace();
+  const { mutateAsync: updateWorkspace } = useUpdateWorkspace();
 
-  return (authToken: string, singleTenantUrl?: string) => {
-    const domain = singleTenantUrl || dbtCloudDomain;
-    const validationUrl = `${domain}/api/v2/accounts`;
-
-    updateWorkspace({
+  return useMutation(async (authToken: string) => {
+    await updateWorkspace({
       workspaceId,
       webhookConfigs: [
         {
           name: webhookConfigName,
           authToken,
-          validationUrl,
         },
       ],
     });
-  };
+  });
 };
 
 export const useDbtIntegration = (connection: WebBackendConnectionRead) => {

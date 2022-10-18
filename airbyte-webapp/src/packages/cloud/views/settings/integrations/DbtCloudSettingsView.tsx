@@ -1,38 +1,25 @@
-import { Field, FieldInputProps, FieldProps, Form, Formik } from "formik";
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { LabeledInput } from "components/LabeledInput";
 import { Button } from "components/ui/Button";
-import { CollapsablePanel } from "components/ui/CollapsablePanel";
 
 import { useSubmitDbtCloudIntegrationConfig } from "packages/cloud/services/dbtCloud";
 import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
 import styles from "./DbtCloudSettingsView.module.scss";
 
-const singleTenantUrlInput = (fieldProps: FieldInputProps<string>) => (
-  <LabeledInput
-    {...fieldProps}
-    className={styles.singleTenantUrlInput}
-    label={<FormattedMessage id="settings.integrationSettings.dbtCloudSettings.form.singleTenantUrl" />}
-    type="text"
-  />
-);
-
 export const DbtCloudSettingsView: React.FC = () => {
-  const submitDbtCloudIntegrationConfig = useSubmitDbtCloudIntegrationConfig();
+  const { mutate: submitDbtCloudIntegrationConfig, isLoading } = useSubmitDbtCloudIntegrationConfig();
   return (
     <SettingsCard title={<FormattedMessage id="settings.integrationSettings.dbtCloudSettings" />}>
       <Content>
         <Formik
           initialValues={{
             serviceToken: "",
-            singleTenantUrl: undefined,
           }}
-          onSubmit={({ serviceToken, singleTenantUrl }) =>
-            submitDbtCloudIntegrationConfig(serviceToken, singleTenantUrl)
-          }
+          onSubmit={({ serviceToken }) => submitDbtCloudIntegrationConfig(serviceToken)}
         >
           <Form>
             <Field name="serviceToken">
@@ -44,23 +31,8 @@ export const DbtCloudSettingsView: React.FC = () => {
                 />
               )}
             </Field>
-            <Field name="singleTenantUrl">
-              {({ field }: FieldProps<string>) => (
-                <CollapsablePanel
-                  className={styles.advancedOptions}
-                  closedClassName={styles.advancedOptionsClosed}
-                  openClassName={styles.advancedOptionsOpen}
-                  drawer={singleTenantUrlInput(field)}
-                >
-                  <FormattedMessage id="settings.integrationSettings.dbtCloudSettings.form.advancedOptions" />
-                </CollapsablePanel>
-              )}
-            </Field>
             <div className={styles.controlGroup}>
-              <Button variant="secondary" type="button" className={styles.button}>
-                <FormattedMessage id="settings.integrationSettings.dbtCloudSettings.form.testConnection" />
-              </Button>
-              <Button variant="primary" type="submit" className={styles.button}>
+              <Button variant="primary" type="submit" className={styles.button} isLoading={isLoading}>
                 <FormattedMessage id="settings.integrationSettings.dbtCloudSettings.form.submit" />
               </Button>
             </div>

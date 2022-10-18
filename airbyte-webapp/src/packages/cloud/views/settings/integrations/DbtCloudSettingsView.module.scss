@@ -3,31 +3,6 @@
 
 $item-spacing: 25px;
 
-.advancedOptions {
-  margin-top: $item-spacing;
-}
-
-.advancedOptionsClosed {
-  color: colors.$grey;
-}
-
-.advancedOptionsOpen {
-  color: colors.$blue;
-}
-
-.singleTenantUrlInput {
-  margin-top: 1em;
-
-  // HACK: this left margin approximately matches the width of the containing
-  // CollapsablePanel component's caret button
-  margin-left: 1.6em;
-
-  // this overrides the LabeledInput's width: 100%, which causes the input to
-  // overflow into the parent div's padding (by exactly the left margin above).
-  // With width: auto, the right-hand edges of the two inputs line up nicely.
-  width: auto;
-}
-
 .controlGroup {
   display: flex;
   justify-content: flex-end;
