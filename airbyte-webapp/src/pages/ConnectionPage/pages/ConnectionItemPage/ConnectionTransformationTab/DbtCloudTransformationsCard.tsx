@@ -36,89 +36,75 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   //   2.2) AND the connection has saved dbt jobs
   //        THEN show the "no jobs" card body and the "+ Add transformation" button
 
-  const { hasDbtIntegration, saveJobs, dbtCloudJobs, addNewJob, setAddNewJobFn } = useDbtIntegration(connection);
-
-  return (
-    <Card
-      title={
-        <span className={styles.jobListTitle}>
-          Transformations
-          <Button
-            variant="secondary"
-            disabled={!!dbtCloudJobs.find((job: DbtCloudJob) => !job.operationId)}
-            onClick={addNewJob}
-            icon={<FontAwesomeIcon icon={faPlus} />}
-          >
-            Add transformation
-          </Button>
-        </span>
-      }
-    >
-      {hasDbtIntegration ? (
-        <DbtJobsList
-          jobs={dbtCloudJobs}
-          className={styles.jobListContainer}
-          saveJobs={saveJobs}
-          setAddNewJobFn={setAddNewJobFn}
-        />
-      ) : (
-        <NoDbtIntegration className={styles.jobListContainer} />
-      )}
-    </Card>
-  );
-};
-
-const DbtJobsList = ({
-  className,
-  jobs,
-  saveJobs,
-  setAddNewJobFn,
-}: {
-  className?: string;
-  jobs: DbtCloudJob[];
-  saveJobs: (jobs: DbtCloudJob[]) => void;
-  setAddNewJobFn: (addNewJobFn: (job: DbtCloudJob) => void) => void;
-}) => {
+  const { hasDbtIntegration, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
   const onSubmit = ({ jobs }: { jobs: DbtCloudJob[] }) => {
     saveJobs(jobs);
   };
 
   return (
-    <div className={classNames(className, styles.emptyListContent)}>
-      <p className={styles.contextExplanation}>After an Airbyte sync job has completed, the following jobs will run</p>
-      {jobs.length ? (
-        <Formik // TODO extract to parent component, see if that helps with input focus issues
-          onSubmit={onSubmit}
-          initialValues={{ jobs }}
-          render={({ values }) => (
-            <Form className={styles.jobListForm}>
-              <FieldArray
-                name="jobs"
-                render={({ remove, push }) => {
-                  setAddNewJobFn(push);
-                  return values.jobs.map((t, i) => (
-                    <JobsListItem key={jobKey(t, i)} jobIndex={i} removeJob={() => remove(i)} />
-                  ));
-                }}
-              />
-              <div className={styles.jobListButtonGroup}>
-                <Button className={styles.jobListButton} type="reset" variant="secondary">
-                  Cancel
-                </Button>
-                <Button className={styles.jobListButton} type="submit" variant="primary">
-                  Save changes
-                </Button>
-              </div>
-            </Form>
-          )}
-        />
-      ) : (
-        <>
-          <img src="/images/octavia/worker.png" alt="An octopus wearing a hard hat, tools at the ready" />
-          No transformations
-        </>
-      )}
-    </div>
+    <Formik // TODO extract to parent component, see if that helps with input focus issues
+      onSubmit={onSubmit}
+      initialValues={{ jobs: dbtCloudJobs }}
+      render={({ values }) => {
+        return (
+          <Form className={styles.jobListForm}>
+            <FieldArray
+              name="jobs"
+              render={({ remove, push }) => {
+                return (
+                  <Card
+                    title={
+                      <span className={styles.jobListTitle}>
+                        Transformations
+                        <Button
+                          variant="secondary"
+                          disabled={!!values.jobs.find((job: DbtCloudJob) => !job.operationId)}
+                          onClick={() => push({ account: "", job: "" })}
+                          icon={<FontAwesomeIcon icon={faPlus} />}
+                        >
+                          Add transformation
+                        </Button>
+                      </span>
+                    }
+                  >
+                    {hasDbtIntegration ? (
+                      <div className={classNames(styles.jobListContainer, styles.emptyListContent)}>
+                        <p className={styles.contextExplanation}>
+                          After an Airbyte sync job has completed, the following jobs will run
+                        </p>
+                        {values.jobs.length ? (
+                          values.jobs.map((t, i) => (
+                            <JobsListItem key={jobKey(t, i)} jobIndex={i} removeJob={() => remove(i)} />
+                          ))
+                        ) : (
+                          <>
+                            <img
+                              src="/images/octavia/worker.png"
+                              alt="An octopus wearing a hard hat, tools at the ready"
+                            />
+                            No transformations
+                          </>
+                        )}
+                        <div className={styles.jobListButtonGroup}>
+                          <Button className={styles.jobListButton} type="reset" variant="secondary">
+                            Cancel
+                          </Button>
+                          <Button className={styles.jobListButton} type="submit" variant="primary">
+                            Save changes
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <NoDbtIntegration className={styles.jobListContainer} />
+                    )}
+                  </Card>
+                );
+              }}
+            />
+          </Form>
+        );
+      }}
+    />
   );
 };
 

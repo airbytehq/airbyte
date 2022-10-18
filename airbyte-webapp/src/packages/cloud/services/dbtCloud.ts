@@ -20,7 +20,6 @@ export interface DbtCloudJob {
   job: string;
   operationId?: string;
 }
-const emptyDbtCloudJob = { account: "", job: "" };
 const dbtCloudDomain = "https://cloud.getdbt.com";
 const webhookConfigName = "dbt cloud";
 const executionBody = `{"cause": "airbyte"}`;
@@ -83,20 +82,6 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
   );
   const otherOperations = [...(connection.operations?.filter((operation) => !isDbtCloudJob(operation)) || [])];
 
-  // TODO this is a godawful hack: the "add new jobs" button should be defined
-  // inside the Formik FieldArray so it can directly use the array utilities
-  // from the render function.
-  let addNewJobFn: () => void = () => {
-    console.log("original fn implementation ha ha ho ho hee hee");
-  };
-  const addNewJob = () => addNewJobFn();
-  const setAddNewJobFn = (addJobFn: (job: DbtCloudJob) => void) => {
-    addNewJobFn = () => {
-      console.log("the new job! the homie");
-      addJobFn(emptyDbtCloudJob);
-    };
-  };
-
   const saveJobs = (jobs: DbtCloudJob[]) => {
     // TODO dynamically use the workspace's configured dbt cloud domain when it gets returned by backend
     const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}/run`;
@@ -127,7 +112,5 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
     hasDbtIntegration,
     dbtCloudJobs,
     saveJobs,
-    addNewJob,
-    setAddNewJobFn,
   };
 };
