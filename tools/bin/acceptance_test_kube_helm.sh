@@ -9,20 +9,22 @@ assert_root
 
 # Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
 # See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
-if [ -n "$CI" ]; then
-  echo "Loading images into KIND..."
-  kind load docker-image airbyte/server:dev --name helm-testing &
-  kind load docker-image airbyte/webapp:dev --name helm-testing &
-  kind load docker-image airbyte/worker:dev --name helm-testing &
-  kind load docker-image airbyte/db:dev --name helm-testing &
-  kind load docker-image airbyte/container-orchestrator:dev --name helm-testing &
-  kind load docker-image airbyte/bootloader:dev --name helm-testing &
-  kind load docker-image airbyte/cron:dev --name helm-testing &
-  wait
-fi
+# if [ -n "$CI" ]; then
+#   echo "Loading images into KIND..."
+#   kind load docker-image airbyte/server:dev --name helm-testing &
+#   kind load docker-image airbyte/webapp:dev --name helm-testing &
+#   kind load docker-image airbyte/worker:dev --name helm-testing &
+#   kind load docker-image airbyte/db:dev --name helm-testing &
+#   kind load docker-image airbyte/container-orchestrator:dev --name helm-testing &
+#   kind load docker-image airbyte/bootloader:dev --name helm-testing &
+#   kind load docker-image airbyte/cron:dev --name helm-testing &
+#   wait
+# fi
 
-echo "Deploying filebeat to collect logs"
-kubectl apply -f elastic/filebeat-kubernetes.yaml
+eval $(minikube docker-env)
+
+# echo "Deploying filebeat to collect logs"
+# kubectl apply -f elastic/filebeat-kubernetes.yaml
 
 
 echo "Replacing default Chart.yaml and values.yaml with a test one"
@@ -71,6 +73,7 @@ if [ -n "$CI" ]; then
 #  trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
 fi
 
+MINIKUBE_IP=$(minikube ip)
 kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --port 8001 --target-port 8001 --name exposed-server-svc --type NodePort --overrides '{ "apiVersion": "v1","spec":{"ports": [{"port":8001,"protocol":"TCP","targetPort":8001,"nodePort":8001}]}}'
 
 # kubectl port-forward svc/airbyte-server-svc 8001:8001 &
@@ -97,7 +100,7 @@ if [ -n "$CI" ]; then
 fi
 
 echo "Running e2e tests via gradle..."
-KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
+KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true TEST_API_HOST=${MINIKUBE_IP} ./gradlew :airbyte-tests:acceptanceTests --scan
 
 echo "Reverting changes back"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.test

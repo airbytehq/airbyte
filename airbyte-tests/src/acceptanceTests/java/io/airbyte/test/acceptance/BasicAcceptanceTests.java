@@ -160,12 +160,12 @@ class BasicAcceptanceTests {
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
-            .setHost("localhost")
+            .setHost(getApiServerHost())
             .setPort(8001)
             .setBasePath("/api"));
     webBackendApi = new WebBackendApi(
         new ApiClient().setScheme("http")
-            .setHost("localhost")
+            .setHost(getApiServerHost())
             .setPort(8001)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
@@ -181,9 +181,16 @@ class BasicAcceptanceTests {
             .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
     LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
+    LOGGER.info("server endpoint: {}", getApiServerHost());
 
     testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId);
     sourcePsql = testHarness.getSourcePsql();
+  }
+
+  private static String getApiServerHost() {
+    final var host = System.getenv(TEST_API_HOST);
+
+    return (host == null) ? "localhost" : host;
   }
 
   @AfterAll

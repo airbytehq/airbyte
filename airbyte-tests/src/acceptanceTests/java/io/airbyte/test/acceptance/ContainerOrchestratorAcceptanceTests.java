@@ -70,7 +70,7 @@ class ContainerOrchestratorAcceptanceTests {
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
-            .setHost("localhost")
+            .setHost(getApiServerHost())
             .setPort(8001)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
@@ -90,6 +90,13 @@ class ContainerOrchestratorAcceptanceTests {
     testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId);
     kubernetesClient = testHarness.getKubernetesClient();
   }
+
+  private static String getApiServerHost() {
+    final var host = System.getenv(TEST_API_HOST);
+
+    return (host == null) ? "localhost" : host;
+  }
+
 
   @AfterAll
   static void end() {
