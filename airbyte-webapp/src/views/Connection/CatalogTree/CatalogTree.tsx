@@ -7,8 +7,8 @@ import { BatchEditProvider } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
 
+import { CatalogTreeBody } from "./CatalogTreeBody";
 import { CatalogTreeHeader } from "./CatalogTreeHeader";
-import { CatalogTreeRows } from "./CatalogTreeRows";
 import { CatalogTreeSearch } from "./CatalogTreeSearch";
 import { CatalogTreeSubheader } from "./CatalogTreeSubheader";
 import { BulkHeader } from "./components/BulkHeader";
@@ -56,7 +56,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
         <CatalogTreeHeader />
         <CatalogTreeSubheader />
         <BulkHeader />
-        <CatalogTreeRows streams={filteredStreams} onStreamChanged={onSingleStreamChanged} />
+        <CatalogTreeBody streams={filteredStreams} onStreamChanged={onSingleStreamChanged} />
       </LoadingBackdrop>
     </BatchEditProvider>
   );

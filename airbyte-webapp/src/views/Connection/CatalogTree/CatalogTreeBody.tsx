@@ -7,14 +7,14 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import { ConnectionFormValues, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import { CatalogSection } from "./CatalogSection";
-import styles from "./CatalogTreeRows.module.scss";
+import styles from "./CatalogTreeBody.module.scss";
 
-interface CatalogTreeRowsProps {
+interface CatalogTreeBodyProps {
   streams: SyncSchemaStream[];
   onStreamChanged: (stream: SyncSchemaStream) => void;
 }
 
-export const CatalogTreeRows: React.FC<CatalogTreeRowsProps> = ({ streams, onStreamChanged }) => {
+export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, onStreamChanged }) => {
   const { mode } = useConnectionFormService();
 
   const onUpdateStream = useCallback(
