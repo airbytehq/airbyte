@@ -1,36 +1,86 @@
 {
   "streams": [
     {
-      "name": "TODO fix this file",
-      "supported_sync_modes": ["full_refresh", "incremental"],
+      "name": "ohlcv_historical_data",
+      "supported_sync_modes": ["full_refresh"],
       "source_defined_cursor": true,
-      "default_cursor_field": "column1",
+      "default_cursor_field": "time_start",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "column1": {
-            "type": "string"
+          "time_period_start": {
+            "type": ["null", "string"],
+            "format": "date-time"
           },
-          "column2": {
-            "type": "number"
+          "time_period_end": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "time_open": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "time_close": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "price_open": {
+            "type": ["null", "number"]
+          },
+          "price_high": {
+            "type": ["null", "number"]
+          },
+          "price_low": {
+            "type": ["null", "number"]
+          },
+          "price_close": {
+            "type": ["null", "number"]
+          },
+          "volume_traded": {
+            "type": ["null", "number"]
+          },
+          "trades_count": {
+            "type": ["null", "integer"]
           }
         }
       }
     },
     {
-      "name": "table1",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": false,
+      "name": "trades_historical_data",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "time_coinapi",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "column1": {
-            "type": "string"
+          "symbol_id": {
+            "type": ["null", "string"]
           },
-          "column2": {
-            "type": "number"
+          "time_period_end": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "time_exchange": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "time_coinapi": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "uuid": {
+            "type": ["null", "string"]
+          },
+          "price": {
+            "type": ["null", "number"]
+          },
+          "size": {
+            "type": ["null", "number"]
+          },
+          "taker_side": {
+            "type": ["null", "string"]
           }
         }
       }
