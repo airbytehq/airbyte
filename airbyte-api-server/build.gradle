@@ -23,7 +23,6 @@ dependencies {
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-jackson-databind")
     implementation("io.micronaut.jaxrs:micronaut-jaxrs-server")
-    implementation("jakarta.annotation:jakarta.annotation-api")
     runtimeOnly("ch.qos.logback:logback-classic")
     testAnnotationProcessor("io.micronaut.jaxrs:micronaut-jaxrs-processor")
     implementation("io.micronaut:micronaut-validation")
@@ -40,13 +39,8 @@ dependencies {
     implementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.1'
 }
 
-
 application {
     mainClass.set("io.airbyte.api.server.Application")
-}
-java {
-    sourceCompatibility = JavaVersion.toVersion("11")
-    targetCompatibility = JavaVersion.toVersion("11")
 }
 
 graalvmNative.toolchainDetection = false
