@@ -161,11 +161,8 @@ class AdvancedAcceptanceTests {
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("max_messages", 100)
-            .put("mock_catalog", Jsons.jsonNode(ImmutableMap.builder()
-                .put("type", "SINGLE_STREAM")
-                .put("stream_name", "data")
-                .put("stream_schema", "{ \"type\": \"object\", \"properties\": { \"column1\": { \"type\": \"string\" } } }").build()))
+            .put(TYPE, "EXCEPTION_AFTER_N")
+            .put("throw_after_n_records", 100)
             .build()));
 
     final DestinationRead destination = testHarness.createDestination(
@@ -255,11 +252,8 @@ class AdvancedAcceptanceTests {
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
         Jsons.jsonNode(ImmutableMap.builder()
-            .put("max_messages", 5000)
-            .put("mock_catalog", Jsons.jsonNode(ImmutableMap.builder()
-                .put("type", "SINGLE_STREAM")
-                .put("stream_name", "data")
-                .put("stream_schema", "{ \"type\": \"object\", \"properties\": { \"column1\": { \"type\": \"string\" } } }").build()))
+            .put(TYPE, "INFINITE_FEED")
+            .put("max_records", 5000)
             .build()));
 
     final DestinationRead destination = testHarness.createDestination(
