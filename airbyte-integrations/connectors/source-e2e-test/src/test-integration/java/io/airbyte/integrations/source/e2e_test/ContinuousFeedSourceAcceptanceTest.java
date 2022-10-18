@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.e2e_test.ContinuousFeedConfig.MockCatalogType;
-import io.airbyte.integrations.source.e2e_test.TestingSources.TestingSourceType;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -81,7 +80,7 @@ public class ContinuousFeedSourceAcceptanceTest extends SourceAcceptanceTest {
             Jsons.serialize(SCHEMA_2)))
         .build());
     this.config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("type", TestingSourceType.CONTINUOUS_FEED)
+        .put("type", "CONTINUOUS_FEED")
         .put("seed", 1024)
         .put("message_interval_ms", 0)
         .put("max_messages", MAX_MESSAGES)

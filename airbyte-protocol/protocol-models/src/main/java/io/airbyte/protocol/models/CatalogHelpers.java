@@ -50,7 +50,7 @@ public class CatalogHelpers {
   }
 
   public static AirbyteStream createAirbyteStream(final String streamName, final String namespace, final List<Field> fields) {
-    return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields));
+    return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields)).withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
   }
 
   public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String streamName, final String namespace, final Field... fields) {
