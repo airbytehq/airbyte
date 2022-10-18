@@ -4,6 +4,7 @@
 
 import json
 import logging
+from copy import deepcopy
 from unittest.mock import PropertyMock
 
 import jsonschema
@@ -91,7 +92,7 @@ def test_nan_to_null(absolute_path, test_files):
     )
 
     source = SourceFile()
-    records = source.read(logger=logger, config=config, catalog=catalog)
+    records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
     records = [r.record.data for r in records]
     assert records == [
         {"col1": "key1", "col2": 1.11, "col3": None},
@@ -101,7 +102,7 @@ def test_nan_to_null(absolute_path, test_files):
     ]
 
     config.update({"format": "yaml", "url": f"{absolute_path}/{test_files}/formats/yaml/demo.yaml"})
-    records = source.read(logger=logger, config=config, catalog=catalog)
+    records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
     records = [r.record.data for r in records]
     assert records == []
 
@@ -145,3 +146,9 @@ def test_discover(source, config, client):
 
     with pytest.raises(Exception):
         source.discover(logger=logger, config=config)
+
+
+def test_check_wrong_reader_options(source, config):
+    config["reader_options"] = '{encoding":"utf_16"}'
+    with pytest.raises(Exception):
+        source.check(logger=logger, config=config)
