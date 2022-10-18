@@ -172,6 +172,7 @@ def test_octavia_not_initialized(mocker):
 )
 def test_get_api_client(mocker, api_http_headers: Optional[List[str]]):
     mocker.patch.object(entrypoint, "airbyte_api_client")
+    entrypoint.airbyte_api_client.Configuration.return_value.get_basic_auth_token.return_value = "my_basic_auth_token"
     mocker.patch.object(entrypoint, "check_api_health")
     mocker.patch.object(entrypoint, "set_api_headers_on_api_client")
     api_client = entrypoint.get_api_client("test-url", "test-username", "test-password", "test-user-agent", api_http_headers)
