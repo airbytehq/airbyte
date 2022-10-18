@@ -6,6 +6,7 @@
 import logging
 import os
 from abc import ABC, abstractmethod
+from contextlib import suppress
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
@@ -13,8 +14,8 @@ import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.utils.helpers import get_instance_number
 from requests.auth import AuthBase
+from requests_cache.session import CachedSession
 
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
@@ -59,8 +60,19 @@ class HttpStream(Stream, ABC):
         """
         return False
 
-    def request_cache(self):
+    def request_cache(self) -> CachedSession:
+        self.clear_cache()
         return requests_cache.CachedSession(self.cache_filename)
+
+    def clear_cache(self):
+        """
+        remove cache file only once
+        """
+        STREAM_CACHE_FILES = globals().setdefault("STREAM_CACHE_FILES", set())
+        if self.cache_filename not in STREAM_CACHE_FILES:
+            with suppress(FileNotFoundError):
+                os.remove(self.cache_filename)
+            STREAM_CACHE_FILES.add(self.cache_filename)
 
     @property
     @abstractmethod
