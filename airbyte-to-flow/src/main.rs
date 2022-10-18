@@ -12,7 +12,17 @@ use apis::FlowCaptureOperation;
 use connector_runner::run_airbyte_source_connector;
 
 #[derive(clap::Parser, Debug)]
-#[clap(about = "Command to start an Airbyte to Flow protocol adaptor")]
+/// airbyte-to-flow sits in-between an airbyte connector and Flow
+/// as an adaptor that reads from connector stdout and writes to connector stdin
+/// while on the other hand connects to Flow using a TCP socket
+///
+/// airbyte-to-flow supports patching of spec schema and document schemas using
+/// certain files. Patching is done using RFC7396 JSON Merge Patch and the files
+/// are:
+/// spec.patch.json -> for patching spec response of airbyte connector
+/// oauth2.patch.json -> for patching oauth2 response of airbyte connector
+/// documentation_url.patch.json -> for patching documentation url of airbyte connector
+/// streams/{stream-name}.patch.json -> for patching document schema of stream {stream-name}
 pub struct Args {
     /// The command used to run the underlying airbyte connector
     #[clap(long)]

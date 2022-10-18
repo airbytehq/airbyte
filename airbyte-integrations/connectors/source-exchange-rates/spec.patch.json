@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "start_date": {
+      "description": "The date in the format YYYY-MM-DD. Data will begin from this date."
+    },
+    "access_key": {
+      "description": "Your API Access Key. See this article to generate one https://exchangeratesapi.io/documentation/. The key is case sensitive."
+    },
+    "base": {
+      "description": "ISO reference currency. See the documentation https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html."
+    }
+  }
+}

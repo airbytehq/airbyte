@@ -25,15 +25,23 @@ use validator::Validate;
 
 use futures::{stream, StreamExt, TryStreamExt};
 use serde_json::value::RawValue;
+use serde_json as sj;
 use std::fs::File;
 use std::io::Write;
 use tempfile::{Builder, TempDir};
+
+use json_patch::merge;
 
 use super::fix_document_schema::fix_document_schema_keys;
 
 const CONFIG_FILE_NAME: &str = "config.json";
 const CATALOG_FILE_NAME: &str = "catalog.json";
 const STATE_FILE_NAME: &str = "state.json";
+
+const SPEC_PATCH_FILE_NAME: &str = "spec.patch.json";
+const OAUTH2_PATCH_FILE_NAME: &str = "spec.patch.json";
+const DOC_URL_PATCH_FILE_NAME: &str = "documentation_url.patch.json";
+const STREAM_PATCH_DIR_NAME: &str = "streams";
 
 pub struct AirbyteSourceInterceptor {
     validate_request: Arc<Mutex<Option<ValidateRequest>>>,
@@ -64,15 +72,33 @@ impl AirbyteSourceInterceptor {
         Box::pin(stream::once(async {
             let message = get_airbyte_response(in_stream, |m| m.spec.is_some(), "spec").await?;
             let spec = message.spec.unwrap();
-            let auth_spec = spec.auth_specification.map(|s| serde_json::from_str(s.get())).transpose()?;
+            let mut endpoint_spec = sj::from_str::<sj::Value>(spec.connection_specification.get())?;
+            let mut auth_spec = spec.auth_specification.map(|aspec| sj::from_str::<sj::Value>(aspec.get())).transpose()?;
+
+            let spec_patch = std::fs::read_to_string(SPEC_PATCH_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+            let oauth2_patch = std::fs::read_to_string(OAUTH2_PATCH_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+            let documentation_url_patch = std::fs::read_to_string(DOC_URL_PATCH_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+
+            if let Some(p) = spec_patch {
+                merge(&mut endpoint_spec, &p);
+            }
+
+            if let (Some(p), Some(spec)) = (oauth2_patch.as_ref(), auth_spec.as_mut()) {
+                merge(spec, p);
+            }
+
+            let documentation_url = match documentation_url_patch {
+                Some(p) => p.get("documentation_url").map(|v| v.as_str()).flatten().map(|s| s.to_string()),
+                None => spec.documentation_url
+            };
 
             encode_message(&SpecResponse {
-                endpoint_spec_schema_json: spec.connection_specification.to_string(),
+                endpoint_spec_schema_json: endpoint_spec.to_string(),
                 resource_spec_schema_json: serde_json::to_string_pretty(&create_root_schema::<
                     ResourceSpec,
                 >())?,
-                oauth2_spec: auth_spec,
-                documentation_url: spec.documentation_url.unwrap_or_default(),
+                oauth2_spec: auth_spec.map(|spec| serde_json::from_value(spec)).transpose()?,
+                documentation_url: documentation_url.unwrap_or_default(),
             })
         }))
     }
