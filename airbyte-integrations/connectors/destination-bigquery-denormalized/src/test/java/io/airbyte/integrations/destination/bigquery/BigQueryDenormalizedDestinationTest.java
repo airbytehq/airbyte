@@ -17,7 +17,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.internal.verification.VerificationModeFactory.atLeastOnce;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +31,6 @@ import com.google.cloud.bigquery.TableDefinition;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsBigQueryDenormalizedRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.LegacyArrayFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
@@ -88,14 +86,6 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   @Test
-  void getTargetTableName() {
-    final String streamName = "stream name";
-    final String expectedResult = "stream_name";
-    String result = bqdd.getTargetTableName(streamName);
-    assertEquals(expectedResult, result);
-  }
-
-  @Test
   void getFormatterMap() {
     final JsonNode jsonNodeSchema = getSchema();
     final Map<UploaderType, BigQueryRecordFormatter> formatterMap = bqdd.getFormatterMap(jsonNodeSchema);
@@ -109,21 +99,6 @@ class BigQueryDenormalizedDestinationTest {
   @Test
   void isDefaultAirbyteTmpTableSchema() {
     assertFalse(bqdd.isDefaultAirbyteTmpTableSchema());
-  }
-
-  @Test
-  void getAvroSchemaCreator() {
-    DefaultBigQueryRecordFormatter recordFormatterMock = mock(DefaultBigQueryRecordFormatter.class);
-    AirbyteStreamNameNamespacePair namespacePairMock = mock(AirbyteStreamNameNamespacePair.class);
-    when(recordFormatterMock.getJsonSchema()).thenReturn(mapper.createObjectNode());
-    when(namespacePairMock.getName()).thenReturn("name_test");
-    when(namespacePairMock.getNamespace()).thenReturn("name_space_test");
-
-    bqdd.getAvroSchemaCreator().apply(recordFormatterMock, namespacePairMock);
-
-    verify(recordFormatterMock, atLeastOnce()).getJsonSchema();
-    verify(namespacePairMock, atLeastOnce()).getName();
-    verify(namespacePairMock, atLeastOnce()).getNamespace();
   }
 
   @Test
