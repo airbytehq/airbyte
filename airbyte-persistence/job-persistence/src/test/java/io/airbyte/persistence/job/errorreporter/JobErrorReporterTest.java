@@ -499,4 +499,20 @@ class JobErrorReporterTest {
     Mockito.verifyNoMoreInteractions(jobErrorReportingClient);
   }
 
+  @Test
+  void testReportUnsupportedFailureType() {
+    final FailureReason failureReason = new FailureReason()
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, READ_COMMAND))
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.CONFIG_ERROR);
+
+    final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(JOB_ID, SOURCE_DOCKER_IMAGE);
+
+    jobErrorReporter.reportSpecJobFailure(failureReason, jobContext);
+
+    Mockito.verifyNoInteractions(jobErrorReportingClient);
+  }
+
 }
