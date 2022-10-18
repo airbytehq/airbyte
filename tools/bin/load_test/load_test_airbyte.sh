@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -o errexit
 set -o nounset
-
+set -x
 <<comment
 This script performs a load test against an existing Airbyte instance by calling the instance's API to create and sync new connections.
 It is intended to work with any Airbyte instance (local or remote, docker or kube, OSS or Cloud). It authenticates using a special auth header
@@ -10,12 +10,7 @@ which means the script will delete every connector and connection ID that it cre
 comment
 
 cd "$(dirname "$0")"
-. load_test_utils.sh
-
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-CLEAR='\033[0m'
+source load_test_utils.sh
 
 function showhelp {
   echo -e """Usage $(dirname $0)/load_test_airbyte [OPTIONS]
@@ -208,7 +203,6 @@ function createConnection {
     sed "
       s/replace_source_id/$sourceId/g ;
       s/replace_destination_id/$destinationId/g ;
-      s/replace_catalog_id/$sourceCatalogId/g ;
       s/replace_connection_name/load_test_connection_$1/g" connection_spec.json |
     tr -d '\n' |
     tr -d ' '
@@ -244,8 +238,8 @@ echo "Created Source with ID: ${sourceId}"
 createDestination
 echo "Created Destination with ID: ${destinationId}"
 
-discoverSource
-echo "Retrieved sourceCatalogId: ${sourceCatalogId}"
+# discoverSource
+# echo "Retrieved sourceCatalogId: ${sourceCatalogId}"
 
 createMultipleConnections
 

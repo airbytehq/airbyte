@@ -43,6 +43,5 @@
   },
   "name": "replace_connection_name",
   "operations": [],
-  "status": "active",
-  "sourceCatalogId": "replace_catalog_id"
+  "status": "active"
 }
