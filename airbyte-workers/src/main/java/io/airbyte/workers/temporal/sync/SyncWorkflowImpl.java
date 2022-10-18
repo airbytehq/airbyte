@@ -4,6 +4,13 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
@@ -14,12 +21,14 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.WebhookOperationSummary;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.temporal.workflow.Workflow;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -44,16 +53,21 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private PersistStateActivity persistActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
-
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WebhookOperationActivity webhookOperationActivity;
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
+
+    ApmTraceUtils
+        .addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId.toString(), JOB_ID_KEY, jobRunConfig.getJobId(), SOURCE_DOCKER_IMAGE_KEY,
+            sourceLauncherConfig.getDockerImage(),
+            DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
 
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
     StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
@@ -101,7 +115,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         } else if (standardSyncOperation.getOperatorType() == OperatorType.WEBHOOK) {
           LOGGER.info("running webhook operation");
           LOGGER.debug("webhook operation input: {}", standardSyncOperation);
-          boolean success = webhookOperationActivity
+          final boolean success = webhookOperationActivity
               .invokeWebhook(new OperatorWebhookInput()
                   .withExecutionUrl(standardSyncOperation.getOperatorWebhook().getExecutionUrl())
                   .withExecutionBody(standardSyncOperation.getOperatorWebhook().getExecutionBody())
