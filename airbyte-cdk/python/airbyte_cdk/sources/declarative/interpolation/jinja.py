@@ -5,9 +5,9 @@
 import ast
 from typing import Optional
 
+from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
-from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.types import Config
 from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
