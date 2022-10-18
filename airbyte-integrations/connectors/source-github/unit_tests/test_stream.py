@@ -200,9 +200,8 @@ def test_stream_organizations_read():
 
 
 @responses.activate
-def test_stream_teams_read(monkeypatch):
+def test_stream_teams_read():
     organization_args = {"organizations": ["org1", "org2"]}
-    monkeypatch.setattr(Teams, "use_cache", False)
     stream = Teams(**organization_args)
     responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
@@ -465,7 +464,7 @@ def test_stream_pull_request_commits():
 
 
 @responses.activate
-def test_stream_project_columns(monkeypatch):
+def test_stream_project_columns():
 
     repository_args_with_start_date = {
         "repositories": ["organization/repository"],
@@ -496,8 +495,6 @@ def test_stream_project_columns(monkeypatch):
 
     ProjectsResponsesAPI.register(data)
 
-    monkeypatch.setattr(Projects, "use_cache", False)
-    monkeypatch.setattr(ProjectColumns, "use_cache", False)
     stream = ProjectColumns(Projects(**repository_args_with_start_date), **repository_args_with_start_date)
 
     stream_state = {}
@@ -879,7 +876,7 @@ def test_stream_reviews_incremental_read():
 
 
 @responses.activate
-def test_stream_team_members_full_refresh(monkeypatch):
+def test_stream_team_members_full_refresh():
     organization_args = {"organizations": ["org1"]}
     repository_args = {"repositories": [], "page_size_for_large_streams": 100}
 
@@ -890,7 +887,6 @@ def test_stream_team_members_full_refresh(monkeypatch):
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/members", json=[{"login": "login2"}])
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/memberships/login2", json={"username": "login2"})
 
-    monkeypatch.setattr(Teams, "use_cache", False)
     stream = TeamMembers(parent=Teams(**organization_args), **repository_args)
     records = list(read_full_refresh(stream))
 
@@ -911,12 +907,9 @@ def test_stream_team_members_full_refresh(monkeypatch):
 
 
 @responses.activate
-def test_stream_commit_comment_reactions_incremental_read(monkeypatch):
+def test_stream_commit_comment_reactions_incremental_read():
 
     repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
-
-    monkeypatch.setattr(CommitCommentReactions, "use_cache", False)
-    monkeypatch.setattr(CommitComments, "use_cache", False)
     stream = CommitCommentReactions(**repository_args)
 
     responses.add(

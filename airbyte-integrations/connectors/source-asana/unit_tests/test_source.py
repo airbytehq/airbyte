@@ -4,7 +4,6 @@
 
 from airbyte_cdk.logger import AirbyteLogger
 from source_asana.source import SourceAsana
-from source_asana.streams import Workspaces
 
 logger = AirbyteLogger()
 
@@ -26,8 +25,7 @@ def test_check_connection_empty_config(config):
     assert error_msg
 
 
-def test_check_connection_exception(config, monkeypatch):
-    monkeypatch.setattr(Workspaces, "use_cache", False)
+def test_check_connection_exception(config):
     ok, error_msg = SourceAsana().check_connection(logger, config=config)
 
     assert not ok
