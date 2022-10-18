@@ -47,15 +47,6 @@ The Workable source connector supports the following [sync modes](https://docs.a
 * [Stages](https://workable.readme.io/reference/stages)
 * [Recruiters](https://workable.readme.io/reference/recruiters)
 
-## Data type map
-
-| Integration Type    | Airbyte Type |
-| :------------------ | :----------- |
-| `string`            | `string`     |
-| `integer`, `number` | `number`     |
-| `array`             | `array`      |
-| `object`            | `object`     |
-
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                           |
