@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0
+## 0.1.104
 
 - Replace caching method: VCR.py -> requests-cache with SQLite backend
 
