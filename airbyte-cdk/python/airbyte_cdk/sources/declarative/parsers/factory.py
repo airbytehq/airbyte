@@ -229,7 +229,7 @@ class DeclarativeComponentFactory:
                 options = kwargs.get(OPTIONS_STR, {})
                 try:
                     # enums can't accept options
-                    if issubclass(expected_type, enum.Enum) or self.isBuiltinTypes(definition):
+                    if issubclass(expected_type, enum.Enum) or self.is_primitive(definition):
                         return expected_type(definition)
                     else:
                         return expected_type(definition, options=options)
@@ -237,7 +237,7 @@ class DeclarativeComponentFactory:
                     raise Exception(f"failed to instantiate type {expected_type}. {e}")
         return definition
 
-    def isBuiltinTypes(self, obj):
+    def is_primitive(self, obj):
         return isinstance(obj, (int, float, bool))
 
     @staticmethod
