@@ -9,6 +9,10 @@ configurations {
     migrations.extendsFrom implementation
 }
 
+configurations.all {
+    exclude group: 'io.micronaut.flyway'
+}
+
 dependencies {
     api libs.hikaricp
     api libs.jooq.meta
