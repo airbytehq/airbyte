@@ -251,6 +251,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 ## Changelog
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.6   | 2022-10-19 | [18087](https://github.com/airbytehq/airbyte/pull/18087)   | Better error messaging for configuration errors (SSH configs, choosing an invalid cursor)                                                     |
 | 1.0.5   | 2022-10-17 | [18041](https://github.com/airbytehq/airbyte/pull/18041)   | Fixes bug introduced 2022-09-12 with SshTunnel, handles iterator exception properly                                                           |
 |         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238)   | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode     |
 | 1.0.4   | 2022-10-11 | [17815](https://github.com/airbytehq/airbyte/pull/17815)   | Expose setting server timezone for CDC syncs                                                                                                  |
