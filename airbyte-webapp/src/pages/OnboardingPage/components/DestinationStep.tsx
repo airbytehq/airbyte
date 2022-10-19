@@ -7,6 +7,7 @@ import { useGetDestinationDefinitionSpecificationAsync } from "services/connecto
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+import { ConnectorFormValues } from "views/Connector/ServiceForm";
 
 interface Props {
   onNextStep: () => void;
@@ -67,7 +68,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     setError(null);
     setDestinationDefinitionId(destinationDefinitionId);
   };
-  const onSubmitForm = async (values: { name: string; serviceType: string }) => {
+  const onSubmitForm = async (values: ConnectorFormValues) => {
     await onSubmitDestinationStep({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
@@ -87,7 +88,6 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
       errorMessage={errorMessage}
       selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
       isLoading={isLoading}
-      formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
     />
   );
 };

@@ -64,10 +64,6 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
         formType="source"
         connector={currentSource}
         availableServices={[sourceDefinition]}
-        formValues={{
-          ...currentSource,
-          serviceType: currentSource.sourceDefinitionId,
-        }}
         selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       />
       <DeleteBlock type="source" onDelete={onDelete} />

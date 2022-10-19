@@ -3,8 +3,6 @@ import { FormattedMessage } from "react-intl";
 
 import DeleteBlock from "components/DeleteBlock";
 
-import { ConnectionConfiguration } from "core/domain/connection";
-import { Connector } from "core/domain/connector";
 import { DestinationRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
@@ -12,6 +10,7 @@ import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDe
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { ConnectorFormValues } from "views/Connector/ServiceForm";
 
 import styles from "./DestinationSettings.module.scss";
 
@@ -33,11 +32,7 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
 
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM_SETTINGS);
 
-  const onSubmitForm = async (values: {
-    name: string;
-    serviceType: string;
-    connectionConfiguration?: ConnectionConfiguration;
-  }) => {
+  const onSubmitForm = async (values: ConnectorFormValues) => {
     await updateDestination({
       values,
       destinationId: currentDestination.destinationId,
@@ -60,10 +55,6 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
         onSubmit={onSubmitForm}
         formType="destination"
         availableServices={[destinationDefinition]}
-        formValues={{
-          ...currentDestination,
-          serviceType: Connector.id(destinationDefinition),
-        }}
         connector={currentDestination}
         selectedConnectorDefinitionSpecification={destinationSpecification}
         title={<FormattedMessage id="destination.destinationSettings" />}

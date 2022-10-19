@@ -8,7 +8,7 @@ import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefi
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ServiceFormValues } from "views/Connector/ServiceForm/types";
+import { ConnectorFormValues } from "views/Connector/ServiceForm/types";
 
 interface SourceFormProps {
   onSubmit: (values: {
@@ -47,7 +47,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
     setSourceDefinitionId(sourceDefinitionId);
   };
 
-  const onSubmitForm = (values: ServiceFormValues) => {
+  const onSubmitForm = (values: ConnectorFormValues) => {
     onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
@@ -67,7 +67,6 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
       fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
       errorMessage={errorMessage}
       isLoading={isLoading}
-      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined}
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />
