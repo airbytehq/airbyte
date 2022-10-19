@@ -166,6 +166,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Typeform](sources/typeform.md)                                                             | Alpha                | Yes                 |
 | [US Census](sources/us-census.md)                                                           | Alpha                | Yes                 |
 | [VictorOps](sources/victorops.md)                                                           | Alpha                | No                  |
+| [Waiteraid](sources/waiteraid.md)                                                           | Alpha                | Yes                 |
 | [Webflow](sources/webflow.md        )                                                       | Alpha                | Yes                 |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
 | [Wordpress](sources/wordpress.md)                                                           | Alpha                | No                  |
