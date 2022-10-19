@@ -64,7 +64,7 @@ def stream_schema_fixture():
 def stream_mapping_fixture(stream_schema):
     return {
         "my_stream": ConfiguredAirbyteStream(
-            stream=AirbyteStream(name="my_stream", json_schema=stream_schema),
+            stream=AirbyteStream(name="my_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.full_refresh]),
             sync_mode=SyncMode.full_refresh,
             destination_sync_mode=DestinationSyncMode.append,
         )
