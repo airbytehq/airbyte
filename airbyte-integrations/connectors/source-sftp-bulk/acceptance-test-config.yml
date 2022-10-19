@@ -1,9 +1,9 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-ftp:dev
+connector_image: airbyte/source-sftp-bulk:dev
 tests:
   spec:
-    - spec_path: "source_ftp/spec.json"
+    - spec_path: "source_sftp_bulk/spec.json"
       timeout_seconds: 60
   connection:
     - config_path: "integration_tests/valid_config.json"

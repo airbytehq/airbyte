@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from source_ftp import SourceFtp
+from source_sftp_bulk import SourceFtp
 
 source = SourceFtp()
 

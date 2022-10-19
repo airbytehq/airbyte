@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_ftp_singer'
+    moduleDirectory 'source_sftp_bulk'
 }

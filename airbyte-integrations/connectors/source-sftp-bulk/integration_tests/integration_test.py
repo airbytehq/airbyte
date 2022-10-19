@@ -13,7 +13,7 @@ from typing import Mapping
 
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type, Status
 
-from source_ftp import SourceFtp
+from source_sftp_bulk import SourceFtp
 
 pytest_plugins = ("source_acceptance_test.plugin",)
 

@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from source_ftp.client import SFTPClient
+from source_sftp_bulk.client import SFTPClient
 
 
 def test_get_files_matching_pattern_match():

@@ -20,8 +20,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_ftp",
-    description="Source implementation for Ftp.",
+    name="source_sftp_bulk",
+    description="Source implementation for SFTP Bulk.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
