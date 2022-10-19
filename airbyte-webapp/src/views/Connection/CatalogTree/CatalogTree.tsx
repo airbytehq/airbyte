@@ -1,59 +1,65 @@
-import { Field, FieldProps, setIn, useFormikContext } from "formik";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+
+import { LoadingBackdrop } from "components/ui/LoadingBackdrop";
 
 import { SyncSchemaStream } from "core/domain/catalog";
-import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
+import { BulkEditServiceProvider } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { ConnectionFormValues, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+import { naturalComparatorBy } from "utils/objects";
 
-import { CatalogSection } from "./CatalogSection";
+import { CatalogTreeBody } from "./CatalogTreeBody";
+import { CatalogTreeHeader } from "./CatalogTreeHeader";
+import { CatalogTreeSearch } from "./CatalogTreeSearch";
+import { CatalogTreeSubheader } from "./CatalogTreeSubheader";
+import { BulkHeader } from "./components/BulkHeader";
 
 interface CatalogTreeProps {
   streams: SyncSchemaStream[];
-  onChangeStream: (stream: SyncSchemaStream) => void;
+  onStreamsChanged: (streams: SyncSchemaStream[]) => void;
+  isLoading: boolean;
 }
 
-const CatalogTree: React.FC<CatalogTreeProps> = ({ streams, onChangeStream }) => {
+const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> = ({
+  streams,
+  onStreamsChanged,
+  isLoading,
+}) => {
   const { mode } = useConnectionFormService();
-  const onUpdateStream = useCallback(
-    (id: string | undefined, newConfig: Partial<AirbyteStreamConfiguration>) => {
-      const streamNode = streams.find((streamNode) => streamNode.id === id);
 
-      if (streamNode) {
-        const newStreamNode = setIn(streamNode, "config", { ...streamNode.config, ...newConfig });
+  const [searchString, setSearchString] = useState("");
 
-        onChangeStream(newStreamNode);
-      }
-    },
-    [streams, onChangeStream]
+  const onSingleStreamChanged = useCallback(
+    (newValue: SyncSchemaStream) => onStreamsChanged(streams.map((str) => (str.id === newValue.id ? newValue : str))),
+    [streams, onStreamsChanged]
   );
 
-  const { initialValues } = useFormikContext<ConnectionFormValues>();
+  const sortedSchema = useMemo(
+    () => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
+    [streams]
+  );
 
-  const changedStreams = streams.filter((stream, idx) => {
-    return stream.config?.selected !== initialValues.syncCatalog.streams[idx].config?.selected;
-  });
+  const filteredStreams = useMemo(() => {
+    const filters: Array<(s: SyncSchemaStream) => boolean> = [
+      (_: SyncSchemaStream) => true,
+      searchString
+        ? (stream: SyncSchemaStream) => stream.stream?.name.toLowerCase().includes(searchString.toLowerCase())
+        : null,
+    ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>;
+
+    return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
+  }, [searchString, sortedSchema]);
 
   return (
-    <>
-      {streams.map((streamNode) => (
-        <Field key={`schema.streams[${streamNode.id}].config`} name={`schema.streams[${streamNode.id}].config`}>
-          {({ form }: FieldProps<FormikConnectionFormValues>) => (
-            <CatalogSection
-              key={`schema.streams[${streamNode.id}].config`}
-              errors={form.errors}
-              namespaceDefinition={form.values.namespaceDefinition}
-              namespaceFormat={form.values.namespaceFormat}
-              prefix={form.values.prefix}
-              streamNode={streamNode}
-              updateStream={onUpdateStream}
-              changedSelected={changedStreams.includes(streamNode) && mode === "edit"}
-            />
-          )}
-        </Field>
-      ))}
-    </>
+    <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
+      <LoadingBackdrop loading={isLoading}>
+        {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
+        <CatalogTreeHeader />
+        <CatalogTreeSubheader />
+        <BulkHeader />
+        <CatalogTreeBody streams={filteredStreams} onStreamChanged={onSingleStreamChanged} />
+      </LoadingBackdrop>
+    </BulkEditServiceProvider>
   );
 };
 
-export default CatalogTree;
+export const CatalogTree = React.memo(CatalogTreeComponent);
