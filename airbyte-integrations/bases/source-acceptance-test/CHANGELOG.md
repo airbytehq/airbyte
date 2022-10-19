@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.9
+Update tests after protocol change making `supported_sync_modes` a required property of `AirbyteStream` [#15591](https://github.com/airbytehq/airbyte/pull/15591/)
+
 ## 0.2.8
 Make full refresh tests tolerant to new records in a sequential read.[#17660](https://github.com/airbytehq/airbyte/pull/17660/)
 
