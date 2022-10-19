@@ -29,8 +29,7 @@ def before_all_tests(request):
         "test_type": "ephemeral",
         "tmp_folders": temporary_folders,
     }
-    if DestinationType.POSTGRES.value not in destinations_to_test:
-        destinations_to_test.append(DestinationType.POSTGRES.value)
+
     dbt_test_utils.set_target_schema("test_ephemeral")
     dbt_test_utils.change_current_test_dir(request)
     dbt_test_utils.setup_db(destinations_to_test)
