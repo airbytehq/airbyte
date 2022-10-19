@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.104
+
+- Protocol change: `supported_sync_modes` is now a required properties on AirbyteStream. [#15591](https://github.com/airbytehq/airbyte/pull/15591)
+
+## 0.1.103
+
+- Low-code: added hash filter to jinja template
+
+## 0.1.102
+
+- Low-code: Fix check for streams that do not define a stream slicer
+
+## 0.1.101
+
+- Low-code: $options do not overwrite parameters that are already set
+
 ## 0.1.100
 
 - Low-code: Pass stream_slice to read_records when reading from CheckStream
