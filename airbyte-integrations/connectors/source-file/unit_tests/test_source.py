@@ -69,6 +69,7 @@ def get_catalog(properties):
                 stream=AirbyteStream(
                     name="test",
                     json_schema={"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": properties},
+                    supported_sync_modes=[SyncMode.full_refresh]
                 ),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
