@@ -21,15 +21,15 @@ function showhelp {
     ${GREEN}Display help
 
   ${CLEAR}-W <workspace id>
-    ${GREEN}Specify the workspace ID from where connectors and connections should be deleted
+    ${GREEN}Specify the workspace ID from where connectors and connections should be deleted.
+    Required.
 
   ${CLEAR}-H <hostname>
     ${GREEN}Specify the Airbyte API server hostname that the script should call to delete connectors and connections.
     Defaults to 'localhost'.
 
   ${CLEAR}-P <port>
-    ${GREEN}Specify the port for the Airbyte server. If kube (ie. '-k' is provided), port-forwarding
-    will be set up for the airbyte-server deployment using the provided <port> (ie. '8001:8001').
+    ${GREEN}Specify the port for the Airbyte server.
     Defaults to '8001'.
 
   ${CLEAR}-X <header>
