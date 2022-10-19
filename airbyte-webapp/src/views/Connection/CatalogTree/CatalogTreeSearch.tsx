@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { Input } from "components/ui/Input";
 
-interface SearchProps {
+interface CatalogTreeSearchProps {
   onSearch: (value: string) => void;
 }
 
@@ -21,7 +21,7 @@ const SearchContent = styled.div`
   }
 `;
 
-const Search: React.FC<SearchProps> = ({ onSearch }) => {
+export const CatalogTreeSearch: React.FC<CatalogTreeSearchProps> = ({ onSearch }) => {
   const { formatMessage } = useIntl();
 
   return (
@@ -35,5 +35,3 @@ const Search: React.FC<SearchProps> = ({ onSearch }) => {
     </SearchContent>
   );
 };
-
-export default Search;

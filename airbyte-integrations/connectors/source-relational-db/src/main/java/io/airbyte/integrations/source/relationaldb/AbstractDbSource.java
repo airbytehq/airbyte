@@ -135,36 +135,49 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
-      throws Exception {
-    final StateManager stateManager =
-        StateManagerFactory.createStateManager(getSupportedStateType(config), deserializeInitialState(state, config), catalog);
-    final Instant emittedAt = Instant.now();
+    throws Exception {
+    try {
+      final StateManager stateManager =
+          StateManagerFactory.createStateManager(getSupportedStateType(config), deserializeInitialState(state, config), catalog);
+      final Instant emittedAt = Instant.now();
 
-    final Database database = createDatabaseInternal(config);
+      final Database database = createDatabaseInternal(config);
 
-    final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo =
-        discoverWithoutSystemTables(database)
-            .stream()
-            .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()), Function
-                .identity()));
+      final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo =
+          discoverWithoutSystemTables(database)
+              .stream()
+              .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()), Function
+                  .identity()));
 
-    validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog);
+      validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog);
 
-    final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
-        getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
-    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
-        getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
-    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream
-        .of(incrementalIterators, fullRefreshIterators)
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
+      final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
+          getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
+      final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
+          getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
+      final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream
+          .of(incrementalIterators, fullRefreshIterators)
+          .flatMap(Collection::stream)
+          .collect(Collectors.toList());
 
-    return AutoCloseableIterators
-        .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList), () -> {
-          LOGGER.info("Closing database connection pool.");
-          Exceptions.toRuntime(this::close);
-          LOGGER.info("Closed database connection pool.");
-        });
+      return AutoCloseableIterators
+          .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList), () -> {
+            LOGGER.info("Closing database connection pool.");
+            Exceptions.toRuntime(this::close);
+            LOGGER.info("Closed database connection pool.");
+          });
+    } catch (final Exception exception) {
+      if (isConfigError(exception)) {
+        AirbyteTraceMessageUtility.emitConfigErrorTrace(exception, exception.getMessage());
+      }
+      throw exception;
+    }
+  }
+
+  private boolean isConfigError(final Exception exception) {
+    // For now, enhanced error details should only be shown for InvalidCursorException. In the future, enhanced error messages will exist for
+    // additional error types.
+    return exception instanceof InvalidCursorException;
   }
 
   private void validateCursorFieldForIncrementalTables(final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
