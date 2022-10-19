@@ -8,7 +8,12 @@ const CRON_REGEX_MAP = [
   /^(([0-9]|,|-|\*|\/)+)?/, // year
 ];
 
-export function validateCronExpression(expression: string): boolean {
+export function validateCronExpression(expression: string | undefined): boolean {
+  // yup passes string | undefined, this may be fixed in the future: https://github.com/jquense/yup/issues/1367
+  if (expression === undefined) {
+    return false;
+  }
+
   try {
     const cronFields = expression.trim().split(" ");
 

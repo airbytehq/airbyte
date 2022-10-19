@@ -27,9 +27,9 @@ import {
 import { ConnectionFormMode, ConnectionOrPartialConnection } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { validateCronExpression } from "utils/cron";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
-import { validateCronExpression } from "./ScheduleField";
 
 export interface FormikConnectionFormValues {
   name?: string;
@@ -103,9 +103,7 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
               cronExpression: yup
                 .string()
                 .required("form.empty.error")
-                .test("validCron", "form.cronExpression.error", (expression) =>
-                  !expression ? false : validateCronExpression(expression)
-                ),
+                .test("validCron", "form.cronExpression.error", validateCronExpression),
               cronTimeZone: yup.string().required("form.empty.error"),
             })
             .defined("form.empty.error"),
