@@ -134,13 +134,3 @@ def test_open_gcs_url():
     provider.update({"service_account_json": '{service_account_json": "service_account_json"}'})
     with pytest.raises(ConfigurationError):
         assert URLFile(url="", provider=provider)._open_gcs_url()
-
-
-def test_client_wrong_reader_options():
-    with pytest.raises(ConfigurationError):
-        Client(
-            dataset_name="test_dataset",
-            url="scp://test_dataset",
-            provider={"provider": {"storage": "HTTPS", "reader_impl": "gcsfs", "user_agent": False}},
-            reader_options='{encoding":"utf_16"}',
-        )
