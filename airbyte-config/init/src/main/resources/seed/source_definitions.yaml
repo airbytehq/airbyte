@@ -382,6 +382,13 @@
   icon: glassfrog.svg
   sourceType: api
   releaseStage: alpha
+- name: GoCardless
+  sourceDefinitionId: ba15ac82-5c6a-4fb2-bf24-925c23a1180c
+  dockerRepository: airbyte/source-gocardless
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gocardless
+  sourceType: api
+  releaseStage: alpha
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
