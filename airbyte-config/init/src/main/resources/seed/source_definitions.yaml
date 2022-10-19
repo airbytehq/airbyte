@@ -213,6 +213,13 @@
   icon: confluence.svg
   sourceType: api
   releaseStage: alpha
+- name: Courier
+  sourceDefinitionId: 0541b2cd-2367-4986-b5f1-b79ff55439e4
+  dockerRepository: airbyte/source-courier
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/courier
+  sourceType: api
+  releaseStage: alpha
 - name: Customer.io
   sourceDefinitionId: c47d6804-8b98-449f-970a-5ddb5cb5d7aa
   dockerRepository: farosai/airbyte-customer-io-source
