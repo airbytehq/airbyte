@@ -109,7 +109,6 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
           initialValues={initialValues}
           validationSchema={createConnectionValidationSchema({ mode, allowSubOneHourCronExpressions })}
           onSubmit={onFormSubmit}
-          validateOnChange={false}
         >
           {({ values, isSubmitting, isValid, dirty }) => (
             <Form>
