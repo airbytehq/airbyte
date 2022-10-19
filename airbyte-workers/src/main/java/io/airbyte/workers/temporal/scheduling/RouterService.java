@@ -10,7 +10,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -19,11 +18,15 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Singleton
 @Slf4j
-@AllArgsConstructor
 public class RouterService {
 
   private final ConfigRepository configRepository;
   private final GeographyMapper geographyMapper;
+
+  public RouterService(final ConfigRepository configRepository, final GeographyMapper geographyMapper) {
+    this.configRepository = configRepository;
+    this.geographyMapper = geographyMapper;
+  }
 
   /**
    * Given a connectionId, look up the connection's configured {@link Geography} in the config DB and

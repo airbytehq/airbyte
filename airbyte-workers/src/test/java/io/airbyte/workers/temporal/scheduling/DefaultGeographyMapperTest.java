@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.temporal.scheduling.GeographyMapper;
 import io.airbyte.config.Geography;
-import io.airbyte.workers.temporal.scheduling.DefaultGeographyMapper;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
