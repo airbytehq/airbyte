@@ -10,7 +10,7 @@
     "created_at": {
       "type": "string",
       "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "airbyte_type": "timestamp_with_timezone"
     }
   }
 }
