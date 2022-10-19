@@ -6,7 +6,7 @@ import { Cell, Header } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
-import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
+import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { links } from "utils/links";
 
@@ -14,7 +14,7 @@ import styles from "./CatalogTreeHeader.module.scss";
 
 export const CatalogTreeHeader: React.FC = () => {
   const { mode } = useConnectionFormService();
-  const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEdit();
+  const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEditService();
   const catalogHeaderStyle = classnames({
     [styles.catalogHeader]: mode !== "readonly",
     [styles.readonlyCatalogHeader]: mode === "readonly",

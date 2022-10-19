@@ -3,7 +3,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { LoadingBackdrop } from "components/ui/LoadingBackdrop";
 
 import { SyncSchemaStream } from "core/domain/catalog";
-import { BatchEditProvider } from "hooks/services/BulkEdit/BulkEditService";
+import { BulkEditServiceProvider } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
 
@@ -50,7 +50,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   }, [searchString, sortedSchema]);
 
   return (
-    <BatchEditProvider nodes={streams} update={onStreamsChanged}>
+    <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
         <CatalogTreeHeader />
@@ -58,7 +58,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
         <BulkHeader />
         <CatalogTreeBody streams={filteredStreams} onStreamChanged={onSingleStreamChanged} />
       </LoadingBackdrop>
-    </BatchEditProvider>
+    </BulkEditServiceProvider>
   );
 };
 
