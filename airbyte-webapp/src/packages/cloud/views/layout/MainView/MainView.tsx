@@ -33,9 +33,10 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
     !cloudWorkspace.trialExpiryTimestamp;
 
   const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
-
   // exp-speedy-connection
-  const { isExperimentVariant: showExperimentBanner } = useExperimentSpeedyConnection();
+  const { isExperimentVariant } = useExperimentSpeedyConnection();
+  const isTrial = Boolean(cloudWorkspace.trialExpiryTimestamp);
+  const showExperimentBanner = isExperimentVariant && isTrial;
 
   const alertMessage = useMemo(() => {
     if (alertToShow === "credits") {

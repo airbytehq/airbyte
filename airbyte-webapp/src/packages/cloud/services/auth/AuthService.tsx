@@ -127,6 +127,11 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
           // also happen for email/password users if they closed their browser or got some network
           // errors in between creating the firebase user and the database user originally.
           const user = await createAirbyteUser(currentUser);
+          // exp-speedy-connection
+          localStorage.setItem(
+            "exp-speedy-connection-timestamp",
+            String(new Date(new Date().getTime() + 24 * 60 * 60 * 1000))
+          );
           await onAfterAuth(currentUser, user);
         } else {
           throw e;
@@ -181,11 +186,6 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
             .then(async () => {
               state.next("loading");
               if (auth.currentUser) {
-                // exp-speedy-connection
-                localStorage.setItem(
-                  "exp-speedy-connection-timestamp",
-                  String(new Date(new Date().getTime() + 24 * 60 * 60 * 1000))
-                );
                 await onAfterAuth(auth.currentUser);
                 state.next("done");
                 state.complete();

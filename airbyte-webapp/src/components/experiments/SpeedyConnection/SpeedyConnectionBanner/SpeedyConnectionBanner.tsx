@@ -6,8 +6,6 @@ import { Link, useLocation } from "react-router-dom";
 import { CountDownTimer } from "components/experiments/SpeedyConnection/CountDownTimer";
 import { Text } from "components/ui/Text";
 
-import { Action, Namespace } from "core/analytics";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { useExperiment } from "hooks/services/Experiment";
 import { StepType } from "pages/OnboardingPage/types";
 import { RoutePaths } from "pages/routePaths";
@@ -18,7 +16,6 @@ import styles from "./SpeedyConnectionBanner.module.scss";
 
 export const SpeedyConnectionBanner = () => {
   const { expiredOfferDate } = useExperimentSpeedyConnection();
-  const analyticsService = useAnalyticsService();
   const location = useLocation();
   const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
 
@@ -40,11 +37,6 @@ export const SpeedyConnectionBanner = () => {
                 state={{
                   step: StepType.CREATE_SOURCE,
                 }}
-                onClick={() =>
-                  analyticsService.track(Namespace.ONBOARDING, Action.START_EXP_SPEEDY_CONNECTION, {
-                    actionDescription: "Start Onboarding speedy connection experiment",
-                  })
-                }
               >
                 <Text bold>{link}</Text>
               </Link>

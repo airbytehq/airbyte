@@ -1,8 +1,6 @@
 import { useCallback } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
-import { useExperimentSpeedyConnection } from "components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
-
 import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { SyncSchema } from "core/domain/catalog";
@@ -108,8 +106,7 @@ const useCreateConnection = () => {
   const service = useWebConnectionService();
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
-  // exp-speedy-connection
-  const { isExperimentVariant: isSpeedyConnection, trialExpiryTimestamp } = useExperimentSpeedyConnection();
+
   return useMutation(
     async ({
       values,
@@ -138,8 +135,6 @@ const useCreateConnection = () => {
         connector_destination_definition_id: destinationDefinition?.destinationDefinitionId,
         available_streams: values.syncCatalog.streams.length,
         enabled_streams: enabledStreams,
-        // exp-speedy-connection
-        ...(isSpeedyConnection && { isSpeedyConnection, trialExpiryTimestamp }),
       });
 
       return response;

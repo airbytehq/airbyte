@@ -27,7 +27,6 @@ export const enum Action {
   SELECTION_OPENED = "SelectionOpened",
   CHECKOUT_START = "CheckoutStart",
   LOAD_MORE_JOBS = "LoadMoreJobs",
-  START_EXP_SPEEDY_CONNECTION = "Experiment.Start.SpeedyConnection",
 }
 
 export type EventParams = Record<string, unknown>;

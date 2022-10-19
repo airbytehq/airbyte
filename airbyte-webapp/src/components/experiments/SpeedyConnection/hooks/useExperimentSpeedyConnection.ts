@@ -1,19 +1,15 @@
 import { useExperiment } from "hooks/services/Experiment";
-import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
-import { useCurrentWorkspace, useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
+import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
 
 export const useExperimentSpeedyConnection = () => {
-  const workspace = useCurrentWorkspace();
-  const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const { hasConnections } = useCurrentWorkspaceState();
   const isVariantEnabled = useExperiment("onboarding.speedyConnection", false);
 
-  const isTrial = Boolean(cloudWorkspace.trialExpiryTimestamp);
   const timestamp = localStorage.getItem("exp-speedy-connection-timestamp");
   const expiredOfferDate = timestamp ? String(timestamp) : String(0);
 
   const now = new Date();
   const isExperimentVariant =
-    isTrial && !hasConnections && expiredOfferDate && new Date(expiredOfferDate) >= now && isVariantEnabled;
-  return { isExperimentVariant, expiredOfferDate, trialExpiryTimestamp: cloudWorkspace.trialExpiryTimestamp };
+    !hasConnections && expiredOfferDate && new Date(expiredOfferDate) >= now && isVariantEnabled;
+  return { isExperimentVariant, expiredOfferDate };
 };

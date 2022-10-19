@@ -2,11 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { useExperimentSpeedyConnection } from "components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { Button } from "components/ui/Button";
 
-import { Action, Namespace } from "core/analytics";
-import { useAnalyticsService } from "hooks/services/Analytics";
 import { links } from "utils/links";
 
 import HighlightedText from "./HighlightedText";
@@ -29,10 +26,6 @@ const Videos = styled.div`
 `;
 
 const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
-  // exp-speedy-connection
-  const { isExperimentVariant } = useExperimentSpeedyConnection();
-  const analyticsService = useAnalyticsService();
-
   return (
     <>
       <TitlesBlock
@@ -74,18 +67,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
         />
       </Videos>
 
-      <Button
-        size="lg"
-        onClick={() => {
-          // exp-speedy-connection
-          if (isExperimentVariant) {
-            analyticsService.track(Namespace.ONBOARDING, Action.START_EXP_SPEEDY_CONNECTION, {
-              actionDescription: "Start Onboarding speedy connection experiment",
-            });
-          }
-          onNextStep();
-        }}
-      >
+      <Button size="lg" onClick={onNextStep}>
         <FormattedMessage id="onboarding.firstConnection" />
       </Button>
     </>
