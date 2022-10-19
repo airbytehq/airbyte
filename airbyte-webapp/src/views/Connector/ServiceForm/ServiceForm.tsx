@@ -6,18 +6,15 @@ import { useDeepCompareEffect } from "react-use";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
-import { isDestinationDefinitionSpecification } from "core/domain/connector/destination";
-import { isSourceDefinition, isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { isDefined } from "utils/common";
 
-import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { FormRoot } from "./FormRoot";
 import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
-import { ServiceFormValues } from "./types";
+import { ConnectorFormValues, ServiceFormValues } from "./types";
 import {
   useBuildForm,
   useBuildInitialSchema,
@@ -112,9 +109,8 @@ const SetDefaultName: React.FC = () => {
 export interface ServiceFormProps {
   formType: "source" | "destination";
   formId?: string;
-  availableServices: ConnectorDefinition[];
+  selectedService?: ConnectorDefinition;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
-  onServiceSelect?: (id: string) => void;
   onSubmit: (values: ServiceFormValues) => Promise<void> | void;
   isLoading?: boolean;
   isEditMode?: boolean;
@@ -126,7 +122,7 @@ export interface ServiceFormProps {
 
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
-  testConnector?: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
+  testConnector?: (v?: ConnectorFormValues) => Promise<CheckConnectionRead>;
 }
 
 export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
@@ -143,8 +139,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     onStopTesting,
     testConnector,
     selectedConnectorDefinitionSpecification,
-    availableServices,
     errorMessage,
+    selectedService,
   } = props;
 
   const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
@@ -153,7 +149,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     () => ({
       type: "object",
       properties: {
-        serviceType: { type: "string" },
         ...(selectedConnectorDefinitionSpecification ? { name: { type: "string" } } : {}),
         ...Object.fromEntries(
           Object.entries({
@@ -161,7 +156,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           }).filter(([, v]) => !!v)
         ),
       },
-      required: ["name", "serviceType"],
+      required: ["name"],
     }),
     [isLoading, selectedConnectorDefinitionSpecification, specifications]
   );
@@ -199,13 +194,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
           <ConnectorNameControl property={property} formType={formType} {...componentProps} />
         ),
-      },
-      serviceType: {
-        /* since we use <ConnectorServiceTypeControl/> outside formik form
-           we need to keep the serviceType field in formik, but hide it.
-           serviceType prop will be removed in further PR
-        */
-        component: () => null,
       },
     };
   }, [formType]);
@@ -253,12 +241,11 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           resetUiWidgetsInfo={resetUiWidgetsInfo}
           formType={formType}
           selectedConnector={selectedConnectorDefinitionSpecification}
-          availableServices={availableServices}
           isEditMode={isEditMode}
           isLoadingSchema={isLoading}
           validationSchema={validationSchema}
+          selectedService={selectedService}
         >
-          {!isEditMode && <SetDefaultName />}
           <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
           <FormikPatch />
           <FormChangeTracker changed={dirty} formId={formId} />
