@@ -2,12 +2,13 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.helper;
+package io.airbyte.workers.temporal.scheduling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.temporal.scheduling.GeographyMapper;
 import io.airbyte.config.Geography;
+import io.airbyte.workers.temporal.scheduling.DefaultGeographyMapper;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
