@@ -56,6 +56,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: WORKSPACE_ROOT
+            - name: MICRONAUT_ENVIRONMENTS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CRON_MICRONAUT_ENVIRONMENTS
           volumeMounts:
             - name: airbyte-volume-configs
               mountPath: /configs

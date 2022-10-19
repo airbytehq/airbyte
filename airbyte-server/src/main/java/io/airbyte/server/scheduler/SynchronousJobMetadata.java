@@ -4,8 +4,8 @@
 
 package io.airbyte.server.scheduler;
 
+import io.airbyte.commons.temporal.JobMetadata;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.workers.temporal.JobMetadata;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Objects;
