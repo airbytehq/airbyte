@@ -1,4 +1,4 @@
-import { Field, FieldInputProps, FieldProps, FormikProps, useFormikContext } from "formik";
+import { Field, FieldInputProps, FieldProps, FormikProps, useField } from "formik";
 import { ChangeEvent, useCallback, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -28,7 +28,6 @@ export const ScheduleField: React.FC = () => {
   const { connection, mode } = useConnectionFormService();
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
   const analyticsService = useAnalyticsService();
-  const { errors } = useFormikContext<FormikConnectionFormValues>();
 
   const onDropDownSelect = useCallback(
     (item: DropDownOptionDataItem | null) => {
@@ -129,9 +128,7 @@ export const ScheduleField: React.FC = () => {
     return form.values.scheduleType === ConnectionScheduleType.cron;
   };
 
-  const cronValidationError = useMemo(() => {
-    return (errors?.scheduleData as ConnectionScheduleData)?.cron?.cronExpression;
-  }, [errors]);
+  const [, { error: cronValidationError }] = useField("scheduleData.cron.cronExpression");
 
   return (
     <Field name="scheduleData">
