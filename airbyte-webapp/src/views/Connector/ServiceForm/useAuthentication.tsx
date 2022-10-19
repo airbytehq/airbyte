@@ -86,8 +86,7 @@ interface AuthenticationHook {
    */
   isHiddenAuthField: (fieldPath: string) => boolean;
   hiddenAuthFieldErrors: Record<string, string>;
-  shouldShowAuthButton: boolean;
-  oAuthButtonPath: string;
+  shouldShowAuthButton: (fieldPath: string) => boolean;
 }
 
 export const useAuthentication = (): AuthenticationHook => {
@@ -101,7 +100,7 @@ export const useAuthentication = (): AuthenticationHook => {
 
   const spec = selectedConnector?.connectionSpecification as JSONSchema7;
 
-  const shouldShowAuthButton = useMemo(() => {
+  const isAuthButtonVisible = useMemo(() => {
     const vals = getValues(values);
     const shouldShowAdvancedAuth =
       advancedAuth && shouldShowButtonForAdvancedAuth(advancedAuth.predicateKey, advancedAuth.predicateValue, vals);
@@ -134,9 +133,9 @@ export const useAuthentication = (): AuthenticationHook => {
     (fieldPath: string) => {
       // A field should be hidden due to OAuth if we have OAuth enabled and selected (in case it's inside a oneOf)
       // and the field is part of the OAuth flow parameters.
-      return shouldShowAuthButton && implicitAuthFieldPaths.includes(fieldPath);
+      return isAuthButtonVisible && implicitAuthFieldPaths.includes(fieldPath);
     },
-    [implicitAuthFieldPaths, shouldShowAuthButton]
+    [implicitAuthFieldPaths, isAuthButtonVisible]
   );
 
   const hiddenAuthFieldErrors = useMemo(() => {
@@ -149,14 +148,25 @@ export const useAuthentication = (): AuthenticationHook => {
     }, {});
   }, [getFieldMeta, implicitAuthFieldPaths, submitCount]);
 
-  const oAuthButtonPath = advancedAuth
-    ? advancedAuth.predicateKey && makeConnectionConfigurationPath(advancedAuth.predicateKey)
-    : legacyOauthSpec && makeConnectionConfigurationPath(stripNumericalEntries(legacyOauthSpec.rootObject as Path));
+  const shouldShowAuthButton = useCallback(
+    (fieldPath: string) => {
+      if (!isAuthButtonVisible) {
+        // Never show the auth button anywhere if its not enabled or visible
+        return false;
+      }
+
+      const path = advancedAuth
+        ? advancedAuth.predicateKey && makeConnectionConfigurationPath(advancedAuth.predicateKey)
+        : legacyOauthSpec && makeConnectionConfigurationPath(stripNumericalEntries(legacyOauthSpec.rootObject as Path));
+
+      return fieldPath === (path ?? makeConnectionConfigurationPath());
+    },
+    [advancedAuth, isAuthButtonVisible, legacyOauthSpec]
+  );
 
   return {
     isHiddenAuthField,
     hiddenAuthFieldErrors,
     shouldShowAuthButton,
-    oAuthButtonPath: oAuthButtonPath ?? makeConnectionConfigurationPath(),
   };
 };

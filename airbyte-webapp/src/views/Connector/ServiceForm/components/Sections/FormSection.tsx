@@ -41,7 +41,7 @@ interface FormSectionProps {
 }
 
 export const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend, disabled }) => {
-  const { isHiddenAuthField, shouldShowAuthButton, oAuthButtonPath } = useAuthentication();
+  const { isHiddenAuthField, shouldShowAuthButton } = useAuthentication();
 
   const sections = useMemo(() => {
     const flattenedBlocks = [blocks].flat();
@@ -62,9 +62,7 @@ export const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, ski
 
           return (
             <React.Fragment key={sectionPath}>
-              {shouldShowAuthButton && oAuthButtonPath === sectionPath && formField._type !== "formCondition" && (
-                <AuthSection />
-              )}
+              {shouldShowAuthButton(sectionPath) && formField._type !== "formCondition" && <AuthSection />}
               <FormNode formField={formField} sectionPath={sectionPath} disabled={disabled} />
             </React.Fragment>
           );
