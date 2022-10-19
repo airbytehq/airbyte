@@ -15,6 +15,7 @@ from normalization import DestinationType
 temporary_folders = set()
 dbt_test_utils = DbtIntegrationTest()
 
+
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     destinations_to_test = dbt_test_utils.get_test_targets()
@@ -35,6 +36,7 @@ def before_all_tests(request):
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
 
+
 @pytest.fixture
 def setup_test_path(request):
     dbt_test_utils.change_current_test_dir(request)
@@ -42,6 +44,7 @@ def setup_test_path(request):
     print(f"Current PATH is: {os.environ['PATH']}")
     yield
     os.chdir(request.config.invocation_dir)
+
 
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_reset_scd_on_overwrite(destination_type: DestinationType, setup_test_path):
@@ -140,4 +143,3 @@ def run_reset_scd_on_overwrite_test(destination_type: DestinationType, test_reso
     # Run dbt process
     generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "test_drop_scd_catalog_reset.json", dbt_test_utils)
     dbt_test_utils.dbt_run(destination_type, test_root_dir)
-
