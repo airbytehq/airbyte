@@ -20,8 +20,8 @@ definitions:
     $ref: "*ref(definitions.base_requester)"
     request_options_provider:
       request_parameters:
-        start_date: "{{ config['start_datetime'] }}"
-        end_date: "{{ config['end_datetime'] }}"
+        start_datetime: "{{ config['start_datetime'] }}"
+        end_datetime: "{{ config['end_datetime'] }}"
   paginator:
     type: DefaultPaginator
     pagination_strategy:
@@ -82,7 +82,7 @@ definitions:
     $ref: "*ref(definitions.date_stream)"
     $options:
       name: "sessions"
-      primary_key: "timestamp"
+      primary_key: "start_timestamp"
       path: "/session"
   sleep_periods_stream:
     $ref: "*ref(definitions.date_stream)"
@@ -100,7 +100,7 @@ definitions:
     $ref: "*ref(definitions.date_stream)"
     $options:
       name: "workouts"
-      primary_key: "timestamp"
+      primary_key: "start_datetime"
       path: "/workout"
 
 streams:

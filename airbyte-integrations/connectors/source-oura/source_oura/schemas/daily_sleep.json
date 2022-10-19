@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "contributors": {
+      "type": "object",
+      "properties": {
+        "deep_sleep": {
+          "type": "number"
+        },
+        "efficiency": {
+          "type": "number"
+        },
+        "latency": {
+          "type": "number"
+        },
+        "rem_sleep": {
+          "type": "number"
+        },
+        "restfulness": {
+          "type": "number"
+        },
+        "timing": {
+          "type": "number"
+        },
+        "total_sleep": {
+          "type": "number"
+        }
+      }
+    },
+    "day": {
+      "type": "string",
+      "format": "date"
+    },
+    "score": {
+      "type": "number"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

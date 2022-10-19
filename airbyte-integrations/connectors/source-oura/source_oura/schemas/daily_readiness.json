@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "contributors": {
+      "type": "object",
+      "properties": {
+        "activity_balance": {
+          "type": "number"
+        },
+        "body_temperature": {
+          "type": "number"
+        },
+        "hrv_balance": {
+          "type": "number"
+        },
+        "previous_day_activity": {},
+        "previous_night": {
+          "type": "number"
+        },
+        "recovery_index": {
+          "type": "number"
+        },
+        "resting_heart_rate": {
+          "type": "number"
+        },
+        "sleep_balance": {
+          "type": "number"
+        }
+      }
+    },
+    "day": {
+      "type": "string",
+      "format": "date"
+    },
+    "score": {
+      "type": "number"
+    },
+    "temperature_deviation": {
+      "type": "number"
+    },
+    "temperature_trend_deviation": {
+      "type": "number"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

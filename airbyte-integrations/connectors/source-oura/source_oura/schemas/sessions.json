@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "day": {
+      "type": "string",
+      "format" : "date"
+    },
+    "start_datetime": {
+      "type": "string",
+      "format" : "date-time"
+    },
+    "end_datetime": {
+      "type": "string",
+      "format" : "date-time"
+    },
+    "type": {
+      "type": "string"
+    },
+    "heart_rate": {},
+    "heart_rate_variability": {},
+    "mood": {},
+    "motion_count": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": "number"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

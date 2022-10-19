@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "average_breath": {
+      "type": "number"
+    },
+    "average_heart_rate": {
+      "type": "number"
+    },
+    "average_hrv": {
+      "type": "number"
+    },
+    "awake_time": {
+      "type": "number"
+    },
+    "bedtime_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "bedtime_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "day": {
+      "type": "string",
+      "format": "date"
+    },
+    "deep_sleep_duration": {
+      "type": "number"
+    },
+    "efficiency": {
+      "type": "number"
+    },
+    "heart_rate": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": "number"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "hrv": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": "number"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "latency": {
+      "type": "number"
+    },
+    "light_sleep_duration": {
+      "type": "number"
+    },
+    "low_battery_alert": {
+      "type": "boolean"
+    },
+    "lowest_heart_rate": {
+      "type": "number"
+    },
+    "movement_30_sec": {
+      "type": "string"
+    },
+    "period": {
+      "type": "number"
+    },
+    "readiness_score_delta": {
+      "type": "number"
+    },
+    "rem_sleep_duration": {
+      "type": "number"
+    },
+    "restless_periods": {
+      "type": "number"
+    },
+    "sleep_phase_5_min": {
+      "type": "string"
+    },
+    "sleep_score_delta": {
+      "type": "number"
+    },
+    "time_in_bed": {
+      "type": "number"
+    },
+    "total_sleep_duration": {},
+    "type": {
+      "type": "string"
+    }
+  }
+}

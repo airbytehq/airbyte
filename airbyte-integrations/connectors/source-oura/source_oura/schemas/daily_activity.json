@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "class_5_min": {
+      "type": "string"
+    },
+    "score": {
+      "type": "number"
+    },
+    "active_calories": {
+      "type": "number"
+    },
+    "average_met_minutes": {
+      "type": "number"
+    },
+    "contributors": {
+      "type": "object",
+      "properties": {
+        "meet_daily_targets": {
+          "type": "number"
+        },
+        "move_every_hour": {
+          "type": "number"
+        },
+        "recovery_time": {
+          "type": "number"
+        },
+        "stay_active": {
+          "type": "number"
+        },
+        "training_frequency": {
+          "type": "number"
+        },
+        "training_volume": {
+          "type": "number"
+        }
+      }
+    },
+    "equivalent_walking_distance": {
+      "type": "number"
+    },
+    "high_activity_met_minutes": {
+      "type": "number"
+    },
+    "high_activity_time": {
+      "type": "number"
+    },
+    "inactivity_alerts": {
+      "type": "number"
+    },
+    "low_activity_met_minutes": {
+      "type": "number"
+    },
+    "low_activity_time": {
+      "type": "number"
+    },
+    "medium_activity_met_minutes": {
+      "type": "number"
+    },
+    "medium_activity_time": {
+      "type": "number"
+    },
+    "met": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": "number"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "meters_to_target": {
+      "type": "number"
+    },
+    "non_wear_time": {
+      "type": "number"
+    },
+    "resting_time": {
+      "type": "number"
+    },
+    "sedentary_met_minutes": {
+      "type": "number"
+    },
+    "sedentary_time": {
+      "type": "number"
+    },
+    "steps": {
+      "type": "number"
+    },
+    "target_calories": {
+      "type": "number"
+    },
+    "target_meters": {
+      "type": "number"
+    },
+    "total_calories": {
+      "type": "number"
+    },
+    "day": {
+      "type": "string",
+      "format": "date"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
