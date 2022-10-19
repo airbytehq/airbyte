@@ -143,6 +143,8 @@ class MetricRepository {
   long numberOfJobsRunningUnusuallyLong() {
     // Definition of unusually long means runtime is more than 2x historic avg run time or 15
     // minutes more than avg run time, whichever is greater.
+    // It will skip jobs with fewer than 4 runs in last week to make sure the historic avg run is
+    // meaningful and consistent.
     final var query =
         """
         -- pick average running time and last sync running time in attempts table.
@@ -156,9 +158,7 @@ class MetricRepository {
                 (
                   select
                     jobs.scope as connection_id,
-                    extract(epoch
-                  from
-                    age(NOW(), attempts.created_at)) as running_time
+                    extract(epoch from age(NOW(), attempts.created_at)) as running_time
                   from
                     jobs
                   join attempts on
