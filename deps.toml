@@ -1,4 +1,5 @@
 [versions]
+datadog-version = "0.111.0"
 fasterxml_version = "2.13.3"
 flyway = "7.14.0"
 glassfish_version = "2.31"
@@ -42,6 +43,7 @@ log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4
 jul-to-slf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+java-dogstatsd-client = { module = "com.datadoghq:java-dogstatsd-client", version = "4.1.0"}
 javax-databind = { module = "javax.xml.bind:jaxb-api", version = "2.4.0-b180830.0359" }
 jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
@@ -90,7 +92,8 @@ otel-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version = "1.
 otel-sdk = {module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0"}
 otel-sdk-testing = {module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha"}
 micrometer-statsd = {module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3"}
-
+datadog-trace-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog-version" }
+datadog-trace-ot = { module = "com.datadoghq:dd-trace-ot", version.ref = "datadog-version" }
 quartz-scheduler = {module="org.quartz-scheduler:quartz", version = "2.3.2"}
 
 # Micronaut-related dependencies
@@ -119,6 +122,7 @@ micronaut-validation = { module = "io.micronaut:micronaut-validation" }
 [bundles]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
 apache = ["apache-commons", "apache-commons-lang"]
+datadog = ["datadog-trace-api", "datadog-trace-ot"]
 log4j = ["log4j-api", "log4j-core", "log4j-impl", "log4j-web"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]

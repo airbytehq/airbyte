@@ -4,6 +4,12 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
+
+import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -15,6 +21,7 @@ import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
@@ -22,6 +29,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
@@ -30,7 +38,6 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -44,6 +51,7 @@ import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
@@ -51,6 +59,7 @@ import io.temporal.activity.ActivityExecutionContext;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -61,9 +70,9 @@ import org.slf4j.LoggerFactory;
 public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
+  private static final int MAX_TEMPORAL_MESSAGE_SIZE = 2 * 1024 * 1024;
 
   private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
-  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
@@ -77,7 +86,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final AirbyteApiClient airbyteApiClient;
 
   public ReplicationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
-                                 @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
                                  @Named("replicationProcessFactory") final ProcessFactory processFactory,
                                  final SecretsHydrator secretsHydrator,
                                  @Named("workspaceRoot") final Path workspaceRoot,
@@ -90,7 +98,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final TemporalUtils temporalUtils,
                                  final AirbyteApiClient airbyteApiClient) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
-    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
@@ -104,11 +111,14 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.airbyteApiClient = airbyteApiClient;
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
                                       final IntegrationLauncherConfig sourceLauncherConfig,
                                       final IntegrationLauncherConfig destinationLauncherConfig,
                                       final StandardSyncInput syncInput) {
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+        destinationLauncherConfig.getDockerImage(), SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
     final ActivityExecutionContext context = Activity.getExecutionContext();
     return temporalUtils.withBackgroundHeartbeat(
         () -> {
@@ -156,7 +166,14 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           final ReplicationOutput attemptOutput = temporalAttempt.get();
           final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
 
-          LOGGER.info("sync summary: {}", standardSyncOutput);
+          final String standardSyncOutputString = standardSyncOutput.toString();
+          LOGGER.info("sync summary: {}", standardSyncOutputString);
+          if (standardSyncOutputString.length() > MAX_TEMPORAL_MESSAGE_SIZE) {
+            LOGGER.error("Sync ouput exceeds the max temporal message size of {}, actual is {}.", MAX_TEMPORAL_MESSAGE_SIZE,
+                standardSyncOutputString.length());
+          } else {
+            LOGGER.info("Sync summary length: {}", standardSyncOutputString.length());
+          }
 
           return standardSyncOutput;
         },
@@ -164,19 +181,18 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   }
 
   private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
-    final long totalBytesReplicated = output.getReplicationAttemptSummary().getBytesSynced();
-    final long totalRecordsReplicated = output.getReplicationAttemptSummary().getRecordsSynced();
-
-    final StandardSyncSummary syncSummary = new StandardSyncSummary();
-    syncSummary.setBytesSynced(totalBytesReplicated);
-    syncSummary.setRecordsSynced(totalRecordsReplicated);
-    syncSummary.setStartTime(output.getReplicationAttemptSummary().getStartTime());
-    syncSummary.setEndTime(output.getReplicationAttemptSummary().getEndTime());
-    syncSummary.setStatus(output.getReplicationAttemptSummary().getStatus());
-    syncSummary.setTotalStats(output.getReplicationAttemptSummary().getTotalStats());
-    syncSummary.setStreamStats(output.getReplicationAttemptSummary().getStreamStats());
-
     final StandardSyncOutput standardSyncOutput = new StandardSyncOutput();
+    final StandardSyncSummary syncSummary = new StandardSyncSummary();
+    final ReplicationAttemptSummary replicationSummary = output.getReplicationAttemptSummary();
+
+    syncSummary.setBytesSynced(replicationSummary.getBytesSynced());
+    syncSummary.setRecordsSynced(replicationSummary.getRecordsSynced());
+    syncSummary.setStartTime(replicationSummary.getStartTime());
+    syncSummary.setEndTime(replicationSummary.getEndTime());
+    syncSummary.setStatus(replicationSummary.getStatus());
+    syncSummary.setTotalStats(replicationSummary.getTotalStats());
+    syncSummary.setStreamStats(replicationSummary.getStreamStats());
+
     standardSyncOutput.setState(output.getState());
     standardSyncOutput.setOutputCatalog(output.getOutputCatalog());
     standardSyncOutput.setStandardSyncSummary(syncSummary);
@@ -207,7 +223,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       final AirbyteSource airbyteSource =
           WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage())
               ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
-              : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
+              : new DefaultAirbyteSource(sourceLauncher);
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
@@ -217,7 +233,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           Math.toIntExact(jobRunConfig.getAttemptId()),
           airbyteSource,
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-          new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
+          new DefaultAirbyteDestination(destinationLauncher),
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
           metricReporter);

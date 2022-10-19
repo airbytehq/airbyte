@@ -21,9 +21,12 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.init.YamlSeedConfigPersistence;
+import io.airbyte.config.init.DefinitionProviderToConfigPersistenceAdapter;
+import io.airbyte.config.init.DefinitionsProvider;
+import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -133,12 +136,12 @@ class BootloaderAppTest {
       bootloader.load();
 
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
-      assertEquals("0.40.4.002", jobsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.40.14.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
       // this line should change with every new migration
       // to show that you meant to make a new migration to the prod database
-      assertEquals("0.40.3.002", configsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals("0.40.12.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       assertEquals(VERSION_0330_ALPHA, jobsPersistence.getVersion().get());
@@ -198,9 +201,10 @@ class BootloaderAppTest {
       val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, null, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
       initBootloader.load();
 
-      final ConfigPersistence localSchema = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+      final DefinitionsProvider localDefinitions = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
       final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
-      configRepository.loadDataNoSecrets(localSchema);
+      final ConfigPersistence localConfigPersistence = new DefinitionProviderToConfigPersistenceAdapter(localDefinitions);
+      configRepository.loadDataNoSecrets(localConfigPersistence);
 
       final String sourceSpecs = """
                                  {
@@ -216,13 +220,14 @@ class BootloaderAppTest {
       final ObjectMapper mapper = new ObjectMapper();
 
       final UUID workspaceId = UUID.randomUUID();
-      configRepository.writeStandardWorkspace(new StandardWorkspace()
+      configRepository.writeStandardWorkspaceNoSecrets(new StandardWorkspace()
           .withWorkspaceId(workspaceId)
           .withName("wName")
           .withSlug("wSlug")
           .withEmail("email@mail.com")
           .withTombstone(false)
-          .withInitialSetupComplete(false));
+          .withInitialSetupComplete(false)
+          .withDefaultGeography(Geography.AUTO));
       final UUID sourceId = UUID.randomUUID();
       configRepository.writeSourceConnectionNoSecrets(new SourceConnection()
           .withSourceDefinitionId(UUID.fromString("e7778cfc-e97c-4458-9ecb-b4f2bba8946c")) // Facebook Marketing

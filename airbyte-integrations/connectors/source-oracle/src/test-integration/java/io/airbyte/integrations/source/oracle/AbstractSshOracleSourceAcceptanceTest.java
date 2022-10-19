@@ -36,7 +36,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
   private static final Network network = Network.newNetwork();
   private final SshBastionContainer sshBastionContainer = new SshBastionContainer();
-  private OracleContainer db;
+  private AirbyteOracleTestContainer db;
 
   private JsonNode config;
 
@@ -90,7 +90,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   }
 
   private void initAndStartJdbcContainer() {
-    db = new OracleContainer()
+    db = new AirbyteOracleTestContainer()
         .withUsername("test")
         .withPassword("oracle")
         .usingSid()
@@ -108,7 +108,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
     return SshHelpers.getSpecAndInjectSsh();
   }
 
-  public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuider(final OracleContainer db) {
+  public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuider(final AirbyteOracleTestContainer db) {
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
