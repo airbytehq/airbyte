@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.elasticsearch;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -14,6 +15,7 @@ public class ConnectorConfiguration {
 
   private String endpoint;
   private boolean upsert;
+  private byte[] certAsBytes;
   private AuthenticationMethod authenticationMethod = new AuthenticationMethod();
 
   public ConnectorConfiguration() {}
@@ -34,6 +36,15 @@ public class ConnectorConfiguration {
     return this.authenticationMethod;
   }
 
+  public byte[] getCertAsBytes() {
+    return certAsBytes;
+  }
+
+  public ConnectorConfiguration setCertAsBytes(byte[] certAsBytes) {
+    this.certAsBytes = certAsBytes;
+    return this;
+  }
+
   public void setEndpoint(String endpoint) {
     this.endpoint = endpoint;
   }
@@ -48,17 +59,35 @@ public class ConnectorConfiguration {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
-    if (o == null || getClass() != o.getClass())
+    }
+    if (o == null || getClass() != o.getClass()) {
       return false;
+    }
+
     ConnectorConfiguration that = (ConnectorConfiguration) o;
-    return upsert == that.upsert && Objects.equals(endpoint, that.endpoint) && Objects.equals(authenticationMethod, that.authenticationMethod);
+
+    if (upsert != that.upsert) {
+      return false;
+    }
+    if (endpoint != null ? !endpoint.equals(that.endpoint) : that.endpoint != null) {
+      return false;
+    }
+    if (!Arrays.equals(certAsBytes, that.certAsBytes)) {
+      return false;
+    }
+    return authenticationMethod != null ? authenticationMethod.equals(that.authenticationMethod)
+        : that.authenticationMethod == null;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(endpoint, upsert, authenticationMethod);
+    int result = endpoint != null ? endpoint.hashCode() : 0;
+    result = 31 * result + (upsert ? 1 : 0);
+    result = 31 * result + Arrays.hashCode(certAsBytes);
+    result = 31 * result + (authenticationMethod != null ? authenticationMethod.hashCode() : 0);
+    return result;
   }
 
   @Override
@@ -66,6 +95,7 @@ public class ConnectorConfiguration {
     return "ConnectorConfiguration{" +
         "endpoint='" + endpoint + '\'' +
         ", upsert=" + upsert +
+        ", certAsBytes=" + Arrays.toString(certAsBytes) +
         ", authenticationMethod=" + authenticationMethod +
         '}';
   }

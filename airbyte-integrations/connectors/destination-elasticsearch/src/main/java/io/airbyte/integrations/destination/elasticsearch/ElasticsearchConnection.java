@@ -28,6 +28,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
 import org.elasticsearch.client.Node;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +57,17 @@ public class ElasticsearchConnection {
 
     // Create the low-level client
     httpHost = HttpHost.create(config.getEndpoint());
-    restClient = RestClient.builder(httpHost)
+    final RestClientBuilder builder = RestClient.builder(httpHost);
+
+    // Set custom user's certificate if provided
+    if (config.getCertAsBytes() != null && config.getCertAsBytes().length != 0){
+      builder.setHttpClientConfigCallback(clientBuilder -> {
+        clientBuilder.setSSLContext(SslUtils.createContextFromCaCert(config.getCertAsBytes()));
+        return clientBuilder;
+      });
+    }
+
+    restClient = builder
         .setDefaultHeaders(configureHeaders(config))
         .setFailureListener(new FailureListener())
         .build();
