@@ -3,7 +3,6 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
 import ApiErrorBoundary from "components/ApiErrorBoundary";
-import { useExperimentSpeedyConnection } from "components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
@@ -12,6 +11,7 @@ import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Featu
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useQuery } from "hooks/useQuery";
+import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
