@@ -9,9 +9,11 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.List;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +23,14 @@ class RedisDestination extends BaseConnector implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestination.class);
 
   public static void main(String[] args) throws Exception {
-    new IntegrationRunner(new RedisDestination()).run(args);
+    LOGGER.info("starting destination: {}", RedisDestination.class);
+    final Destination destination = RedisDestination.sshWrappedDestination();
+    new IntegrationRunner(destination).run(args);
+    LOGGER.info("completed destination: {}", RedisDestination.class);
+  }
+
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new RedisDestination(), List.of("host"), List.of("port"));
   }
 
   @Override

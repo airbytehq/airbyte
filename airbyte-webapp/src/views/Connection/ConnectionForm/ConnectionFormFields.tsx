@@ -19,11 +19,11 @@ import { ValuesProps } from "hooks/services/useConnectionHook";
 
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
-import ScheduleField from "./components/ScheduleField";
 import { Section } from "./components/Section";
 import SchemaField from "./components/SyncCatalogField";
 import styles from "./ConnectionFormFields.module.scss";
 import { FormikConnectionFormValues } from "./formConfig";
+import { ScheduleField } from "./ScheduleField";
 
 interface ConnectionFormFieldsProps {
   values: ValuesProps | FormikConnectionFormValues;
