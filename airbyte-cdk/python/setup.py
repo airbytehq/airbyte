@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.1.104",
+    version="0.2.0",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -53,7 +53,7 @@ setup(
         "pydantic~=1.9.2",
         "PyYAML~=5.4",
         "requests",
-        "vcrpy",
+        "requests_cache",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
     ],
