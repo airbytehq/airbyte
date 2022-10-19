@@ -8,6 +8,14 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 In the project directory, you can run:
 
+### `npm ci`
+
+Installs essential modules Ex. "orval"
+
+### `npm install`
+
+Installs requirements.
+
 ### `npm start`
 
 Runs the app in the development mode.<br />
