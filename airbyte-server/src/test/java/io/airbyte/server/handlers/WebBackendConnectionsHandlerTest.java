@@ -269,7 +269,7 @@ class WebBackendConnectionsHandlerTest {
             .catalog(modifiedCatalog));
 
     expectedWithNewSchema = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead,
-        new OperationReadList().operations(expected.getOperations()), SchemaChange.NON_BREAKING, now, modifiedCatalog, null)
+        new OperationReadList().operations(expected.getOperations()), SchemaChange.NO_CHANGE, now, modifiedCatalog, null)
             .catalogDiff(new CatalogDiff().transforms(List.of(
                 new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
                     .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
@@ -289,8 +289,7 @@ class WebBackendConnectionsHandlerTest {
                                                                   final SchemaChange schemaChange,
                                                                   final Instant now,
                                                                   final AirbyteCatalog syncCatalog,
-                                                                  final UUID catalogId)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
+                                                                  final UUID catalogId) {
     return new WebBackendConnectionRead()
         .connectionId(connectionRead.getConnectionId())
         .sourceId(connectionRead.getSourceId())
@@ -300,8 +299,8 @@ class WebBackendConnectionsHandlerTest {
         .namespaceDefinition(connectionRead.getNamespaceDefinition())
         .namespaceFormat(connectionRead.getNamespaceFormat())
         .prefix(connectionRead.getPrefix())
-        .syncCatalog(connectionRead.getSyncCatalog())
-        .catalogId(connectionRead.getSourceCatalogId())
+        .syncCatalog(syncCatalog)
+        .catalogId(catalogId)
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
         .scheduleType(connectionRead.getScheduleType())
@@ -312,7 +311,7 @@ class WebBackendConnectionsHandlerTest {
         .latestSyncJobCreatedAt(now.getEpochSecond())
         .latestSyncJobStatus(JobStatus.SUCCEEDED)
         .isSyncing(false)
-        .schemaChange(SchemaChange.NO_CHANGE)
+        .schemaChange(schemaChange)
         .resourceRequirements(new ResourceRequirements()
             .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
             .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
