@@ -165,8 +165,6 @@ services:
     logging: *default-logging
     container_name: airbyte-temporal
     restart: unless-stopped
-    ports:
-      - 7233:7233
     environment:
       - DB=postgresql
       - DB_PORT=${DATABASE_PORT}
@@ -194,6 +192,7 @@ services:
       - TEMPORAL_HISTORY_RETENTION_IN_DAYS=${TEMPORAL_HISTORY_RETENTION_IN_DAYS}
       - UPDATE_DEFINITIONS_CRON_ENABLED=${UPDATE_DEFINITIONS_CRON_ENABLED}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - MICRONAUT_ENVIRONMENTS=${CRON_MICRONAUT_ENVIRONMENTS}
     volumes:
       - workspace:${WORKSPACE_ROOT}
 volumes:

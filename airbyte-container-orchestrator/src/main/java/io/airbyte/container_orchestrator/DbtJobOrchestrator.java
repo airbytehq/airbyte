@@ -4,12 +4,12 @@
 
 package io.airbyte.container_orchestrator;
 
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.Configs;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DbtTransformationRunner;
 import io.airbyte.workers.general.DbtTransformationWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
@@ -64,7 +64,7 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
                 NormalizationRunnerFactory.NORMALIZATION_VERSION)));
 
     log.info("Running dbt worker...");
-    final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     worker.run(dbtInput, jobRoot);
 
     return Optional.empty();
