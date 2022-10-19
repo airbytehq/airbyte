@@ -15,9 +15,36 @@ from normalization import DestinationType
 temporary_folders = set()
 dbt_test_utils = DbtIntegrationTest()
 
+@pytest.fixture(scope="module", autouse=True)
+def before_all_tests(request):
+    destinations_to_test = dbt_test_utils.get_test_targets()
+    # set clean-up args to clean target destination after the test
+    clean_up_args = {
+        "destination_type": [d for d in DestinationType if d.value in destinations_to_test],
+        "test_type": "test_reset_scd_overwrite",
+        "tmp_folders": temporary_folders,
+    }
+    dbt_test_utils.set_target_schema("test_reset_scd_overwrite")
+    dbt_test_utils.change_current_test_dir(request)
+    dbt_test_utils.setup_db(destinations_to_test)
+    os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
+    yield
+    dbt_test_utils.clean_tmp_tables(**clean_up_args)
+    dbt_test_utils.tear_down_db()
+    for folder in temporary_folders:
+        print(f"Deleting temporary test folder {folder}")
+        shutil.rmtree(folder, ignore_errors=True)
+
+@pytest.fixture
+def setup_test_path(request):
+    dbt_test_utils.change_current_test_dir(request)
+    print(f"Running from: {pathlib.Path().absolute()}")
+    print(f"Current PATH is: {os.environ['PATH']}")
+    yield
+    os.chdir(request.config.invocation_dir)
 
 @pytest.mark.parametrize("destination_type", list(DestinationType))
-def test_reset_scd_on_overwrite(destination_type: DestinationType, setup_test_path) -> bool:
+def test_reset_scd_on_overwrite(destination_type: DestinationType, setup_test_path):
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
 
@@ -27,10 +54,10 @@ def test_reset_scd_on_overwrite(destination_type: DestinationType, setup_test_pa
     # Overwrite target schema for Oracle or Redshift
     if destination_type.value == DestinationType.ORACLE.value:
         # Oracle does not allow changing to random schema
-        dbt_test_utils.set_target_schema("test_normalization")
+        dbt_test_utils.set_target_schema("test_reset_scd_overwrite")
     elif destination_type.value == DestinationType.REDSHIFT.value:
         # set unique schema for Redshift test
-        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_normalization_"))
+        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_reset_scd_overwrite_"))
     try:
         print(f"Testing resetting SCD tables on overwrite with {destination_type} in schema {target_schema}")
         run_reset_scd_on_overwrite_test(destination_type, test_resource_name)
@@ -114,11 +141,3 @@ def run_reset_scd_on_overwrite_test(destination_type: DestinationType, test_reso
     generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "test_drop_scd_catalog_reset.json", dbt_test_utils)
     dbt_test_utils.dbt_run(destination_type, test_root_dir)
 
-
-@pytest.fixture
-def setup_test_path(request):
-    dbt_test_utils.change_current_test_dir(request)
-    print(f"Running from: {pathlib.Path().absolute()}")
-    print(f"Current PATH is: {os.environ['PATH']}")
-    yield
-    os.chdir(request.config.invocation_dir)
