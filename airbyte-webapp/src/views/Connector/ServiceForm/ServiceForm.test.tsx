@@ -169,7 +169,6 @@ describe("Service Form", () => {
               documentationUrl: "",
             } as DestinationDefinitionSpecificationRead
           }
-          availableServices={[]}
         />
       );
       container = renderResult.container;
@@ -241,7 +240,7 @@ describe("Service Form", () => {
       const renderResult = await render(
         <ServiceForm
           formType="source"
-          formValues={{ name: "test-name", serviceType: "test-service-type" }}
+          formValues={{ name: "test-name" }}
           onSubmit={(values) => {
             result = values;
           }}
@@ -253,7 +252,6 @@ describe("Service Form", () => {
               documentationUrl: "",
             } as DestinationDefinitionSpecificationRead
           }
-          availableServices={[]}
         />
       );
       container = renderResult.container;
@@ -286,7 +284,6 @@ describe("Service Form", () => {
 
       expect(result).toEqual({
         name: "name",
-        serviceType: "test-service-type",
         connectionConfiguration: {
           credentials: { api_key: "test-api-key" },
           emails: ["test@test.com"],
@@ -381,7 +378,7 @@ describe("Service Form", () => {
 
   describe("conditionally render form submit button", () => {
     const renderServiceForm = (props: ServiceFormProps) =>
-      render(<ServiceForm {...props} formValues={{ name: "test-name", serviceType: "test-service-type" }} />);
+      render(<ServiceForm {...props} formValues={{ name: "test-name" }} />);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     const onSubmitClb = () => {};
     const connectorDefSpec = {
@@ -396,7 +393,6 @@ describe("Service Form", () => {
           // @ts-expect-error Partial objects for testing
           connectorDefSpec as DestinationDefinitionSpecificationRead,
         formType: "destination",
-        availableServices: [],
         onSubmit: onSubmitClb,
       });
       expect(getByText(/Set up destination/)).toBeInTheDocument();
@@ -406,7 +402,6 @@ describe("Service Form", () => {
       const { container } = await renderServiceForm({
         selectedConnectorDefinitionSpecification: undefined,
         formType: "destination",
-        availableServices: [],
         onSubmit: onSubmitClb,
       });
 
@@ -421,7 +416,6 @@ describe("Service Form", () => {
           // @ts-expect-error Partial objects for testing
           connectorDefSpec as DestinationDefinitionSpecificationRead,
         formType: "destination",
-        availableServices: [],
         onSubmit: onSubmitClb,
         isEditMode: true,
       });
@@ -433,7 +427,6 @@ describe("Service Form", () => {
       const { container } = await renderServiceForm({
         selectedConnectorDefinitionSpecification: undefined,
         formType: "destination",
-        availableServices: [],
         onSubmit: onSubmitClb,
         isEditMode: true,
       });
