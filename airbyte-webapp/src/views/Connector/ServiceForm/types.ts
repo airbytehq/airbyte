@@ -4,9 +4,11 @@ import { DestinationDefinitionReadWithLatestTag } from "services/connector/Desti
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type ServiceFormValues<T = unknown> = {
   name: string;
-  serviceType: string;
   connectionConfiguration: T;
 };
+
+// The whole ConnectorCard form values
+export type ConnectorFormValues = { serviceType: string } & ServiceFormValues;
 
 export type DestinationConnectorCard = Pick<
   DestinationDefinitionReadWithLatestTag,
