@@ -33,7 +33,7 @@ services:
     image: airbyte/connector-builder:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: /airbyte-connector-builder
+      context: airbyte-integrations/connector-builder
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   server:
