@@ -25,10 +25,6 @@ class ZendeskSellStream(HttpStream, ABC):
     url_base = "https://api.getbase.com/v2/"
     primary_key = None
 
-    # def __init__(self, config: Mapping[str, Any], **kwargs):
-    #     super().__init__()
-    #     self.start_date = config["start_date"]
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
             regex_page='[=?/]page[_=/-]?(\d{1,3})'
@@ -51,27 +47,6 @@ class ZendeskSellStream(HttpStream, ABC):
         items = response.json()['items']
         return [item['data'] for item in items]
 
-# Basic incremental stream
-class IncrementalZendeskSellStream(ZendeskSellStream, IncrementalMixin, ABC):
-    state_checkpoint_interval = 100
-    cursor_field = "updated_at"
-
-    # def __init__(self, **kwargs):
-    #     super().__init__()
-    #     self._cursor_value = None
-
-    @property
-    def state(self) -> Mapping[str, Any]:
-        if self._cursor_value:
-            return {self.cursor_field: self._cursor_value}
-        else:
-            return {self.cursor_field: self.start_date}
-
-    @state.setter
-    def state(self, value: Mapping[str, Any]):
-       self._cursor_value = value[self.cursor_field]
-
-
 class Pipelines(ZendeskSellStream):
     """
     Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/pipelines/
@@ -91,7 +66,7 @@ class Stages(ZendeskSellStream):
         return "stages"
 
 
-class Contacts(IncrementalZendeskSellStream):
+class Contacts(ZendeskSellStream):
     """
     Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/contacts/
     """
@@ -100,7 +75,7 @@ class Contacts(IncrementalZendeskSellStream):
     def path(self, **kwargs) -> str:
         return "contacts"
 
-class Deals(IncrementalZendeskSellStream):
+class Deals(ZendeskSellStream):
     """
     Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deals/
     """
@@ -109,7 +84,7 @@ class Deals(IncrementalZendeskSellStream):
     def path(self, **kwargs) -> str:
         return "deals"
 
-class Leads(IncrementalZendeskSellStream):
+class Leads(ZendeskSellStream):
     """
     Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/leads/
     """
@@ -286,7 +261,6 @@ class SourceZendeskSell(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             authenticator = TokenAuthenticator(token = config["api_token"])
-            #stream = Contacts(authenticator=authenticator, config = config)
             stream = Contacts(authenticator=authenticator)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -298,4 +272,3 @@ class SourceZendeskSell(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config["api_token"])
         return [Contacts(authenticator=auth), Deals(authenticator=auth), Leads(authenticator=auth), Pipelines(authenticator=auth), Stages(authenticator=auth),  CallOutcomes(authenticator=auth), Calls(authenticator=auth), Collaborations(authenticator=auth), DealSources(authenticator=auth), DealUnqualifiedReasons(authenticator=auth), LeadConversions(authenticator=auth), LeadSources(authenticator=auth), LeadUnqualifiedReasons(authenticator=auth), LossReasons(authenticator=auth), Notes(authenticator=auth), Orders(authenticator=auth), Products(authenticator=auth), Tags(authenticator=auth), Tasks(authenticator=auth), TextMessages(authenticator=auth), Users(authenticator=auth), VisitOutcomes(authenticator=auth), Visits(authenticator=auth)]
-        #return [Contacts(authenticator=auth, config = config), Deals(authenticator=auth, config = config), Leads(authenticator=auth, config = config), Pipelines(authenticator=auth, config = config), Stages(authenticator=auth, config = config),  CallOutcomes(authenticator=auth, config = config), Calls(authenticator=auth, config = config), Collaborations(authenticator=auth, config = config), DealSources(authenticator=auth, config = config), DealUnqualifiedReasons(authenticator=auth, config = config), LeadConversions(authenticator=auth, config = config), LeadSources(authenticator=auth, config = config), LeadUnqualifiedReasons(authenticator=auth, config = config), LossReasons(authenticator=auth, config = config), Notes(authenticator=auth, config = config), Orders(authenticator=auth, config = config), Products(authenticator=auth, config = config), Tags(authenticator=auth, config = config), Tasks(authenticator=auth, config = config), TextMessages(authenticator=auth, config = config), Users(authenticator=auth, config = config), VisitOutcomes(authenticator=auth, config = config), Visits(authenticator=auth, config = config)]
