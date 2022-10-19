@@ -163,7 +163,7 @@ public class WebBackendConnectionsHandler {
     return destinationReads.stream().collect(Collectors.toMap(DestinationRead::getDestinationId, Function.identity()));
   }
 
-  private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead, final Optional<UUID> currentSourceCatalogId)
+  private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceRead source = getSourceRead(connectionRead.getSourceId());
     final DestinationRead destination = getDestinationRead(connectionRead.getDestinationId());
@@ -334,7 +334,6 @@ public class WebBackendConnectionsHandler {
 
     final CatalogDiff diff;
     final AirbyteCatalog syncCatalog;
-    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connection.getSourceCatalogId());
     if (refreshedCatalog.isPresent()) {
       connection.sourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
@@ -366,7 +365,7 @@ public class WebBackendConnectionsHandler {
     }
 
     connection.setSyncCatalog(syncCatalog);
-    return buildWebBackendConnectionRead(connection, currentSourceCatalogId).catalogDiff(diff);
+    return buildWebBackendConnectionRead(connection).catalogDiff(diff);
   }
 
   private Optional<SourceDiscoverSchemaRead> getRefreshedSchema(final UUID sourceId)
@@ -447,8 +446,7 @@ public class WebBackendConnectionsHandler {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
 
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
-    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connectionCreate.getSourceCatalogId());
-    return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate), currentSourceCatalogId);
+    return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
   }
 
   /**
@@ -495,8 +493,7 @@ public class WebBackendConnectionsHandler {
       connectionRead.setSyncCatalog(syncCatalog);
     }
 
-    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connectionRead.getSourceCatalogId());
-    return buildWebBackendConnectionRead(connectionRead, currentSourceCatalogId);
+    return buildWebBackendConnectionRead(connectionRead);
   }
 
   /**

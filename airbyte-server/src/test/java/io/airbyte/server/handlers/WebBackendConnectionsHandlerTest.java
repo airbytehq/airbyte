@@ -1155,25 +1155,19 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testGetSchemaChangeBreaking() throws ConfigNotFoundException, IOException {
+  void testGetSchemaChangeBreaking() throws IOException {
     final UUID sourceId = UUID.randomUUID();
     final ConnectionRead connectionReadWithSourceId = new ConnectionRead().sourceCatalogId(UUID.randomUUID()).sourceId(sourceId).breakingChange(true);
-
-    final ActorCatalogFetchEvent actorCatalogFetchEvent = new ActorCatalogFetchEvent()
-        .withActorCatalogId(UUID.randomUUID());
 
     assertEquals(SchemaChange.BREAKING, wbHandler.getSchemaChange(connectionReadWithSourceId,
         Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID()))));
   }
 
   @Test
-  void testGetSchemaChangeNotBreaking() throws ConfigNotFoundException, IOException {
+  void testGetSchemaChangeNotBreaking() throws IOException {
     final UUID sourceId = UUID.randomUUID();
     final ConnectionRead connectionReadWithSourceId =
         new ConnectionRead().sourceCatalogId(UUID.randomUUID()).sourceId(sourceId).breakingChange(false);
-
-    final ActorCatalogFetchEvent actorCatalogFetchEvent = new ActorCatalogFetchEvent()
-        .withActorCatalogId(UUID.randomUUID());
 
     assertEquals(SchemaChange.NON_BREAKING, wbHandler.getSchemaChange(connectionReadWithSourceId,
         Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID()))));
