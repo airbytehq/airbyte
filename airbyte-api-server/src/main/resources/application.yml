@@ -1,6 +1,11 @@
 micronaut:
   application:
     name: airbyteApiServer
+  http:
+    services:
+      config-api:
+        url: "http://localhost:8000"
+        read-timeout: 1m
 netty:
   default:
     allocator:
