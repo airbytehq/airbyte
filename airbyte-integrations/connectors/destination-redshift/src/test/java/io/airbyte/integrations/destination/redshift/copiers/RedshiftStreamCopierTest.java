@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -86,6 +87,7 @@ class RedshiftStreamCopierTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
                 .withName("fake-stream")
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
                 .withNamespace("fake-namespace")));
   }
 

@@ -317,7 +317,6 @@ class Client:
             logger.error(error_msg)
             raise ConfigurationError(error_msg) from err
 
-
         reader_options = {**self._reader_options}
         try:
             if self._reader_format == "csv":
