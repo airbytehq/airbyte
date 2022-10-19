@@ -12,6 +12,7 @@ import java.util.Collection;
 public class StorageObjectGetInterceptor implements TraceInterceptor {
 
   @Override
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public Collection<? extends MutableSpan> onTraceComplete(
                                                            final Collection<? extends MutableSpan> trace) {
     final var filtered = new ArrayList<MutableSpan>();
@@ -29,7 +30,7 @@ public class StorageObjectGetInterceptor implements TraceInterceptor {
       // that begins with "404 Not Found"
       final var is404 = tags.getOrDefault("http.status_code", "").equals(404) ||
           ((String) tags.getOrDefault("error.msg", "")).startsWith("404 Not Found");
-      if (s.isError() && tags.getOrDefault("peer.hostname", "").equals("storage.googleapis.com")
+      if (s.isError() && "storage.googleapis.com".equals(tags.getOrDefault("peer.hostname", ""))
           && is404) {
         // Mark these spans as non-errors as this is expected behavior based on our
         // current google storage usage.
