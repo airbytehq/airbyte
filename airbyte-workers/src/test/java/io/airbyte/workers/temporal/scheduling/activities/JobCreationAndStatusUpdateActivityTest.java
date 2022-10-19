@@ -225,17 +225,17 @@ class JobCreationAndStatusUpdateActivityTest {
       final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);
 
       final Job previousJob = new Job(PREVIOUS_JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(),
-              new JobConfig(), List.of(), JobStatus.SUCCEEDED, 4L, 4L, 5L);
+          new JobConfig(), List.of(), JobStatus.SUCCEEDED, 4L, 4L, 5L);
       final Job activeJob = new Job(JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(activeAttempt),
-              JobStatus.RUNNING, 2L, 2L, 3L);
+          JobStatus.RUNNING, 2L, 2L, 3L);
 
       Set<ConfigType> configTypes = new HashSet<>();
       configTypes.add(SYNC);
 
       Mockito.when(mJobPersistence.listJobsIncludingId(configTypes, CONNECTION_ID.toString(), JOB_ID, 2))
-              .thenReturn(List.of(activeJob, previousJob));
-      boolean result = jobCreationAndStatusUpdateActivity.isLastJobOrAttemptFailure
-              (new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 0, CONNECTION_ID));
+          .thenReturn(List.of(activeJob, previousJob));
+      boolean result = jobCreationAndStatusUpdateActivity
+          .isLastJobOrAttemptFailure(new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 0, CONNECTION_ID));
       Assertions.assertThat(result).isEqualTo(false);
     }
 
@@ -245,17 +245,17 @@ class JobCreationAndStatusUpdateActivityTest {
       final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);
 
       final Job previousJob = new Job(PREVIOUS_JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(),
-              new JobConfig(), List.of(), JobStatus.FAILED, 4L, 4L, 5L);
+          new JobConfig(), List.of(), JobStatus.FAILED, 4L, 4L, 5L);
       final Job activeJob = new Job(JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(activeAttempt),
-              JobStatus.RUNNING, 2L, 2L, 3L);
+          JobStatus.RUNNING, 2L, 2L, 3L);
 
       Set<ConfigType> configTypes = new HashSet<>();
       configTypes.add(SYNC);
 
       Mockito.when(mJobPersistence.listJobsIncludingId(configTypes, CONNECTION_ID.toString(), JOB_ID, 2))
-              .thenReturn(List.of(activeJob, previousJob));
-      boolean result = jobCreationAndStatusUpdateActivity.isLastJobOrAttemptFailure
-              (new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 0, CONNECTION_ID));
+          .thenReturn(List.of(activeJob, previousJob));
+      boolean result = jobCreationAndStatusUpdateActivity
+          .isLastJobOrAttemptFailure(new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 0, CONNECTION_ID));
       Assertions.assertThat(result).isEqualTo(true);
     }
 
@@ -266,17 +266,17 @@ class JobCreationAndStatusUpdateActivityTest {
       final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);
 
       final Job previousJob = new Job(PREVIOUS_JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(),
-              JobStatus.SUCCEEDED, 4L, 4L, 5L);
+          JobStatus.SUCCEEDED, 4L, 4L, 5L);
       final Job activeJob = new Job(JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(activeAttempt, previousAttempt),
-              JobStatus.RUNNING, 2L, 2L, 3L);
+          JobStatus.RUNNING, 2L, 2L, 3L);
 
       Set<ConfigType> configTypes = new HashSet<>();
       configTypes.add(SYNC);
 
       Mockito.when(mJobPersistence.listJobsIncludingId(configTypes, CONNECTION_ID.toString(), JOB_ID, 2))
-              .thenReturn(List.of(activeJob, previousJob));
-      boolean result = jobCreationAndStatusUpdateActivity.isLastJobOrAttemptFailure
-              (new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 1, CONNECTION_ID));
+          .thenReturn(List.of(activeJob, previousJob));
+      boolean result = jobCreationAndStatusUpdateActivity
+          .isLastJobOrAttemptFailure(new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 1, CONNECTION_ID));
       Assertions.assertThat(result).isEqualTo(true);
     }
 

@@ -216,18 +216,18 @@ class ConnectionManagerWorkflowTest {
 
   private void returnTrueForLastJobOrAttemptFailure() {
     when(mJobCreationAndStatusUpdateActivity.isLastJobOrAttemptFailure(Mockito.any()))
-            .thenReturn(true);
+        .thenReturn(true);
 
     JobRunConfig jobRunConfig = new JobRunConfig();
     jobRunConfig.setJobId(Long.toString(JOB_ID));
     jobRunConfig.setAttemptId((long) ATTEMPT_ID);
     when(mGenerateInputActivityImpl.getSyncWorkflowInputWithAttemptNumber(Mockito.any(SyncInputWithAttemptNumber.class)))
-            .thenReturn(
-                    new GeneratedJobInput(
-                            jobRunConfig,
-                            new IntegrationLauncherConfig().withDockerImage("some_source"),
-                            new IntegrationLauncherConfig(),
-                            new StandardSyncInput()));
+        .thenReturn(
+            new GeneratedJobInput(
+                jobRunConfig,
+                new IntegrationLauncherConfig().withDockerImage("some_source"),
+                new IntegrationLauncherConfig(),
+                new StandardSyncInput()));
   }
 
   @AfterEach
@@ -1182,18 +1182,18 @@ class ConnectionManagerWorkflowTest {
     void testSourceCheckSkippedWhenReset() throws InterruptedException {
 
       when(mJobCreationAndStatusUpdateActivity.isLastJobOrAttemptFailure(Mockito.any()))
-              .thenReturn(true);
+          .thenReturn(true);
 
       JobRunConfig jobRunConfig = new JobRunConfig();
       jobRunConfig.setJobId(Long.toString(JOB_ID));
       jobRunConfig.setAttemptId((long) ATTEMPT_ID);
       when(mGenerateInputActivityImpl.getSyncWorkflowInputWithAttemptNumber(Mockito.any(SyncInputWithAttemptNumber.class)))
-              .thenReturn(
-                      new GeneratedJobInput(
-                              jobRunConfig,
-                              new IntegrationLauncherConfig().withDockerImage("some_source"),
-                              new IntegrationLauncherConfig(),
-                              new StandardSyncInput()));
+          .thenReturn(
+              new GeneratedJobInput(
+                  jobRunConfig,
+                  new IntegrationLauncherConfig().withDockerImage("some_source"),
+                  new IntegrationLauncherConfig(),
+                  new StandardSyncInput()));
 
       when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
           .thenReturn(new JobCreationOutput(JOB_ID));
