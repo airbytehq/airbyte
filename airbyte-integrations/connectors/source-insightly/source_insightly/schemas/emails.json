@@ -6,84 +6,80 @@
       "type": "integer"
     },
     "EMAIL_FROM": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "SUBJECT": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "EMAIL_DATE_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "FORMAT": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "SIZE": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "OWNER_USER_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "DATE_CREATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "QUEUED_SEND_DATE_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "CREATED_USER_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "TAGS": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "TAG_NAME": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "TAG_NAME": {
+            "type": ["string", "null"]
           }
         }
-      ]
+      }
     },
     "LINKS": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "LINK_ID": {
-              "type": "integer"
-            },
-            "OBJECT_NAME": {
-              "type": "string"
-            },
-            "OBJECT_ID": {
-              "type": "integer"
-            },
-            "LINK_OBJECT_NAME": {
-              "type": "string"
-            },
-            "LINK_OBJECT_ID": {
-              "type": "integer"
-            },
-            "ROLE": {
-              "type": "string"
-            },
-            "DETAILS": {
-              "type": "string"
-            },
-            "RELATIONSHIP_ID": {
-              "type": "integer"
-            },
-            "IS_FORWARD": {
-              "type": "boolean"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "LINK_ID": {
+            "type": ["integer", "null"]
+          },
+          "OBJECT_NAME": {
+            "type": ["string", "null"]
+          },
+          "OBJECT_ID": {
+            "type": ["integer", "null"]
+          },
+          "LINK_OBJECT_NAME": {
+            "type": ["string", "null"]
+          },
+          "LINK_OBJECT_ID": {
+            "type": ["integer", "null"]
+          },
+          "ROLE": {
+            "type": ["string", "null"]
+          },
+          "DETAILS": {
+            "type": ["string", "null"]
+          },
+          "RELATIONSHIP_ID": {
+            "type": ["integer", "null"]
+          },
+          "IS_FORWARD": {
+            "type": ["boolean", "null"]
           }
         }
-      ]
+      }
     }
   }
 }

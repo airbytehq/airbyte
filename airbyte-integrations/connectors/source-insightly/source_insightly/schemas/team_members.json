@@ -3,10 +3,10 @@
   "type": "object",
   "properties": {
     "PERMISSION_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "TEAM_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "MEMBER_USER_ID": {
       "type": "integer"

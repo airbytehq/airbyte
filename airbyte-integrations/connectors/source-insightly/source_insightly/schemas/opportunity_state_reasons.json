@@ -6,10 +6,10 @@
       "type": "integer"
     },
     "STATE_REASON": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "FOR_OPPORTUNITY_STATE": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }

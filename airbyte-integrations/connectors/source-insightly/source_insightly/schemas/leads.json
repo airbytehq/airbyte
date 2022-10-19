@@ -6,180 +6,174 @@
       "type": "integer"
     },
     "SALUTATION": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "FIRST_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "LAST_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "LEAD_SOURCE_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "LEAD_STATUS_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "TITLE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "CONVERTED": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "CONVERTED_CONTACT_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "CONVERTED_DATE_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "CONVERTED_OPPORTUNITY_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "CONVERTED_ORGANISATION_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "DATE_CREATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "DATE_UPDATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "EMAIL": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "EMPLOYEE_COUNT": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "FAX": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "INDUSTRY": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "LEAD_DESCRIPTION": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "LEAD_RATING": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "MOBILE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "OWNER_USER_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "PHONE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "RESPONSIBLE_USER_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "WEBSITE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADDRESS_STREET": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADDRESS_CITY": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADDRESS_STATE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADDRESS_POSTCODE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADDRESS_COUNTRY": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "LAST_ACTIVITY_DATE_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "NEXT_ACTIVITY_DATE_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "ORGANISATION_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "CREATED_USER_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "IMAGE_URL": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "EMAIL_OPTED_OUT": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "CUSTOMFIELDS": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "FIELD_NAME": {
-              "type": "string"
-            },
-            "FIELD_VALUE": {
-              "type": "object"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "FIELD_NAME": {
+            "type": ["string", "null"]
+          },
+          "FIELD_VALUE": {
+            "type": "object"
           }
         }
-      ]
+      }
     },
     "TAGS": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "TAG_NAME": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "TAG_NAME": {
+            "type": ["string", "null"]
           }
         }
-      ]
+      }
     },
     "LINKS": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "LINK_ID": {
-              "type": "integer"
-            },
-            "OBJECT_NAME": {
-              "type": "string"
-            },
-            "OBJECT_ID": {
-              "type": "integer"
-            },
-            "LINK_OBJECT_NAME": {
-              "type": "string"
-            },
-            "LINK_OBJECT_ID": {
-              "type": "integer"
-            },
-            "ROLE": {
-              "type": "string"
-            },
-            "DETAILS": {
-              "type": "string"
-            },
-            "RELATIONSHIP_ID": {
-              "type": "integer"
-            },
-            "IS_FORWARD": {
-              "type": "boolean"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "LINK_ID": {
+            "type": ["integer", "null"]
+          },
+          "OBJECT_NAME": {
+            "type": ["string", "null"]
+          },
+          "OBJECT_ID": {
+            "type": ["integer", "null"]
+          },
+          "LINK_OBJECT_NAME": {
+            "type": ["string", "null"]
+          },
+          "LINK_OBJECT_ID": {
+            "type": ["integer", "null"]
+          },
+          "ROLE": {
+            "type": ["string", "null"]
+          },
+          "DETAILS": {
+            "type": ["string", "null"]
+          },
+          "RELATIONSHIP_ID": {
+            "type": ["integer", "null"]
+          },
+          "IS_FORWARD": {
+            "type": ["boolean", "null"]
           }
         }
-      ]
+      }
     }
   }
 }

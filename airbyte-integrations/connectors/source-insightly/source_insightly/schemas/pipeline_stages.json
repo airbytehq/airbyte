@@ -6,19 +6,19 @@
       "type": "integer"
     },
     "PIPELINE_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "STAGE_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "STAGE_ORDER": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "ACTIVITYSET_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "OWNER_USER_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     }
   }
 }

@@ -6,61 +6,59 @@
       "type": "integer"
     },
     "OPPORTUNITY_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "PRICEBOOK_ENTRY_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "CURRENCY_CODE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "UNIT_PRICE": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "DESCRIPTION": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "QUANTITY": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "SERVICE_DATE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "TOTAL_PRICE": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "DATE_CREATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "DATE_UPDATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "LIST_PRICE": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "SUBTOTAL": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "DISCOUNT": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "CUSTOMFIELDS": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "FIELD_NAME": {
-              "type": "string"
-            },
-            "FIELD_VALUE": {
-              "type": "object"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "FIELD_NAME": {
+            "type": ["string", "null"]
+          },
+          "FIELD_VALUE": {
+            "type": "object"
           }
         }
-      ]
+      }
     }
   }
 }

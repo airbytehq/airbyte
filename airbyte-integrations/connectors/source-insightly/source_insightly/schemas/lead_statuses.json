@@ -6,16 +6,16 @@
       "type": "integer"
     },
     "LEAD_STATUS": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "DEFAULT_STATUS": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "STATUS_TYPE": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "FIELD_ORDER": {
-      "type": "integer"
+      "type": ["integer", "null"]
     }
   }
 }

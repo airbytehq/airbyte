@@ -6,26 +6,26 @@
       "type": "integer"
     },
     "FOLDER_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "CATEGORY_ID": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "VISIBILITY": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ORDER_ARTICLES": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "CREATED_USER_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "DATE_CREATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "DATE_UPDATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     }
   }

@@ -6,34 +6,34 @@
       "type": "integer"
     },
     "TITLE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "COMPLETED": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "DUE_DATE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "OWNER_USER_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "DATE_CREATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "DATE_UPDATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "COMPLETED_DATE_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "PROJECT_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "RESPONSIBLE_USER": {
-      "type": "integer"
+      "type": ["integer", "null"]
     }
   }
 }

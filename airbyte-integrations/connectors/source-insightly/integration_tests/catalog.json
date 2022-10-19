@@ -2,61 +2,18 @@
   "streams": [
     {
       "stream": {
-        "name": "activity_sets",
+        "name": "team_members",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "ACTIVITYSET_ID": { "type": "integer" },
-            "NAME": { "type": "string" },
-            "FOR_CONTACTS": { "type": "boolean" },
-            "FOR_ORGANISATIONS": { "type": "boolean" },
-            "FOR_OPPORTUNITIES": { "type": "boolean" },
-            "FOR_PROJECTS": { "type": "boolean" },
-            "FOR_LEADS": { "type": "boolean" },
-            "OWNER_USER_ID": { "type": "integer" },
-            "ACTIVITIES": {
-              "type": "array",
-              "items": [
-                {
-                  "type": "object",
-                  "properties": {
-                    "ACTIVITY_ID": { "type": "integer" },
-                    "ACTIVITYSET_ID": { "type": "integer" },
-                    "ACTIVITY_NAME": { "type": "string" },
-                    "ACTIVITY_DETAILS": { "type": "string" },
-                    "ACTIVITY_TYPE": { "type": "string" },
-                    "CATEGORY_ID": { "type": "integer" },
-                    "REMINDER": { "type": "boolean" },
-                    "REMINDER_DAYS_BEFORE_DUE": { "type": "integer" },
-                    "REMINDER_TIME": { "type": "string" },
-                    "PUBLICLY_VISIBLE": { "type": "boolean" },
-                    "OWNER_VISIBLE": { "type": "boolean" },
-                    "OWNER_USER_ID": { "type": "integer" },
-                    "RESPONSIBLE_USER_ID": { "type": "integer" },
-                    "ASSIGNED_TEAM_ID": { "type": "integer" },
-                    "SKIP_SUN": { "type": "boolean" },
-                    "SKIP_MON": { "type": "boolean" },
-                    "SKIP_TUE": { "type": "boolean" },
-                    "SKIP_WED": { "type": "boolean" },
-                    "SKIP_THU": { "type": "boolean" },
-                    "SKIP_FRI": { "type": "boolean" },
-                    "SKIP_SAT": { "type": "boolean" },
-                    "DUE_DAYS_AFTER_START": { "type": "integer" },
-                    "DUE_DAYS_BEFORE_END": { "type": "integer" },
-                    "EVENT_DAYS_AFTER_START": { "type": "integer" },
-                    "EVENT_DAYS_BEFORE_END": { "type": "integer" },
-                    "EVENT_TIME": { "type": "string" },
-                    "ALL_DAY": { "type": "boolean" },
-                    "DURATION": { "type": "integer" }
-                  }
-                }
-              ]
-            }
+            "PERMISSION_ID": { "type": ["integer", "null"] },
+            "TEAM_ID": { "type": ["integer", "null"] },
+            "MEMBER_USER_ID": { "type": "integer" }
           }
         },
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["activityset_id"]]
+        "source_defined_primary_key": [["MEMBER_USER_ID"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -68,26 +25,26 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
-            "USER_ID": { "type": "integer" },
-            "CONTACT_ID": { "type": "integer" },
-            "FIRST_NAME": { "type": "string" },
-            "LAST_NAME": { "type": "string" },
-            "TIMEZONE_ID": { "type": "string" },
-            "EMAIL_ADDRESS": { "type": "string" },
-            "EMAIL_DROPBOX_IDENTIFIER": { "type": "string" },
-            "EMAIL_DROPBOX_ADDRESS": { "type": "string" },
-            "ADMINISTRATOR": { "type": "boolean" },
-            "ACCOUNT_OWNER": { "type": "boolean" },
-            "ACTIVE": { "type": "boolean" },
-            "DATE_CREATED_UTC": { "type": "string" },
-            "DATE_UPDATED_UTC": { "type": "string" },
-            "USER_CURRENCY": { "type": "string" },
-            "CONTACT_DISPLAY": { "type": "string" },
-            "CONTACT_ORDER": { "type": "string" },
-            "TASK_WEEK_START": { "type": "integer" },
-            "INSTANCE_ID": { "type": "integer" },
-            "PROFILE_ID": { "type": "integer" },
-            "ROLE_ID": { "type": "integer" }
+            "USER_ID": { "type": ["integer", "null"] },
+            "CONTACT_ID": { "type": ["integer", "null"] },
+            "FIRST_NAME": { "type": ["string", "null"] },
+            "LAST_NAME": { "type": ["string", "null"] },
+            "TIMEZONE_ID": { "type": ["string", "null"] },
+            "EMAIL_ADDRESS": { "type": ["string", "null"] },
+            "EMAIL_DROPBOX_IDENTIFIER": { "type": ["string", "null"] },
+            "EMAIL_DROPBOX_ADDRESS": { "type": ["string", "null"] },
+            "ADMINISTRATOR": { "type": ["boolean", "null"] },
+            "ACCOUNT_OWNER": { "type": ["boolean", "null"] },
+            "ACTIVE": { "type": ["boolean", "null"] },
+            "DATE_CREATED_UTC": { "type": ["string", "null"] },
+            "DATE_UPDATED_UTC": { "type": ["string", "null"] },
+            "USER_CURRENCY": { "type": ["string", "null"] },
+            "CONTACT_DISPLAY": { "type": ["string", "null"] },
+            "CONTACT_ORDER": { "type": ["string", "null"] },
+            "TASK_WEEK_START": { "type": ["integer", "null"] },
+            "INSTANCE_ID": { "type": ["integer", "null"] },
+            "PROFILE_ID": { "type": ["integer", "null"] },
+            "ROLE_ID": { "type": ["integer", "null"] }
           },
           "supported_sync_modes": ["full_refresh", "incremental"],
           "source_defined_cursor": true,

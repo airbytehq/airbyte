@@ -6,63 +6,63 @@
       "type": "integer"
     },
     "CONTACT_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "FIRST_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "LAST_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "TIMEZONE_ID": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "EMAIL_ADDRESS": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "EMAIL_DROPBOX_IDENTIFIER": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "EMAIL_DROPBOX_ADDRESS": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADMINISTRATOR": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "ACCOUNT_OWNER": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "ACTIVE": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "DATE_CREATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "DATE_UPDATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "USER_CURRENCY": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "CONTACT_DISPLAY": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "CONTACT_ORDER": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "TASK_WEEK_START": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "INSTANCE_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "PROFILE_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "ROLE_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     }
   }
 }

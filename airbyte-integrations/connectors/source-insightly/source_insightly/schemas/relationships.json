@@ -6,22 +6,22 @@
       "type": "integer"
     },
     "FORWARD_TITLE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "FORWARD": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "REVERSE_TITLE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "REVERSE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "FOR_CONTACTS": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "FOR_ORGANISATIONS": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     }
   }
 }

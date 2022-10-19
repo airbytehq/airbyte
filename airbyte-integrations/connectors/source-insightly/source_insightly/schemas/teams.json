@@ -6,17 +6,17 @@
       "type": "integer"
     },
     "TEAM_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ANONYMOUS_TEAM": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "DATE_CREATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "DATE_UPDATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "TEAMMEMBERS": {

@@ -6,13 +6,13 @@
       "type": "integer"
     },
     "CATEGORY_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ACTIVE": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "BACKGROUND_COLOR": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }

@@ -8,13 +8,13 @@
     "additionalProperties": true,
     "properties": {
       "token": {
-        "type": "string",
+        "type": ["string", "null"],
         "title": "API Token",
         "description": "Your Insightly API token.",
         "airbyte_secret": true
       },
       "start_date": {
-        "type": "string",
+        "type": ["string", "null"],
         "title": "Start Date",
         "description": "The date from which you'd like to replicate data for Insightly in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. Note that it will be used only for incremental streams.",
         "examples": ["2021-03-01T00:00:00Z"],

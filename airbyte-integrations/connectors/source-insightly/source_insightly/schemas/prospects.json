@@ -6,139 +6,135 @@
       "type": "integer"
     },
     "LEAD_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "CONTACT_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "ORGANISATION_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "SALUTATION": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "FIRST_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "LAST_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ORGANISATION_NAME": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "TITLE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "EMAIL_ADDRESS": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "PHONE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "MOBILE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "FAX": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "WEBSITE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADDRESS_STREET": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADDRESS_CITY": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADDRESS_STATE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADDRESS_POSTCODE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "ADDRESS_COUNTRY": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "INDUSTRY": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "EMPLOYEE_COUNT": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "SCORE": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "GRADE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "DESCRIPTION": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "DO_NOT_EMAIL": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "DO_NOT_CALL": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "OPTED_OUT": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "LAST_ACTIVITY_DATE_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "CREATED_USER_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "OWNER_USER_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "DATE_CREATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "DATE_UPDATED_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "DO_NOT_SYNC": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "LEAD_CONVERSION_DATE_UTC": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "GRADE_PROFILE_ID": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "CUSTOMFIELDS": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "FIELD_NAME": {
-              "type": "string"
-            },
-            "FIELD_VALUE": {
-              "type": "object"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "FIELD_NAME": {
+            "type": ["string", "null"]
+          },
+          "FIELD_VALUE": {
+            "type": "object"
           }
         }
-      ]
+      }
     },
     "TAGS": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "TAG_NAME": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "TAG_NAME": {
+            "type": ["string", "null"]
           }
         }
-      ]
+      }
     }
   }
 }

@@ -6,7 +6,7 @@
       "type": "string"
     },
     "CURRENCY_SYMBOL": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }

@@ -6,13 +6,13 @@
       "type": "integer"
     },
     "LEAD_SOURCE": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "DEFAULT_VALUE": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "FIELD_ORDER": {
-      "type": "integer"
+      "type": ["integer", "null"]
     }
   }
 }
