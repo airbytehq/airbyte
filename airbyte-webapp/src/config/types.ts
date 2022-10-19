@@ -26,6 +26,7 @@ export interface Config {
   version?: string;
   integrationUrl: string;
   launchDarkly?: string;
+  connectorBuilderUrl: string;
 }
 
 export type DeepPartial<T> = {

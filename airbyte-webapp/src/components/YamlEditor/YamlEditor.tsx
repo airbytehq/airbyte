@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useDebounce, useLocalStorage } from "react-use";
 
 import { DownloadYamlButton } from "./DownloadYamlButton";
+import { TestBuilderServer } from "./TestBuilderServer";
 import styles from "./YamlEditor.module.scss";
 import { template } from "./YamlTemplate";
 
@@ -41,6 +42,7 @@ export const YamlEditor: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.control}>
         <DownloadYamlButton className={styles.downloadButton} yaml={editorValue} />
+        <TestBuilderServer />
       </div>
       <div className={styles.editorContainer}>
         <Editor
