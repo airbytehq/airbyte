@@ -103,8 +103,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final String RENAME_ATTEMPT_ID_TO_NUMBER_TAG = "rename_attempt_id_to_number";
   private static final int RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION = 1;
 
-  private static final String CHECK_PREVIOUS_JOB_OUTPUT_TAG = "rename_attempt_id_to_number";
-  private static final int CHECK_PREVIOUS_JOB_OUTPUT_TAG_CURRENT_VERSION = 1;
+  private static final String CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG = "check_previous_job_or_attempt";
+  private static final int CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG_CURRENT_VERSION = 1;
 
   private static final String ENSURE_CLEAN_JOB_STATE = "ensure_clean_job_state";
   private static final int ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION = 1;
@@ -412,10 +412,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
 
     final int checkJobOutputVersion =
-        Workflow.getVersion(CHECK_PREVIOUS_JOB_OUTPUT_TAG, Workflow.DEFAULT_VERSION, CHECK_PREVIOUS_JOB_OUTPUT_TAG_CURRENT_VERSION);
+        Workflow.getVersion(CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG, Workflow.DEFAULT_VERSION, CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG_CURRENT_VERSION);
     boolean isLastJobOrAttemptFailure = true;
 
-    if (checkJobOutputVersion >= CHECK_PREVIOUS_JOB_OUTPUT_TAG_CURRENT_VERSION) {
+    if (checkJobOutputVersion >= CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG_CURRENT_VERSION) {
       final JobCheckFailureInput jobStateInput =
           new JobCheckFailureInput(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), connectionId);
       isLastJobOrAttemptFailure = runMandatoryActivityWithOutput(jobCreationAndStatusUpdateActivity::isLastJobOrAttemptFailure, jobStateInput);
