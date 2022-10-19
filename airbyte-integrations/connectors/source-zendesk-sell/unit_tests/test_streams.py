@@ -23,25 +23,20 @@ def test_request_params(patch_base_class):
     expected_params = {}
     assert stream.request_params(**inputs) == expected_params
 
+@pytest.mark.parametrize(
+    ("inputs", "expected_token"),
+    [
+        ({'items': [{'data': {'id': 302488228, 'creator_id': 2393211, 'contact_id': 302488227, 'created_at': '2020-11-12T09:05:47Z', 'updated_at': '2022-03-23T16:53:22Z', 'title': None, 'name': 'Octavia Squidington', 'first_name': 'Octavia', 'last_name': 'Squidington'},'meta': {'version': 36, 'type': 'contact'}}],
+                'meta': {'type': 'collection','count': 25,'links': {'self': 'https://api.getbase.com/v2/contacts?page=2&per_page=25', 'first_page': 'https://api.getbase.com/v2/contacts?page=1&per_page=25', 'prev_page': 'https://api.getbase.com/v2/contacts?page=1&per_page=25', 'next_page': 'https://api.getbase.com/v2/contacts?page=3&per_page=25'}}}, 3),
+        ({'items': [{'data': {'id': 302488228, 'creator_id': 2393211, 'contact_id': 302488227, 'created_at': '2020-11-12T09:05:47Z', 'updated_at': '2022-03-23T16:53:22Z', 'title': None, 'name': 'Octavia Squidington', 'first_name': 'Octavia', 'last_name': 'Squidington'},'meta': {'version': 36, 'type': 'contact'}}],
+                'meta': {'type': 'collection','count': 25,'links': {'self': 'https://api.getbase.com/v2/contacts?page=2&per_page=25', 'first_page': 'https://api.getbase.com/v2/contacts?page=1&per_page=25', 'prev_page': 'https://api.getbase.com/v2/contacts?page=1&per_page=25'}}}, None),
+        ({None}, None),
+    ],
+)
 
-def test_next_page_token_success(patch_base_class):
+def test_next_page_token(patch_base_class, inputs, expected_token):
     stream = ZendeskSellStream()
-    inputs = {"response": {'items': [{'data': {'id': 302488228, 'creator_id': 2393211, 'contact_id': 302488227, 'created_at': '2020-11-12T09:05:47Z', 'updated_at': '2022-03-23T16:53:22Z', 'title': None, 'name': 'Octavia Squidington', 'first_name': 'Octavia', 'last_name': 'Squidington'},'meta': {'version': 36, 'type': 'contact'}}],
-                'meta': {'type': 'collection','count': 25,'links': {'self': 'https://api.getbase.com/v2/contacts?page=2&per_page=25', 'first_page': 'https://api.getbase.com/v2/contacts?page=1&per_page=25', 'prev_page': 'https://api.getbase.com/v2/contacts?page=1&per_page=25', 'next_page': 'https://api.getbase.com/v2/contacts?page=3&per_page=25'}}}}
-    expected_token = 3
-    assert stream.next_page_token(**inputs) == expected_token
-
-def test_next_page_token_last_page(patch_base_class):
-    stream = ZendeskSellStream()
-    inputs = {"response": {'items': [{'data': {'id': 302488228, 'creator_id': 2393211, 'contact_id': 302488227, 'created_at': '2020-11-12T09:05:47Z', 'updated_at': '2022-03-23T16:53:22Z', 'title': None, 'name': 'Octavia Squidington', 'first_name': 'Octavia', 'last_name': 'Squidington'},'meta': {'version': 36, 'type': 'contact'}}],
-                'meta': {'type': 'collection','count': 25,'links': {'self': 'https://api.getbase.com/v2/contacts?page=2&per_page=25', 'first_page': 'https://api.getbase.com/v2/contacts?page=1&per_page=25', 'prev_page': 'https://api.getbase.com/v2/contacts?page=1&per_page=25'}}}}
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
-
-def test_next_page_token_no_response(patch_base_class):
-    stream = ZendeskSellStream()
-    inputs = {None}
-    expected_token = None
+    inputs = {"response": MagicMock()}
     assert stream.next_page_token(**inputs) == expected_token
 
 def test_parse_response(patch_base_class):
