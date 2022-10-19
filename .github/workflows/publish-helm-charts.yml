@@ -10,6 +10,7 @@ on:
       - 'charts/**'
       - '!charts/**/Chart.yaml'
       - '!charts/**/Chart.lock'
+      - '!charts/**/README.md'
   workflow_dispatch:
 
 jobs:
