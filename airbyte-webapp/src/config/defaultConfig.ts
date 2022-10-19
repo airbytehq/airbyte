@@ -7,7 +7,7 @@ const defaultConfig: Config = {
   apiUrl: `${window.location.protocol}//${window.location.hostname}:8001/api`,
   integrationUrl: "/docs",
   oauthRedirectUrl: `${window.location.protocol}//${window.location.host}`,
-  connectorBuilderUrl: `${window.location.protocol}//${window.location.hostname}:8080/connector-builder`,
+  connectorBuilderUrl: `${window.location.protocol}//${window.location.hostname}:8080/`,
 };
 
 export { defaultConfig };

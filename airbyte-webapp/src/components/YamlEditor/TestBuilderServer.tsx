@@ -11,7 +11,9 @@ export const TestBuilderServer: React.FC<unknown> = () => {
       method: "get",
     });
 
-    alert(response);
+    const responseJson = await response.json();
+
+    alert(JSON.stringify(responseJson));
   };
 
   return <Button onClick={handleClick}>Test Call to Server</Button>;

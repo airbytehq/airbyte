@@ -24,7 +24,8 @@ export const YamlEditor: React.FC = () => {
       base: "vs-dark",
       inherit: true,
       rules: [
-        { token: "string", foreground: styles.tokenString },
+        // add logic to convert these two six character
+        { token: "string", foreground: "#ffffff" },
         { token: "type", foreground: styles.tokenType },
         { token: "number", foreground: styles.tokenNumber },
         { token: "delimiter", foreground: styles.tokenDelimiter },
