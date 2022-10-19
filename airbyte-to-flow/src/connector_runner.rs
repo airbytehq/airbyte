@@ -123,6 +123,7 @@ pub async fn run_airbyte_source_connector(
         // a state (checkpoint). In those cases, we want to provide a default empty checkpoint. It's important that
         // this only happens if the connector exit successfully, otherwise we risk double-writing data.
         if exit_status_result.is_ok() && cloned_op == FlowCaptureOperation::Pull {
+            tracing::debug!("airbyte-to-flow: waiting for tp_receiver");
             // the received value (transaction_pending) is true if the connector writes output messages and exits _without_ writing
             // a final state checkpoint.
             if tp_receiver.await.unwrap() {
@@ -141,14 +142,25 @@ pub async fn run_airbyte_source_connector(
             }
         }
 
+        if exit_status_result.is_ok() {
+            // We wait a few seconds to let any remaining writes to be done
+            // since the select below will not wait for `streaming_all` task to finish
+            // once exit_status has been received.
+            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        }
+
         exit_status_result
     });
 
-    tokio::try_join!(
-        flatten_join_handle(streaming_all_task),
-        flatten_join_handle(exit_status_task)
-    )?;
+    // If streaming_all_task errors out, we error out and don't wait for exit_status, on the other
+    // hand once the connector has exit (exit_status_task completes), we don't wait for streaming
+    // task anymore
+    tokio::select! {
+        Err(e) = flatten_join_handle(streaming_all_task) => Err(e),
+        resp = flatten_join_handle(exit_status_task) => resp,
+    }?;
 
+    tracing::debug!("airbyte-to-flow: connector_runner done");
     Ok(())
 }
 
@@ -165,23 +177,25 @@ async fn streaming_all(
 
     let request_stream_copy =
         tokio::spawn(
-            async move { copy(&mut request_stream_reader, &mut request_stream_writer).await },
+            async move {
+                copy(&mut request_stream_reader, &mut request_stream_writer).await?;
+                tracing::debug!("airbyte-to-flow: request_stream_copy done");
+                Ok::<(), std::io::Error>(())
+            },
         );
 
     let response_stream_copy = tokio::spawn(async move {
         let mut writer = response_stream_writer.lock().await;
-        copy(&mut response_stream_reader, writer.deref_mut()).await
+        copy(&mut response_stream_reader, writer.deref_mut()).await?;
+        tracing::debug!("airbyte-to-flow: response_stream_copy done");
+        Ok(())
     });
 
-    let (req_stream_bytes, resp_stream_bytes) = tokio::try_join!(
+    tokio::try_join!(
         flatten_join_handle(request_stream_copy),
         flatten_join_handle(response_stream_copy)
     )?;
 
-    tracing::debug!(
-        req_stream = req_stream_bytes,
-        resp_stream = resp_stream_bytes,
-        "streaming_all finished"
-    );
+    tracing::debug!("airbyte-to-flow: streaming_all finished");
     Ok(())
 }
