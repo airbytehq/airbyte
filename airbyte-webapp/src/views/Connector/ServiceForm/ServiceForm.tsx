@@ -80,32 +80,6 @@ const RevalidateOnValidationSchemaChange: React.FC<{ validationSchema: unknown }
   return null;
 };
 
-/**
- * A component that will observe whenever the serviceType (selected connector)
- * changes and set the name of the connector to match the connector definition name.
- */
-const SetDefaultName: React.FC = () => {
-  const { setFieldValue } = useFormikContext();
-  const { selectedService } = useServiceForm();
-
-  useEffect(() => {
-    if (!selectedService) {
-      return;
-    }
-
-    const timeout = setTimeout(() => {
-      // We need to push this out one execution slot, so the form isn't still in its
-      // initialization status and won't react to this call but would just take the initialValues instead.
-      setFieldValue("name", selectedService.name);
-    });
-    return () => clearTimeout(timeout);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedService]);
-
-  return null;
-};
-
 export interface ServiceFormProps {
   formType: "source" | "destination";
   formId?: string;
