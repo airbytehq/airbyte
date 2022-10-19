@@ -95,7 +95,7 @@ def test_singer_discover_metadata(mock_read_catalog):
     _user_stream = airbyte_catalog.streams[0]
     _roles_stream = airbyte_catalog.streams[1]
 
-    assert _user_stream.supported_sync_modes is None
+    # assert _user_stream.supported_sync_modes is None
     assert _user_stream.default_cursor_field is None
     assert _roles_stream.supported_sync_modes == [SyncMode.incremental]
     assert _roles_stream.default_cursor_field == ["name"]
