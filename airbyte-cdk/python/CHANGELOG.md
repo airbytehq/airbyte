@@ -1,8 +1,12 @@
 # Changelog
 
-## 0.1.105
+## 0.2.1
 
 - Low-code: Always convert stream slices output to an iterator
+
+## 0.2.0
+
+- Replace caching method: VCR.py -> requests-cache with SQLite backend
 
 ## 0.1.104
 
