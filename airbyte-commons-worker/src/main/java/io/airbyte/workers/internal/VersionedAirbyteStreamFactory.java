@@ -101,22 +101,34 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
    * @throws IOException
    */
   private Optional<Version> detectVersion(final BufferedReader bufferedReader) throws IOException {
+    // Buffersize needs to be big enough to containing everything we need for the detection. Otherwise,
+    // the reset will fail.
     bufferedReader.mark(BUFFER_READ_AHEAD_LIMIT);
-    // Cap detection to the first 10 messages
-    for (int i = 0; i < MESSAGES_LOOK_AHEAD_FOR_DETECTION; ++i) {
-      final String line = bufferedReader.readLine();
-      final Optional<JsonNode> jsonOpt = Jsons.tryDeserialize(line);
-      if (jsonOpt.isPresent()) {
-        final JsonNode json = jsonOpt.get();
-        if (isSpecMessage(json)) {
-          final JsonNode protocolVersionNode = json.at("/spec/protocol_version");
-          bufferedReader.reset();
-          return Optional.ofNullable(protocolVersionNode).filter(Predicate.not(JsonNode::isMissingNode)).map(node -> new Version(node.asText()));
+    try {
+      // Cap detection to the first 10 messages. When doing the protocol detection, we expect the SPEC
+      // message to show up early in the stream. Ideally it should be first message however we do not
+      // enforce this constraint currently so connectors may send LOG messages before.
+      for (int i = 0; i < MESSAGES_LOOK_AHEAD_FOR_DETECTION; ++i) {
+        final String line = bufferedReader.readLine();
+        final Optional<JsonNode> jsonOpt = Jsons.tryDeserialize(line);
+        if (jsonOpt.isPresent()) {
+          final JsonNode json = jsonOpt.get();
+          if (isSpecMessage(json)) {
+            final JsonNode protocolVersionNode = json.at("/spec/protocol_version");
+            bufferedReader.reset();
+            return Optional.ofNullable(protocolVersionNode).filter(Predicate.not(JsonNode::isMissingNode)).map(node -> new Version(node.asText()));
+          }
         }
       }
+      bufferedReader.reset();
+      return Optional.empty();
+    } catch (IOException e) {
+      logger.warn(
+          "Protocol version detection failed, it is likely than the connector sent more than {}B without an complete SPEC message." +
+              " A SPEC message that is too long could be the root cause here.",
+          BUFFER_READ_AHEAD_LIMIT);
+      throw e;
     }
-    bufferedReader.reset();
-    return Optional.empty();
   }
 
   private boolean isSpecMessage(final JsonNode json) {
