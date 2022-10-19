@@ -996,6 +996,11 @@ exports[`CreateConnectionForm should render with an error 1`] = `
         >
           Failed to fetch schema. Please try again
         </p>
+        <p
+          class="<removed-for-snapshot-test>"
+        >
+          Error: Test Error
+        </p>
         <button
           class="<removed-for-snapshot-test>"
         >

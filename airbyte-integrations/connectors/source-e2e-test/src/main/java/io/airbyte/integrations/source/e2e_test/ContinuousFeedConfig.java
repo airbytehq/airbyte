@@ -5,12 +5,14 @@
 package io.airbyte.integrations.source.e2e_test;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -79,13 +81,15 @@ public class ContinuousFeedConfig {
         checkSchema(streamName, streamSchema.get());
 
         if (streamDuplication == 1) {
-          final AirbyteStream stream = new AirbyteStream().withName(streamName).withJsonSchema(streamSchema.get());
+          final AirbyteStream stream = new AirbyteStream().withName(streamName).withJsonSchema(streamSchema.get())
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
           return new AirbyteCatalog().withStreams(Collections.singletonList(stream));
         } else {
           final List<AirbyteStream> streams = new ArrayList<>(streamDuplication);
           for (int i = 0; i < streamDuplication; ++i) {
             streams.add(new AirbyteStream()
                 .withName(String.join("_", streamName, String.valueOf(i)))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
                 .withJsonSchema(streamSchema.get()));
           }
           return new AirbyteCatalog().withStreams(streams);
@@ -104,7 +108,8 @@ public class ContinuousFeedConfig {
           final String streamName = entry.getKey();
           final JsonNode streamSchema = entry.getValue();
           checkSchema(streamName, streamSchema);
-          streams.add(new AirbyteStream().withName(streamName).withJsonSchema(streamSchema));
+          streams.add(new AirbyteStream().withName(streamName).withJsonSchema(streamSchema)
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)));
         }
         return new AirbyteCatalog().withStreams(streams);
       }

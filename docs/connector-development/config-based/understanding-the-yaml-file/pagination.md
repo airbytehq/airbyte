@@ -13,8 +13,8 @@ Schema:
     type: object
     anyOf:
       - "$ref": "#/definitions/DefaultPaginator"
-      - "$ref": "#/definitions/NoPaginator"
-  NoPaginator:
+      - "$ref": "#/definitions/NoPagination"
+  NoPagination:
     type: object
     additionalProperties: true
 ```

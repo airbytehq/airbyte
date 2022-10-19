@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
     AirbyteStream,
     ConnectorSpecification,
     Status,
+    SyncMode,
     Type,
 )
 from airbyte_cdk.sources import Source
@@ -172,7 +173,7 @@ def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock
 
 def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
     parsed_args = Namespace(command="discover", config="config_path")
-    expected = AirbyteCatalog(streams=[AirbyteStream(name="stream", json_schema={"k": "v"})])
+    expected = AirbyteCatalog(streams=[AirbyteStream(name="stream", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])])
     mocker.patch.object(MockSource, "discover", return_value=expected)
     assert [_wrap_message(expected)] == list(entrypoint.run(parsed_args))
     assert spec_mock.called
