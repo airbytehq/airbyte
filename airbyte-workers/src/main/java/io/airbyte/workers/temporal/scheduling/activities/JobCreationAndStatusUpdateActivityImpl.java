@@ -6,7 +6,6 @@ package io.airbyte.workers.temporal.scheduling.activities;
 
 import static io.airbyte.config.JobConfig.ConfigType.SYNC;
 import static io.airbyte.persistence.job.models.AttemptStatus.FAILED;
-
 import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
 import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
