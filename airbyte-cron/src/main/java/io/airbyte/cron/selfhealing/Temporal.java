@@ -4,6 +4,9 @@
 
 package io.airbyte.cron.selfhealing;
 
+import static io.airbyte.cron.MicronautCronRunner.SCHEDULED_TRACE_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.micronaut.scheduling.annotation.Scheduled;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
@@ -21,6 +24,7 @@ public class Temporal {
     this.temporalClient = temporalClient;
   }
 
+  @Trace(operationName = SCHEDULED_TRACE_OPERATION_NAME)
   @Scheduled(fixedRate = "10s")
   void cleanTemporal() {
     temporalClient.restartClosedWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);

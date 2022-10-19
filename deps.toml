@@ -1,5 +1,5 @@
 [versions]
-datadog-version = "0.110.0"
+datadog-version = "0.111.0"
 fasterxml_version = "2.13.3"
 flyway = "7.14.0"
 glassfish_version = "2.31"
@@ -43,6 +43,7 @@ log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4
 jul-to-slf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+java-dogstatsd-client = { module = "com.datadoghq:java-dogstatsd-client", version = "4.1.0"}
 javax-databind = { module = "javax.xml.bind:jaxb-api", version = "2.4.0-b180830.0359" }
 jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
