@@ -9,7 +9,7 @@ import { Switch } from "components/ui/Switch";
 
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchemaToField } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
-import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
+import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
@@ -57,7 +57,7 @@ export const BulkHeader: React.FC = () => {
   const {
     destDefinition: { supportedDestinationSyncModes },
   } = useConnectionFormService();
-  const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEdit();
+  const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEditService();
 
   const availableSyncModes = useMemo(
     () =>
