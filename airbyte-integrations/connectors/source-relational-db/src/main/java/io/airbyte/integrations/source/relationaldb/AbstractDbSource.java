@@ -167,14 +167,14 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
             LOGGER.info("Closed database connection pool.");
           });
     } catch (final Exception exception) {
-      if (showEnhancedErrorDetails(exception)) {
+      if (isConfigError(exception)) {
         AirbyteTraceMessageUtility.emitConfigErrorTrace(exception, exception.getMessage());
       }
       throw exception;
     }
   }
 
-  private boolean showEnhancedErrorDetails(final Exception exception) {
+  private boolean isConfigError(final Exception exception) {
     // For now, enhanced error details should only be shown for InvalidCursorException. In the future, enhanced error messages will exist for
     // additional error types.
     return exception instanceof InvalidCursorException;
