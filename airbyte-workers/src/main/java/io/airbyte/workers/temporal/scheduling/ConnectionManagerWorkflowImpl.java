@@ -415,7 +415,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         Workflow.getVersion(CHECK_PREVIOUS_JOB_OUTPUT_TAG, Workflow.DEFAULT_VERSION, CHECK_PREVIOUS_JOB_OUTPUT_TAG_CURRENT_VERSION);
     boolean isLastJobOrAttemptFailure = true;
 
-    if (checkJobOutputVersion < CHECK_PREVIOUS_JOB_OUTPUT_TAG_CURRENT_VERSION) {
+    if (checkJobOutputVersion >= CHECK_PREVIOUS_JOB_OUTPUT_TAG_CURRENT_VERSION) {
       final JobCheckFailureInput jobStateInput =
           new JobCheckFailureInput(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), connectionId);
       isLastJobOrAttemptFailure = runMandatoryActivityWithOutput(jobCreationAndStatusUpdateActivity::isLastJobOrAttemptFailure, jobStateInput);
