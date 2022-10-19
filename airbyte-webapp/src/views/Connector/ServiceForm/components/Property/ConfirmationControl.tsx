@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 const ComponentContainer = styled.div`
   display: flex;
