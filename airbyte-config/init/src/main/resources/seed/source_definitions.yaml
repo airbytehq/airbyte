@@ -33,7 +33,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.22
+  dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -211,6 +211,13 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/confluence
   icon: confluence.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Courier
+  sourceDefinitionId: 0541b2cd-2367-4986-b5f1-b79ff55439e4
+  dockerRepository: airbyte/source-courier
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/courier
   sourceType: api
   releaseStage: alpha
 - name: Customer.io
