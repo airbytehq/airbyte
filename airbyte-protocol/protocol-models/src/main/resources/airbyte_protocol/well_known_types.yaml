@@ -17,7 +17,7 @@ definitions:
     #   2022-01-23 BC
     # format: date is a superset of what we want, so we cannot use it here (e.g. it accepts 2-digit years)
     pattern: ^\d{4}-\d{2}-\d{2}( BC)?$
-    description: RFC 3339§5.6's full-date format
+    description: RFC 3339§5.6's full-date format, extended with BC era support
   TimestampWithTimezone:
     type: string
     # Examples:
@@ -27,7 +27,8 @@ definitions:
     pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+\-]\d{1,2}:\d{2})( BC)?$
     description: >
       An instant in time. Frequently simply referred to as just a timestamp, or timestamptz.
-      Uses RFC 3339§5.6's date-time format, requiring a "T" separator. Note that we do _not_ accept Unix epochs here.
+      Uses RFC 3339§5.6's date-time format, requiring a "T" separator, and extended with BC era support.
+      Note that we do _not_ accept Unix epochs here.
   TimestampWithoutTimezone:
     type: string
     # Examples:
@@ -37,7 +38,7 @@ definitions:
     pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?( BC)?$
     description: >
       Also known as a localdatetime, or just datetime.
-      Under RFC 3339§5.6, this would be represented as `full-date "T" partial-time`.
+      Under RFC 3339§5.6, this would be represented as `full-date "T" partial-time`, extended with BC era support.
   TimeWithTimezone:
     type: string
     # Examples:
