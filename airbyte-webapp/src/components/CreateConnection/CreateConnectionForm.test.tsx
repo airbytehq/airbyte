@@ -19,11 +19,6 @@ jest.mock("services/workspaces/WorkspacesService", () => ({
   useCurrentWorkspaceId: () => "workspace-id",
 }));
 
-// exp-speedy-connection
-jest.mock("components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection", () => ({
-  useExperimentSpeedyConnection: () => ({ isExperimentVariant: false }),
-}));
-
 describe("CreateConnectionForm", () => {
   const Wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => <TestWrapper>{children}</TestWrapper>;
   const render = async () => {
