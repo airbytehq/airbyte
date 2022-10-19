@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -o errexit
 set -o nounset
-set -x
+
 <<comment
 This script performs a load test against an existing Airbyte instance by calling the instance's API to create and sync new connections.
 It is intended to work with any Airbyte instance (local or remote, docker or kube, OSS or Cloud). It authenticates using a special auth header

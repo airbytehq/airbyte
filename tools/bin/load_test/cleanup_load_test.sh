@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -o errexit
+set -o nounset
 
 <<comment
 This script cleans up an earlier load test. It reads from cleanup files that the load test script writes to
@@ -37,7 +39,7 @@ function showhelp {
 
 hostname=localhost
 api_port=8001
-x_endpoint_header=
+x_endpoint_header=""
 
 while getopts "hW:H:P:X:kN:" options ; do
   case "${options}" in
@@ -71,8 +73,6 @@ function setup {
   echo "set workspace_id to ${workspace_id}"
   echo "set hostname to ${hostname}"
   echo "set api_port to ${api_port}"
-  echo "set kube to ${kube}"
-  echo "set kube_namespace to ${kube_namespace}"
 
   setCleanupFilesForWorkspace $workspace_id
 }
