@@ -829,6 +829,9 @@ The config in the `AirbyteConfigMessage` must conform to connector's specificati
         additionalProperties: true
 ```
 
+For example, if the currently persisted config file is `{"api_key": 123, start_date: "01-01-2022"}` and the following `AirbyteConfigMessage` is output `{"config": {"api_key":  456}, "emitted_at": <current_time>}` then the persisted configuration will become `{"api_key": 456, start_date: "01-01-2022"}`. 
+
+
 # Acknowledgements
 
 We'd like to note that we were initially inspired by Singer.io's [specification](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#singer-specification) and would like to acknowledge that some of their design choices helped us bootstrap our project. We've since made a lot of modernizations to our protocol and specification, but don't want to forget the tools that helped us get started.
