@@ -46,3 +46,6 @@ definitions:
       cursor:
         description: string representation of the last value recorded for the cursor.
         type: string
+      cursor_record_count:
+        description: number of records that have the cursor value.
+        type: integer
