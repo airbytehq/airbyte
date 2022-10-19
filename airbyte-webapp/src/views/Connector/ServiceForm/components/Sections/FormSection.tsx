@@ -62,6 +62,15 @@ export const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, ski
 
           return (
             <React.Fragment key={sectionPath}>
+              {/*
+                If the auth button should be rendered here, do so. In addition to the check useAuthentication does
+                we also need to check if the formField type is not a `formCondition`. We render a lot of OAuth buttons
+                in conditional fields in which case the path they should be rendered is the path of the conditional itself.
+                For conditional fields we're rendering this component twice, once "outside" of the conditional, which causes
+                the actual conditional frame to be rendered and once inside the conditional to render the actual content.
+                Since we want to only render the auth button inside the conditional and not above it, we filter out the cases
+                where the formField._type is formCondition, which will be the "outside rendering".
+               */}
               {shouldShowAuthButton(sectionPath) && formField._type !== "formCondition" && <AuthSection />}
               <FormNode formField={formField} sectionPath={sectionPath} disabled={disabled} />
             </React.Fragment>

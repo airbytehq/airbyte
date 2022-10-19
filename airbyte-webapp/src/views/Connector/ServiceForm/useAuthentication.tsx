@@ -36,6 +36,11 @@ const convertAndPrefixPaths = (paths?: Path[], rootPath: Path = []): string[] =>
   );
 };
 
+/**
+ * Returns true if the auth button should be shown for a advancedAuth specification.
+ * This will check if the connector has a predicateKey, and if so, check if the current form value
+ * of the corresponding field matches the predicateValue from the specification.
+ */
 const shouldShowButtonForAdvancedAuth = (
   predicateKey: string[] | undefined,
   predicateValue: string | undefined,
@@ -48,32 +53,53 @@ const shouldShowButtonForAdvancedAuth = (
   );
 };
 
+/**
+ * Returns true if the auth button should be shown for a authSpecification connector.
+ */
 const shouldShowButtonForLegacyAuth = (
   spec: JSONSchema7,
   rootPath: Path,
   values: ServiceFormValues<unknown>
 ): boolean => {
   if (!rootPath.some((p) => isNumerical(p))) {
+    // If the root path of the auth parameters (which is also the place the button will be rendered)
+    // is not inside a conditional, i.e. none of the root path is a numerical value, we will always
+    // show the button.
     return true;
   }
 
-  const specPath = (rootPath as string[]).flatMap((path) =>
-    isNumerical(path) ? ["oneOf", path] : ["properties", path]
+  // If the spec had a root path inside a conditional, e.g. `credentials.0`, we need to figure
+  // out if that conditional is currently on the correct selected option. Since the connector spec
+  // in contrast to `advancedAuth`, which has `predicateValue` doesn't have the value for the conditional
+  // we need to find that ourselves first.
+
+  // To find the path inside the connector spec that matches the `rootPath` we'll need to insert `properties`
+  // and `oneOf`, since they'll appear in the JSONSchema, e.g. this turns `credentials.0` to `properties.credentials.oneOf.0`
+  const specPath = rootPath.flatMap((path) =>
+    isNumerical(path) ? ["oneOf", String(path)] : ["properties", String(path)]
   );
+  // Get the part of the spec that `rootPath` point to
   const credentialsSpecRoot = getIn(spec, specPath) as JSONSchema7 | undefined;
 
   if (!credentialsSpecRoot?.properties) {
+    // if the part doesn't exist in the spec (which should not happen) we just show the auth button always.
     return true;
   }
 
+  // To find the value we're expecting, we run through all properties inside that matching spec inside the conditional
+  // to find the one that has a `const` value in it, since this is the actual value that will be written into the conditional
+  // field itself once it's selected.
   const constProperty = Object.entries(credentialsSpecRoot.properties)
     .map(([key, prop]) => [key, typeof prop !== "boolean" ? prop.const : undefined] as const)
     .find(([, constValue]) => !!constValue);
 
+  // If none of the conditional properties is a const value, we'll also show the auth button always (should not happen)
   if (!constProperty) {
     return true;
   }
 
+  // Check if the value in the form match the found `const` value from the spec. If so we know the conditional
+  // is on the right option.
   const [key, constValue] = constProperty;
   const value = getIn(values, makeConnectionConfigurationPath(stripNumericalEntries([...rootPath, key])));
   return value === constValue;
@@ -85,7 +111,16 @@ interface AuthenticationHook {
    * OAuth flow and will be filled in by that.
    */
   isHiddenAuthField: (fieldPath: string) => boolean;
+  /**
+   * A record of all formik errors in hidden authentication fields. The key will be the
+   * name of the field and the value an error code. If no error is present in a field
+   * it will be missing from this object.
+   */
   hiddenAuthFieldErrors: Record<string, string>;
+  /**
+   * This will return true if the auth button should be visible and rendered in the place of
+   * the passed in field, and false otherwise.
+   */
   shouldShowAuthButton: (fieldPath: string) => boolean;
 }
 
@@ -139,6 +174,10 @@ export const useAuthentication = (): AuthenticationHook => {
   );
 
   const hiddenAuthFieldErrors = useMemo(() => {
+    if (!isAuthButtonVisible) {
+      // We don't want to return the errors if the auth button isn't visible.
+      return {};
+    }
     return implicitAuthFieldPaths.reduce<Record<string, string>>((authErrors, fieldName) => {
       const { error } = getFieldMeta(fieldName);
       if (submitCount > 0 && error) {
@@ -146,12 +185,12 @@ export const useAuthentication = (): AuthenticationHook => {
       }
       return authErrors;
     }, {});
-  }, [getFieldMeta, implicitAuthFieldPaths, submitCount]);
+  }, [getFieldMeta, implicitAuthFieldPaths, isAuthButtonVisible, submitCount]);
 
   const shouldShowAuthButton = useCallback(
     (fieldPath: string) => {
       if (!isAuthButtonVisible) {
-        // Never show the auth button anywhere if its not enabled or visible
+        // Never show the auth button anywhere if its not enabled or visible (inside a conditional that's not selected)
         return false;
       }
 
