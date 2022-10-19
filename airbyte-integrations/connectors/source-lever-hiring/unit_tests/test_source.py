@@ -3,29 +3,30 @@
 #
 
 from unittest.mock import MagicMock
-
+import pytest
 import responses
 from source_lever_hiring.source import SourceLeverHiring
 
 
-def setup_responses():
-    responses.add(
-        responses.POST, "https://sandbox-lever.auth0.com/oauth/token", json={"access_token": "fake_access_token", "expires_in": 3600},
-        responses.GET, "https://api.lever.co/v1/opportunities", json={"api_key": "fake_api_key", "expires_in": 3600}
-    )
-
+@pytest.mark.parametrize(
+    ("response, url, payload, test_config"), 
+    [
+        (responses.POST, "https://sandbox-lever.auth0.com/oauth/token", json={"access_token": "fake_access_token", "expires_in": 3600}), test_config_client() 
+        (responses.GET, "https://api.lever.co/v1/opportunities", json={"api_key": "fake_api_key", "expires_in": 3600}), test_config_key(),
+    ],
+)
 
 @responses.activate
-def test_check_connection(test_config):
-    setup_responses()
+def test_check_connection(response, url, payload, test_config):
+    responses.add(response, url, payload)
     source = SourceLeverHiring()
     logger_mock = MagicMock()
     assert source.check_connection(logger_mock, test_config) == (True, None)
 
 
 @responses.activate
-def test_streams(test_config):
-    setup_responses()
+def test_streams(response, url, payload, test_config):
+    responses.add(response, url, payload)
     source = SourceLeverHiring()
     streams = source.streams(test_config)
     expected_streams_number = 7
