@@ -19,7 +19,7 @@ export const useTestConnector = (
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
-  testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
+  testConnector: (v?: ConnectorFormValues) => Promise<CheckConnectionRead>;
   error: Error | null;
   reset: () => void;
 } => {
