@@ -13,7 +13,6 @@ import { Switch } from "components/ui/Switch";
 import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
-import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import { Arrow as ArrowBlock } from "./components/Arrow";
 import { IndexerType, PathPopout } from "./components/PathPopout";
@@ -30,7 +29,7 @@ interface SyncSchema {
   destinationSyncMode: DestinationSyncMode;
 }
 
-interface StreamHeaderProps {
+export interface StreamHeaderProps {
   stream: SyncSchemaStream;
   destName: string;
   destNamespace: string;
@@ -45,10 +44,11 @@ interface StreamHeaderProps {
   cursorType: IndexerType;
   onCursorChange: (cursorPath: Path) => void;
   isRowExpanded: boolean;
-  hasFields: boolean;
+  fields: SyncSchemaField[];
   onExpand: () => void;
   changedSelected: boolean;
   hasError: boolean;
+  disabled?: boolean;
 }
 
 export const StreamHeader: React.FC<StreamHeaderProps> = ({
@@ -64,14 +64,14 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   primitiveFields,
   cursorType,
   isRowExpanded,
-  hasFields,
+  fields,
   onExpand,
   changedSelected,
   hasError,
+  disabled,
 }) => {
-  const { mode } = useConnectionFormService();
   const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config ?? {};
-  const isEnabled = stream.config?.selected;
+  const isStreamEnabled = stream.config?.selected;
 
   const { defaultCursorField } = stream.stream ?? {};
   const syncSchema = useMemo(
@@ -86,14 +86,16 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
 
   const paths = primitiveFields.map((field) => field.path);
 
+  const hasFields = fields && fields.length > 0;
+
   const iconStyle = classnames(styles.icon, {
-    [styles.plus]: isEnabled,
-    [styles.minus]: !isEnabled,
+    [styles.plus]: isStreamEnabled,
+    [styles.minus]: !isStreamEnabled,
   });
 
   const streamHeaderContentStyle = classnames(styles.streamHeaderContent, {
-    [styles.greenBackground]: changedSelected && isEnabled,
-    [styles.redBackground]: changedSelected && !isEnabled,
+    [styles.greenBackground]: changedSelected && isStreamEnabled,
+    [styles.redBackground]: changedSelected && !isStreamEnabled,
     [styles.purpleBackground]: isSelected,
     [styles.redBorder]: hasError,
   });
@@ -101,11 +103,11 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
 
   return (
     <Row className={styles.catalogSectionRow}>
-      {mode !== "readonly" && (
+      {!disabled && (
         <div className={checkboxCellCustomStyle}>
           {changedSelected && (
             <div>
-              {isEnabled ? (
+              {isStreamEnabled ? (
                 <FontAwesomeIcon icon={faPlus} size="2x" className={iconStyle} />
               ) : (
                 <FontAwesomeIcon icon={faMinus} size="2x" className={iconStyle} />
@@ -120,7 +122,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       </ArrowCell>
       <div className={streamHeaderContentStyle}>
         <HeaderCell flex={0.4}>
-          <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={mode === "readonly"} />
+          <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
         </HeaderCell>
         <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
           {stream.stream?.namespace || (
@@ -133,12 +135,12 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           {stream.stream?.name}
         </HeaderCell>
         <Cell flex={1.5}>
-          {mode !== "readonly" ? (
-            <SyncSettingsDropdown value={syncSchema} options={availableSyncModes} onChange={onSelectSyncMode} />
-          ) : (
+          {disabled ? (
             <HeaderCell ellipsis title={`${syncSchema.syncMode} | ${syncSchema.destinationSyncMode}`}>
               {syncSchema.syncMode} | {syncSchema.destinationSyncMode}
             </HeaderCell>
+          ) : (
+            <SyncSettingsDropdown value={syncSchema} options={availableSyncModes} onChange={onSelectSyncMode} />
           )}
         </Cell>
         <HeaderCell>
