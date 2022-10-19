@@ -44,7 +44,7 @@ function showhelp {
   ${CLEAR}-T <minutes>
     ${GREEN}Specify the time in minutes that each connection should sync for.
     Defaults to '10'.
-  """ && exit 1
+  """
 }
 
 hostname=localhost
@@ -63,6 +63,7 @@ while getopts "hW:H:P:X:C:T:kN:-:" options ; do
                 ;;
             *)
                 showhelp
+                exit 0
                 ;;
         esac;;
     h)
@@ -88,6 +89,7 @@ while getopts "hW:H:P:X:C:T:kN:-:" options ; do
       ;;
     *)
       showhelp
+      exit 1
       ;;
   esac
 done
@@ -182,7 +184,7 @@ function createDestination {
 function createMultipleConnections {
   for i in $(seq 1 $num_connections)
   do
-    echo "Creating connection number $i..."
+    echo "Creating connection number $i (out of $num_connections)..."
     createConnection $i
   done
   echo "Finished creating $num_connections connections."
