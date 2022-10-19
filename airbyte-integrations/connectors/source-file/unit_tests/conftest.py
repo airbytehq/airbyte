@@ -35,7 +35,7 @@ def invalid_config(read_file):
 
 
 @pytest.fixture
-def non_direct_url_provided_config():
+def config_dropbox_link():
     return {
         "dataset_name": "test",
         "format": "csv",
