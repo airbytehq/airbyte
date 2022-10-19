@@ -33,7 +33,12 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VersionedAirbyteStreamFactory.class);
   private static final Version fallbackVersion = new Version("0.2.0");
-  private static final int BUFFER_READ_AHEAD_LIMIT = 4096;
+
+  // Buffer size to use when detecting the protocol version.
+  // Given that BufferedReader::reset fails if we try to reset if we go past its buffer size, this
+  // buffer has to be big enough to contain our longest spec and whatever messages get emitted before
+  // the SPEC.
+  private static final int BUFFER_READ_AHEAD_LIMIT = 32000;
   private static final int MESSAGES_LOOK_AHEAD_FOR_DETECTION = 10;
 
   private final AirbyteMessageSerDeProvider serDeProvider;
