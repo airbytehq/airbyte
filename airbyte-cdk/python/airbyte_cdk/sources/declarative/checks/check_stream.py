@@ -47,9 +47,13 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
         return True, None
 
     def _get_stream_slice(self, stream):
-        slices = stream.stream_slices(
-            cursor_field=stream.cursor_field,
-            sync_mode=SyncMode.full_refresh,
+        # We wrap the return output of stream_slices() because some implementations return types that are iterable,
+        # but not iterators such as lists or tuples
+        slices = iter(
+            stream.stream_slices(
+                cursor_field=stream.cursor_field,
+                sync_mode=SyncMode.full_refresh,
+            )
         )
         try:
             return next(slices)
