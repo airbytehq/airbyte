@@ -806,7 +806,11 @@ AirbyteErrorTraceMessage:
 
 ## AirbyteConfigMessage
 
-A AirbyteConfigMessage allows a connector to update its configuration in the middle of a sync.  This is valuable for connectors with short-lived or single-use credentials.
+An `AirbyteConfigMessage` allows a connector to update its configuration in the middle of a sync.  This is valuable for connectors with short-lived or single-use credentials. 
+
+Emitting this message signals to the orchestrator process (for example, the Airbyte platform) that it should update its persistence layer, replacing the connector's current configuration with the config present in the `.config` field of the message.  
+
+The config in the `AirbyteConfigMessage` must conform to connector's specification's schema, and the orchestrator process is expected to validate this invariant. If the output config does not conform to the specification's schema, the orchestrator process should raise an exception and terminate the sync.
 
 ```yaml
   AirbyteConfigMessage:
