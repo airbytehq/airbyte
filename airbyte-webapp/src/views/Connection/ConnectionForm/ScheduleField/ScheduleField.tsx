@@ -1,4 +1,4 @@
-import { Field, FieldInputProps, FieldProps, FormikProps } from "formik";
+import { Field, FieldInputProps, FieldProps, FormikProps, useFormikContext } from "formik";
 import { ChangeEvent, useCallback, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -28,6 +28,7 @@ export const ScheduleField: React.FC = () => {
   const { connection, mode } = useConnectionFormService();
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
   const analyticsService = useAnalyticsService();
+  const { errors } = useFormikContext<FormikConnectionFormValues>();
 
   const onDropDownSelect = useCallback(
     (item: DropDownOptionDataItem | null) => {
@@ -128,6 +129,10 @@ export const ScheduleField: React.FC = () => {
     return form.values.scheduleType === ConnectionScheduleType.cron;
   };
 
+  const cronValidationError = useMemo(() => {
+    return (errors?.scheduleData as ConnectionScheduleData)?.cron?.cronExpression;
+  }, [errors]);
+
   return (
     <Field name="scheduleData">
       {({ field, meta, form }: FieldProps<ConnectionScheduleData>) => (
@@ -203,9 +208,9 @@ export const ScheduleField: React.FC = () => {
                     onChange={(item: DropDownOptionDataItem) => onCronChange(item, field, form, "cronTimeZone")}
                   />
                 </div>
-                {(form.errors?.scheduleData as ConnectionScheduleData)?.cron?.cronExpression && (
+                {cronValidationError && (
                   <PropertyError data-testid="cronExpressionError">
-                    <FormattedMessage id={(form.errors.scheduleData as ConnectionScheduleData)?.cron?.cronExpression} />
+                    <FormattedMessage id={cronValidationError} />
                   </PropertyError>
                 )}
               </div>
