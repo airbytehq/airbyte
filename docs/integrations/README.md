@@ -179,6 +179,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Zenloop](sources/zenloop.md)                                                               | Alpha                | Yes                 |
 | [Zoho CRM](sources/zoho-crm.md)                                                             | Alpha                | No                  |
 | [Zoom](sources/zoom.md)                                                                     | Alpha                | No                  |
+| [Zoom low-code CDK](sources/zoom-lc-cdk.md)                                                        | Alpha                | No                  |
 | [Zuora](sources/zuora.md)                                                                   | Alpha                | Yes                 |
 
 ## Destinations
