@@ -149,10 +149,8 @@ class HttpRequester(Requester, JsonSchemaMixin):
 
     @property
     def cache_filename(self) -> str:
-        # FIXME: this should be declarative
         return f"{self.name}.yml"
 
     @property
     def use_cache(self) -> bool:
-        # FIXME: this should be declarative
-        return False
+        return True
