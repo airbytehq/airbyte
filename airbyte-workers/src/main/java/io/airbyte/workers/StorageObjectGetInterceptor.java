@@ -27,8 +27,12 @@ public class StorageObjectGetInterceptor implements TraceInterceptor {
         return;
       }
       if (s.isError()) {
-        System.out.println(tags.get("http.status_code").getClass().getName());
-        System.out.println(tags.get("peer.hostname").getClass().getName());
+        try {
+          System.out.println(tags.get("http.status_code").getClass().getName());
+          System.out.println(tags.get("peer.hostname").getClass().getName());
+        } catch (final Exception e) {
+          // NOOP
+        }
       }
       if (s.isError() &&
           tags.getOrDefault("peer.hostname", "").equals("storage.googleapis.com") &&
