@@ -24,6 +24,7 @@
   "sidebar.recipes": "Tutorials - Use cases",
 
   "form.continue": "Continue",
+  "form.error": "Error: {message}",
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "Enter a valid email",
