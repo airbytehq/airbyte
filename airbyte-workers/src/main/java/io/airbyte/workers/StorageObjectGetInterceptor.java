@@ -26,10 +26,13 @@ public class StorageObjectGetInterceptor implements TraceInterceptor {
         filtered.add(s);
         return;
       }
-
+      if (s.isError()) {
+        System.out.println(tags.get("http.status_code").getClass().getName());
+        System.out.println(tags.get("peer.hostname").getClass().getName());
+      }
       if (s.isError() &&
           tags.getOrDefault("peer.hostname", "").equals("storage.googleapis.com") &&
-          tags.getOrDefault("http.status_code", "").equals("404")) {
+          tags.getOrDefault("http.status_code", "").equals(404)) {
         System.out.printf("setting error to false: span name: %s (%s)%n", s.getResourceName(),
             s.getOperationName());
         s.setError(false);
