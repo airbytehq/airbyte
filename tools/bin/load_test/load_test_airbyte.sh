@@ -190,6 +190,8 @@ function createMultipleConnections {
 
 # Call the API to create a connection. Replace strings in connection_spec.json with real IDs.
 # $1 arg is the connection count, which is used in the name of the created connection
+# Connection spec might change and this function could break in the future. If that happens, we need
+# to update the connection spec.
 function createConnection {
   body=$(
     sed "
