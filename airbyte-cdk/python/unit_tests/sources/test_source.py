@@ -60,12 +60,12 @@ def catalog():
     configured_catalog = {
         "streams": [
             {
-                "stream": {"name": "mock_http_stream", "json_schema": {}},
+                "stream": {"name": "mock_http_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
                 "destination_sync_mode": "overwrite",
                 "sync_mode": "full_refresh",
             },
             {
-                "stream": {"name": "mock_stream", "json_schema": {}},
+                "stream": {"name": "mock_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
                 "destination_sync_mode": "overwrite",
                 "sync_mode": "full_refresh",
             },
@@ -317,7 +317,11 @@ def test_read_catalog(source):
     configured_catalog = {
         "streams": [
             {
-                "stream": {"name": "mystream", "json_schema": {"type": "object", "properties": {"k": "v"}}},
+                "stream": {
+                    "name": "mystream",
+                    "json_schema": {"type": "object", "properties": {"k": "v"}},
+                    "supported_sync_modes": ["full_refresh"],
+                },
                 "destination_sync_mode": "overwrite",
                 "sync_mode": "full_refresh",
             }
