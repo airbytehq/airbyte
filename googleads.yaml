@@ -1,0 +1,124 @@
+# AdWordsClient configurations
+adwords:
+  #############################################################################
+  # Required Fields                                                           #
+  #############################################################################
+  developer_token: INSERT_DEVELOPER_TOKEN_HERE
+  #############################################################################
+  # Optional Fields                                                           #
+  #############################################################################
+  # client_customer_id: INSERT_CLIENT_CUSTOMER_ID_HERE
+  # user_agent: INSERT_USER_AGENT_HERE
+  # partial_failure: True
+  # validate_only: True
+  #############################################################################
+  # OAuth2 Configuration                                                      #
+  # Below you may provide credentials for either the installed application or #
+  # service account flows. Remove or comment the lines for the flow you're    #
+  # not using.                                                                #
+  #############################################################################
+  # The following values configure the client for the installed application
+  # flow.
+  client_id: INSERT_OAUTH_2_CLIENT_ID_HERE
+  client_secret: INSERT_CLIENT_SECRET_HERE
+  refresh_token: INSERT_REFRESH_TOKEN_HERE
+  # The following values configure the client for the service account flow.
+  # path_to_private_key_file: INSERT_PATH_TO_JSON_KEY_FILE_HERE
+  # delegated_account: INSERT_DOMAIN_WIDE_DELEGATION_ACCOUNT
+  #############################################################################
+  # ReportDownloader Headers                                                  #
+  # Below you may specify boolean values for optional headers that will be    #
+  # applied to all requests made by the ReportDownloader utility by default.  #
+  #############################################################################
+  # report_downloader_headers:
+    # skip_report_header: False
+    # skip_column_header: False
+    # skip_report_summary: False
+    # use_raw_enum_values: False
+
+
+# AdManagerClient configurations
+ad_manager:
+  #############################################################################
+  # Required Fields                                                           #
+  #############################################################################
+  application_name: handy-compass-282417
+  #############################################################################
+  # Optional Fields                                                           #
+  #############################################################################
+  # The network_code is required for all services except NetworkService:
+  # network_code: INSERT_NETWORK_CODE_HERE
+  # delegated_account: INSERT_DOMAIN_WIDE_DELEGATION_ACCOUNT
+  #############################################################################
+  # OAuth2 Configuration                                                      #
+  # Below you may provide credentials for either the installed application or #
+  # service account (recommended) flows. Remove or comment the lines for the  #
+  # flow you're not using.                                                    #
+  #############################################################################
+  # The following values configure the client for the service account flow.
+  # path_to_private_key_file: INSERT_PATH_TO_JSON_KEY_FILE_HERE
+  # delegated_account: INSERT_DOMAIN_WIDE_DELEGATION_ACCOUNT
+  # The following values configure the client for the installed application
+  # flow.
+  client_id: '191712914109-2b5mhu9pv6jblhfl2qmgamnd99gfagbk.apps.googleusercontent.com'
+  client_secret: 'XQviNztdknGJQQZgH7h9uzJP'
+  refresh_token: INSERT_REFRESH_TOKEN_HERE
+
+
+# Common configurations:
+###############################################################################
+# Compression (optional)                                                      #
+# Below you may specify whether to accept and automatically decompress gzip   #
+# encoded SOAP requests. By default, gzip compression is not enabled.         #
+###############################################################################
+# enable_compression: False
+###############################################################################
+# Logging configuration (optional)                                            #
+# Below you may specify the logging configuration. This will be provided as   #
+# an input to logging.config.dictConfig.                                      #
+###############################################################################
+# logging:
+  # version: 1
+  # disable_existing_loggers: False
+  # formatters:
+    # default_fmt:
+      # format: ext://googleads.util.LOGGER_FORMAT
+  # handlers:
+    # default_handler:
+      # class: logging.StreamHandler
+      # formatter: default_fmt
+      # level: INFO
+  # loggers:
+    ## Configure root logger
+    # "":
+      # handlers: [default_handler]
+      # level: INFO
+###############################################################################
+# Proxy configurations (optional)                                             #
+# Below you may specify an HTTP or HTTPS Proxy to be used when making API     #
+# requests. Note: You must specify the scheme used for the proxy endpoint.    #
+#                                                                             #
+# For additional information on configuring these values, see:                #
+# http://docs.python-requests.org/en/master/user/advanced/#proxies            #
+###############################################################################
+# proxy_config:
+  # http: INSERT_HTTP_PROXY_URI_HERE
+  # https: INSERT_HTTPS_PROXY_URI_HERE
+  # If specified, the given cafile will only be used if certificate validation
+  # is not disabled.
+  # cafile: INSERT_PATH_HERE
+  # disable_certificate_validation: False
+################################################################################
+# Utilities Included (optional)                                                #
+# Below you may specify whether the library will include utilities used in the #
+# user agent. By default, the library will include utilities used in the user  #
+# agent.                                                                       #
+################################################################################
+# include_utilities_in_user_agent: True
+################################################################################
+# Custom HTTP headers (optional)                                               #
+# Specify one or more custom headers to pass along with all requests to        #
+# the API.                                                                     #
+################################################################################
+# custom_http_headers:
+#   X-My-Header: 'content'

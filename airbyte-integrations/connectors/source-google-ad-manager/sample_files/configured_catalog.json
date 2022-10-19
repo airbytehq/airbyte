@@ -1,0 +1,19 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "ad_unit_per_hour_report_stream",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "hour": "number"
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

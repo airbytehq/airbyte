@@ -4,40 +4,40 @@ connectionSpecification:
   title: Google Ad Manager Source Spec
   type: object
   required:
-    - ClientId
-    - ClientSecret
-    - DeveloperKey
-    - ServiceAccountName
-    - ServiceKey
-    - ProfileId
+    - project_id
+    - private_key_id
+    - private_key
+    - client_id
+    - client_email
   properties:
-    ClientId:
+    project_id:
       type: string
-      description: In the form .apps.googleusercontent.com (give more info on how to find)
-      examples:
-        - "000000000000-xxxxxxxxxx.apps.googleusercontent.com"
-    ClientSecret:
-      type: string
-      description: Give more info on how to aquire
+      description: the name of the project on google ad manager
       airbyte_secret: true
-    DeveloperKey:
+      examples:
+        - "1030xxxxxxxxxxxxxxx53"
+    client_id:
       type: string
-      description: Give more info on how to aquire
-    ServiceAccountName:
+      description: In form of 111*********
+      airbyte_secret: true
+      examples:
+        - "1030xxxxxxxxxxxxxxx53"
+    client_email:
       type: string
-      description: Of the form .iam.gserviceaccount.com (Give more info)
+      description: Of the form .iam.gserviceaccount.com
+      airbyte_secret: true
       examples:
         - "xxxx@xxxx.iam.gserviceaccount.com"
-    ServiceKey:
+    private_key_id:
+      type: string
+      description: Id of the ssh private key to use
+    private_key:
       type: string
       description: Private key for service account (give more info)
       airbyte_secret: true
       examples:
         - "-----BEGIN PRIVATE KEY----- xxxxxxxx -----END PRIVATE KEY----- " 
-    ProfileId:
-      type: string
-      description: Numbers associated with your google ad manager account found in the google ad manager console on the left divider
-    CustomUnitIds:
+    custom_unit_ids:
       type: object
       description: Support for accessing custom ad units, passed as a json object
       examples:

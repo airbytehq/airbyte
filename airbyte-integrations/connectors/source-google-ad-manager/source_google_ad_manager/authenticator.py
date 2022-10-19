@@ -13,8 +13,8 @@ class GoogleAdManagerAuthenticator:
     """responsible for generating the google_ad_manager authenticator object
     """
 
-    def __init__(self, credentials: MutableMapping[str, Any], application_name: str):
-        service_key_path = self.generate_json_file_from_credentials(credentials)
+    def __init__(self, config: MutableMapping[str, Any], application_name: str):
+        service_key_path = self.generate_json_file_from_credentials(config)
         try:
             self.oauth2_client = oauth2.GoogleServiceAccountClient(service_key_path, oauth2.GetAPIScope('ad_manager'))
         except GoogleAdsValueError as e:
@@ -39,7 +39,7 @@ class GoogleAdManagerAuthenticator:
         networks = network_service.getAllNetworks()
         return networks
 
-    def set_networks(self, network):
+    def set_network(self, network):
         """update the client by setting the network
 
         Args:

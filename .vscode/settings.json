@@ -41,5 +41,6 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.stylelint": true
     }
-  }
+  },
+  "liveServer.settings.port": 5001
 }
