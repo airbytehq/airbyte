@@ -1,4 +1,4 @@
-# FTP
+# SFTP  Bulk
 This page contains the setup guide and reference information for the FTP source connector.
 
 This connector allows you to:
@@ -14,7 +14,7 @@ This connector allows you to:
 * Username-Password/Public Key Access Rights
 
 ## Setup guide
-### Step 1: Set up FTP
+### Step 1: Set up SFTP
 1. Use your username/password credential to connect the server.
 2. Alternatively generate Public Key Access
 
@@ -25,10 +25,10 @@ Private key stays with the user (and only there), while the public key is sent t
 Server stores the public key (and "marks" it as authorized).
 Server will now allow access to anyone who can prove they have the corresponding private key.
 
-### Step 2: Set up the FTP connector in Airbyte
+### Step 2: Set up the SFTP connector in Airbyte
 
 1. In the left navigation bar, click **`Sources`**. In the top-right corner, click **+new source**.
-2. On the Set up the source page, enter the name for the FTP connector and select **FTP** from the Source type dropdown.
+2. On the Set up the source page, enter the name for the FTP connector and select **SFTP Bulk** from the Source type dropdown.
 3. Enter your `User Name`, `Host Address`, `Port`
 4. Enter authentication details for the FTP server (`Password` and/or `Private Key`)
 5. Choose a `File type`

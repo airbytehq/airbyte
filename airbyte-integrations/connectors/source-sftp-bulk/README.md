@@ -1,7 +1,7 @@
-# Ftp Source
+# SFTP Bulk Source
 
-This is the repository for the Ftp source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/ftp).
+This is the repository for the FTP source connector, written in Python, that helps you bulk ingest files with the same data format from an FTP server into a single stream.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/sftp-bulk).
 
 ## Local development
 
@@ -32,12 +32,12 @@ should work as you expect.
 #### Building via Gradle
 From the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-ftp:build
+./gradlew :airbyte-integrations:connectors:source-sftp-bulk:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/ftp)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_ftp/spec.yaml` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/sftp-bulk)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_sftp_bulk/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
@@ -57,12 +57,12 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-ftp:dev
+docker build . -t airbyte/source-sftp-bulk:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-ftp:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-sftp-bulk:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -70,10 +70,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-ftp:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-ftp:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-ftp:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-ftp:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-sftp-bulk:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-sftp-bulk:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-sftp-bulk:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-sftp-bulk:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
@@ -107,11 +107,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-ftp:unitTest
+./gradlew :airbyte-integrations:connectors:source-sftp-bulk:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-ftp:integrationTest
+./gradlew :airbyte-integrations:connectors:source-sftp-bulk:integrationTest
 ```
 
 ## Dependency Management
