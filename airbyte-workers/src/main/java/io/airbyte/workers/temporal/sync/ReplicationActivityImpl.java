@@ -10,6 +10,7 @@ import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_
 import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
 
 import datadog.trace.api.Trace;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -117,7 +118,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                       final IntegrationLauncherConfig sourceLauncherConfig,
                                       final IntegrationLauncherConfig destinationLauncherConfig,
                                       final StandardSyncInput syncInput,
-                                      final String taskQueue) {
+                                      @Nullable final String taskQueue) {
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
         destinationLauncherConfig.getDockerImage(), SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
     final ActivityExecutionContext context = Activity.getExecutionContext();
@@ -163,7 +164,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   airbyteApiClient,
                   airbyteVersion,
                   () -> context,
-                  Optional.of(taskQueue));
+                  Optional.ofNullable(taskQueue));
 
           final ReplicationOutput attemptOutput = temporalAttempt.get();
           final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
