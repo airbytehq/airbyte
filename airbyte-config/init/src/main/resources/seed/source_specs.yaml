@@ -9990,7 +9990,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.14"
+- dockerImage: "airbyte/source-sendgrid:0.2.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sendgrid"
     connectionSpecification:
@@ -10003,6 +10003,7 @@
       properties:
         apikey:
           title: "Sendgrid API key"
+          airbyte_secret: true
           type: "string"
           description: "API Key, use <a href=\"https://app.sendgrid.com/settings/api_keys/\"\
             >admin</a> to generate this key."
