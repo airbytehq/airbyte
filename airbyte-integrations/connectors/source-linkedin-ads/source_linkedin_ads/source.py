@@ -262,7 +262,7 @@ class AdDirectSponsoredContents(LinkedInAdsStreamSlicing):
         for record in parent_stream.read_records(**kwargs):
 
             if record.get('reference', '').startswith('urn:li:person'):
-                self.logger.warn(f'Skip {record.get("name")} account because it has reference to person {record.get("reference")} instead of organization')
+                self.logger.warn(f'Skip {record.get("name")} account, ORGANIZATION permissions required, but referenced to PERSON {record.get("reference")}')
                 continue
 
             child_stream_slice = super(LinkedInAdsStreamSlicing, self).read_records(stream_slice=get_parent_stream_values(record, self.parent_values_map), **kwargs)
