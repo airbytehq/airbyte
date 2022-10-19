@@ -78,11 +78,11 @@ public class ContainerOrchestratorConfigBeanFactory {
     environmentVariables.put(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(featureFlags.useStreamCapableState()));
     environmentVariables.put(JAVA_OPTS_ENV_VAR, containerOrchestratorJavaOpts);
 
-    if(System.getenv(DD_ENV_ENV_VAR) != null) {
+    if (System.getenv(DD_ENV_ENV_VAR) != null) {
       environmentVariables.put(DD_ENV_ENV_VAR, System.getenv(DD_ENV_ENV_VAR));
     }
 
-    if(System.getenv(DD_VERSION_ENV_VAR) != null) {
+    if (System.getenv(DD_VERSION_ENV_VAR) != null) {
       environmentVariables.put(DD_VERSION_ENV_VAR, System.getenv(DD_VERSION_ENV_VAR));
     }
 
