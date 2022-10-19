@@ -26,8 +26,9 @@ public class StorageObjectGetInterceptor implements TraceInterceptor {
         return;
       }
 
-      if (tags.getOrDefault("component", "").equals("google-http-client") &&
-          tags.getOrDefault("error.message", "").toString().startsWith("404 Not Found")) {
+      if (s.isError() &&
+          tags.getOrDefault("peer.hostname", "").equals("storage.googleapis.com") &&
+          tags.getOrDefault("http.status_code", "").equals("404")) {
         s.setError(false);
       }
       System.out.printf("span name: %s; tags: %s; isError: %s%n", s.getResourceName(), s.getTags(),
