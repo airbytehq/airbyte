@@ -86,9 +86,9 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-      String streamName,
-      String namespace,
-      JsonNode streamSchema) {
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema) {
     var key = redisNameTransformer.keyName(namespace, streamName);
     return redisCache.getAll(key).stream()
         .sorted(Comparator.comparing(RedisRecord::getTimestamp))
@@ -96,7 +96,6 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }
-
 
   @Override
   protected boolean implementsNamespaces() {

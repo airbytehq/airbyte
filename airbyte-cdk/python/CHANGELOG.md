@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.1
+
+- Low-code: Always convert stream slices output to an iterator
+
+## 0.2.0
+
+- Replace caching method: VCR.py -> requests-cache with SQLite backend
+
+## 0.1.104
+
+- Protocol change: `supported_sync_modes` is now a required properties on AirbyteStream. [#15591](https://github.com/airbytehq/airbyte/pull/15591)
+
 ## 0.1.103
 
 - Low-code: added hash filter to jinja template
