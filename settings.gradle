@@ -89,6 +89,7 @@ include ':airbyte-worker-models'
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-bootloader'
     include ':airbyte-config:specs'
+    include ':airbyte-connector-builder'
     include ':airbyte-container-orchestrator'
     include ':airbyte-cron'
     include ':airbyte-metrics:reporter'
@@ -140,7 +141,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 }
 
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTOR_BUILDER") {
-    include ':airbyte-connector-builder'
 }
 
 // connectors
