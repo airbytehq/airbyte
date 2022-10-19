@@ -7,6 +7,9 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1.56",
+    "googleads==33.0.0",
+    "pydantic==1.9.2"
+
 ]
 
 TEST_REQUIREMENTS = [
@@ -18,8 +21,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_google_ad_manager",
     description="Source implementation for Google Ad Manager.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Spiny",
+    author_email="developers@spiny.ai",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},

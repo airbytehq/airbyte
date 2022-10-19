@@ -13,7 +13,7 @@ from googleads import ad_manager
 from googleads.errors import AdManagerReportError
 from typing import Any, Mapping, Union, List
 from csv import DictReader as csv_dict_reader
-from data_classes import AdUnitPerHourItem
+from .data_classes import AdUnitPerHourItem
 
 _CHUNK_SIZE = 16 * 1024
 
@@ -77,7 +77,7 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
                 ad_unit_per_hour_item = AdUnitPerHourItem.from_dict(row)
                 yield ad_unit_per_hour_item.dict()
     
-    def run_report(self, report_job):
+    def run_report(self, report_job: str) -> str:
         """Runs a report, then waits (blocks) for the report to finish generating.
 
         Args:

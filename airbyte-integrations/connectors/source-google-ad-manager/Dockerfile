@@ -30,6 +30,8 @@ RUN apk --no-cache add bash
 # copy payload code only
 COPY main.py ./
 COPY source_google_ad_manager ./source_google_ad_manager
+COPY schemas ./source_google_ad_manager/schemas
+COPY sample_files ./source_google_ad_manager/sample_files
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]

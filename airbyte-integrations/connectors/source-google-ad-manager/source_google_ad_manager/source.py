@@ -1,11 +1,10 @@
 from datetime import datetime
 from typing import Any, Mapping, Tuple, List
-from xmlrpc.client import APPLICATION_ERROR
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from .authenticator import GoogleAdManagerAuthenticator
-from streams import AdUnitPerHourReportStream
-from utils import convert_time_to_dict
+from .streams import AdUnitPerHourReportStream
+from .utils import convert_time_to_dict
 
 APPLICATION_NAME = 'spiny'
 
