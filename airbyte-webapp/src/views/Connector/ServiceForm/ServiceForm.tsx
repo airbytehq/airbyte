@@ -137,31 +137,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
-  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
-
-  useEffect(() => {
-    if (!selectedConnectorDefinitionSpecification) {
-      return;
-    }
-
-    const selectedServiceDefinition = availableServices.find((service) => {
-      if (isSourceDefinition(service)) {
-        const serviceDefinitionId = service.sourceDefinitionId;
-        return (
-          isSourceDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
-          serviceDefinitionId === selectedConnectorDefinitionSpecification.sourceDefinitionId
-        );
-      }
-      const serviceDefinitionId = service.destinationDefinitionId;
-      return (
-        isDestinationDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
-        serviceDefinitionId === selectedConnectorDefinitionSpecification.destinationDefinitionId
-      );
-    });
-    setDocumentationUrl(selectedServiceDefinition?.documentationUrl ?? "");
-    setDocumentationPanelOpen(true);
-  }, [availableServices, selectedConnectorDefinitionSpecification, setDocumentationPanelOpen, setDocumentationUrl]);
-
   const uiOverrides = useMemo(() => {
     return {
       name: {
