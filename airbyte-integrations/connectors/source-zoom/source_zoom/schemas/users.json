@@ -1,86 +1,86 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "$schema": "http://json-schema.org/draft-06/schema#",
   "properties": {
-    "id": {
-      "type": ["string"]
-    },
-    "first_name": {
-      "type": ["null", "string"]
-    },
-    "last_name": {
-      "type": ["null", "string"]
-    },
-    "email": {
-      "type": ["null", "string"]
-    },
-    "employee_unique_id": {
-      "type": ["null", "string"]
-    },
-    "type": {
-      "type": ["null", "integer"]
-    },
-    "plan_united_type": {
-      "type": ["null", "integer"]
-    },
-    "status": {
-      "type": ["null", "string"]
-    },
-    "role_id": {
-      "type": ["null", "string"]
-    },
-    "pmi": {
-      "type": ["null", "integer"]
-    },
-    "timezone": {
-      "type": ["null", "string"]
-    },
-    "dept": {
-      "type": ["null", "string"]
-    },
     "created_at": {
-      "format": "date-time",
-      "type": ["null", "string"]
-    },
-    "last_login_time": {
-      "format": "date-time",
-      "type": ["null", "string"]
-    },
-    "last_client_version": {
-      "type": ["null", "string"]
-    },
-    "group_ids": {
-      "items": {
-        "type": ["string"]
-      },
-      "type": ["null", "array"]
-    },
-    "im_group_ids": {
-      "items": {
-        "type": ["string"]
-      },
-      "type": ["null", "array"]
-    },
-    "verified": {
-      "type": ["null", "integer"]
+      "type": "string"
     },
     "custom_attributes": {
+      "type": "array",
       "items": {
+        "type": "object",
         "properties": {
           "key": {
-            "type": ["null", "string"]
+            "type": "string"
           },
           "name": {
-            "type": ["null", "string"]
+            "type": "string"
           },
           "value": {
-            "type": ["null", "string"]
+            "type": "string"
           }
         },
-        "type": ["object"],
-        "additionalProperties": false
-      },
-      "type": ["null", "array"]
+        "required": [
+        ]
+      }
+    },
+    "dept": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "employee_unique_id": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "group_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "id": {
+      "type": "string"
+    },
+    "im_group_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_client_version": {
+      "type": "string"
+    },
+    "last_login_time": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "plan_united_type": {
+      "type": "string"
+    },
+    "pmi": {
+      "type": "number"
+    },
+    "role_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "type": {
+      "type": "number"
+    },
+    "verified": {
+      "type": "number"
     }
-  }
+  },
+  "required": [
+  ]
 }

@@ -1,63 +1,76 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-      "meeting_id": {
-        "type": ["string"]
-      },
-      "uuid": {
-        "type": ["string"]
-      },
-      "id": {
-        "type": ["integer"]
-      },
-      "type": {
-        "type": ["null", "integer"]
-      },
-      "topic": {
-        "type": ["null", "string"]
-      },
-      "user_name": {
-        "type": ["null", "string"]
-      },
-      "user_email": {
-        "type": ["null", "string"]
-      },
-      "start_time": {
-        "format": "date-time",
-        "type": ["null", "string"]
-      },
-      "end_time": {
-        "format": "date-time",
-        "type": ["null", "string"]
-      },
-      "duration": {
-        "type": ["null", "integer"]
-      },
-      "total_minutes": {
-        "type": ["null", "integer"]
-      },
-      "participants_count": {
-        "type": ["null", "integer"]
-      },
-      "tracking_fields": {
-        "items": {
-          "properties": {
-            "field": {
-              "type": ["null", "string"]
-            },
-            "value": {
-              "type": ["null", "string"]
-            }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "meeting_uuid": {
+      "type": "string"
+    },
+    "custom_keys": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
           },
-          "type": ["object"],
-          "additionalProperties": false
+          "value": {
+            "type": "string"
+          }
         },
-        "type": ["null", "array"]
-      },
-      "dept": {
-        "type": ["null", "integer"]
+        "required": []
       }
+    },
+    "dept": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "number"
+    },
+    "end_time": {
+      "type": "string"
+    },
+    "id": {
+      "type": "number"
+    },
+    "participants_count": {
+      "type": "number"
+    },
+    "start_time": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "total_minutes": {
+      "type": "number"
+    },
+    "tracking_fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": []
+      }
+    },
+    "type": {
+      "type": "number"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "uuid": {
+      "type": "string"
     }
-  }
-  
+  },
+  "required": []
+}

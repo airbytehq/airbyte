@@ -1,85 +1,85 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-      "id": {
-        "type": ["string"]
-      },
-      "webinar_id": {
-        "type": ["string"]
-      },
-      "email": {
-        "type": ["null", "string"]
-      },
-      "first_name": {
-        "type": ["null", "string"]
-      },
-      "last_name": {
-        "type": ["null", "string"]
-      },
-      "address": {
-        "type": ["null", "string"]
-      },
-      "city": {
-        "type": ["null", "string"]
-      },
-      "county": {
-        "type": ["null", "string"]
-      },
-      "zip": {
-        "type": ["null", "string"]
-      },
-      "state": {
-        "type": ["null", "string"]
-      },
-      "phone": {
-        "type": ["null", "string"]
-      },
-      "industry": {
-        "type": ["null", "string"]
-      },
-      "org": {
-        "type": ["null", "string"]
-      },
-      "job_title": {
-        "type": ["null", "string"]
-      },
-      "purchasing_time_frame": {
-        "type": ["null", "string"]
-      },
-      "role_in_purchase_process": {
-        "type": ["null", "string"]
-      },
-      "no_of_employees": {
-        "type": ["null", "string"]
-      },
-      "comments": {
-        "type": ["null", "string"]
-      },
-      "custom_questions": {
-        "items": {
-          "properties": {
-            "title": {
-              "type": ["null", "string"]
-            },
-            "value": {
-              "type": ["null", "string"]
-            }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "webinar_id": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "comments": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "custom_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
           },
-          "type": ["object"],
-          "additionalProperties": false
+          "value": {
+            "type": "string"
+          }
         },
-        "type": ["null", "array"]
-      },
-      "status": {
-        "type": ["null", "string"]
-      },
-      "create_time": {
-        "format": "date-time",
-        "type": ["null", "string"]
-      },
-      "join_url": {
-        "type": ["null", "string"]
+        "required": []
       }
+    },
+    "email": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "no_of_employees": {
+      "type": "string"
+    },
+    "org": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "purchasing_time_frame": {
+      "type": "string"
+    },
+    "role_in_purchase_process": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "zip": {
+      "type": "string"
+    },
+    "create_time": {
+      "type": "string"
+    },
+    "join_url": {
+      "type": "string"
     }
-  }
+  },
+  "required": []
+}

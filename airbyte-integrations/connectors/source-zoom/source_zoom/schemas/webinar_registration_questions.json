@@ -1,49 +1,49 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-      "webinar_id": {
-        "type": ["string"]
-      },
-      "questions": {
-        "items": {
-          "properties": {
-            "field_name": {
-              "type": ["null", "string"]
-            },
-            "required": {
-              "type": ["null", "boolean"]
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "webinar_id": {
+      "type": "string"
+    },
+    "custom_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           },
-          "type": ["object"],
-          "additionalProperties": false
-        },
-        "type": ["null", "array"]
-      },
-      "custom_questions": {
-        "items": {
-          "properties": {
-            "title": {
-              "type": ["null", "string"]
-            },
-            "type": {
-              "type": ["null", "string"]
-            },
-            "required": {
-              "type": ["null", "boolean"]
-            },
-            "answers": {
-              "items": {
-                "type": ["string"]
-              },
-              "type": ["null", "array"]
-            }
+          "required": {
+            "type": "boolean"
           },
-          "type": ["object"],
-          "additionalProperties": false
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
         },
-        "type": ["null", "array"]
+        "required": []
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field_name": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": []
       }
     }
-  }
-  
+  },
+  "required": []
+}

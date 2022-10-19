@@ -14,12 +14,31 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
-      #  expect_records:
-      #    path: "integration_tests/expected_records.txt"
-      #    extra_fields: no
-      #    exact_order: no
-      #    extra_records: yes
+      empty_streams:
+        - "users"
+        - "meetings"
+        - "meeting_registrants"
+        - "meeting_polls"
+        - "meeting_poll_results"
+        - "meeting_registration_questions"
+        - "webinars"
+        - "webinar_panelists"
+        - "webinar_registrants"
+        - "webinar_absentees"
+        - "webinar_polls"
+        - "webinar_poll_results"
+        - "webinar_registration_questions"
+        - "webinar_tracking_sources"
+        - "webinar_qna_results"
+        - "report_meetings"
+        - "report_meeting_participants"
+        - "report_webinars"
+        - "report_webinar_participants"
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      ignored_fields:
+        "meetings":
+          - "start_url"
+        "webinars":
+          - "start_url"          
