@@ -26,6 +26,7 @@ export const links = {
   demoLink: "https://demo.airbyte.io",
   contactSales: "https://airbyte.com/talk-to-sales",
   webpageLink: "https://airbyte.com",
+  cronReferenceLink: "http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html",
 } as const;
 
 export type OutboundLinks = typeof links;

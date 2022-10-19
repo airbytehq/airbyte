@@ -132,9 +132,12 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return "./reports:batchGet"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        next_page = response.json().get("nextPageToken")
-        if next_page:
-            return {"pageToken": next_page}
+        reports = response.json().get(self.report_field, [])
+        for report in reports:
+            # since we're requesting just one report at a time, the first report in the response is enough
+            next_page = report.get("nextPageToken")
+            if next_page:
+                return {"pageToken": next_page}
 
     def should_retry(self, response: requests.Response) -> bool:
         """

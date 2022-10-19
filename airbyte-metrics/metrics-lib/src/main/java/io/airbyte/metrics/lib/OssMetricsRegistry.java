@@ -9,15 +9,15 @@ import com.google.api.client.util.Preconditions;
 /**
  * Enum source of truth of all Airbyte metrics. Each enum value represent a metric and is linked to
  * an application and contains a description to make it easier to understand.
- *
+ * <p>
  * Each object of the enum actually represent a metric, so the Registry name is misleading. The
  * reason 'Registry' is in the name is to emphasize this enum's purpose as a source of truth for all
  * metrics. This also helps code readability i.e. AirbyteMetricsRegistry.metricA.
- *
+ * <p>
  * Metric Name Convention (adapted from
  * https://docs.datadoghq.com/developers/guide/what-best-practices-are-recommended-for-naming-metrics-and-tags/):
  * <p>
- * - Use lowercase. Metric names are case sensitive.
+ * - Use lowercase. Metric names are case-sensitive.
  * <p>
  * - Use underscore to delimit names with multiple words.
  * <p>
@@ -71,6 +71,14 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",
       "time taken to create a new kube pod process"),
+  JSON_STRING_LENGTH(
+      MetricEmittingApps.WORKER,
+      "json_string_length",
+      "string length of a raw json string"),
+  JSON_SIZE(
+      MetricEmittingApps.WORKER,
+      "json_size",
+      "size of the json object"),
   NUM_PENDING_JOBS(
       MetricEmittingApps.METRICS_REPORTER,
       "num_pending_jobs",
@@ -124,7 +132,9 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   private final String metricName;
   private final String metricDescription;
 
-  OssMetricsRegistry(final MetricEmittingApp application, final String metricName, final String metricDescription) {
+  OssMetricsRegistry(final MetricEmittingApp application,
+                     final String metricName,
+                     final String metricDescription) {
     Preconditions.checkNotNull(metricDescription);
     Preconditions.checkNotNull(application);
 
