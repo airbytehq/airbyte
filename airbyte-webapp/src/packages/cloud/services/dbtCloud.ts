@@ -30,7 +30,7 @@ const toDbtCloudJob = (operation: OperationRead): DbtCloudJob => {
   const { operationId } = operation;
   const { executionUrl } = operation.operatorConfiguration.webhook || {};
 
-  const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\//);
+  const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\/run\//);
 
   if (!matches) {
     throw new Error(`Cannot extract dbt cloud job params from executionUrl ${executionUrl}`);
@@ -81,7 +81,7 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
 
   const saveJobs = (jobs: DbtCloudJob[]) => {
     // TODO dynamically use the workspace's configured dbt cloud domain when it gets returned by backend
-    const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}/run`;
+    const urlForJob = (job: DbtCloudJob) => `${dbtCloudDomain}/api/v2/accounts/${job.account}/jobs/${job.job}/run/`;
 
     return connectionService.update({
       connectionId: connection.connectionId,
