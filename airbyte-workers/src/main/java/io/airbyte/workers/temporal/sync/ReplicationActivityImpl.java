@@ -112,6 +112,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.airbyteApiClient = airbyteApiClient;
   }
 
+  // Marking task queue as nullable because we changed activity signature; thus runs started before
+  // this new change will have taskQueue set to null. We should remove it after the old runs are all
+  // finished in next release.
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
