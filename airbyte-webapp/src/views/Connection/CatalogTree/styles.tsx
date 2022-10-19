@@ -8,9 +8,8 @@ export const HeaderCell = styled(Cell)`
 `;
 
 export const CheckboxCell = styled(HeaderCell)`
-  max-width: 43px;
+  max-width: 55px;
   text-align: center;
-  margin-left: -43px;
 `;
 
 export const ArrowCell = styled(HeaderCell)`
