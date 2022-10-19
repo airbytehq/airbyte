@@ -99,11 +99,11 @@
         }
       }
     },
-    "requires_shipping" : {
-      "type" : ["null", "boolean"]
+    "requires_shipping": {
+      "type": ["null", "boolean"]
     },
-    "admin_graphql_api_id" : {
-      "type" : ["null", "string"]
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
     },
     "shop_url": {
       "type": ["null", "string"]
