@@ -110,9 +110,9 @@ function setup {
 
   mkdir -p cleanup
 
-  touch $connection_cleanup_file
-  touch $source_cleanup_file
-  touch $destination_cleanup_file
+  touch $CONNECTION_CLEANUP_FILE
+  touch $SOURCE_CLEANUP_FILE
+  touch $DESTINATION_CLEANUP_FILE
 }
 
 function getE2ETestSourceDefinitionId {
@@ -160,7 +160,7 @@ function createSource {
     jq -r '.sourceId'
   )
   export sourceId
-  echo $sourceId >> $source_cleanup_file
+  echo $sourceId >> $SOURCE_CLEANUP_FILE
 }
 
 function createDestination {
@@ -176,15 +176,7 @@ function createDestination {
     jq -r '.destinationId'
   )
   export destinationId
-  echo $destinationId >> $destination_cleanup_file
-}
-
-function discoverSource {
-  sourceCatalogId=$(
-    callApi "sources/discover_schema" "{\"sourceId\":\"$sourceId\",\"disable_cache\":true}" |
-      jq -r '.catalogId'
-  )
-  export sourceCatalogId
+  echo $destinationId >> $DESTINATION_CLEANUP_FILE
 }
 
 function createMultipleConnections {
@@ -212,7 +204,7 @@ function createConnection {
     callApi "web_backend/connections/create" $body |
       jq -r '.connectionId'
   )
-  echo $connectionId >> $connection_cleanup_file
+  echo $connectionId >> $CONNECTION_CLEANUP_FILE
 }
 
 ############
@@ -237,9 +229,6 @@ echo "Created Source with ID: ${sourceId}"
 
 createDestination
 echo "Created Destination with ID: ${destinationId}"
-
-# discoverSource
-# echo "Retrieved sourceCatalogId: ${sourceCatalogId}"
 
 createMultipleConnections
 

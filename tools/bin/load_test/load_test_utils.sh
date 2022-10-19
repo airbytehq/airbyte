@@ -14,11 +14,7 @@ function callApi {
   # example of calling the API with a payload:
   #    callApi "destinations/list" "{\"workspaceId\":\"${workspace}\"}"
   endpoint=$1
-  if [ -z "${2-}" ] ; then
-    payload=""
-  else
-    payload=$2
-  fi
+  payload=${2:-""}
 
   curl --silent \
    --request POST \
@@ -39,11 +35,11 @@ function removeFirstLineFromFile {
 }
 
 function setCleanupFilesForWorkspace {
-  export connection_cleanup_file="cleanup/${1}_connection_ids.txt"
-  export destination_cleanup_file="cleanup/${1}_destination_ids.txt"
-  export source_cleanup_file="cleanup/${1}_source_ids.txt"
+  export CONNECTION_CLEANUP_FILE="cleanup/${1}_connection_ids.txt"
+  export DESTINATION_CLEANUP_FILE="cleanup/${1}_destination_ids.txt"
+  export SOURCE_CLEANUP_FILE="cleanup/${1}_source_ids.txt"
 
-  echo "set connection cleanup file to $connection_cleanup_file"
-  echo "set destination cleanup file to $destination_cleanup_file"
-  echo "set source cleanup file to $source_cleanup_file"
+  echo "set connection cleanup file to     $CONNECTION_CLEANUP_FILE"
+  echo "set destination cleanup file to    $DESTINATION_CLEANUP_FILE"
+  echo "set source cleanup file to         $SOURCE_CLEANUP_FILE"
 }

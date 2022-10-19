@@ -6,7 +6,7 @@ in order to determine which IDs to delete.
 comment
 
 cd "$(dirname "$0")"
-. load_test_utils.sh
+source load_test_utils.sh
 
 function showhelp {
   echo -e """Usage $(dirname $0)/cleanup_load_test [OPTIONS]
@@ -78,56 +78,56 @@ function setup {
 }
 
 function deleteConnections {
-  while test -s $connection_cleanup_file
+  while test -s $CONNECTION_CLEANUP_FILE
   do
-    connectionId=$(readFirstLineFromFile $connection_cleanup_file)
+    connectionId=$(readFirstLineFromFile $CONNECTION_CLEANUP_FILE)
     callApi "connections/delete" "{\"connectionId\":\"$connectionId\"}"
     echo "deleted connection with ID $connectionId"
 
     # deletion succeeded, so remove the ID from the cleanup file
-    removeFirstLineFromFile $connection_cleanup_file
+    removeFirstLineFromFile $CONNECTION_CLEANUP_FILE
   done
 
-  if ! test -s $connection_cleanup_file
+  if ! test -s $CONNECTION_CLEANUP_FILE
   then
-    rm $connection_cleanup_file
-    echo "removed cleanup file $connection_cleanup_file"
+    rm $CONNECTION_CLEANUP_FILE
+    echo "removed cleanup file $CONNECTION_CLEANUP_FILE"
   fi
 }
 
 function deleteSources {
-  while test -s $source_cleanup_file
+  while test -s $SOURCE_CLEANUP_FILE
   do
-    sourceId=$(readFirstLineFromFile $source_cleanup_file)
+    sourceId=$(readFirstLineFromFile $SOURCE_CLEANUP_FILE)
     callApi "sources/delete" "{\"sourceId\":\"$sourceId\"}"
     echo "deleted source with ID $sourceId"
 
     # deletion succeeded, so remove the ID from the cleanup file
-    removeFirstLineFromFile $source_cleanup_file
+    removeFirstLineFromFile $SOURCE_CLEANUP_FILE
   done
 
-  if ! test -s $source_cleanup_file
+  if ! test -s $SOURCE_CLEANUP_FILE
   then
-    rm $source_cleanup_file
-    echo "removed cleanup file $source_cleanup_file"
+    rm $SOURCE_CLEANUP_FILE
+    echo "removed cleanup file $SOURCE_CLEANUP_FILE"
   fi
 }
 
 function deleteDestinations {
-  while test -s $destination_cleanup_file
+  while test -s $DESTINATION_CLEANUP_FILE
   do
-    destinationId=$(readFirstLineFromFile $destination_cleanup_file)
+    destinationId=$(readFirstLineFromFile $DESTINATION_CLEANUP_FILE)
     callApi "destinations/delete" "{\"destinationId\":\"$destinationId\"}"
     echo "deleted destination with ID $destinationId"
 
     # deletion succeeded, so remove the ID from the cleanup file
-    removeFirstLineFromFile $destination_cleanup_file
+    removeFirstLineFromFile $DESTINATION_CLEANUP_FILE
   done
 
-  if ! test -s $destination_cleanup_file
+  if test -z $DESTINATION_CLEANUP_FILE
   then
-    rm $destination_cleanup_file
-    echo "removed cleanup file $destination_cleanup_file"
+    rm $DESTINATION_CLEANUP_FILE
+    echo "removed cleanup file $DESTINATION_CLEANUP_FILE"
   fi
 }
 
