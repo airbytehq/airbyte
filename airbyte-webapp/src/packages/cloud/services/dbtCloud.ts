@@ -30,7 +30,7 @@ const toDbtCloudJob = (operation: OperationRead): DbtCloudJob => {
   const { operationId } = operation;
   const { executionUrl } = operation.operatorConfiguration.webhook || {};
 
-  const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\//);
+  const matches = (executionUrl || "").match(/\/accounts\/([^/]+)\/jobs\/([^]+)\/run\//);
 
   if (!matches) {
     throw new Error(`Cannot extract dbt cloud job params from executionUrl ${executionUrl}`);
