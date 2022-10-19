@@ -2,7 +2,10 @@
   "$schema": "http://json-schema.org/schema#",
   "properties": {
     "assigneeId": {
-      "type": "null"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "assigneeIds": {
       "items": {
@@ -14,16 +17,56 @@
       "type": "boolean"
     },
     "costRate": {
-      "type": "null"
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "properties": {
+            "amount": {
+              "type": [
+                "null",
+                "string",
+                "integer"
+              ]
+            },
+            "currency": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "type": "object"
+        }
+      ]
     },
     "duration": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "estimate": {
       "type": "string"
     },
     "hourlyRate": {
-      "type": "null"
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "amount": {
+              "type": "integer"
+            },
+            "currency": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      ]
     },
     "id": {
       "type": "string"

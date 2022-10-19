@@ -55,10 +55,7 @@
           "type": "boolean"
         },
         "lang": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": "string"
         },
         "longRunning": {
           "type": "boolean"

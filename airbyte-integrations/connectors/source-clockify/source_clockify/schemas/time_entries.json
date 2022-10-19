@@ -17,7 +17,10 @@
       "type": "boolean"
     },
     "kioskId": {
-      "type": "null"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "projectId": {
       "type": [
@@ -26,9 +29,16 @@
       ]
     },
     "tagIds": {
-      "type": [
-        "array",
-        "null"
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
       ]
     },
     "taskId": {

@@ -8,7 +8,37 @@
       "type": "boolean"
     },
     "budgetEstimate": {
-      "type": "null"
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "properties": {
+            "estimate": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "type": {
+              "type": "string"
+            },
+            "resetOption": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "active": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        }
+      ]
     },
     "clientId": {
       "type": "string"
@@ -20,7 +50,32 @@
       "type": "string"
     },
     "costRate": {
-      "type": "null"
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "properties": {
+            "amount": {
+              "type": [
+                "null",
+                "string",
+                "integer"
+              ]
+            },
+            "currency": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "type": "object"
+        }
+      ]
     },
     "duration": {
       "type": "string"
@@ -57,7 +112,22 @@
             "type": "null"
           },
           "hourlyRate": {
-            "type": "null"
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "properties": {
+                  "amount": {
+                    "type": "integer"
+                  },
+                  "currency": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            ]
           },
           "membershipStatus": {
             "type": "string"
@@ -100,7 +170,10 @@
           "type": "boolean"
         },
         "resetOption": {
-          "type": "null"
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "type": {
           "type": "string"
