@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from googleads import ad_manager
 from googleads.errors import AdManagerReportError
 from typing import Any, Mapping, Union, List
+from csv import DictReader as csv_dict_reader
 
 _CHUNK_SIZE = 16 * 1024
 
@@ -67,7 +68,11 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
 
         while True:
             chunk = response.read(_CHUNK_SIZE)
-            logger.info("I have got the following response chunk", chunk)
+            lines = chunk.decode('utf-8')
+            reader = csv_dict_reader(lines.splitlines())
+            for row in reader:
+                print(row)
+            print(10 * "**===--")
             if not chunk:
                 break
             yield chunk
@@ -172,7 +177,7 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         """the main method that read the records from the report"""
         try:
             report_job_id = self.get_query(self.report_job)
-            response = self.download_report(report_job_id, export_format='CSV_DUMP')
+            response = self.download_report(report_job_id, export_format='CSV_DUMP', use_gzip_compression=False)
             # TODO: do something with the response before parsing it
             yield from self.parse_response(response)
         except AdManagerReportError as exc:
