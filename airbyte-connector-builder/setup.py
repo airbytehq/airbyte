@@ -14,9 +14,9 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 setup(
-    name="octavia-cli",
-    version="0.40.15",
-    description="A command line interface to manage Airbyte configurations",
+    name="connector-builder",
+    version="0.0.1",
+    description="",
     long_description=README,
     author="Airbyte",
     author_email="contact@airbyte.io",
@@ -34,14 +34,14 @@ setup(
         # Python Version Support
         "Programming Language :: Python :: 3.8",
     ],
-    keywords="airbyte cli command-line-interface configuration",
+    keywords="connect-builder",
     project_urls={
         "Documentation": "https://docs.airbyte.io/",
         "Source": "https://github.com/airbytehq/airbyte",
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("unit_tests", "integration_tests", "docs")),
-    package_data={"octavia_cli.generate": ["templates/*.j2"], "octavia_cli.init.example_files": ["example_api_http_headers.yaml"]},
+    package_data={},
     install_requires=[
         "click~=8.0.3",
         "fastapi>=0.68.0,<0.69.0",
@@ -62,5 +62,4 @@ setup(
             "sphinx-rtd-theme~=1.0",
         ],
     },
-    entry_points={"console_scripts": ["octavia=octavia_cli.entrypoint:octavia"]},
 )

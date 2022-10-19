@@ -7,12 +7,12 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'octavia_cli'
+    moduleDirectory 'connector_builder'
 }
 
 
 task generateApiClient(type: GenerateTask) {
-    inputSpec =  "$rootDir.absolutePath/airbyte-api/src/main/openapi/config.yaml"
+    inputSpec = "$rootDir.absolutePath/airbyte-api/src/main/openapi/config.yaml"
     outputDir = "$buildDir/airbyte_api_client"
 
     generatorName = "python"

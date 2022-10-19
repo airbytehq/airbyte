@@ -1,4 +1,4 @@
 build
 !build/airbyte_api_client
 .venv
-octavia_cli.egg-info
+connector_builder.egg-info

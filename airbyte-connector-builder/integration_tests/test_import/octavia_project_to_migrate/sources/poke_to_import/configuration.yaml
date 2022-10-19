@@ -1,9 +1,0 @@
-resource_name: poke_to_import
-definition_type: source
-definition_id: 6371b14b-bc68-4236-bfbd-468e8df8e968
-definition_image: airbyte/source-pokeapi
-definition_version: 0.1.4
-
-# EDIT THE CONFIGURATION BELOW!
-configuration:
-  pokemon_name: ditto
