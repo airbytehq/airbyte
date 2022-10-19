@@ -103,6 +103,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
         self.dimensions = config["dimensions"]
+        self.segments = config.get("segments", list())
+        self.filtersExpression = config.get("filter", "")
         self._config = config
         self.dimensions_ref, self.metrics_ref = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
 
@@ -130,18 +132,34 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return "./reports:batchGet"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        next_page = response.json().get("nextPageToken")
-        if next_page:
-            return {"pageToken": next_page}
+        reports = response.json().get(self.report_field, [])
+        for report in reports:
+            # since we're requesting just one report at a time, the first report in the response is enough
+            next_page = report.get("nextPageToken")
+            if next_page:
+                return {"pageToken": next_page}
 
     def should_retry(self, response: requests.Response) -> bool:
-        """When the connector gets a custom report which has unknown metric(s) or dimension(s)
+        """
+        When the connector gets a custom report which has unknown metric(s) or dimension(s)
         and API returns an error with 400 code, the connector ignores an error with 400 code
-        to finish successfully sync and inform the user about an error in logs with an error message."""
+        to finish successfully sync and inform the user about an error in logs with an error message.
+
+        When the daily request limit reached, the connector ignores an error with 429 code and
+        'has exceeded the daily request limit' error massage to finish successfully sync and
+        inform the user about an error in logs with an error message and link to google analytics docs.
+        """
 
         if response.status_code == 400:
             self.logger.info(f"{response.json()['error']['message']}")
             self._raise_on_http_errors = False
+            return False
+
+        elif response.status_code == 429 and "has exceeded the daily request limit" in response.json()["error"]["message"]:
+            rate_limit_docs_url = "https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas"
+            self.logger.info(f"{response.json()['error']['message']}. More info: {rate_limit_docs_url}")
+            self._raise_on_http_errors = False
+            return False
 
         result: bool = HttpStream.should_retry(self, response)
         return result
@@ -156,6 +174,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
         metrics = [{"expression": metric} for metric in self.metrics]
         dimensions = [{"name": dimension} for dimension in self.dimensions]
+        segments = [{"segmentId": segment} for segment in self.segments]
+        filtersExpression = self.filtersExpression
 
         request_body = {
             "reportRequests": [
@@ -165,6 +185,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     "pageSize": self.page_size,
                     "metrics": metrics,
                     "dimensions": dimensions,
+                    "segments": segments,
+                    "filtersExpression": filtersExpression,
                 }
             ]
         }
@@ -181,7 +203,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         schema: Dict[str, Any] = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
-            "additionalProperties": False,
+            "additionalProperties": True,
             "properties": {
                 "view_id": {"type": ["string"]},
             },
@@ -257,12 +279,16 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         """
         try:
             if field_type == "dimension":
-                if attribute.startswith(("ga:dimension", "ga:customVarName", "ga:customVarValue")):
+                if attribute.startswith(("ga:dimension", "ga:customVarName", "ga:customVarValue", "ga:segment")):
                     # Custom Google Analytics Dimensions that are not part of self.dimensions_ref. They are always
                     # strings
                     return "string"
 
+                elif attribute.startswith("ga:dateHourMinute"):
+                    return "integer"
+
                 attr_type = self.dimensions_ref[attribute]
+
             elif field_type == "metric":
                 # Custom Google Analytics Metrics {ga:goalXXStarts, ga:metricXX, ... }
                 # We always treat them as strings as we can not be sure of their data type
@@ -374,7 +400,9 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     "ga_exitRate":6.523809523809524
         }
         """
-        json_response = response.json()
+        json_response = response.json() if response.status_code not in (400, 429) else None
+        if not json_response:
+            return []
         reports = json_response.get(self.report_field, [])
 
         for report in reports:
@@ -541,7 +569,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         # declare additional variables
         authenticator = self.get_authenticator(config)
         config["authenticator"] = authenticator
-        config["metrics"] = ["ga:14dayUsers"]
+        config["metrics"] = ["ga:hits"]
         config["dimensions"] = ["ga:date"]
 
         try:
@@ -587,6 +615,8 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         for stream in config["ga_streams"]:
             config["metrics"] = stream["metrics"]
             config["dimensions"] = stream["dimensions"]
+            config["segments"] = stream.get("segments", list())
+            config["filter"] = stream.get("filter", "")
 
             # construct GAReadStreams sub-class for each stream
             stream_name = stream["name"]

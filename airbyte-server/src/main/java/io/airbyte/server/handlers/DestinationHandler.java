@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.DestinationCloneConfiguration;
+import io.airbyte.api.model.generated.DestinationCloneRequestBody;
 import io.airbyte.api.model.generated.DestinationCreate;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
@@ -32,12 +34,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DestinationHandler {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationHandler.class);
 
   private final ConnectionsHandler connectionsHandler;
   private final Supplier<UUID> uuidGenerator;
@@ -60,7 +58,7 @@ public class DestinationHandler {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.validator = integrationSchemaValidation;
+    validator = integrationSchemaValidation;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
@@ -80,7 +78,6 @@ public class DestinationHandler {
         connectionsHandler,
         UUID::randomUUID,
         JsonSecretsProcessor.builder()
-            .maskSecrets(true)
             .copySecrets(true)
             .build(),
         new ConfigurationUpdate(configRepository, secretsRepositoryReader));
@@ -168,26 +165,32 @@ public class DestinationHandler {
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
-  public DestinationRead cloneDestination(final DestinationIdRequestBody destinationIdRequestBody)
+  public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read destination configuration from db
-    final DestinationRead destinationToClone = buildDestinationReadWithSecrets(destinationIdRequestBody.getDestinationId());
-    final ConnectorSpecification spec = getSpec(destinationToClone.getDestinationDefinitionId());
+    final DestinationRead destinationToClone = buildDestinationReadWithSecrets(destinationCloneRequestBody.getDestinationCloneId());
+    final DestinationCloneConfiguration destinationCloneConfiguration = destinationCloneRequestBody.getDestinationConfiguration();
 
-    // persist
-    final UUID destinationId = uuidGenerator.get();
     final String copyText = " (Copy)";
     final String destinationName = destinationToClone.getName() + copyText;
-    persistDestinationConnection(
-        destinationName,
-        destinationToClone.getDestinationDefinitionId(),
-        destinationToClone.getWorkspaceId(),
-        destinationId,
-        destinationToClone.getConnectionConfiguration(),
-        false);
 
-    // read configuration from db
-    return buildDestinationRead(destinationId, spec);
+    final DestinationCreate destinationCreate = new DestinationCreate()
+        .name(destinationName)
+        .destinationDefinitionId(destinationToClone.getDestinationDefinitionId())
+        .connectionConfiguration(destinationToClone.getConnectionConfiguration())
+        .workspaceId(destinationToClone.getWorkspaceId());
+
+    if (destinationCloneConfiguration != null) {
+      if (destinationCloneConfiguration.getName() != null) {
+        destinationCreate.name(destinationCloneConfiguration.getName());
+      }
+
+      if (destinationCloneConfiguration.getConnectionConfiguration() != null) {
+        destinationCreate.connectionConfiguration(destinationCloneConfiguration.getConnectionConfiguration());
+      }
+    }
+
+    return createDestination(destinationCreate);
   }
 
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -305,7 +308,8 @@ public class DestinationHandler {
         .destinationDefinitionId(destinationConnection.getDestinationDefinitionId())
         .connectionConfiguration(destinationConnection.getConfiguration())
         .name(destinationConnection.getName())
-        .destinationName(standardDestinationDefinition.getName());
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
   }
 
 }

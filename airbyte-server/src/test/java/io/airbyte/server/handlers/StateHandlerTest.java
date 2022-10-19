@@ -24,7 +24,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.server.converters.ProtocolConverters;
+import io.airbyte.workers.helper.ProtocolConverters;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +32,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class StateHandlerTest {
+class StateHandlerTest {
 
   public static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final JsonNode JSON_BLOB = Jsons.deserialize("{\"users\": 10}");

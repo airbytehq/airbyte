@@ -92,7 +92,7 @@ def check_module(connector):
         elif connector.startswith("destination"):
             SUCCESS_DESTINATION.append(connector)
     else:
-        failed_today = [connector, short_status, last_build["link"]]
+        failed_today = [connector, short_status, last_build["link"], last_build["date"]]
 
         if len(history) > 1 and history[1]["status"] != "success":
             FAILED_2_LAST.append(failed_today)
@@ -170,7 +170,7 @@ def get_docker_label_to_connector_directory(base_directory: str, connector_modul
         # parse the dockerfile label if the dockerfile exists
         dockerfile_path = pathlib.Path(base_directory, connector, "Dockerfile")
         if os.path.isfile(dockerfile_path):
-            print(f"Reading f{dockerfile_path}")
+            print(f"Reading {dockerfile_path}")
             with open(dockerfile_path, "r") as file:
                 dockerfile_contents = file.read()
                 label = parse_dockerfile_repository_label(dockerfile_contents)

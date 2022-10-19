@@ -1,5 +1,16 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
 plugins {
     id 'java-library'
+}
+
+// Add a configuration for our migrations tasks defined below to encapsulate their dependencies
+configurations {
+    migrations.extendsFrom implementation
+}
+
+configurations.all {
+    exclude group: 'io.micronaut.flyway'
 }
 
 dependencies {
@@ -13,8 +24,12 @@ dependencies {
     implementation project(':airbyte-config:config-models')
     implementation libs.flyway.core
 
+    migrations libs.platform.testcontainers.postgresql
+    migrations sourceSets.main.output
+
     // Mark as compile only to avoid leaking transitively to connectors
     compileOnly libs.platform.testcontainers.postgresql
+    compileOnly libs.connectors.testcontainers.mysql
 
     // These are required because gradle might be using lower version of Jna from other
     // library transitive dependency. Can be removed if we can figure out which library is the cause.
@@ -25,6 +40,7 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.platform.testcontainers.postgresql
+    testImplementation libs.connectors.testcontainers.mysql
 
     // Big Query
     implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
@@ -38,38 +54,38 @@ dependencies {
 }
 
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = files(configurations.migrations.files)
     args 'configs', 'create'
 }
 
 task(runConfigsMigration, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = files(configurations.migrations.files)
     args 'configs', 'migrate'
 }
 
 task(dumpConfigsSchema, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = files(configurations.migrations.files)
     args 'configs', 'dump_schema'
 }
 
 task(newJobsMigration, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = files(configurations.migrations.files)
     args 'jobs', 'create'
 }
 
 task(runJobsMigration, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = files(configurations.migrations.files)
     args 'jobs', 'migrate'
 }
 
 task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
-    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = files(configurations.migrations.files)
     args 'jobs', 'dump_schema'
 }
 
@@ -82,8 +98,8 @@ task copyInitSql(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("db", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyInitSql)
-assemble.dependsOn(dockerBuildTask)
+tasks.named("buildDockerImage") {
+    dependsOn copyInitSql
+}
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

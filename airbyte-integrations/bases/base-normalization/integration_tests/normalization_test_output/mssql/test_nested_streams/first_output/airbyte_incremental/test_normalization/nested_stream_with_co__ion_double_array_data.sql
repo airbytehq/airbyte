@@ -52,7 +52,7 @@ and double_array_data is not null
 select
     _airbyte_partition_hashid,
     cast(id as 
-    VARCHAR(max)) as id,
+    NVARCHAR(max)) as id,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at
@@ -70,9 +70,9 @@ select
     
 
     concat(concat(coalesce(cast(_airbyte_partition_hashid as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(id as 
-    VARCHAR(max)), ''''),''''), '''') as 
-    VARCHAR(max)), '''')), 2) as _airbyte_double_array_data_hashid,
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(id as 
+    NVARCHAR(max)), ''''),''''), '''') as 
+    NVARCHAR(max)), '''')), 2) as _airbyte_double_array_data_hashid,
     tmp.*
 from __dbt__cte__nested_stream_with_co__ion_double_array_data_ab2 tmp
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data

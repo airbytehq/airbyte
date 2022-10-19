@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/redshift",
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": true,
@@ -14,7 +14,8 @@
       "host": {
         "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
         "type": "string",
-        "title": "Host"
+        "title": "Host",
+        "order": 1
       },
       "port": {
         "description": "Port of the database.",
@@ -23,35 +24,47 @@
         "maximum": 65536,
         "default": 5439,
         "examples": ["5439"],
-        "title": "Port"
+        "title": "Port",
+        "order": 2
       },
       "username": {
         "description": "Username to use to access the database.",
         "type": "string",
-        "title": "Username"
+        "title": "Username",
+        "order": 3
       },
       "password": {
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true,
-        "title": "Password"
+        "title": "Password",
+        "order": 4
       },
       "database": {
         "description": "Name of the database.",
         "type": "string",
-        "title": "Database"
+        "title": "Database",
+        "order": 5
       },
       "schema": {
         "description": "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
         "type": "string",
         "examples": ["public"],
         "default": "public",
-        "title": "Default Schema"
+        "title": "Default Schema",
+        "order": 6
+      },
+      "jdbc_url_params": {
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "type": "string",
+        "order": 7
       },
       "uploading_method": {
         "title": "Uploading Method",
         "type": "object",
         "description": "The method how the data will be uploaded to the database.",
+        "order": 8,
         "oneOf": [
           {
             "title": "Standard",
@@ -84,7 +97,7 @@
                 "examples": ["airbyte.staging"]
               },
               "s3_bucket_path": {
-                "title": "S3 Bucket Path (Optional)",
+                "title": "S3 Bucket Path",
                 "type": "string",
                 "description": "The directory under the S3 bucket where data will be written. If not provided, then defaults to the root directory. See <a href=\"https://docs.aws.amazon.com/prescriptive-guidance/latest/defining-bucket-names-data-lakes/faq.html#:~:text=be%20globally%20unique.-,For%20S3%20bucket%20paths,-%2C%20you%20can%20use\">path's name recommendations</a> for more details.",
                 "examples": ["data_sync/test"]
@@ -121,6 +134,19 @@
                   "me-south-1"
                 ]
               },
+              "file_name_pattern": {
+                "type": "string",
+                "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
+                "title": "S3 Filename pattern",
+                "examples": [
+                  "{date}",
+                  "{date:yyyy_MM}",
+                  "{timestamp}",
+                  "{part_number}",
+                  "{sync_id}"
+                ],
+                "order": 8
+              },
               "access_key_id": {
                 "type": "string",
                 "description": "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
@@ -134,7 +160,7 @@
                 "airbyte_secret": true
               },
               "purge_staging_data": {
-                "title": "Purge Staging Files and Tables (Optional)",
+                "title": "Purge Staging Files and Tables",
                 "type": "boolean",
                 "description": "Whether to delete the staging files from S3 after completing the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"> docs</a> for details.",
                 "default": true

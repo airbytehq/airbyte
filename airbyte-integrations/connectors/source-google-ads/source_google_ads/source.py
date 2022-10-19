@@ -3,10 +3,10 @@
 #
 
 
+import logging
 import traceback
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -39,6 +39,12 @@ from .streams import (
 
 class SourceGoogleAds(AbstractSource):
     @staticmethod
+    def _validate_and_transform(config: Mapping[str, Any]):
+        if config.get("end_date") == "":
+            config.pop("end_date")
+        return config
+
+    @staticmethod
     def get_credentials(config: Mapping[str, Any]) -> MutableMapping[str, Any]:
         credentials = config["credentials"]
         # use_proto_plus is set to True, because setting to False returned wrong value types, which breakes the backward compatibility.
@@ -52,16 +58,15 @@ class SourceGoogleAds(AbstractSource):
 
     @staticmethod
     def get_incremental_stream_config(google_api: GoogleAds, config: Mapping[str, Any], customers: List[Customer]):
-        true_end_date = None
-        configured_end_date = config.get("end_date")
-        if configured_end_date is not None:
-            true_end_date = min(today(), parse(configured_end_date)).to_date_string()
+        end_date = config.get("end_date")
+        if end_date:
+            end_date = min(today(), parse(end_date)).to_date_string()
         incremental_stream_config = dict(
             api=google_api,
             customers=customers,
             conversion_window_days=config["conversion_window_days"],
             start_date=config["start_date"],
-            end_date=true_end_date,
+            end_date=end_date,
         )
         return incremental_stream_config
 
@@ -79,7 +84,8 @@ class SourceGoogleAds(AbstractSource):
                 return True
         return False
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        config = self._validate_and_transform(config)
         try:
             logger.info("Checking the config")
             google_api = GoogleAds(credentials=self.get_credentials(config))
@@ -109,6 +115,7 @@ class SourceGoogleAds(AbstractSource):
             return False, f"Unable to connect to Google Ads API with the provided configuration - {error_messages}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config = self._validate_and_transform(config)
         google_api = GoogleAds(credentials=self.get_credentials(config))
         accounts = self.get_account_info(google_api, config)
         customers = Customer.from_accounts(accounts)
@@ -121,7 +128,6 @@ class SourceGoogleAds(AbstractSource):
             AdGroups(**incremental_config),
             AdGroupLabels(google_api, customers=customers),
             Accounts(**incremental_config),
-            Campaigns(**incremental_config),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
         ]
@@ -129,6 +135,7 @@ class SourceGoogleAds(AbstractSource):
         if non_manager_accounts:
             streams.extend(
                 [
+                    Campaigns(**non_manager_incremental_config),
                     UserLocationReport(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),
                     DisplayTopicsPerformanceReport(**non_manager_incremental_config),

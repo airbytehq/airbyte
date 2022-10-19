@@ -39,11 +39,17 @@ module.exports = {
           {
             type: 'category',
             label: 'Sources',
+            link: {
+              type: 'generated-index',
+            },
             items: getSourceConnectors()
           },
           {
             type: 'category',
             label: 'Destinations',
+            link: {
+              type: 'generated-index',
+            },
             items: getDestinationConnectors()
           },
           {
@@ -106,6 +112,7 @@ module.exports = {
         'operator-guides/upgrading-airbyte',
         'operator-guides/reset',
         'operator-guides/configuring-airbyte-db',
+        'operator-guides/configuring-connector-resources',
         'operator-guides/browsing-output-logs',
         'operator-guides/using-the-airflow-airbyte-operator',
         'operator-guides/using-prefect-task',
@@ -133,7 +140,6 @@ module.exports = {
           },
         'operator-guides/using-custom-connectors',
         'operator-guides/scaling-airbyte',
-        'operator-guides/securing-airbyte',
       ],
     },
     {
@@ -157,6 +163,56 @@ module.exports = {
         id: 'connector-development/README',
       },      
       items: [
+        {
+          type: 'category',
+          label: 'Low-code connector development',
+          link: {
+            type: 'doc',
+            id: 'connector-development/config-based/low-code-cdk-overview',
+          },
+          items: [
+            {
+              type: 'category',
+              label: 'Tutorial',
+              items: [
+                'connector-development/config-based/tutorial/getting-started',
+                'connector-development/config-based/tutorial/create-source',
+                'connector-development/config-based/tutorial/install-dependencies',
+                'connector-development/config-based/tutorial/connecting-to-the-API-source',
+                'connector-development/config-based/tutorial/reading-data',
+                'connector-development/config-based/tutorial/incremental-reads',
+                'connector-development/config-based/tutorial/testing',
+              ],
+            },
+            {
+              type: 'category',
+              label: 'Understanding the YAML file',
+              link: {
+                type: 'doc',
+                id: 'connector-development/config-based/understanding-the-yaml-file/yaml-overview',
+              },
+              items: [
+                {
+                  type: `category`,
+                  label: `Requester`,
+                  link: {
+                    type: 'doc',
+                    id: 'connector-development/config-based/understanding-the-yaml-file/requester',
+                  },
+                  items: [
+                    'connector-development/config-based/understanding-the-yaml-file/request-options',
+                    'connector-development/config-based/understanding-the-yaml-file/authentication',
+                    'connector-development/config-based/understanding-the-yaml-file/error-handling',  
+                  ]
+              },
+                'connector-development/config-based/understanding-the-yaml-file/pagination',
+                'connector-development/config-based/understanding-the-yaml-file/record-selector',
+                'connector-development/config-based/understanding-the-yaml-file/stream-slicers',
+              ]
+            },
+            'connector-development/config-based/advanced-topics',    
+          ]
+        },
         'connector-development/tutorials/cdk-speedrun',
         {
           type: 'category',
@@ -218,13 +274,9 @@ module.exports = {
         'contributing-to-airbyte/developing-on-kubernetes',
         'contributing-to-airbyte/monorepo-python-development',
         'contributing-to-airbyte/code-style',
+        'contributing-to-airbyte/issues-and-pull-requests',
         'contributing-to-airbyte/gradle-cheatsheet',
         'contributing-to-airbyte/gradle-dependency-update',
-        {
-          type: 'link',
-          label: 'Connector template',
-          href: 'https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw',
-        },
         {
           type: 'category',
           label: 'Updating documentation',
@@ -233,11 +285,11 @@ module.exports = {
             id: 'contributing-to-airbyte/updating-documentation',
           },
           items: [
-            'docusaurus/contributing_to_docs',
-            'docusaurus/making_a_redirect',
-            'docusaurus/deploying_and_reverting_docs',
-            'docusaurus/locally_testing_docusaurus',
-            'docusaurus/readme',
+            {
+              type: 'link',
+              label: 'Connector doc template',
+              href: 'https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw',
+            },
           ]
         },
       ]
@@ -272,8 +324,12 @@ module.exports = {
         'understanding-airbyte/namespaces',
         'understanding-airbyte/supported-data-types',
         'understanding-airbyte/json-avro-conversion',
-        'understanding-airbyte/glossary',
+        'understanding-airbyte/database-data-catalog',
       ]
+    },
+    {
+      type: 'doc',
+      id: "operator-guides/security",
     },
     {
       type: 'doc',
@@ -294,17 +350,7 @@ module.exports = {
           href: 'https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap',
         },
         'project-overview/product-release-stages',
-        {
-          type: 'category',
-          label: 'Changelog',
-          items: [
-            'project-overview/changelog/README',
-            'project-overview/changelog/platform',
-            'project-overview/changelog/connectors',
-          ]
-        },
         'project-overview/slack-code-of-conduct',
-        'project-overview/security',
         {
           type: 'link',
           label: 'Airbyte Repository',
@@ -324,6 +370,15 @@ module.exports = {
             'project-overview/licenses/examples',
           ]
         },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Release Notes',
+      items: [
+         'release_notes/july_2022',
+         'release_notes/august_2022',
+         'release_notes/september_2022',
       ],
     },
   ],

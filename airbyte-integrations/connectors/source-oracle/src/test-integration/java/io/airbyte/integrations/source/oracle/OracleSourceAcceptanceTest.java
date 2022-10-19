@@ -31,12 +31,12 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";
   private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
 
-  protected OracleContainer container;
+  protected AirbyteOracleTestContainer container;
   protected JsonNode config;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new OracleContainer()
+    container = new AirbyteOracleTestContainer()
         .withUsername("test")
         .withPassword("oracle")
         .usingSid();
@@ -45,7 +45,9 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("sid", container.getSid())
+        .put("connection_data", ImmutableMap.builder()
+            .put("service_name", container.getSid())
+            .put("connection_type", "service_name").build())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("schemas", List.of("JDBC_SPACE"))
@@ -61,7 +63,7 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()));
+            config.get("connection_data").get("service_name").asText()));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

@@ -43,12 +43,13 @@ dependencies {
 
     acceptanceTestsImplementation project(':airbyte-api')
     acceptanceTestsImplementation project(':airbyte-commons')
+    acceptanceTestsImplementation project(':airbyte-commons-temporal')
     acceptanceTestsImplementation project(':airbyte-config:config-models')
     acceptanceTestsImplementation project(':airbyte-config:config-persistence')
     acceptanceTestsImplementation project(':airbyte-db:db-lib')
     acceptanceTestsImplementation project(':airbyte-tests')
     acceptanceTestsImplementation project(':airbyte-test-utils')
-    acceptanceTestsImplementation project(':airbyte-workers')
+    acceptanceTestsImplementation project(':airbyte-commons-worker')
 
     acceptanceTestsImplementation 'com.fasterxml.jackson.core:jackson-databind'
     acceptanceTestsImplementation 'io.github.cdimascio:java-dotenv:3.0.0'

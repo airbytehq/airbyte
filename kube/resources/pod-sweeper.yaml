@@ -9,7 +9,7 @@ data:
     get_worker_pods () {
       kubectl -n ${KUBE_NAMESPACE} -L airbyte -l airbyte=worker-pod \
         --field-selector status.phase!=Running get pods \
-        -o=jsonpath='{range .items[*]} {.metadata.name} {.status.phase} {.status.conditions[0].lastTransitionTime}{"\n"}{end}'
+        -o=jsonpath='{range .items[*]} {.metadata.name} {.status.phase} {.status.conditions[0].lastTransitionTime} {.status.startTime}{"\n"}{end}'
     }
 
     delete_worker_pod() {
@@ -25,8 +25,6 @@ data:
       # Longer time window for pods in error (to debug)
       NON_SUCCESS_DATE_STR=`date -d 'now - 24 hours' --utc -Ins`
       NON_SUCCESS_DATE=`date -d $NON_SUCCESS_DATE_STR +%s`
-      # default time to use in case its unavailable from kubectl
-      DEFAULT=`date --utc -Ins`
       (
           IFS=$'\n'
           for POD in `get_worker_pods`; do
@@ -34,7 +32,8 @@ data:
               POD_NAME=`echo $POD | cut -d " " -f 1`
               POD_STATUS=`echo $POD | cut -d " " -f 2`
               POD_DATE_STR=`echo $POD | cut -d " " -f 3`
-              POD_DATE=`date -d ${POD_DATE_STR:-$DEFAULT} '+%s'`
+              POD_START_DATE_STR=`echo $POD | cut -d " " -f 4`
+              POD_DATE=`date -d ${POD_DATE_STR:-$POD_START_DATE_STR} '+%s'`
               if [ "$POD_STATUS" = "Succeeded" ]; then
                 if [ "$POD_DATE" -lt "$SUCCESS_DATE" ]; then
                   delete_worker_pod "$POD_NAME" "$POD_STATUS" "$POD_DATE_STR"

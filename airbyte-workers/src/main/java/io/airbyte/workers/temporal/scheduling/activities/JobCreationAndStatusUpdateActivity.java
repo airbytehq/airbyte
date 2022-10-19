@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.workers.temporal.exception.RetryableException;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.util.UUID;
@@ -23,7 +23,6 @@ public interface JobCreationAndStatusUpdateActivity {
   class JobCreationInput {
 
     private UUID connectionId;
-    private boolean reset;
 
   }
 
@@ -97,6 +96,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptId;
+    private UUID connectionId;
     private StandardSyncOutput standardSyncOutput;
 
   }
@@ -114,6 +114,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptNumber;
+    private UUID connectionId;
     private StandardSyncOutput standardSyncOutput;
 
   }
@@ -130,6 +131,8 @@ public interface JobCreationAndStatusUpdateActivity {
   class JobFailureInput {
 
     private long jobId;
+    private UUID connectionId;
+    private int attemptNumber;
     private String reason;
 
   }
@@ -147,6 +150,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptId;
+    private UUID connectionId;
     private StandardSyncOutput standardSyncOutput;
     private AttemptFailureSummary attemptFailureSummary;
 
@@ -165,6 +169,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptNumber;
+    private UUID connectionId;
     private StandardSyncOutput standardSyncOutput;
     private AttemptFailureSummary attemptFailureSummary;
 
@@ -183,6 +188,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptId;
+    private UUID connectionId;
     private AttemptFailureSummary attemptFailureSummary;
 
   }
@@ -200,6 +206,7 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptNumber;
+    private UUID connectionId;
     private AttemptFailureSummary attemptFailureSummary;
 
   }
@@ -216,6 +223,7 @@ public interface JobCreationAndStatusUpdateActivity {
   class ReportJobStartInput {
 
     private long jobId;
+    private UUID connectionId;
 
   }
 

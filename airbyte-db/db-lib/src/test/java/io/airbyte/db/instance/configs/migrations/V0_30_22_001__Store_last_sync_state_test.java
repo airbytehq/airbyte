@@ -19,10 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.JobOutput;
@@ -31,9 +28,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
-import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
-import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
 import io.airbyte.db.instance.jobs.JobsDatabaseTestProvider;
 import java.io.IOException;
@@ -59,10 +54,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTest {
 
-  private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
   private static final OffsetDateTime TIMESTAMP = OffsetDateTime.now();
 
   private static final Table<?> JOBS_TABLE = table("jobs");
@@ -94,13 +89,13 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   @BeforeEach
   @Timeout(value = 2,
            unit = TimeUnit.MINUTES)
-  public void setupJobDatabase() throws DatabaseInitializationException, IOException {
+  void setupJobDatabase() throws DatabaseInitializationException, IOException {
     jobDatabase = new JobsDatabaseTestProvider(dslContext, null).create(false);
   }
 
   @Test
   @Order(10)
-  public void testGetJobsDatabase() {
+  void testGetJobsDatabase() {
     assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase("", "", "").isEmpty());
 
     // when there is database environment variable, return the database
@@ -115,7 +110,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
 
   @Test
   @Order(20)
-  public void testGetStandardSyncStates() throws Exception {
+  void testGetStandardSyncStates() throws Exception {
     jobDatabase.query(ctx -> {
       // Connection 1 has 1 job, no attempt.
       // This is to test that connection without no state is not returned.
@@ -152,7 +147,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
 
   @Test
   @Order(30)
-  public void testCopyData() throws SQLException {
+  void testCopyData() throws SQLException {
 
     final Set<StandardSyncState> newConnectionStates = Collections.singleton(
         new StandardSyncState()
@@ -185,18 +180,22 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
    */
   @Test
   @Order(40)
-  public void testMigration() throws Exception {
+  void testMigration() throws Exception {
     jobDatabase.query(ctx -> ctx.deleteFrom(TABLE_AIRBYTE_CONFIGS)
         .where(COLUMN_CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC_STATE.name()))
         .execute());
 
-    final var migration = new V0_30_22_001__Store_last_sync_state(container.getUsername(), container.getPassword(), container.getJdbcUrl());
-    // this context is a flyway class; only the getConnection method is needed to run the migration
+    final var migration = new V0_30_22_001__Store_last_sync_state();
+    // this context is a flyway class
     final Context context = new Context() {
 
       @Override
       public Configuration getConfiguration() {
-        return null;
+        final Configuration configuration = mock(Configuration.class);
+        when(configuration.getUser()).thenReturn(container.getUsername());
+        when(configuration.getPassword()).thenReturn(container.getPassword());
+        when(configuration.getUrl()).thenReturn(container.getJdbcUrl());
+        return configuration;
       }
 
       @Override
@@ -288,11 +287,6 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
         assertEquals(expectedTimestamp, record.value3());
       }
     }
-  }
-
-  private void initializeJobsDatabase(final DSLContext dslContext) throws DatabaseInitializationException, IOException {
-    final String initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
-    DatabaseCheckFactory.createJobsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initialSchema).initialize();
   }
 
 }

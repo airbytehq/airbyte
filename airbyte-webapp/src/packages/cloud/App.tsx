@@ -1,5 +1,6 @@
 import GlobalStyle from "global-styles";
 import React, { Suspense } from "react";
+import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
@@ -8,8 +9,9 @@ import LoadingPage from "components/LoadingPage";
 
 import { I18nProvider } from "core/i18n";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureService } from "hooks/services/Feature";
+import { FeatureItem, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { ModalServiceProvider } from "hooks/services/Modal";
 import NotificationServiceProvider from "hooks/services/Notification";
 import en from "locales/en.json";
 import { Routing } from "packages/cloud/cloudRoutes";
@@ -25,27 +27,33 @@ import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvide
 
 const messages = { ...en, ...cloudLocales };
 
-const StyleProvider: React.FC = ({ children }) => (
+const StyleProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <ThemeProvider theme={theme}>
     <GlobalStyle />
     {children}
   </ThemeProvider>
 );
 
-const Services: React.FC = ({ children }) => (
+const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <NotificationServiceProvider>
         <ConfirmationModalService>
-          <FormChangeTrackerService>
-            <FeatureService>
-              <AppServicesProvider>
-                <AuthenticationProvider>
-                  <IntercomProvider>{children}</IntercomProvider>
-                </AuthenticationProvider>
-              </AppServicesProvider>
-            </FeatureService>
-          </FormChangeTrackerService>
+          <ModalServiceProvider>
+            <FormChangeTrackerService>
+              <FeatureService
+                features={[FeatureItem.AllowOAuthConnector, FeatureItem.AllowCreateConnection, FeatureItem.AllowSync]}
+              >
+                <AppServicesProvider>
+                  <AuthenticationProvider>
+                    <HelmetProvider>
+                      <IntercomProvider>{children}</IntercomProvider>
+                    </HelmetProvider>
+                  </AuthenticationProvider>
+                </AppServicesProvider>
+              </FeatureService>
+            </FormChangeTrackerService>
+          </ModalServiceProvider>
         </ConfirmationModalService>
       </NotificationServiceProvider>
     </ApiErrorBoundary>

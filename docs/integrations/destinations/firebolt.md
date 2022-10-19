@@ -71,4 +71,4 @@ Each stream will be output into its own raw [Fact table](https://docs.firebolt.i
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
-| 0.1.0  | 2022-05-18 | []() | New Destination: Firebolt |
+| 0.1.0  | 2022-05-18 | [13118](https://github.com/airbytehq/airbyte/pull/13118) | New Destination: Firebolt |

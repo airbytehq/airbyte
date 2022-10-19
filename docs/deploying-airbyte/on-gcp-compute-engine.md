@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # On GCP (Compute Engine)
 
 :::info
@@ -38,24 +41,29 @@ INSTANCE_NAME=airbyte # or anyother name that you've used
 
 * Install `gcloud`
 
-{% tabs %}
-{% tab title="MacOS" %}
-```bash
-# In your workstation terminal
-brew install --cask google-cloud-sdk
-gcloud init # Follow instructions
-```
-{% endtab %}
+<Tabs groupId="operating-systems">
+<TabItem value="linux" label="Linux">
 
-{% tab title="Ubuntu" %}
 ```bash
 echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 sudo apt-get install apt-transport-https ca-certificates gnupg
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 sudo apt-get update && sudo apt-get install google-cloud-sdk
 ```
-{% endtab %}
-{% endtabs %}
+
+</TabItem>
+<TabItem value="mac" label="macOS">
+
+```bash
+# In your workstation terminal
+brew install --cask google-cloud-sdk
+gcloud init # Follow instructions```
+```
+
+</TabItem>
+</Tabs>
+
+* List all instances in your project
 
 ```bash
 # Verify you can see your instance

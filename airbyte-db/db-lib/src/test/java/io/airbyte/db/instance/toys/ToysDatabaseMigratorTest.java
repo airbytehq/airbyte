@@ -31,7 +31,7 @@ class ToysDatabaseMigratorTest extends AbstractDatabaseTest {
   }
 
   @Test
-  public void testMigration() throws Exception {
+  void testMigration() throws Exception {
     final DataSource dataSource = getDataSource();
 
     initializeDatabase(getDslContext());

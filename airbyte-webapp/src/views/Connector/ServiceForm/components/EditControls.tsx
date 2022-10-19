@@ -2,11 +2,12 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 import { useServiceForm } from "../serviceFormContext";
+import styles from "./EditControls.module.scss";
 import { TestingConnectionError } from "./TestingConnectionError";
-import TestingConnectionSpinner from "./TestingConnectionSpinner";
+import { TestingConnectionSpinner } from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
 const Controls = styled.div`
@@ -16,17 +17,13 @@ const Controls = styled.div`
   align-items: center;
 `;
 
-const ButtonContainer = styled.span`
-  margin-left: 10px;
-`;
-
 interface IProps {
   formType: "source" | "destination";
   isSubmitting: boolean;
   isValid: boolean;
   dirty: boolean;
-  resetForm: () => void;
-  onRetest?: () => void;
+  onCancelClick: () => void;
+  onRetestClick?: () => void;
   onCancelTesting?: () => void;
   isTestConnectionInProgress?: boolean;
   successMessage?: React.ReactNode;
@@ -38,9 +35,9 @@ const EditControls: React.FC<IProps> = ({
   isTestConnectionInProgress,
   isValid,
   dirty,
-  resetForm,
+  onCancelClick,
   formType,
-  onRetest,
+  onRetestClick,
   successMessage,
   errorMessage,
   onCancelTesting,
@@ -51,7 +48,7 @@ const EditControls: React.FC<IProps> = ({
     return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
   }
 
-  const showStatusMessage = () => {
+  const renderStatusMessage = () => {
     if (errorMessage) {
       return <TestingConnectionError errorMessage={errorMessage} />;
     }
@@ -63,23 +60,24 @@ const EditControls: React.FC<IProps> = ({
 
   return (
     <>
-      {showStatusMessage()}
+      {renderStatusMessage()}
       <Controls>
-        <div>
-          <Button
-            type="submit"
-            disabled={isSubmitting || !isValid || !dirty || Object.keys(unfinishedFlows).length > 0}
-          >
+        <div className={styles.buttonsContainer}>
+          <Button type="submit" disabled={isSubmitting || !dirty || Object.keys(unfinishedFlows).length > 0}>
             <FormattedMessage id="form.saveChangesAndTest" />
           </Button>
-          <ButtonContainer>
-            <Button type="button" secondary disabled={isSubmitting || !isValid || !dirty} onClick={resetForm}>
-              <FormattedMessage id="form.cancel" />
-            </Button>
-          </ButtonContainer>
+          <Button
+            className={styles.cancelButton}
+            type="button"
+            variant="secondary"
+            disabled={isSubmitting || !dirty}
+            onClick={onCancelClick}
+          >
+            <FormattedMessage id="form.cancel" />
+          </Button>
         </div>
-        {onRetest && (
-          <Button type="button" onClick={onRetest} disabled={!isValid}>
+        {onRetestClick && (
+          <Button type="button" onClick={onRetestClick} disabled={!isValid}>
             <FormattedMessage id={`form.${formType}Retest`} />
           </Button>
         )}

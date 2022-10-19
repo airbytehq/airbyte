@@ -12,12 +12,14 @@ import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
+import io.airbyte.config.OperatorWebhook;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
@@ -34,6 +36,8 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.WebhookConfig;
+import io.airbyte.config.WebhookOperationConfigs;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AuthSpecification;
@@ -127,6 +131,10 @@ public class MockData {
   private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
 
   private static final String CONNECTION_SPECIFICATION = "'{\"name\":\"John\", \"age\":30, \"car\":null}'";
+  private static final UUID OPERATION_ID_4 = UUID.randomUUID();
+  private static final UUID WEBHOOK_CONFIG_ID = UUID.randomUUID();
+  private static final String WEBHOOK_OPERATION_EXECUTION_URL = "test-webhook-url";
+  private static final String WEBHOOK_OPERATION_EXECUTION_BODY = "test-webhook-body";
 
   public static List<StandardWorkspace> standardWorkspaces() {
     final Notification notification = new Notification()
@@ -149,21 +157,26 @@ public class MockData {
         .withTombstone(false)
         .withNotifications(Collections.singletonList(notification))
         .withFirstCompletedSync(true)
-        .withFeedbackDone(true);
+        .withFeedbackDone(true)
+        .withDefaultGeography(Geography.AUTO)
+        .withWebhookOperationConfigs(Jsons.jsonNode(
+            new WebhookOperationConfigs().withWebhookConfigs(List.of(new WebhookConfig().withId(WEBHOOK_CONFIG_ID).withName("name")))));
 
     final StandardWorkspace workspace2 = new StandardWorkspace()
         .withWorkspaceId(WORKSPACE_ID_2)
         .withName("Another Workspace")
         .withSlug("another-workspace")
         .withInitialSetupComplete(true)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withDefaultGeography(Geography.AUTO);
 
     final StandardWorkspace workspace3 = new StandardWorkspace()
         .withWorkspaceId(WORKSPACE_ID_3)
         .withName("Tombstoned")
         .withSlug("tombstoned")
         .withInitialSetupComplete(true)
-        .withTombstone(true);
+        .withTombstone(true)
+        .withDefaultGeography(Geography.AUTO);
 
     return Arrays.asList(workspace1, workspace2, workspace3);
   }
@@ -178,6 +191,7 @@ public class MockData {
         .withDocumentationUrl("documentation-url-1")
         .withIcon("icon-1")
         .withSpec(connectorSpecification())
+        .withProtocolVersion("0.2.1")
         .withTombstone(false)
         .withPublic(true)
         .withCustom(false)
@@ -206,6 +220,7 @@ public class MockData {
         .withDockerImageTag("tag-3")
         .withDockerRepository("repository-3")
         .withDocumentationUrl("documentation-url-3")
+        .withProtocolVersion("0.2.2")
         .withIcon("icon-3")
         .withTombstone(false)
         .withPublic(false)
@@ -220,6 +235,7 @@ public class MockData {
         .withDockerImageTag("tag-4")
         .withDockerRepository("repository-4")
         .withDocumentationUrl("documentation-url-4")
+        .withProtocolVersion("0.2.4")
         .withIcon("icon-4")
         .withTombstone(false)
         .withPublic(false)
@@ -256,6 +272,7 @@ public class MockData {
         .withDocumentationUrl("documentation-url-3")
         .withIcon("icon-3")
         .withSpec(connectorSpecification())
+        .withProtocolVersion("0.3.1")
         .withTombstone(false)
         .withPublic(true)
         .withCustom(false)
@@ -299,6 +316,7 @@ public class MockData {
         .withDocumentationUrl("documentation-url-44")
         .withIcon("icon-4")
         .withSpec(connectorSpecification())
+        .withProtocolVersion("0.3.2")
         .withTombstone(false)
         .withPublic(false)
         .withCustom(true);
@@ -420,7 +438,20 @@ public class MockData {
         .withOperatorDbt(null)
         .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC))
         .withOperatorType(OperatorType.NORMALIZATION);
-    return Arrays.asList(standardSyncOperation1, standardSyncOperation2, standardSyncOperation3);
+    final StandardSyncOperation standardSyncOperation4 = new StandardSyncOperation()
+        .withName("webhook-operation")
+        .withTombstone(false)
+        .withOperationId(OPERATION_ID_4)
+        .withWorkspaceId(WORKSPACE_ID_1)
+        .withOperatorType(OperatorType.WEBHOOK)
+        .withOperatorDbt(null)
+        .withOperatorNormalization(null)
+        .withOperatorWebhook(
+            new OperatorWebhook()
+                .withWebhookConfigId(WEBHOOK_CONFIG_ID)
+                .withExecutionUrl(WEBHOOK_OPERATION_EXECUTION_URL)
+                .withExecutionBody(WEBHOOK_OPERATION_EXECUTION_BODY));
+    return Arrays.asList(standardSyncOperation1, standardSyncOperation2, standardSyncOperation3, standardSyncOperation4);
   }
 
   public static List<StandardSync> standardSyncs() {
@@ -443,7 +474,8 @@ public class MockData {
         .withPrefix("")
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
-        .withSchedule(schedule);
+        .withSchedule(schedule)
+        .withGeography(Geography.AUTO);
 
     final StandardSync standardSync2 = new StandardSync()
         .withOperationIds(Arrays.asList(OPERATION_ID_1, OPERATION_ID_2))
@@ -458,7 +490,8 @@ public class MockData {
         .withPrefix("")
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
-        .withSchedule(schedule);
+        .withSchedule(schedule)
+        .withGeography(Geography.AUTO);
 
     final StandardSync standardSync3 = new StandardSync()
         .withOperationIds(Arrays.asList(OPERATION_ID_1, OPERATION_ID_2))
@@ -473,10 +506,11 @@ public class MockData {
         .withPrefix("")
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
-        .withSchedule(schedule);
+        .withSchedule(schedule)
+        .withGeography(Geography.AUTO);
 
     final StandardSync standardSync4 = new StandardSync()
-        .withOperationIds(Arrays.asList(OPERATION_ID_1, OPERATION_ID_2))
+        .withOperationIds(Collections.emptyList())
         .withConnectionId(CONNECTION_ID_4)
         .withSourceId(SOURCE_ID_2)
         .withDestinationId(DESTINATION_ID_2)
@@ -487,8 +521,9 @@ public class MockData {
         .withNamespaceFormat("")
         .withPrefix("")
         .withResourceRequirements(resourceRequirements)
-        .withStatus(Status.INACTIVE)
-        .withSchedule(schedule);
+        .withStatus(Status.DEPRECATED)
+        .withSchedule(schedule)
+        .withGeography(Geography.AUTO);
 
     final StandardSync standardSync5 = new StandardSync()
         .withOperationIds(Arrays.asList(OPERATION_ID_3))
@@ -503,7 +538,8 @@ public class MockData {
         .withPrefix("")
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
-        .withSchedule(schedule);
+        .withSchedule(schedule)
+        .withGeography(Geography.AUTO);
 
     final StandardSync standardSync6 = new StandardSync()
         .withOperationIds(Arrays.asList())
@@ -518,7 +554,8 @@ public class MockData {
         .withPrefix("")
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.DEPRECATED)
-        .withSchedule(schedule);
+        .withSchedule(schedule)
+        .withGeography(Geography.AUTO);
 
     return Arrays.asList(standardSync1, standardSync2, standardSync3, standardSync4, standardSync5, standardSync6);
   }

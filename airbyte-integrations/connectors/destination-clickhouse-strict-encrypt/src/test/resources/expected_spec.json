@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/clickhouse",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/clickhouse",
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": false,
@@ -19,7 +19,7 @@
       },
       "port": {
         "title": "Port",
-        "description": "JDBC port (not the native port) of the database.",
+        "description": "HTTP port of the database.",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
@@ -27,33 +27,29 @@
         "examples": ["8123"],
         "order": 1
       },
-      "tcp-port": {
-        "title": "Native Port",
-        "description": "Native port (not the JDBC) of the database.",
-        "type": "integer",
-        "minimum": 0,
-        "maximum": 65536,
-        "default": 9000,
-        "examples": ["9000"],
-        "order": 2
-      },
       "database": {
         "title": "DB Name",
         "description": "Name of the database.",
         "type": "string",
-        "order": 3
+        "order": 2
       },
       "username": {
         "title": "User",
         "description": "Username to use to access the database.",
         "type": "string",
-        "order": 4
+        "order": 3
       },
       "password": {
         "title": "Password",
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true,
+        "order": 4
+      },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string",
         "order": 5
       },
       "tunnel_method": {

@@ -81,12 +81,15 @@ To write to a custom S3 log location, replace the following variables in the `.e
 ```text
 S3_LOG_BUCKET=<your_s3_bucket_to_write_logs_in>
 S3_LOG_BUCKET_REGION=<your_s3_bucket_region>
-AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
-AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
 # Set this to empty.
 S3_MINIO_ENDPOINT=
 # Set this to empty.
 S3_PATH_STYLE_ACCESS=
+```
+Additionally, replace the following variables in the `.secrets` file in the `kube/overlays/stable` directory:
+```text
+AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
+AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
 ```
 
 See [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) for instructions on creating an S3 bucket and [here](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) for instructions on creating AWS credentials.
@@ -102,7 +105,7 @@ Create the GCP service account with read/write permission to the GCS log bucket.
 $ cat gcp.json | base64
 ```
 
-2\) Populate the gcs-log-creds secrets with the Base64-encoded credential. This is as simple as taking the encoded credential from the previous step and adding it to the `secret-gcs-log-creds,yaml` file.
+2\) Populate the gcs-log-creds secrets with the Base64-encoded credential. This is as simple as taking the encoded credential from the previous step and adding it to the `secret-gcs-log-creds.yaml` file.
 
 ```text
 apiVersion: v1
@@ -238,13 +241,13 @@ See the documentation for [`kubectl cp`](https://kubernetes.io/docs/reference/ge
 ### Listing Files
 
 ```bash
-kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx ls /tmp/workspace/8
+kubectl exec -it airbyte-server-6b5747df5c-bj4fx ls /tmp/workspace/8
 ```
 
 ### Reading Files
 
 ```bash
-kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
+kubectl exec -it airbyte-server-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
 ```
 
 ### Persistent storage on GKE regional cluster

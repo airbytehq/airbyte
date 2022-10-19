@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.relationaldb.state;
 
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FIELD_FUNCTION;
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FUNCTION;
+import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION;
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION;
 
 import io.airbyte.commons.json.Jsons;
@@ -13,6 +14,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
+import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -20,8 +22,10 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -52,9 +56,10 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
         getStreamsSupplier(airbyteStateMessage),
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
+        CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
 
-    this.cdcStateManager = new CdcStateManager(extractCdcState(airbyteStateMessage));
+    this.cdcStateManager = new CdcStateManager(extractCdcState(airbyteStateMessage), extractStreams(airbyteStateMessage));
   }
 
   @Override
@@ -97,6 +102,26 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
       final DbState legacyState = Jsons.object(airbyteStateMessage.getData(), DbState.class);
       return legacyState != null ? legacyState.getCdcState() : null;
     }
+  }
+
+  private Set<AirbyteStreamNameNamespacePair> extractStreams(final AirbyteStateMessage airbyteStateMessage) {
+    if (airbyteStateMessage.getType() == AirbyteStateType.GLOBAL) {
+      return airbyteStateMessage.getGlobal().getStreamStates().stream()
+          .map(streamState -> {
+            final AirbyteStreamState cloned = Jsons.clone(streamState);
+            return new AirbyteStreamNameNamespacePair(cloned.getStreamDescriptor().getName(), cloned.getStreamDescriptor().getNamespace());
+          }).collect(Collectors.toSet());
+    } else {
+      final DbState legacyState = Jsons.object(airbyteStateMessage.getData(), DbState.class);
+      return legacyState != null ? extractNamespacePairsFromDbStreamState(legacyState.getStreams()) : Collections.emptySet();
+    }
+  }
+
+  private Set<AirbyteStreamNameNamespacePair> extractNamespacePairsFromDbStreamState(final List<DbStreamState> streams) {
+    return streams.stream().map(stream -> {
+      final DbStreamState cloned = Jsons.clone(stream);
+      return new AirbyteStreamNameNamespacePair(cloned.getStreamName(), cloned.getStreamNamespace());
+    }).collect(Collectors.toSet());
   }
 
   /**

@@ -5,19 +5,18 @@
 package io.airbyte.container_orchestrator;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.Configs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.general.DefaultNormalizationWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.normalization.NormalizationWorker;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
+import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -26,12 +25,10 @@ import lombok.extern.slf4j.Slf4j;
 public class NormalizationJobOrchestrator implements JobOrchestrator<NormalizationInput> {
 
   private final Configs configs;
-  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
 
-  public NormalizationJobOrchestrator(final Configs configs, final WorkerConfigs workerConfigs, final ProcessFactory processFactory) {
+  public NormalizationJobOrchestrator(final Configs configs, final ProcessFactory processFactory) {
     this.configs = configs;
-    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
   }
 
@@ -59,14 +56,13 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
         NormalizationRunnerFactory.create(
-            workerConfigs,
             destinationLauncherConfig.getDockerImage(),
             processFactory,
             NormalizationRunnerFactory.NORMALIZATION_VERSION),
         configs.getWorkerEnvironment());
 
     log.info("Running normalization worker...");
-    final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     final NormalizationSummary normalizationSummary = normalizationWorker.run(normalizationInput, jobRoot);
 
     return Optional.of(Jsons.serialize(normalizationSummary));

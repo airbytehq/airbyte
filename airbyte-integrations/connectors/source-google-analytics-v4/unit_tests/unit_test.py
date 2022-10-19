@@ -70,6 +70,15 @@ def mock_unknown_metrics_or_dimensions_error(requests_mock):
 
 
 @pytest.fixture
+def mock_daily_request_limit_error(requests_mock):
+    yield requests_mock.post(
+        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
+        status_code=429,
+        json={"error": {"code": 429, "message": "Quota Error: profileId 207066566 has exceeded the daily request limit."}},
+    )
+
+
+@pytest.fixture
 def mock_api_returns_no_records(requests_mock):
     """API returns empty data for given date based slice"""
     yield requests_mock.post(
@@ -147,7 +156,7 @@ def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
 def get_metrics_dimensions_mapping():
     test_metrics_dimensions_map = {
         "metric": [("ga:users", "integer"), ("ga:newUsers", "integer")],
-        "dimension": [("ga:dimension", "string")],
+        "dimension": [("ga:dimension", "string"), ("ga:dateHourMinute", "integer")],
     }
     for field_type, attribute_expected_pairs in test_metrics_dimensions_map.items():
         for attribute_expected_pair in attribute_expected_pairs:
@@ -304,9 +313,16 @@ def test_check_connection_success_oauth(
     assert mock_api_returns_valid_records.called
 
 
-def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error):
-    records = GoogleAnalyticsV4Stream(MagicMock()).read_records(sync_mode=None)
-    assert records
+def test_unknown_metrics_or_dimensions_error_validation(
+    mocker, test_config, mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error
+):
+    records = GoogleAnalyticsV4Stream(test_config).read_records(sync_mode=None)
+    assert list(records) == []
+
+
+def test_daily_request_limit_error_validation(mocker, test_config, mock_metrics_dimensions_type_list_link, mock_daily_request_limit_error):
+    records = GoogleAnalyticsV4Stream(test_config).read_records(sync_mode=None)
+    assert list(records) == []
 
 
 @freeze_time("2021-11-30")
@@ -381,3 +397,18 @@ def test_is_data_golden_flag_missing_equals_false(
     for message in source.read(logging.getLogger(), test_config, configured_catalog):
         if message.type == Type.RECORD:
             assert message.record.data["isDataGolden"] is False
+
+
+@pytest.mark.parametrize(
+    "configured_response, expected_token",
+    (
+        ({}, None),
+        ({"reports": []}, None),
+        ({"reports": [{"data": {}, "columnHeader": {}}]}, None),
+        ({"reports": [{"data": {}, "columnHeader": {}, "nextPageToken": 100000}]}, {"pageToken": 100000}),
+    ),
+)
+def test_next_page_token(test_config, configured_response, expected_token):
+    response = MagicMock(json=MagicMock(return_value=configured_response))
+    token = GoogleAnalyticsV4Stream(test_config).next_page_token(response)
+    assert token == expected_token

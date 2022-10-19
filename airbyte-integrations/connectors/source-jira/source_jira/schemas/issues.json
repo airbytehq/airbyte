@@ -28,26 +28,19 @@
     },
     "renderedFields": {
       "type": "object",
-      "additionalProperties": {
-        "readOnly": true
-      },
+      "additionalProperties": true,
       "description": "The rendered value of each field present on the issue.",
       "readOnly": true
     },
     "properties": {
       "type": "object",
-      "additionalProperties": {
-        "readOnly": true
-      },
+      "additionalProperties": true,
       "description": "Details of the issue properties identified in the request.",
       "readOnly": true
     },
     "names": {
       "type": "object",
-      "additionalProperties": {
-        "type": "string",
-        "readOnly": true
-      },
+      "additionalProperties": true,
       "description": "The ID and name of each field present on the issue.",
       "readOnly": true
     },
@@ -75,13 +68,7 @@
     },
     "versionedRepresentations": {
       "type": "object",
-      "additionalProperties": {
-        "type": "object",
-        "additionalProperties": {
-          "readOnly": true
-        },
-        "readOnly": true
-      },
+      "additionalProperties": true,
       "description": "The versions of each field on the issue.",
       "readOnly": true
     },
@@ -102,7 +89,7 @@
           "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor fiekd. Updated may be absent. Added to solve the #4341"
         }
       },
-      "additionalProperties": {}
+      "additionalProperties": true
     },
     "projectId": {
       "type": "string",
@@ -115,5 +102,5 @@
       "readOnly": true
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }
