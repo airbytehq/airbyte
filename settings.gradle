@@ -76,7 +76,6 @@ include ':airbyte-queue'
 include ':airbyte-test-utils'
 
 // airbyte-workers has a lot of dependencies.
-include ':airbyte-workers' // reused by acceptance tests in connector base.
 include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-commons-temporal'
 include ':airbyte-commons-worker'
@@ -98,6 +97,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-tests'
     include ':airbyte-webapp'
     include ':airbyte-webapp-e2e-tests'
+    include ':airbyte-workers'
 }
 
 // connectors base

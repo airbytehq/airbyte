@@ -1,6 +1,6 @@
-import { Field, FieldInputProps, FieldProps, FormikProps } from "formik";
+import { Field, FieldInputProps, FieldProps, FormikProps, useField } from "formik";
 import { ChangeEvent, useCallback, useMemo } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { ControlLabels, Link } from "components";
 import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
@@ -10,6 +10,8 @@ import { Action, Namespace } from "core/analytics";
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { links } from "utils/links";
+import { PropertyError } from "views/Connector/ServiceForm/components/Property/PropertyError";
 
 import availableCronTimeZones from "../../../../config/availableCronTimeZones.json";
 import { FormikConnectionFormValues, useFrequencyDropdownData } from "../formConfig";
@@ -21,9 +23,7 @@ const CRON_DEFAULT_VALUE = {
   cronExpression: "0 0 12 * * ?",
 };
 
-const CRON_REFERENCE_LINK = "http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html";
-
-const ScheduleField: React.FC = () => {
+export const ScheduleField: React.FC = () => {
   const { formatMessage } = useIntl();
   const { connection, mode } = useConnectionFormService();
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
@@ -128,6 +128,8 @@ const ScheduleField: React.FC = () => {
     return form.values.scheduleType === ConnectionScheduleType.cron;
   };
 
+  const [, { error: cronValidationError }] = useField("scheduleData.cron.cronExpression");
+
   return (
     <Field name="scheduleData">
       {({ field, meta, form }: FieldProps<ConnectionScheduleData>) => (
@@ -137,7 +139,6 @@ const ScheduleField: React.FC = () => {
               <ControlLabels
                 className={styles.connectorLabel}
                 nextLine
-                error={!!meta.error && meta.touched}
                 label={formatMessage({
                   id: "form.frequency",
                 })}
@@ -149,8 +150,8 @@ const ScheduleField: React.FC = () => {
             <div className={styles.rightFieldCol} style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
               <DropDown
                 {...field}
-                error={!!meta.error && meta.touched}
                 options={frequencies}
+                data-testid="scheduleData"
                 onChange={(item) => {
                   onScheduleChange(item, form);
                 }}
@@ -174,7 +175,7 @@ const ScheduleField: React.FC = () => {
                     },
                     {
                       lnk: (lnk: React.ReactNode) => (
-                        <Link target="_blank" href={CRON_REFERENCE_LINK} as="a">
+                        <Link target="_blank" href={links.cronReferenceLink} as="a">
                           {lnk}
                         </Link>
                       ),
@@ -204,6 +205,11 @@ const ScheduleField: React.FC = () => {
                     onChange={(item: DropDownOptionDataItem) => onCronChange(item, field, form, "cronTimeZone")}
                   />
                 </div>
+                {cronValidationError && (
+                  <PropertyError data-testid="cronExpressionError">
+                    <FormattedMessage id={cronValidationError} />
+                  </PropertyError>
+                )}
               </div>
             </div>
           )}
@@ -212,5 +218,3 @@ const ScheduleField: React.FC = () => {
     </Field>
   );
 };
-
-export default ScheduleField;
