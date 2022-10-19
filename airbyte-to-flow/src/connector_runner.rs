@@ -1,7 +1,7 @@
-use std::pin::Pin;
+use std::{pin::Pin, sync::{Arc}, ops::DerefMut};
 
 use futures::{channel::oneshot, stream, StreamExt};
-use tokio::{net::{tcp::{OwnedWriteHalf, OwnedReadHalf}, TcpListener}, task::JoinHandle, io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}};
+use tokio::{net::{tcp::{OwnedWriteHalf, OwnedReadHalf}, TcpListener}, task::JoinHandle, io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}, sync::Mutex};
 use tokio_util::io::{ReaderStream, StreamReader};
 
 use proto_flow::capture::PullResponse;
@@ -34,8 +34,8 @@ async fn flow_read_stream(read_half: OwnedReadHalf) -> Result<InterceptorStream,
     Ok(Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(read_half))))
 }
 
-fn flow_write_stream(write_half: OwnedWriteHalf) -> Pin<Box<dyn AsyncWrite + Send>> {
-    Box::pin(write_half)
+fn flow_write_stream(write_half: OwnedWriteHalf) -> Arc<Mutex<Pin<Box<dyn AsyncWrite + Send + Sync>>>> {
+    Arc::new(Mutex::new(Box::pin(write_half)))
 }
 
 fn airbyte_response_stream(child_stdout: ChildStdout) -> InterceptorStream {
@@ -112,7 +112,7 @@ pub async fn run_airbyte_source_connector(
         adapted_request_stream,
         child_stdin,
         Box::pin(adapted_response_stream),
-        response_write,
+        response_write.clone(),
     ));
 
     let cloned_op = op.clone();
@@ -136,19 +136,9 @@ pub async fn run_airbyte_source_connector(
                 });
                 let encoded_response = &encode_message(&resp)?;
                 let mut buf = &encoded_response[..];
-                copy(&mut buf, &mut tokio::io::stdout()).await?;
+                let mut writer = response_write.lock().await;
+                copy(&mut buf, writer.deref_mut()).await?;
             }
-        }
-
-        // Once the airbyte connector has exited, we must close stdout of connector_proxy
-        // so that the runtime knows the RPC is over. In turn, the runtime will close the stdin
-        // from their end. This is necessary to avoid a deadlock where runtime is waiting for
-        // connector_proxy to close stdout, and connector_proxy is waiting for runtime to close
-        // stdin.
-        if exit_status_result.is_ok() {
-            // We wait a few seconds to let any remaining writes to be done
-            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
-            std::process::exit(0);
         }
 
         exit_status_result
@@ -168,7 +158,7 @@ async fn streaming_all(
     request_stream: InterceptorStream,
     mut request_stream_writer: ChildStdin,
     response_stream: InterceptorStream,
-    mut response_stream_writer: Pin<Box<dyn AsyncWrite + Send>>,
+    response_stream_writer: Arc<Mutex<Pin<Box<dyn AsyncWrite + Sync + Send>>>>,
 ) -> Result<(), Error> {
     let mut request_stream_reader = StreamReader::new(interceptor_stream_to_io_stream(request_stream));
     let mut response_stream_reader = StreamReader::new(interceptor_stream_to_io_stream(response_stream));
@@ -179,7 +169,8 @@ async fn streaming_all(
         );
 
     let response_stream_copy = tokio::spawn(async move {
-        copy(&mut response_stream_reader, &mut response_stream_writer).await
+        let mut writer = response_stream_writer.lock().await;
+        copy(&mut response_stream_reader, writer.deref_mut()).await
     });
 
     let (req_stream_bytes, resp_stream_bytes) = tokio::try_join!(
