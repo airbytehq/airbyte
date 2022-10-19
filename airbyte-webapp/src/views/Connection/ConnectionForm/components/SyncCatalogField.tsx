@@ -2,12 +2,12 @@ import { FieldProps } from "formik";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { CatalogTree } from "components/connection/CatalogTree";
 import { Text } from "components/ui/Text";
 
 import { SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { CatalogTree } from "views/Connection/CatalogTree";
 
 import styles from "./SyncCatalogField.module.scss";
 
