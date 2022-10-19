@@ -126,7 +126,7 @@ public class AirbyteAcceptanceTestHarness {
   private static final DockerImageName SOURCE_POSTGRES_IMAGE_NAME = DockerImageName.parse("debezium/postgres:13-alpine")
       .asCompatibleSubstituteFor("postgres");
 
-  private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
+  private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.2";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
 
   public static final String POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION = "0.4.26";

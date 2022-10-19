@@ -126,7 +126,7 @@ class SingerHelper:
         for stream in singer_catalog.get("streams"):  # type: ignore
             name = stream.get("stream")
             schema = stream.get("schema")
-            airbyte_stream = AirbyteStream(name=name, json_schema=schema)
+            airbyte_stream = AirbyteStream(name=name, json_schema=schema, supported_sync_modes=[SyncMode.full_refresh])
             if name in sync_mode_overrides:
                 override_sync_modes(airbyte_stream, sync_mode_overrides[name])
             else:
