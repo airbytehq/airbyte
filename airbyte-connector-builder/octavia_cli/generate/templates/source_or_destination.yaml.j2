@@ -1,0 +1,79 @@
+# Configuration for {{ definition.docker_repository }}
+# Documentation about this connector can be found at {{ definition.documentation_url }}
+resource_name: "{{ resource_name}}"
+definition_type: {{ definition.type}}
+definition_id: {{ definition.id }}
+definition_image: {{ definition.docker_repository }}
+definition_version: {{ definition.docker_image_tag }}
+
+{%- macro render_field(field, is_commented) %}
+{%- if is_commented %}# {% endif %}{{ field.name }}:{% if field.default %} {% if field.airbyte_secret %}{{ field.default }}{% else %}{{ field.default | tojson() }}{% endif %}{% endif %} # {{ field.comment }}
+{%- endmacro %}
+
+{%- macro render_sub_fields(sub_fields, is_commented) %}
+{%- for f in sub_fields %}
+{%- if f.type == "object" and not f.oneOf %}
+{{- render_object_field(f)|indent(2, False) }}
+{%- elif f.oneOf %}}
+{{- render_one_of(f) }}
+{%- elif f.is_array_of_objects %}}
+{{- render_array_of_objects(f) }}
+{%- else %}
+{{ render_field(f, is_commented) }}
+{%- endif %}
+{%- endfor %}
+{%- endmacro %}
+
+{%- macro render_array_sub_fields(sub_fields, is_commented) %}
+{%- for f in sub_fields %}
+{% if loop.first %}- {% else %}  {% endif %}{{ render_field(f, is_commented) }}
+{%- endfor %}
+{%- endmacro %}
+
+
+{%- macro render_one_of(field) %}
+{{ field.name }}:
+{%- for one_of_value in field.one_of_values %}
+  {%- if loop.first %}
+  ## -------- Pick one valid structure among the examples below: --------
+  {{- render_sub_fields(one_of_value, False)|indent(2, False) }}
+  {%- else %}
+  ## -------- Another valid structure for {{ field.name }}: --------
+  {{- render_sub_fields(one_of_value, True)|indent(2, False) }}
+  {%- endif %}
+{%- endfor %}
+{%- endmacro %}
+
+{%- macro render_object_field(field) %}
+{{ field.name }}:
+  {{- render_sub_fields(field.object_properties, is_commented=False)|indent(2, False)}}
+{%- endmacro %}
+
+{%- macro render_array_of_objects(field) %}
+{{ field.name }}:
+  {{- render_array_sub_fields(field.array_items, is_commented=False)|indent(2, False)}}
+{%- endmacro %}
+
+{%- macro render_root(root, is_commented) %}
+{%- for f in root %}
+  {%- if f.type == "object" and not f.oneOf %}
+  {{- render_object_field(f)|indent(2, False) }}
+  {%- elif f.oneOf %}
+  {{- render_one_of(f)|indent(2, False) }}
+  {%- elif f.is_array_of_objects %}
+  {{- render_array_of_objects(f)|indent(2, False) }}
+  {%- else %}
+  {{ render_field(f, is_commented=is_commented) }}
+  {%- endif %}
+{%- endfor %}
+{%- endmacro %}
+
+# EDIT THE CONFIGURATION BELOW!
+configuration:
+{%- for root in configuration_fields %}
+{%- if loop.first %}
+{{- render_root(root, is_commented=False)}}
+{%- else %}
+{{- render_root(root, is_commented=True)}}
+{%- endif %}
+{% endfor %}
