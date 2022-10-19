@@ -28,7 +28,7 @@ definitions:
           - CONNECTION_STATUS
           - CATALOG
           - TRACE
-          - CONFIG
+          - CONNECTOR_CONFIG
       log:
         description: "log message: any kind of logging you want the platform to know about."
         "$ref": "#/definitions/AirbyteLogMessage"
@@ -49,9 +49,9 @@ definitions:
       trace:
         description: "trace message: a message to communicate information about the status and performance of a connector"
         "$ref": "#/definitions/AirbyteTraceMessage"
-      config:
-        description: "config message: a message to communicate an updated configuration from a connector that should be persisted"
-        "$ref": "#/definitions/AirbyteConfigMessage"
+      connectorConfig:
+        description: "connector config message: a message to communicate an updated configuration from a connector that should be persisted"
+        "$ref": "#/definitions/AirbyteConnectorConfigMessage"
   AirbyteRecordMessage:
     type: object
     additionalProperties: true
@@ -201,7 +201,7 @@ definitions:
         enum:
           - system_error
           - config_error
-  AirbyteConfigMessage:
+  AirbyteConnectorConfigMessage:
     type: object
     additionalProperties: true
     required:

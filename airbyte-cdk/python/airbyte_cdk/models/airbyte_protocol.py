@@ -21,7 +21,7 @@ class Type(Enum):
     CONNECTION_STATUS = "CONNECTION_STATUS"
     CATALOG = "CATALOG"
     TRACE = "TRACE"
-    CONFIG = "CONFIG"
+    CONNECTOR_CONFIG = "CONNECTOR_CONFIG"
 
 
 class AirbyteRecordMessage(BaseModel):
@@ -98,7 +98,7 @@ class AirbyteErrorTraceMessage(BaseModel):
     failure_type: Optional[FailureType] = Field(None, description="The type of error")
 
 
-class AirbyteConfigMessage(BaseModel):
+class AirbyteConnectorConfigMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
@@ -342,9 +342,9 @@ class AirbyteMessage(BaseModel):
         None,
         description="trace message: a message to communicate information about the status and performance of a connector",
     )
-    config: Optional[AirbyteConfigMessage] = Field(
+    connectorConfig: Optional[AirbyteConnectorConfigMessage] = Field(
         None,
-        description="config message: a message to communicate an updated configuration from a connector that should be persisted",
+        description="connector config message: a message to communicate an updated configuration from a connector that should be persisted",
     )
 
 

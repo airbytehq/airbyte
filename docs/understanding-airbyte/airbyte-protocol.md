@@ -27,8 +27,8 @@ Each of these concepts is described in greater depth in their respective section
 The Airbyte Protocol is versioned independently of the Airbyte Platform, and the version number is used to determine the compatibility between connectors and the Airbyte Platform.
 
 | Version  | Date of Change | Pull Request(s)                                                                                                     | Subject                                                                          |
-|:---------|:---------------|:--------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------|
-| `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                                | `AirbyteConfigMessage` added                                                     |
+| :------- | :------------- | :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------- |
+| `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                            | `AirbyteConnectorConfigMessage` added                                            |
 | `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                            | `AirbyteLogMessage.stack_trace` added                                            |
 | `v0.2.0` | 2022-06-10     | [13573](https://github.com/airbytehq/airbyte/pull/13573) & [12586](https://github.com/airbytehq/airbyte/pull/12586) | `STREAM` and `GLOBAL` STATE messages                                             |
 | `v0.1.1` | 2022-06-06     | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                            | Add a namespace in association with the stream name                              |
@@ -804,33 +804,32 @@ AirbyteErrorTraceMessage:
         - config_error
 ```
 
-## AirbyteConfigMessage
+## AirbyteConnectorConfigMessage
 
-An `AirbyteConfigMessage` allows a connector to update its configuration in the middle of a sync.  This is valuable for connectors with short-lived or single-use credentials. 
+An `AirbyteConnectorConfigMessage` allows a connector to update its configuration in the middle of a sync. This is valuable for connectors with short-lived or single-use credentials.
 
-Emitting this message signals to the orchestrator process (for example, the Airbyte platform) that it should update its persistence layer, replacing the connector's current configuration with the config present in the `.config` field of the message.  
+Emitting this message signals to the orchestrator process (for example, the Airbyte platform) that it should update its persistence layer, replacing the connector's current configuration with the config present in the `.config` field of the message.
 
-The config in the `AirbyteConfigMessage` must conform to connector's specification's schema, and the orchestrator process is expected to validate this invariant. If the output config does not conform to the specification's schema, the orchestrator process should raise an exception and terminate the sync.
+The config in the `AirbyteConnectorConfigMessage` must conform to connector's specification's schema, and the orchestrator process is expected to validate these messages. If the output config does not conform to the specification's schema, the orchestrator process should raise an exception and terminate the sync.
 
 ```yaml
-  AirbyteConfigMessage:
-    type: object
-    additionalProperties: true
-    required:
-      - config
-      - emitted_at
-    properties:
-      emitted_at:
-        description: "the time in ms that the message was emitted"
-        type: number
-      config:
-        description: "the config items from this connector's spec to update"
-        type: object
-        additionalProperties: true
+AirbyteConnectorConfigMessage:
+  type: object
+  additionalProperties: true
+  required:
+    - config
+    - emitted_at
+  properties:
+    emitted_at:
+      description: "the time in ms that the message was emitted"
+      type: number
+    config:
+      description: "the config items from this connector's spec to update"
+      type: object
+      additionalProperties: true
 ```
 
-For example, if the currently persisted config file is `{"api_key": 123, start_date: "01-01-2022"}` and the following `AirbyteConfigMessage` is output `{"config": {"api_key":  456}, "emitted_at": <current_time>}` then the persisted configuration will become `{"api_key": 456, start_date: "01-01-2022"}`. 
-
+For example, if the currently persisted config file is `{"api_key": 123, start_date: "01-01-2022"}` and the following `AirbyteConnectorConfigMessage` is output `{"config": {"api_key": 456}, "emitted_at": <current_time>}` then the persisted configuration is merged, and will become `{"api_key": 456, start_date: "01-01-2022"}`.
 
 # Acknowledgements
 

@@ -17,7 +17,7 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
-import io.airbyte.protocol.models.AirbyteConfigMessage;
+import io.airbyte.protocol.models.AirbyteConnectorConfigMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -111,7 +111,7 @@ public class AirbyteMessageTracker implements MessageTracker {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.SOURCE);
       case RECORD -> handleSourceEmittedRecord(message.getRecord());
       case STATE -> handleSourceEmittedState(message.getState());
-      case CONFIG -> handleEmittedConfig(message.getConfig(), ConnectorType.SOURCE);
+      case CONNECTOR_CONFIG -> handleEmittedConfig(message.getConnectorConfig(), ConnectorType.SOURCE);
       default -> log.warn("Invalid message type for message: {}", message);
     }
   }
@@ -124,7 +124,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.DESTINATION);
       case STATE -> handleDestinationEmittedState(message.getState());
-      case CONFIG -> handleEmittedConfig(message.getConfig(), ConnectorType.DESTINATION);
+      case CONNECTOR_CONFIG -> handleEmittedConfig(message.getConnectorConfig(), ConnectorType.DESTINATION);
       default -> log.warn("Invalid message type for message: {}", message);
     }
   }
@@ -223,7 +223,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    * When a connector needs to update its configuration
    */
   @SuppressWarnings("PMD") // until method is implemented
-  private void handleEmittedConfig(final AirbyteConfigMessage configMessage, final ConnectorType connectorType) {
+  private void handleEmittedConfig(final AirbyteConnectorConfigMessage configMessage, final ConnectorType connectorType) {
     // TODO: Update config here
     /**
      * Pseudocode: for (key in configMessage.getConfig()) { validateIsReallyConfig(key);
