@@ -187,7 +187,7 @@ class MetricRepository {
                   group by
                     connection_id
                   having
-                    count(1) > 4
+                    count(*) > 4
                 ) as historic_avg_running_attempts
               on
                 current_running_attempts.connection_id = historic_avg_running_attempts.connection_id)
