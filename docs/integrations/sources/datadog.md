@@ -60,6 +60,6 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 ## Changelog
 
-| Version | Date       | Pull Request                                        | Subject             |
-|:--------|:-----------|:----------------------------------------------------|:--------------------|
-| 0.1.0   | 2022-10-18 | [](https://github.com/airbytehq/airbyte/pull/)      | New Source: Datadog |
+| Version | Date       | Pull Request                                              | Subject             |
+|:--------|:-----------|:----------------------------------------------------------|:--------------------|
+| 0.1.0   | 2022-10-18 | [18150](https://github.com/airbytehq/airbyte/pull/18150)  | New Source: Datadog |
