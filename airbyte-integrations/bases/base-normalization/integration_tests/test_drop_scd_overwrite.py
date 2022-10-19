@@ -114,6 +114,7 @@ def run_reset_scd_on_overwrite_test(destination_type: DestinationType, test_reso
     generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "test_drop_scd_catalog_reset.json", dbt_test_utils)
     dbt_test_utils.dbt_run(destination_type, test_root_dir)
 
+
 @pytest.fixture
 def setup_test_path(request):
     dbt_test_utils.change_current_test_dir(request)
