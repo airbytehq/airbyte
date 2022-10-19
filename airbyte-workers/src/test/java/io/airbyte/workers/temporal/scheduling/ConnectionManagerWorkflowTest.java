@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
+import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.commons.temporal.scheduling.state.listener.TestStateListener;
 import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
@@ -57,7 +58,6 @@ import io.airbyte.workers.temporal.scheduling.testsyncworkflow.ReplicateFailureS
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SleepingSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SourceAndDestinationFailureSyncWorkflow;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
-import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.micronaut.context.BeanRegistration;
 import io.micronaut.inject.BeanIdentifier;
 import io.temporal.activity.ActivityOptions;

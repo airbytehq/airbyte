@@ -4,12 +4,18 @@
 
 package io.airbyte.workers.temporal.check.connection;
 
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.DOCKER_IMAGE_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -17,10 +23,10 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
@@ -36,6 +42,7 @@ import io.temporal.activity.ActivityExecutionContext;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
+import java.util.Map;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -74,8 +81,11 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.migratorFactory = migratorFactory;
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public ConnectorJobOutput runWithJobOutput(final CheckConnectionInput args) {
+    ApmTraceUtils
+        .addTagsToTrace(Map.of(JOB_ID_KEY, args.getJobRunConfig().getJobId(), DOCKER_IMAGE_KEY, args.getLauncherConfig().getDockerImage()));
     final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
 
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
@@ -97,8 +107,11 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     return temporalAttemptExecution.get();
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public StandardCheckConnectionOutput run(final CheckConnectionInput args) {
+    ApmTraceUtils
+        .addTagsToTrace(Map.of(JOB_ID_KEY, args.getJobRunConfig().getJobId(), DOCKER_IMAGE_KEY, args.getLauncherConfig().getDockerImage()));
     final ConnectorJobOutput output = runWithJobOutput(args);
     if (output.getFailureReason() != null) {
       return new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("Error checking connection");
