@@ -26,20 +26,15 @@ public class StorageObjectGetInterceptor implements TraceInterceptor {
         filtered.add(s);
         return;
       }
-      if (s.isError()) {
-        try {
-          System.out.println(tags.get("http.status_code").getClass().getName());
-          System.out.println(tags.get("peer.hostname").getClass().getName());
-        } catch (final Exception e) {
-          // NOOP
-        }
-      }
-      if (s.isError() &&
-          tags.getOrDefault("peer.hostname", "").equals("storage.googleapis.com") &&
-          (tags.getOrDefault("http.status_code", "").equals(404)) ||
-          ((String) tags.getOrDefault("err.msg", "")).startsWith("404 Not Found")) {
-        System.out.printf("setting error to false: span name: %s (%s)%n", s.getResourceName(),
-            s.getOperationName());
+
+      // There are two different errors spans that we want to ignore, both of which are specific to
+      // "storage.googleapis.com". One returns an http status code of 404 and the other has an error
+      // message
+      // that begins with "404 Not Found"
+      final var is404 = tags.getOrDefault("http.status_code", "").equals(404) ||
+          ((String) tags.getOrDefault("error.msg", "")).startsWith("404 Not Found");
+      if (s.isError() && tags.getOrDefault("peer.hostname", "").equals("storage.googleapis.com")
+          && is404) {
         s.setError(false);
       }
       System.out.printf("span name: %s (%s); isError: %s; tags: %s%n",
