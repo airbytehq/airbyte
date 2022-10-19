@@ -79,7 +79,7 @@ kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --port
 # ./tools/bin/health_check.sh &
 
 echo "Running worker integration tests..."
-SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
+SUB_BUILD=PLATFORM LOG_LEVEL=DEBUG  ./gradlew :airbyte-workers:integrationTest --scan
 
 echo "Printing system disk usage..."
 df -h
@@ -99,7 +99,7 @@ if [ -n "$CI" ]; then
 fi
 
 echo "Running e2e tests via gradle..."
-KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
+KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
 
 echo "Reverting changes back"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.test
