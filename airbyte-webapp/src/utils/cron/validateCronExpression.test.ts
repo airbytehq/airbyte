@@ -70,11 +70,13 @@ describe("validateCronExpression", () => {
 
 describe("validateCronFrequencyOverOneHour", () => {
   it.each`
-    expression        | isValid
-    ${"0 0 12 * * ?"} | ${true}
-    ${"0 0 * * * ?"}  | ${true}
-    ${"0 * 12 * * ?"} | ${false}
-    ${"* * 12 * * ?"} | ${false}
+    expression            | isValid
+    ${"0 0 12 * * ?"}     | ${true}
+    ${"0 0 * * * ?"}      | ${true}
+    ${"0 * 12 * * ?"}     | ${false}
+    ${"* * 12 * * ?"}     | ${false}
+    ${"15,45 * 12 * * ?"} | ${false}
+    ${"0 15,45 12 * * ?"} | ${false}
   `("'$expression' is valid: $isValid", ({ expression, isValid }) => {
     expect(validateCronFrequencyOneHourOrMore(expression)).toEqual(isValid);
   });
