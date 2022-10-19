@@ -5,8 +5,6 @@ metadata:
   name: {{ include "common.names.fullname" . }}-pod-sweeper
   labels:
     {{- include "airbyte.labels" . | nindent 4 }}
-  annotations:
-    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 spec:
   replicas: 1
   selector:
@@ -16,8 +14,9 @@ spec:
     metadata:
       labels:
         {{- include "airbyte.selectorLabels" . | nindent 8 }}
-      {{- if .Values.podAnnotations }}
       annotations:
+        checksum/sweep-pod-script: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      {{- if .Values.podAnnotations }}
         {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
       {{- end }}
     spec:
