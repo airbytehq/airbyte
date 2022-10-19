@@ -1,7 +1,6 @@
 version: "0.1.0"
 
 definitions:
-
   schema_loader:
     type: JsonSchema
     file_path: "./source_courier/schemas/{{ options['name'] }}.json"
@@ -78,7 +77,7 @@ definitions:
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
 
-## MESSAGE INFO / HISTORY / OUTPUT STREAMS ## 
+  ## MESSAGE INFO / HISTORY / OUTPUT STREAMS ##
   message_id_transformer:
     type: AddFields
     fields:
@@ -125,7 +124,7 @@ definitions:
         $ref: "*ref(definitions.message_stream_slicer)"
     transformations:
       - $ref: "*ref(definitions.message_id_transformer)"
-  
+
   message_output_stream:
     type: DeclarativeStream
     $options:
@@ -150,7 +149,6 @@ streams:
   - "*ref(definitions.message_info_stream)"
   - "*ref(definitions.message_history_stream)"
   - "*ref(definitions.message_output_stream)"
-
 
 check:
   type: CheckStream
