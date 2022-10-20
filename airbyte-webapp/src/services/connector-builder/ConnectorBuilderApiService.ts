@@ -1,3 +1,5 @@
+import { useQuery } from "react-query";
+
 import { useConfig } from "config";
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import {
@@ -100,8 +102,10 @@ function useConnectorBuilderService() {
 export const useReadStream = (params: StreamReadRequestBody) => {
   const service = useConnectorBuilderService();
 
-  return useSuspenseQuery(connectorBuilderKeys.read(params.stream, params.connectorDefinition, params.config), () =>
-    service.readStream(params)
+  return useQuery(
+    connectorBuilderKeys.read(params.stream, params.connectorDefinition, params.config),
+    () => service.readStream(params),
+    { refetchOnWindowFocus: false, enabled: false }
   );
 };
 
