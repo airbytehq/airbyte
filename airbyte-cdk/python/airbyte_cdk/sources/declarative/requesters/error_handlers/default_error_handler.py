@@ -134,17 +134,12 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
         else:
             self._last_request_to_attempt_count[request] += 1
         for response_filter in self.response_filters:
-            filter_action = response_filter.matches(response)
-            if filter_action is not None:
-                error_message = response_filter.create_error_message(response)
-                if filter_action == ResponseAction.RETRY:
-                    return ResponseStatus(
-                        ResponseAction.RETRY,
-                        self._backoff_time(response, self._last_request_to_attempt_count[request]),
-                        error_message=error_message,
-                    )
-                else:
-                    return ResponseStatus(filter_action, error_message=error_message)
+            matched_status = response_filter.matches(
+                response=response, backoff_time=self._backoff_time(response, self._last_request_to_attempt_count[request])
+            )
+            if matched_status is not None:
+                return matched_status
+
         if response.ok:
             return response_status.SUCCESS
         # Fail if the response matches no filters

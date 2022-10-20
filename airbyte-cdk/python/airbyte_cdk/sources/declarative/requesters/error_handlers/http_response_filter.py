@@ -9,6 +9,7 @@ import requests
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from dataclasses_jsonschema import JsonSchemaMixin
@@ -46,7 +47,21 @@ class HttpResponseFilter(JsonSchemaMixin):
             self.predicate = InterpolatedBoolean(condition=self.predicate, options=options)
         self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, options=options)
 
-    def matches(self, response: requests.Response) -> Optional[ResponseAction]:
+    def matches(self, response: requests.Response, backoff_time: Optional[float] = None) -> Optional[ResponseStatus]:
+        filter_action = self._matches_filter(response)
+        if filter_action is not None:
+            error_message = self._create_error_message(response)
+            if filter_action == ResponseAction.RETRY:
+                return ResponseStatus(
+                    response_action=ResponseAction.RETRY,
+                    retry_in=backoff_time,
+                    error_message=error_message,
+                )
+            else:
+                return ResponseStatus(filter_action, error_message=error_message)
+        return None
+
+    def _matches_filter(self, response: requests.Response) -> Optional[ResponseAction]:
         """
         Apply the filter on the response and return the action to execute if it matches
         :param response: The HTTP response to evaluate
@@ -61,7 +76,7 @@ class HttpResponseFilter(JsonSchemaMixin):
         else:
             return None
 
-    def create_error_message(self, response: requests.Response) -> str:
+    def _create_error_message(self, response: requests.Response) -> str:
         """
         Construct an error message based on the specified message template of the filter.
         :param response: The HTTP response which can be used during interpolation
