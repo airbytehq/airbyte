@@ -96,6 +96,21 @@ def run_reset_scd_on_overwrite_test(destination_type: DestinationType, test_reso
 
     # Force a reset in destination raw tables to remove any data left over from previous test runs
     assert run_destination_process(destination_type, test_root_dir, "", "initial_reset_catalog.json", dbt_test_utils)
+    # generate models from catalog
+    generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "initial_reset_catalog.json", dbt_test_utils)
+
+    # Run dbt process to normalize data from the first sync
+    dbt_test_utils.dbt_run(destination_type, test_root_dir, force_full_refresh=True)
+
+    # Remove models generated in previous step to avoid DBT compilation errors
+    test_directory = os.path.join(test_root_dir, "models/generated/airbyte_incremental")
+    shutil.rmtree(test_directory, ignore_errors=True)
+    test_directory = os.path.join(test_root_dir, "models/generated/airbyte_views")
+    shutil.rmtree(test_directory, ignore_errors=True)
+    test_directory = os.path.join(test_root_dir, "models/generated/airbyte_ctes")
+    shutil.rmtree(test_directory, ignore_errors=True)
+    test_directory = os.path.join(test_root_dir, "models/generated/airbyte_tables")
+    shutil.rmtree(test_directory, ignore_errors=True)
 
     # Run the first sync to create raw tables in destinations
     dbt_test_utils.copy_replace(original_catalog_file, os.path.join(test_root_dir, "destination_catalog.json"))
