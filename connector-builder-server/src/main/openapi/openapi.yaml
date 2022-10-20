@@ -18,6 +18,7 @@ paths:
   /v1/stream/read:
     post:
       summary: Reads a specific stream in the source. TODO in a later phase - only read a single slice of data.
+      operationId: readStream
       requestBody:
         content:
           application/json:
@@ -38,6 +39,7 @@ paths:
   /v1/streams/list:
     post:
       summary: List all streams present in the connector definition, along with their specific request URLs
+      operationId: listStreams
       requestBody:
         content:
           application/json:
@@ -89,7 +91,8 @@ components:
                       type: array
                       description: The RECORD/STATE/LOG AirbyteMessages coming from the read operation for this page
                       items:
-                        $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteMessage"
+                        type: object
+                        # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteMessage"
                     request:
                       $ref: "#/components/schemas/HttpRequest"
                     response:
@@ -97,17 +100,24 @@ components:
     StreamReadRequestBody:
       type: object
       required:
-        - definition
+        - connectorDefinition
         - stream
+        - config
       properties:
-        definition:
-          $ref: "#/components/schemas/ConnectorDefinitionBody"
+        connectorDefinition:
+          type: object
           description: The config-based connector definition contents
+          # $ref: "#/components/schemas/ConnectorDefinitionBody"
         stream:
           type: string
           description: Name of the stream to read
         state:
-          $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
+          type: object
+          description: The AirbyteStateMessage object to use as the starting state for this read
+        config:
+          type: object
+          description: The config blob containing the user inputs for testing
+          # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
         # --- Potential addition for a later phase ---
         # numPages:
         #   type: integer
@@ -144,18 +154,20 @@ components:
         headers:
           type: object
           description: The headers of the HTTP response, if any
-    ConnectorDefinitionBody:
-      $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
-    AirbyteProtocol:
-      $ref: ../../../../airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
+    # --- Commenting out for now since they do not work with our orval openapi client generator ---
+    # ConnectorDefinitionBody:
+    #   $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
+    # AirbyteProtocol:
+    #   $ref: ../../../../airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
     StreamsListRequestBody:
       type: object
       required:
-        - definition
+        - connectorDefinition
       properties:
-        definition:
-          $ref: "#/components/schemas/ConnectorDefinitionBody"
+        connectorDefinition:
+          type: object
           description: The config-based connector definition contents
+          # $ref: "#/components/schemas/ConnectorDefinitionBody"
     StreamsListRead:
       type: object
       required:
