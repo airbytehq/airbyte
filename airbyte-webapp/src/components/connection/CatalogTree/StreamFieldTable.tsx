@@ -2,12 +2,12 @@ import React from "react";
 import styled from "styled-components";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
+import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 
-import { AirbyteStreamConfiguration } from "../../../core/request/AirbyteClient";
-import { pathDisplayName } from "./components/PathPopout";
-import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { FieldHeader } from "./FieldHeader";
 import { FieldRow } from "./FieldRow";
+import { pathDisplayName } from "./PathPopout";
+import { TreeRowWrapper } from "./TreeRowWrapper";
 
 const RowsContainer = styled.div`
   background: ${({ theme }) => theme.whiteColor};

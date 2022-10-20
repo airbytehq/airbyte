@@ -11,13 +11,13 @@ import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchem
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
-import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
-import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
-import { flatten, getPathType } from "../utils";
 import styles from "./BulkHeader.module.scss";
 import { pathDisplayName, PathPopout } from "./PathPopout";
+import { ArrowCell, CheckboxCell, HeaderCell } from "./styles";
 import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
+import { flatten, getPathType } from "./utils";
 
 const ActionCell = styled.div`
   display: flex;

@@ -242,4 +242,18 @@ public interface JobCreationAndStatusUpdateActivity {
   @ActivityMethod
   void ensureCleanJobState(EnsureCleanJobStateInput input);
 
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class JobCheckFailureInput {
+
+    private long jobId;
+    private int attemptId;
+    private UUID connectionId;
+
+  }
+
+  @ActivityMethod
+  boolean isLastJobOrAttemptFailure(JobCheckFailureInput input);
+
 }
