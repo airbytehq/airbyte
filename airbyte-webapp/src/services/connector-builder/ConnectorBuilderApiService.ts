@@ -6,7 +6,7 @@ import {
   StreamRead,
   StreamReadRequestBody,
   StreamReadRequestBodyConfig,
-  StreamReadRequestBodyConnectorDefinition,
+  StreamReadRequestBodyManifest,
   StreamsListRead,
   StreamsListRequestBody,
 } from "core/request/ConnectorBuilderClient";
@@ -20,7 +20,7 @@ class ConnectorBuilderService extends AirbyteRequestService {
     // return readStream(body, this.requestOptions);
     console.log("------------");
     console.log(`Stream: ${body.stream}`);
-    console.log(`Connector definition:\n${JSON.stringify(body.connectorDefinition)}`);
+    console.log(`Connector manifest:\n${JSON.stringify(body.manifest)}`);
     console.log(`Config:\n${JSON.stringify(body.config)}`);
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
       return {
@@ -124,11 +124,11 @@ const connectorBuilderKeys = {
   all: ["connectorBuilder"] as const,
   read: (
     streamName: string,
-    connectorDefinition: StreamReadRequestBodyConnectorDefinition,
+    manifest: StreamReadRequestBodyManifest,
     config: StreamReadRequestBodyConfig
-  ) => [...connectorBuilderKeys.all, "read", { streamName, connectorDefinition, config }] as const,
-  list: (connectorDefinition: StreamReadRequestBodyConnectorDefinition) =>
-    [...connectorBuilderKeys.all, "list", { connectorDefinition }] as const,
+  ) => [...connectorBuilderKeys.all, "read", { streamName, manifest, config }] as const,
+  list: (manifest: StreamReadRequestBodyManifest) =>
+    [...connectorBuilderKeys.all, "list", { manifest }] as const,
 };
 
 function useConnectorBuilderService() {
@@ -144,7 +144,7 @@ export const useReadStream = (params: StreamReadRequestBody) => {
   const service = useConnectorBuilderService();
 
   return useQuery(
-    connectorBuilderKeys.read(params.stream, params.connectorDefinition, params.config),
+    connectorBuilderKeys.read(params.stream, params.manifest, params.config),
     () => service.readStream(params),
     { refetchOnWindowFocus: false, enabled: false }
   );
@@ -153,5 +153,5 @@ export const useReadStream = (params: StreamReadRequestBody) => {
 export const useListStreams = (params: StreamsListRequestBody) => {
   const service = useConnectorBuilderService();
 
-  return useSuspenseQuery(connectorBuilderKeys.list(params.connectorDefinition), () => service.listStreams(params));
+  return useSuspenseQuery(connectorBuilderKeys.list(params.manifest), () => service.listStreams(params));
 };

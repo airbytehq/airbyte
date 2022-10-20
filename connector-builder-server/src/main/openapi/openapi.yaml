@@ -38,7 +38,7 @@ paths:
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/streams/list:
     post:
-      summary: List all streams present in the connector definition, along with their specific request URLs
+      summary: List all streams present in the connector manifest, along with their specific request URLs
       operationId: listStreams
       requestBody:
         content:
@@ -100,23 +100,23 @@ components:
     StreamReadRequestBody:
       type: object
       required:
-        - connectorDefinition
+        - manifest
         - stream
         - config
       properties:
-        connectorDefinition:
+        manifest:
           type: object
-          description: The config-based connector definition contents
-          # $ref: "#/components/schemas/ConnectorDefinitionBody"
+          description: The config-based connector manifest contents
+          # $ref: "#/components/schemas/ConnectorManifest"
         stream:
           type: string
           description: Name of the stream to read
-        state:
-          type: object
-          description: The AirbyteStateMessage object to use as the starting state for this read
         config:
           type: object
           description: The config blob containing the user inputs for testing
+        state:
+          type: object
+          description: The AirbyteStateMessage object to use as the starting state for this read
           # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
         # --- Potential addition for a later phase ---
         # numPages:
@@ -155,19 +155,19 @@ components:
           type: object
           description: The headers of the HTTP response, if any
     # --- Commenting out for now since they do not work with our orval openapi client generator ---
-    # ConnectorDefinitionBody:
+    # ConnectorManifest:
     #   $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
     # AirbyteProtocol:
     #   $ref: ../../../../airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
     StreamsListRequestBody:
       type: object
       required:
-        - connectorDefinition
+        - manifest
       properties:
-        connectorDefinition:
+        manifest:
           type: object
-          description: The config-based connector definition contents
-          # $ref: "#/components/schemas/ConnectorDefinitionBody"
+          description: The config-based connector manifest contents
+          # $ref: "#/components/schemas/ConnectorManifest"
     StreamsListRead:
       type: object
       required:
@@ -177,7 +177,7 @@ components:
           type: array
           items:
             type: object
-            description: The stream names present in the connector definition
+            description: The stream names present in the connector manifest
             required:
               - name
               - url
