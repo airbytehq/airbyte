@@ -51,9 +51,9 @@ def test_reset_scd_on_overwrite(destination_type: DestinationType, setup_test_pa
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
 
-    if destination_type.value == DestinationType.ORACLE.value:
-        # Oracle does not allow changing to random schema
-        dbt_test_utils.set_target_schema("test_normalization")
+    if destination_type.value in [DestinationType.ORACLE.value, DestinationType.TIDB.value]:
+        # Oracle and TiDB do not support incremental syncs with schema changes yet
+        pytest.skip(f"{destination_type} does not support incremental sync with schema change yet")
     elif destination_type.value == DestinationType.REDSHIFT.value:
         # set unique schema for Redshift test
         dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_reset_scd_"))
@@ -61,13 +61,7 @@ def test_reset_scd_on_overwrite(destination_type: DestinationType, setup_test_pa
     test_resource_name = "test_reset_scd_overwrite"
     # Select target schema
     target_schema = dbt_test_utils.target_schema
-    # Overwrite target schema for Oracle or Redshift
-    if destination_type.value == DestinationType.ORACLE.value:
-        # Oracle does not allow changing to random schema
-        dbt_test_utils.set_target_schema("test_reset_scd_overwrite")
-    elif destination_type.value == DestinationType.REDSHIFT.value:
-        # set unique schema for Redshift test
-        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_reset_scd_overwrite_"))
+
     try:
         print(f"Testing resetting SCD tables on overwrite with {destination_type} in schema {target_schema}")
         run_reset_scd_on_overwrite_test(destination_type, test_resource_name)
