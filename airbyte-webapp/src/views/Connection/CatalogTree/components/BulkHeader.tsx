@@ -116,6 +116,7 @@ export const BulkHeader: React.FC = () => {
             pathType={cursorType}
             paths={paths}
             path={options.cursorField}
+            data-testid="cursorField"
           />
         )}
       </HeaderCell>
