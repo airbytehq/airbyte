@@ -10,8 +10,8 @@ import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { equal } from "utils/objects";
 import { useTranslateDataType } from "utils/useTranslateDataType";
 
-import DataTypeCell from "./components/DataTypeCell";
-import { pathDisplayName } from "./components/PathPopout";
+import DataTypeCell from "./DataTypeCell";
+import { pathDisplayName } from "./PathPopout";
 import { NameContainer } from "./styles";
 
 interface FieldRowProps {
