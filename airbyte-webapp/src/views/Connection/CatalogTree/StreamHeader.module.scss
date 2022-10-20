@@ -1,6 +1,6 @@
 @use "../../../scss/colors";
 @use "../../../scss/variables";
-@forward "./CatalogTree.module.scss";
+@forward "./CatalogTreeBody.module.scss";
 
 .icon {
   margin-right: 7px;
@@ -16,10 +16,10 @@
 }
 
 .streamRowCheckboxCell {
-  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  padding-left: 27px;
 }
 
 .streamHeaderContent {
