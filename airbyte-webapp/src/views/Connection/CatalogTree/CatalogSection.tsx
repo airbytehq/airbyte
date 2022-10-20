@@ -1,4 +1,4 @@
-import { FormikErrors, getIn } from "formik";
+import { FormikErrors, getIn, useFormikContext } from "formik";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 
@@ -45,6 +45,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     destDefinition: { supportedDestinationSyncModes },
   } = useConnectionFormService();
   const { mode } = useConnectionFormService();
+  const { touched } = useFormikContext();
 
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
@@ -128,8 +129,9 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   );
 
   const destName = prefix + (streamNode.stream?.name ?? "");
-  const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
-  const hasError = configErrors && Object.keys(configErrors).length > 0;
+  const configErrors = getIn(errors, `syncCatalog.streams[${streamNode.id}].config`);
+  const streamIsTouched = getIn(touched, `syncCatalog.streams[${streamNode.id}]`);
+  const hasError = configErrors && streamIsTouched;
   const pkType = getPathType(pkRequired, shouldDefinePk);
   const cursorType = getPathType(cursorRequired, shouldDefineCursor);
   const hasFields = fields?.length > 0;

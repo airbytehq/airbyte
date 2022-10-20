@@ -16,6 +16,7 @@ interface CatalogTreeBodyProps {
 
 export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, onStreamChanged }) => {
   const { mode } = useConnectionFormService();
+  const { setFieldTouched } = useFormikContext();
 
   const onUpdateStream = useCallback(
     (id: string | undefined, newConfig: Partial<AirbyteStreamConfiguration>) => {
@@ -23,11 +24,11 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, onStr
 
       if (streamNode) {
         const newStreamNode = setIn(streamNode, "config", { ...streamNode.config, ...newConfig });
-
+        setFieldTouched(`syncCatalog.streams[${id}]`, true);
         onStreamChanged(newStreamNode);
       }
     },
-    [streams, onStreamChanged]
+    [streams, onStreamChanged, setFieldTouched]
   );
 
   const { initialValues } = useFormikContext<ConnectionFormValues>();

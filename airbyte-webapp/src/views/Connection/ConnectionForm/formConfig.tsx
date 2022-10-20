@@ -154,7 +154,7 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
                     if (value.primaryKey?.length === 0) {
                       return this.createError({
                         message: "connectionForm.primaryKey.required",
-                        path: `schema.streams[${this.parent.id}].config.primaryKey`,
+                        path: `syncCatalog.streams[${this.parent.id}].config.primaryKey`,
                       });
                     }
                   }
@@ -168,7 +168,7 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
                     ) {
                       return this.createError({
                         message: "connectionForm.cursorField.required",
-                        path: `schema.streams[${this.parent.id}].config.cursorField`,
+                        path: `syncCatalog.streams[${this.parent.id}].config.cursorField`,
                       });
                     }
                   }
