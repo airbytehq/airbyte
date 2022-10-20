@@ -3,8 +3,8 @@
 #
 
 
-from abc import ABC
-from typing import Any, Iterable, Mapping, Optional
+from abc import ABC, abstractmethod
+from typing import Any, Iterable, Mapping, Optional, List
 import logging
 import time
 import requests
@@ -13,7 +13,7 @@ from googleads import ad_manager
 from googleads.errors import AdManagerReportError
 from typing import Any, Mapping, Union, List
 from csv import DictReader as csv_dict_reader
-from .data_classes import AdUnitPerHourItem
+from .data_classes import AdUnitPerHourItem, AdUnitPerReferrerItem
 
 _CHUNK_SIZE = 16 * 1024
 
@@ -74,8 +74,8 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
             lines = chunk.decode('utf-8')
             reader = csv_dict_reader(lines.splitlines())
             for row in reader:
-                ad_unit_per_hour_item = AdUnitPerHourItem.from_dict(row)
-                yield ad_unit_per_hour_item.dict()
+                item = self.generate_item(row)
+                yield item.dict()
     
     def run_report(self, report_job: str) -> str:
         """Runs a report, then waits (blocks) for the report to finish generating.
@@ -123,9 +123,36 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
             report_job["reportQuery"]["dateRangeType"] = 'YESTERDAY'
         return report_job
     
+    @abstractmethod
     def generate_report_query(self, start_date, end_date):
         raise NotImplementedError("generate_report_query should be implemented")
+    
+    @abstractmethod
+    def generate_item(self, row):
+        raise NotImplementedError("generate_item should be implemented")
+    
+    def get_query(self, report_job: Mapping[str, Any]) -> str:
+        """convenience method to the generate the URl
 
+        Args:
+            stream_slice (Mapping[str, Any]): _description_
+
+        Returns:
+            str: _description_
+        """
+        return self.run_report(report_job)
+
+    def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """the main method that read the records from the report"""
+        try:
+            report_job_id = self.get_query(self.report_job)
+            response = self.download_report(report_job_id, export_format='CSV_DUMP', use_gzip_compression=False)
+            # TODO: do something with the response before parsing it
+            yield from self.parse_response(response)
+        except AdManagerReportError as exc:
+            # the error handling should be implemented here, for now raise
+            raise exc
+    
 
 class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
     """this class generate the report for the Ad unit PerHour
@@ -161,28 +188,17 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         report_job["reportQuery"]["adUnitView"] = 'HIERARCHICAL'
         report_job = self.add_dates_ranges(report_job, start_date, end_date)
         return report_job
-
-    def get_query(self, report_job: Mapping[str, Any]) -> str:
-        """convenience method to the generate the URl
+    
+    def generate_item(self, row):
+        """from a dict returned by the http request generate item
 
         Args:
-            stream_slice (Mapping[str, Any]): _description_
+            row (_type_): _description_
 
         Returns:
-            str: _description_
+            _type_: _description_
         """
-        return self.run_report(report_job)
-
-    def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """the main method that read the records from the report"""
-        try:
-            report_job_id = self.get_query(self.report_job)
-            response = self.download_report(report_job_id, export_format='CSV_DUMP', use_gzip_compression=False)
-            # TODO: do something with the response before parsing it
-            yield from self.parse_response(response)
-        except AdManagerReportError as exc:
-            # the error handling should be implemented here, for now raise 
-            raise exc
+        return AdUnitPerHourItem.from_dict(row)
     
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -192,4 +208,117 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         list of list of strings if composite primary key consisting of nested fields.
         If the stream has no primary keys, return None.
         """
-        return None
+        return ["ad_unit", "hour", "date"]
+
+
+class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
+    """this class generate report query for the ad unit per referrer
+
+    Args:
+        BaseGoogleAdManagerReportStream (_type_): _description_
+    """
+    
+    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, start_date: Mapping, end_date: Mapping) -> None:
+        super().__init__(google_ad_manager_client)
+        targeting_values = self.get_custom_targeting_keys_ids("referrer")  # @TODO: I can make this manual instead of getting from the api.
+        self.report_job = self.generate_report_query(targeting_values, start_date=start_date, end_date=end_date)
+
+    def generate_report_query(self, targeting_values: List, start_date: Mapping, end_date: Mapping) -> Mapping:
+        """generate the report query for the ad unit per referrer report
+
+        Returns:
+            _type_: _description_
+        """
+        targets_ids = [targeting_value['id'] for targeting_value in targeting_values if targeting_value["id"]]
+        targets_ids = ", ".join([str(target_id) for target_id in targets_ids])
+        report_job = {"reportQuery": {}}
+        custom_traffic_source_columns = [
+                "TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE",
+                "TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS",
+                "TOTAL_LINE_ITEM_LEVEL_CLICKS",
+                "TOTAL_LINE_ITEM_LEVEL_WITHOUT_CPD_AVERAGE_ECPM",
+                "TOTAL_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS",
+                "TOTAL_ACTIVE_VIEW_MEASURABLE_IMPRESSIONS",
+                "TOTAL_ACTIVE_VIEW_ELIGIBLE_IMPRESSIONS",
+            ]
+        dimensions = ['ADVERTISER_NAME', 'CUSTOM_CRITERIA', 'AD_UNIT_ID', "DATE"]
+        report_job["reportQuery"]["dimensions"] = dimensions
+        report_job["reportQuery"]["columns"] = custom_traffic_source_columns
+        report_job["reportQuery"]["adUnitView"] = 'HIERARCHICAL'
+        statement_builder = ad_manager.StatementBuilder(version='v202208')
+        statement_builder.Where(f"CUSTOM_TARGETING_VALUE_ID IN ({targets_ids})")
+        statement_builder.Limit(None).Offset(None)
+        report_job["reportQuery"]["statement"] = statement_builder.ToStatement()
+        report_job = self.add_dates_ranges(report_job, start_date, end_date)
+        return report_job
+
+    def get_custom_targeting_keys_ids(self, name: str) -> List:
+        all_keys = []
+        custom_targeting_service = self.google_ad_manager_client.GetService('CustomTargetingService', version='v202208')
+        statement_builder = ad_manager.StatementBuilder(version='v202208')
+        page_size = ad_manager.SUGGESTED_PAGE_LIMIT
+        if name:
+            statement_builder = statement_builder.Where("name = :name").WithBindVariable('name', name)
+        statement_builder.limit = page_size
+    
+        total_result_set_size = 0
+        while True:
+            response = custom_targeting_service.getCustomTargetingKeysByStatement(statement_builder.ToStatement())
+            if 'results' in response and len(response['results']):
+                all_keys.extend(response['results'])
+                statement_builder.offset += statement_builder.limit
+            else:
+                break
+        customs_target_values = self.get_custom_targeting_values(all_keys)
+        return customs_target_values
+
+    def get_custom_targeting_values(self, all_keys: list) -> List:
+        """given a list of keys retrieve the custom targeting values
+
+        Args:
+            all_keys (list): _description_
+
+        Returns:
+            dict: _description_
+        """
+        targeting_values = list()
+        if all_keys:
+            statement_builder = ad_manager.StatementBuilder(version='v202208')
+            custom_targeting_service = self.google_ad_manager_client.GetService('CustomTargetingService', version='v202208')
+            statement = statement_builder.Where("customTargetingKeyId IN ({})".format(",".join([str(key['id']) for key in all_keys])))
+            while True:
+                response = custom_targeting_service.getCustomTargetingValuesByStatement(statement.ToStatement())
+                if 'results' in response and len(response['results']):
+                    for custom_targeting_value in response['results']:
+                        custom_targe_dict = {"id": custom_targeting_value['id'],
+                                             "name": custom_targeting_value['name'],
+                                             "displayName": custom_targeting_value['displayName'],
+                                             "customTargetingKeyId": custom_targeting_value['customTargetingKeyId']}
+                        targeting_values.append(custom_targe_dict)
+                    statement.offset += statement.limit
+                else:
+                    break
+        logger.info("found {} custom targeting values".format(len(targeting_values)))
+        return targeting_values
+
+    def generate_item(self, row):
+        """from a dict returned by the http request generate item
+
+        Args:
+            row (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        return AdUnitPerReferrerItem.from_dict(row)
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        """
+        :return: string if single primary key,
+        list of strings if composite primary key,
+        list of list of strings if composite primary key consisting of nested fields.
+        If the stream has no primary keys, return None.
+        """
+        return ["ad_unit", "referrer", "date"]
+

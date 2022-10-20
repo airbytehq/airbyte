@@ -3,7 +3,7 @@ from typing import Any, Mapping, Tuple, List
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from .authenticator import GoogleAdManagerAuthenticator
-from .streams import AdUnitPerHourReportStream
+from .streams import AdUnitPerHourReportStream, AdUnitPerReferrerReportStream
 from .utils import convert_time_to_dict
 
 APPLICATION_NAME = 'spiny'
@@ -29,7 +29,6 @@ class SourceGoogleAdManager(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
         google_ad_manager_authenticator = self._get_authenticator(config=config)
         google_ad_manager_client = google_ad_manager_authenticator.get_client()
         today_date = datetime.today()
@@ -38,7 +37,10 @@ class SourceGoogleAdManager(AbstractSource):
         ad_unit_per_hour_report_stream = AdUnitPerHourReportStream(google_ad_manager_client=google_ad_manager_client,
                                                                    start_date=start_date,
                                                                    end_date=end_date)
-        return [ad_unit_per_hour_report_stream, ]
+        ad_unit_per_referrer_report_stream = AdUnitPerReferrerReportStream(google_ad_manager_client=google_ad_manager_client,
+                                                                           start_date=start_date,
+                                                                           end_date=end_date)
+        return [ad_unit_per_hour_report_stream, ad_unit_per_referrer_report_stream]
 
     def _get_authenticator(self, config: Mapping[str, Any]) -> GoogleAdManagerAuthenticator:
         """Returns an authenticator based on the input config"""

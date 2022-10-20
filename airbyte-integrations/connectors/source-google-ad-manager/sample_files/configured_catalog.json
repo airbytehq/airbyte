@@ -35,6 +35,46 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ad_unit_per_referrer_report_stream",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "cpm_cpc_revenue": {
+              "title": "Cpm Cpc Revenue",
+              "type": "integer"
+            },
+            "impressions": { "title": "Impressions", "type": "integer" },
+            "eCpm": { "title": "Ecpm", "type": "integer" },
+            "unfilled_impressions": {
+              "title": "Unfilled Impressions",
+              "type": "integer"
+            },
+            "ad_unit": { "title": "Ad Unit", "type": "string" },
+            "referrer": { "title": "Referrer", "type": "string" },
+            "hour": { "title": "Hour", "type": "integer" },
+            "click": { "title": "Click", "type": "integer" },
+            "date": { "title": "Date", "type": "string", "format": "date-time" }
+          },
+          "required": [
+            "cpm_cpc_revenue",
+            "impressions",
+            "eCpm",
+            "unfilled_impressions",
+            "ad_unit",
+            "hour",
+            "date",
+            "referrer",
+            "click"
+          ]
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
