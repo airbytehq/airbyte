@@ -294,7 +294,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     }
 
     // Copy all additionally provided environment variables
-    envVars.addAll(environmentVariables.entrySet().stream().map(e -> new EnvVar(e.getKey(), e.getValue(), null)).collect(Collectors.toList()));
+    envVars.addAll(environmentVariables.entrySet().stream().map(e -> new EnvVar(e.getKey(), e.getValue(), null)).toList());
 
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
     containerPorts.add(new ContainerPort(serverPort, null, null, null, null));
