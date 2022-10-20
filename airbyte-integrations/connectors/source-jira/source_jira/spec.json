@@ -28,7 +28,7 @@
       "max_results": {
         "type": "number",
         "title": "Max Results",
-        "description": "Pagination max results (only for users stream)"
+        "description": "Pagination max results (only for users stream)",
         "default": 50
       },
       "projects": {
