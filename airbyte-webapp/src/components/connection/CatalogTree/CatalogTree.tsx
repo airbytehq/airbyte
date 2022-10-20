@@ -7,11 +7,11 @@ import { BulkEditServiceProvider } from "hooks/services/BulkEdit/BulkEditService
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
 
+import { BulkHeader } from "./BulkHeader";
 import { CatalogTreeBody } from "./CatalogTreeBody";
 import { CatalogTreeHeader } from "./CatalogTreeHeader";
 import { CatalogTreeSearch } from "./CatalogTreeSearch";
 import { CatalogTreeSubheader } from "./CatalogTreeSubheader";
-import { BulkHeader } from "./components/BulkHeader";
 
 interface CatalogTreeProps {
   streams: SyncSchemaStream[];
