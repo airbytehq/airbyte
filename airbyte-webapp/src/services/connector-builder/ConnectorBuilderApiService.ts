@@ -33,12 +33,50 @@ class ConnectorBuilderService extends AirbyteRequestService {
                   {
                     type: "RECORD",
                     record: {
-                      stream: "disputes",
+                      stream: body.stream,
                       data: {
                         id: "dp_123",
-                        object: "dispute",
+                        object: body.stream,
                         amount: 2000,
                         balance_transaction: "txn_123",
+                      },
+                    },
+                  },
+                  {
+                    type: "STATE",
+                    state: {
+                      data: {
+                        timestamp: "2022-10-20T02:00:59Z",
+                      },
+                    },
+                  },
+                ],
+                request: {
+                  url: "https://api.com/path",
+                },
+                response: {
+                  status: 200,
+                },
+              },
+              {
+                airbyteMessages: [
+                  {
+                    type: "RECORD",
+                    record: {
+                      stream: body.stream,
+                      data: {
+                        id: "dp_123",
+                        object: body.stream,
+                        amount: 2000,
+                        balance_transaction: "txn_123",
+                      },
+                    },
+                  },
+                  {
+                    type: "STATE",
+                    state: {
+                      data: {
+                        timestamp: "2022-10-20T02:00:59Z",
                       },
                     },
                   },

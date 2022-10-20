@@ -1,7 +1,14 @@
 @use "scss/colors";
 
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  // overflow: auto;
+}
+
 .slice {
-  background-color: colors.$grey-100;
+  background-color: colors.$blue-200;
   padding: 10px;
   border-radius: 6px;
   display: flex;
@@ -19,8 +26,8 @@
 }
 
 .dataObject {
-  background-color: colors.$orange-100;
+  background-color: colors.$blue-50;
   padding: 10px;
   border-radius: 6px;
-  overflow-wrap: break-word;
+  overflow-x: auto;
 }
