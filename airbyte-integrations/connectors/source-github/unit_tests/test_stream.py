@@ -95,7 +95,7 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
     ("http_status", "response_headers", "text"),
     [
         (HTTPStatus.OK, {"X-RateLimit-Resource": "graphql"}, '{"errors": [{"type": "RATE_LIMITED"}]}'),
-        (HTTPStatus.OK, {"X-RateLimit-Remaining": "0"}, ""),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0"}, ""),
         (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, ""),
         (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, ""),
         (HTTPStatus.INTERNAL_SERVER_ERROR, {}, ""),
