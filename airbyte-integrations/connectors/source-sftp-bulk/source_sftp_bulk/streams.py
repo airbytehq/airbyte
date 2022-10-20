@@ -3,10 +3,10 @@
 #
 
 from datetime import datetime
-from typing import Mapping, Any, Iterable, List
+from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream, IncrementalMixin
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
 from .client import SFTPClient
 
@@ -15,9 +15,7 @@ class FTPStream(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "last_modified"
 
-    def __init__(
-        self, config: Mapping[str, Any], start_date: datetime, connection: SFTPClient, json_schema: Mapping[str, Any], **kwargs
-    ):
+    def __init__(self, config: Mapping[str, Any], start_date: datetime, connection: SFTPClient, json_schema: Mapping[str, Any], **kwargs):
         super(Stream, self).__init__(**kwargs)
 
         self.config = config

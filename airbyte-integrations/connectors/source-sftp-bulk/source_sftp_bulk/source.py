@@ -4,13 +4,12 @@
 
 import json
 import logging
-
 from datetime import datetime
-from typing import Dict, List, Any, Mapping, Tuple, Mapping
+from typing import Any, Dict, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
+from airbyte_cdk.sources import AbstractSource
 
 from .client import SFTPClient
 from .streams import FTPStream
@@ -85,7 +84,9 @@ class SourceFtp(AbstractSource):
             conn.close()
             return (True, AirbyteConnectionStatus(status=Status.SUCCEEDED))
         except Exception as ex:
-            logger.error(f"Failed to connect to FTP server: {ex}",)
+            logger.error(
+                f"Failed to connect to FTP server: {ex}",
+            )
             return (False, AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(ex)}"))
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
