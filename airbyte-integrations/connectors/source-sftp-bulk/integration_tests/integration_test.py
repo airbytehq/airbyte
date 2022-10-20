@@ -2,17 +2,15 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import os
 import time
-import pytest
-import docker
-import logging
-
 from socket import socket
 from typing import Mapping
 
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type, Status
-
+import docker
+import pytest
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode, Type
 from source_sftp_bulk import SourceFtp
 
 pytest_plugins = ("source_acceptance_test.plugin",)
@@ -124,7 +122,9 @@ def test_check_valid_config_pk(config_pk: Mapping):
 
 
 def test_check_valid_config_pk_bad_pk(config_pk: Mapping):
-    outcome = SourceFtp().check(logger, {**config_pk, "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----"})
+    outcome = SourceFtp().check(
+        logger, {**config_pk, "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----"}
+    )
     assert outcome.status == Status.FAILED
 
 
@@ -213,9 +213,9 @@ def test_get_files_handle_null_values(config: Mapping, configured_catalog: Confi
     res = result[2]
     assert res.type == Type.RECORD
     assert res.record.data["string_col"] == "bar"
-    assert res.record.data["int_col"] == None
+    assert res.record.data["int_col"] is None
 
     res = result[4]
     assert res.type == Type.RECORD
-    assert res.record.data["string_col"] == None
+    assert res.record.data["string_col"] is None
     assert res.record.data["int_col"] == 4

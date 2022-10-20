@@ -1,9 +1,15 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import os
 import time
-import pytest
+
 import docker
+import pytest
 
 pytest_plugins = ("source_acceptance_test.plugin",)
+
 
 @pytest.fixture(scope="module", autouse=True)
 def connector_setup():
@@ -12,7 +18,7 @@ def connector_setup():
 
     container = docker_client.containers.run(
         "atmoz/sftp",
-        f"foo:pass",
+        "foo:pass",
         name="mysftpacceptance",
         ports={22: 22},
         volumes={

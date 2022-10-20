@@ -1,16 +1,20 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import io
+import logging
 import os
 import re
-import stat
-import logging
 import socket
+import stat
+from datetime import datetime
+from typing import Any, Dict, List, Mapping, Tuple
+
 import backoff
-import paramiko
 import numpy as np
 import pandas as pd
-
-from datetime import datetime
-from typing import Tuple, Dict, List, Any, Mapping
+import paramiko
 from paramiko.ssh_exception import AuthenticationException
 
 # set default timeout to 300 seconds
@@ -92,6 +96,12 @@ class SFTPClient:
     # backoff for 60 seconds as there is possibility the request will backoff again in 'discover.get_schema'
     @backoff.on_exception(backoff.constant, (socket.timeout), max_time=60, interval=10, jitter=None)
     def get_files_by_prefix(self, prefix: str) -> List[File]:
+        def is_empty(a):
+            return a.st_size == 0
+
+        def is_directory(a):
+            return stat.S_ISDIR(a.st_mode)
+
         files = []
 
         if prefix is None or prefix == "":
@@ -101,9 +111,6 @@ class SFTPClient:
             result = self._connection.listdir_attr(prefix)
         except FileNotFoundError as e:
             raise Exception("Directory '{}' does not exist".format(prefix)) from e
-
-        is_empty = lambda a: a.st_size == 0
-        is_directory = lambda a: stat.S_ISDIR(a.st_mode)
 
         for file_attr in result:
             # NB: This only looks at the immediate level beneath the prefix directory
