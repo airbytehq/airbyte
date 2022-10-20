@@ -15,7 +15,7 @@ echo "Starting app..."
 mkdir -p /tmp/airbyte_local
 
 # Detach so we can run subsequent commands
-VERSION=dev TRACKING_STRATEGY=logging docker-compose up -d
+VERSION=dev BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" TRACKING_STRATEGY=logging docker-compose up -d
 # Uncomment for debugging. Warning, this is verbose.
 # trap 'echo "docker-compose logs:" && docker-compose logs -t --tail 1000 && docker-compose down && docker stop airbyte_ci_pg' EXIT
 
@@ -28,4 +28,4 @@ until $(curl --output /dev/null --fail --silent --max-time 5 --head localhost:80
 done
 
 echo "Running e2e tests via gradle"
-SUB_BUILD=PLATFORM BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" ./gradlew --no-daemon :airbyte-webapp-e2e-tests:e2etest -PcypressWebappKey=$CYPRESS_WEBAPP_KEY
+SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp-e2e-tests:e2etest -PcypressWebappKey=$CYPRESS_WEBAPP_KEY
