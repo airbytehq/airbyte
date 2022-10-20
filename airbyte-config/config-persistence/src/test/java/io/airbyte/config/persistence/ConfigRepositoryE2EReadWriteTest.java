@@ -4,9 +4,13 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -16,6 +20,8 @@ import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.Geography;
@@ -36,6 +42,8 @@ import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -46,6 +54,7 @@ import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +66,7 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -499,6 +509,92 @@ class ConfigRepositoryE2EReadWriteTest {
     final Geography actual = configRepository.getGeographyForConnection(sync.getConnectionId());
 
     assertEquals(expected, actual);
+
+    @Test
+  void testGetMostRecentActorCatalogFetchEventForSource() throws SQLException, IOException, JsonValidationException {
+    UUID actorId = UUID.randomUUID();
+    UUID workspaceId = UUID.randomUUID();
+    UUID actorCatalogId1 = UUID.randomUUID();
+    UUID actorCatalogId2 = UUID.randomUUID();
+    UUID actorDefinitionId = UUID.randomUUID();
+    OffsetDateTime now = OffsetDateTime.now();
+    OffsetDateTime yesterday = now.minusDays(1l);
+    final ActorCatalog actorCatalog1 = new ActorCatalog()
+        .withId(actorCatalogId1)
+        .withCatalog(Jsons.deserialize("{}"))
+        .withCatalogHash("TESTHASH");
+    final ActorCatalog actorCatalog2 = new ActorCatalog()
+        .withId(actorCatalogId2)
+        .withCatalog(Jsons.deserialize("{}"))
+        .withCatalogHash("TESTHASH");
+
+    database.transaction(ctx -> {
+      ctx.insertInto(WORKSPACE)
+          .columns(WORKSPACE.ID,
+              WORKSPACE.NAME,
+              WORKSPACE.SLUG,
+              WORKSPACE.INITIAL_SETUP_COMPLETE, WORKSPACE.CREATED_AT, WORKSPACE.UPDATED_AT, WORKSPACE.GEOGRAPHY)
+          .values(workspaceId, "", "", true, now.minusDays(3l), now.minusDays(3l), GeographyType.US).execute();
+      ctx.insertInto(ACTOR_DEFINITION)
+          .columns(ACTOR_DEFINITION.ID,
+              ACTOR_DEFINITION.NAME,
+              ACTOR_DEFINITION.DOCKER_REPOSITORY,
+              ACTOR_DEFINITION.DOCKER_IMAGE_TAG,
+              ACTOR_DEFINITION.ACTOR_TYPE,
+              ACTOR_DEFINITION.SPEC,
+              ACTOR_DEFINITION.CREATED_AT,
+              ACTOR_DEFINITION.UPDATED_AT)
+          .values(actorDefinitionId, "", "", "", ActorType.destination, JSONB.valueOf("{}"), now.minusDays(4l), now.minusDays(4l)).execute();
+      ctx.insertInto(ACTOR)
+          .columns(
+              ACTOR.ID,
+              ACTOR.WORKSPACE_ID,
+              ACTOR.ACTOR_DEFINITION_ID,
+              ACTOR.NAME,
+              ACTOR.CONFIGURATION,
+              ACTOR.ACTOR_TYPE,
+              ACTOR.CREATED_AT,
+              ACTOR.UPDATED_AT)
+          .values(actorId, workspaceId, actorDefinitionId, "", JSONB.valueOf("{}"), ActorType.destination, now.minusDays(2l), now.minusDays(2l))
+          .execute();
+      return null;
+    });
+
+    configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog1.getId().toString(), actorCatalog1);
+    configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog2.getId().toString(), actorCatalog2);
+
+    database.transaction(ctx -> {
+      insertCatalogFetchEvent(
+          ctx,
+          actorId,
+          actorCatalogId1,
+          yesterday);
+      insertCatalogFetchEvent(
+          ctx,
+          actorId,
+          actorCatalogId2,
+          now);
+
+      return null;
+    });
+
+    Optional<ActorCatalogFetchEvent> result = configRepository.getMostRecentActorCatalogFetchEventForSource(actorId);
+
+    assertEquals(actorCatalogId2, result.get().getActorCatalogId());
+  }
+
+  private void insertCatalogFetchEvent(DSLContext ctx, UUID sourceId, UUID catalogId, OffsetDateTime creationDate) {
+    ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
+        .columns(
+            ACTOR_CATALOG_FETCH_EVENT.ID,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID,
+            ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION,
+            ACTOR_CATALOG_FETCH_EVENT.CREATED_AT,
+            ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT)
+        .values(UUID.randomUUID(), sourceId, catalogId, "", "", creationDate, creationDate)
+        .execute();
   }
 
 }
