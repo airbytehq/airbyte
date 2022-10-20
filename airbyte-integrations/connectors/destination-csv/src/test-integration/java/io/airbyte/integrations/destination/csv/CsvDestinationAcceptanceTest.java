@@ -65,15 +65,16 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
       // CSV file to string
       String content = Files.readString(path);
 
-      try{
+      try {
         assertTrue(content.contains(String.valueOf(input)));
-        System.out.println(content+ "✅ Passed with '" + input + "' delimiter!");
+        System.out.println(content + "✅ Passed with '" + input + "' delimiter!");
         Files.delete(path);
-      }catch(AssertionError e) {
-        System.out.println(content+ "❌ Failed with '" + input + "' delimiter!");
+      } catch (AssertionError e) {
+        System.out.println(content + "❌ Failed with '" + input + "' delimiter!");
       }
 
     }
+  }
 
   // todo (cgardens) - it would be great if we could find a configuration here that failed. the
   // commented out one fails in mac but not on the linux box that the github action runs in. instead
