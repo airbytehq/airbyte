@@ -310,7 +310,7 @@ public class SshTunnel implements AutoCloseable {
     if (keyPairs != null && keyPairs.iterator().hasNext()) {
       return keyPairs.iterator().next();
     }
-    return null;
+    throw new GeneralSecurityException("Unable to load private key pairs, please verify key pairs are properly inputted");
   }
 
   private String validateKey() {
