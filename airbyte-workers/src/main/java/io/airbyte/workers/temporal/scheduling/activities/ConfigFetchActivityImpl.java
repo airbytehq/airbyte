@@ -4,6 +4,12 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
+
+import datadog.trace.api.Trace;
+import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.ScheduleType;
@@ -11,11 +17,10 @@ import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.config.WorkerMode;
-import io.airbyte.workers.temporal.exception.RetryableException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import jakarta.inject.Named;
@@ -25,6 +30,7 @@ import java.text.ParseException;
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -56,9 +62,11 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     this.currentSecondsSupplier = currentSecondsSupplier;
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public ScheduleRetrieverOutput getTimeToWait(final ScheduleRetrieverInput input) {
     try {
+      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
 
       if (standardSync.getScheduleType() != null) {
@@ -156,6 +164,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public GetMaxAttemptOutput getMaxAttempt() {
     return new GetMaxAttemptOutput(syncJobMaxAttempts);
