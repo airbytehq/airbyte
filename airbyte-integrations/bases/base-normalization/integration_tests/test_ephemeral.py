@@ -57,7 +57,7 @@ def test_destination_supported_limits(destination_type: DestinationType, column_
     if destination_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
         # not by absolute column count. It is way fewer than 1000.
-        pytest.skip(f"Skipping test for column limit, because in MySQL, the max number of columns is limited by row size (8KB)")
+        pytest.skip("Skipping test for column limit, because in MySQL, the max number of columns is limited by row size (8KB)")
     if destination_type.value == DestinationType.ORACLE.value:
         # Airbyte uses a few columns for metadata and Oracle limits are right at 1000
         column_count = 993
@@ -84,9 +84,11 @@ def test_destination_failure_over_limits(integration_type: str, column_count: in
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
     run_test(destination_type, column_count, expected_exception_message)
 
+
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_empty_streams(destination_type: DestinationType, setup_test_path):
     run_test(destination_type, 0)
+
 
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_stream_with_1_airbyte_column(destination_type: DestinationType, setup_test_path):
