@@ -118,7 +118,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         if self._snapshot_has_more:
-            return "/api/snapshot_list"
+            return "/api/list_snapshot"
         else:
             return "/api/document_deltas"
 

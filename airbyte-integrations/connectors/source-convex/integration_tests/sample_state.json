@@ -1,8 +1,14 @@
 {
   "posts": {
-    "_ts": 1652635567679741986
+    "snapshot_cursor": "hi",
+    "snapshot_has_more": false,
+    "delta_cursor": 1,
+    "delta_has_more": true
   },
   "users": {
-    "_ts": 1660025892355943945
+    "snapshot_cursor": null,
+    "snapshot_has_more": true,
+    "delta_cursor": null,
+    "delta_has_more": true
   }
 }
