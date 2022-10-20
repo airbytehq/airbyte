@@ -149,6 +149,8 @@ class ConvexStream(HttpStream, IncrementalMixin):
         if self._snapshot_has_more:
             if self._snapshot_cursor_value:
                 params["cursor"] = self._snapshot_cursor_value
+            if self._delta_cursor_value:
+                params["snapshot"] = self._delta_cursor_value
         else:
             if self._delta_cursor_value:
                 params["cursor"] = self._delta_cursor_value
