@@ -49,11 +49,10 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @ParameterizedTest
-  @ValueSource(chars = {',',';','.',' '})
+  @ValueSource(chars = {',',';','.',' ','\t'})
   void detectDelimiter(char input) throws IOException {
-    // Create a CSV file with specified delimiter
-
     final Path path = Paths.get(SAMPLE_CSV_FILE);
+    // Create CSV file
     try (
             BufferedWriter writer = Files.newBufferedWriter(path);
 
@@ -62,15 +61,20 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
                     .withHeader("ID", "Instrument", "Type", "Melodic"));
     ) {
       csvPrinter.printRecord("1", "Violin", "String", "True");
-
       csvPrinter.flush();
-
+      // CSV file to string
       String content = Files.readString(path);
 
-      System.out.println(content);
+      try{
+        assertTrue(content.contains(String.valueOf(input)));
+        System.out.println(content+ "✅ Passed with '" + input + "' delimiter!");
+        Files.delete(path);
+      }catch(AssertionError e) {
+        System.out.println(content+ "❌ Failed with '" + input + "' delimiter!");
+      }
+
     }
 
-//    CSVParser csvParser = new CSVParser(new FileReader(SAMPLE_CSV_FILE), CSVFormat.DEFAULT.withDelimiter(input));
 //    for (CSVRecord record : csvParser) {
 //      for (int i = 0; i < record.size(); i++) {
 //        System.out.println("At " + i + ": " + record.get(i));
