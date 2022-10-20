@@ -162,7 +162,7 @@ def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: Connector
             message="Config validation error: " + validation_error.message,
             internal_message=validation_error.message,
             failure_type=FailureType.config_error,
-        ) from None
+        ) from None  # required to prevent logging config secrets from the ValidationError's stacktrace
 
 
 class InternalConfig(BaseModel):
