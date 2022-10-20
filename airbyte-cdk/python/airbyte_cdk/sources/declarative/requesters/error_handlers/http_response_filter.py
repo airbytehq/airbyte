@@ -6,8 +6,10 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional, Set, Union
 
 import requests
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
+from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from dataclasses_jsonschema import JsonSchemaMixin
 
@@ -22,16 +24,19 @@ class HttpResponseFilter(JsonSchemaMixin):
         http_codes (Set[int]): http code of matching requests
         error_message_contains (str): error substring of matching requests
         predicate (str): predicate to apply to determine if a request is matching
+        error_message (Union[InterpolatedString, str): error message to display if the response matches the filter
     """
 
     TOO_MANY_REQUESTS_ERRORS = {429}
     DEFAULT_RETRIABLE_ERRORS = set([x for x in range(500, 600)]).union(TOO_MANY_REQUESTS_ERRORS)
 
     action: Union[ResponseAction, str]
+    config: Config
     options: InitVar[Mapping[str, Any]]
     http_codes: Set[int] = None
     error_message_contains: str = None
     predicate: Union[InterpolatedBoolean, str] = ""
+    error_message: Union[InterpolatedString, str] = ""
 
     def __post_init__(self, options: Mapping[str, Any]):
         if isinstance(self.action, str):
@@ -39,6 +44,7 @@ class HttpResponseFilter(JsonSchemaMixin):
         self.http_codes = self.http_codes or set()
         if isinstance(self.predicate, str):
             self.predicate = InterpolatedBoolean(condition=self.predicate, options=options)
+        self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, options=options)
 
     def matches(self, response: requests.Response) -> Optional[ResponseAction]:
         """
@@ -54,6 +60,16 @@ class HttpResponseFilter(JsonSchemaMixin):
             return self.action
         else:
             return None
+
+    def create_error_message(self, response: requests.Response) -> str:
+        """
+        Construct an error message based on the specified message template of the filter.
+        :param response: The HTTP response which can be used during interpolation
+        :return: The evaluated error message string to be emitted
+        """
+        if self.error_message:
+            return self.error_message.eval(self.config, response=response.json(), headers=response.headers)
+        return ""
 
     def _response_matches_predicate(self, response: requests.Response) -> bool:
         return self.predicate and self.predicate.eval(None, response=response.json(), headers=response.headers)
