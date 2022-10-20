@@ -6,11 +6,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      airbyte: cron
+      airbyte: connector-builder
   template:
     metadata:
       labels:
-        airbyte: cron
+        airbyte: connector-builder
     spec:
       containers:
         - name: airbyte-connector-builder
