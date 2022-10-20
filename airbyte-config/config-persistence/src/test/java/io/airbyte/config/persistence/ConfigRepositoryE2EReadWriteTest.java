@@ -517,70 +517,41 @@ class ConfigRepositoryE2EReadWriteTest {
     UUID actorCatalogId1 = UUID.randomUUID();
     UUID actorCatalogId2 = UUID.randomUUID();
     UUID actorDefinitionId = UUID.randomUUID();
+
+@Test
+  void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException, JsonValidationException {
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+    }
+
     OffsetDateTime now = OffsetDateTime.now();
     OffsetDateTime yesterday = now.minusDays(1l);
-    final ActorCatalog actorCatalog1 = new ActorCatalog()
-        .withId(actorCatalogId1)
-        .withCatalog(Jsons.deserialize("{}"))
-        .withCatalogHash("TESTHASH");
-    final ActorCatalog actorCatalog2 = new ActorCatalog()
-        .withId(actorCatalogId2)
-        .withCatalog(Jsons.deserialize("{}"))
-        .withCatalogHash("TESTHASH");
 
-    database.transaction(ctx -> {
-      ctx.insertInto(WORKSPACE)
-          .columns(WORKSPACE.ID,
-              WORKSPACE.NAME,
-              WORKSPACE.SLUG,
-              WORKSPACE.INITIAL_SETUP_COMPLETE, WORKSPACE.CREATED_AT, WORKSPACE.UPDATED_AT, WORKSPACE.GEOGRAPHY)
-          .values(workspaceId, "", "", true, now.minusDays(3l), now.minusDays(3l), GeographyType.US).execute();
-      ctx.insertInto(ACTOR_DEFINITION)
-          .columns(ACTOR_DEFINITION.ID,
-              ACTOR_DEFINITION.NAME,
-              ACTOR_DEFINITION.DOCKER_REPOSITORY,
-              ACTOR_DEFINITION.DOCKER_IMAGE_TAG,
-              ACTOR_DEFINITION.ACTOR_TYPE,
-              ACTOR_DEFINITION.SPEC,
-              ACTOR_DEFINITION.CREATED_AT,
-              ACTOR_DEFINITION.UPDATED_AT)
-          .values(actorDefinitionId, "", "", "", ActorType.destination, JSONB.valueOf("{}"), now.minusDays(4l), now.minusDays(4l)).execute();
-      ctx.insertInto(ACTOR)
-          .columns(
-              ACTOR.ID,
-              ACTOR.WORKSPACE_ID,
-              ACTOR.ACTOR_DEFINITION_ID,
-              ACTOR.NAME,
-              ACTOR.CONFIGURATION,
-              ACTOR.ACTOR_TYPE,
-              ACTOR.CREATED_AT,
-              ACTOR.UPDATED_AT)
-          .values(actorId, workspaceId, actorDefinitionId, "", JSONB.valueOf("{}"), ActorType.destination, now.minusDays(2l), now.minusDays(2l))
-          .execute();
-      return null;
-    });
-
-    configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog1.getId().toString(), actorCatalog1);
-    configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog2.getId().toString(), actorCatalog2);
+    List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEventsSameSource();
+    ActorCatalogFetchEvent fetchEvent1 = fetchEvents.get(0);
+    ActorCatalogFetchEvent fetchEvent2 = fetchEvents.get(1);
 
     database.transaction(ctx -> {
       insertCatalogFetchEvent(
           ctx,
-          actorId,
-          actorCatalogId1,
-          yesterday);
+          fetchEvent1.getActorId(),
+          fetchEvent1.getActorCatalogId(),
+          yesterday
+      );
       insertCatalogFetchEvent(
           ctx,
-          actorId,
-          actorCatalogId2,
-          now);
+          fetchEvent2.getActorId(),
+          fetchEvent2.getActorCatalogId(),
+          now
+      );
 
       return null;
     });
 
-    Optional<ActorCatalogFetchEvent> result = configRepository.getMostRecentActorCatalogFetchEventForSource(actorId);
+    Optional<ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSource(fetchEvent1.getActorId());
 
-    assertEquals(actorCatalogId2, result.get().getActorCatalogId());
+    assertEquals(fetchEvent2.getActorCatalogId(), result.get().getActorCatalogId());
   }
 
   private void insertCatalogFetchEvent(DSLContext ctx, UUID sourceId, UUID catalogId, OffsetDateTime creationDate) {
