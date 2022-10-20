@@ -16,10 +16,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 class CommonDatabaseCheckTest {
 
-  private CommonDatabaseCheckTest() {
-
-  }
-
   protected static final long TIMEOUT_MS = 500L;
 
   static final protected PostgreSQLContainer<?> container;
