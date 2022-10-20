@@ -52,7 +52,15 @@ const isHeadingType = (props: TextProps | HeadingProps): props is HeadingProps =
 
 export const Text: React.FC<React.PropsWithChildren<TextProps | HeadingProps>> = React.memo((props) => {
   const isHeading = isHeadingType(props);
-  const { as = "p", centered = false, children, className: classNameProp, ...remainingProps } = props;
+  const {
+    as = "p",
+    centered = false,
+    children,
+    className: classNameProp,
+    size,
+    bold,
+    ...remainingProps
+  } = { ...props, bold: !isHeading ? props.bold : false };
 
   const className = classNames(
     isHeading
