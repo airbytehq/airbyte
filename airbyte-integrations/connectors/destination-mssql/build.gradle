@@ -30,6 +30,6 @@ dependencies {
 
 configurations.all {
   resolutionStrategy {
-    force 'org.apache.commons:commons-text:1.10'
+    force 'org.apache.commons:commons-text:1.10.0'
   }
 }
