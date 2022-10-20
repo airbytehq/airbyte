@@ -33,6 +33,7 @@ import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -1120,6 +1121,14 @@ public class ConfigRepository {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = getStandardSync(connectionId);
     return standardSync.getCatalog();
+  }
+
+  public Geography getGeographyForConnection(final UUID connectionId) throws IOException {
+    return database.query(ctx -> ctx.select(CONNECTION.GEOGRAPHY)
+        .from(CONNECTION)
+        .where(CONNECTION.ID.eq(connectionId))
+        .limit(1))
+        .fetchOneInto(Geography.class);
   }
 
 }
