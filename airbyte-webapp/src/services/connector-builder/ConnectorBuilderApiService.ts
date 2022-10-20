@@ -18,7 +18,10 @@ class ConnectorBuilderService extends AirbyteRequestService {
   public readStream(body: StreamReadRequestBody): Promise<StreamRead> {
     // TODO: uncomment this once there is a real API to call
     // return readStream(body, this.requestOptions);
-    console.log(`Received readStream body: ${JSON.stringify(body)}`);
+    console.log("------------");
+    console.log(`Stream: ${body.stream}`);
+    console.log(`Connector definition:\n${JSON.stringify(body.connectorDefinition)}`);
+    console.log(`Config:\n${JSON.stringify(body.config)}`);
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
       return {
         slices: [

@@ -6,6 +6,8 @@ import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
+import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
+
 import styles from "./ConfigMenu.module.scss";
 
 interface ConfigMenuProps {
@@ -14,7 +16,7 @@ interface ConfigMenuProps {
 
 export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [configValue, setConfigValue] = useState("{\n  \n}");
+  const { configString, setConfigString } = useConnectorBuilderState();
 
   return (
     <>
@@ -29,11 +31,11 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
         <Modal onClose={() => setIsOpen(false)} title={<FormattedMessage id="connectorBuilder.configMenuTitle" />}>
           <ModalBody className={styles.modalContent}>
             <CodeEditor
-              value={configValue}
+              value={configString}
               language="json"
               theme="airbyte"
               onChange={(val: string | undefined) => {
-                setConfigValue(val ?? "");
+                setConfigString(val ?? "");
               }}
             />
           </ModalBody>

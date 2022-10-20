@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useDebounce, useLocalStorage } from "react-use";
 
 import {
+  StreamReadRequestBodyConfig,
   StreamsListReadStreamsItem,
   StreamsListRequestBodyConnectorDefinition,
 } from "core/request/ConnectorBuilderClient";
@@ -15,8 +16,11 @@ interface Context {
   jsonDefinition: StreamsListRequestBodyConnectorDefinition;
   streams: StreamsListReadStreamsItem[];
   selectedStream: StreamsListReadStreamsItem;
+  configString: string;
+  configJson: StreamReadRequestBodyConfig;
   setYamlDefinition: (yamlValue: string) => void;
   setSelectedStream: (streamName: string) => void;
+  setConfigString: (configString: string) => void;
 }
 
 export const ConnectorBuilderStateContext = React.createContext<Context | null>(null);
@@ -31,8 +35,8 @@ const useYamlDefinition = () => {
     try {
       const json = load(yamlDefinition) as StreamsListRequestBodyConnectorDefinition;
       setJsonDefinition(json);
-    } catch (error) {
-      if (error instanceof YAMLException) {
+    } catch (err) {
+      if (err instanceof YAMLException) {
         console.log("Connector definition yaml is not valid!");
       }
     }
@@ -55,17 +59,37 @@ const useStreams = () => {
   return { streams, selectedStream, setSelectedStream };
 };
 
+const useConfig = () => {
+  const [configString, setConfigString] = useState("{\n  \n}");
+  const [configJson, setConfigJson] = useState<StreamReadRequestBodyConfig>({});
+
+  useEffect(() => {
+    try {
+      const json = JSON.parse(configString) as StreamReadRequestBodyConfig;
+      setConfigJson(json);
+    } catch (err) {
+      console.log("Config value is not valid JSON!");
+    }
+  }, [configString]);
+
+  return { configString, configJson, setConfigString };
+};
+
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { yamlDefinition, jsonDefinition, setYamlDefinition } = useYamlDefinition();
   const { streams, selectedStream, setSelectedStream } = useStreams();
+  const { configString, configJson, setConfigString } = useConfig();
 
   const ctx = {
     yamlDefinition,
     jsonDefinition,
     streams,
     selectedStream,
+    configString,
+    configJson,
     setYamlDefinition,
     setSelectedStream,
+    setConfigString,
   };
 
   return <ConnectorBuilderStateContext.Provider value={ctx}>{children}</ConnectorBuilderStateContext.Provider>;
