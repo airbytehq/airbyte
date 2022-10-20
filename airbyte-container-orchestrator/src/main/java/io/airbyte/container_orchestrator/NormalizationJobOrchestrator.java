@@ -6,7 +6,7 @@ package io.airbyte.container_orchestrator;
 
 import static io.airbyte.container_orchestrator.TraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
 import static io.airbyte.container_orchestrator.TraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
-import static io.airbyte.metrics.lib.MetricTags.JOB_ID;
+import static io.airbyte.container_orchestrator.TraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
@@ -59,7 +59,7 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
         Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
-    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
 
     log.info("Setting up normalization worker...");
     final NormalizationWorker normalizationWorker = new DefaultNormalizationWorker(

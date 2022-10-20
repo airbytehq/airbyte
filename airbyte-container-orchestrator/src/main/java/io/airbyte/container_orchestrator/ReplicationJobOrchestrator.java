@@ -6,8 +6,8 @@ package io.airbyte.container_orchestrator;
 
 import static io.airbyte.container_orchestrator.TraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
 import static io.airbyte.container_orchestrator.TraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.container_orchestrator.TraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.container_orchestrator.TraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
-import static io.airbyte.metrics.lib.MetricTags.JOB_ID;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.features.FeatureFlags;
@@ -83,7 +83,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
-    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
         SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
 
     log.info("Setting up source launcher...");
