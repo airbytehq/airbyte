@@ -114,6 +114,24 @@ final class NumAbnormalScheduledSyncs extends Emitter {
 }
 
 @Singleton
+final class NumUnusuallyLongSyncs extends Emitter {
+
+  NumUnusuallyLongSyncs(final MetricClient client, final MetricRepository db) {
+    super(client, () -> {
+      final var count = db.numberOfJobsRunningUnusuallyLong();
+      client.gauge(OssMetricsRegistry.NUM_UNUSUALLY_LONG_SYNCS, count);
+      return null;
+    });
+  }
+
+  @Override
+  public Duration getDuration() {
+    return Duration.ofMinutes(15);
+  }
+
+}
+
+@Singleton
 final class TotalScheduledSyncs extends Emitter {
 
   TotalScheduledSyncs(final MetricClient client, final MetricRepository db) {

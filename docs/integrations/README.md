@@ -80,6 +80,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Harvest](sources/harvest.md)                                                               | Generally Available  | Yes                 |
 | [http-request](sources/http-request.md)                                                     | Alpha                | No                  |
 | [HubSpot](sources/hubspot.md)                                                               | Generally Available  | Yes                 |
+| [Insightly](sources/insightly.md)                                                           | Alpha                | Yes                 |
 | [Instagram](sources/instagram.md)                                                           | Generally Available  | Yes                 |
 | [Intercom](sources/intercom.md)                                                             | Generally Available  | Yes                 |
 | [Iterable](sources/iterable.md)                                                             | Generally Available  | Yes                 |
