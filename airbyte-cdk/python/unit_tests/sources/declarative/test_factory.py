@@ -328,7 +328,7 @@ list_stream:
     primary_key: "id"
     extractor:
       $ref: "*ref(extractor)"
-      field_pointer: ["result"]
+      field_pointer: ["{{ options['name'] }}"]
   retriever:
     $ref: "*ref(retriever)"
     requester:
@@ -365,7 +365,7 @@ check:
     assert type(stream.retriever.record_selector) == RecordSelector
     assert type(stream.retriever.record_selector.extractor.decoder) == JsonDecoder
 
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["result"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["lists"]
     assert type(stream.retriever.record_selector.record_filter) == RecordFilter
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -378,18 +378,24 @@ check:
     assert stream.retriever.requester.path.default == "marketing/lists"
 
 
-def test_create_record_selector():
-    content = """
+@pytest.mark.parametrize(
+    "test_name, record_selector, expected_runtime_selector",
+    [("test_static_record_selector", "result", "result"), ("test_options_record_selector", "{{ options['name'] }}", "lists")],
+)
+def test_create_record_selector(test_name, record_selector, expected_runtime_selector):
+    content = f"""
     extractor:
       type: DpathExtractor
     selector:
+      $options:
+        name: "lists"
       class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
       record_filter:
         class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
         $ref: "*ref(extractor)"
-        field_pointer: ["result"]
+        field_pointer: ["{record_selector}"]
     """
     config = parser.parse(content)
 
@@ -398,8 +404,50 @@ def test_create_record_selector():
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in selector.extractor.field_pointer] == ["result"]
+    assert [fp.eval(input_config) for fp in selector.extractor.field_pointer] == [expected_runtime_selector]
     assert isinstance(selector.record_filter, RecordFilter)
+
+
+@pytest.mark.parametrize(
+    "test_name, content, expected_field_pointer_value",
+    [
+        (
+            "test_option_in_selector",
+            """
+          extractor:
+            type: DpathExtractor
+            field_pointer: ["{{ options['name'] }}"]
+          selector:
+            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+            $options:
+              name: "selector"
+            extractor: "*ref(extractor)"
+        """,
+            "selector",
+        ),
+        (
+            "test_option_in_extractor",
+            """
+          extractor:
+            type: DpathExtractor
+            $options:
+              name: "extractor"
+            field_pointer: ["{{ options['name'] }}"]
+          selector:
+            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+            $options:
+              name: "selector"
+            extractor: "*ref(extractor)"
+        """,
+            "extractor",
+        ),
+    ],
+)
+def test_options_propagation(test_name, content, expected_field_pointer_value):
+    config = parser.parse(content)
+
+    selector = factory.create_component(config["selector"], input_config, True)()
+    assert selector.extractor.field_pointer[0].eval(input_config) == expected_field_pointer_value
 
 
 def test_create_requester():
@@ -610,6 +658,37 @@ class TestCreateTransformations:
             class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
             $options:
                 {self.base_options}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "static_value"
+        """
+        config = parser.parse(content)
+
+        factory.create_component(config["the_stream"], input_config, False)
+
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"], value=InterpolatedString(string="static_value", default="static_value", options={}), options={}
+                    )
+                ],
+                options={},
+            )
+        ]
+        assert expected == component.transformations
+
+    def test_add_fields_path_in_options(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            $options:
+                {self.base_options}
+                path: "/wrong_path"
                 transformations:
                     - type: AddFields
                       fields:

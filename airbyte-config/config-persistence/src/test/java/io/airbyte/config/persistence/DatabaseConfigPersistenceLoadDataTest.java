@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -119,7 +120,8 @@ class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPersistenc
         .withWorkspaceId(s3Connection.getWorkspaceId())
         .withName("workspace")
         .withSlug("slug")
-        .withInitialSetupComplete(true);
+        .withInitialSetupComplete(true)
+        .withDefaultGeography(Geography.AUTO);
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, standardWorkspace.getWorkspaceId().toString(), standardWorkspace);
     configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, s3Connection.getDestinationId().toString(), s3Connection);
     final SourceConnection githubConnection = new SourceConnection()

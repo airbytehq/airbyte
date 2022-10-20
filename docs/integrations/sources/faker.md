@@ -40,7 +40,10 @@ N/A
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
-|:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.2.0   | 2022-10-14 | [18021](https://github.com/airbytehq/airbyte/pull/18021)     | Move to mimesis for speed!                                |
+| 0.1.8   | 2022-10-12 | [17889](https://github.com/airbytehq/airbyte/pull/17889) | Bump to test publish command (2)                          |
+| 0.1.7   | 2022-10-11 | [17848](https://github.com/airbytehq/airbyte/pull/17848) | Bump to test publish command                              |
 | 0.1.6   | 2022-09-07 | [16418](https://github.com/airbytehq/airbyte/pull/16418) | Log start of each stream                                  |
 | 0.1.5   | 2022-06-10 | [13695](https://github.com/airbytehq/airbyte/pull/13695) | Emit timestamps in the proper ISO format                  |
 | 0.1.4   | 2022-05-27 | [13298](https://github.com/airbytehq/airbyte/pull/13298) | Test publication flow                                     |

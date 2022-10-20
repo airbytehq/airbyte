@@ -4,18 +4,24 @@
 
 package io.airbyte.workers.temporal.spec;
 
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.DOCKER_IMAGE_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
+
+import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.temporal.CancellationHandler;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.config.WorkerMode;
 import io.airbyte.workers.general.DefaultGetSpecWorker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -28,6 +34,7 @@ import io.temporal.activity.ActivityExecutionContext;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.function.Supplier;
 
 @Singleton
@@ -58,8 +65,11 @@ public class SpecActivityImpl implements SpecActivity {
     this.airbyteVersion = airbyteVersion;
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public ConnectorJobOutput run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
+    ApmTraceUtils.addTagsToTrace(Map.of(DOCKER_IMAGE_KEY, launcherConfig.getDockerImage(), JOB_ID_KEY, jobRunConfig.getJobId()));
+
     final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
@@ -89,7 +99,7 @@ public class SpecActivityImpl implements SpecActivity {
           processFactory,
           workerConfigs.getResourceRequirements());
 
-      return new DefaultGetSpecWorker(workerConfigs, integrationLauncher);
+      return new DefaultGetSpecWorker(integrationLauncher);
     };
   }
 

@@ -36,6 +36,10 @@ spec:
       {{- if .Values.affinity }}
       affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
       {{- end }}
+      {{- if .Values.extraInitContainers }}
+      initContainers:
+      {{- toYaml .Values.extraInitContainers | nindent 6 }}
+      {{- end }}
       containers:
       - name: airbyte-worker-container
         image: {{ printf "%s:%s" .Values.image.repository (include "worker.imageTag" .) }}
@@ -89,11 +93,6 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: WORKSPACE_ROOT
-        - name: WORKER_ENVIRONMENT
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Release.Name }}-airbyte-env
-              key: WORKER_ENVIRONMENT
         - name: LOCAL_ROOT
           valueFrom:
             configMapKeyRef:

@@ -8,7 +8,7 @@
     "additionalProperties": true,
     "properties": {
       "credentials": {
-        "title": "Authentication *",
+        "title": "Authentication",
         "description": "Choose how to authenticate to GitHub",
         "type": "object",
         "order": 0,
@@ -72,14 +72,14 @@
       },
       "branch": {
         "type": "string",
-        "title": "Branch (Optional)",
+        "title": "Branch",
         "examples": ["airbytehq/airbyte/master airbytehq/airbyte/my-branch"],
         "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
         "order": 3
       },
       "page_size_for_large_streams": {
         "type": "integer",
-        "title": "Page size for large streams (Optional)",
+        "title": "Page size for large streams",
         "minimum": 1,
         "maximum": 100,
         "default": 10,

@@ -35,6 +35,10 @@ properties:
     type: array
     items:
       "$ref": StandardSyncOperation.yaml
+  webhookOperationConfigs:
+    description: The webhook operation configs belonging to this workspace. Must conform to WebhookOperationConfigs.yaml.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   resourceRequirements:
     type: object
     description: optional resource requirements to run sync workers
