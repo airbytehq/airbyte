@@ -32,9 +32,11 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -195,6 +197,34 @@ class PostgresSourceSSLTest {
         "replication_slot", "slot",
         "publication", "ab_pub")));
     assertTrue(PostgresUtils.isCdc(config));
+  }
+
+  @Test
+  void testAllowSSLWithCdcReplicationMethod() throws Exception {
+
+    JsonNode config = getCDCAndSslModeConfig("allow");
+
+    final AirbyteConnectionStatus actual = new PostgresSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertTrue(actual.getMessage().contains("In CDC replication mode ssl value 'allow' is invalid"));
+  }
+
+  @Test
+  void testPreferSSLWithCdcReplicationMethod() throws Exception {
+
+    JsonNode config = getCDCAndSslModeConfig("prefer");
+
+    final AirbyteConnectionStatus actual = new PostgresSource().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+    assertTrue(actual.getMessage().contains("In CDC replication mode ssl value 'prefer' is invalid"));
+  }
+
+  private JsonNode getCDCAndSslModeConfig(String sslMode){
+    return Jsons.jsonNode(ImmutableMap.builder()
+            .put(JdbcUtils.SSL_KEY, true)
+            .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode))
+            .put("replication_method", Map.of("method", "CDC"))
+            .build());
   }
 
 }

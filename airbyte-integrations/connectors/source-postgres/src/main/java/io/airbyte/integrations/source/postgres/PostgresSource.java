@@ -78,6 +78,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   public static final String PARAM_SSLMODE = "sslmode";
+  public static final String SSL_MODE = "ssl_mode";
+  public static final String SSL_MODE_ALLOW = "allow";
+  public static final String SSL_MODE_PREFER = "prefer";
   public static final String PARAM_SSL = "ssl";
   public static final String PARAM_SSL_TRUE = "true";
   public static final String PARAM_SSL_FALSE = "false";
@@ -87,9 +90,13 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String CA_CERTIFICATE_PATH = "ca_certificate_path";
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
+  public static final String MODE = "mode";
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
       "sslmode", "require");
+  public static final String REPLICATION_METHOD = "replication_method";
+  public static final String METHOD = "method";
+  public static final String CDC_METHOD = "CDC";
   private List<String> schemas;
   private final FeatureFlags featureFlags;
 
@@ -462,6 +469,25 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    if (isCdcReplicationMethod(config)){
+      String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
+      if(SSL_MODE_ALLOW.equals(sslModeValue) || SSL_MODE_PREFER.equals(sslModeValue) ){
+        return new AirbyteConnectionStatus()
+                .withStatus(Status.FAILED)
+                .withMessage(String.format(
+                        "In CDC replication mode ssl value '%s' is invalid. Please use one of the following SSL modes: disable, require, verify-ca, verify-full", sslModeValue));
+      }
+    }
+    return super.check(config);
+  }
+
+  private boolean isCdcReplicationMethod(final JsonNode config) {
+    JsonNode replication_method = config.get(REPLICATION_METHOD);
+    return replication_method != null && replication_method.get(METHOD) != null && CDC_METHOD.equals(replication_method.get(METHOD).asText());
   }
 
   @Override
