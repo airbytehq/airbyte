@@ -1,0 +1,26 @@
+@use "scss/colors";
+
+.slice {
+  background-color: colors.$grey-100;
+  padding: 10px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.page {
+  background-color: colors.$blue-100;
+  padding: 10px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dataObject {
+  background-color: colors.$orange-100;
+  padding: 10px;
+  border-radius: 6px;
+  overflow-wrap: break-word;
+}

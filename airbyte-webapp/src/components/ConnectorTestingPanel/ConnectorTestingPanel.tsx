@@ -2,6 +2,7 @@ import { useReadStream } from "services/connector-builder/ConnectorBuilderApiSer
 import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
 
 import styles from "./ConnectorTestingPanel.module.scss";
+import { ResultDisplay } from "./ResultDisplay";
 import { StreamSelector } from "./StreamSelector";
 import { TestControls } from "./TestControls";
 
@@ -21,7 +22,7 @@ export const ConnectorTestingPanel: React.FC<unknown> = () => {
           readStream();
         }}
       />
-      <div>{JSON.stringify(streamReadData)}</div>
+      <ResultDisplay data={streamReadData ?? { slices: [] }} />
     </div>
   );
 };
