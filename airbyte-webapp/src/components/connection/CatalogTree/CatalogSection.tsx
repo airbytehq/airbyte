@@ -18,6 +18,8 @@ import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./CatalogSection.module.scss";
+import { CatalogTreeTableRow } from "./next/CatalogTreeTableRow";
+import { StreamPanel } from "./next/StreamPanel";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
@@ -41,6 +43,8 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   errors,
   changedSelected,
 }) => {
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+
   const {
     destDefinition: { supportedDestinationSyncModes },
   } = useConnectionFormService();
@@ -135,9 +139,11 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const hasFields = fields?.length > 0;
   const disabled = mode === "readonly";
 
+  const StreamComponent = isNewStreamsTableEnabled ? CatalogTreeTableRow : StreamHeader;
+
   return (
     <div className={styles.catalogSection}>
-      <StreamHeader
+      <StreamComponent
         stream={streamNode}
         destNamespace={destNamespace}
         destName={destName}
@@ -156,18 +162,33 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
         hasError={hasError}
         disabled={disabled}
       />
-      {isRowExpanded && hasFields && (
-        <div className={styles.streamFieldTableContainer}>
-          <StreamFieldTable
+      {isRowExpanded &&
+        hasFields &&
+        (isNewStreamsTableEnabled ? (
+          <StreamPanel
             config={config}
+            disabled={mode === "readonly"}
             syncSchemaFields={flattenedFields}
+            onClose={onExpand}
             onCursorSelect={onCursorSelect}
             onPkSelect={onPkSelect}
+            onSelectedChange={onSelectStream}
             shouldDefinePk={shouldDefinePk}
             shouldDefineCursor={shouldDefineCursor}
+            stream={stream}
           />
-        </div>
-      )}
+        ) : (
+          <div className={styles.streamFieldTableContainer}>
+            <StreamFieldTable
+              config={config}
+              syncSchemaFields={flattenedFields}
+              onCursorSelect={onCursorSelect}
+              onPkSelect={onPkSelect}
+              shouldDefinePk={shouldDefinePk}
+              shouldDefineCursor={shouldDefineCursor}
+            />
+          </div>
+        ))}
     </div>
   );
 };
