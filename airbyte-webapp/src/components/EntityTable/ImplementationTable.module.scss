@@ -1,18 +1,5 @@
 .content {
-  margin: 0 32px 0 27px;
-
   > table > tbody > tr > td:first-of-type {
     padding-left: 32px !important;
   }
-}
-
-.tableHeaderButton {
-  display: inline-flex;
-  font-size: inherit;
-  text-transform: inherit;
-  color: inherit;
-  background-color: inherit;
-  border: none;
-  font-weight: inherit;
-  cursor: pointer;
 }

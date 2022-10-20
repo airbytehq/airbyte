@@ -140,6 +140,18 @@ public class JobHistoryHandler {
     return jobPersistence.getLastSyncJob(connectionId).map(JobConverter::getJobRead);
   }
 
+  public List<JobRead> getLatestSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobPersistence.getLastSyncJobForConnections(connectionIds).stream()
+        .map(JobConverter::getJobRead)
+        .collect(Collectors.toList());
+  }
+
+  public List<JobRead> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobPersistence.getRunningSyncJobForConnections(connectionIds).stream()
+        .map(JobConverter::getJobRead)
+        .collect(Collectors.toList());
+  }
+
   private SourceRead getSourceRead(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(connectionRead.getSourceId());
     return sourceHandler.getSource(sourceIdRequestBody);

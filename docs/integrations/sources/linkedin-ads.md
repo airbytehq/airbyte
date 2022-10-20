@@ -13,9 +13,9 @@ The LinkedIn Ads source connector is based on a [Airbyte CDK](https://docs.airby
    * OAuth2.0:
       * `Client ID` from your `Developer Application`
       * `Client Secret` from your `Developer Application`
-      * `Refresh Token` obtained from successfull authorization with `Client ID` + `Client Secret`
+      * `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
    * Access Token:
-      * `Access Token` obtained from successfull authorization with `Client ID` + `Client Secret`
+      * `Access Token` obtained from successful authorization with `Client ID` + `Client Secret`
 
 ## Step 1: Set up LinkedIn Ads
 
@@ -181,7 +181,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                           |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
+| 0.1.11  | 2022-10-07 | [17724](https://github.com/airbytehq/airbyte/pull/17724) | Retry 429/5xx errors when refreshing access token                                                                 |
 | 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                     |
 | 0.1.9   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas                                                                  |
 | 0.1.8   | 2022-06-07 | [13495](https://github.com/airbytehq/airbyte/pull/13495) | Fixed `base-normalization` issue on `Destination Redshift` caused by wrong casting of `pivot` column              |

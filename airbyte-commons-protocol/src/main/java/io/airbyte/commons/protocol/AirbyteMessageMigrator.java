@@ -6,7 +6,7 @@ package io.airbyte.commons.protocol;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.protocol.migrations.AirbyteMessageMigration;
-import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
 import java.util.Collection;
@@ -46,7 +46,7 @@ public class AirbyteMessageMigrator {
    * Downgrade a message from the most recent version to the target version by chaining all the
    * required migrations
    */
-  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message, final AirbyteVersion target) {
+  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message, final Version target) {
     if (target.getMajorVersion().equals(mostRecentVersion)) {
       return (PreviousVersion) message;
     }
@@ -63,7 +63,7 @@ public class AirbyteMessageMigrator {
    * Upgrade a message from the source version to the most recent version by chaining all the required
    * migrations
    */
-  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message, final AirbyteVersion source) {
+  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message, final Version source) {
     if (source.getMajorVersion().equals(mostRecentVersion)) {
       return (CurrentVersion) message;
     }
@@ -75,7 +75,7 @@ public class AirbyteMessageMigrator {
     return (CurrentVersion) result;
   }
 
-  private Collection<AirbyteMessageMigration<?, ?>> selectMigrations(final AirbyteVersion version) {
+  private Collection<AirbyteMessageMigration<?, ?>> selectMigrations(final Version version) {
     final Collection<AirbyteMessageMigration<?, ?>> results = migrations.tailMap(version.getMajorVersion()).values();
     if (results.isEmpty()) {
       throw new RuntimeException("Unsupported migration version " + version.serialize());
