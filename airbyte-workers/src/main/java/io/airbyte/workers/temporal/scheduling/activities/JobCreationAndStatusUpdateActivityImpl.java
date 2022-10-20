@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import static io.airbyte.config.JobConfig.ConfigType.SYNC;
+import static io.airbyte.persistence.job.models.AttemptStatus.FAILED;
 import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
 import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
@@ -18,6 +20,7 @@ import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.FailureReason;
+import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.NormalizationSummary;
@@ -56,9 +59,13 @@ import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
@@ -370,6 +377,55 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   public void ensureCleanJobState(final EnsureCleanJobStateInput input) {
     ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
     failNonTerminalJobs(input.getConnectionId());
+  }
+
+  @Override
+  public boolean isLastJobOrAttemptFailure(JobCheckFailureInput input) {
+    final int limit = 2;
+    boolean lastAttemptCheck = false;
+    boolean lastJobCheck = false;
+
+    Set<JobConfig.ConfigType> configTypes = new HashSet<>();
+    configTypes.add(SYNC);
+
+    try {
+      List<Job> jobList = jobPersistence.listJobsIncludingId(configTypes, input.getConnectionId().toString(), input.getJobId(), limit);
+      Optional<Job> optionalActiveJob = jobList.stream().filter(job -> job.getId() == input.getJobId()).findFirst();
+      if (optionalActiveJob.isPresent()) {
+        lastAttemptCheck = checkActiveJobPreviousAttempt(optionalActiveJob.get(), input.getAttemptId());
+      }
+
+      OptionalLong previousJobId = getPreviousJobId(input.getJobId(), jobList.stream().map(Job::getId).toList());
+      if (previousJobId.isPresent()) {
+        Optional<Job> optionalPreviousJob = jobList.stream().filter(job -> job.getId() == previousJobId.getAsLong()).findFirst();
+        if (optionalPreviousJob.isPresent()) {
+          lastJobCheck = optionalPreviousJob.get().getStatus().equals(io.airbyte.persistence.job.models.JobStatus.FAILED);
+        }
+      }
+
+      return lastJobCheck || lastAttemptCheck;
+    } catch (final IOException e) {
+      throw new RetryableException(e);
+    }
+  }
+
+  private OptionalLong getPreviousJobId(Long activeJobId, List<Long> jobIdsList) {
+    return jobIdsList.stream()
+        .filter(jobId -> !Objects.equals(jobId, activeJobId))
+        .mapToLong(jobId -> jobId).max();
+  }
+
+  private boolean checkActiveJobPreviousAttempt(Job activeJob, int attemptId) {
+    final int minAttemptSize = 1;
+    boolean result = false;
+
+    if (activeJob.getAttempts().size() > minAttemptSize) {
+      Optional<Attempt> optionalAttempt = activeJob.getAttempts().stream()
+          .filter(attempt -> attempt.getId() == (attemptId - 1)).findFirst();
+      result = optionalAttempt.isPresent() && optionalAttempt.get().getStatus().equals(FAILED);
+    }
+
+    return result;
   }
 
   private void failNonTerminalJobs(final UUID connectionId) {
