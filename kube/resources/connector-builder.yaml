@@ -13,7 +13,7 @@ spec:
         airbyte: connector-builder
     spec:
       containers:
-        - name: airbyte-connector-builder
+        - name: airbyte-connector-builder-container
           image: airbyte/connector-builder
           env:
             - name: AIRBYTE_VERSION
