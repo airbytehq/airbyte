@@ -190,10 +190,16 @@ public class ConfigRepository {
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
-    return persistence.getConfig(
+    final StandardSourceDefinition sourceDef = persistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceDefinitionId.toString(),
         StandardSourceDefinition.class);
+    // Make sure we have a default version of the Protocol.
+    // This corner case may happen for connectors that haven't been upgraded since we added versioning.
+    if (sourceDef != null) {
+      return sourceDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(sourceDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -302,8 +308,15 @@ public class ConfigRepository {
 
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
-        StandardDestinationDefinition.class);
+    final StandardDestinationDefinition destDef =
+        persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
+            StandardDestinationDefinition.class);
+    // Make sure we have a default version of the Protocol.
+    // This corner case may happen for connectors that haven't been upgraded since we added versioning.
+    if (destDef != null) {
+      return destDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(destDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardDestinationDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {
