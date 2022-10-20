@@ -196,7 +196,10 @@ public class ConfigRepository {
         StandardSourceDefinition.class);
     // Make sure we have a default version of the Protocol.
     // This corner case may happen for connectors that haven't been upgraded since we added versioning.
-    return sourceDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(sourceDef.getProtocolVersion()).serialize());
+    if (sourceDef != null) {
+      return sourceDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(sourceDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -310,7 +313,10 @@ public class ConfigRepository {
             StandardDestinationDefinition.class);
     // Make sure we have a default version of the Protocol.
     // This corner case may happen for connectors that haven't been upgraded since we added versioning.
-    return destDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(destDef.getProtocolVersion()).serialize());
+    if (destDef != null) {
+      return destDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(destDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardDestinationDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {
