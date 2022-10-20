@@ -51,6 +51,13 @@ def test_reset_scd_on_overwrite(destination_type: DestinationType, setup_test_pa
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
 
+    if destination_type.value == DestinationType.ORACLE.value:
+        # Oracle does not allow changing to random schema
+        dbt_test_utils.set_target_schema("test_normalization")
+    elif destination_type.value == DestinationType.REDSHIFT.value:
+        # set unique schema for Redshift test
+        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_reset_scd_"))
+
     test_resource_name = "test_reset_scd_overwrite"
     # Select target schema
     target_schema = dbt_test_utils.target_schema
