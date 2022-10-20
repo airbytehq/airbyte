@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+- Low-code: Enable requests caching
+
 ## 0.2.1
 
 - Low-code: Always convert stream slices output to an iterator
