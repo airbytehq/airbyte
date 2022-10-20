@@ -55,6 +55,8 @@ class MaskedDataInterceptorTest {
     when(message.getFormattedMessage()).thenReturn(JSON_WITH_STRING_WITH_QUOTE_SECRETS);
     when(logEvent.getMessage()).thenReturn(message);
 
+    System.out.println(JSON_WITH_STRING_WITH_QUOTE_SECRETS);
+
     final MaskedDataInterceptor interceptor = MaskedDataInterceptor.createPolicy(TEST_SPEC_SECRET_MASK_YAML);
     final LogEvent result = interceptor.rewrite(logEvent);
 
