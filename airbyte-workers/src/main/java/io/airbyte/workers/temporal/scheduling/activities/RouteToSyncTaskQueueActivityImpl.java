@@ -14,7 +14,9 @@ import io.airbyte.workers.temporal.scheduling.RouterService;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Singleton
 public class RouteToSyncTaskQueueActivityImpl implements RouteToSyncTaskQueueActivity {
 
@@ -34,6 +36,7 @@ public class RouteToSyncTaskQueueActivityImpl implements RouteToSyncTaskQueueAct
 
       return new RouteToSyncTaskQueueOutput(taskQueueForConnectionId);
     } catch (final IOException e) {
+      log.warn("Encountered an error while attempting to route connection {} to a task queue: \n{}", input.getConnectionId(), e);
       throw new RetryableException(e);
     }
   }

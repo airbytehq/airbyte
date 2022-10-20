@@ -6,7 +6,7 @@ package io.airbyte.workers.temporal.scheduling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.commons.temporal.scheduling.GeographyMapper;
+import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
 import io.airbyte.config.Geography;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
@@ -32,17 +32,17 @@ class RouterServiceTest {
   private ConfigRepository mConfigRepository;
 
   @Mock
-  private GeographyMapper mGeographyMapper;
+  private TaskQueueMapper mTaskQueueMapper;
 
   private RouterService routerService;
 
   @BeforeEach
   void init() {
-    routerService = new RouterService(mConfigRepository, mGeographyMapper);
+    routerService = new RouterService(mConfigRepository, mTaskQueueMapper);
 
-    Mockito.when(mGeographyMapper.getTaskQueue(Geography.AUTO)).thenReturn(US_TASK_QUEUE);
-    Mockito.when(mGeographyMapper.getTaskQueue(Geography.US)).thenReturn(US_TASK_QUEUE);
-    Mockito.when(mGeographyMapper.getTaskQueue(Geography.EU)).thenReturn(EU_TASK_QUEUE);
+    Mockito.when(mTaskQueueMapper.getTaskQueue(Geography.AUTO)).thenReturn(US_TASK_QUEUE);
+    Mockito.when(mTaskQueueMapper.getTaskQueue(Geography.US)).thenReturn(US_TASK_QUEUE);
+    Mockito.when(mTaskQueueMapper.getTaskQueue(Geography.EU)).thenReturn(EU_TASK_QUEUE);
   }
 
   @Test

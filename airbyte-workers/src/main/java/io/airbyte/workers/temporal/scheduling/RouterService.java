@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
-import io.airbyte.commons.temporal.scheduling.GeographyMapper;
+import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
 import io.airbyte.config.Geography;
 import io.airbyte.config.persistence.ConfigRepository;
 import jakarta.inject.Singleton;
@@ -21,11 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 public class RouterService {
 
   private final ConfigRepository configRepository;
-  private final GeographyMapper geographyMapper;
+  private final TaskQueueMapper taskQueueMapper;
 
-  public RouterService(final ConfigRepository configRepository, final GeographyMapper geographyMapper) {
+  public RouterService(final ConfigRepository configRepository, final TaskQueueMapper taskQueueMapper) {
     this.configRepository = configRepository;
-    this.geographyMapper = geographyMapper;
+    this.taskQueueMapper = taskQueueMapper;
   }
 
   /**
@@ -34,7 +34,7 @@ public class RouterService {
    */
   public String getTaskQueue(final UUID connectionId) throws IOException {
     final Geography geography = configRepository.getGeographyForConnection(connectionId);
-    return geographyMapper.getTaskQueue(geography);
+    return taskQueueMapper.getTaskQueue(geography);
   }
 
 }

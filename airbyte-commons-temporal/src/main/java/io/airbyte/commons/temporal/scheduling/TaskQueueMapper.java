@@ -10,7 +10,7 @@ import io.airbyte.config.Geography;
  * Maps a {@link Geography} to a Temporal Task Queue that should be used to run syncs for the given
  * Geography.
  */
-public interface GeographyMapper {
+public interface TaskQueueMapper {
 
   String getTaskQueue(Geography geography);
 
