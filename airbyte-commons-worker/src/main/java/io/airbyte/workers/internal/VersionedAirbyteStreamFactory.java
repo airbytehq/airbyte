@@ -40,6 +40,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   // the SPEC.
   private static final int BUFFER_READ_AHEAD_LIMIT = 32000;
   private static final int MESSAGES_LOOK_AHEAD_FOR_DETECTION = 10;
+  private static final String TYPE_FIELD_NAME = "type";
 
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
@@ -132,8 +133,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   }
 
   private boolean isSpecMessage(final JsonNode json) {
-    final String typeFieldName = "type";
-    return json.has(typeFieldName) && "spec".equalsIgnoreCase(json.get(typeFieldName).asText());
+    return json.has(TYPE_FIELD_NAME) && "spec".equalsIgnoreCase(json.get(TYPE_FIELD_NAME).asText());
   }
 
   public boolean setDetectVersion(final boolean detectVersion) {
