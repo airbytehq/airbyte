@@ -10,6 +10,7 @@ connectionSpecification:
     api_key:
       type: string
       description: API Key
+      airbyte_secret: true
       order: 0
     start_date:
       type: string
