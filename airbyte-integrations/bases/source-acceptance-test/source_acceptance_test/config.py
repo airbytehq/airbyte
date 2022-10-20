@@ -5,9 +5,11 @@
 
 from enum import Enum
 from pathlib import Path
-from typing import List, Mapping, Optional, Set
+from typing import Generic, List, Mapping, Optional, Set, TypeVar
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, root_validator, validator
+from pydantic.generics import GenericModel
+from source_acceptance_test import strict_mode_validations
 
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
@@ -23,6 +25,9 @@ SEMVER_REGEX = r"(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*)))?(?:
 class BaseConfig(BaseModel):
     class Config:
         extra = "forbid"
+
+
+TestConfigT = TypeVar("TestConfigT")
 
 
 class BackwardCompatibilityTestsConfig(BaseConfig):
@@ -133,13 +138,18 @@ class IncrementalConfig(BaseConfig):
     )
 
 
-class TestConfig(BaseConfig):
-    spec: Optional[List[SpecTestConfig]] = Field(description="TODO")
-    connection: Optional[List[ConnectionTestConfig]] = Field(description="TODO")
-    discovery: Optional[List[DiscoveryTestConfig]] = Field(description="TODO")
-    basic_read: Optional[List[BasicReadTestConfig]] = Field(description="TODO")
-    full_refresh: Optional[List[FullRefreshConfig]] = Field(description="TODO")
-    incremental: Optional[List[IncrementalConfig]] = Field(description="TODO")
+class GenericTestConfig(GenericModel, Generic[TestConfigT]):
+    bypass_reason: Optional[str]
+    tests: Optional[List[TestConfigT]]
+
+
+class AcceptanceTestConfigurations(BaseConfig):
+    spec: Optional[GenericTestConfig[SpecTestConfig]]
+    connection: Optional[GenericTestConfig[ConnectionTestConfig]]
+    discovery: Optional[GenericTestConfig[DiscoveryTestConfig]]
+    basic_read: Optional[GenericTestConfig[BasicReadTestConfig]]
+    full_refresh: Optional[GenericTestConfig[FullRefreshConfig]]
+    incremental: Optional[GenericTestConfig[IncrementalConfig]]
 
 
 class Config(BaseConfig):
@@ -147,8 +157,13 @@ class Config(BaseConfig):
         strict = "strict"
 
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
-    tests: TestConfig = Field(description="List of the tests with their configs")
+    acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")
     strict_mode: Optional[StrictMode] = Field(
         description="Strict mode corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run."
     )
+
+    @root_validator(pre=False)
+    def strict_mode_validation(cls, values: dict):
+        [validator(values) for validator in strict_mode_validations.VALIDATORS if values.get("strict_mode") == Config.StrictMode.strict]
+        return values
