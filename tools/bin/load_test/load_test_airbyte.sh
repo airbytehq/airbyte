@@ -35,7 +35,8 @@ function showhelp {
     Defaults to '8001'.
 
   ${CLEAR}-X <header>
-    ${GREEN}Specify the X-Endpoint-API-UserInfo header value for API authentication. Cloud-only.
+    ${GREEN}Specify the X-Endpoint-API-UserInfo header value for API authentication.
+    For Google Cloud Endpoint authentication only.
 
   ${CLEAR}-C <count>
     ${GREEN}Specify the number of connections that should be created by the script.

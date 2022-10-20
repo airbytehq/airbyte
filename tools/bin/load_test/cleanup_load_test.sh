@@ -33,7 +33,8 @@ function showhelp {
     Defaults to '8001'.
 
   ${CLEAR}-X <header>
-    ${GREEN}Specify the X-Endpoint-API-UserInfo header value for API authentication. Cloud-only.
+    ${GREEN}Specify the X-Endpoint-API-UserInfo header value for API authentication.
+    For Google Cloud Endpoint authentication only.
   """ && exit 1
 }
 
