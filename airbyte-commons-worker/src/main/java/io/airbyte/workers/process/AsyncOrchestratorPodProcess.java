@@ -59,6 +59,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final KubernetesClient kubernetesClient;
   private final String secretName;
   private final String secretMountPath;
+  private final String serviceAccount;
   private final String googleApplicationCredentials;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
   private final boolean useStreamCapableState;
@@ -70,6 +71,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final KubernetesClient kubernetesClient,
                                      final String secretName,
                                      final String secretMountPath,
+                                     final String serviceAccount,
                                      final String googleApplicationCredentials,
                                      final boolean useStreamCapableState,
                                      final Integer serverPort) {
@@ -78,6 +80,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     this.kubernetesClient = kubernetesClient;
     this.secretName = secretName;
     this.secretMountPath = secretMountPath;
+    this.serviceAccount = serviceAccount;
     this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
     this.useStreamCapableState = useStreamCapableState;
@@ -317,7 +320,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withLabels(allLabels)
         .endMetadata()
         .withNewSpec()
-        .withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true)
+        .withServiceAccount(this.serviceAccount).withAutomountServiceAccountToken(true)
         .withRestartPolicy("Never")
         .withContainers(mainContainer)
         .withVolumes(volumes)

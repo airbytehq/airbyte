@@ -106,6 +106,7 @@ public class EnvConfigs implements Configs {
   private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
+  private static final String CONTAINER_ORCHESTRATOR_SERVICE_ACCOUNT = "OCONTAINER_ORCHESTRATOR_SERVICE_ACCOUNT";
   public static final String DD_CONSTANT_TAGS = "DD_CONSTANT_TAGS";
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -1011,6 +1012,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getContainerOrchestratorImage() {
     return getEnvOrDefault(CONTAINER_ORCHESTRATOR_IMAGE, "airbyte/container-orchestrator:" + getAirbyteVersion().serialize());
+  }
+
+  @Override
+  public String getContainerOrchestratorServiceAccount() {
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_SERVICE_ACCOUNT, "airbyte-admin");
   }
 
   @Override

@@ -648,6 +648,11 @@ public interface Configs {
   String getContainerOrchestratorImage();
 
   /**
+   * Define the orchestrator Kubernetes service account. Defaults to 'airbyte-admin'.
+   */
+  String getContainerOrchestratorServiceAccount();
+
+  /**
    * Define the replication orchestrator's minimum CPU usage. Defaults to none.
    */
   String getReplicationOrchestratorCpuRequest();

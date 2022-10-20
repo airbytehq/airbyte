@@ -785,10 +785,12 @@ worker:
   ## Container Orchestrator
   ## enabled -- Enable or disable Orchestrator
   ## image -- Orchestrator image
+  ## serviceAccount - Orchestrator service account
 
   containerOrchestrator:
     enabled: true
     image: ""
+    serviceAccount: ""
 
 ## @section Metrics parameters
 metrics:

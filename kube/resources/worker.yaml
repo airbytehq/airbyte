@@ -230,6 +230,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: CONTAINER_ORCHESTRATOR_IMAGE
+            - name: CONTAINER_ORCHESTRATOR_SERVICE_ACCOUNT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONTAINER_ORCHESTRATOR_SERVICE_ACCOUNT
             - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
               valueFrom:
                 configMapKeyRef:

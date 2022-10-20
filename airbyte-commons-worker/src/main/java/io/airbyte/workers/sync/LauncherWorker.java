@@ -142,6 +142,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.kubernetesClient(),
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
+            containerOrchestratorConfig.serviceAccount(),
             containerOrchestratorConfig.googleApplicationCredentials(),
             featureFlag.useStreamCapableState(),
             serverPort);

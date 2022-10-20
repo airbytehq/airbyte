@@ -112,6 +112,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         kubernetesClient,
         null,
         null,
+        "airbyte-admin",
         null,
         true,
         serverPort);

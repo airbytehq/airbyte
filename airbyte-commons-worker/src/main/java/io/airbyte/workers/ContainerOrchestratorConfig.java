@@ -16,5 +16,6 @@ public record ContainerOrchestratorConfig(
                                           String secretMountPath,
                                           String containerOrchestratorImage,
                                           String containerOrchestratorImagePullPolicy,
+                                          String serviceAccount,
                                           String googleApplicationCredentials,
                                           WorkerEnvironment workerEnvironment) {}

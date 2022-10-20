@@ -40,6 +40,7 @@ public class ContainerOrchestratorConfigBeanFactory {
                                                                            @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String containerOrchestratorImagePullPolicy,
                                                                            @Value("${airbyte.container.orchestrator.secret-mount-path}") final String containerOrchestratorSecretMountPath,
                                                                            @Value("${airbyte.container.orchestrator.secret-name}") final String containerOrchestratorSecretName,
+                                                                           @Value("${airbyte.container.orchestrator.service-account}") final String containerOrchestratorServiceAccount,
                                                                            @Value("${google.application.credentials}") final String googleApplicationCredentials,
                                                                            @Value("${airbyte.worker.job.kube.namespace}") final String namespace,
                                                                            final WorkerEnvironment workerEnvironment) {
@@ -57,6 +58,7 @@ public class ContainerOrchestratorConfigBeanFactory {
         containerOrchestratorSecretMountPath,
         StringUtils.isNotEmpty(containerOrchestratorImage) ? containerOrchestratorImage : "airbyte/container-orchestrator:" + airbyteVersion,
         containerOrchestratorImagePullPolicy,
+        StringUtils.isNotEmpty(containerOrchestratorServiceAccount) ? containerOrchestratorServiceAccount : "airbyte-admin",
         googleApplicationCredentials,
         workerEnvironment);
   }
