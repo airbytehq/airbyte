@@ -4,7 +4,7 @@
 
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any,Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 import requests
@@ -17,6 +17,8 @@ from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from requests.auth import AuthBase
 from source_square.utils import separate_items_by_count
+from dateutil.parser import isoparse
+
 
 
 class SquareException(Exception):
@@ -58,7 +60,8 @@ class SquareStream(HttpStream, ABC):
     data_field = None
     primary_key = "id"
     items_per_page_limit = 100
-
+    last_refreshed_datetime = None
+    
     @property
     def url_base(self) -> str:
         return "https://connect.squareup{}.com/v2/".format("sandbox" if self.is_sandbox else "")
@@ -75,6 +78,8 @@ class SquareStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
+        last_refreshed_datetime = json_response.get("UPDATED_AT")
+        self.last_refreshed_datetime = isoparse(last_refreshed_datetime) if last_refreshed_datetime else None
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
         yield from records
 
@@ -86,6 +91,38 @@ class SquareStream(HttpStream, ABC):
             if square_exception:
                 self.logger.error(str(square_exception))
             raise e
+    @staticmethod
+    def unnest_field(record: Mapping[str, Any], unnest_from: Dict, cursor_field: str):
+        """
+        Unnest cursor_field to the root level of the record.
+        """
+        if unnest_from in record:
+            record[cursor_field] = record.get(unnest_from).get(cursor_field)
+
+    @staticmethod
+    def update_field(record: Mapping[str, Any], field_path: Union[List[str], str], update: Callable[[Any], None]):
+        if not isinstance(field_path, List):
+            field_path = [field_path]
+
+        last_field = field_path[-1]
+        data = SquareStream.get_field(record, field_path[:-1])
+        if data and last_field in data:
+            data[last_field] = update(data[last_field])
+
+    @staticmethod
+    def get_field(record: Mapping[str, Any], field_path: Union[List[str], str]):
+
+        if not isinstance(field_path, List):
+            field_path = [field_path]
+
+        data = record
+        for attr in field_path:
+            if data and isinstance(data, dict):
+                data = data.get(attr)
+            else:
+                return None
+
+        return data
 
 
 # Some streams require next_page_token in request query parameters (TeamMemberWages, Customers)
@@ -307,20 +344,42 @@ class TeamMemberWages(SquareStreamPageParam):
 
 
 class Customers(SquareStreamPageParam):
-    """Docs: https://developer.squareup.com/reference/square_2021-06-16/customers-api/list-customers"""
-
+    """Docs: https://developer.squareup.com/reference/square_2021-06-16/customers-api/search-customers"""
+    http_method = "POST"
+    items_per_page_limit = 100
     data_field = "customers"
-
+    cursor_field = "created_at"
+    filterbody = """{
+                        "filter": 
+                     {
+                        "created_at": 
+                            {   
+                                "start_at": 
+                """
+    sortbody = """ "sort": {
+                        "field": "CREATED_AT",
+                        "order": "ASC"
+                    }
+            """
+    #params_payload = super().request_params(stream_state, stream_slice, next_page_token)
     def path(self, **kwargs) -> str:
-        return "customers"
+        return "customers/search"
+    
+    def request_body_json(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Optional[Mapping]:
+        json_payload = super().request_body_json(stream_state, stream_slice, next_page_token)
+        json_payload = json_payload or {}
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params_payload = super().request_params(**kwargs)
-        params_payload = params_payload or {}
+        if stream_slice:
+            json_payload.update(stream_slice)
+        json_payload["limit"] = self.items_per_page_limit
+        if stream_state:
+            json_payload["query"] = json.loads(f'{self.filterbody}"{stream_state[self.cursor_field]}" }}}}, {self.sortbody}}}}}') 
+        else:
+            json_payload["query"] = json.loads(f'{self.filterbody}"{self.start_date}" }}}}, {self.sortbody}}}')
 
-        params_payload["sort_order"] = "ASC"
-        params_payload["sort_field"] = "CREATED_AT"
-        return params_payload
+        return json_payload
 
 
 class Orders(SquareStreamPageJson):
@@ -329,6 +388,22 @@ class Orders(SquareStreamPageJson):
     data_field = "orders"
     http_method = "POST"
     items_per_page_limit = 500
+    cursor_field = "updated_at"
+    filterbody = """{
+                        "filter": 
+                     {
+                            "date_time_filter": 
+                            {   
+                                "updated_at": 
+                                {   
+                                    "start_at": 
+                """
+    sortbody = """ "sort": {
+                        "sort_field": "UPDATED_AT",
+                        "sort_order": "ASC"
+                    }
+            """
+
     # There is a restriction in the documentation where only 10 locations can be send at one request
     # https://developer.squareup.com/reference/square/orders-api/search-orders#request__property-location_ids
     locations_per_requets = 10
@@ -336,14 +411,20 @@ class Orders(SquareStreamPageJson):
     def path(self, **kwargs) -> str:
         return "orders/search"
 
-    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
-        json_payload = super().request_body_json(stream_slice=stream_slice, **kwargs)
+    def request_body_json(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Optional[Mapping]:
+        json_payload = super().request_body_json(stream_state, stream_slice, next_page_token)
         json_payload = json_payload or {}
 
         if stream_slice:
             json_payload.update(stream_slice)
-
         json_payload["limit"] = self.items_per_page_limit
+        if stream_state:
+            json_payload["query"] = json.loads(f'{self.filterbody}"{stream_state[self.cursor_field]}" }}}}}}, {self.sortbody}}}') 
+        else:
+            json_payload["query"] = json.loads(f'{self.filterbody}"{self.start_date}" }}}}}}, {self.sortbody}}}')
+
         return json_payload
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
