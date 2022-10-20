@@ -81,7 +81,14 @@ class GithubStream(HttpStream, ABC):
             or "Retry-After" in response.headers
         )
         if retry_flag:
-            headers = ["X-RateLimit-Resource", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Retry-After"]
+            headers = [
+                "X-RateLimit-Resource",
+                "X-RateLimit-Remaining",
+                "X-RateLimit-Reset",
+                "X-RateLimit-Limit",
+                "X-RateLimit-Used",
+                "Retry-After",
+            ]
             headers = ", ".join([f"{h}: {response.headers[h]}" for h in headers if h in response.headers])
             if headers:
                 headers = f"HTTP headers: {headers},"
