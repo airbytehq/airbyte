@@ -1083,7 +1083,7 @@ class Users(JiraStream):
 
     primary_key = None
 
-    def __init__(self, domain: str, projects: List[str], max_results: str, **kwargs):
+    def __init__(self, domain: str, projects: List[str], max_results: int, **kwargs):
         super(JiraStream, self).__init__(**kwargs)
         self._domain = domain
         self._projects = projects
@@ -1091,7 +1091,7 @@ class Users(JiraStream):
 
     def path(self, **kwargs) -> str:
         if int(self._max_results) > 0:
-            return "user/search?maxResults=" + self._max_results + "&query="
+            return "user/search?maxResults=" + str(self._max_results) + "&query="
         return "user/search?query="
 
 class Workflows(JiraStream):
