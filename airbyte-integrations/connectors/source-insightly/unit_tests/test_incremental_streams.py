@@ -3,15 +3,15 @@
 #
 
 
-from pytest import fixture
 from datetime import datetime, timezone
-from airbyte_cdk.models import SyncMode
-from source_insightly.source import IncrementalInsightlyStream
-from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from pytest import fixture
+from source_insightly.source import IncrementalInsightlyStream
 
 start_date = "2021-01-01T00:00:00Z"
 authenticator = BasicHttpAuthenticator(username="test", password="")
+
 
 @fixture
 def patch_incremental_base_class(mocker):
@@ -24,20 +24,24 @@ def patch_incremental_base_class(mocker):
 def test_cursor_field(patch_incremental_base_class):
     stream = IncrementalInsightlyStream(authenticator=authenticator, start_date=start_date)
     # TODO: replace this with your expected cursor field
-    expected_cursor_field = 'DATE_UPDATED_UTC'
+    expected_cursor_field = "DATE_UPDATED_UTC"
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
     stream = IncrementalInsightlyStream(authenticator=authenticator, start_date=start_date)
-    inputs = {"current_stream_state": {'DATE_UPDATED_UTC': '2021-01-01T00:00:00Z'}, "latest_record": {'DATE_UPDATED_UTC': '2021-02-01T00:00:00Z'}}
-    expected_state = {'DATE_UPDATED_UTC': datetime(2021, 2, 1, 0, 0, 0, tzinfo=timezone.utc)}
+    inputs = {
+        "current_stream_state": {"DATE_UPDATED_UTC": "2021-01-01T00:00:00Z"},
+        "latest_record": {"DATE_UPDATED_UTC": "2021-02-01T00:00:00Z"},
+    }
+    expected_state = {"DATE_UPDATED_UTC": datetime(2021, 2, 1, 0, 0, 0, tzinfo=timezone.utc)}
     assert stream.get_updated_state(**inputs) == expected_state
+
 
 def test_get_updated_state_no_current_state(patch_incremental_base_class):
     stream = IncrementalInsightlyStream(authenticator=authenticator, start_date=start_date)
-    inputs = {"current_stream_state": {}, "latest_record": {'DATE_UPDATED_UTC': '2021-01-01T00:00:00Z'}}
-    expected_state = {'DATE_UPDATED_UTC': datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc)}
+    inputs = {"current_stream_state": {}, "latest_record": {"DATE_UPDATED_UTC": "2021-01-01T00:00:00Z"}}
+    expected_state = {"DATE_UPDATED_UTC": datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc)}
     assert stream.get_updated_state(**inputs) == expected_state
 
 

@@ -13,37 +13,12 @@
     {
       "stream": {
         "name": "users",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "USER_ID": { "type": ["integer", "null"] },
-            "CONTACT_ID": { "type": ["integer", "null"] },
-            "FIRST_NAME": { "type": ["string", "null"] },
-            "LAST_NAME": { "type": ["string", "null"] },
-            "TIMEZONE_ID": { "type": ["string", "null"] },
-            "EMAIL_ADDRESS": { "type": ["string", "null"] },
-            "EMAIL_DROPBOX_IDENTIFIER": { "type": ["string", "null"] },
-            "EMAIL_DROPBOX_ADDRESS": { "type": ["string", "null"] },
-            "ADMINISTRATOR": { "type": ["boolean", "null"] },
-            "ACCOUNT_OWNER": { "type": ["boolean", "null"] },
-            "ACTIVE": { "type": ["boolean", "null"] },
-            "DATE_CREATED_UTC": { "type": ["string", "null"] },
-            "DATE_UPDATED_UTC": { "type": ["string", "null"] },
-            "USER_CURRENCY": { "type": ["string", "null"] },
-            "CONTACT_DISPLAY": { "type": ["string", "null"] },
-            "CONTACT_ORDER": { "type": ["string", "null"] },
-            "TASK_WEEK_START": { "type": ["integer", "null"] },
-            "INSTANCE_ID": { "type": ["integer", "null"] },
-            "PROFILE_ID": { "type": ["integer", "null"] },
-            "ROLE_ID": { "type": ["integer", "null"] }
-          },
+        "json_schema": {},
           "supported_sync_modes": ["full_refresh", "incremental"],
           "source_defined_cursor": true,
           "default_cursor_field": ["DATE_UPDATED_UTC"],
           "source_defined_primary_key": [["user_id"]]
-        }
-      },
+        },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
     }

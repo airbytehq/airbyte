@@ -43,7 +43,7 @@ def test_check_connection(mocker):
 def test_check_connection_fail(mocker):
     source = SourceInsightly()
     logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock)[0] == False
+    assert source.check_connection(logger_mock, config_mock)[0] is False
     assert source.check_connection(logger_mock, config_mock)[1] is not None
 
 

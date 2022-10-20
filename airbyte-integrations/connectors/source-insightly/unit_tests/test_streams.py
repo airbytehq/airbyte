@@ -6,10 +6,11 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_insightly.source import InsightlyStream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from source_insightly.source import InsightlyStream
 
 authenticator = BasicHttpAuthenticator(username="test", password="")
+
 
 @pytest.fixture
 def patch_base_class(mocker):
@@ -22,14 +23,16 @@ def patch_base_class(mocker):
 def test_request_params(patch_base_class):
     stream = InsightlyStream(authenticator=authenticator)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {'count_total': True, 'skip': 0, 'top': 500}
+    expected_params = {"count_total": True, "skip": 0, "top": 500}
     assert stream.request_params(**inputs) == expected_params
+
 
 def test_request_param_with_next_page_token(patch_base_class):
     stream = InsightlyStream(authenticator=authenticator)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": 1000}
-    expected_params = {'count_total': True, 'skip': 1000, 'top': 500}
+    expected_params = {"count_total": True, "skip": 1000, "top": 500}
     assert stream.request_params(**inputs) == expected_params
+
 
 def test_next_page_token(patch_base_class):
     stream = InsightlyStream(authenticator=authenticator)
@@ -45,6 +48,7 @@ def test_next_page_token(patch_base_class):
     expected_token = 500
     assert stream.next_page_token(**inputs) == expected_token
 
+
 def test_next_page_token_last_records(patch_base_class):
     stream = InsightlyStream(authenticator=authenticator)
     stream.total_count = 2100
@@ -58,6 +62,7 @@ def test_next_page_token_last_records(patch_base_class):
     inputs = {"response": response}
     expected_token = 2000
     assert stream.next_page_token(**inputs) == expected_token
+
 
 def test_next_page_token_no_more_records(patch_base_class):
     stream = InsightlyStream(authenticator=authenticator)
@@ -88,7 +93,7 @@ def test_parse_response(patch_base_class):
 def test_request_headers(patch_base_class):
     stream = InsightlyStream(authenticator=authenticator)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {'Accept': 'application/json'}
+    expected_headers = {"Accept": "application/json"}
     assert stream.request_headers(**inputs) == expected_headers
 
 
