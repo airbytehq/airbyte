@@ -12,7 +12,7 @@ jobs:
         with:
           fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
 
-      - name: Extract git-dif change file
+      - name: Extract git-diff change file
         run: |
           git diff --name-only remotes/origin/master...HEAD -- airbyte-integrations/ > ./changed_files.txt
         id: extract_changed_files
