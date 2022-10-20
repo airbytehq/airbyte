@@ -7,7 +7,6 @@ jobs:
   report-affected-connectors:
     name: "Report affected connectors"
     runs-on: ubuntu-latest
-    if: ! github.event.pull_request.head.repo.fork  # don't run on PRs coming from forks
     steps:
       - uses: actions/checkout@v3
         with:
