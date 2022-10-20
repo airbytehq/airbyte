@@ -210,9 +210,9 @@
   "onboarding.fetchingSchema": "We are fetching the schema of your data source. \nThis should take less than a minute, but may take a few minutes on slow internet connections or data sources with a large amount of tables.",
   "onboarding.tutorial": "Check how you can sync PostgreSQL databases in minutes",
   "onboarding.skipOnboarding": "Skip Onboarding",
-  "onboarding.welcome": "Welcome to Airbyte!",
+  "onboarding.welcome": "ETL built for ecommerce",
   "onboarding.welcomeUser": "Welcome to Airbyte, {name}!",
-  "onboarding.welcomeUser.text": "<b>Your path to syncing your data starts here.</b>Connections are automated data pipelines that replicate data from a source to a destination.  ",
+  "onboarding.welcomeUser.text": "You can get your first data pipeline running in 3 simple steps. \nRest assure, we will guide you through the setup.   ",
   "onboarding.or": "or",
   "onboarding.watchVideo": "Watch the 2-min demo video",
   "onboarding.exploreDemo": "Explore our demo app with test data",
@@ -383,9 +383,13 @@
   "tables.sourceAdd": "add source",
   "tables.destinationAdd": "add destination",
   "tables.lastSync": "Last Sync",
+  "tables.lastSyncAt": "Last sync at",
   "tables.sourceConnectionToName": "Destination name",
   "tables.destinationConnectionToName": "Source name",
+  "tables.source": "Destination",
+  "tables.destination": "Source",
   "tables.frequency": "Frequency",
+  "tables.status": "Status",
   "tables.enabled": "Enabled",
   "tables.disabled": "Disabled",
   "tables.sourceConnectWithNum": "{num} destinations",
@@ -539,5 +543,9 @@
   "airbyte.datatype.untyped": "Untyped",
   "airbyte.datatype.union": "Union",
   "airbyte.datatype.unknown": "Unknown",
-  "airbyte.datatype.boolean": "Boolean"
+  "airbyte.datatype.boolean": "Boolean",
+
+  "sidebar.DaspireLogo": "Daspire",
+  "sidebar.DaspireDashboard": "Dashboard",
+  "sidebar.DaspireSetting": "Settings"
 }
