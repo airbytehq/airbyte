@@ -75,35 +75,6 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     }
 
-//    for (CSVRecord record : csvParser) {
-//      for (int i = 0; i < record.size(); i++) {
-//        System.out.println("At " + i + ": " + record.get(i));
-//      }
-//    }
-
-//    try (CSVReader reader = new CSVReader(new FileReader(SAMPLE_CSV_FILE))) {
-//      List<String[]> r = reader.readAll();
-//      r.forEach(x -> System.out.println(Arrays.toString(x)));
-//    }
-  }
-//    FileWriter out = new FileWriter("book.csv");
-//    try {
-//      (CSVPrinter printer = new CSVPrinter(out, CSVFormat.DEFAULT
-//              .withDelimiter(input)
-//              .withHeader(HEADERS))){
-//        AUTHOR_BOOK_MAP.forEach((author, title) -> {
-//          printer.printRecord(author, title);
-//        });
-//        return out;
-//      }
-//    }
-//    Reader in = new FileReader(out);
-//    Iterable<CSVRecord> records = CSVFormat.DEFAULT
-//      .withHeader(HEADERS)
-//      .withFirstRecordAsHeader()
-//      .parse(in);
-
-
   // todo (cgardens) - it would be great if we could find a configuration here that failed. the
   // commented out one fails in mac but not on the linux box that the github action runs in. instead
   // we override the test here so it never runs.
