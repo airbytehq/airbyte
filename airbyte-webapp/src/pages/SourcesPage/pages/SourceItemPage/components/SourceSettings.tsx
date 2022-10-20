@@ -1,8 +1,6 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 
-import DeleteBlock from "components/DeleteBlock";
-
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -57,6 +55,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
   return (
     <div className={styles.content}>
       <ConnectorCard
+        onDelete={onDelete}
         formId={formId}
         title={<FormattedMessage id="sources.sourceSettings" />}
         isEditMode
@@ -70,7 +69,6 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
         }}
         selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       />
-      <DeleteBlock type="source" onDelete={onDelete} />
     </div>
   );
 };

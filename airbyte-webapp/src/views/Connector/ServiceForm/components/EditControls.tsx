@@ -4,6 +4,7 @@ import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
 
+import { useDeleteModal } from "../../../../components/DeleteBlock/useDeleteModal";
 import { useServiceForm } from "../serviceFormContext";
 import styles from "./EditControls.module.scss";
 import { TestingConnectionError } from "./TestingConnectionError";
@@ -18,6 +19,7 @@ const Controls = styled.div`
 `;
 
 interface IProps {
+  onDelete?: () => Promise<unknown>;
   formType: "source" | "destination";
   isSubmitting: boolean;
   isValid: boolean;
@@ -41,7 +43,9 @@ const EditControls: React.FC<IProps> = ({
   successMessage,
   errorMessage,
   onCancelTesting,
+  onDelete,
 }) => {
+  const { onDeleteButtonClick } = useDeleteModal({ type: formType, onDelete });
   const { unfinishedFlows } = useServiceForm();
 
   if (isSubmitting) {
@@ -62,25 +66,34 @@ const EditControls: React.FC<IProps> = ({
     <>
       {renderStatusMessage()}
       <Controls>
-        <div className={styles.buttonsContainer}>
-          <Button type="submit" disabled={isSubmitting || !dirty || Object.keys(unfinishedFlows).length > 0}>
-            <FormattedMessage id="form.saveChangesAndTest" />
-          </Button>
-          <Button
-            className={styles.cancelButton}
-            type="button"
-            variant="secondary"
-            disabled={isSubmitting || !dirty}
-            onClick={onCancelClick}
-          >
-            <FormattedMessage id="form.cancel" />
-          </Button>
-        </div>
-        {onRetestClick && (
-          <Button type="button" onClick={onRetestClick} disabled={!isValid}>
-            <FormattedMessage id={`form.${formType}Retest`} />
+        {onDelete && (
+          <Button variant="danger" onClick={onDeleteButtonClick} data-id="open-delete-modal">
+            <FormattedMessage id={`tables.${formType}Delete`} />
           </Button>
         )}
+        <div className={styles.buttonsContainer}>
+          {dirty && (
+            <>
+              <Button type="submit" disabled={isSubmitting || !dirty || Object.keys(unfinishedFlows).length > 0}>
+                <FormattedMessage id="form.saveChangesAndTest" />
+              </Button>
+              <Button
+                className={styles.cancelButton}
+                type="button"
+                variant="secondary"
+                disabled={isSubmitting || !dirty}
+                onClick={onCancelClick}
+              >
+                <FormattedMessage id="form.cancel" />
+              </Button>
+            </>
+          )}
+          {!dirty && onRetestClick && (
+            <Button type="button" onClick={onRetestClick} disabled={!isValid}>
+              <FormattedMessage id={`form.${formType}Retest`} />
+            </Button>
+          )}
+        </div>
       </Controls>
     </>
   );

@@ -9,13 +9,12 @@ import { FormChangeTracker } from "components/FormChangeTracker";
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { isDestinationDefinitionSpecification } from "core/domain/connector/destination";
 import { isSourceDefinition, isSourceDefinitionSpecification } from "core/domain/connector/source";
-import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
-import { CheckConnectionRead } from "core/request/AirbyteClient";
+import { FormBlock } from "core/form/types";
 import { isDefined } from "utils/common";
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { FormRoot } from "./FormRoot";
-import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
+import { useServiceForm } from "./serviceFormContext";
 import { ServiceFormValues } from "./types";
 import { usePatchFormik } from "./useBuildForm";
 
@@ -103,51 +102,33 @@ const SetDefaultName: React.FC = () => {
 };
 
 export interface ServiceFormProps {
-  formType: "source" | "destination";
   formId?: string;
   availableServices: ConnectorDefinition[];
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   onServiceSelect?: (id: string) => void;
   onSubmit: (values: ServiceFormValues) => Promise<void> | void;
-  isLoading?: boolean;
   isEditMode?: boolean;
   formValues?: Partial<ServiceFormValues>;
   hasSuccess?: boolean;
   fetchingConnectorError?: Error | null;
-  errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   initialValues: ServiceFormValues;
   formFields: FormBlock;
   validationSchema: AnySchema;
-  getValues: <T = unknown>(values: ServiceFormValues<T>) => ServiceFormValues<T>;
-  uiWidgetsInfo: WidgetConfigMap;
-  setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
-  resetUiWidgetsInfo: () => void;
   jsonSchema: JSONSchema7;
   isTestConnectionInProgress?: boolean;
-  onStopTesting?: () => void;
-  testConnector?: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
 }
 
 export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const {
     availableServices,
-    errorMessage,
     formFields,
     formId,
-    formType,
-    getValues,
     initialValues,
     isEditMode,
-    isLoading,
     isTestConnectionInProgress,
     jsonSchema,
-    onStopTesting,
-    resetUiWidgetsInfo,
     selectedConnectorDefinitionSpecification,
-    setUiWidgetsInfo,
-    testConnector,
-    uiWidgetsInfo,
     validationSchema,
   } = props;
   const { dirty } = useFormikContext();
@@ -178,32 +159,13 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   }, [availableServices, selectedConnectorDefinitionSpecification, setDocumentationPanelOpen, setDocumentationUrl]);
 
   return (
-    <ServiceFormContextProvider
-      widgetsInfo={uiWidgetsInfo}
-      getValues={getValues}
-      setUiWidgetsInfo={setUiWidgetsInfo}
-      resetUiWidgetsInfo={resetUiWidgetsInfo}
-      formType={formType}
-      selectedConnector={selectedConnectorDefinitionSpecification}
-      availableServices={availableServices}
-      isEditMode={isEditMode}
-      isLoadingSchema={isLoading}
-      validationSchema={validationSchema}
-    >
+    <>
       {!isEditMode && <SetDefaultName />}
       <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
       <FormikPatch />
       <FormChangeTracker changed={dirty} formId={formId} />
       <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
-      <FormRoot
-        {...props}
-        errorMessage={errorMessage}
-        isTestConnectionInProgress={isTestConnectionInProgress}
-        onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
-        onRetest={testConnector ? async () => await testConnector() : undefined}
-        formFields={formFields}
-        selectedConnector={selectedConnectorDefinitionSpecification}
-      />
-    </ServiceFormContextProvider>
+      <FormRoot {...props} isTestConnectionInProgress={isTestConnectionInProgress} formFields={formFields} />
+    </>
   );
 };

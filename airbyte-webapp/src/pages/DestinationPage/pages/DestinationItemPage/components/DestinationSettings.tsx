@@ -1,8 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import DeleteBlock from "components/DeleteBlock";
-
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector } from "core/domain/connector";
 import { DestinationRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
@@ -64,11 +62,11 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
           ...currentDestination,
           serviceType: Connector.id(destinationDefinition),
         }}
+        onDelete={onDelete}
         connector={currentDestination}
         selectedConnectorDefinitionSpecification={destinationSpecification}
         title={<FormattedMessage id="destination.destinationSettings" />}
       />
-      <DeleteBlock type="destination" onDelete={onDelete} />
     </div>
   );
 };
