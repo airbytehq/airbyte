@@ -7,6 +7,9 @@ This script cleans up an earlier load test. It reads from cleanup files that the
 in order to determine which IDs to delete.
 comment
 
+echo "Sourcing environment variables from .env"
+source .env
+
 cd "$(dirname "$0")"
 source load_test_utils.sh
 
