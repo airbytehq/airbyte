@@ -10,6 +10,7 @@ import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_
 import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
 
 import datadog.trace.api.Trace;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -111,12 +112,16 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.airbyteApiClient = airbyteApiClient;
   }
 
+  // Marking task queue as nullable because we changed activity signature; thus runs started before
+  // this new change will have taskQueue set to null. We should remove it after the old runs are all
+  // finished in next release.
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
                                       final IntegrationLauncherConfig sourceLauncherConfig,
                                       final IntegrationLauncherConfig destinationLauncherConfig,
-                                      final StandardSyncInput syncInput) {
+                                      final StandardSyncInput syncInput,
+                                      @Nullable final String taskQueue) {
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
         destinationLauncherConfig.getDockerImage(), SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
     final ActivityExecutionContext context = Activity.getExecutionContext();
@@ -161,7 +166,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   new CancellationHandler.TemporalCancellationHandler(context),
                   airbyteApiClient,
                   airbyteVersion,
-                  () -> context);
+                  () -> context,
+                  Optional.ofNullable(taskQueue));
 
           final ReplicationOutput attemptOutput = temporalAttempt.get();
           final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
