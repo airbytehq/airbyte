@@ -37,7 +37,7 @@ def setup_responses():
     }
     responses.add(
         responses.GET,
-        "https://murky-swan-635.convex.cloud/api/egress-0.1.0/json_schemas?deltaSchema=true",
+        "https://murky-swan-635.convex.cloud/api/json_schemas?deltaSchema=true",
         json=sample_shapes_resp,
     )
 

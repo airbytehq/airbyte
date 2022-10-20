@@ -78,11 +78,6 @@ def test_request_headers(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     assert stream.request_headers(**inputs) == {}
-    stream._snapshot_cursor_value = 1234
-    stream._delta_cursor_value = 3000
-    assert stream.request_headers(**inputs) == {"cursor": 1234}
-    stream._snapshot_has_more = False
-    assert stream.request_headers(**inputs) == {"cursor": 3000}
 
 
 def test_http_method(patch_base_class):
