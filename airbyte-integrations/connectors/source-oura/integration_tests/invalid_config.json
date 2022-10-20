@@ -1,3 +1,7 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_key": "INVALID_API_KEY",
+  "start_date": "2022-01-01",
+  "end_date": "2022-10-31",
+  "start_datetime": "2022-10-19T21:12:25Z",
+  "end_datetime": "2022-10-31T23:59:59Z"
 }

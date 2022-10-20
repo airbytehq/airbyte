@@ -82,7 +82,7 @@ definitions:
     $ref: "*ref(definitions.date_stream)"
     $options:
       name: "sessions"
-      primary_key: "start_timestamp"
+      primary_key: "start_datetime"
       path: "/session"
   sleep_periods_stream:
     $ref: "*ref(definitions.date_stream)"

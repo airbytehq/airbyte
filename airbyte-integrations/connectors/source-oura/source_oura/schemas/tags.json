@@ -3,20 +3,20 @@
   "type": "object",
   "properties": {
     "day": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date"
     },
     "text": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "timestamp": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "tags": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     }
   }

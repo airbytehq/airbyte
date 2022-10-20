@@ -3,31 +3,31 @@
   "type": "object",
   "properties": {
     "activity": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "calories": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "day": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date"
     },
     "distance": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "end_datetime": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "intensity": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "label": {},
     "source": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "start_datetime": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     }
   }

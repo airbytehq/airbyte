@@ -6,37 +6,37 @@
       "type": "object",
       "properties": {
         "deep_sleep": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "efficiency": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "latency": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "rem_sleep": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "restfulness": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "timing": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "total_sleep": {
-          "type": "number"
+          "type": ["number", "null"]
         }
       }
     },
     "day": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date"
     },
     "score": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "timestamp": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     }
   }

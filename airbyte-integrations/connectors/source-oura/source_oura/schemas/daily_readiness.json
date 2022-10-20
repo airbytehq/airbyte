@@ -6,44 +6,44 @@
       "type": "object",
       "properties": {
         "activity_balance": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "body_temperature": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "hrv_balance": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "previous_day_activity": {},
         "previous_night": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "recovery_index": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "resting_heart_rate": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "sleep_balance": {
-          "type": "number"
+          "type": ["number", "null"]
         }
       }
     },
     "day": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date"
     },
     "score": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "temperature_deviation": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "temperature_trend_deviation": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "timestamp": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     }
   }

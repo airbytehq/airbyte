@@ -3,13 +3,13 @@
   "type": "object",
   "properties": {
     "bpm": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "source": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "timestamp": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     }
   }

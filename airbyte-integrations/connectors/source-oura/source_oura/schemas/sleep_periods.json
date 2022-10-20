@@ -3,49 +3,49 @@
   "type": "object",
   "properties": {
     "average_breath": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "average_heart_rate": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "average_hrv": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "awake_time": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "bedtime_end": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "bedtime_start": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "day": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date"
     },
     "deep_sleep_duration": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "efficiency": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "heart_rate": {
       "type": "object",
       "properties": {
         "interval": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "items": {
           "type": "array",
           "items": {
-            "type": "number"
+            "type": ["number", "null"]
           }
         },
         "timestamp": {
-          "type": "string",
+          "type": ["string", "null"],
           "format": "date-time"
         }
       }
@@ -54,59 +54,59 @@
       "type": "object",
       "properties": {
         "interval": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "items": {
           "type": "array",
           "items": {
-            "type": "number"
+            "type": ["number", "null"]
           }
         },
         "timestamp": {
-          "type": "string",
+          "type": ["string", "null"],
           "format": "date-time"
         }
       }
     },
     "latency": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "light_sleep_duration": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "low_battery_alert": {
       "type": "boolean"
     },
     "lowest_heart_rate": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "movement_30_sec": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "period": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "readiness_score_delta": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "rem_sleep_duration": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "restless_periods": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "sleep_phase_5_min": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "sleep_score_delta": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "time_in_bed": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "total_sleep_duration": {},
     "type": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }

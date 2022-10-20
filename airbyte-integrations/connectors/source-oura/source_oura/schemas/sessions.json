@@ -3,19 +3,19 @@
   "type": "object",
   "properties": {
     "day": {
-      "type": "string",
+      "type": ["string", "null"],
       "format" : "date"
     },
     "start_datetime": {
-      "type": "string",
+      "type": ["string", "null"],
       "format" : "date-time"
     },
     "end_datetime": {
-      "type": "string",
+      "type": ["string", "null"],
       "format" : "date-time"
     },
     "type": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "heart_rate": {},
     "heart_rate_variability": {},
@@ -24,16 +24,16 @@
       "type": "object",
       "properties": {
         "interval": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "items": {
           "type": "array",
           "items": {
-            "type": "number"
+            "type": ["number", "null"]
           }
         },
         "timestamp": {
-          "type": "string",
+          "type": ["string", "null"],
           "format": "date-time"
         }
       }
