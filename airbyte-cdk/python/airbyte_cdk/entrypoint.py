@@ -13,7 +13,7 @@ from typing import Iterable, List
 
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, FailureType, Status, Type
+from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
