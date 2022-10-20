@@ -16,6 +16,7 @@ class ConnectorBuilderService extends AirbyteRequestService {
   public readStream(body: StreamReadRequestBody): Promise<StreamRead> {
     // TODO: uncomment this once there is a real API to call
     // return readStream(body, this.requestOptions);
+    console.log(`Received readStream body: ${JSON.stringify(body)}`);
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
       return {
         slices: [
@@ -54,6 +55,7 @@ class ConnectorBuilderService extends AirbyteRequestService {
   public listStreams(body: StreamsListRequestBody): Promise<StreamsListRead> {
     // TODO: uncomment this once there is a real API to call
     // return listStreams(body, this.requestOptions);
+    console.log(`Received listStreams body: ${JSON.stringify(body)}`);
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
       return {
         streams: [
@@ -101,4 +103,10 @@ export const useReadStream = (params: StreamReadRequestBody) => {
   return useSuspenseQuery(connectorBuilderKeys.read(params.stream, params.connectorDefinition, params.config), () =>
     service.readStream(params)
   );
+};
+
+export const useListStreams = (params: StreamsListRequestBody) => {
+  const service = useConnectorBuilderService();
+
+  return useSuspenseQuery(connectorBuilderKeys.list(params.connectorDefinition), () => service.listStreams(params));
 };

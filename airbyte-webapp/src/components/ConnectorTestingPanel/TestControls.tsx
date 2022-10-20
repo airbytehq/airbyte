@@ -4,18 +4,21 @@ import { RotateIcon } from "components/icons/RotateIcon";
 import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
+import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
+
 import styles from "./TestControls.module.scss";
 
 interface TestControlsProps {
-  url: string;
   onClickTest: () => void;
 }
 
-export const TestControls: React.FC<TestControlsProps> = ({ url, onClickTest }) => {
+export const TestControls: React.FC<TestControlsProps> = ({ onClickTest }) => {
+  const { selectedStream } = useConnectorBuilderState();
+
   return (
     <div className={styles.container}>
       <div className={styles.urlDisplay}>
-        <Text size="lg">{url}</Text>
+        <Text size="lg">{selectedStream.url}</Text>
       </div>
       <Button
         className={styles.testButton}

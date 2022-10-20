@@ -1,24 +1,15 @@
-import { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectorTestingPanel } from "components/ConnectorTestingPanel";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 import { YamlEditor } from "components/YamlEditor";
 
+import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
+
 import styles from "./ConnectorBuilderPage.module.scss";
 
 export const ConnectorBuilderPage: React.FC = () => {
-  const urlBase = "https://my.url.api.com";
-  const streams = [
-    { name: "Customers", url: `${urlBase}/customers` },
-    { name: "Users", url: `${urlBase}/users` },
-    { name: "Applications", url: `${urlBase}/applications` },
-  ];
-  const [selectedStream, setSelectedStream] = useState(streams[0].name);
-
-  const handleStreamSelection = (selectedStreamName: string) => {
-    setSelectedStream(selectedStreamName);
-  };
+  const { selectedStream } = useConnectorBuilderState();
 
   return (
     <ResizablePanels
@@ -28,14 +19,8 @@ export const ConnectorBuilderPage: React.FC = () => {
         className: styles.leftPanel,
       }}
       rightPanel={{
-        children: (
-          <ConnectorTestingPanel
-            streams={streams}
-            selectedStream={selectedStream}
-            onStreamSelect={handleStreamSelection}
-          />
-        ),
-        smallWidthHeader: <span>{selectedStream}</span>,
+        children: <ConnectorTestingPanel />,
+        smallWidthHeader: <span>{selectedStream.name}</span>,
         showPanel: true,
         className: styles.rightPanel,
         startingFlex: 0.33,

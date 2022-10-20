@@ -1,37 +1,26 @@
-import { useState } from "react";
-import { useDebounce, useLocalStorage } from "react-use";
-
 import { CodeEditor } from "components/ui/CodeEditor";
+
+import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
 
 import { ConfigMenu } from "./ConfigMenu";
 import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
-import { template } from "./YamlTemplate";
 
 export const YamlEditor: React.FC = () => {
-  const [locallyStoredEditorValue, setLocallyStoredEditorValue] = useLocalStorage<string>(
-    "connectorBuilderEditorContent",
-    template
-  );
-  const [editorValue, setEditorValue] = useState(locallyStoredEditorValue ?? "");
-  useDebounce(() => setLocallyStoredEditorValue(editorValue), 500, [editorValue]);
-
-  const handleEditorChange = (value: string | undefined) => {
-    setEditorValue(value ?? "");
-  };
+  const { yamlDefinition, setYamlDefinition } = useConnectorBuilderState();
 
   return (
     <div className={styles.container}>
       <div className={styles.control}>
-        <DownloadYamlButton className={styles.downloadButton} yaml={editorValue} />
+        <DownloadYamlButton className={styles.downloadButton} yaml={yamlDefinition} />
         <ConfigMenu className={styles.configMenuButton} />
       </div>
       <div className={styles.editorContainer}>
         <CodeEditor
-          value={editorValue}
+          value={yamlDefinition}
           language="yaml"
           theme="airbyte"
-          onChange={handleEditorChange}
+          onChange={(value: string | undefined) => setYamlDefinition(value ?? "")}
           lineNumberCharacterWidth={6}
         />
       </div>

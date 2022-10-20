@@ -164,7 +164,7 @@ components:
       required:
         - connectorDefinition
       properties:
-        definition:
+        connectorDefinition:
           type: object
           description: The config-based connector definition contents
           # $ref: "#/components/schemas/ConnectorDefinitionBody"
