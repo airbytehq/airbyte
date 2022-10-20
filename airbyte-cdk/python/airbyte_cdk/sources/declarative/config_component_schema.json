@@ -46,7 +46,7 @@
         },
         "name": {
           "type": "string",
-          "default": "<property object at 0x1079b3c20>"
+          "default": "<property object at 0x1064298a0>"
         },
         "_name": {
           "type": "string",
@@ -73,7 +73,7 @@
               "type": "string"
             }
           ],
-          "default": "<property object at 0x1078f1590>"
+          "default": "<property object at 0x106429760>"
         },
         "_primary_key": {
           "type": "string",
@@ -81,16 +81,27 @@
         },
         "stream_cursor_field": {
           "anyOf": [
-            { "type": "array", "items": { "type": "string" } },
-            { "type": "string" }
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
           ]
         },
         "transformations": {
           "type": "array",
           "items": {
             "anyOf": [
-              { "$ref": "#/definitions/AddFields" },
-              { "$ref": "#/definitions/RemoveFields" }
+              {
+                "$ref": "#/definitions/AddFields"
+              },
+              {
+                "$ref": "#/definitions/RemoveFields"
+              }
             ]
           }
         },
@@ -111,8 +122,12 @@
           "properties": {
             "file_path": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "config": {
@@ -158,7 +173,7 @@
             },
             "name": {
               "type": "string",
-              "default": "<property object at 0x1078f1630>"
+              "default": "<property object at 0x106406f20>"
             },
             "_name": {
               "type": "string",
@@ -185,7 +200,7 @@
                   "type": "string"
                 }
               ],
-              "default": "<property object at 0x10799fbd0>"
+              "default": "<property object at 0x1064073d0>"
             },
             "_primary_key": {
               "type": "string",
@@ -193,8 +208,12 @@
             },
             "paginator": {
               "anyOf": [
-                { "$ref": "#/definitions/LimitPaginator" },
-                { "$ref": "#/definitions/NoPagination" }
+                {
+                  "$ref": "#/definitions/DefaultPaginator"
+                },
+                {
+                  "$ref": "#/definitions/NoPagination"
+                }
               ]
             },
             "stream_slicer": {
@@ -236,14 +255,22 @@
             },
             "url_base": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "path": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "config": {
@@ -285,8 +312,12 @@
             },
             "error_handler": {
               "anyOf": [
-                { "$ref": "#/definitions/CompositeErrorHandler" },
-                { "$ref": "#/definitions/DefaultErrorHandler" }
+                {
+                  "$ref": "#/definitions/CompositeErrorHandler"
+                },
+                {
+                  "$ref": "#/definitions/DefaultErrorHandler"
+                }
               ]
             }
           }
@@ -310,36 +341,52 @@
               "anyOf": [
                 {
                   "type": "object",
-                  "additionalProperties": { "type": "string" }
+                  "additionalProperties": {
+                    "type": "string"
+                  }
                 },
-                { "type": "string" }
+                {
+                  "type": "string"
+                }
               ]
             },
             "request_headers": {
               "anyOf": [
                 {
                   "type": "object",
-                  "additionalProperties": { "type": "string" }
+                  "additionalProperties": {
+                    "type": "string"
+                  }
                 },
-                { "type": "string" }
+                {
+                  "type": "string"
+                }
               ]
             },
             "request_body_data": {
               "anyOf": [
                 {
                   "type": "object",
-                  "additionalProperties": { "type": "string" }
+                  "additionalProperties": {
+                    "type": "string"
+                  }
                 },
-                { "type": "string" }
+                {
+                  "type": "string"
+                }
               ]
             },
             "request_body_json": {
               "anyOf": [
                 {
                   "type": "object",
-                  "additionalProperties": { "type": "string" }
+                  "additionalProperties": {
+                    "type": "string"
+                  }
                 },
-                { "type": "string" }
+                {
+                  "type": "string"
+                }
               ]
             }
           }
@@ -354,10 +401,15 @@
     },
     "NoAuth": {
       "allOf": [
-        { "$ref": "#/definitions/DeclarativeAuthenticator" },
-        { "type": "object", "properties": {} }
+        {
+          "$ref": "#/definitions/DeclarativeAuthenticator"
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
       ],
-      "description": "NoAuth()"
+      "description": "NoAuth(options: dataclasses.InitVar[typing.Mapping[str, typing.Any]])"
     },
     "DeclarativeAuthenticator": {
       "type": "object",
@@ -381,26 +433,42 @@
           "properties": {
             "token_refresh_endpoint": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "client_id": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "client_secret": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "refresh_token": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "config": {
@@ -414,22 +482,34 @@
             },
             "token_expiry_date": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "_token_expiry_date": {},
             "access_token_name": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ],
               "default": "access_token"
             },
             "expires_in_name": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ],
               "default": "expires_in"
             },
@@ -452,14 +532,22 @@
           "properties": {
             "header": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "api_token": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "config": {
@@ -481,8 +569,12 @@
           "properties": {
             "api_token": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "config": {
@@ -504,8 +596,12 @@
           "properties": {
             "username": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "config": {
@@ -513,8 +609,12 @@
             },
             "password": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ],
               "default": ""
             }
@@ -536,15 +636,19 @@
               "type": "array",
               "items": {
                 "anyOf": [
-                  { "$ref": "#/definitions/CompositeErrorHandler" },
-                  { "$ref": "#/definitions/DefaultErrorHandler" }
+                  {
+                    "$ref": "#/definitions/CompositeErrorHandler"
+                  },
+                  {
+                    "$ref": "#/definitions/DefaultErrorHandler"
+                  }
                 ]
               }
             }
           }
         }
       ],
-      "description": "\n    Error handler that sequentially iterates over a list of `ErrorHandler`s\n\n    Sample config chaining 2 different retriers:\n        error_handler:\n          type: \"CompositeErrorHandler\"\n          error_handlers:\n            - response_filters:\n                - predicate: \"{{ 'codase' in response }}\"\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoffStrategy\"\n                  backoff_time_in_seconds: 5\n            - response_filters:\n                - http_codes: [403]\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoffStrategy\"\n                  backoff_time_in_seconds: 10\n    Attributes:\n        error_handlers (List[ErrorHandler]): list of error handlers\n    "
+      "description": "\n    Error handler that sequentially iterates over a list of `ErrorHandler`s\n\n    Sample config chaining 2 different retriers:\n        error_handler:\n          type: \"CompositeErrorHandler\"\n          error_handlers:\n            - response_filters:\n                - predicate: \"{{ 'codase' in response }}\"\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoff\"\n                  backoff_time_in_seconds: 5\n            - response_filters:\n                - http_codes: [ 403 ]\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoff\"\n                  backoff_time_in_seconds: 10\n    Attributes:\n        error_handlers (List[ErrorHandler]): list of error handlers\n    "
     },
     "DefaultErrorHandler": {
       "allOf": [
@@ -562,7 +666,7 @@
             },
             "max_retries": {
               "type": "integer",
-              "default": "<property object at 0x107957540>"
+              "default": "<property object at 0x1063ca2f0>"
             },
             "_max_retries": {
               "type": "integer",
@@ -573,16 +677,16 @@
               "items": {
                 "anyOf": [
                   {
-                    "$ref": "#/definitions/ConstantBackoffStrategy"
+                    "$ref": "#/definitions/ConstantBackoff"
                   },
                   {
-                    "$ref": "#/definitions/ExponentialBackoffStrategy"
+                    "$ref": "#/definitions/ExponentialBackoff"
                   },
                   {
-                    "$ref": "#/definitions/WaitTimeFromHeaderBackoffStrategy"
+                    "$ref": "#/definitions/WaitTimeFromHeader"
                   },
                   {
-                    "$ref": "#/definitions/WaitUntilTimeFromHeaderBackoffStrategy"
+                    "$ref": "#/definitions/WaitUntilTimeFromHeader"
                   }
                 ]
               }
@@ -590,7 +694,7 @@
           }
         }
       ],
-      "description": "\n    Default error handler.\n\n    By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.\n\n    If the response is successful, then return SUCCESS\n    Otherwise, iterate over the response_filters.\n    If any of the filter match the response, then return the appropriate status.\n    If the match is RETRY, then iterate sequentially over the backoff_strategies and return the first non-None backoff time.\n\n    Sample configs:\n\n    1. retry 10 times\n    `\n        error_handler:\n          max_retries: 10\n    `\n    2. backoff for 5 seconds\n    `\n        error_handler:\n          backoff_strategies:\n            - type: \"ConstantBackoffStrategy\"\n              backoff_time_in_seconds: 5\n    `\n    3. retry on HTTP 404\n    `\n        error_handler:\n          response_filters:\n            - http_codes: [404]\n              action: RETRY\n    `\n    4. ignore HTTP 404\n    `\n      error_handler:\n        - http_codes: [404]\n          action: IGNORE\n    `\n    5. retry if error message contains `retrythisrequest!` substring\n    `\n        error_handler:\n          response_filters:\n            - error_message_contain: \"retrythisrequest!\"\n              action: IGNORE\n    `\n    6. retry if 'code' is a field present in the response body\n    `\n        error_handler:\n          response_filters:\n            - predicate: \"{{ 'code' in response }}\"\n              action: IGNORE\n    `\n\n    7. ignore 429 and retry on 404\n    `\n        error_handler:\n        - http_codes: [429]\n          action: IGNORE\n        - http_codes: [404]\n          action: RETRY\n    `\n\n    Attributes:\n        response_filters (Optional[List[HttpResponseFilter]]): response filters to iterate on\n        max_retries (Optional[int]): maximum retry attempts\n        backoff_strategies (Optional[List[BackoffStrategy]]): list of backoff strategies to use to determine how long\n        to wait before retrying\n    "
+      "description": "\n    Default error handler.\n\n    By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.\n\n    If the response is successful, then return SUCCESS\n    Otherwise, iterate over the response_filters.\n    If any of the filter match the response, then return the appropriate status.\n    If the match is RETRY, then iterate sequentially over the backoff_strategies and return the first non-None backoff time.\n\n    Sample configs:\n\n    1. retry 10 times\n    `\n        error_handler:\n          max_retries: 10\n    `\n    2. backoff for 5 seconds\n    `\n        error_handler:\n          backoff_strategies:\n            - type: \"ConstantBackoff\"\n              backoff_time_in_seconds: 5\n    `\n    3. retry on HTTP 404\n    `\n        error_handler:\n          response_filters:\n            - http_codes: [ 404 ]\n              action: RETRY\n    `\n    4. ignore HTTP 404\n    `\n      error_handler:\n        - http_codes: [ 404 ]\n          action: IGNORE\n    `\n    5. retry if error message contains `retrythisrequest!` substring\n    `\n        error_handler:\n          response_filters:\n            - error_message_contain: \"retrythisrequest!\"\n              action: IGNORE\n    `\n    6. retry if 'code' is a field present in the response body\n    `\n        error_handler:\n          response_filters:\n            - predicate: \"{{ 'code' in response }}\"\n              action: IGNORE\n    `\n\n    7. ignore 429 and retry on 404\n    `\n        error_handler:\n        - http_codes: [ 429 ]\n          action: IGNORE\n        - http_codes: [ 404 ]\n          action: RETRY\n    `\n\n    Attributes:\n        response_filters (Optional[List[HttpResponseFilter]]): response filters to iterate on\n        max_retries (Optional[int]): maximum retry attempts\n        backoff_strategies (Optional[List[BackoffStrategy]]): list of backoff strategies to use to determine how long\n        to wait before retrying\n    "
     },
     "HttpResponseFilter": {
       "type": "object",
@@ -619,8 +723,12 @@
         },
         "predicate": {
           "anyOf": [
-            { "$ref": "#/definitions/InterpolatedBoolean" },
-            { "type": "string" }
+            {
+              "$ref": "#/definitions/InterpolatedBoolean"
+            },
+            {
+              "type": "string"
+            }
           ],
           "default": ""
         }
@@ -637,7 +745,7 @@
       },
       "description": "InterpolatedBoolean(condition: str, options: dataclasses.InitVar[typing.Mapping[str, typing.Any]])"
     },
-    "ConstantBackoffStrategy": {
+    "ConstantBackoff": {
       "allOf": [
         {
           "$ref": "#/definitions/BackoffStrategy"
@@ -659,17 +767,24 @@
       "properties": {},
       "description": "\n    Backoff strategy defining how long to wait before retrying a request that resulted in an error.\n    "
     },
-    "ExponentialBackoffStrategy": {
+    "ExponentialBackoff": {
       "allOf": [
-        { "$ref": "#/definitions/BackoffStrategy" },
+        {
+          "$ref": "#/definitions/BackoffStrategy"
+        },
         {
           "type": "object",
-          "properties": { "factor": { "type": "number", "default": 5 } }
+          "properties": {
+            "factor": {
+              "type": "number",
+              "default": 5
+            }
+          }
         }
       ],
       "description": "\n    Backoff strategy with an exponential backoff interval\n\n    Attributes:\n        factor (float): multiplicative factor\n    "
     },
-    "WaitTimeFromHeaderBackoffStrategy": {
+    "WaitTimeFromHeader": {
       "allOf": [
         {
           "$ref": "#/definitions/BackoffStrategy"
@@ -689,7 +804,7 @@
       ],
       "description": "\n    Extract wait time from http header\n\n    Attributes:\n        header (str): header to read wait time from\n        regex (Optional[str]): optional regex to apply on the header to extract its value\n    "
     },
-    "WaitUntilTimeFromHeaderBackoffStrategy": {
+    "WaitUntilTimeFromHeader": {
       "allOf": [
         {
           "$ref": "#/definitions/BackoffStrategy"
@@ -719,8 +834,13 @@
     },
     "Requester": {
       "allOf": [
-        { "$ref": "#/definitions/RequestOptionsProvider" },
-        { "type": "object", "properties": {} }
+        {
+          "$ref": "#/definitions/RequestOptionsProvider"
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
       ]
     },
     "RecordSelector": {
@@ -756,8 +876,12 @@
               "type": "array",
               "items": {
                 "anyOf": [
-                  { "$ref": "#/definitions/InterpolatedString" },
-                  { "type": "string" }
+                  {
+                    "$ref": "#/definitions/InterpolatedString"
+                  },
+                  {
+                    "type": "string"
+                  }
                 ]
               }
             },
@@ -775,8 +899,13 @@
     },
     "JsonDecoder": {
       "allOf": [
-        { "$ref": "#/definitions/Decoder" },
-        { "type": "object", "properties": {} }
+        {
+          "$ref": "#/definitions/Decoder"
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
       ],
       "description": "\n    Decoder strategy that returns the json-encoded content of a response, if any.\n    "
     },
@@ -809,7 +938,7 @@
       "properties": {},
       "description": "\n    Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering\n    records based on a heuristic.\n    "
     },
-    "LimitPaginator": {
+    "DefaultPaginator": {
       "allOf": [
         {
           "$ref": "#/definitions/Paginator"
@@ -817,18 +946,13 @@
         {
           "type": "object",
           "required": [
-            "page_size",
-            "limit_option",
             "page_token_option",
             "pagination_strategy",
             "config",
             "url_base"
           ],
           "properties": {
-            "page_size": {
-              "type": "integer"
-            },
-            "limit_option": {
+            "page_size_option": {
               "$ref": "#/definitions/RequestOption"
             },
             "page_token_option": {
@@ -852,8 +976,12 @@
             },
             "url_base": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "decoder": {
@@ -864,7 +992,7 @@
           }
         }
       ],
-      "description": "\n    Limit paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token\n\n    Examples:\n        1.\n        * fetches up to 10 records at a time by setting the \"limit\" request param to 10\n        * updates the request path with  \"{{ response._metadata.next }}\"\n          paginator:\n            type: \"LimitPaginator\"\n            page_size: 10\n            limit_option:\n              inject_into: request_parameter\n              field_name: page_size\n            page_token_option:\n              option_type: path\n            pagination_strategy:\n              type: \"CursorPagination\"\n              cursor_value: \"{{ response._metadata.next }}\"\n        `\n\n        2.\n        * fetches up to 5 records at a time by setting the \"page_size\" header to 5\n        * increments a record counter and set the request parameter \"offset\" to the value of the counter\n        `\n          paginator:\n            type: \"LimitPaginator\"\n            page_size: 5\n            limit_option:\n              inject_into: header\n              field_name: page_size\n            pagination_strategy:\n              type: \"OffsetIncrement\"\n            page_token:\n              option_type: \"request_parameter\"\n              field_name: \"offset\"\n        `\n\n        3.\n        * fetches up to 5 records at a time by setting the \"page_size\" request param to 5\n        * increments a page counter and set the request parameter \"page\" to the value of the counter\n        `\n          paginator:\n            type: \"LimitPaginator\"\n            page_size: 5\n            limit_option:\n              inject_into: request_parameter\n              field_name: page_size\n            pagination_strategy:\n              type: \"PageIncrement\"\n            page_token:\n              option_type: \"request_parameter\"\n              field_name: \"page\"\n\n    Attributes:\n        page_size (int): the number of records to request\n        limit_option (RequestOption): the request option to set the limit. Cannot be injected in the path.\n        page_token_option (RequestOption): the request option to set the page token\n        pagination_strategy (PaginationStrategy): Strategy defining how to get the next page token\n        config (Config): connection config\n        url_base (Union[InterpolatedString, str]): endpoint's base url\n        decoder (Decoder): decoder to decode the response\n    "
+      "description": "\n    Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token\n\n    Examples:\n        1.\n        * fetches up to 10 records at a time by setting the \"limit\" request param to 10\n        * updates the request path with  \"{{ response._metadata.next }}\"\n        ```\n          paginator:\n            type: \"DefaultPaginator\"\n            page_size_option:\n              inject_into: request_parameter\n              field_name: limit\n            page_token_option:\n              option_type: path\n            pagination_strategy:\n              type: \"CursorPagination\"\n              cursor_value: \"{{ response._metadata.next }}\"\n              page_size: 10\n        ```\n\n        2.\n        * fetches up to 5 records at a time by setting the \"page_size\" header to 5\n        * increments a record counter and set the request parameter \"offset\" to the value of the counter\n        ```\n          paginator:\n            type: \"DefaultPaginator\"\n            page_size_option:\n              inject_into: header\n              field_name: page_size\n            pagination_strategy:\n              type: \"OffsetIncrement\"\n              page_size: 5\n            page_token:\n              option_type: \"request_parameter\"\n              field_name: \"offset\"\n        ```\n\n        3.\n        * fetches up to 5 records at a time by setting the \"page_size\" request param to 5\n        * increments a page counter and set the request parameter \"page\" to the value of the counter\n        ```\n          paginator:\n            type: \"DefaultPaginator\"\n            page_size_option:\n              inject_into: request_parameter\n              field_name: page_size\n            pagination_strategy:\n              type: \"PageIncrement\"\n              page_size: 5\n            page_token_option:\n              option_type: \"request_parameter\"\n              field_name: \"page\"\n        ```\n    Attributes:\n        page_size_option (Optional[RequestOption]): the request option to set the page size. Cannot be injected in the path.\n        page_token_option (RequestOption): the request option to set the page token\n        pagination_strategy (PaginationStrategy): Strategy defining how to get the next page token\n        config (Config): connection config\n        url_base (Union[InterpolatedString, str]): endpoint's base url\n        decoder (Decoder): decoder to decode the response\n    "
     },
     "RequestOption": {
       "type": "object",
@@ -897,17 +1025,28 @@
           "properties": {
             "cursor_value": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "config": {
               "type": "object"
             },
+            "page_size": {
+              "type": "integer"
+            },
             "stop_condition": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedBoolean" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedBoolean"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "decoder": {
@@ -917,7 +1056,7 @@
           }
         }
       ],
-      "description": "\n    Pagination strategy that evaluates an interpolated string to define the next page token\n\n    Attributes:\n        cursor_value (Union[InterpolatedString, str]): template string evaluating to the cursor value\n        config (Config): connection config\n        stop_condition (Optional[InterpolatedBoolean]): template string evaluating when to stop paginating\n        decoder (Decoder): decoder to decode the response\n    "
+      "description": "\n    Pagination strategy that evaluates an interpolated string to define the next page token\n\n    Attributes:\n        page_size (Optional[int]): the number of records to request\n        cursor_value (Union[InterpolatedString, str]): template string evaluating to the cursor value\n        config (Config): connection config\n        stop_condition (Optional[InterpolatedBoolean]): template string evaluating when to stop paginating\n        decoder (Decoder): decoder to decode the response\n    "
     },
     "PaginationStrategy": {
       "type": "object",
@@ -960,15 +1099,25 @@
     },
     "Paginator": {
       "allOf": [
-        { "$ref": "#/definitions/RequestOptionsProvider" },
-        { "type": "object", "properties": {} }
+        {
+          "$ref": "#/definitions/RequestOptionsProvider"
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
       ],
       "description": "\n    Defines the token to use to fetch the next page of records from the API.\n\n    If needed, the Paginator will set request options to be set on the HTTP request to fetch the next page of records.\n    If the next_page_token is the path to the next page of records, then it should be accessed through the `path` method\n    "
     },
     "NoPagination": {
       "allOf": [
-        { "$ref": "#/definitions/Paginator" },
-        { "type": "object", "properties": {} }
+        {
+          "$ref": "#/definitions/Paginator"
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
       ],
       "description": "\n    Pagination implementation that never returns a next page.\n    "
     },
@@ -1026,14 +1175,22 @@
           "properties": {
             "start_datetime": {
               "anyOf": [
-                { "$ref": "#/definitions/MinMaxDatetime" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/MinMaxDatetime"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "end_datetime": {
               "anyOf": [
-                { "$ref": "#/definitions/MinMaxDatetime" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/MinMaxDatetime"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "step": {
@@ -1041,8 +1198,12 @@
             },
             "cursor_field": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "datetime_format": {
@@ -1071,8 +1232,12 @@
             },
             "lookback_window": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             }
           }
@@ -1086,13 +1251,17 @@
       "properties": {
         "datetime": {
           "anyOf": [
-            { "$ref": "#/definitions/InterpolatedString" },
-            { "type": "string" }
+            {
+              "$ref": "#/definitions/InterpolatedString"
+            },
+            {
+              "type": "string"
+            }
           ]
         },
         "datetime_format": {
           "type": "string",
-          "default": "<property object at 0x10798fea0>"
+          "default": "<property object at 0x106404ef0>"
         },
         "_datetime_format": {
           "type": "string",
@@ -1100,15 +1269,23 @@
         },
         "min_datetime": {
           "anyOf": [
-            { "$ref": "#/definitions/InterpolatedString" },
-            { "type": "string" }
+            {
+              "$ref": "#/definitions/InterpolatedString"
+            },
+            {
+              "type": "string"
+            }
           ],
           "default": ""
         },
         "max_datetime": {
           "anyOf": [
-            { "$ref": "#/definitions/InterpolatedString" },
-            { "type": "string" }
+            {
+              "$ref": "#/definitions/InterpolatedString"
+            },
+            {
+              "type": "string"
+            }
           ],
           "default": ""
         }
@@ -1117,8 +1294,13 @@
     },
     "StreamSlicer": {
       "allOf": [
-        { "$ref": "#/definitions/RequestOptionsProvider" },
-        { "type": "object", "properties": {} }
+        {
+          "$ref": "#/definitions/RequestOptionsProvider"
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
       ],
       "description": "\n    Slices the stream into a subset of records.\n    Slices enable state checkpointing and data retrieval parallelization.\n\n    The stream slicer keeps track of the cursor state as a dict of cursor_field -> cursor_value\n\n    See the stream slicing section of the docs for more information.\n    "
     },
@@ -1133,14 +1315,25 @@
           "properties": {
             "slice_values": {
               "anyOf": [
-                { "type": "array", "items": { "type": "string" } },
-                { "type": "string" }
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "cursor_field": {
               "anyOf": [
-                { "$ref": "#/definitions/InterpolatedString" },
-                { "type": "string" }
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
               ]
             },
             "config": {
@@ -1156,8 +1349,13 @@
     },
     "SingleSlice": {
       "allOf": [
-        { "$ref": "#/definitions/StreamSlicer" },
-        { "type": "object", "properties": {} }
+        {
+          "$ref": "#/definitions/StreamSlicer"
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
       ],
       "description": "Stream slicer returning only a single stream slice"
     },
@@ -1242,8 +1440,12 @@
         },
         "value": {
           "anyOf": [
-            { "$ref": "#/definitions/InterpolatedString" },
-            { "type": "string" }
+            {
+              "$ref": "#/definitions/InterpolatedString"
+            },
+            {
+              "type": "string"
+            }
           ]
         }
       },

@@ -3,10 +3,11 @@ plugins {
 }
 dependencies {
     implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-commons-worker')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-workers')
+    implementation project(':airbyte-commons-worker')
 
     implementation(enforcedPlatform('org.junit:junit-bom:5.8.2'))
     implementation 'org.junit.jupiter:junit-jupiter-api'

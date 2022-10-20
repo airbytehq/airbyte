@@ -3,12 +3,14 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, Cell, Header, Switch } from "components";
+import { Cell, Header } from "components";
+import { Button } from "components/ui/Button";
+import { Switch } from "components/ui/Switch";
 
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchemaToField } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
-import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
@@ -55,7 +57,7 @@ export const BulkHeader: React.FC = () => {
   const {
     destDefinition: { supportedDestinationSyncModes },
   } = useConnectionFormService();
-  const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEdit();
+  const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEditService();
 
   const availableSyncModes = useMemo(
     () =>

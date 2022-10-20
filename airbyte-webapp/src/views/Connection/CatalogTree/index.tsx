@@ -1,3 +1,1 @@
-import CatalogTree from "./CatalogTree";
-
-export default CatalogTree;
+export { CatalogTree } from "./CatalogTree";

@@ -60,7 +60,11 @@ import io.airbyte.api.client.model.generated.JobListRequestBody;
 import io.airbyte.api.client.model.generated.JobRead;
 import io.airbyte.api.client.model.generated.JobStatus;
 import io.airbyte.api.client.model.generated.JobWithAttemptsRead;
+import io.airbyte.api.client.model.generated.OperationCreate;
 import io.airbyte.api.client.model.generated.OperationRead;
+import io.airbyte.api.client.model.generated.OperatorConfiguration;
+import io.airbyte.api.client.model.generated.OperatorType;
+import io.airbyte.api.client.model.generated.OperatorWebhook;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
@@ -71,6 +75,9 @@ import io.airbyte.api.client.model.generated.StreamDescriptor;
 import io.airbyte.api.client.model.generated.StreamState;
 import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
+import io.airbyte.api.client.model.generated.WebhookConfigWrite;
+import io.airbyte.api.client.model.generated.WorkspaceRead;
+import io.airbyte.api.client.model.generated.WorkspaceUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.db.Database;
@@ -409,21 +416,7 @@ class BasicAcceptanceTests {
         testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.BASIC,
             BASIC_SCHEDULE_DATA).getConnectionId();
 
-    // Retry for up to 5 minutes.
-    int i;
-    for (i = 0; i < MAX_SCHEDULED_JOB_RETRIES; i++) {
-      sleep(Duration.ofSeconds(30).toMillis());
-      try {
-        final JobRead jobInfo = testHarness.getMostRecentSyncJobId(connectionId);
-        waitForSuccessfulJob(apiClient.getJobsApi(), jobInfo);
-        break;
-      } catch (Exception e) {
-        LOGGER.info("Something went wrong querying jobs API, retrying...");
-      }
-    }
-    if (i == MAX_SCHEDULED_JOB_RETRIES) {
-      LOGGER.error("Sync job did not complete within 5 minutes");
-    }
+    waitForSuccessfulJobWithRetries(connectionId, MAX_SCHEDULED_JOB_RETRIES);
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
   }
@@ -447,27 +440,56 @@ class BasicAcceptanceTests {
         testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.CRON,
             connectionScheduleData).getConnectionId();
 
-    int i;
-    for (i = 0; i < MAX_SCHEDULED_JOB_RETRIES; i++) {
-      sleep(Duration.ofSeconds(30).toMillis());
-      try {
-        final JobRead jobInfo = testHarness.getMostRecentSyncJobId(connectionId);
-        waitForSuccessfulJob(apiClient.getJobsApi(), jobInfo);
-        break;
-      } catch (Exception e) {
-        LOGGER.info("Something went wrong querying jobs API, retrying...");
-      }
-    }
-
-    if (i == MAX_SCHEDULED_JOB_RETRIES) {
-      LOGGER.error("Sync job did not complete within 5 minutes");
-    }
+    waitForSuccessfulJobWithRetries(connectionId, MAX_SCHEDULED_JOB_RETRIES);
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
     apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // remove connection to avoid exception during tear down
     testHarness.removeConnection(connectionId);
+  }
+
+  @Test
+  @Order(19)
+  void testWebhookOperationExecutesSuccessfully() throws Exception {
+    // create workspace webhook config
+    final WorkspaceRead workspaceRead = apiClient.getWorkspaceApi().updateWorkspace(
+        new WorkspaceUpdate().workspaceId(workspaceId).addWebhookConfigsItem(
+            new WebhookConfigWrite().name("reqres test")));
+    // create a webhook operation
+    final OperationRead operationRead = apiClient.getOperationApi().createOperation(new OperationCreate()
+        .workspaceId(workspaceId)
+        .name("reqres test")
+        .operatorConfiguration(new OperatorConfiguration()
+            .operatorType(OperatorType.WEBHOOK)
+            .webhook(new OperatorWebhook()
+                .webhookConfigId(workspaceRead.getWebhookConfigs().get(0).getId())
+                // NOTE: reqres.in is free service that hosts a REST API intended for testing frontend/client code.
+                // We use it here as an endpoint that will accept an HTTP POST.
+                .executionUrl("https://reqres.in/api/users")
+                .executionBody("{\"name\": \"morpheus\", \"job\": \"leader\"}"))));
+    // create a connection with the new operation.
+    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
+    // NOTE: this is a normalization operation.
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+        testHarness.createConnection(
+            TEST_CONNECTION, sourceId, destinationId, List.of(operationId, operationRead.getOperationId()), catalog, ConnectionScheduleType.MANUAL,
+            null)
+            .getConnectionId();
+    // run the sync
+    apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJobWithRetries(connectionId, MAX_SCHEDULED_JOB_RETRIES);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
+    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    // remove connection to avoid exception during tear down
+    testHarness.removeConnection(connectionId);
+    // TODO(mfsiega-airbyte): add webhook info to the jobs api to verify the webhook execution status.
   }
 
   @Test
@@ -925,7 +947,7 @@ class BasicAcceptanceTests {
 
     // sync one more time. verify it is the equivalent of a full refresh.
     final String expectedState =
-        "{\"cursor\":\"6\",\"stream_name\":\"id_and_name\",\"cursor_field\":[\"id\"],\"stream_namespace\":\"public\"}";
+        "{\"cursor\":\"6\",\"stream_name\":\"id_and_name\",\"cursor_field\":[\"id\"],\"stream_namespace\":\"public\",\"cursor_record_count\":1}";
     LOGGER.info("Starting {} sync 3", testInfo.getDisplayName());
     final JobInfoRead connectionSyncRead3 =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -1410,6 +1432,31 @@ class BasicAcceptanceTests {
       mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
     }
     return mostRecentSyncJob;
+  }
+
+  /**
+   * Waits for the given connection to finish, waiting at 30s intervals, until maxRetries is reached.
+   *
+   * @param connectionId the connection to wait for
+   * @param maxRetries the number of times to retry
+   * @throws InterruptedException
+   */
+  private void waitForSuccessfulJobWithRetries(final UUID connectionId, int maxRetries) throws InterruptedException {
+    int i;
+    for (i = 0; i < maxRetries; i++) {
+      try {
+        final JobRead jobInfo = testHarness.getMostRecentSyncJobId(connectionId);
+        waitForSuccessfulJob(apiClient.getJobsApi(), jobInfo);
+        break;
+      } catch (Exception e) {
+        LOGGER.info("Something went wrong querying jobs API, retrying...");
+      }
+      sleep(Duration.ofSeconds(30).toMillis());
+    }
+
+    if (i == maxRetries) {
+      LOGGER.error("Sync job did not complete within 5 minutes");
+    }
   }
 
   // This test is disabled because it takes a couple of minutes to run, as it is testing timeouts.

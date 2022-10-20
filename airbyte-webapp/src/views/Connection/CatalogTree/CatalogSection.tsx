@@ -2,12 +2,12 @@ import { FormikErrors, getIn } from "formik";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 
-import { DropDownRow } from "components";
+import { DropDownOptionDataItem } from "components/ui/DropDown";
 
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
 import { useDestinationNamespace } from "hooks/connection/useDestinationNamespace";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
@@ -44,6 +44,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const {
     destDefinition: { supportedDestinationSyncModes },
   } = useConnectionFormService();
+  const { mode } = useConnectionFormService();
 
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
@@ -54,7 +55,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   );
 
   const onSelectSyncMode = useCallback(
-    (data: DropDownRow.IDataItem) => updateStreamWithConfig(data.value),
+    (data: DropDownOptionDataItem) => updateStreamWithConfig(data.value),
     [updateStreamWithConfig]
   );
 
@@ -107,10 +108,11 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     [stream?.supportedSyncModes, supportedDestinationSyncModes]
   );
 
-  const destNamespace = useDestinationNamespace({
-    namespaceDefinition,
-    namespaceFormat,
-  });
+  const destNamespace =
+    useDestinationNamespace({
+      namespaceDefinition,
+      namespaceFormat,
+    }) ?? "";
 
   const fields = useMemo(() => {
     const traversedFields = traverseSchemaToField(stream?.jsonSchema, stream?.name);
@@ -125,31 +127,36 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     [flattenedFields]
   );
 
+  const destName = prefix + (streamNode.stream?.name ?? "");
   const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
   const hasError = configErrors && Object.keys(configErrors).length > 0;
-  const hasChildren = fields && fields.length > 0;
+  const pkType = getPathType(pkRequired, shouldDefinePk);
+  const cursorType = getPathType(cursorRequired, shouldDefineCursor);
+  const hasFields = fields?.length > 0;
+  const disabled = mode === "readonly";
 
   return (
     <div className={styles.catalogSection}>
       <StreamHeader
         stream={streamNode}
-        destNamespace={destNamespace ?? ""}
-        destName={prefix + (streamNode.stream?.name ?? "")}
+        destNamespace={destNamespace}
+        destName={destName}
         availableSyncModes={availableSyncModes}
         onSelectStream={onSelectStream}
         onSelectSyncMode={onSelectSyncMode}
         isRowExpanded={isRowExpanded}
         primitiveFields={primitiveFields}
-        pkType={getPathType(pkRequired, shouldDefinePk)}
+        pkType={pkType}
         onPrimaryKeyChange={onPkUpdate}
-        cursorType={getPathType(cursorRequired, shouldDefineCursor)}
+        cursorType={cursorType}
         onCursorChange={onCursorSelect}
-        hasFields={hasChildren}
+        fields={fields}
         onExpand={onExpand}
         changedSelected={changedSelected}
         hasError={hasError}
+        disabled={disabled}
       />
-      {isRowExpanded && hasChildren && (
+      {isRowExpanded && hasFields && (
         <div className={styles.streamFieldTableContainer}>
           <StreamFieldTable
             config={config}

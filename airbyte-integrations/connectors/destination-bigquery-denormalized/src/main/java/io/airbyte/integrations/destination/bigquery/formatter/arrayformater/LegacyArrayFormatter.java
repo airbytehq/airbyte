@@ -5,13 +5,15 @@
 package io.airbyte.integrations.destination.bigquery.formatter.arrayformater;
 
 import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.PROPERTIES_FIELD;
-import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.TYPE_FIELD;
+import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.ARRAY_ITEMS_FIELD;
+import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.NESTED_ARRAY_FIELD;
+import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.TYPE_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,21 +39,7 @@ public class LegacyArrayFormatter extends DefaultArrayFormatter {
   protected List<JsonNode> findArrays(final JsonNode node) {
     if (node != null) {
       return node.findParents(TYPE_FIELD).stream()
-          .filter(
-              jsonNode -> {
-                final JsonNode type = jsonNode.get(TYPE_FIELD);
-                if (type.isArray()) {
-                  final ArrayNode typeNode = (ArrayNode) type;
-                  for (final JsonNode arrayTypeNode : typeNode) {
-                    if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array")) {
-                      return true;
-                    }
-                  }
-                } else if (type.isTextual()) {
-                  return jsonNode.asText().equals("array");
-                }
-                return false;
-              })
+          .filter(FormatterUtil::isAirbyteArray)
           .collect(Collectors.toList());
     } else {
       return Collections.emptyList();
