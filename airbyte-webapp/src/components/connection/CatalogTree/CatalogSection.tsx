@@ -6,17 +6,17 @@ import { DropDownOptionDataItem } from "components/ui/DropDown";
 
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
-import { useDestinationNamespace } from "hooks/connection/useDestinationNamespace";
-import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { equal, naturalComparatorBy } from "utils/objects";
-import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
-
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
   NamespaceDefinitionType,
   SyncMode,
-} from "../../../core/request/AirbyteClient";
+} from "core/request/AirbyteClient";
+import { useDestinationNamespace } from "hooks/connection/useDestinationNamespace";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { equal, naturalComparatorBy } from "utils/objects";
+import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
+
 import styles from "./CatalogSection.module.scss";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";

@@ -14,11 +14,11 @@ import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
-import { Arrow as ArrowBlock } from "./components/Arrow";
-import { IndexerType, PathPopout } from "./components/PathPopout";
-import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
+import { Arrow as ArrowBlock } from "./Arrow";
+import { IndexerType, PathPopout } from "./PathPopout";
 import styles from "./StreamHeader.module.scss";
 import { ArrowCell, HeaderCell } from "./styles";
+import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
 
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
