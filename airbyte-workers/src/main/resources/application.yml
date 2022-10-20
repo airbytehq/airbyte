@@ -196,7 +196,7 @@ airbyte:
     docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
     root: ${WORKSPACE_ROOT}
 
-data-dog:
+datadog:
   agent:
     host: ${DD_AGENT_HOST:}
     port: ${DD_DOGSTATSD_PORT:}
