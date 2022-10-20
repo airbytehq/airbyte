@@ -22,10 +22,11 @@ def test_request_params(patch_base_class):
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     expected_params = {"tableName": "messages"}
     assert stream.request_params(**inputs) == expected_params
-    inputs = {"stream_slice": None, "stream_state": {"_ts": 1234}, "next_page_token": None}
+    stream._snapshot_cursor_value = 1234
     expected_params = {"tableName": "messages", "cursor": 1234}
     assert stream.request_params(**inputs) == expected_params
-    inputs = {"stream_slice": None, "stream_state": {"_ts": 1234}, "next_page_token": {"_ts": 2345}}
+    stream._snapshot_has_more = False
+    stream._delta_cursor_value = 2345
     expected_params = {"tableName": "messages", "cursor": 2345}
     assert stream.request_params(**inputs) == expected_params
 
@@ -33,28 +34,55 @@ def test_request_params(patch_base_class):
 def test_next_page_token(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     resp = MagicMock()
-    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 123}], "cursor": 1234, "hasMore": True}
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 123}], "cursor": 1234, "snapshot": 5000, "hasMore": True}
     stream.parse_response(resp, {})
-    assert stream.next_page_token(resp) == {"_ts": 1234}
-    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 1235, "hasMore": False}
+    assert stream.next_page_token(resp) == {
+        "snapshot_cursor": 1234,
+        "snapshot_has_more": True,
+        "delta_cursor": 5000,
+        "delta_has_more": True,
+    }
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 1235, "snapshot": 5000, "hasMore": False}
+    stream.parse_response(resp, {})
+    assert stream.next_page_token(resp) == {
+        "snapshot_cursor": 1235,
+        "snapshot_has_more": False,
+        "delta_cursor": 5000,
+        "delta_has_more": True,
+    }
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 6000, "hasMore": True}
+    stream.parse_response(resp, {})
+    assert stream.next_page_token(resp) == {
+        "snapshot_cursor": 1235,
+        "snapshot_has_more": False,
+        "delta_cursor": 6000,
+        "delta_has_more": True,
+    }
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 7000, "hasMore": False}
     stream.parse_response(resp, {})
     assert stream.next_page_token(resp) is None
+    assert stream.state == {"snapshot_cursor": 1235, "snapshot_has_more": False, "delta_cursor": 7000, "delta_has_more": False}
 
 
 def test_parse_response(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     resp = MagicMock()
-    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1234}], "cursor": 1234, "hasMore": True}
+    resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1234}], "cursor": 1234, "snapshot": 2000, "hasMore": True}
     inputs = {"response": resp, "stream_state": {}}
     expected_parsed_objects = [{"_id": "my_id", "field": "f", "_ts": 1234}]
     assert stream.parse_response(**inputs) == expected_parsed_objects
+    assert stream.state == {"snapshot_cursor": 1234, "snapshot_has_more": True, "delta_cursor": 2000, "delta_has_more": True}
 
 
 def test_request_headers(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
+    assert stream.request_headers(**inputs) == {}
+    stream._snapshot_cursor_value = 1234
+    stream._delta_cursor_value = 3000
+    assert stream.request_headers(**inputs) == {"cursor": 1234}
+    stream._snapshot_has_more = False
+    assert stream.request_headers(**inputs) == {"cursor": 3000}
 
 
 def test_http_method(patch_base_class):

@@ -12,8 +12,6 @@ from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-API_VERSION = "egress-0.1.0"
-
 
 def convex_url_base(instance_name) -> str:
     return f"https://{instance_name}.convex.cloud"
@@ -24,7 +22,7 @@ class SourceConvex(AbstractSource):
     def _json_schemas(self, config) -> requests.Response:
         instance_name = config["instance_name"]
         access_key = config["access_key"]
-        url = f"{convex_url_base(instance_name)}/api/{API_VERSION}/json_schemas?deltaSchema=true"
+        url = f"{convex_url_base(instance_name)}/api/json_schemas?deltaSchema=true"
         headers = {"Authorization": f"Convex {access_key}"}
         return requests.get(url, headers=headers)
 
@@ -72,8 +70,10 @@ class ConvexStream(HttpStream, IncrementalMixin):
         else:
             json_schema = {}
         self.json_schema = json_schema
-        self._cursor_value = None
-        self._has_more = True
+        self._snapshot_cursor_value = None
+        self._snapshot_has_more = True
+        self._delta_cursor_value = None
+        self._delta_has_more = True
         super().__init__(TokenAuthenticator(access_key, "Convex"))
 
     @property
@@ -95,24 +95,32 @@ class ConvexStream(HttpStream, IncrementalMixin):
 
     @property
     def state(self) -> Mapping[str, Any]:
-        if self._cursor_value:
-            return {self.cursor_field: self._cursor_value}
-        else:
-            return {}
+        return {
+            "snapshot_cursor": self._snapshot_cursor_value,
+            "snapshot_has_more": self._snapshot_has_more,
+            "delta_cursor": self._delta_cursor_value,
+            "delta_has_more": self._delta_has_more,
+        }
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value[self.cursor_field]
+        self._snapshot_cursor_value = value["snapshot_cursor"]
+        self._snapshot_has_more = value["snapshot_has_more"]
+        self._delta_cursor_value = value["delta_cursor"]
+        self._delta_has_more = value["delta_has_more"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # Inner level of pagination shares the same state as outer,
         # and returns None to indicate that we're done.
-        return self.state if self._has_more else None
+        return self.state if self._delta_has_more else None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"/api/{API_VERSION}/document_deltas"
+        if self._snapshot_has_more:
+            return "/api/snapshot_list"
+        else:
+            return "/api/document_deltas"
 
     def parse_response(
         self,
@@ -122,8 +130,13 @@ class ConvexStream(HttpStream, IncrementalMixin):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         resp_json = response.json()
-        self._cursor_value = resp_json["cursor"]
-        self._has_more = resp_json["hasMore"]
+        if self._snapshot_has_more:
+            self._snapshot_cursor_value = resp_json["cursor"]
+            self._snapshot_has_more = resp_json["hasMore"]
+            self._delta_cursor_value = resp_json["snapshot"]
+        else:
+            self._delta_cursor_value = resp_json["cursor"]
+            self._delta_has_more = resp_json["hasMore"]
         return resp_json["values"]
 
     def request_params(
@@ -133,10 +146,12 @@ class ConvexStream(HttpStream, IncrementalMixin):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"tableName": self.table_name}
-        if stream_state and self.cursor_field in stream_state:
-            params["cursor"] = stream_state[self.cursor_field]
-        if next_page_token and self.cursor_field in next_page_token:
-            params["cursor"] = next_page_token[self.cursor_field]
+        if self._snapshot_has_more:
+            if self._snapshot_cursor_value:
+                params["cursor"] = self._snapshot_cursor_value
+        else:
+            if self._delta_cursor_value:
+                params["cursor"] = self._delta_cursor_value
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
@@ -156,6 +171,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
             record["_ab_cdc_lsn"] = ts_ns
             # DebeziumEventUtils.CDC_DELETED_AT
             record["_ab_cdc_updated_at"] = ts
+            record["_deleted"] = "_deleted" in record and record["_deleted"]
             # DebeziumEventUtils.CDC_DELETED_AT
-            record["_ab_cdc_deleted_at"] = ts if ("_deleted" in record and record["_deleted"]) else None
+            record["_ab_cdc_deleted_at"] = ts if record["_deleted"] else None
             yield record
