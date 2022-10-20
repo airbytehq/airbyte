@@ -47,7 +47,7 @@ class LinkedinPagesStream(HttpStream, ABC):
                 f"Stream {self.name}: LinkedIn API requests are rate limited. "
                 f"Rate limits specify the maximum number of API calls that can be made in a 24 hour period. "
                 f"These limits reset at midnight UTC every day. "
-                f"You can find more information here https://docs.airbyte.io/integrations/sources/linkedin-pages. "
+                f"You can find more information here https://docs.airbyte.com/integrations/sources/linkedin-pages. "
                 f"Also quotas and usage are here: https://www.linkedin.com/developers/apps."
             )
             self.logger.error(error_message)

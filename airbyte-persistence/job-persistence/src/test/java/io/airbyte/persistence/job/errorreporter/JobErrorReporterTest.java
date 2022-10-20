@@ -259,7 +259,7 @@ class JobErrorReporterTest {
 
     final StandardWorkspace mWorkspace = Mockito.mock(StandardWorkspace.class);
     Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
-    Mockito.when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(mWorkspace);
+    Mockito.when(configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true)).thenReturn(mWorkspace);
 
     jobErrorReporter.reportSourceCheckJobFailure(SOURCE_DEFINITION_ID, WORKSPACE_ID, failureReason, jobContext);
 
@@ -337,7 +337,7 @@ class JobErrorReporterTest {
 
     final StandardWorkspace mWorkspace = Mockito.mock(StandardWorkspace.class);
     Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
-    Mockito.when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(mWorkspace);
+    Mockito.when(configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true)).thenReturn(mWorkspace);
 
     jobErrorReporter.reportDestinationCheckJobFailure(DESTINATION_DEFINITION_ID, WORKSPACE_ID, failureReason, jobContext);
 
@@ -415,7 +415,7 @@ class JobErrorReporterTest {
 
     final StandardWorkspace mWorkspace = Mockito.mock(StandardWorkspace.class);
     Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
-    Mockito.when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(mWorkspace);
+    Mockito.when(configRepository.getStandardWorkspaceNoSecrets(WORKSPACE_ID, true)).thenReturn(mWorkspace);
 
     jobErrorReporter.reportDiscoverJobFailure(SOURCE_DEFINITION_ID, WORKSPACE_ID, failureReason, jobContext);
 
@@ -497,6 +497,38 @@ class JobErrorReporterTest {
 
     Mockito.verify(jobErrorReportingClient).reportJobFailureReason(null, failureReason, SOURCE_DOCKER_IMAGE, expectedMetadata);
     Mockito.verifyNoMoreInteractions(jobErrorReportingClient);
+  }
+
+  @Test
+  void testReportUnsupportedFailureType() {
+    final FailureReason readFailureReason = new FailureReason()
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, READ_COMMAND))
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.CONFIG_ERROR);
+
+    final FailureReason discoverFailureReason = new FailureReason()
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, DISCOVER_COMMAND))
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.MANUAL_CANCELLATION);
+
+    final FailureReason checkFailureReason = new FailureReason()
+        .withMetadata(new Metadata()
+            .withAdditionalProperty(FROM_TRACE_MESSAGE, true)
+            .withAdditionalProperty(CONNECTOR_COMMAND_KEY, CHECK_COMMAND))
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.CONFIG_ERROR);
+
+    final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(JOB_ID, SOURCE_DOCKER_IMAGE);
+
+    jobErrorReporter.reportSpecJobFailure(readFailureReason, jobContext);
+    jobErrorReporter.reportSpecJobFailure(discoverFailureReason, jobContext);
+    jobErrorReporter.reportSpecJobFailure(checkFailureReason, jobContext);
+
+    Mockito.verifyNoInteractions(jobErrorReportingClient);
   }
 
 }

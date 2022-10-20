@@ -103,6 +103,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
           initialValues={initialValues}
           validationSchema={connectionValidationSchema(mode)}
           onSubmit={onFormSubmit}
+          validateOnChange={false}
         >
           {({ values, isSubmitting, isValid, dirty }) => (
             <Form>

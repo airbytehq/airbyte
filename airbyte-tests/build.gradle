@@ -49,7 +49,7 @@ dependencies {
     acceptanceTestsImplementation project(':airbyte-db:db-lib')
     acceptanceTestsImplementation project(':airbyte-tests')
     acceptanceTestsImplementation project(':airbyte-test-utils')
-    acceptanceTestsImplementation project(':airbyte-workers')
+    acceptanceTestsImplementation project(':airbyte-commons-worker')
 
     acceptanceTestsImplementation 'com.fasterxml.jackson.core:jackson-databind'
     acceptanceTestsImplementation 'io.github.cdimascio:java-dotenv:3.0.0'

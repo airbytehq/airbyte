@@ -119,7 +119,7 @@ public class ConfigRepository {
     return true;
   }
 
-  public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
+  public StandardWorkspace getStandardWorkspaceNoSecrets(final UUID workspaceId, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
 
@@ -166,12 +166,21 @@ public class ConfigRepository {
     return workspaces;
   }
 
-  public void writeStandardWorkspace(final StandardWorkspace workspace) throws JsonValidationException, IOException {
+  /**
+   * MUST NOT ACCEPT SECRETS - Should only be called from { @link SecretsRepositoryWriter }
+   *
+   * Write a StandardWorkspace to the database.
+   *
+   * @param workspace - The configuration of the workspace
+   * @throws JsonValidationException - throws is the workspace is invalid
+   * @throws IOException - you never know when you IO
+   */
+  public void writeStandardWorkspaceNoSecrets(final StandardWorkspace workspace) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
   public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = getStandardWorkspace(workflowId, false);
+    final StandardWorkspace workspace = getStandardWorkspaceNoSecrets(workflowId, false);
 
     workspace.setFeedbackDone(true);
 
@@ -181,10 +190,16 @@ public class ConfigRepository {
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
-    return persistence.getConfig(
+    final StandardSourceDefinition sourceDef = persistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceDefinitionId.toString(),
         StandardSourceDefinition.class);
+    // Make sure we have a default version of the Protocol.
+    // This corner case may happen for connectors that haven't been upgraded since we added versioning.
+    if (sourceDef != null) {
+      return sourceDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(sourceDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -209,7 +224,7 @@ public class ConfigRepository {
     try {
       final StandardSync sync = getStandardSync(connectionId);
       final SourceConnection source = getSourceConnection(sync.getSourceId());
-      return getStandardWorkspace(source.getWorkspaceId(), isTombstone);
+      return getStandardWorkspaceNoSecrets(source.getWorkspaceId(), isTombstone);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -293,8 +308,15 @@ public class ConfigRepository {
 
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
-        StandardDestinationDefinition.class);
+    final StandardDestinationDefinition destDef =
+        persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
+            StandardDestinationDefinition.class);
+    // Make sure we have a default version of the Protocol.
+    // This corner case may happen for connectors that haven't been upgraded since we added versioning.
+    if (destDef != null) {
+      return destDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(destDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardDestinationDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {

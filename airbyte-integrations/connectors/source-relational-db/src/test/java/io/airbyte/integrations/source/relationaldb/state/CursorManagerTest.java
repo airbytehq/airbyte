@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.relationaldb.state;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD1;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_FIELD2;
+import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.CURSOR_RECORD_COUNT;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAME_NAMESPACE_PAIR1;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.NAME_NAMESPACE_PAIR2;
 import static io.airbyte.integrations.source.relationaldb.state.StateTestConstants.getCatalog;
@@ -19,6 +20,7 @@ import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -26,16 +28,25 @@ import org.junit.jupiter.api.Test;
  */
 public class CursorManagerTest {
 
+  private static final Function<DbStreamState, Long> CURSOR_RECORD_COUNT_FUNCTION = stream -> {
+    if (stream.getCursorRecordCount() != null) {
+      return stream.getCursorRecordCount();
+    } else {
+      return 0L;
+    }
+  };
+
   @Test
   void testCreateCursorInfoCatalogAndStateSameCursorField() {
     final CursorManager<DbStreamState> cursorManager = createCursorManager(CURSOR_FIELD1, CURSOR, NAME_NAMESPACE_PAIR1);
     final CursorInfo actual = cursorManager.createCursorInfoForStream(
         NAME_NAMESPACE_PAIR1,
-        getState(CURSOR_FIELD1, CURSOR),
+        getState(CURSOR_FIELD1, CURSOR, CURSOR_RECORD_COUNT),
         getStream(CURSOR_FIELD1),
         DbStreamState::getCursor,
-        DbStreamState::getCursorField);
-    assertEquals(new CursorInfo(CURSOR_FIELD1, CURSOR, CURSOR_FIELD1, CURSOR), actual);
+        DbStreamState::getCursorField,
+        CURSOR_RECORD_COUNT_FUNCTION);
+    assertEquals(new CursorInfo(CURSOR_FIELD1, CURSOR, CURSOR_RECORD_COUNT, CURSOR_FIELD1, CURSOR, CURSOR_RECORD_COUNT), actual);
   }
 
   @Test
@@ -46,7 +57,8 @@ public class CursorManagerTest {
         getState(CURSOR_FIELD1, null),
         getStream(CURSOR_FIELD1),
         DbStreamState::getCursor,
-        DbStreamState::getCursorField);
+        DbStreamState::getCursorField,
+        CURSOR_RECORD_COUNT_FUNCTION);
     assertEquals(new CursorInfo(CURSOR_FIELD1, null, CURSOR_FIELD1, null), actual);
   }
 
@@ -58,7 +70,8 @@ public class CursorManagerTest {
         getState(CURSOR_FIELD1, CURSOR),
         getStream(CURSOR_FIELD2),
         DbStreamState::getCursor,
-        DbStreamState::getCursorField);
+        DbStreamState::getCursorField,
+        CURSOR_RECORD_COUNT_FUNCTION);
     assertEquals(new CursorInfo(CURSOR_FIELD1, CURSOR, CURSOR_FIELD2, null), actual);
   }
 
@@ -70,7 +83,8 @@ public class CursorManagerTest {
         Optional.empty(),
         getStream(CURSOR_FIELD1),
         DbStreamState::getCursor,
-        DbStreamState::getCursorField);
+        DbStreamState::getCursorField,
+        CURSOR_RECORD_COUNT_FUNCTION);
     assertEquals(new CursorInfo(null, null, CURSOR_FIELD1, null), actual);
   }
 
@@ -82,7 +96,8 @@ public class CursorManagerTest {
         getState(CURSOR_FIELD1, CURSOR),
         Optional.empty(),
         DbStreamState::getCursor,
-        DbStreamState::getCursorField);
+        DbStreamState::getCursorField,
+        CURSOR_RECORD_COUNT_FUNCTION);
     assertEquals(new CursorInfo(CURSOR_FIELD1, CURSOR, null, null), actual);
   }
 
@@ -95,7 +110,8 @@ public class CursorManagerTest {
         Optional.empty(),
         Optional.empty(),
         DbStreamState::getCursor,
-        DbStreamState::getCursorField);
+        DbStreamState::getCursorField,
+        CURSOR_RECORD_COUNT_FUNCTION);
     assertEquals(new CursorInfo(null, null, null, null), actual);
   }
 
@@ -107,7 +123,8 @@ public class CursorManagerTest {
         getState(CURSOR_FIELD1, CURSOR),
         getStream(null),
         DbStreamState::getCursor,
-        DbStreamState::getCursorField);
+        DbStreamState::getCursorField,
+        CURSOR_RECORD_COUNT_FUNCTION);
     assertEquals(new CursorInfo(CURSOR_FIELD1, CURSOR, null, null), actual);
   }
 
@@ -134,6 +151,7 @@ public class CursorManagerTest {
         () -> Collections.singleton(dbStreamState),
         DbStreamState::getCursor,
         DbStreamState::getCursorField,
+        CURSOR_RECORD_COUNT_FUNCTION,
         s -> nameNamespacePair);
   }
 
