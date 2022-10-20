@@ -108,7 +108,11 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     }
 
     overwrite_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="overwrite_stream", json_schema=stream_schema),
+        stream=AirbyteStream(
+            name="overwrite_stream",
+            json_schema=stream_schema,
+            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+        ),
         sync_mode=SyncMode.full_refresh,
         destination_sync_mode=DestinationSyncMode.overwrite,
     )
