@@ -41,28 +41,28 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  jobs_stream:
+  jobs_stream: # https://workable.readme.io/reference/jobs
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "jobs"
       primary_key: "id"
       path: "/spi/v3/jobs"
       field_pointer: ["jobs"]
-  candidates_stream:
+  candidates_stream: # https://workable.readme.io/reference/job-candidates-index
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "candidates"
       primary_key: "id"
       path: "/spi/v3/candidates"
       field_pointer: ["candidates"]
-  stages_stream:
+  stages_stream: # https://workable.readme.io/reference/stages
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "stages"
       primary_key: "slug"
       path: "/spi/v3/stages"
       field_pointer: ["stages"]
-  recruiters_stream:
+  recruiters_stream: # https://workable.readme.io/reference/recruiters
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "recruiters"
