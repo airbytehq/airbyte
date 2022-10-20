@@ -22,16 +22,16 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         config (Config): The user-provided configuration as specified by the source's spec
         request_parameters (Union[str, Mapping[str, str]]): The request parameters to set on an outgoing HTTP request
         request_headers (Union[str, Mapping[str, str]]): The request headers to set on an outgoing HTTP request
-        request_body_data (Union[str, Mapping[str, str]]): The body data to set on an outgoing HTTP request
-        request_body_json (Union[str, Mapping[str, str]]): The json content to set on an outgoing HTTP request
+        request_body_data (Union[str, Mapping[str, Any]]): The body data to set on an outgoing HTTP request
+        request_body_json (Union[str, Mapping[str, Any]]): The json content to set on an outgoing HTTP request
     """
 
     options: InitVar[Mapping[str, Any]]
     config: Config = field(default_factory=dict)
     request_parameters: Optional[RequestInput] = None
     request_headers: Optional[RequestInput] = None
-    request_body_data: Optional[RequestInput] = None
-    request_body_json: Optional[RequestInput] = None
+    request_body_data: Optional[Mapping[str, Any]] = None
+    request_body_json: Optional[Mapping[str, Any]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         if self.request_parameters is None:
@@ -78,7 +78,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Union[Mapping, str]]:
+    ) -> Optional[Union[Mapping, Any]]:
         return self._body_data_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
 
     def get_request_body_json(

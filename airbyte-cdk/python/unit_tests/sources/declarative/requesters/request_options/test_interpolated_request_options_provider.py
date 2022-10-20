@@ -70,6 +70,11 @@ def test_interpolated_request_json(test_name, input_request_json, expected_reque
     "test_name, input_request_data, expected_request_data",
     [
         ("test_static_map_data", {"a_static_request_param": "a_static_value"}, {"a_static_request_param": "a_static_value"}),
+        (
+            "test_nested_json",
+            {"top_level_field": {"inner_field": "a_static_value"}},
+            {"top_level_field": {"inner_field": "a_static_value"}},
+        ),
         ("test_map_depends_on_stream_slice", {"read_from_slice": "{{ stream_slice['start_date'] }}"}, {"read_from_slice": "2020-01-01"}),
         ("test_map_depends_on_config", {"read_from_config": "{{ config['option'] }}"}, {"read_from_config": "OPTION"}),
         ("test_defaults_to_empty_dict", None, {}),
