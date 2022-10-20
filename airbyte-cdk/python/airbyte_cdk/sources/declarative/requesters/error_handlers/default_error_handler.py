@@ -95,7 +95,7 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
     config: Config
     options: InitVar[Mapping[str, Any]]
     response_filters: Optional[List[HttpResponseFilter]] = None
-    max_retries: Optional[int] = 1
+    max_retries: Optional[int] = 5
     _max_retries: int = field(init=False, repr=False, default=5)
     backoff_strategies: Optional[List[BackoffStrategy]] = None
 
