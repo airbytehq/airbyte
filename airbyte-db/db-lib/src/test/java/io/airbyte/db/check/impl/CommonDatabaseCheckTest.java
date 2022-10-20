@@ -14,7 +14,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 /**
  * Common test setup for database availability check tests.
  */
-abstract class CommonDatabaseCheckTest {
+class CommonDatabaseCheckTest {
+
+  private CommonDatabaseCheckTest() {
+
+  }
 
   protected static final long TIMEOUT_MS = 500L;
 
