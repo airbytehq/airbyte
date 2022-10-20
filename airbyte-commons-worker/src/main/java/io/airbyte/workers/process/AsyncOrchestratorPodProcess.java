@@ -199,7 +199,11 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     final long deadline = System.nanoTime() + remainingNanos;
     do {
-      Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(remainingNanos) + 1, 100));
+      // The remainingNanos bit is about calculating how much time left for the actual timeout.
+      // Most of the time we should be sleeping for 500ms except when we get to the actual timeout.
+      // We are waiting polling every 500ms for status. The trade-off here is between how often
+      // we poll our status storage (GCS) and how reactive we are to detect that a process is done.
+      Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(remainingNanos) + 1, 500));
       if (hasExited())
         return true;
       remainingNanos = deadline - System.nanoTime();

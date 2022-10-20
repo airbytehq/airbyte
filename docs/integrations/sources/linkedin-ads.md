@@ -13,9 +13,9 @@ The LinkedIn Ads source connector is based on a [Airbyte CDK](https://docs.airby
    * OAuth2.0:
       * `Client ID` from your `Developer Application`
       * `Client Secret` from your `Developer Application`
-      * `Refresh Token` obtained from successfull authorization with `Client ID` + `Client Secret`
+      * `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
    * Access Token:
-      * `Access Token` obtained from successfull authorization with `Client ID` + `Client Secret`
+      * `Access Token` obtained from successful authorization with `Client ID` + `Client Secret`
 
 ## Step 1: Set up LinkedIn Ads
 

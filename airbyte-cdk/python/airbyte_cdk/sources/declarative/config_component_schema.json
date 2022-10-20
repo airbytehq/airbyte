@@ -648,7 +648,7 @@
           }
         }
       ],
-      "description": "\n    Error handler that sequentially iterates over a list of `ErrorHandler`s\n\n    Sample config chaining 2 different retriers:\n        error_handler:\n          type: \"CompositeErrorHandler\"\n          error_handlers:\n            - response_filters:\n                - predicate: \"{{ 'codase' in response }}\"\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoffStrategy\"\n                  backoff_time_in_seconds: 5\n            - response_filters:\n                - http_codes: [ 403 ]\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoffStrategy\"\n                  backoff_time_in_seconds: 10\n    Attributes:\n        error_handlers (List[ErrorHandler]): list of error handlers\n    "
+      "description": "\n    Error handler that sequentially iterates over a list of `ErrorHandler`s\n\n    Sample config chaining 2 different retriers:\n        error_handler:\n          type: \"CompositeErrorHandler\"\n          error_handlers:\n            - response_filters:\n                - predicate: \"{{ 'codase' in response }}\"\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoff\"\n                  backoff_time_in_seconds: 5\n            - response_filters:\n                - http_codes: [ 403 ]\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoff\"\n                  backoff_time_in_seconds: 10\n    Attributes:\n        error_handlers (List[ErrorHandler]): list of error handlers\n    "
     },
     "DefaultErrorHandler": {
       "allOf": [
@@ -677,16 +677,16 @@
               "items": {
                 "anyOf": [
                   {
-                    "$ref": "#/definitions/ConstantBackoffStrategy"
+                    "$ref": "#/definitions/ConstantBackoff"
                   },
                   {
-                    "$ref": "#/definitions/ExponentialBackoffStrategy"
+                    "$ref": "#/definitions/ExponentialBackoff"
                   },
                   {
-                    "$ref": "#/definitions/WaitTimeFromHeaderBackoffStrategy"
+                    "$ref": "#/definitions/WaitTimeFromHeader"
                   },
                   {
-                    "$ref": "#/definitions/WaitUntilTimeFromHeaderBackoffStrategy"
+                    "$ref": "#/definitions/WaitUntilTimeFromHeader"
                   }
                 ]
               }
@@ -694,7 +694,7 @@
           }
         }
       ],
-      "description": "\n    Default error handler.\n\n    By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.\n\n    If the response is successful, then return SUCCESS\n    Otherwise, iterate over the response_filters.\n    If any of the filter match the response, then return the appropriate status.\n    If the match is RETRY, then iterate sequentially over the backoff_strategies and return the first non-None backoff time.\n\n    Sample configs:\n\n    1. retry 10 times\n    `\n        error_handler:\n          max_retries: 10\n    `\n    2. backoff for 5 seconds\n    `\n        error_handler:\n          backoff_strategies:\n            - type: \"ConstantBackoffStrategy\"\n              backoff_time_in_seconds: 5\n    `\n    3. retry on HTTP 404\n    `\n        error_handler:\n          response_filters:\n            - http_codes: [ 404 ]\n              action: RETRY\n    `\n    4. ignore HTTP 404\n    `\n      error_handler:\n        - http_codes: [ 404 ]\n          action: IGNORE\n    `\n    5. retry if error message contains `retrythisrequest!` substring\n    `\n        error_handler:\n          response_filters:\n            - error_message_contain: \"retrythisrequest!\"\n              action: IGNORE\n    `\n    6. retry if 'code' is a field present in the response body\n    `\n        error_handler:\n          response_filters:\n            - predicate: \"{{ 'code' in response }}\"\n              action: IGNORE\n    `\n\n    7. ignore 429 and retry on 404\n    `\n        error_handler:\n        - http_codes: [ 429 ]\n          action: IGNORE\n        - http_codes: [ 404 ]\n          action: RETRY\n    `\n\n    Attributes:\n        response_filters (Optional[List[HttpResponseFilter]]): response filters to iterate on\n        max_retries (Optional[int]): maximum retry attempts\n        backoff_strategies (Optional[List[BackoffStrategy]]): list of backoff strategies to use to determine how long\n        to wait before retrying\n    "
+      "description": "\n    Default error handler.\n\n    By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.\n\n    If the response is successful, then return SUCCESS\n    Otherwise, iterate over the response_filters.\n    If any of the filter match the response, then return the appropriate status.\n    If the match is RETRY, then iterate sequentially over the backoff_strategies and return the first non-None backoff time.\n\n    Sample configs:\n\n    1. retry 10 times\n    `\n        error_handler:\n          max_retries: 10\n    `\n    2. backoff for 5 seconds\n    `\n        error_handler:\n          backoff_strategies:\n            - type: \"ConstantBackoff\"\n              backoff_time_in_seconds: 5\n    `\n    3. retry on HTTP 404\n    `\n        error_handler:\n          response_filters:\n            - http_codes: [ 404 ]\n              action: RETRY\n    `\n    4. ignore HTTP 404\n    `\n      error_handler:\n        - http_codes: [ 404 ]\n          action: IGNORE\n    `\n    5. retry if error message contains `retrythisrequest!` substring\n    `\n        error_handler:\n          response_filters:\n            - error_message_contain: \"retrythisrequest!\"\n              action: IGNORE\n    `\n    6. retry if 'code' is a field present in the response body\n    `\n        error_handler:\n          response_filters:\n            - predicate: \"{{ 'code' in response }}\"\n              action: IGNORE\n    `\n\n    7. ignore 429 and retry on 404\n    `\n        error_handler:\n        - http_codes: [ 429 ]\n          action: IGNORE\n        - http_codes: [ 404 ]\n          action: RETRY\n    `\n\n    Attributes:\n        response_filters (Optional[List[HttpResponseFilter]]): response filters to iterate on\n        max_retries (Optional[int]): maximum retry attempts\n        backoff_strategies (Optional[List[BackoffStrategy]]): list of backoff strategies to use to determine how long\n        to wait before retrying\n    "
     },
     "HttpResponseFilter": {
       "type": "object",
@@ -745,7 +745,7 @@
       },
       "description": "InterpolatedBoolean(condition: str, options: dataclasses.InitVar[typing.Mapping[str, typing.Any]])"
     },
-    "ConstantBackoffStrategy": {
+    "ConstantBackoff": {
       "allOf": [
         {
           "$ref": "#/definitions/BackoffStrategy"
@@ -767,7 +767,7 @@
       "properties": {},
       "description": "\n    Backoff strategy defining how long to wait before retrying a request that resulted in an error.\n    "
     },
-    "ExponentialBackoffStrategy": {
+    "ExponentialBackoff": {
       "allOf": [
         {
           "$ref": "#/definitions/BackoffStrategy"
@@ -784,7 +784,7 @@
       ],
       "description": "\n    Backoff strategy with an exponential backoff interval\n\n    Attributes:\n        factor (float): multiplicative factor\n    "
     },
-    "WaitTimeFromHeaderBackoffStrategy": {
+    "WaitTimeFromHeader": {
       "allOf": [
         {
           "$ref": "#/definitions/BackoffStrategy"
@@ -804,7 +804,7 @@
       ],
       "description": "\n    Extract wait time from http header\n\n    Attributes:\n        header (str): header to read wait time from\n        regex (Optional[str]): optional regex to apply on the header to extract its value\n    "
     },
-    "WaitUntilTimeFromHeaderBackoffStrategy": {
+    "WaitUntilTimeFromHeader": {
       "allOf": [
         {
           "$ref": "#/definitions/BackoffStrategy"

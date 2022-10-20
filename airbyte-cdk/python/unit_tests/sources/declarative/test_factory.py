@@ -414,31 +414,31 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         (
             "test_option_in_selector",
             """
-      extractor:
-        type: DpathExtractor
-        field_pointer: ["{{ options['name'] }}"]
-      selector:
-        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-        $options:
-          name: "selector"
-        extractor: "*ref(extractor)"
-    """,
+          extractor:
+            type: DpathExtractor
+            field_pointer: ["{{ options['name'] }}"]
+          selector:
+            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+            $options:
+              name: "selector"
+            extractor: "*ref(extractor)"
+        """,
             "selector",
         ),
         (
             "test_option_in_extractor",
             """
-      extractor:
-        type: DpathExtractor
-        $options:
-          name: "extractor"
-        field_pointer: ["{{ options['name'] }}"]
-      selector:
-        class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-        $options:
-          name: "selector"
-        extractor: "*ref(extractor)"
-    """,
+          extractor:
+            type: DpathExtractor
+            $options:
+              name: "extractor"
+            field_pointer: ["{{ options['name'] }}"]
+          selector:
+            class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+            $options:
+              name: "selector"
+            extractor: "*ref(extractor)"
+        """,
             "extractor",
         ),
     ],
@@ -658,6 +658,37 @@ class TestCreateTransformations:
             class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
             $options:
                 {self.base_options}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "static_value"
+        """
+        config = parser.parse(content)
+
+        factory.create_component(config["the_stream"], input_config, False)
+
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"], value=InterpolatedString(string="static_value", default="static_value", options={}), options={}
+                    )
+                ],
+                options={},
+            )
+        ]
+        assert expected == component.transformations
+
+    def test_add_fields_path_in_options(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            $options:
+                {self.base_options}
+                path: "/wrong_path"
                 transformations:
                     - type: AddFields
                       fields:
