@@ -4,13 +4,10 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
-import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
-import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -42,8 +39,6 @@ import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
-import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
-import io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -66,7 +61,6 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
-import org.jooq.JSONB;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -536,14 +530,12 @@ class ConfigRepositoryE2EReadWriteTest {
           ctx,
           fetchEvent1.getActorId(),
           fetchEvent1.getActorCatalogId(),
-          yesterday
-      );
+          yesterday);
       insertCatalogFetchEvent(
           ctx,
           fetchEvent2.getActorId(),
           fetchEvent2.getActorCatalogId(),
-          now
-      );
+          now);
 
       return null;
     });
