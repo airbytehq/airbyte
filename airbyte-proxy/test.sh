@@ -6,17 +6,19 @@ BASIC_AUTH_USERNAME=airbyte
 BASIC_AUTH_PASSWORD=password
 BASIC_AUTH_UPDATED_PASSWORD=pa55w0rd
 TEST_HOST=localhost
+VERSION="${VERSION:-dev}" # defaults to "dev", otherwise it is set by environment's $VERSION
 
+echo "testing with proxy container airbyte/proxy:$VERSION"
 
 function start_container () {
-  CMD="docker run -d -p $PORT:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --env PROXY_PASS_WEB=http://localhost --env PROXY_PASS_API=http://localhost --name $NAME airbyte/proxy:dev"
+  CMD="docker run -d -p $PORT:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --env PROXY_PASS_WEB=http://localhost --env PROXY_PASS_API=http://localhost --name $NAME airbyte/proxy:$VERSION"
   echo $CMD
   eval $CMD
   wait_for_docker;
 }
 
 function start_container_with_proxy () {
-  CMD="docker run -d -p $PORT:8000 --env PROXY_PASS_WEB=$1 --env PROXY_PASS_API=$1 --name $NAME airbyte/proxy:dev"
+  CMD="docker run -d -p $PORT:8000 --env PROXY_PASS_WEB=$1 --env PROXY_PASS_API=$1 --name $NAME airbyte/proxy:$VERSION"
   echo $CMD
   eval $CMD
   wait_for_docker;
