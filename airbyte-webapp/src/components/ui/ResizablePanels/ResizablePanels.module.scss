@@ -1,0 +1,77 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
+.leftPanelStyle {
+  min-width: 200px;
+  position: relative;
+}
+
+/*
+* This eliminates flickering scrollbars when resizing using the reflex splitter.
+* See more details in https://github.com/airbytehq/airbyte/pull/15996#issuecomment-1229019827
+*/
+.leftPanelStyle.leftPanelStyle,
+.rightPanelStyle.rightPanelStyle {
+  overflow: hidden;
+}
+
+.darkOverlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 10;
+  opacity: 0.9;
+  background-color: colors.$dark-blue-900;
+  color: colors.$white;
+  text-align: center;
+}
+
+.leftPanelContainer {
+  overflow: auto;
+  height: 100%;
+}
+
+.rightPanelContainer {
+  background-color: colors.$white;
+  height: 100%;
+  overflow: auto;
+}
+
+.lightOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 10;
+  background-color: colors.$white;
+  overflow: hidden;
+  padding-top: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.rotatedHeader {
+  transform: rotate(180deg);
+  writing-mode: vertical-lr;
+
+  white-space: nowrap;
+}
+
+.panelGrabber {
+  height: 100vh;
+  padding: 6px;
+  display: flex;
+}
+
+.grabberHandleIcon {
+  margin: auto;
+  height: 25px;
+  color: colors.$grey-100;
+}

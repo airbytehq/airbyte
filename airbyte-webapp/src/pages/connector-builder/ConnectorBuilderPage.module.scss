@@ -1,0 +1,14 @@
+@use "scss/colors";
+
+.leftPanel {
+  overflow: hidden;
+}
+
+.rightPanel {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.container {
+  background-image: linear-gradient(colors.$dark-blue-900, colors.$dark-blue-1000);
+}
