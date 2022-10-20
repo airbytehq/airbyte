@@ -587,7 +587,7 @@ public class ConfigRepository {
    * @throws JsonValidationException - throws if returned sources are invalid
    * @throws IOException - you never know when you IO
    */
-  public List<SourceConnection> listWorkspaceSourceConnection(final UUID workspaceId) throws JsonValidationException, IOException {
+  public List<SourceConnection> listWorkspaceSourceConnection(final UUID workspaceId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(ACTOR)
         .where(ACTOR.ACTOR_TYPE.eq(ActorType.source))

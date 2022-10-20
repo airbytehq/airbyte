@@ -293,7 +293,7 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  void testListWorkspaceDefinitions() throws IOException, JsonValidationException {
+  void testListWorkspaceDefinitions() throws IOException {
     UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final List<SourceConnection> expectedSources = MockData.sourceConnections().stream()
         .filter(source -> source.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
