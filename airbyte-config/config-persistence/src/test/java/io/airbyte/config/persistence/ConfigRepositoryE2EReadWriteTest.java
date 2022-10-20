@@ -18,6 +18,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -489,6 +490,15 @@ class ConfigRepositoryE2EReadWriteTest {
 
     final List<DestinationAndDefinition> actual = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds);
     assertThat(actual).hasSameElementsAs(expected);
+  }
+
+  @Test
+  void testGetGeographyForConnection() throws IOException {
+    final StandardSync sync = MockData.standardSyncs().get(0);
+    final Geography expected = sync.getGeography();
+    final Geography actual = configRepository.getGeographyForConnection(sync.getConnectionId());
+
+    assertEquals(expected, actual);
   }
 
 }
