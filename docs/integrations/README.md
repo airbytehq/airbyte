@@ -75,7 +75,8 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Search Console](sources/google-search-console.md)                                   | Generally Available  | Yes                 |
 | [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
-| [Greenhouse](sources/greenhouse.md)                                                         | Generally Available  | Yes                 |
+| [Greenhouse](sources/greenhouse.md)                                                         | Beta                 | Yes                 |
+| [Gutendex](sources/gutendex.md)                                                             | Alpha                | No                  |
 | [Harness](sources/harness.md)                                                               | Alpha                | No                  |
 | [Harvest](sources/harvest.md)                                                               | Generally Available  | Yes                 |
 | [http-request](sources/http-request.md)                                                     | Alpha                | No                  |
