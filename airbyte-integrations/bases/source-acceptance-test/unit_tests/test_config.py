@@ -15,19 +15,19 @@ class TestConfig:
             pytest.param({"connector_image": "foo", "tests": {}}, None, does_not_raise(), id="No test_mode declared defaults to None."),
             pytest.param(
                 {"connector_image": "foo", "tests": {}, "test_mode": "strict"},
-                config.Config.StrictMode.strict,
+                config.Config.TestMode.strict,
                 does_not_raise(),
                 id="The test_mode set to strict is a valid enum value is provided.",
             ),
             pytest.param(
                 {"connector_image": "foo", "tests": {}, "test_mode": "medium"},
-                config.Config.StrictMode.medium,
+                config.Config.TestMode.medium,
                 does_not_raise(),
                 id="The test_mode set to strict is a valid enum value is provided.",
             ),
             pytest.param(
                 {"connector_image": "foo", "tests": {}, "test_mode": "light"},
-                config.Config.StrictMode.light,
+                config.Config.TestMode.light,
                 does_not_raise(),
                 id="The test_mode set to strict is a valid enum value is provided.",
             ),
