@@ -548,7 +548,7 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.21
+  dockerImageTag: 0.2.22
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
   sourceType: api
