@@ -17,7 +17,7 @@ export function validateCronFrequencyOneHourOrMore(expression: string | undefine
   }
 
   try {
-    const cronFields = expression.trim().split(" ");
+    const cronFields = expression.trim().split(/\s+/g);
     const [seconds, minutes] = cronFields;
     [seconds, minutes].forEach((field) => {
       if (!ONLY_NUMBERS_REGEX.test(field)) {
@@ -38,7 +38,7 @@ export function validateCronExpression(expression: string | undefined): boolean 
   }
 
   try {
-    const cronFields = expression.trim().split(" ");
+    const cronFields = expression.trim().split(/\s+/g);
 
     if (cronFields.length < 6) {
       throw new Error(
