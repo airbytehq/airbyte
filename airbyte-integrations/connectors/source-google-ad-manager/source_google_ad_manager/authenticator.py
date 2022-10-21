@@ -25,6 +25,7 @@ class GoogleAdManagerAuthenticator:
         """generates a json file from the credentials
         """
         # @todo: check if this does not have any security issues
+        credentials["private_key"] = credentials["private_key"].replace("\\n", "\n")  # hack to fix the private key issue
         service_key_path = Path('/tmp/service_key.json')
         with open(service_key_path, 'w') as f:
             json.dump(credentials, f)
