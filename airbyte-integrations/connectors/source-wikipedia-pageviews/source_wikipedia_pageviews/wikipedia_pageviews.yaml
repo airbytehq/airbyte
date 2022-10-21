@@ -7,20 +7,26 @@ definitions:
   requester:
     url_base: "https://wikimedia.org/api/rest_v1/metrics/pageviews"
     http_method: "GET"
-  # stream_slicer:
-  #   start_datetime: "{{config.start}}"
-  #   end_datetime: "{{config.end}}"
-  #   step: "1d"
-  #   start_time_option:
-  #     field_name: "start"
-  #     inject_into: "path"
-  #   end_time_option:
-  #     field_name: "end"
-  #     inject_into: "path"
+    request_options_provider:
+      request_headers:
+        "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbyte/airbyte)"
+  stream_slicer:
+    type: DatetimeStreamSlicer
+    start_datetime: "{{config.start}}"
+    end_datetime: "{{config.end}}"
+    step: "1d"
+    cursor_field: "timestamp"
+    datetime_format: "%Y%m%d"
+    # start_time_option:
+    #   field_name: "start"
+    #   inject_into: "path"
+    # end_time_option:
+    #   field_name: "end"
+    #   inject_into: "path"
   per_article_requester:
     $options:
       $ref: "*ref(definitions.requester)"
-    path: "/per-article/{{config.project}}/{{config.access}}/{{config.agent}}/daily/{{config.start}}/{{config.end}}"
+    path: "/per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{config.start}}/{{config.end}}"
   top_requester:
     $options:
       $ref: "*ref(definitions.requester)"
@@ -33,8 +39,8 @@ definitions:
       type: NoPagination
     requester:
       $ref: "*ref(definitions.per_article_requester)"
-    # stream_slicer:
-    #   $ref: "*ref(definitions.stream_slicer)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
   top_retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -55,9 +61,11 @@ definitions:
       name: "top"
       primary_key: "project"
 
-streams: ["*ref(definitions.per_article_stream)"]
-  # - "*ref(definitions.per_article_stream)"
-  # - "*ref(definitions.top_stream)"
+streams: 
+  - "*ref(definitions.per_article_stream)"
+  - "*ref(definitions.top_stream)"
 
 check:
-  stream_names: ["per-article"]
+  stream_names: 
+    - "per-article"
+    - "top"
