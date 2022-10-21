@@ -1,0 +1,34 @@
+@use "scss/colors";
+
+.button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 3px 10px;
+  gap: 5px;
+  border-radius: 20px;
+  border: 1px solid colors.$grey-50;
+  background: colors.$grey-50;
+  color: colors.$grey-600;
+  cursor: pointer;
+
+  &:hover,
+  &.active {
+    background: colors.$grey-100;
+  }
+
+  &.light {
+    background: colors.$grey-30;
+    border-color: colors.$grey-50;
+
+    .caret {
+      color: colors.$grey-200;
+    }
+
+    &:hover,
+    &.active {
+      background: colors.$grey-50;
+      border-color: colors.$grey-100;
+    }
+  }
+}
