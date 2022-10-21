@@ -1,6 +1,6 @@
 package io.airbyte.integrations.destination.doris;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -11,22 +11,23 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(DorisConsumer.class);
 
-//    private static List<Long> txnList = new ArrayList<>();
-
     private final ConfiguredAirbyteCatalog catalog;
     private final Map<String, DorisWriteConfig> writeConfigs;
 
+    private JsonStringEncoder jsonEncoder;
 
     public DorisConsumer(
             final Map<String,DorisWriteConfig> writeConfigs,
             final ConfiguredAirbyteCatalog catalog,
             final Consumer<AirbyteMessage> outputRecordCollector) {
         super(outputRecordCollector);
+        jsonEncoder = JsonStringEncoder.getInstance();
         this.catalog = catalog;
         this.writeConfigs = writeConfigs;
         LOGGER.info("initializing DorisConsumer.");
@@ -48,7 +49,6 @@ public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
         if (msg.getType() != AirbyteMessage.Type.RECORD) {
             return;
         }
-
         final AirbyteRecordMessage recordMessage = msg.getRecord();
         if (!writeConfigs.containsKey(recordMessage.getStream())) {
             throw new IllegalArgumentException(
@@ -56,15 +56,12 @@ public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
                             Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
         }
 
-        JsonNode data = recordMessage.getData();
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String s : writeConfigs.get(recordMessage.getStream()).getFormat().getHeader()) {
-            if (!stringBuilder.isEmpty()) stringBuilder.append(DorisStreamLoad.CSV_COLUMN_SEPARATOR);
-            stringBuilder.append(data.get(s).asText());
-        }
 
         writeConfigs.get(recordMessage.getStream()).getWriter().printRecord(
-                stringBuilder.toString()
+                UUID.randomUUID(),
+//                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(recordMessage.getEmittedAt())),
+                recordMessage.getEmittedAt(),
+                new String(jsonEncoder.quoteAsString(Jsons.serialize(recordMessage.getData())))
         );
 
     }
@@ -82,7 +79,6 @@ public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
             }
         }
 
-        // firstCommit
         try{
             for (final DorisWriteConfig value : writeConfigs.values()) {
                 value.getDorisStreamLoad().firstCommit();
@@ -113,8 +109,8 @@ public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
             }
         } finally {
             for (final DorisWriteConfig writeConfig : writeConfigs.values()) {
+                Files.deleteIfExists(writeConfig.getDorisStreamLoad().getPath());
                 writeConfig.getDorisStreamLoad().close();
-                Files.deleteIfExists(writeConfig.getTmpPath());
             }
         }
 

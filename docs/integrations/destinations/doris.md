@@ -6,8 +6,11 @@ destination-doris is a destination implemented based on [Doris stream load](http
 
 ### Output schema
 
-Each stream will be output into its own table in Doris, Each table columns depends on the stream's JsonSchema, therefore, the output schema written depends on the parsing of the column by the stream.
-If the column names are the same, this process does not need to manually specify the comparison order, nor does it need to build '_airbyte_ab_id','_airbyte_emitted_at','_airbyte_data' columns in doris table to store the result data.
+Each stream will be output into its own table in Doris. Each table will contain 3 columns:
+
+* `_airbyte_ab_id`: an uuid assigned by Airbyte to each event that is processed. The column type in Doris is `VARCHAR(40)`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Doris is `BIGINT`.
+* `_airbyte_data`: a json blob representing with the event data. The column type in Doris is `String`.
 
 ### Features
 
@@ -16,8 +19,8 @@ This section should contain a table with the following format:
 | Feature | Supported?(Yes/No) | Notes |
 | :--- |:-------------------| :--- |
 | Full Refresh Sync | Yes                |  |
-| Incremental Sync | Yes                |  |
-| Replicate Incremental Deletes | No                 | it will soon be realized |
+| Incremental - Append Sync | Yes                |  |
+| Incremental - Deduped History | No                 | it will soon be realized |
 | For databases, WAL/Logical replication | Yes                |  |
 
 ### Performance considerations
@@ -41,7 +44,8 @@ You need to prepare tables that will be used to store synced data from Airbyte, 
 
 ### Setup the access parameters
 * **Host**
-* **Port**
+* **HttpPort**
+* **QueryPort**
 * **Username**
 * **Password**
 * **Database**

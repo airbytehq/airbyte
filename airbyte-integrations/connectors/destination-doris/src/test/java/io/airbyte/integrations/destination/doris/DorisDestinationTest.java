@@ -7,36 +7,25 @@ package io.airbyte.integrations.destination.doris;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -79,7 +68,7 @@ class DorisDestinationTest {
   @BeforeEach
   void setup() throws IOException {
     destinationPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
-    config = Jsons.deserialize(IOs.readFile(Paths.get("/airbyte/secrets/config.json")));
+    config = Jsons.deserialize(IOs.readFile(Paths.get("../../../secrets/config.json")));
   }
 
   private DorisDestination getDestination() {
@@ -123,8 +112,8 @@ class DorisDestinationTest {
 
   @Test
   void testCheckInvalidDestinationFolder() {
-    final Path relativePath = Path.of("../tmp/conf.d/");
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(DorisDestination.DESTINATION_TEMP_PATH_FIELD, relativePath.toString()));
+//    final Path relativePath = Path.of("../tmp/conf.d/");
+//    final JsonNode config = Jsons.jsonNode(ImmutableMap.of(DorisDestination.DESTINATION_TEMP_PATH_FIELD, relativePath.toString()));
     final AirbyteConnectionStatus actual = new DorisDestination().check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED);
     // the message includes the random file path, so just verify it exists and then remove it when we do
@@ -136,41 +125,16 @@ class DorisDestinationTest {
 
   @Test
   void testWriteSuccess() throws Exception {
-    final AirbyteMessageConsumer consumer = getDestination().getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
+    DorisDestination destination = getDestination();
+    destination.check(config);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
     consumer.accept(MESSAGE_USERS2);
     consumer.accept(MESSAGE_TASKS2);
     consumer.accept(MESSAGE_STATE);
     consumer.close();
-//
-//    // verify contents of CSV file
-//    final String usersActual = Files.readString(destinationPath.resolve(USERS_FILE));
-//    // csv adds all of these goofy quotes.
-//    final String EXPECTED_USERS1 = "\"{\"\"name\"\":\"\"john\"\",\"\"id\"\":\"\"10\"\"}\"";
-//    final String EXPECTED_USERS2 = "\"{\"\"name\"\":\"\"susan\"\",\"\"id\"\":\"\"30\"\"}\"";
-//    assertTrue(usersActual.contains(EXPECTED_USERS1));
-//    assertTrue(usersActual.contains(EXPECTED_USERS2));
-//
-//    final String tasksActual = Files.readString(destinationPath.resolve(TASKS_FILE));
-//    final String EXPECTED_TASKS1 = "\"{\"\"goal\"\":\"\"announce the game.\"\"}\"";
-//    final String EXPECTED_TASKS2 = "\"{\"\"goal\"\":\"\"ship some code.\"\"}\"";
-//    assertTrue(tasksActual.contains(EXPECTED_TASKS1));
-//    assertTrue(tasksActual.contains(EXPECTED_TASKS2));
-//
-//    // verify that the file is parsable as json (sanity check since the quoting is so goofy).
-//    final List<JsonNode> actualUsersJson = csvToJson(destinationPath.resolve(USERS_FILE));
-//    final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
-//    assertEquals(expectedUsersJson, actualUsersJson);
-//
-//    final List<JsonNode> actualTasksJson = csvToJson(destinationPath.resolve(TASKS_FILE));
-//    final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
-//    assertEquals(expectedTasksJson, actualTasksJson);
-//
-//    // verify tmp files are cleaned up
-//    final Set<String> actualFilenames = Files.list(destinationPath).map(Path::getFileName).map(Path::toString).collect(Collectors.toSet());
-//    final Set<String> expectedFilenames = Sets.newHashSet(USERS_FILE, TASKS_FILE);
-//    assertEquals(expectedFilenames, actualFilenames);
+
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -179,8 +143,9 @@ class DorisDestinationTest {
     // hack to force an exception to be thrown from within the consumer.
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
-
-    final AirbyteMessageConsumer consumer = spy(getDestination().getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector));
+    DorisDestination destination = getDestination();
+    destination.check(config);
+    final AirbyteMessageConsumer consumer = spy(destination.getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
@@ -189,18 +154,6 @@ class DorisDestinationTest {
     // verify tmp files are cleaned up and no files are output at all
     final Set<String> actualFilenames = Files.list(destinationPath).map(Path::getFileName).map(Path::toString).collect(Collectors.toSet());
     assertEquals(Collections.emptySet(), actualFilenames);
-  }
-
-  private List<JsonNode> csvToJson(final Path csvPath) throws IOException {
-    final Reader in = new FileReader(csvPath.toFile(), Charset.defaultCharset());
-    final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-        .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)
-        .withFirstRecordAsHeader()
-        .parse(in);
-
-    return StreamSupport.stream(records.spliterator(), false)
-        .map(record -> Jsons.deserialize(record.toMap().get(JavaBaseConstants.COLUMN_NAME_DATA)))
-        .collect(Collectors.toList());
   }
 
 }

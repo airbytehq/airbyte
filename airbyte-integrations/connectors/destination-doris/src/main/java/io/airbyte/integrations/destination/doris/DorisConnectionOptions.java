@@ -18,9 +18,11 @@ public class DorisConnectionOptions {
     private String feHost;
     private static final String FE_HOST_KEY = "host";
 
-    private Integer fePort;
-    private static final String FE_PORT_KEY = "port";
+    private Integer feHttpPort;
+    private static final String FE_HTTP_PORT_KEY = "httpport";
 
+    private Integer feQueryPort;
+    private static final String FE_QUERY_PORT_KEY = "queryport";
 
     public static DorisConnectionOptions getDorisConnection(final JsonNode config,String table) {
         return new DorisConnectionOptions(
@@ -29,19 +31,21 @@ public class DorisConnectionOptions {
             config.get(USER_KEY).asText(),
             config.get(PWD_KEY)==null?"":config.get(PWD_KEY).asText(),
             config.get(FE_HOST_KEY).asText(),
-            config.get(FE_PORT_KEY).asInt(8030)
+            config.get(FE_HTTP_PORT_KEY).asInt(8030),
+            config.get(FE_QUERY_PORT_KEY).asInt(9030)
         );
 
     }
 
 
-    private DorisConnectionOptions(String db, String table, String user, String pwd, String feHost, Integer fePort) {
+    public DorisConnectionOptions(String db, String table, String user, String pwd, String feHost, Integer feHttpPort, Integer feQueryPort) {
         this.db = db;
         this.table = table;
         this.user = user;
         this.pwd = pwd;
         this.feHost = feHost;
-        this.fePort = fePort;
+        this.feHttpPort = feHttpPort;
+        this.feQueryPort = feQueryPort;
     }
 
 
@@ -65,14 +69,20 @@ public class DorisConnectionOptions {
         return feHost;
     }
 
-    public Integer getFePort() {
-        return fePort;
+    public Integer getFeHttpPort() {
+        return feHttpPort;
     }
 
-    public String getHostPort() {
-        return feHost+":"+fePort;
+    public String getHttpHostPort() {
+        return feHost+":"+ feHttpPort;
+    }
+    public String getQueryHostPort() {
+        return feHost+":"+ feHttpPort;
     }
 
+    public Integer getFeQueryPort() {
+        return feQueryPort;
+    }
 
     @Override
     public String toString() {
@@ -82,7 +92,8 @@ public class DorisConnectionOptions {
                 ", user='" + user + '\'' +
                 ", pwd='" + pwd + '\'' +
                 ", feHost='" + feHost + '\'' +
-                ", fePort=" + fePort +
+                ", feHttpPort=" + feHttpPort +
+                ", feQueryPort=" + feQueryPort +
                 '}';
     }
 }

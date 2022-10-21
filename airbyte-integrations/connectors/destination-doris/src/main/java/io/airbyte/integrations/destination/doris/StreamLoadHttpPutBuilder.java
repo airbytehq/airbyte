@@ -92,8 +92,6 @@ public class StreamLoadHttpPutBuilder {
 
 
     public HttpPut build() {
-        // prop.put("format", "csv_with_names");
-        // prop.put("column_separator", "*");
         Preconditions.checkNotNull(url);
         Preconditions.checkNotNull(httpEntity);
         HttpPut put = new HttpPut(url);
