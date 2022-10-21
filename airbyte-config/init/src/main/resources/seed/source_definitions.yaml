@@ -453,6 +453,13 @@
   icon: greenhouse.svg
   sourceType: api
   releaseStage: generally_available
+- name: Gutendex
+  sourceDefinitionId: bff9a277-e01d-420d-81ee-80f28a307318
+  dockerRepository: airbyte/source-gutendex
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gutendex
+  sourceType: api
+  releaseStage: alpha
 - name: Harness
   sourceDefinitionId: 6fe89830-d04d-401b-aad6-6552ffa5c4af
   dockerRepository: farosai/airbyte-harness-source
@@ -498,6 +505,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/db2
   icon: db2.svg
   sourceType: database
+  releaseStage: alpha
+- name: Insightly
+  sourceDefinitionId: 38f84314-fe6a-4257-97be-a8dcd942d693
+  dockerRepository: airbyte/source-insightly
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/insightly
+  sourceType: api
   releaseStage: alpha
 - name: Instagram
   sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
@@ -1033,7 +1047,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.39
+  dockerImageTag: 0.1.40
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
@@ -1140,6 +1154,13 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/webflow
   icon: webflow.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Whisky Hunter
+  sourceDefinitionId: e65f84c0-7598-458a-bfac-f770c381ff5d
+  dockerRepository: airbyte/source-whisky-hunter
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/whisky-hunter
   sourceType: api
   releaseStage: alpha
 - name: WooCommerce
