@@ -2,16 +2,12 @@ import { Dialog } from "@headlessui/react";
 
 import { Overlay } from "components/ui/Overlay/Overlay";
 
-import { SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStream } from "core/request/AirbyteClient";
 
-import { FieldHeader } from "../FieldHeader";
-import { FieldRow } from "../FieldRow";
-import { pathDisplayName } from "../PathPopout";
 import { StreamFieldTableProps } from "../StreamFieldTable";
-import { TreeRowWrapper } from "../TreeRowWrapper";
 import { StreamConnectionHeader } from "./StreamConnectionHeader";
 import styles from "./StreamDetailsPanel.module.scss";
+import { StreamFieldsTable } from "./StreamFieldsTable";
 import { StreamPanelHeader } from "./StreamPanelHeader";
 
 interface StreamDetailsPanelProps extends StreamFieldTableProps {
@@ -45,21 +41,14 @@ export const StreamDetailsPanel: React.FC<StreamDetailsPanelProps> = ({
           onSelectedChange={onSelectedChange}
         />
         <StreamConnectionHeader />
-        <TreeRowWrapper noBorder>
-          <FieldHeader />
-        </TreeRowWrapper>
-        {syncSchemaFields.map((field) => (
-          <TreeRowWrapper depth={1} key={pathDisplayName(field.path)}>
-            <FieldRow
-              field={field}
-              config={config}
-              isPrimaryKeyEnabled={shouldDefinePk && SyncSchemaFieldObject.isPrimitive(field)}
-              isCursorEnabled={shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(field)}
-              onPrimaryKeyChange={onPkSelect}
-              onCursorChange={onCursorSelect}
-            />
-          </TreeRowWrapper>
-        ))}
+        <StreamFieldsTable
+          config={config}
+          syncSchemaFields={syncSchemaFields}
+          onCursorSelect={onCursorSelect}
+          onPkSelect={onPkSelect}
+          shouldDefinePk={shouldDefinePk}
+          shouldDefineCursor={shouldDefineCursor}
+        />
       </Dialog.Panel>
     </Dialog>
   );
