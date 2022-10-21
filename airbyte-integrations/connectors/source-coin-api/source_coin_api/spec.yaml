@@ -13,6 +13,7 @@ connectionSpecification:
     api_key:
       type: string
       description: API Key
+      airbyte_secret: true
       order: 0
     environment:
       type: string
