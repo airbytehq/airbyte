@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "authors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "birth_year": {
+            "type": ["integer", "null"]
+          },
+          "death_year": {
+            "type": ["integer", "null"]
+          }
+        },
+        "required": ["name", "birth_year", "death_year"]
+      }
+    },
+    "translators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "birth_year": {
+            "type": ["integer", "null"]
+          },
+          "death_year": {
+            "type": ["integer", "null"]
+          }
+        },
+        "required": ["name", "birth_year", "death_year"]
+      }
+    },
+    "subjects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "bookshelves": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "copyright": {
+      "type": ["boolean", "null"]
+    },
+    "media_type": {
+      "type": "string"
+    },
+    "formats": {
+      "type": "object",
+      "properties": {
+        "image/jpeg": {
+          "type": "string"
+        },
+        "application/x-mobipocket-ebook": {
+          "type": "string"
+        },
+        "application/rdf+xml": {
+          "type": "string"
+        },
+        "text/html": {
+          "type": "string"
+        },
+        "application/epub+zip": {
+          "type": "string"
+        },
+        "text/plain; charset=us-ascii": {
+          "type": "string"
+        },
+        "application/octet-stream": {
+          "type": "string"
+        }
+      }
+    },
+    "download_count": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "authors",
+    "translators",
+    "subjects",
+    "bookshelves",
+    "languages",
+    "copyright",
+    "media_type",
+    "formats",
+    "download_count"
+  ]
+}
