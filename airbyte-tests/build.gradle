@@ -88,6 +88,11 @@ task acceptanceTests(type: Test) {
     testLogging() {
         events "passed", "failed", "started", "standardOut"
         exceptionFormat "full"
+
+        debug {
+            events "failed"
+            exceptionFormat "full"
+        }
     }
     mustRunAfter test
 }
