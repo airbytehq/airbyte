@@ -293,6 +293,20 @@ class AdAnalytics(PinterestAnalyticsStream):
 
 
 class SourcePinterest(AbstractSource):
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        today = pendulum.today()
+        AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP = 914
+        latest_date_allowed_by_api = today.subtract(days=AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP)
+
+        start_date = config["start_date"]
+        if not start_date:
+            config["start_date"] = latest_date_allowed_by_api
+        else:
+            config["start_date"] = pendulum.from_format(config["start_date"], "YYYY-MM-DD")
+            if (today - config["start_date"]).days > AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP:
+                config["start_date"] = latest_date_allowed_by_api
+        return config
+
     @staticmethod
     def get_authenticator(config):
         config = config.get("credentials") or config
@@ -310,6 +324,7 @@ class SourcePinterest(AbstractSource):
         )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+        config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         url = f"{PinterestStream.url_base}user_account"
         auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
@@ -321,18 +336,7 @@ class SourcePinterest(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        today = pendulum.today()
-        AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP = 914
-        latest_date_allowed_by_api = today.subtract(days=AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP)
-
-        start_date = config["start_date"]
-        if not start_date:
-            config["start_date"] = latest_date_allowed_by_api
-        else:
-            config["start_date"] = pendulum.from_format(config["start_date"], "YYYY-MM-DD")
-            if (today - config["start_date"]).days > AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP:
-                config["start_date"] = latest_date_allowed_by_api
-
+        config = self._validate_and_transform(config)
         config["authenticator"] = self.get_authenticator(config)
         return [
             AdAccountAnalytics(AdAccounts(config), config=config),
