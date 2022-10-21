@@ -3,66 +3,170 @@
 #
 
 import pytest
-from pydantic import ValidationError, root_validator
+from pydantic import ValidationError
 from source_acceptance_test import config
 
 from .conftest import does_not_raise
 
 
-@root_validator
-def dumb_validator(cls, x):
-    return x
-
-
 class TestConfig:
     @pytest.mark.parametrize(
-        "raw_config, expected_test_mode, expected_error",
+        "raw_config, expected_output_config, expected_error",
         [
-            pytest.param({"connector_image": "foo", "tests": {}}, None, does_not_raise(), id="No test_mode declared defaults to None."),
             pytest.param(
-                {"connector_image": "foo", "tests": {}, "test_mode": "strict"},
-                config.Config.TestMode.strict,
+                {"connector_image": "foo", "tests": {"spec": [{"spec_path": "my-spec-path"}]}},
+                config.Config(
+                    connector_image="foo",
+                    acceptance_tests=config.AcceptanceTestConfigurations(
+                        spec=config.GenericTestConfig(tests=[config.SpecTestConfig(spec_path="my-spec-path")])
+                    ),
+                ),
                 does_not_raise(),
-                id="The test_mode set to strict is a valid enum value is provided.",
+                id="Legacy config should be parsed without error.",
             ),
             pytest.param(
-                {"connector_image": "foo", "tests": {}, "test_mode": "medium"},
-                config.Config.TestMode.medium,
-                does_not_raise(),
-                id="The test_mode set to strict is a valid enum value is provided.",
-            ),
-            pytest.param(
-                {"connector_image": "foo", "tests": {}, "test_mode": "light"},
-                config.Config.TestMode.light,
-                does_not_raise(),
-                id="The test_mode set to strict is a valid enum value is provided.",
-            ),
-            pytest.param(
-                {"connector_image": "foo", "tests": {}, "test_mode": "unknown"},
+                {"connector_image": "foo", "acceptance_tests": {}, "test_mode": "extra-light"},
                 None,
                 pytest.raises(ValidationError),
-                id="The strict_mode set to strict, acceptance tests are not declared -> ValidationError",
+                id="Invalid test mode: ValidationError",
+            ),
+            pytest.param(
+                {"connector_image": "foo", "acceptance_tests": {}},
+                config.Config(
+                    connector_image="foo", acceptance_tests=config.AcceptanceTestConfigurations(), test_mode=config.Config.TestMode.light
+                ),
+                does_not_raise(),
+                id="No test_mode: defaults to light, acceptance_tests field can be empty.",
+            ),
+            pytest.param(
+                {"connector_image": "foo", "test_mode": "light", "acceptance_tests": {}},
+                config.Config(
+                    connector_image="foo", acceptance_tests=config.AcceptanceTestConfigurations(), test_mode=config.Config.TestMode.light
+                ),
+                does_not_raise(),
+                id="Light test mode: acceptance_tests field can be empty.",
+            ),
+            pytest.param(
+                {"connector_image": "foo", "test_mode": "medium", "acceptance_tests": {}},
+                config.Config(
+                    connector_image="foo", acceptance_tests=config.AcceptanceTestConfigurations(), test_mode=config.Config.TestMode.medium
+                ),
+                does_not_raise(),
+                id="Medium test mode: acceptance_tests field can be empty.",
+            ),
+            pytest.param(
+                {"connector_image": "foo", "acceptance_tests": {}, "test_mode": "strict"},
+                None,
+                pytest.raises(ValidationError),
+                id="Strict test mode: acceptance_tests field can't be empty.",
             ),
             pytest.param(
                 {
                     "connector_image": "foo",
-                    "strict_mode": "strict",
+                    "test_mode": "strict",
                     "acceptance_tests": {
-                        "connection": {"bypass_reason": "No good reason"},
-                        "spec": {"bypass_reason": "No good reason"},
-                        "basic_read": {"bypass_reason": "No good reason"},
-                        "full_refresh": {"bypass_reason": "No good reason"},
-                        "incremental": {"bypass_reason": "No good reason"},
-                        "discovery": {"bypass_reason": "No good reason"},
+                        "connection": {"bypass_reason": "My good reason to bypass"},
+                        "spec": {"bypass_reason": "My good reason to bypass"},
+                        "basic_read": {"bypass_reason": "My good reason to bypass"},
+                        "discovery": {"bypass_reason": "My good reason to bypass"},
                     },
                 },
-                config.Config.StrictMode.strict,
+                None,
+                pytest.raises(ValidationError),
+                id="Strict test mode: multiple tests are missing -> ValidationError",
+            ),
+            pytest.param(
+                {
+                    "connector_image": "foo",
+                    "test_mode": "strict",
+                    "acceptance_tests": {
+                        "connection": {"bypass_reason": "My good reason to bypass"},
+                        "spec": {"bypass_reason": "My good reason to bypass"},
+                        "basic_read": {"bypass_reason": "My good reason to bypass"},
+                        "full_refresh": {"bypass_reason": "My good reason to bypass"},
+                        "incremental": {"bypass_reason": "My good reason to bypass"},
+                        "discovery": {"bypass_reason": "My good reason to bypass"},
+                    },
+                },
+                config.Config(
+                    connector_image="foo",
+                    test_mode=config.Config.TestMode.strict,
+                    acceptance_tests=config.AcceptanceTestConfigurations(
+                        connection=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                        spec=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                        basic_read=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                        full_refresh=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                        incremental=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                        discovery=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                    ),
+                ),
                 does_not_raise(),
-                id="The strict_mode set to strict, all acceptance tests have a bypass reason -> No failure",
+                id="Strict test mode: all acceptance tests have a bypass reason -> No failure",
+            ),
+            pytest.param(
+                {
+                    "connector_image": "foo",
+                    "test_mode": "strict",
+                    "acceptance_tests": {
+                        "spec": {"tests": [{"spec_path": "my-spec-path"}]},
+                        "connection": {"bypass_reason": "My good reason to bypass"},
+                        "basic_read": {"bypass_reason": "My good reason to bypass"},
+                        "full_refresh": {"bypass_reason": "My good reason to bypass"},
+                        "incremental": {"bypass_reason": "My good reason to bypass"},
+                        "discovery": {"bypass_reason": "My good reason to bypass"},
+                    },
+                },
+                config.Config(
+                    connector_image="foo",
+                    test_mode=config.Config.TestMode.strict,
+                    acceptance_tests=config.AcceptanceTestConfigurations(
+                        spec=config.GenericTestConfig(tests=[config.SpecTestConfig(spec_path="my-spec-path")]),
+                        connection=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                        basic_read=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                        full_refresh=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                        incremental=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                        discovery=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
+                    ),
+                ),
+                does_not_raise(),
+                id="Strict test mode: Only one test is configured, all other have a bypass reason -> No failure",
+            ),
+            pytest.param(
+                {
+                    "connector_image": "foo",
+                    "acceptance_tests": {
+                        "spec": {"tests": [{"spec_path": "my-spec-path"}], "bypass_reason": "I'm not bypassing"},
+                        "connection": {"bypass_reason": "My good reason to bypass"},
+                        "basic_read": {"bypass_reason": "My good reason to bypass"},
+                        "full_refresh": {"bypass_reason": "My good reason to bypass"},
+                        "incremental": {"bypass_reason": "My good reason to bypass"},
+                        "discovery": {"bypass_reason": "My good reason to bypass"},
+                    },
+                },
+                None,
+                pytest.raises(ValidationError),
+                id="A test can't have a bypass reason and a configuration.",
+            ),
+            pytest.param(
+                {
+                    "connector_image": "foo",
+                    "test_mode": "strict",
+                    "acceptance_tests": {
+                        "spec": {"tests": [{"spec_path": "my-spec-path"}], "bypass_reason": "I'm not bypassing"},
+                        "connection": {"bypass_reason": "My good reason to bypass"},
+                        "basic_read": {"bypass_reason": "My good reason to bypass"},
+                        "full_refresh": {"bypass_reason": "My good reason to bypass"},
+                        "incremental": {"bypass_reason": "My good reason to bypass"},
+                        "discovery": {"bypass_reason": "My good reason to bypass"},
+                    },
+                },
+                None,
+                pytest.raises(ValidationError),
+                id="Strict test mode: A test can't have a bypass reason and a configuration.",
             ),
         ],
     )
-    def test_test_mode(self, raw_config, expected_test_mode, expected_error):
+    def test_config_parsing(self, raw_config, expected_output_config, expected_error):
         with expected_error:
             parsed_config = config.Config.parse_obj(raw_config)
-            assert parsed_config.test_mode == expected_test_mode
+            assert parsed_config == expected_output_config

@@ -3,6 +3,7 @@
 #
 
 
+from copy import deepcopy
 from enum import Enum
 from pathlib import Path
 from typing import Generic, List, Mapping, Optional, Set, TypeVar
@@ -142,6 +143,12 @@ class GenericTestConfig(GenericModel, Generic[TestConfigT]):
     bypass_reason: Optional[str]
     tests: Optional[List[TestConfigT]]
 
+    @validator("tests", always=True)
+    def no_bypass_reason_when_tests_is_set(cls, tests, values):
+        if tests and values.get("bypass_reason"):
+            raise ValueError("You can't set a bypass_reason if tests are set.")
+        return tests
+
 
 class AcceptanceTestConfigurations(BaseConfig):
     spec: Optional[GenericTestConfig[SpecTestConfig]]
@@ -162,10 +169,24 @@ class Config(BaseConfig):
     acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")
     test_mode: Optional[TestMode] = Field(
-        description="Strict mode corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run."
+        default=TestMode.light,
+        description="Strict mode corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
     )
 
-    @root_validator(pre=False)
+    @root_validator(pre=True)
+    def legacy_format_adapter(cls, values: dict):
+        is_legacy = "tests" in values
+        if not is_legacy:
+            return values
+
+        migrated_config = deepcopy(values)
+        migrated_config.pop("tests")
+        migrated_config["acceptance_tests"] = {}
+        for test_name, test_configurations in values["tests"].items():
+            migrated_config["acceptance_tests"][test_name] = {"tests": test_configurations}
+        return migrated_config
+
+    @root_validator(pre=False, skip_on_failure=True)
     def strict_mode_validation(cls, values: dict):
-        [validator(values) for validator in strict_mode_validations.VALIDATORS if values.get("strict_mode") == Config.StrictMode.strict]
+        [validator(values) for validator in strict_mode_validations.VALIDATORS if values.get("test_mode") == Config.TestMode.strict]
         return values
