@@ -57,7 +57,7 @@ The connector should be enhanced to support variable batch sizes.
   * Endpoint URL [ex. https://elasticsearch.savantly.net:9423]
   * Username [optional] (basic auth)
   * Password [optional] (basic auth)
-  * CA certificate (Base64 encoded) [optional]
+  * CA certificate [optional]
   * Api key ID [optional]
   * Api key secret [optional]
 * If authentication is used, the user should have permission to create an index if it doesn't exist, and/or be able to `create` documents
@@ -66,10 +66,7 @@ The connector should be enhanced to support variable batch sizes.
 Ca certificate may be fetched from the Elasticsearch server from /usr/share/elasticsearch/config/certs/http_ca.crt
 Fetching example from dockerized Elasticsearch:
 `docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt .` where es01 is a container's name. For more details please visit https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
-
-Airbyte accepts only CA certificates encoded in Base64 format. You may use any convertors to encode it locally or
-online service like https://www.base64encode.org. It's always better to use local encoders for sensitive data to prevent data leaks. 
-
+ 
 ### Setup guide
 Enter the endpoint URL, select authentication method, and whether to use 'upsert' method when indexing new documents. 
 

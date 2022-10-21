@@ -108,19 +108,6 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
         .build());
   }
 
-  protected JsonNode getUnsecureConfig() {
-
-    final JsonNode authConfig = Jsons.jsonNode(Map.of(
-        "method", "basic",
-        "username", "elastic",
-        "password", "MagicWord"));
-
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
-        .put("authenticationMethod", authConfig)
-        .build());
-  }
-
   @Override
   protected JsonNode getFailCheckConfig() {
     // should result in a failed connection check
