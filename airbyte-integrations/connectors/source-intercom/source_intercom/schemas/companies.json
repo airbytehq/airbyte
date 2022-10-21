@@ -1,7 +1,7 @@
 {
   "type": "object",
   "required": ["id"],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "type": {
       "type": ["null", "string"]
@@ -96,7 +96,6 @@
     },
     "plan": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "id": {
           "type": ["null", "string"]

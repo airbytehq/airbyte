@@ -1,7 +1,7 @@
 {
   "type": "object",
   "required": ["id"],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "assigned_to": {
       "anyOf": [
@@ -9,7 +9,6 @@
           "type": ["null", "object"],
           "items": {
             "type": "object",
-            "additionalProperties": false,
             "properties": {
               "type": {
                 "type": ["null", "string"]
@@ -31,7 +30,6 @@
           "type": "array",
           "items": {
             "type": "object",
-            "additionalProperties": false,
             "properties": {
               "type": {
                 "type": ["null", "string"]
@@ -64,7 +62,6 @@
     },
     "author": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "id": {
           "type": ["null", "string"]

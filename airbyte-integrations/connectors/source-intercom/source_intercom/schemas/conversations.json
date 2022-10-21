@@ -1,6 +1,7 @@
 {
   "type": "object",
   "required": ["id"],
+  "additionalProperties": true,
   "properties": {
     "assignee": {
       "type": ["null", "object"],
