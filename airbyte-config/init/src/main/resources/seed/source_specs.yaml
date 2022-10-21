@@ -11029,7 +11029,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.39"
+- dockerImage: "airbyte/source-stripe:0.1.40"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -11086,9 +11086,9 @@
           - 180
           - 360
           description: "The time increment used by the connector when requesting data\
-            \ from the Stripe API. The bigger the value is,  the less requests will\
+            \ from the Stripe API. The bigger the value is, the less requests will\
             \ be made and faster the sync will be. On the other hand, the more seldom\
-            \  the state is persisted."
+            \ the state is persisted."
           order: 4
     supportsNormalization: false
     supportsDBT: false
