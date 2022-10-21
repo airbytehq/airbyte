@@ -165,7 +165,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
     def read_records(self, *args, **kwargs):
         for record in super().read_records(*args, **kwargs):
             ts_ns = record["_ts"]
-            ts_seconds = ts_ns / 1000000000.0  # convert from nanoseconds.
+            ts_seconds = ts_ns / 1e9  # convert from nanoseconds.
             # equivalent of java's `new Timestamp(transactionMillis).toInstant().toString()`
             ts_datetime = datetime.fromtimestamp(ts_seconds)
             ts = ts_datetime.isoformat()
