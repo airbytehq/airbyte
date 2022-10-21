@@ -4,13 +4,12 @@ import { Overlay } from "components/ui/Overlay/Overlay";
 
 import { AirbyteStream } from "core/request/AirbyteClient";
 
-import { StreamFieldTableProps } from "../StreamFieldTable";
 import { StreamConnectionHeader } from "./StreamConnectionHeader";
 import styles from "./StreamDetailsPanel.module.scss";
-import { StreamFieldsTable } from "./StreamFieldsTable";
+import { StreamFieldsTable, StreamFieldsTableProps } from "./StreamFieldsTable";
 import { StreamPanelHeader } from "./StreamPanelHeader";
 
-interface StreamDetailsPanelProps extends StreamFieldTableProps {
+interface StreamDetailsPanelProps extends StreamFieldsTableProps {
   disabled?: boolean;
   onClose: () => void;
   onSelectedChange: () => void;

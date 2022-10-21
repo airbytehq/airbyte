@@ -6,7 +6,7 @@ import { TreeRowWrapper } from "../TreeRowWrapper";
 import { StreamFieldsTableHeader } from "./StreamFieldsTableHeader";
 import { StreamFieldsTableRow } from "./StreamFieldsTableRow";
 
-interface StreamFieldsTableProps {
+export interface StreamFieldsTableProps {
   config?: AirbyteStreamConfiguration;
   onCursorSelect: (cursorPath: string[]) => void;
   onPkSelect: (pkPath: string[]) => void;

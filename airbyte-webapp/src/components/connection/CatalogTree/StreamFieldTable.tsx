@@ -15,7 +15,7 @@ const RowsContainer = styled.div`
   margin: 0 10px 5px 10px;
 `;
 
-export interface StreamFieldTableProps {
+interface StreamFieldTableProps {
   syncSchemaFields: SyncSchemaField[];
   config: AirbyteStreamConfiguration | undefined;
   shouldDefinePk: boolean;
