@@ -14,6 +14,8 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAut
 
 
 def convex_url_base(instance_name) -> str:
+    if "localhost" in instance_name:
+        return instance_name
     return f"https://{instance_name}.convex.cloud"
 
 
@@ -99,7 +101,6 @@ class ConvexStream(HttpStream, IncrementalMixin):
             "snapshot_cursor": self._snapshot_cursor_value,
             "snapshot_has_more": self._snapshot_has_more,
             "delta_cursor": self._delta_cursor_value,
-            "delta_has_more": self._delta_has_more,
         }
 
     @state.setter
@@ -107,7 +108,6 @@ class ConvexStream(HttpStream, IncrementalMixin):
         self._snapshot_cursor_value = value["snapshot_cursor"]
         self._snapshot_has_more = value["snapshot_has_more"]
         self._delta_cursor_value = value["delta_cursor"]
-        self._delta_has_more = value["delta_has_more"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # Inner level of pagination shares the same state as outer,

@@ -40,7 +40,6 @@ def test_next_page_token(patch_base_class):
         "snapshot_cursor": 1234,
         "snapshot_has_more": True,
         "delta_cursor": 5000,
-        "delta_has_more": True,
     }
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 1235, "snapshot": 5000, "hasMore": False}
     stream.parse_response(resp, {})
@@ -48,7 +47,6 @@ def test_next_page_token(patch_base_class):
         "snapshot_cursor": 1235,
         "snapshot_has_more": False,
         "delta_cursor": 5000,
-        "delta_has_more": True,
     }
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 6000, "hasMore": True}
     stream.parse_response(resp, {})
@@ -56,12 +54,11 @@ def test_next_page_token(patch_base_class):
         "snapshot_cursor": 1235,
         "snapshot_has_more": False,
         "delta_cursor": 6000,
-        "delta_has_more": True,
     }
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1235}], "cursor": 7000, "hasMore": False}
     stream.parse_response(resp, {})
     assert stream.next_page_token(resp) is None
-    assert stream.state == {"snapshot_cursor": 1235, "snapshot_has_more": False, "delta_cursor": 7000, "delta_has_more": False}
+    assert stream.state == {"snapshot_cursor": 1235, "snapshot_has_more": False, "delta_cursor": 7000}
 
 
 def test_parse_response(patch_base_class):
@@ -71,7 +68,7 @@ def test_parse_response(patch_base_class):
     inputs = {"response": resp, "stream_state": {}}
     expected_parsed_objects = [{"_id": "my_id", "field": "f", "_ts": 1234}]
     assert stream.parse_response(**inputs) == expected_parsed_objects
-    assert stream.state == {"snapshot_cursor": 1234, "snapshot_has_more": True, "delta_cursor": 2000, "delta_has_more": True}
+    assert stream.state == {"snapshot_cursor": 1234, "snapshot_has_more": True, "delta_cursor": 2000}
 
 
 def test_request_headers(patch_base_class):

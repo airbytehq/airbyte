@@ -2,13 +2,11 @@
   "posts": {
     "snapshot_cursor": "hi",
     "snapshot_has_more": false,
-    "delta_cursor": 2652635567679741986,
-    "delta_has_more": true
+    "delta_cursor": 2652635567679741986
   },
   "users": {
     "snapshot_cursor": "hi",
     "snapshot_has_more": false,
-    "delta_cursor": 2660025892355943945,
-    "delta_has_more": true
+    "delta_cursor": 2660025892355943945
   }
 }
