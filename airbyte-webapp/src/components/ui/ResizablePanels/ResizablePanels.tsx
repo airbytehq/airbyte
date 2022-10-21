@@ -83,7 +83,7 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({ leftPanel, rig
         </LeftPanelContainer>
       </ReflexElement>
       {rightPanel.showPanel && (
-        <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
+        <ReflexSplitter className={styles.splitter}>
           <div className={styles.panelGrabber}>
             <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
           </div>
