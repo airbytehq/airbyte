@@ -158,7 +158,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
-        This is supposedly deprecated, but it's still used by AbstractSource to update state between calls to `read_records`.
+        This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`.
         """
         return self.state
 
