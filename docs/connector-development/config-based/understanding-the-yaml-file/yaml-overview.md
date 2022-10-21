@@ -1,6 +1,6 @@
 # Understanding the YAML file
 
-The low-code framework involves editing a boilerplate [YAML file](../low-code-cdk-overview.md#configuring-the-yaml-file). This section deep dives into the components of the YAML file.
+The low-code framework involves editing a boilerplate [YAML manifest](../low-code-cdk-overview.md#configuring-the-yaml-file). This section deep dives into the components of the YAML file.
 
 ## Stream
 
@@ -8,7 +8,7 @@ Streams define the schema of the data to sync, as well as how to read it from th
 A stream generally corresponds to a resource within the API. They are analogous to tables for a relational database source.
 
 A stream's schema will can defined as a [JSONSchema](https://json-schema.org/) file in `<source_connector_name>/schemas/<stream_name>.json`.
-More information on how to define a stream's schema can be found [here](../source_schema.yaml)
+More information on how to define a stream's schema can be found [here](../manifest_schema.yaml)
 
 The schema of a stream object is:
 
