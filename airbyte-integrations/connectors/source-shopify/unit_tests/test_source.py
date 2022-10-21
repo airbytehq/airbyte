@@ -1,3 +1,4 @@
+from re import A
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -89,12 +90,19 @@ def test_read_records(config, mocker):
     assert next(stream.read_records(stream_slice=stream_slice)) == records[0]
 
 
-def test_request_params(config):
-    stream = OrderRefunds(config)
-    assert stream.request_params(next_page_token={"next_page": 2}) == {"limit": 250, "next_page": 2}
+@pytest.mark.parametrize(
+    "stream, expected",
+    [
+        (OrderRefunds, {"limit": 250}),
+        (Orders, {"limit": 250, "status": "any", "order": "updated_at asc", "updated_at_min": "2020-11-01"}),
+        (AbandonedCheckouts, {"limit": 250, "status": "any", "order": "updated_at asc", "updated_at_min": "2020-11-01"}),
+    ],
+)
+def test_request_params(config, stream, expected):
+    assert stream(config).request_params() == expected
 
 
-def test_get_updated_state(config, mocker):
+def test_get_updated_state(config):
     current_stream_state = {"created_at": ""}
     latest_record = {"created_at": "2022-10-10T06:21:53-07:00"}
     updated_state = {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}
