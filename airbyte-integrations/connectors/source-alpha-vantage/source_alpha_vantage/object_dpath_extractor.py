@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Mapping, Any
+from typing import Mapping, Any, Union
 
 import dpath.util
 import requests
@@ -54,7 +54,7 @@ class ObjectDpathExtractor(DpathExtractor):
         ...
     ]
     """
-    inject_key_as_field: str | InterpolatedString | None = None
+    inject_key_as_field: Union[str, InterpolatedString] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         self.inject_key_as_field = InterpolatedString.create(self.inject_key_as_field, options=options)
