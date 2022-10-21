@@ -144,10 +144,7 @@ public class ConfigRepository {
           .where(WORKSPACE.SLUG.eq(slug)).andNot(WORKSPACE.TOMBSTONE)).fetch();
     }
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildStandardWorkspace(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildStandardWorkspace);
   }
 
   public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)
@@ -789,10 +786,7 @@ public class ConfigRepository {
           ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(sourceDefinitionId)).fetch();
     });
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildSourceOAuthParameter(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildSourceOAuthParameter);
   }
 
   public void writeSourceOAuthParam(final SourceOAuthParameter sourceOAuthParameter) throws JsonValidationException, IOException {
@@ -818,10 +812,7 @@ public class ConfigRepository {
           ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(destinationDefinitionId)).fetch();
     });
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildDestinationOAuthParameter(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildDestinationOAuthParameter);
   }
 
   public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter) throws JsonValidationException, IOException {
@@ -918,6 +909,7 @@ public class ConfigRepository {
       throws IOException, ConfigNotFoundException {
     final Result<Record> result = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
         .from(ACTOR_CATALOG).where(ACTOR_CATALOG.ID.eq(actorCatalogId))).fetch();
+
     if (result.size() > 0) {
       return DbConverter.buildActorCatalog(result.get(0));
     }
@@ -970,11 +962,7 @@ public class ConfigRepository {
         .and(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH.eq(configHash))
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1)).fetch();
 
-    if (records.size() >= 1) {
-      return Optional.of(DbConverter.buildActorCatalog(records.get(0)));
-    }
-    return Optional.empty();
-
+    return records.stream().findFirst().map(DbConverter::buildActorCatalog);
   }
 
   public Optional<ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSource(final UUID sourceId) throws IOException {
@@ -984,10 +972,7 @@ public class ConfigRepository {
         .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(sourceId))
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1).fetch());
 
-    if (records.size() >= 1) {
-      return Optional.of(DbConverter.buildActorCatalogFetchEvent(records.get(0)));
-    }
-    return Optional.empty();
+    return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
   }
 
   /**
