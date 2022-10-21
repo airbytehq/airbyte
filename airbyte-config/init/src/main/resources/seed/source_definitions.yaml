@@ -1149,7 +1149,7 @@
   sourceType: api
   releaseStage: alpha
 - name: xkcd
-  sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
+  sourceDefinitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
   dockerRepository: airbyte/source-xkcd
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/xkcd
