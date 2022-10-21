@@ -3,6 +3,7 @@
 #
 
 import os
+import shutil
 import time
 
 import docker
@@ -10,11 +11,18 @@ import pytest
 
 pytest_plugins = ("source_acceptance_test.plugin",)
 
+TMP_FOLDER = "/tmp/test_sftp_source"
 
-@pytest.fixture(scope="module", autouse=True)
+
+@pytest.fixture(scope="session", autouse=True)
 def connector_setup():
+    dir_path = os.getcwd() + "/integration_tests/files"
+
+    if os.path.exists(TMP_FOLDER):
+        shutil.rmtree(TMP_FOLDER)
+    shutil.copytree(dir_path, TMP_FOLDER)
+
     docker_client = docker.from_env()
-    dir_path = os.getcwd() + "/integration_tests"
 
     container = docker_client.containers.run(
         "atmoz/sftp",
@@ -22,7 +30,7 @@ def connector_setup():
         name="mysftpacceptance",
         ports={22: 22},
         volumes={
-            f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
+            f"{TMP_FOLDER}": {"bind": "/home/foo/files", "mode": "rw"},
         },
         detach=True,
     )
@@ -30,5 +38,6 @@ def connector_setup():
     time.sleep(5)
     yield
 
+    shutil.rmtree(TMP_FOLDER)
     container.kill()
     container.remove()
