@@ -102,9 +102,9 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("endpoint", String.format("https://%s:%s", container.getHost(), container.getMappedPort(9200)))
         .put("authenticationMethod", authConfig)
-        .put("certAsBytes", container.copyFileFromContainer(
+        .put("ca_certificate", new String(container.copyFileFromContainer(
             "/usr/share/elasticsearch/config/certs/http_ca.crt",
-            InputStream::readAllBytes))
+            InputStream::readAllBytes), StandardCharsets.UTF_8))
         .build());
   }
 
