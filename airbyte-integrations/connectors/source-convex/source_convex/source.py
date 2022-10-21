@@ -195,7 +195,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
             ts_ns = record["_ts"]
             ts_seconds = ts_ns / 1e9  # convert from nanoseconds.
             # equivalent of java's `new Timestamp(transactionMillis).toInstant().toString()`
-            ts_datetime = datetime.fromtimestamp(ts_seconds)
+            ts_datetime = datetime.utcfromtimestamp(ts_seconds)
             ts = ts_datetime.isoformat()
             # DebeziumEventUtils.CDC_LSN
             record["_ab_cdc_lsn"] = ts_ns
