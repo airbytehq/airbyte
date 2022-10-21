@@ -236,7 +236,7 @@ For tables that do not contain a large amount of data in a row, to use primary k
 ```
 ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
-In case your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) and have ≥have.8very large field values it is highly recommended to use
+In case your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) and have very large field values it is highly recommended to use
 ```
 ALTER TABLE tbl1 REPLICA IDENTITY FULL;
 ```
