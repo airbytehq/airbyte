@@ -682,6 +682,37 @@ class TestCreateTransformations:
         ]
         assert expected == component.transformations
 
+    def test_add_fields_path_in_options(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            $options:
+                {self.base_options}
+                path: "/wrong_path"
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "static_value"
+        """
+        config = parser.parse(content)
+
+        factory.create_component(config["the_stream"], input_config, False)
+
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"], value=InterpolatedString(string="static_value", default="static_value", options={}), options={}
+                    )
+                ],
+                options={},
+            )
+        ]
+        assert expected == component.transformations
+
 
 def test_validation_wrong_input_type():
     content = """

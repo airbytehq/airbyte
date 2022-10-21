@@ -647,7 +647,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.22"
+- dockerImage: "airbyte/source-amazon-ads:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -729,6 +729,20 @@
           type: "array"
           items:
             type: "integer"
+        state_filter:
+          title: "State Filter"
+          description: "Reflects the state of the Display, Product, and Brand Campaign\
+            \ streams as enabled, paused, or archived. If you do not populate this\
+            \ field, it will be ignored completely."
+          items:
+            type: "string"
+            enum:
+            - "enabled"
+            - "paused"
+            - "archived"
+          type: "array"
+          uniqueItems: true
+          order: 9
       required:
       - "client_id"
       - "client_secret"
@@ -1319,7 +1333,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-azure-table:0.1.2"
+- dockerImage: "airbyte/source-azure-table:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -1329,7 +1343,6 @@
       required:
       - "storage_account_name"
       - "storage_access_key"
-      additionalProperties: false
       properties:
         storage_account_name:
           title: "Account Name"
@@ -2156,6 +2169,24 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-courier:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/courier"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Courier Source Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          description: "Courier API Key to retrieve your data."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "farosai/airbyte-customer-io-source:0.1.23"
   spec:
     documentationUrl: "https://docs.faros.ai"
@@ -2410,7 +2441,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-e2e-test:2.1.1"
+- dockerImage: "airbyte/source-e2e-test:2.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/e2e-test"
     connectionSpecification:
@@ -2523,6 +2554,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    protocol_version: "0.2.1"
 - dockerImage: "airbyte/source-exchange-rates:1.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/exchangeratesapi"
@@ -2561,7 +2593,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.68"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.69"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -3091,7 +3123,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.24"
+- dockerImage: "airbyte/source-file:0.2.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -3502,7 +3534,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.3.6"
+- dockerImage: "airbyte/source-github:0.3.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -3702,6 +3734,54 @@
           type: "string"
           description: "API key provided by Glassfrog"
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-gocardless:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/gocardless"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Gocardless Spec"
+      type: "object"
+      required:
+      - "access_token"
+      - "gocardless_environment"
+      - "gocardless_version"
+      - "start_date"
+      properties:
+        access_token:
+          title: "Access Token"
+          type: "string"
+          pattern: "^(sandbox|live)_.+$"
+          description: "Gocardless API TOKEN"
+          airbyte_secret: true
+          order: 0
+        gocardless_environment:
+          title: "GoCardless API Environment"
+          type: "string"
+          enum:
+          - "sandbox"
+          - "live"
+          default: "sandbox"
+          description: "Environment you are trying to connect to."
+          order: 1
+        gocardless_version:
+          title: "GoCardless API Version"
+          type: "string"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          description: "GoCardless version. This is a date. You can find the latest\
+            \ here: \nhttps://developer.gocardless.com/api-reference/#api-usage-making-requests\n"
+          order: 2
+        start_date:
+          title: "Start Date"
+          type: "string"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
+            \ data\nbefore this date will not be replicated.\n"
+          examples:
+          - "2017-01-25T00:00:00Z"
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -4353,7 +4433,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.20"
+- dockerImage: "airbyte/source-google-sheets:0.2.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-sheets"
     connectionSpecification:
@@ -4492,6 +4572,84 @@
             >docs</a> for more information on how to generate this key."
           airbyte_secret: true
           order: 0
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-gutendex:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/gutendex"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Gutendex Spec"
+      type: "object"
+      additionalProperties: true
+      properties:
+        author_year_start:
+          type: "string"
+          description: "(Optional) Defines the minimum birth year of the authors.\
+            \ Books by authors born prior to the start year will not be returned.\
+            \ Supports both positive (CE) or negative (BCE) integer values"
+          pattern: "^[-]?[0-9]{1,4}$"
+          examples:
+          - 2002
+          - 500
+          - -500
+          - 2020
+        author_year_end:
+          type: "string"
+          description: "(Optional) Defines the maximum birth year of the authors.\
+            \ Books by authors born after the end year will not be returned. Supports\
+            \ both positive (CE) or negative (BCE) integer values"
+          pattern: "^[-]?[0-9]{1,4}$"
+          examples:
+          - 2002
+          - 500
+          - -500
+          - 2020
+        copyright:
+          type: "string"
+          description: "(Optional) Use this to find books with a certain copyright\
+            \ status - true for books with existing copyrights, false for books in\
+            \ the public domain in the USA, or null for books with no available copyright\
+            \ information."
+          pattern: "^(true|false|null)$"
+          examples:
+          - true
+          - false
+          - null
+        languages:
+          type: "string"
+          description: "(Optional) Use this to find books in any of a list of languages.\
+            \ They must be comma-separated, two-character language codes."
+          examples:
+          - "en"
+          - "en,fr,fi"
+        search:
+          type: "string"
+          description: "(Optional) Use this to search author names and book titles\
+            \ with given words. They must be separated by a space (i.e. %20 in URL-encoded\
+            \ format) and are case-insensitive."
+          examples:
+          - "dickens%20great%20expect"
+          - "dickens"
+        sort:
+          type: "string"
+          description: "(Optional) Use this to sort books - ascending for Project\
+            \ Gutenberg ID numbers from lowest to highest, descending for IDs highest\
+            \ to lowest, or popular (the default) for most popular to least popular\
+            \ by number of downloads."
+          pattern: "^(ascending|descending|popular)$"
+          examples:
+          - "ascending"
+          - "descending"
+          - "popular"
+        topic:
+          type: "string"
+          description: "(Optional) Use this to search for a case-insensitive key-phrase\
+            \ in books' bookshelves or subjects."
+          examples:
+          - "children"
+          - "fantasy"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -4924,6 +5082,39 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-insightly:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/insightly"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Insightly Spec"
+      type: "object"
+      required:
+      - "token"
+      - "start_date"
+      additionalProperties: true
+      properties:
+        token:
+          type:
+          - "string"
+          - "null"
+          title: "API Token"
+          description: "Your Insightly API token."
+          airbyte_secret: true
+        start_date:
+          type:
+          - "string"
+          - "null"
+          title: "Start Date"
+          description: "The date from which you'd like to replicate data for Insightly\
+            \ in the format YYYY-MM-DDT00:00:00Z. All data generated after this date\
+            \ will be replicated. Note that it will be used only for incremental streams."
+          examples:
+          - "2021-03-01T00:00:00Z"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-instagram:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/instagram"
@@ -4964,7 +5155,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.27"
+- dockerImage: "airbyte/source-intercom:0.1.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -6134,7 +6325,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.20"
+- dockerImage: "airbyte/source-mssql:0.4.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -6964,7 +7155,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.4"
+- dockerImage: "airbyte/source-mysql:1.0.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8596,7 +8787,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.16"
+- dockerImage: "airbyte/source-postgres:1.0.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -9972,7 +10163,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.14"
+- dockerImage: "airbyte/source-sendgrid:0.2.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sendgrid"
     connectionSpecification:
@@ -9985,6 +10176,7 @@
       properties:
         apikey:
           title: "Sendgrid API key"
+          airbyte_secret: true
           type: "string"
           description: "API Key, use <a href=\"https://app.sendgrid.com/settings/api_keys/\"\
             >admin</a> to generate this key."
@@ -10005,7 +10197,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.38"
+- dockerImage: "airbyte/source-shopify:0.1.39"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
@@ -10837,7 +11029,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.39"
+- dockerImage: "airbyte/source-stripe:0.1.40"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -10894,9 +11086,9 @@
           - 180
           - 360
           description: "The time increment used by the connector when requesting data\
-            \ from the Stripe API. The bigger the value is,  the less requests will\
+            \ from the Stripe API. The bigger the value is, the less requests will\
             \ be made and faster the sync will be. On the other hand, the more seldom\
-            \  the state is persisted."
+            \ the state is persisted."
           order: 4
     supportsNormalization: false
     supportsDBT: false
@@ -11652,6 +11844,18 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-whisky-hunter:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/whisky-hunter"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Whisky Hunter Spec"
+      type: "object"
+      additionalProperties: true
+      properties: {}
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-woocommerce:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/woocommerce"
@@ -11736,7 +11940,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-chat:0.1.10"
+- dockerImage: "airbyte/source-zendesk-chat:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-chat"
     connectionSpecification:

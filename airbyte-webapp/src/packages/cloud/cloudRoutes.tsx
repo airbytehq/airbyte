@@ -11,6 +11,7 @@ import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Featu
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useQuery } from "hooks/useQuery";
+import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
@@ -86,6 +87,8 @@ const MainRoutes: React.FC = () => {
   const mainNavigate =
     workspace.displaySetupWizard && !hideOnboardingExperiment ? RoutePaths.Onboarding : RoutePaths.Connections;
 
+  // exp-speedy-connection
+  const { isExperimentVariant } = useExperimentSpeedyConnection();
   return (
     <ApiErrorBoundary>
       <Routes>
@@ -95,7 +98,7 @@ const MainRoutes: React.FC = () => {
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
 
-        {workspace.displaySetupWizard && !hideOnboardingExperiment && (
+        {(workspace.displaySetupWizard || isExperimentVariant) && !hideOnboardingExperiment && (
           <Route
             path={RoutePaths.Onboarding}
             element={
