@@ -232,11 +232,11 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'wal2json');
 
 For each table you want to replicate with CDC, add the replication identity (the method of distinguishing between rows) first:
 
-For tables that do not contain a large amount of data in a row, to use primary keys to distinguish between rows run:
+For tables that do not contain a large amount of data in a row, to use primary keys to distinguish between rows, run:
 ```
 ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
-In case your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) and very large field values it is highly recommended to use
+In case your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) and have ≥have.8very large field values it is highly recommended to use
 ```
 ALTER TABLE tbl1 REPLICA IDENTITY FULL;
 ```
