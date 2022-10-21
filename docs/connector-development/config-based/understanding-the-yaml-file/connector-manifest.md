@@ -1,4 +1,4 @@
-# Understanding the YAML file
+# Connector Manifest
 
 The low-code framework involves editing a boilerplate [connector manifest](../low-code-cdk-overview.md#configuring-the-manifest). This section deep dives into the components of the YAML file.
 

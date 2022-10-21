@@ -26,7 +26,7 @@ Refer to the REST API documentation for the source you want to build the connect
 - Are the following features sufficient:
 
   | Feature                                                      | Support                                                                                                                                                                                                                                       |
-                            |--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+                              |--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
   | Resource type                                                | Collections<br/>[Sub-collection](understanding-the-yaml-file/stream-slicers.md#substreams)                                                                                                                                                      |
   | Sync mode                                                    | Full refresh<br/>Incremental                                                                                                                                             |
   | Schema discovery                                             | Static schemas                                                                                                                                                  |
@@ -101,7 +101,7 @@ For each stream, configure the following components:
 | Transformations        |                 | A set of transformations to be applied on the records read from the source before emitting them to the destination                                                                                                                    |
 | Checkpoint interval    |                 | Defines the interval, in number of records, at which incremental syncs should be checkpointed                                                                                                                                         |
 
-For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/manifest-overview.md) or the [full YAML Schema definition](./manifest_schema.yaml)
+For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/connector-manifest.md) or the [full YAML Schema definition](./manifest_schema.yaml)
 
 ## Tutorial
 
