@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
-
 DBNAME="${DBNAME:-temporal}"
 VISIBILITY_DBNAME="${VISIBILITY_DBNAME:-temporal_visibility}"
 DB_PORT="${DB_PORT:-3306}"

@@ -1,6 +1,6 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/s3",
-  "changelogUrl": "https://docs.airbyte.io/integrations/sources/s3",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/s3",
   "connectionSpecification": {
     "title": "S3 Source Spec",
     "type": "object",
@@ -205,7 +205,7 @@
         ]
       },
       "schema": {
-        "title": "Manually enforced data schema (Optional)",
+        "title": "Manually enforced data schema",
         "description": "Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of <strong>{ \"column\" : \"type\" }</strong>, where types are valid <a href=\"https://json-schema.org/understanding-json-schema/reference/type.html\" target=\"_blank\">JSON Schema datatypes</a>. Leave as {} to auto-infer the schema.",
         "default": "{}",
         "examples": [
@@ -251,18 +251,6 @@
             "default": "",
             "order": 4,
             "type": "string"
-          },
-          "use_ssl": {
-            "title": "Use TLS",
-            "description": "Whether the remote server is using a secure SSL/TLS connection. Only relevant if using an S3-compatible, non-AWS server",
-            "order": 5,
-            "type": "boolean"
-          },
-          "verify_ssl_cert": {
-            "title": "Verify TLS Certificates",
-            "description": "Set this to false to allow self signed certificates. Only relevant if using an S3-compatible, non-AWS server",
-            "order": 6,
-            "type": "boolean"
           }
         },
         "required": ["bucket"],

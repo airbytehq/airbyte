@@ -1,7 +1,7 @@
 # Step 4: Reading data
 
 Now that we're able to authenticate to the source API, we'll want to select data from the HTTP responses.
-Let's first add the stream to the configured catalog in `source-exchange_rates-tutorial/integration_tests/configured_catalog.json`
+Let's first add the stream to the configured catalog in `source-exchange-rates-tutorial/integration_tests/configured_catalog.json`
 
 ```json
 {
@@ -66,5 +66,5 @@ Next, we'll [enhance the connector to read data for a given date, which will ena
 
 ## More readings
 
-- [Record selector](../record-selector.md)
+- [Record selector](../understanding-the-yaml-file/record-selector.md)
 - [Catalog guide](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog)

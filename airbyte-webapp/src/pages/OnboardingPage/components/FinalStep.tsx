@@ -3,10 +3,10 @@ import { FormattedMessage } from "react-intl";
 
 import { Text } from "components/ui/Text";
 
-import { useConfig } from "config";
 import Status from "core/statuses";
 import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
 import { useConnectionList, useGetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
+import { links } from "utils/links";
 
 import styles from "./FinalStep.module.scss";
 import { FirstSuccessfulSync } from "./FirstSuccessfulSync";
@@ -16,7 +16,6 @@ import UseCaseBlock from "./UseCaseBlock";
 import VideoItem from "./VideoItem";
 
 const FinalStep: React.FC = () => {
-  const config = useConfig();
   const { visibleUseCases, useCaseLinks, skipCase } = useOnboardingService();
   const { mutateAsync: syncConnection } = useSyncConnection();
   const { connections } = useConnectionList();
@@ -45,7 +44,7 @@ const FinalStep: React.FC = () => {
         <VideoItem
           small
           description={<FormattedMessage id="onboarding.exploreDemo" />}
-          link={config.links.demoLink}
+          link={links.demoLink}
           img="/videoCover.png"
         />
       </div>
