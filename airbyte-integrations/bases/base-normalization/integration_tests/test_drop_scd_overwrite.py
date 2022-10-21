@@ -97,7 +97,7 @@ def run_reset_scd_on_overwrite_test(destination_type: DestinationType, test_reso
     # Force a reset in destination raw tables to remove any data left over from previous test runs
     assert run_destination_process(destination_type, test_root_dir, "", "initial_reset_catalog.json", dbt_test_utils)
     # generate models from catalog
-    generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "initial_reset_catalog.json", dbt_test_utils)
+    generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "test_drop_scd_catalog_reset.json", dbt_test_utils)
 
     # Run dbt process to normalize data from the first sync
     dbt_test_utils.dbt_run(destination_type, test_root_dir, force_full_refresh=True)
