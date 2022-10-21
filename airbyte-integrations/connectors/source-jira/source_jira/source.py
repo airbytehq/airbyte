@@ -101,6 +101,8 @@ class SourceJira(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+        if config["max_results"] is None:
+            config["max_results"] = 50
         users_args = {**args, "max_results": config["max_results"]}
         incremental_args = {**args, "start_date": config.get("start_date", "")}
         render_fields = config.get("render_fields", False)
