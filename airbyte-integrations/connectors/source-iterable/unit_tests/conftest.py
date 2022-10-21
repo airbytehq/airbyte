@@ -11,7 +11,7 @@ def catalog(request):
     return ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream(name=request.param, json_schema={}),
+                stream=AirbyteStream(name=request.param, json_schema={}, supported_sync_modes=["full_refresh"]),
                 sync_mode="full_refresh",
                 destination_sync_mode="append",
             )
