@@ -269,7 +269,7 @@ class ReportsAmazonSPStream(Stream, ABC):
     ) -> Mapping[str, Any]:
         request_headers = self.request_headers()
         report_data = self._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        logger.warn(f"Report Data {report_data}")
+        #logger.warn(f"Report Data {report_data}")
         create_report_request = self._create_prepared_request(
             http_method="POST",
             path=f"{self.path_prefix}/reports",
@@ -344,7 +344,7 @@ class ReportsAmazonSPStream(Stream, ABC):
             is_done = report_payload.get("processingStatus") == "DONE"
             is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
             is_fatal = report_payload.get("processingStatus") == "FATAL"
-            logger.warn(f"Report Payload {report_payload}")
+            #logger.warn(f"Report Payload {report_payload}")
             time.sleep(self.sleep_seconds)
 
         if is_done:
@@ -543,7 +543,7 @@ class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
             for order in orders:
                 result.append(order.get("Order", {}))
 
-        logger.warn(f"Orders Count {result.__len__()}")
+        #logger.warn(f"Orders Count {result.__len__()}")
         return result
 
     name = "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
@@ -627,7 +627,7 @@ class AnalyticsStream(ReportsAmazonSPStream):
 
     @staticmethod
     def _augmented_data(self, report_options) -> Mapping[str, Any]:
-        logger.warn(f"Report Options {report_options}")
+        #logger.warn(f"Report Options {report_options}")
         if report_options.get("reportPeriod") is None:
             return {"reportOptions": report_options}
         else:
