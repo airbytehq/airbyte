@@ -68,12 +68,12 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
     } else if (isPartialSuccess) {
       status = "partialSuccess";
     } else {
-      return <FormattedMessage id="sources.jobStatus.unknown" />;
+      return <FormattedMessage id="jobs.jobStatus.unknown" />;
     }
     return (
       <FormattedMessage
         values={{ count: streamsToReset?.length || 0 }}
-        id={`sources.jobStatus.${jobConfigType}.${status}`}
+        id={`jobs.jobStatus.${jobConfigType}.${status}`}
       />
     );
   }, [isPartialSuccess, jobConfigType, jobStatus, streamsToReset?.length]);
@@ -89,15 +89,10 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
           {label}
           {attempts.length > 0 && (
             <>
-              {attempts.length > 1 && (
-                <div className={styles.lastAttempt}>
-                  <FormattedMessage id="sources.lastAttempt" />
-                </div>
-              )}
               {jobConfigType === "reset_connection" ? (
                 <ResetStreamsDetails isOpen={isOpen} names={streamsToReset?.map((stream) => stream.name)} />
               ) : (
-                <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
+                <AttemptDetails attempt={attempts[attempts.length - 1]} hasMultipleAttempts={attempts.length > 1} />
               )}
             </>
           )}

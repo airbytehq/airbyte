@@ -4,11 +4,18 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
+import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowInternalState;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.commons.temporal.scheduling.state.listener.NoopStateListener;
@@ -23,6 +30,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
@@ -31,7 +39,6 @@ import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
-import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionOutput;
@@ -53,6 +60,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.EnsureCleanJobStateInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCheckFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobFailureInput;
@@ -68,7 +76,6 @@ import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueAct
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity.DeleteStreamResetRecordsForJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.WorkflowConfigActivity;
-import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.failure.ActivityFailure;
 import io.temporal.failure.CanceledFailure;
@@ -78,6 +85,7 @@ import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -89,14 +97,14 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow {
 
-  public static final long NON_RUNNING_JOB_ID = -1;
-  public static final int NON_RUNNING_ATTEMPT_ID = -1;
-
   private static final int TASK_QUEUE_CHANGE_CURRENT_VERSION = 1;
   private static final int AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION = 1;
 
   private static final String RENAME_ATTEMPT_ID_TO_NUMBER_TAG = "rename_attempt_id_to_number";
   private static final int RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION = 1;
+
+  private static final String CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG = "check_previous_job_or_attempt";
+  private static final int CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG_CURRENT_VERSION = 1;
 
   private static final String ENSURE_CLEAN_JOB_STATE = "ensure_clean_job_state";
   private static final int ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION = 1;
@@ -148,9 +156,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private Duration workflowDelay;
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     try {
+      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionUpdaterInput.getConnectionId()));
       recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.empty(), OssMetricsRegistry.TEMPORAL_WORKFLOW_ATTEMPT, null));
       workflowDelay = getWorkflowRestartDelaySeconds();
 
@@ -401,7 +411,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
     final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
 
-    if (isResetJob(sourceLauncherConfig) || checkFailure.isFailed()) {
+    final int checkJobOutputVersion =
+        Workflow.getVersion(CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG, Workflow.DEFAULT_VERSION, CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG_CURRENT_VERSION);
+    boolean isLastJobOrAttemptFailure = true;
+
+    if (checkJobOutputVersion >= CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG_CURRENT_VERSION) {
+      final JobCheckFailureInput jobStateInput =
+          new JobCheckFailureInput(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), connectionId);
+      isLastJobOrAttemptFailure = runMandatoryActivityWithOutput(jobCreationAndStatusUpdateActivity::isLastJobOrAttemptFailure, jobStateInput);
+    }
+    if (isResetJob(sourceLauncherConfig) || checkFailure.isFailed() || !isLastJobOrAttemptFailure) {
       // reset jobs don't need to connect to any external source, so check connection is unnecessary
       log.info("SOURCE CHECK: Skipped");
     } else {
@@ -419,7 +438,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(destinationConfig);
     final CheckConnectionInput checkDestinationInput = new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
 
-    if (checkFailure.isFailed()) {
+    if (checkFailure.isFailed() || !isLastJobOrAttemptFailure) {
       log.info("DESTINATION CHECK: Skipped");
     } else {
       log.info("DESTINATION CHECK: Starting");
@@ -448,8 +467,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     connectionUpdaterInput.setSkipScheduling(false);
   }
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public void submitManualSync() {
+    traceConnectionId();
     if (workflowState.isRunning()) {
       log.info("Can't schedule a manual workflow if a sync is running for connection {}", connectionId);
       return;
@@ -458,8 +479,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     workflowState.setSkipScheduling(true);
   }
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public void cancelJob() {
+    traceConnectionId();
     if (!workflowState.isRunning()) {
       log.info("Can't cancel a non-running sync for connection {}", connectionId);
       return;
@@ -468,22 +491,28 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     cancellableSyncWorkflow.cancel();
   }
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public void deleteConnection() {
+    traceConnectionId();
     workflowState.setDeleted(true);
     cancelJob();
   }
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public void connectionUpdated() {
+    traceConnectionId();
     workflowState.setUpdated(true);
   }
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public void resetConnection() {
+    traceConnectionId();
+
     // Assumes that the streams_reset has already been populated with streams to reset for this
     // connection
-
     if (workflowState.isDoneWaiting()) {
       workflowState.setCancelledForReset(true);
       cancellableSyncWorkflow.cancel();
@@ -492,32 +521,55 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
   }
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
+  @Override
+  public void resetConnectionAndSkipNextScheduling() {
+    traceConnectionId();
+
+    if (workflowState.isDoneWaiting()) {
+      workflowState.setCancelledForReset(true);
+      workflowState.setSkipSchedulingNextWorkflow(true);
+      cancellableSyncWorkflow.cancel();
+    } else {
+      workflowState.setSkipScheduling(true);
+      workflowState.setSkipSchedulingNextWorkflow(true);
+    }
+  }
+
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public void retryFailedActivity() {
+    traceConnectionId();
     workflowState.setRetryFailedActivity(true);
   }
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public WorkflowState getState() {
+    traceConnectionId();
     return workflowState;
   }
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public JobInformation getJobInformation() {
-    final Long jobId = workflowInternalState.getJobId();
+    final Long jobId = workflowInternalState.getJobId() != null ? workflowInternalState.getJobId() : NON_RUNNING_JOB_ID;
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId, JOB_ID_KEY, jobId));
     return new JobInformation(
-        jobId == null ? NON_RUNNING_JOB_ID : jobId,
+        jobId,
         attemptNumber == null ? NON_RUNNING_ATTEMPT_ID : attemptNumber);
   }
 
+  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
   public QuarantinedInformation getQuarantinedInformation() {
-    final Long jobId = workflowInternalState.getJobId();
+    final Long jobId = workflowInternalState.getJobId() != null ? workflowInternalState.getJobId() : NON_RUNNING_JOB_ID;
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId, JOB_ID_KEY, jobId));
     return new QuarantinedInformation(
         connectionId,
-        jobId == null ? NON_RUNNING_JOB_ID : jobId,
+        jobId,
         attemptNumber == null ? NON_RUNNING_ATTEMPT_ID : attemptNumber,
         workflowState.isQuarantined());
   }
@@ -537,6 +589,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     workflowInternalState.getFailures().clear();
     workflowInternalState.setPartialSuccess(null);
     final boolean isDeleted = workflowState.isDeleted();
+    if (workflowState.isSkipSchedulingNextWorkflow()) {
+      connectionUpdaterInput.setSkipScheduling(true);
+    }
     workflowState.reset();
     if (!isDeleted) {
       Workflow.continueAsNew(connectionUpdaterInput);
@@ -556,17 +611,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     try {
       return mapper.apply(input);
     } catch (final Exception e) {
-      log.error("[ACTIVITY-FAILURE] Connection " + connectionId +
-          " failed to run an activity.(" + input.getClass().getSimpleName() + ").  Connection manager workflow will be restarted after a delay of " +
-          workflowDelay.getSeconds() + " seconds.", e);
+      log.error(
+          "[ACTIVITY-FAILURE] Connection {} failed to run an activity.({}).  Connection manager workflow will be restarted after a delay of {}.",
+          connectionId, input.getClass().getSimpleName(), workflowDelay, e);
       // TODO (https://github.com/airbytehq/airbyte/issues/13773) add tracking/notification
 
       // Wait a short delay before restarting workflow. This is important if, for example, the failing
       // activity was configured to not have retries.
       // Without this delay, that activity could cause the workflow to loop extremely quickly,
       // overwhelming temporal.
-      log.info("Waiting {} seconds before restarting the workflow for connection {}, to prevent spamming temporal with restarts.",
-          workflowDelay.getSeconds(),
+      log.info("Waiting {} before restarting the workflow for connection {}, to prevent spamming temporal with restarts.", workflowDelay,
           connectionId);
       Workflow.await(workflowDelay, () -> workflowState.isRetryFailedActivity());
 
@@ -884,6 +938,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
 
     return workflowConfigActivity.getWorkflowRestartDelaySeconds();
+  }
+
+  private void traceConnectionId() {
+    if (connectionId != null) {
+      ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId));
+    }
   }
 
 }

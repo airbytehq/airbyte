@@ -44,8 +44,8 @@ The Stripe source connector supports the following streams:
 - [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list)
 - [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\)
   - The `amount` column defaults to the smallest currency unit. (See [charge object](https://stripe.com/docs/api/charges/object) for more details)
-- [Checkout Streams](https://stripe.com/docs/api/checkout/sessions/list)
-- [Checkout Streams Line Items](https://stripe.com/docs/api/checkout/sessions/line_items)
+- [Checkout Sessions](https://stripe.com/docs/api/checkout/sessions/list)
+- [Checkout Sessions Line Items](https://stripe.com/docs/api/checkout/sessions/line_items)
 - [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
 - [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
@@ -75,7 +75,8 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.40  | 2022-10-20 | [18228](https://github.com/airbytehq/airbyte/pull/18228) | Update the `Payment Intents` stream schema                                                                                                           |
 | 0.1.39  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states.                                                                                                                        |
 | 0.1.38  | 2022-09-09 | [16537](https://github.com/airbytehq/airbyte/pull/16537) | Fix `redeem_by` field type for `customers` stream                                                                                                    |
 | 0.1.37  | 2022-08-16 | [15686](https://github.com/airbytehq/airbyte/pull/15686) | Fix the bug when the stream couldn't be fetched due to limited permission set, if so - it should be skipped                                          |

@@ -5,10 +5,10 @@ import { FormattedMessage } from "react-intl";
 import ArrayOfObjectsEditor from "components/ArrayOfObjectsEditor";
 
 import { OperationRead } from "core/request/AirbyteClient";
+import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { isDefined } from "utils/common";
 import TransformationForm from "views/Connection/TransformationForm";
 
-import { ConnectionFormMode } from "../ConnectionForm";
 import { useDefaultTransformation } from "../formConfig";
 
 interface TransformationFieldProps extends ArrayHelpers {
@@ -44,7 +44,10 @@ const TransformationField: React.FC<TransformationFieldProps> = ({
         setEditableItem(idx);
         onStartEdit?.();
       }}
-      onCancel={clearEditableItem}
+      onCancel={() => {
+        clearEditableItem();
+        onEndEdit?.();
+      }}
       mode={mode}
       editModalSize="xl"
       renderItemEditorForm={(editableItem) => (

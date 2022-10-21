@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk-support",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-support",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Zendesk Support Spec",
@@ -20,7 +20,7 @@
         "description": "This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain."
       },
       "credentials": {
-        "title": "Authentication *",
+        "title": "Authentication",
         "type": "object",
         "description": "Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.",
         "oneOf": [
@@ -38,7 +38,7 @@
               "access_token": {
                 "type": "string",
                 "title": "Access Token",
-                "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a> for more information.",
+                "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk-support\">docs</a> for more information.",
                 "airbyte_secret": true
               }
             }

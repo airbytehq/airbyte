@@ -41,7 +41,7 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
     `
         error_handler:
           backoff_strategies:
-            - type: "ConstantBackoffStrategy"
+            - type: "ConstantBackoff"
               backoff_time_in_seconds: 5
     `
     3. retry on HTTP 404
@@ -54,8 +54,9 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
     4. ignore HTTP 404
     `
       error_handler:
-        - http_codes: [ 404 ]
-          action: IGNORE
+        response_filters:
+          - http_codes: [ 404 ]
+            action: IGNORE
     `
     5. retry if error message contains `retrythisrequest!` substring
     `
