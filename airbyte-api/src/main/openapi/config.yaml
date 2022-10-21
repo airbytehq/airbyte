@@ -2169,6 +2169,26 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_normalization_status:
+    post:
+      tags:
+        - jobs
+        - internal
+      summary: Get normalization status to determine if we can bypass normalization phase
+      operationId: getAttemptNormalizationStatusesForJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttemptNormalizationStatuses"
+
   /v1/health:
     get:
       tags:
@@ -2242,6 +2262,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalOperationResult"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -4823,6 +4844,26 @@ components:
       properties:
         succeeded:
           type: boolean
+    AttemptNormalizationStatuses:
+      type: object
+      properties:
+        attemptNormalizationStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptNormalizationStatusRead"
+    AttemptNormalizationStatusRead:
+      type: object
+      properties:
+        attemptNumber:
+          $ref: "#/components/schemas/AttemptNumber"
+        hasRecordsCommitted:
+          type: boolean
+        recordsCommitted:
+          type: integer
+          format: int64
+        hasNormalizationFailed:
+          type: boolean
+
     InvalidInputProperty:
       type: object
       required:
