@@ -20,6 +20,7 @@ configured_catalog_path: Optional[str] = Field(default=None, description="Path t
 timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
 
 SEMVER_REGEX = r"(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*)))?(?:\-([\w][\w\.\-_]*))?)?"
+ALLOW_LEGACY_CONFIG = True
 
 
 class BaseConfig(BaseModel):
@@ -172,15 +173,22 @@ class Config(BaseConfig):
         description="Strict mode corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
     )
 
-    @root_validator(pre=True)
-    def legacy_format_adapter(cls, values: dict):
-        is_legacy = "tests" in values
-        if not is_legacy:
-            return values
+    @staticmethod
+    def is_legacy(config: dict) -> bool:
+        return "tests" in config
 
-        migrated_config = deepcopy(values)
+    @staticmethod
+    def migrate_legacy_to_current_config(legacy_config: dict) -> dict:
+        migrated_config = deepcopy(legacy_config)
         migrated_config.pop("tests")
         migrated_config["acceptance_tests"] = {}
-        for test_name, test_configurations in values["tests"].items():
-            migrated_config["acceptance_tests"][test_name] = {"tests": test_configurations}
+        for test_name, test_configs in legacy_config["tests"].items():
+            migrated_config["acceptance_tests"][test_name] = {"tests": test_configs}
         return migrated_config
+
+    @root_validator(pre=True)
+    def legacy_format_adapter(cls, values: dict) -> dict:
+        if ALLOW_LEGACY_CONFIG and cls.is_legacy(values):
+            return cls.migrate_legacy_to_current_config(values)
+        else:
+            return values
