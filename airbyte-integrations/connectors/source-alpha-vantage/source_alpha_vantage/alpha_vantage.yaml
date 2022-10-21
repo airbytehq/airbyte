@@ -7,9 +7,10 @@ definitions:
   selector:
     type: RecordSelector
     extractor:
-      type: DpathExtractor
+      class_name: source_alpha_vantage.object_dpath_extractor.ObjectDpathExtractor
       field_pointer:
         - "{{ options['dpath'] }}"
+      inject_key_as_field: "{{ options['key_field'] }}"
   requester:
     url_base: "https://www.alphavantage.co"
     http_method: "GET"
@@ -19,8 +20,7 @@ definitions:
       request_parameters:
         apikey: "{{ config['api_key'] }}"
         symbol: "{{ config['symbol'] }}"
-#        function: "{{ options['function'] }}"
-        function: GLOBAL_QUOTE
+        function: "{{ options['function'] }}"
         datatype: json
         outputsize: "{{ config['outputsize'] }}"
         interval: "{{ config['interval'] }}"
@@ -42,6 +42,7 @@ definitions:
       dpath: "Time Series ({{ config['interval'] }})"
       function: "TIME_SERIES_INTRADAY"
       path: "/query"
+      key_field: "timestamp"
   time_series_daily_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -49,6 +50,7 @@ definitions:
       dpath: "Time Series (Daily)"
       function: "TIME_SERIES_DAILY"
       path: "/query"
+      key_field: "date"
   time_series_daily_adjusted_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -56,6 +58,7 @@ definitions:
       dpath: "Time Series (Daily)"
       function: "TIME_SERIES_DAILY_ADJUSTED"
       path: "/query"
+      key_field: "date"
   time_series_weekly_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -63,6 +66,7 @@ definitions:
       dpath: "Weekly Time Series"
       function: "TIME_SERIES_WEEKLY"
       path: "/query"
+      key_field: "date"
   time_series_weekly_adjusted_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -70,27 +74,23 @@ definitions:
       dpath: "Weekly Adjusted Time Series"
       function: "TIME_SERIES_WEEKLY_ADJUSTED"
       path: "/query"
+      key_field: "date"
   time_series_monthly_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "time_series_monthly"
-      dpath: "Weekly Time Series"
+      dpath: "Monthly Time Series"
       function: "TIME_SERIES_MONTHLY"
       path: "/query"
+      key_field: "date"
   time_series_monthly_adjusted_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "time_series_monthly_adjusted"
-      dpath: "Weekly Adjusted Time Series"
+      dpath: "Monthly Adjusted Time Series"
       function: "TIME_SERIES_MONTHLY_ADJUSTED"
       path: "/query"
-  quote_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "quote"
-      dpath: "Global Quote"
-      function: "GLOBAL_QUOTE"
-      path: "/query"
+      key_field: "date"
 
 streams:
   - "*ref(definitions.time_series_intraday_stream)"
@@ -100,10 +100,8 @@ streams:
   - "*ref(definitions.time_series_weekly_adjusted_stream)"
   - "*ref(definitions.time_series_monthly_stream)"
   - "*ref(definitions.time_series_monthly_adjusted_stream)"
-  - "*ref(definitions.quote_stream)"
 
 check:
   stream_names:
-#    - "time_series_weekly"
-#    - "time_series_weekly_adjusted"
-    - "quote"
+    - "time_series_weekly"
+    - "time_series_weekly_adjusted"
