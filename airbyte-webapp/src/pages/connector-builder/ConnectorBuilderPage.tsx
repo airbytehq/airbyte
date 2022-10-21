@@ -1,6 +1,6 @@
 import { FormattedMessage } from "react-intl";
 
-import { ConnectorTestingPanel } from "components/ConnectorTestingPanel";
+import { StreamTestingPanel } from "components/StreamTestingPanel";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 import { YamlEditor } from "components/YamlEditor";
 
@@ -19,7 +19,7 @@ export const ConnectorBuilderPage: React.FC = () => {
         className: styles.leftPanel,
       }}
       rightPanel={{
-        children: <ConnectorTestingPanel />,
+        children: <StreamTestingPanel />,
         smallWidthHeader: <span>{selectedStream.name}</span>,
         showPanel: true,
         className: styles.rightPanel,

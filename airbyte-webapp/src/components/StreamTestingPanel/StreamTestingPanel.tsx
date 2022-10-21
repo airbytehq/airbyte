@@ -1,12 +1,12 @@
 import { useReadStream } from "services/connector-builder/ConnectorBuilderApiService";
 import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
 
-import styles from "./ConnectorTestingPanel.module.scss";
 import { ResultDisplay } from "./ResultDisplay";
 import { StreamSelector } from "./StreamSelector";
+import styles from "./StreamTestingPanel.module.scss";
 import { TestControls } from "./TestControls";
 
-export const ConnectorTestingPanel: React.FC<unknown> = () => {
+export const StreamTestingPanel: React.FC<unknown> = () => {
   const { jsonDefinition, selectedStream, configJson } = useConnectorBuilderState();
   const { data: streamReadData, refetch: readStream } = useReadStream({
     connectorDefinition: jsonDefinition,

@@ -2,7 +2,6 @@ import { CodeEditor } from "components/ui/CodeEditor";
 
 import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
 
-import { ConfigMenu } from "./ConfigMenu";
 import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
 
@@ -12,8 +11,7 @@ export const YamlEditor: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.control}>
-        <DownloadYamlButton className={styles.downloadButton} yaml={yamlDefinition} />
-        <ConfigMenu className={styles.configMenuButton} />
+        <DownloadYamlButton yaml={yamlDefinition} />
       </div>
       <div className={styles.editorContainer}>
         <CodeEditor

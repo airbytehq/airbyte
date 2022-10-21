@@ -6,6 +6,7 @@ import { Text } from "components/ui/Text";
 
 import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
 
+import { ConfigMenu } from "./ConfigMenu";
 import styles from "./TestControls.module.scss";
 
 interface TestControlsProps {
@@ -17,6 +18,7 @@ export const TestControls: React.FC<TestControlsProps> = ({ onClickTest }) => {
 
   return (
     <div className={styles.container}>
+      <ConfigMenu />
       <div className={styles.urlDisplay}>
         <Text size="lg">{selectedStream.url}</Text>
       </div>

@@ -11,16 +11,10 @@
   background-color: colors.$dark-blue;
   display: flex;
   padding: 10px;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 
 .editorContainer {
   flex: 1 1 0;
-}
-
-.downloadButton {
-  margin-left: 0;
-}
-
-.configMenuButton {
-  margin-left: auto;
 }
