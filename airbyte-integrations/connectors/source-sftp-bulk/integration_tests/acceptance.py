@@ -28,7 +28,7 @@ def connector_setup():
         "atmoz/sftp",
         "foo:pass",
         name="mysftpacceptance",
-        ports={22: 22},
+        ports={22: 1122},
         volumes={
             f"{TMP_FOLDER}": {"bind": "/home/foo/files", "mode": "rw"},
         },

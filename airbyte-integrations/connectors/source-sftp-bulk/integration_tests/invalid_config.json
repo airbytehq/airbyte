@@ -1,6 +1,6 @@
 {
   "host": "localhost",
-  "port": 22,
+  "port": 1122,
   "username": "foo",
   "password": "badpass",
   "file_type": "json",
