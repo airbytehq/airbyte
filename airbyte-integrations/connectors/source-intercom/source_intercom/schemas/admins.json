@@ -1,7 +1,5 @@
 {
   "type": "object",
-  "required": ["id"],
-  "additionalProperties": true,
   "properties": {
     "admin_ids": {
       "anyOf": [
@@ -37,7 +35,7 @@
       "type": ["null", "boolean"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "job_title": {
       "type": ["null", "string"]

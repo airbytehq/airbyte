@@ -1,7 +1,5 @@
 {
   "type": "object",
-  "required": ["name"],
-  "additionalProperties": true,
   "properties": {
     "admin_ids": {
       "anyOf": [
@@ -20,7 +18,7 @@
       "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
       "type": ["null", "string"]

@@ -1,13 +1,11 @@
 {
-  "type": "object",
-  "required": ["id"],
-  "additionalProperties": true,
+  "type": ["null", "object"],
   "properties": {
     "type": {
       "type": ["null", "string"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "workspace_id": {
       "type": ["null", "string"]
@@ -67,6 +65,9 @@
     "unsubscribed_from_emails": {
       "type": ["null", "boolean"]
     },
+    "unsubscribed_from_sms": {
+      "type": ["null", "boolean"]
+    },
     "created_at": {
       "type": ["null", "integer"]
     },
@@ -75,6 +76,9 @@
     },
     "signed_up_at": {
       "type": ["null", "integer"]
+    },
+    "sms_consent": {
+      "type": ["null", "boolean"]
     },
     "last_seen_at": {
       "type": ["null", "integer"]
