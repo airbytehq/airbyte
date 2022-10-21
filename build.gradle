@@ -1,6 +1,7 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.github.spotbugs.snom.SpotBugsTask
 
+
 // The buildscript block defines dependencies in order for .gradle file evaluation.
 // This is separate from application dependencies.
 // See https://stackoverflow.com/questions/17773817/purpose-of-buildscript-block-in-gradle.
@@ -208,6 +209,12 @@ allprojects {
 
 // Java projects common configurations
 subprojects { subproj ->
+
+
+    configurations {
+        runtimeClasspath
+    }
+
 
     // Common Docker Configuration:
     // If subprojects have the dockerImageName property configured in their gradle.properties file,
@@ -508,6 +515,7 @@ subprojects {
             licenseTask.dependsOn generateFilesTask
         }
     }
+    task listAllDependencies(type: DependencyReportTask) {}
 }
 
 task('generate-docker') {
