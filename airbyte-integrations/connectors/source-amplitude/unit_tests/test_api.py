@@ -191,8 +191,8 @@ class TestEventsStream:
 
     def test_get_updated_state(self):
         stream = Events(pendulum.now().isoformat())
-        current_state = {"event_time": ""}
-        latest_record = {"event_time": "2021-05-27 11:59:53.710000"}
+        current_state = {"server_upload_time": ""}
+        latest_record = {"server_upload_time": "2021-05-27 11:59:53.710000"}
         result = stream.get_updated_state(current_state, latest_record)
         assert result == latest_record
 
@@ -214,7 +214,7 @@ class TestEventsStream:
         "record, expected",
         [
             ({}, {}),
-            ({"event_time": "2021-05-27 11:59:53.710000"}, {"event_time": "2021-05-27T11:59:53.710000+00:00"}),
+            ({"server_upload_time": "2021-05-27 11:59:53.710000"}, {"server_upload_time": "2021-05-27T11:59:53.710000+00:00"}),
         ],
         ids=["empty_record", "transformed_record"],
     )
