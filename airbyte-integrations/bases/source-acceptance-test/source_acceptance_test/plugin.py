@@ -46,7 +46,7 @@ class TestAction(Enum):
 
 def pytest_generate_tests(metafunc):
     """Hook function to customize test discovery and parametrization.
-    It parametrizes, skip or fail a discovered test according the test configuration.
+    It parametrizes, skips or fails a discovered test according the test configuration.
     """
 
     if "inputs" in metafunc.fixturenames:
