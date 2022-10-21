@@ -26,7 +26,7 @@ Refer to the REST API documentation for the source you want to build the connect
 - Are the following features sufficient:
 
   | Feature                                                      | Support                                                                                                                                                                                                                                       |
-                |--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+                            |--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
   | Resource type                                                | Collections<br/>[Sub-collection](understanding-the-yaml-file/stream-slicers.md#substreams)                                                                                                                                                      |
   | Sync mode                                                    | Full refresh<br/>Incremental                                                                                                                                             |
   | Schema discovery                                             | Static schemas                                                                                                                                                  |
@@ -58,9 +58,9 @@ To use the low-code framework to build an REST API Source connector:
 
 For a step-by-step tutorial, refer to the [Getting Started tutorial](./tutorial/0-getting-started.md) or the [video tutorial](https://youtu.be/i7VSL2bDvmw)
 
-## Configuring the YAML file
+## Configuring the Connector Manifest
 
-The low-code framework involves editing a boilerplate YAML file. The general structure of the YAML file is as follows:
+The low-code framework involves editing a boilerplate connector manifest. The general structure of the manifest is as follows:
 
 ```
 version: "0.1.0"
@@ -72,7 +72,7 @@ check:
  <definition of connection checker>
 ```
 
-The following table describes the components of the YAML file:
+The following table describes the components of the manifest:
 
 | Component     | Description                                                                                                                                            |
 |---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -101,7 +101,7 @@ For each stream, configure the following components:
 | Transformations        |                 | A set of transformations to be applied on the records read from the source before emitting them to the destination                                                                                                                    |
 | Checkpoint interval    |                 | Defines the interval, in number of records, at which incremental syncs should be checkpointed                                                                                                                                         |
 
-For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/yaml-overview.md) or the [full YAML Schema definition](./manifest_schema.yaml)
+For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/manifest-overview.md) or the [full YAML Schema definition](./manifest_schema.yaml)
 
 ## Tutorial
 
