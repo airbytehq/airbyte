@@ -33,6 +33,7 @@ import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -190,10 +191,16 @@ public class ConfigRepository {
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
-    return persistence.getConfig(
+    final StandardSourceDefinition sourceDef = persistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceDefinitionId.toString(),
         StandardSourceDefinition.class);
+    // Make sure we have a default version of the Protocol.
+    // This corner case may happen for connectors that haven't been upgraded since we added versioning.
+    if (sourceDef != null) {
+      return sourceDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(sourceDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -302,8 +309,15 @@ public class ConfigRepository {
 
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
-        StandardDestinationDefinition.class);
+    final StandardDestinationDefinition destDef =
+        persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
+            StandardDestinationDefinition.class);
+    // Make sure we have a default version of the Protocol.
+    // This corner case may happen for connectors that haven't been upgraded since we added versioning.
+    if (destDef != null) {
+      return destDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(destDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardDestinationDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {
@@ -1107,6 +1121,14 @@ public class ConfigRepository {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = getStandardSync(connectionId);
     return standardSync.getCatalog();
+  }
+
+  public Geography getGeographyForConnection(final UUID connectionId) throws IOException {
+    return database.query(ctx -> ctx.select(CONNECTION.GEOGRAPHY)
+        .from(CONNECTION)
+        .where(CONNECTION.ID.eq(connectionId))
+        .limit(1))
+        .fetchOneInto(Geography.class);
   }
 
 }
