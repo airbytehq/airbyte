@@ -50,6 +50,6 @@
     "accessTokenUrlTemplate": "https://api.intercom.io/auth/eagle/token",
     "accessTokenBody": "client_id={{ urlencode client_id }}&client_secret={{ urlencode client_secret }}&code={{ urlencode code }}",
     "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
-    "accessTokenResponseMap": "{\"access_token\": \"/token"}"
+    "accessTokenResponseMap": "{\"access_token\": \"/token\"}"
   }
 }
