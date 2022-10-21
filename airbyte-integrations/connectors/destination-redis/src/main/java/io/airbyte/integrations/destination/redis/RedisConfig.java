@@ -5,7 +5,11 @@
 package io.airbyte.integrations.destination.redis;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
+@AllArgsConstructor
 class RedisConfig {
 
   private final String host;
@@ -16,43 +20,18 @@ class RedisConfig {
 
   private final String password;
 
+  private final boolean ssl;
+
   private final RedisCache.CacheType cacheType;
 
-  public RedisConfig(JsonNode jsonNode) {
-    this.host = jsonNode.get("host").asText();
-    this.port = jsonNode.get("port").asInt(6379);
-    this.username = jsonNode.get("username").asText();
-    this.password = jsonNode.get("password").asText();
-    var type = jsonNode.get("cache_type").asText();
+  public RedisConfig(JsonNode jsonConfig) {
+    this.host = jsonConfig.get("host").asText();
+    this.port = jsonConfig.get("port").asInt(6379);
+    this.username = jsonConfig.get("username").asText();
+    this.password = jsonConfig.get("password").asText();
+    var type = jsonConfig.get("cache_type").asText();
     this.cacheType = RedisCache.CacheType.valueOf(type.toUpperCase());
-  }
-
-  public RedisConfig(String host, int port, String username, String password, RedisCache.CacheType cacheType) {
-    this.host = host;
-    this.port = port;
-    this.username = username;
-    this.password = password;
-    this.cacheType = cacheType;
-  }
-
-  public String getHost() {
-    return host;
-  }
-
-  public int getPort() {
-    return port;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public RedisCache.CacheType getCacheType() {
-    return cacheType;
+    this.ssl = jsonConfig.has("ssl") && jsonConfig.get("ssl").asBoolean();
   }
 
   @Override
@@ -61,7 +40,6 @@ class RedisConfig {
         "host='" + host + '\'' +
         ", port=" + port +
         ", username='" + username + '\'' +
-        ", password='" + password + '\'' +
         ", cacheType=" + cacheType +
         '}';
   }

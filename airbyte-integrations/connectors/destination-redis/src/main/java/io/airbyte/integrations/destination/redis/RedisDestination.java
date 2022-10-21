@@ -22,6 +22,8 @@ class RedisDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestination.class);
 
+  private static final String PARAM_SSL_MODE = "ssl_mode";
+
   public static void main(String[] args) throws Exception {
     LOGGER.info("starting destination: {}", RedisDestination.class);
     final Destination destination = RedisDestination.sshWrappedDestination();
@@ -39,13 +41,19 @@ class RedisDestination extends BaseConnector implements Destination {
 
     RedisCache redisCache = null;
     try {
+      if (redisConfig.isSsl()) {
+        RedisSslUtil.setupSsl(config.get(PARAM_SSL_MODE));
+      }
       redisCache = RedisCacheFactory.newInstance(redisConfig);
       // check connection and write permissions
       redisCache.ping("Connection check");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.error("Can't establish Redis connection with reason: ", e);
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
+      return new AirbyteConnectionStatus()
+          .withMessage("Could not connect to the Redis with the provided configuration. \n" + e
+              .getMessage())
+          .withStatus(AirbyteConnectionStatus.Status.FAILED);
     } finally {
       if (redisCache != null) {
         redisCache.close();
