@@ -22,3 +22,8 @@ def catalog(request):
 @pytest.fixture(name="config")
 def config_fixture():
     return {"api_key": 123, "start_date": "2019-10-10T00:00:00"}
+
+
+@pytest.fixture()
+def mock_lists_resp(mocker):
+    mocker.patch("source_iterable.streams.Lists.read_records", return_value=iter([{"id": 1}, {"id": 2}]))
