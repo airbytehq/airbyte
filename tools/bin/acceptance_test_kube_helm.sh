@@ -81,22 +81,22 @@ kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --port
 echo "Running worker integration tests..."
 SUB_BUILD=PLATFORM LOG_LEVEL=DEBUG  ./gradlew :airbyte-workers:integrationTest --scan
 
-echo "Printing system disk usage..."
-df -h
-
-echo "Printing docker disk usage..."
-docker system df
-
-if [ -n "$CI" ]; then
-  echo "Pruning all images..."
-  docker image prune --all --force
-
-  echo "Printing system disk usage after pruning..."
-  df -h
-
-  echo "Printing docker disk usage after pruning..."
-  docker system df
-fi
+#echo "Printing system disk usage..."
+#df -h
+#
+#echo "Printing docker disk usage..."
+#docker system df
+#
+#if [ -n "$CI" ]; then
+#  echo "Pruning all images..."
+#  docker image prune --all --force
+#
+#  echo "Printing system disk usage after pruning..."
+#  df -h
+#
+#  echo "Printing docker disk usage after pruning..."
+#  docker system df
+#fi
 
 echo "Running e2e tests via gradle..."
 KUBE=true LOG_LEVEL=DEBUG SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
