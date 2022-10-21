@@ -515,7 +515,7 @@ class ConfigRepositoryE2EReadWriteTest {
     final OffsetDateTime now = OffsetDateTime.now();
     final OffsetDateTime yesterday = now.minusDays(1l);
 
-    final List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEvents();
+    final List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEventsSameSource();
     final ActorCatalogFetchEvent fetchEvent1 = fetchEvents.get(0);
     final ActorCatalogFetchEvent fetchEvent2 = fetchEvents.get(1);
 

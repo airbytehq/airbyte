@@ -44,6 +44,7 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -180,7 +181,10 @@ public class WebBackendConnectionsHandler {
       webBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
     });
 
-    final SchemaChange schemaChange = getSchemaChange(connectionRead, currentSourceCatalogId);
+    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
+        configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
+
+    final SchemaChange schemaChange = getSchemaChange(connectionRead, currentSourceCatalogId, mostRecentFetchEvent);
 
     webBackendConnectionRead.setSchemaChange(schemaChange);
 
@@ -225,13 +229,13 @@ public class WebBackendConnectionsHandler {
     final Optional<JobRead> latestSyncJob = Optional.ofNullable(latestJobByConnectionId.get(standardSync.getConnectionId()));
     final Optional<JobRead> latestRunningSyncJob = Optional.ofNullable(runningJobByConnectionId.get(standardSync.getConnectionId()));
     final ConnectionRead connectionRead = connectionsHandler.getConnection(standardSync.getConnectionId());
+    final Optional<UUID> currentCatalogId = connectionRead == null ? Optional.empty() : Optional.ofNullable(connectionRead.getSourceCatalogId());
 
-    final Optional<UUID> mostRecentCatalogIdFetchEvent =
+    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
         latestFetchEvent
-            .map(actorCatalogFetchEventWithCreationDate -> actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent().getActorCatalogId());
-    // configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
+            .map(actorCatalogFetchEventWithCreationDate -> actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent());
 
-    final SchemaChange schemaChange = getSchemaChange(connectionRead, mostRecentCatalogIdFetchEvent);
+    final SchemaChange schemaChange = getSchemaChange(connectionRead, currentCatalogId, mostRecentFetchEvent);
 
     final WebBackendConnectionListItem listItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())
@@ -256,25 +260,20 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  SchemaChange getSchemaChange(final ConnectionRead connectionRead, final Optional<UUID> mostRecentFetchEvent)
-      throws IOException {
-    if (connectionRead == null) {
+  SchemaChange getSchemaChange(
+                               final ConnectionRead connectionRead,
+                               final Optional<UUID> currentSourceCatalogId,
+                               final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent) {
+    if (connectionRead == null || currentSourceCatalogId.isEmpty()) {
       return SchemaChange.NO_CHANGE;
     }
 
-    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connectionRead.getSourceCatalogId());
+    if (connectionRead.getBreakingChange() != null && connectionRead.getBreakingChange()) {
+      return SchemaChange.BREAKING;
+    }
 
-    if (connectionRead.getSourceId() != null && currentSourceCatalogId.isPresent()) {
-
-      if (mostRecentFetchEvent.isPresent()) {
-        if (!mostRecentFetchEvent.get().equals(currentSourceCatalogId.get())) {
-          if (connectionRead.getBreakingChange()) {
-            return SchemaChange.BREAKING;
-          } else {
-            return SchemaChange.NON_BREAKING;
-          }
-        }
-      }
+    if (mostRecentFetchEvent.isPresent() && !mostRecentFetchEvent.map(ActorCatalogFetchEvent::getActorCatalogId).equals(currentSourceCatalogId)) {
+      return SchemaChange.NON_BREAKING;
     }
 
     return SchemaChange.NO_CHANGE;

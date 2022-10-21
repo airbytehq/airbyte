@@ -630,9 +630,25 @@ public class MockData {
     return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
   }
 
+  public static List<ActorCatalogFetchEvent> actorCatalogFetchEventsSameSource() {
+    final ActorCatalogFetchEvent actorCatalogFetchEvent1 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_1)
+        .withActorCatalogId(ACTOR_CATALOG_ID_1)
+        .withActorId(SOURCE_ID_1)
+        .withConfigHash("CONFIG_HASH")
+        .withConnectorVersion("1.0.0");
+    final ActorCatalogFetchEvent actorCatalogFetchEvent2 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_2)
+        .withActorCatalogId(ACTOR_CATALOG_ID_2)
+        .withActorId(SOURCE_ID_1)
+        .withConfigHash("1394")
+        .withConnectorVersion("1.2.0");
+    return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
+  }
+
   public static List<ActorCatalogFetchEventWithCreationDate> actorCatalogFetchEventsForAggregationTest() {
-    OffsetDateTime now = OffsetDateTime.now();
-    OffsetDateTime yesterday = OffsetDateTime.now().minusDays(1l);
+    final OffsetDateTime now = OffsetDateTime.now();
+    final OffsetDateTime yesterday = OffsetDateTime.now().minusDays(1l);
 
     final ActorCatalogFetchEvent actorCatalogFetchEvent1 = new ActorCatalogFetchEvent()
         .withId(ACTOR_CATALOG_FETCH_EVENT_ID_1)
