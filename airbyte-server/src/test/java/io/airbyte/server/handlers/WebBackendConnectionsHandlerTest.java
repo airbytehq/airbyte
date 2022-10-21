@@ -269,7 +269,7 @@ class WebBackendConnectionsHandlerTest {
             .catalog(modifiedCatalog));
 
     expectedWithNewSchema = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead,
-        new OperationReadList().operations(expected.getOperations()), SchemaChange.NO_CHANGE, now, modifiedCatalog, null)
+        new OperationReadList().operations(expected.getOperations()), SchemaChange.NON_BREAKING, now, modifiedCatalog, null)
             .catalogDiff(new CatalogDiff().transforms(List.of(
                 new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
                     .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
@@ -610,7 +610,7 @@ class WebBackendConnectionsHandlerTest {
             .prefix(expected.getPrefix())
             .syncCatalog(expected.getSyncCatalog())
             .status(expected.getStatus())
-            .schedule(expected.getSchedule()));
+            .schedule(expected.getSchedule()).breakingChange(false));
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
 
@@ -654,7 +654,8 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
         new ConnectionRead()
             .connectionId(expected.getConnectionId())
-            .operationIds(connectionRead.getOperationIds()));
+            .operationIds(connectionRead.getOperationIds())
+            .breakingChange(false));
     when(connectionsHandler.updateConnection(any())).thenReturn(
         new ConnectionRead()
             .connectionId(expected.getConnectionId())
@@ -667,7 +668,7 @@ class WebBackendConnectionsHandlerTest {
             .prefix(expected.getPrefix())
             .syncCatalog(expected.getSyncCatalog())
             .status(expected.getStatus())
-            .schedule(expected.getSchedule()));
+            .schedule(expected.getSchedule()).breakingChange(false));
     when(operationsHandler.updateOperation(operationUpdate)).thenReturn(new OperationRead().operationId(operationUpdate.getOperationId()));
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
 
@@ -714,7 +715,7 @@ class WebBackendConnectionsHandlerTest {
         .prefix(expected.getPrefix())
         .syncCatalog(expectedWithNewSchema.getSyncCatalog())
         .status(expected.getStatus())
-        .schedule(expected.getSchedule());
+        .schedule(expected.getSchedule()).breakingChange(false);
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
@@ -771,7 +772,7 @@ class WebBackendConnectionsHandlerTest {
 
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
-        new ConnectionRead().connectionId(expected.getConnectionId()));
+        new ConnectionRead().connectionId(expected.getConnectionId()).breakingChange(false));
     final ConnectionRead connectionRead = new ConnectionRead()
         .connectionId(expected.getConnectionId())
         .sourceId(expected.getSourceId())
@@ -782,7 +783,8 @@ class WebBackendConnectionsHandlerTest {
         .prefix(expected.getPrefix())
         .syncCatalog(expectedWithNewSchema.getSyncCatalog())
         .status(expected.getStatus())
-        .schedule(expected.getSchedule());
+        .schedule(expected.getSchedule())
+        .breakingChange(false);
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
@@ -841,7 +843,7 @@ class WebBackendConnectionsHandlerTest {
         .prefix(expected.getPrefix())
         .syncCatalog(expectedWithNewSchema.getSyncCatalog())
         .status(expected.getStatus())
-        .schedule(expected.getSchedule());
+        .schedule(expected.getSchedule()).breakingChange(false);
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
@@ -889,7 +891,8 @@ class WebBackendConnectionsHandlerTest {
         .prefix(expected.getPrefix())
         .syncCatalog(expectedWithNewSchema.getSyncCatalog())
         .status(expected.getStatus())
-        .schedule(expected.getSchedule());
+        .schedule(expected.getSchedule())
+        .breakingChange(false);
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
 
     final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
@@ -1138,8 +1141,8 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionRead connectionReadWithoutSourceId = new ConnectionRead();
     final ConnectionRead connectionReadWithSourceId = new ConnectionRead().sourceId(UUID.randomUUID());
 
-    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(null, Optional.of(new ActorCatalogFetchEvent())));
-    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(connectionReadWithoutSourceId, Optional.of(new ActorCatalogFetchEvent())));
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(null, Optional.of(UUID.randomUUID())));
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(connectionReadWithoutSourceId, Optional.of(UUID.randomUUID())));
     assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(connectionReadWithSourceId, Optional.empty()));
   }
 
@@ -1160,7 +1163,7 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionRead connectionReadWithSourceId = new ConnectionRead().sourceCatalogId(UUID.randomUUID()).sourceId(sourceId).breakingChange(true);
 
     assertEquals(SchemaChange.BREAKING, wbHandler.getSchemaChange(connectionReadWithSourceId,
-        Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID()))));
+        Optional.of(UUID.randomUUID())));
   }
 
   @Test
@@ -1170,7 +1173,7 @@ class WebBackendConnectionsHandlerTest {
         new ConnectionRead().sourceCatalogId(UUID.randomUUID()).sourceId(sourceId).breakingChange(false);
 
     assertEquals(SchemaChange.NON_BREAKING, wbHandler.getSchemaChange(connectionReadWithSourceId,
-        Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID()))));
+        Optional.of(UUID.randomUUID())));
   }
 
 }

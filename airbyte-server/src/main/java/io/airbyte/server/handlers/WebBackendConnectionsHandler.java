@@ -44,7 +44,6 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
-import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -163,7 +162,7 @@ public class WebBackendConnectionsHandler {
     return destinationReads.stream().collect(Collectors.toMap(DestinationRead::getDestinationId, Function.identity()));
   }
 
-  private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead)
+  private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead, final Optional<UUID> currentSourceCatalogId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceRead source = getSourceRead(connectionRead.getSourceId());
     final DestinationRead destination = getDestinationRead(connectionRead.getDestinationId());
@@ -181,15 +180,36 @@ public class WebBackendConnectionsHandler {
       webBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
     });
 
-    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
-        configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
-
-    final SchemaChange schemaChange = getSchemaChange(connectionRead, mostRecentFetchEvent);
+    final SchemaChange schemaChange = getSchemaChange(connectionRead, currentSourceCatalogId);
 
     webBackendConnectionRead.setSchemaChange(schemaChange);
 
     return webBackendConnectionRead;
   }
+
+  /*
+   * A breakingChange boolean is stored on the connectionRead object and corresponds to the boolean
+   * breakingChange field on the connection table. If there is not a breaking change, we still have to
+   * check whether there is a non-breaking schema change by fetching the most recent
+   * ActorCatalogFetchEvent. A new ActorCatalogFetchEvent is stored each time there is a source schema
+   * refresh, so if the most recent ActorCatalogFetchEvent has a different actor catalog than the
+   * existing actor catalog, there is a schema change.
+   */
+  /*
+   * private SchemaChange getSchemaChange(final ConnectionRead connectionRead, final Optional<UUID>
+   * currentSourceCatalogId) throws IOException { SchemaChange schemaChange = SchemaChange.NO_CHANGE;
+   *
+   * if (connectionRead.getBreakingChange()) { schemaChange = SchemaChange.BREAKING; } else if
+   * (currentSourceCatalogId.isPresent()) { final Optional<ActorCatalogFetchEvent>
+   * mostRecentFetchEvent =
+   * configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
+   *
+   * if (mostRecentFetchEvent.isPresent()) { if
+   * (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentSourceCatalogId.get())) {
+   * schemaChange = SchemaChange.NON_BREAKING; } } }
+   *
+   * return schemaChange; }
+   */
 
   private WebBackendConnectionListItem buildWebBackendConnectionListItem(
                                                                          final StandardSync standardSync,
@@ -206,11 +226,12 @@ public class WebBackendConnectionsHandler {
     final Optional<JobRead> latestRunningSyncJob = Optional.ofNullable(runningJobByConnectionId.get(standardSync.getConnectionId()));
     final ConnectionRead connectionRead = connectionsHandler.getConnection(standardSync.getConnectionId());
 
-    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
-        latestFetchEvent.map(actorCatalogFetchEventWithCreationDate -> actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent());
+    final Optional<UUID> mostRecentCatalogIdFetchEvent =
+        latestFetchEvent
+            .map(actorCatalogFetchEventWithCreationDate -> actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent().getActorCatalogId());
     // configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
 
-    final SchemaChange schemaChange = getSchemaChange(connectionRead, mostRecentFetchEvent);
+    final SchemaChange schemaChange = getSchemaChange(connectionRead, mostRecentCatalogIdFetchEvent);
 
     final WebBackendConnectionListItem listItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())
@@ -235,7 +256,7 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  SchemaChange getSchemaChange(final ConnectionRead connectionRead, final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent)
+  SchemaChange getSchemaChange(final ConnectionRead connectionRead, final Optional<UUID> mostRecentFetchEvent)
       throws IOException {
     if (connectionRead == null) {
       return SchemaChange.NO_CHANGE;
@@ -246,7 +267,7 @@ public class WebBackendConnectionsHandler {
     if (connectionRead.getSourceId() != null && currentSourceCatalogId.isPresent()) {
 
       if (mostRecentFetchEvent.isPresent()) {
-        if (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentSourceCatalogId.get())) {
+        if (!mostRecentFetchEvent.get().equals(currentSourceCatalogId.get())) {
           if (connectionRead.getBreakingChange()) {
             return SchemaChange.BREAKING;
           } else {
@@ -334,6 +355,7 @@ public class WebBackendConnectionsHandler {
 
     final CatalogDiff diff;
     final AirbyteCatalog syncCatalog;
+    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connection.getSourceCatalogId());
     if (refreshedCatalog.isPresent()) {
       connection.sourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
@@ -365,7 +387,7 @@ public class WebBackendConnectionsHandler {
     }
 
     connection.setSyncCatalog(syncCatalog);
-    return buildWebBackendConnectionRead(connection).catalogDiff(diff);
+    return buildWebBackendConnectionRead(connection, currentSourceCatalogId).catalogDiff(diff);
   }
 
   private Optional<SourceDiscoverSchemaRead> getRefreshedSchema(final UUID sourceId)
@@ -446,7 +468,8 @@ public class WebBackendConnectionsHandler {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
 
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
-    return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
+    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connectionCreate.getSourceCatalogId());
+    return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate), currentSourceCatalogId);
   }
 
   /**
@@ -493,7 +516,8 @@ public class WebBackendConnectionsHandler {
       connectionRead.setSyncCatalog(syncCatalog);
     }
 
-    return buildWebBackendConnectionRead(connectionRead);
+    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connectionRead.getSourceCatalogId());
+    return buildWebBackendConnectionRead(connectionRead, currentSourceCatalogId);
   }
 
   /**

@@ -17,9 +17,11 @@ import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -496,6 +498,49 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
+  void testGetGeographyForConnection() throws IOException {
+    final StandardSync sync = MockData.standardSyncs().get(0);
+    final Geography expected = sync.getGeography();
+    final Geography actual = configRepository.getGeographyForConnection(sync.getConnectionId());
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  void testGetMostRecentActorCatalogFetchEventForSource() throws SQLException, IOException, JsonValidationException {
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+    }
+
+    final OffsetDateTime now = OffsetDateTime.now();
+    final OffsetDateTime yesterday = now.minusDays(1l);
+
+    final List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEvents();
+    final ActorCatalogFetchEvent fetchEvent1 = fetchEvents.get(0);
+    final ActorCatalogFetchEvent fetchEvent2 = fetchEvents.get(1);
+
+    database.transaction(ctx -> {
+      insertCatalogFetchEvent(
+          ctx,
+          fetchEvent1.getActorId(),
+          fetchEvent1.getActorCatalogId(),
+          yesterday);
+      insertCatalogFetchEvent(
+          ctx,
+          fetchEvent2.getActorId(),
+          fetchEvent2.getActorCatalogId(),
+          now);
+
+      return null;
+    });
+
+    final Optional<ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSource(fetchEvent1.getActorId());
+
+    assertEquals(fetchEvent2.getActorCatalogId(), result.get().getActorCatalogId());
+  }
+
+  @Test
   void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException, JsonValidationException {
     for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
       configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
@@ -511,7 +556,7 @@ class ConfigRepositoryE2EReadWriteTest {
       return null;
     });
 
-    Map<UUID, ActorCatalogFetchEventWithCreationDate> result =
+    final Map<UUID, ActorCatalogFetchEventWithCreationDate> result =
         configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
             MockData.SOURCE_ID_2));
 
@@ -519,7 +564,7 @@ class ConfigRepositoryE2EReadWriteTest {
     assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogFetchEvent().getActorCatalogId());
   }
 
-  private void insertCatalogFetchEvent(DSLContext ctx, UUID sourceId, UUID catalogId, OffsetDateTime creationDate) {
+  private void insertCatalogFetchEvent(final DSLContext ctx, final UUID sourceId, final UUID catalogId, final OffsetDateTime creationDate) {
     ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
         .columns(
             ACTOR_CATALOG_FETCH_EVENT.ID,
