@@ -11,8 +11,6 @@ from source_tiktok_marketing.streams import (
     AdGroupsReports,
     Ads,
     AdsAudienceReports,
-    AdsAudienceReportsByCountry,
-    AdsAudienceReportsByProvince,
     AdsReports,
     Advertisers,
     AdvertisersAudienceReports,
@@ -133,9 +131,7 @@ def test_stream_slices_report(advertiser_ids, granularity, slices_expected, pend
         (AdvertisersReports, 44),
         (CampaignsReports, 43),
         (AdvertisersAudienceReports, 6),
-        (AdsAudienceReports, 30),
-        (AdsAudienceReportsByCountry, 30),
-        (AdsAudienceReportsByProvince, 30)
+        (AdsAudienceReports, 30)
     ],
 )
 def test_basic_reports_get_metrics_day(stream, metrics_number):
