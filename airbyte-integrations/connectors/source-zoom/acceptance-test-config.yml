@@ -14,9 +14,8 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 3600
       empty_streams:
-        - "users"
-        - "meetings"
         - "meeting_registrants"
         - "meeting_polls"
         - "meeting_poll_results"
@@ -42,3 +41,4 @@ tests:
           - "start_url"
         "webinars":
           - "start_url"          
+      timeout_seconds: 3600
