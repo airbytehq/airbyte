@@ -4,16 +4,41 @@
 
 
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Tuple,
+    TypedDict,
+)
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import (
+    TokenAuthenticator,
+)
 
 
-def convex_url_base(instance_name) -> str:
+ConvexConfig = TypedDict('ConvexConfig', {
+    'instance_name': str,
+    'access_key': str,
+})
+
+ConvexState = TypedDict('ConvexState', {
+    'snapshot_cursor': Optional[str],
+    'snapshot_has_more': bool,
+    'delta_cursor': Optional[int],
+})
+
+
+def convex_url_base(instance_name: str) -> str:
     if "localhost" in instance_name:
         return instance_name
     return f"https://{instance_name}.convex.cloud"
@@ -21,14 +46,14 @@ def convex_url_base(instance_name) -> str:
 
 # Source
 class SourceConvex(AbstractSource):
-    def _json_schemas(self, config) -> requests.Response:
+    def _json_schemas(self, config: ConvexConfig) -> requests.Response:
         instance_name = config["instance_name"]
         access_key = config["access_key"]
         url = f"{convex_url_base(instance_name)}/api/json_schemas?deltaSchema=true"
         headers = {"Authorization": f"Convex {access_key}"}
         return requests.get(url, headers=headers)
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: Any, config: ConvexConfig) -> Tuple[bool, Any]:
         """
         Connection check to validate that the user-provided config can be used to connect to the underlying API
 
@@ -42,7 +67,7 @@ class SourceConvex(AbstractSource):
         else:
             return False, resp.text
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: ConvexConfig) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
@@ -62,7 +87,7 @@ class SourceConvex(AbstractSource):
 
 
 class ConvexStream(HttpStream, IncrementalMixin):
-    def __init__(self, instance_name: str, access_key: str, table_name: str, json_schema: Any):
+    def __init__(self, instance_name: str, access_key: str, table_name: str, json_schema: Mapping[str, Any]):
         self.instance_name = instance_name
         self.table_name = table_name
         if json_schema:
@@ -72,9 +97,9 @@ class ConvexStream(HttpStream, IncrementalMixin):
         else:
             json_schema = {}
         self.json_schema = json_schema
-        self._snapshot_cursor_value = None
+        self._snapshot_cursor_value: Optional[str] = None
         self._snapshot_has_more = True
-        self._delta_cursor_value = None
+        self._delta_cursor_value: Optional[int] = None
         self._delta_has_more = True
         super().__init__(TokenAuthenticator(access_key, "Convex"))
 
@@ -96,7 +121,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
     state_checkpoint_interval = 128
 
     @property
-    def state(self) -> Mapping[str, Any]:
+    def state(self) -> ConvexState:
         return {
             "snapshot_cursor": self._snapshot_cursor_value,
             "snapshot_has_more": self._snapshot_has_more,
@@ -104,18 +129,21 @@ class ConvexStream(HttpStream, IncrementalMixin):
         }
 
     @state.setter
-    def state(self, value: Mapping[str, Any]):
+    def state(self, value: ConvexState) -> None:
         self._snapshot_cursor_value = value["snapshot_cursor"]
         self._snapshot_has_more = value["snapshot_has_more"]
         self._delta_cursor_value = value["delta_cursor"]
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[ConvexState]:
         # Inner level of pagination shares the same state as outer,
         # and returns None to indicate that we're done.
         return self.state if self._delta_has_more else None
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Optional[ConvexState] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[ConvexState] = None,
     ) -> str:
         if self._snapshot_has_more:
             return "/api/list_snapshot"
@@ -125,10 +153,10 @@ class ConvexStream(HttpStream, IncrementalMixin):
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
+        stream_state: ConvexState,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[ConvexState] = None,
+    ) -> Iterable[Any]:
         resp_json = response.json()
         if self._snapshot_has_more:
             self._snapshot_cursor_value = resp_json["cursor"]
@@ -137,15 +165,15 @@ class ConvexStream(HttpStream, IncrementalMixin):
         else:
             self._delta_cursor_value = resp_json["cursor"]
             self._delta_has_more = resp_json["hasMore"]
-        return resp_json["values"]
+        return list(resp_json["values"])
 
     def request_params(
         self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_state: ConvexState,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[ConvexState] = None,
     ) -> MutableMapping[str, Any]:
-        params = {"tableName": self.table_name}
+        params: Dict[str, Any] = {"tableName": self.table_name}
         if self._snapshot_has_more:
             if self._snapshot_cursor_value:
                 params["cursor"] = self._snapshot_cursor_value
@@ -156,13 +184,13 @@ class ConvexStream(HttpStream, IncrementalMixin):
                 params["cursor"] = self._delta_cursor_value
         return params
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(self, current_stream_state: ConvexState, latest_record: Mapping[str, Any]) -> ConvexState:
         """
         This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`.
         """
         return self.state
 
-    def read_records(self, *args, **kwargs):
+    def read_records(self, *args: Any, **kwargs: Any) -> Iterator[Any]:
         for record in super().read_records(*args, **kwargs):
             ts_ns = record["_ts"]
             ts_seconds = ts_ns / 1e9  # convert from nanoseconds.
