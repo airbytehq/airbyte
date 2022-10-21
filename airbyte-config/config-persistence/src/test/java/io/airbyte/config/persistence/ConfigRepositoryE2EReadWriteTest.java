@@ -503,16 +503,9 @@ class ConfigRepositoryE2EReadWriteTest {
     final Geography actual = configRepository.getGeographyForConnection(sync.getConnectionId());
 
     assertEquals(expected, actual);
+  }
 
-    @Test
-  void testGetMostRecentActorCatalogFetchEventForSource() throws SQLException, IOException, JsonValidationException {
-    UUID actorId = UUID.randomUUID();
-    UUID workspaceId = UUID.randomUUID();
-    UUID actorCatalogId1 = UUID.randomUUID();
-    UUID actorCatalogId2 = UUID.randomUUID();
-    UUID actorDefinitionId = UUID.randomUUID();
-
-@Test
+  @Test
   void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException, JsonValidationException {
     for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
       configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
