@@ -5,6 +5,7 @@ connectionSpecification:
   type: object
   required:
     - type
+    - customer_name
     - token_uri
     - auth_provider_x509_cert_url
     - auth_uri
@@ -14,6 +15,11 @@ connectionSpecification:
     - client_id
     - client_email
   properties:
+    customer_name:
+      type: string
+      description: The name of the customer to connect to.
+      examples:
+        - "exported_customer"
     type:
       type: string
       description: the type of authentication used to access the Google Ad Manager API

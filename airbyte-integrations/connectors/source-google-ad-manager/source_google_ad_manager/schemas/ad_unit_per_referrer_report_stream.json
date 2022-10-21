@@ -13,7 +13,8 @@
     "referrer": { "title": "Referrer", "type": "string" },
     "hour": { "title": "Hour", "type": "integer" },
     "click": { "title": "Click", "type": "integer" },
-    "date": { "title": "Date", "type": "string", "format": "date-time" }
+    "date": { "title": "Date", "type": "string", "format": "date-time" },
+    "customer_name": { "title": "Customer Name", "type": "string" }
   },
   "required": [
     "cpm_cpc_revenue",
@@ -24,6 +25,7 @@
     "hour",
     "date",
     "referrer",
-    "click"
+    "click",
+    "customer_name"
   ]
 }

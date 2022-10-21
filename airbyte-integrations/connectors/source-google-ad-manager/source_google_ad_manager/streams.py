@@ -142,7 +142,7 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
         """
         return self.run_report(report_job)
 
-    def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         """the main method that read the records from the report"""
         try:
             report_job_id = self.get_query(self.report_job)
@@ -164,8 +164,9 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         _type_: _description_
     """
 
-    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, start_date: Mapping, end_date: Mapping) -> None:
+    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, start_date: Mapping, end_date: Mapping, customer_name: str) -> None:
         super().__init__(google_ad_manager_client)
+        self.customer_name = customer_name
         self.report_job = self.generate_report_query(start_date=start_date, end_date=end_date)
 
     def generate_report_query(self, start_date: Mapping, end_date: Mapping) -> Mapping:
@@ -198,6 +199,7 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         Returns:
             _type_: _description_
         """
+        row['customer_name'] = self.customer_name
         return AdUnitPerHourItem.from_dict(row)
     
     @property
@@ -218,9 +220,10 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         BaseGoogleAdManagerReportStream (_type_): _description_
     """
     
-    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, start_date: Mapping, end_date: Mapping) -> None:
+    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, start_date: Mapping, end_date: Mapping, customer_name: str) -> None:
         super().__init__(google_ad_manager_client)
         targeting_values = self.get_custom_targeting_keys_ids("referrer")  # @TODO: I can make this manual instead of getting from the api.
+        self.customer_name = customer_name
         self.report_job = self.generate_report_query(targeting_values, start_date=start_date, end_date=end_date)
 
     def generate_report_query(self, targeting_values: List, start_date: Mapping, end_date: Mapping) -> Mapping:
@@ -260,8 +263,6 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         if name:
             statement_builder = statement_builder.Where("name = :name").WithBindVariable('name', name)
         statement_builder.limit = page_size
-    
-        total_result_set_size = 0
         while True:
             response = custom_targeting_service.getCustomTargetingKeysByStatement(statement_builder.ToStatement())
             if 'results' in response and len(response['results']):
@@ -310,6 +311,7 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         Returns:
             _type_: _description_
         """
+        row['customer_name'] = self.customer_name
         return AdUnitPerReferrerItem.from_dict(row)
 
     @property
