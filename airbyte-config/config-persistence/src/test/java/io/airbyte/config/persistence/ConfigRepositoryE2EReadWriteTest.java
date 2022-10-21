@@ -298,7 +298,7 @@ class ConfigRepositoryE2EReadWriteTest {
     final List<SourceConnection> expectedSources = MockData.sourceConnections().stream()
         .filter(source -> source.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
     final List<SourceConnection> sources = configRepository.listWorkspaceSourceConnection(workspaceId);
-    assertEquals(sources, expectedSources);
+    assertThat(sources).hasSameElementsAs(expectedSources);
   }
 
   @Test
