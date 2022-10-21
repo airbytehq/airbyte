@@ -294,7 +294,7 @@ class ConfigRepositoryE2EReadWriteTest {
 
   @Test
   void testListWorkspaceSources() throws IOException {
-    UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
     final List<SourceConnection> expectedSources = MockData.sourceConnections().stream()
         .filter(source -> source.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
     final List<SourceConnection> sources = configRepository.listWorkspaceSourceConnection(workspaceId);
