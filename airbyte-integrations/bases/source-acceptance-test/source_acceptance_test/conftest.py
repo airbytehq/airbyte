@@ -42,9 +42,9 @@ def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
     return Path(pytestconfig.getoption("--acceptance-test-config")).absolute()
 
 
-@pytest.fixture(name="strict_mode", scope="session")
-def strict_mode(acceptance_test_config: Config):
-    return acceptance_test_config.strict_mode
+@pytest.fixture(name="test_mode", scope="session")
+def test_mode(acceptance_test_config: Config):
+    return acceptance_test_config.test_mode
 
 
 @pytest.fixture(name="connector_config_path")

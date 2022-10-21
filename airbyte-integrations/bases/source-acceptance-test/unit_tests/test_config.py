@@ -16,23 +16,30 @@ def dumb_validator(cls, x):
 
 class TestConfig:
     @pytest.mark.parametrize(
-        "raw_config, expected_strict_mode, expected_error",
+        "raw_config, expected_test_mode, expected_error",
         [
+            pytest.param({"connector_image": "foo", "tests": {}}, None, does_not_raise(), id="No test_mode declared defaults to None."),
             pytest.param(
-                {"connector_image": "foo", "acceptance_tests": {}},
-                None,
+                {"connector_image": "foo", "tests": {}, "test_mode": "strict"},
+                config.Config.StrictMode.strict,
                 does_not_raise(),
-                id="No strict_mode declared -> strict_mode is None and no failure.",
+                id="The test_mode set to strict is a valid enum value is provided.",
             ),
             pytest.param(
-                {"connector_image": "foo", "acceptance_tests": {}, "strict_mode": "unknown"},
-                config.Config.StrictMode.strict,
-                pytest.raises(ValidationError),
-                id="An invalid enum is passed -> ValidationError",
+                {"connector_image": "foo", "tests": {}, "test_mode": "medium"},
+                config.Config.StrictMode.medium,
+                does_not_raise(),
+                id="The test_mode set to strict is a valid enum value is provided.",
             ),
             pytest.param(
-                {"connector_image": "foo", "strict_mode": "strict", "acceptance_tests": {}},
-                config.Config.StrictMode.strict,
+                {"connector_image": "foo", "tests": {}, "test_mode": "light"},
+                config.Config.StrictMode.light,
+                does_not_raise(),
+                id="The test_mode set to strict is a valid enum value is provided.",
+            ),
+            pytest.param(
+                {"connector_image": "foo", "tests": {}, "test_mode": "unknown"},
+                None,
                 pytest.raises(ValidationError),
                 id="The strict_mode set to strict, acceptance tests are not declared -> ValidationError",
             ),
@@ -55,7 +62,7 @@ class TestConfig:
             ),
         ],
     )
-    def test_strict_mode(self, mocker, raw_config, expected_strict_mode, expected_error):
+    def test_test_mode(self, raw_config, expected_test_mode, expected_error):
         with expected_error:
             parsed_config = config.Config.parse_obj(raw_config)
-            assert parsed_config.strict_mode == expected_strict_mode
+            assert parsed_config.test_mode == expected_test_mode
