@@ -343,7 +343,7 @@ class TeamMemberWages(SquareStreamPageParam):
         return 3
 
 
-class Customers(SquareStreamPageParam):
+class Customers(SquareStreamPageJson):
     """Docs: https://developer.squareup.com/reference/square_2021-06-16/customers-api/search-customers"""
     http_method = "POST"
     items_per_page_limit = 100
@@ -424,6 +424,10 @@ class Orders(SquareStreamPageJson):
             json_payload["query"] = json.loads(f'{self.filterbody}"{stream_state[self.cursor_field]}" }}}}}}, {self.sortbody}}}') 
         else:
             json_payload["query"] = json.loads(f'{self.filterbody}"{self.start_date}" }}}}}}, {self.sortbody}}}')
+        
+    #    if next_page_token: 
+    #        json_payload["cursor"] =  next_page_token["cursor"]
+        
 
         return json_payload
 
