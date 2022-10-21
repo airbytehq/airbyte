@@ -21,21 +21,8 @@ definitions:
         to: "{{ config['to_date'] }}"
         language: "{{ config['language'] }}"
         sortBy: "{{ config['sort_by'] }}"
-  top_headlines_requester:
-    $ref: "*ref(definitions.requester)"
-    request_options_provider:
-      request_parameters:
-        q: "{{ config['search_query'] }}"
-        searchIn: "{{ ','.join(config['search_in']) }}"
-        sources: "{{ ','.join(config['sources']) }}"
-        domains: "{{ ','.join(config['domains']) }}"
-        excludeDomains: "{{ ','.join(config['exclude_domains']) }}"
-        from: "{{ config['from_date'] }}"
-        to: "{{ config['to_date'] }}"
-        language: "{{ config['language'] }}"
-        sortBy: "{{ config['sort_by'] }}"
-        country: "{{ config['country'] }}"
-        category: "{{ config['category'] }}"
+        country: "{{ config['country'] if options['use_country'] is defined else None }}"
+        category: "{{ config['category'] if options['use_category'] is defined else None }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -53,10 +40,6 @@ definitions:
         field_name: "page"
     requester:
       $ref: "*ref(definitions.requester)"
-  top_headlines_retriever:
-    $ref: "*ref(definitions.retriever)"
-    requester:
-      $ref: "*ref(definitions.top_headlines_requester)"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -67,8 +50,7 @@ definitions:
       primary_key: "publishedAt"
       path: "/everything"
   top_headlines_stream:
-    retriever:
-      $ref: "*ref(definitions.top_headlines_retriever)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "top_headlines"
       primary_key: "publishedAt"
