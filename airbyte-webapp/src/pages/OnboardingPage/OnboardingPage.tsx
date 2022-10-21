@@ -151,12 +151,10 @@ const OnboardingPage: React.FC = () => {
             </ApiErrorBoundary>
           </Suspense>
           <Footer>
-            <Button secondary onClick={() => handleFinishOnboarding()}>
-              {currentStep === StepType.FINAL ? (
-                <FormattedMessage id="onboarding.closeOnboarding" />
-              ) : (
-                <FormattedMessage id="onboarding.skipOnboarding" />
-              )}
+            <Button variant="secondary" onClick={handleFinishOnboarding}>
+              <FormattedMessage
+                id={currentStep === StepType.FINAL ? "onboarding.closeOnboarding" : "onboarding.skipOnboarding"}
+              />
             </Button>
           </Footer>
         </Content>

@@ -30,8 +30,7 @@ public class ProcessFactoryBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^(?!kubernetes$).*")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("checkProcessFactory")
   public ProcessFactory checkDockerProcessFactory(
                                                   @Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -52,8 +51,7 @@ public class ProcessFactoryBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^kubernetes$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("checkProcessFactory")
   public ProcessFactory checkKubernetesProcessFactory(
                                                       @Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -102,8 +100,7 @@ public class ProcessFactoryBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^(?!kubernetes$).*")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("discoverProcessFactory")
   public ProcessFactory discoverDockerProcessFactory(
                                                      @Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -124,8 +121,7 @@ public class ProcessFactoryBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^kubernetes$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("discoverProcessFactory")
   public ProcessFactory discoverKubernetesProcessFactory(
                                                          @Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -174,8 +170,7 @@ public class ProcessFactoryBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^(?!kubernetes$).*")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("specProcessFactory")
   public ProcessFactory specDockerProcessFactory(
                                                  @Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -196,8 +191,7 @@ public class ProcessFactoryBeanFactory {
   @Singleton
   @Requires(property = "airbyte.worker.env",
             pattern = "(?i)^kubernetes$")
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("specProcessFactory")
   public ProcessFactory specKubernetesProcessFactory(
                                                      @Named("specWorkerConfigs") final WorkerConfigs workerConfigs,

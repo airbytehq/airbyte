@@ -21,6 +21,7 @@ import DestinationPage from "pages/DestinationPage";
 import OnboardingPage from "pages/OnboardingPage";
 import SourcesPage from "pages/SourcesPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
+import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
@@ -139,6 +140,7 @@ export const Routing: React.FC = () => {
 
   useEffectOnce(() => {
     storeUtmFromQuery(search);
+    setSegmentAnonymousId(search);
   });
 
   const analyticsContext = useMemo(
@@ -150,6 +152,7 @@ export const Routing: React.FC = () => {
         : null,
     [user]
   );
+  useGetSegmentAnonymousId();
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
 

@@ -28,9 +28,9 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 #             file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
 #           retriever:
 #             paginator:
-#               type: "LimitPaginator"
+#               type: "DefaultPaginator"
 #               page_size: 10
-#               limit_option:
+#               page_size_option:
 #                 inject_into: request_parameter
 #                 field_name: page_size
 #               page_token_option:
@@ -72,9 +72,9 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 #             file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
 #           retriever:
 #             paginator:
-#               type: "LimitPaginator"
+#               type: "DefaultPaginator"
 #               page_size: 10
-#               limit_option:
+#               page_size_option:
 #                 inject_into: request_parameter
 #                 field_name: page_size
 #               page_token_option:
@@ -118,9 +118,9 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 #             file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
 #           retriever:
 #             paginator:
-#               type: "LimitPaginator"
+#               type: "DefaultPaginator"
 #               page_size: 10
-#               limit_option:
+#               page_size_option:
 #                 inject_into: request_parameter
 #                 field_name: page_size
 #               page_token_option:
@@ -173,9 +173,9 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 #             file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
 #           retriever:
 #             paginator:
-#               type: "LimitPaginator"
+#               type: "DefaultPaginator"
 #               page_size: 10
-#               limit_option:
+#               page_size_option:
 #                 inject_into: request_parameter
 #                 field_name: page_size
 #               page_token_option:
@@ -292,7 +292,7 @@ def test_generate_schema():
         "anyOf"
     ]
     assert {"type": "string"} in declarative_stream["properties"]["primary_key"]["anyOf"]
-    assert {"$ref": "#/definitions/LimitPaginator"} in simple_retriever["properties"]["paginator"]["anyOf"]
+    assert {"$ref": "#/definitions/DefaultPaginator"} in simple_retriever["properties"]["paginator"]["anyOf"]
     assert {"$ref": "#/definitions/NoPagination"} in simple_retriever["properties"]["paginator"]["anyOf"]
     assert {"$ref": "#/definitions/CartesianProductStreamSlicer"} in simple_retriever["properties"]["stream_slicer"]["anyOf"]
     assert {"$ref": "#/definitions/DatetimeStreamSlicer"} in simple_retriever["properties"]["stream_slicer"]["anyOf"]
@@ -330,17 +330,14 @@ def test_generate_schema():
     assert default_error_handler["properties"]["max_retries"]["type"] == "integer"
     assert default_error_handler["properties"]["backoff_strategies"]["type"] == "array"
 
-    limit_paginator = schema["definitions"]["LimitPaginator"]["allOf"][1]
-    assert {"page_size", "limit_option", "page_token_option", "pagination_strategy", "config", "url_base"}.issubset(
-        limit_paginator["required"]
-    )
-    assert limit_paginator["properties"]["page_size"]["type"] == "integer"
-    assert limit_paginator["properties"]["limit_option"]["$ref"] == "#/definitions/RequestOption"
-    assert limit_paginator["properties"]["page_token_option"]["$ref"] == "#/definitions/RequestOption"
-    assert {"$ref": "#/definitions/CursorPaginationStrategy"} in limit_paginator["properties"]["pagination_strategy"]["anyOf"]
-    assert {"$ref": "#/definitions/OffsetIncrement"} in limit_paginator["properties"]["pagination_strategy"]["anyOf"]
-    assert {"$ref": "#/definitions/PageIncrement"} in limit_paginator["properties"]["pagination_strategy"]["anyOf"]
-    assert limit_paginator["properties"]["decoder"]["$ref"] == "#/definitions/JsonDecoder"
+    default_paginator = schema["definitions"]["DefaultPaginator"]["allOf"][1]
+    assert {"page_token_option", "pagination_strategy", "config", "url_base"}.issubset(default_paginator["required"])
+    assert default_paginator["properties"]["page_size_option"]["$ref"] == "#/definitions/RequestOption"
+    assert default_paginator["properties"]["page_token_option"]["$ref"] == "#/definitions/RequestOption"
+    assert {"$ref": "#/definitions/CursorPaginationStrategy"} in default_paginator["properties"]["pagination_strategy"]["anyOf"]
+    assert {"$ref": "#/definitions/OffsetIncrement"} in default_paginator["properties"]["pagination_strategy"]["anyOf"]
+    assert {"$ref": "#/definitions/PageIncrement"} in default_paginator["properties"]["pagination_strategy"]["anyOf"]
+    assert default_paginator["properties"]["decoder"]["$ref"] == "#/definitions/JsonDecoder"
     assert {"$ref": "#/definitions/InterpolatedString"} in http_requester["properties"]["url_base"]["anyOf"]
     assert {"type": "string"} in http_requester["properties"]["path"]["anyOf"]
 

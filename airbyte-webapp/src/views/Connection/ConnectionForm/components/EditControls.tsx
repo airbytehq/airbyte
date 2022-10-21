@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button, LoadingButton } from "components";
+import { Button } from "components";
 
 import styles from "./EditControls.module.scss";
 import { ResponseMessage } from "./ResponseMessage";
@@ -32,18 +32,23 @@ const EditControls: React.FC<EditControlProps> = ({
       {withLine && <div className={styles.line} />}
       <div className={styles.content}>
         <ResponseMessage dirty={dirty} successMessage={successMessage} errorMessage={errorMessage} />
-        <div>
-          <Button type="button" secondary disabled={isSubmitting || (!dirty && !enableControls)} onClick={resetForm}>
+        <div className={styles.buttonsContainer}>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={isSubmitting || (!dirty && !enableControls)}
+            onClick={resetForm}
+          >
             <FormattedMessage id="form.cancel" />
           </Button>
-          <LoadingButton
+          <Button
             className={styles.controlButton}
             type="submit"
             isLoading={isSubmitting}
             disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
           >
             <FormattedMessage id="form.saveChanges" />
-          </LoadingButton>
+          </Button>
         </div>
       </div>
     </>

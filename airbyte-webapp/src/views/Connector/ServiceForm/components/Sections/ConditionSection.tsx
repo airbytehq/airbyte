@@ -1,9 +1,9 @@
 import { useFormikContext, setIn } from "formik";
 import React, { useCallback, useMemo } from "react";
 
-import { DropDown } from "components";
-import { IDataItem } from "components/base/DropDown/components/Option";
 import GroupControls from "components/GroupControls";
+import { DropDown } from "components/ui/DropDown";
+import { IDataItem } from "components/ui/DropDown/components/Option";
 
 import { FormBlock, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";

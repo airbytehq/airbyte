@@ -7,8 +7,8 @@ import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import { Link } from "components";
-import { Text } from "components/base/Text";
 import { CreditsIcon } from "components/icons/CreditsIcon";
+import { Text } from "components/ui/Text";
 
 import { useConfig } from "config";
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";

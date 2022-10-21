@@ -16,28 +16,21 @@ spec:
         - name: airbyte-cron-container
           image: airbyte/cron
           env:
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: airbyte-secrets
-                  key: DATABASE_USER
-            - name: POSTGRES_PWD
-              valueFrom:
-                secretKeyRef:
-                  name: airbyte-secrets
-                  key: DATABASE_PASSWORD
-            - name: DB
-              value: "postgresql"
-            - name: DB_PORT
+            - name: AIRBYTE_VERSION
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: DATABASE_PORT
-            - name: POSTGRES_SEEDS
+                  key: AIRBYTE_VERSION
+            - name: TEMPORAL_HOST
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: DATABASE_HOST
+                  key: TEMPORAL_HOST
+            - name: TEMPORAL_WORKER_PORTS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: TEMPORAL_WORKER_PORTS
             - name: WORKSPACE_ROOT
               valueFrom:
                 configMapKeyRef:

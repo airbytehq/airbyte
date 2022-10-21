@@ -10,11 +10,6 @@ const ComponentContainer = styled.div`
   align-items: center;
 `;
 
-const SmallButton = styled(Button)`
-  margin-left: 8px;
-  padding: 6px 8px 7px;
-`;
-
 interface ConfirmationControlProps {
   component: React.ReactElement;
   showButtons?: boolean;
@@ -57,17 +52,17 @@ const ConfirmationControl: React.FC<ConfirmationControlProps> = ({
       })}
       {isEditInProgress ? (
         <>
-          <SmallButton onClick={onDone} type="button" disabled={disabled}>
+          <Button size="xs" onClick={onDone} type="button" disabled={disabled}>
             <FormattedMessage id="form.done" />
-          </SmallButton>
-          <SmallButton onClick={onCancel} type="button" secondary disabled={disabled}>
+          </Button>
+          <Button size="xs" onClick={onCancel} type="button" variant="secondary" disabled={disabled}>
             <FormattedMessage id="form.cancel" />
-          </SmallButton>
+          </Button>
         </>
       ) : (
-        <SmallButton onClick={handleStartEdit} type="button" disabled={disabled}>
+        <Button size="xs" onClick={handleStartEdit} type="button" disabled={disabled}>
           <FormattedMessage id="form.edit" />
-        </SmallButton>
+        </Button>
       )}
     </ComponentContainer>
   );

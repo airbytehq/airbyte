@@ -1,6 +1,6 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { Card } from "components/base";
+import { Card } from "components/ui/Card";
 
 import { FormBlock, FormConditionItem } from "core/form/types";
 import { GroupLabel } from "views/Connector/ServiceForm/components/Sections/GroupLabel";

@@ -2,7 +2,7 @@ import React, { memo, useMemo } from "react";
 import { Cell, Column, ColumnInstance, SortingRule, useSortBy, useTable } from "react-table";
 import styled from "styled-components";
 
-import { Card } from "components";
+import { Card } from "../Card";
 
 interface PaddingProps {
   left?: number;

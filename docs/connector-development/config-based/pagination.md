@@ -1,6 +1,6 @@
 # Pagination
 
-Given a page size and a pagination strategy, the `LimitPaginator` will point to pages of results for as long as its strategy returns a `next_page_token`.
+Given a page size and a pagination strategy, the `DefaultPaginator` will point to pages of results for as long as its strategy returns a `next_page_token`.
 
 Iterating over pages of result is different from iterating over stream slices.
 Stream slices have semantic value, for instance, a Datetime stream slice defines data for a specific date range. Two stream slices will have data for different date ranges.
@@ -8,8 +8,7 @@ Conversely, pages don't have semantic value. More pages simply means that more r
 
 The paginator is defined by
 
-- `page_size`: The number of records to fetch in a single request
-- `limit_option`: How to specify the page size in the outgoing HTTP request
+- `page_size_option`: How to specify the page size in the outgoing HTTP request
 - `pagination_strategy`: How to compute the next page to fetch
 - `page_token_option`: How to specify the next page to fetch in the outgoing HTTP request
 
@@ -29,13 +28,13 @@ The following paginator example will fetch 5 records per page, and specify the p
 
 ```yaml
 paginator:
-  type: "LimitPaginator"
-  page_size: 5
-  limit_option:
-    inject_into: request_parameter
-    field_name: page_size
+  type: "DefaultPaginator"
+  page_size_option:
+    inject_into: "request_parameter"
+    field_name: "page_size"
   pagination_strategy:
     type: "PageIncrement"
+    page_size: 5
   page_token:
     inject_into: "request_parameter"
     field_name: "page"
@@ -56,17 +55,16 @@ The following paginator example will fetch 5 records per page, and specify the o
 
 ```yaml
 paginator:
-  type: "LimitPaginator"
-  page_size: 5
-  limit_option:
-    inject_into: request_parameter
-    field_name: page_size
+  type: "DefaultPaginator"
+  page_size_option:
+    inject_into: "request_parameter"
+    field_name: "page_size"
   pagination_strategy:
     type: "OffsetIncrement"
+    page_size: 5
   page_token:
     field_name: "offset"
     inject_into: "request_parameter"
-
 ```
 
 Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_data`,
@@ -89,7 +87,7 @@ In this example, the next page of record is defined by setting the `from` reques
 
 ```yaml
 paginator:
-  type: "LimitPaginator"
+  type: "DefaultPaginator"
   <...>
   pagination_strategy:
     type: "CursorPaginationStrategy"
@@ -111,7 +109,7 @@ Some APIs directly point to the URL of the next page to fetch. In this example, 
 
 ```yaml
 paginator:
-  type: "LimitPaginator"
+  type: "DefaultPaginator"
   <...>
   pagination_strategy:
     type: "CursorPaginationStrategy"

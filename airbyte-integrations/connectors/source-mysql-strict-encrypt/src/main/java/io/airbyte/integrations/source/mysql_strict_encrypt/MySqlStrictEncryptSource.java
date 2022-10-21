@@ -62,7 +62,7 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
           //Fail in case SSL mode is preferred
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
-              .withMessage("Unsecured connection not allowed");
+              .withMessage("Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: required, verify-ca, verify-identity");
         }
       }
     }

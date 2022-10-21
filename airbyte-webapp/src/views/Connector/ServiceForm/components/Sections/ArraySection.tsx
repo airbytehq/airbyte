@@ -2,8 +2,8 @@ import { FieldArray, useField } from "formik";
 import React, { useMemo, useState } from "react";
 
 import { ArrayOfObjectsEditor } from "components";
-import { TooltipTable } from "components/base/Tooltip";
 import GroupControls from "components/GroupControls";
+import { TooltipTable } from "components/ui/Tooltip";
 
 import { FormBlock, FormGroupItem, FormObjectArrayItem } from "core/form/types";
 

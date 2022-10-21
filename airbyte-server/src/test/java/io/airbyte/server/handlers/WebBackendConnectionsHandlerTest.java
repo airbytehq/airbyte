@@ -26,7 +26,6 @@ import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSchedule;
 import io.airbyte.api.model.generated.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.model.generated.ConnectionState;
@@ -56,6 +55,7 @@ import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
+import io.airbyte.api.model.generated.WebBackendConnectionListItem;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
@@ -106,6 +106,7 @@ class WebBackendConnectionsHandlerTest {
 
   private SourceRead sourceRead;
   private ConnectionRead connectionRead;
+  private WebBackendConnectionListItem expectedListItem;
   private OperationReadList operationReadList;
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
@@ -118,6 +119,11 @@ class WebBackendConnectionsHandlerTest {
   private static final String FIELD2 = "field2";
   private static final String FIELD3 = "field3";
   private static final String FIELD5 = "field5";
+
+  // needs to match name of file in src/test/resources/icons
+  private static final String SOURCE_ICON = "test-source.svg";
+  private static final String DESTINATION_ICON = "test-destination.svg";
+  private static final String SVG = "<svg>";
 
   @BeforeEach
   void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
@@ -142,14 +148,18 @@ class WebBackendConnectionsHandlerTest {
         configRepository);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
+    standardSourceDefinition.setIcon(SOURCE_ICON);
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
     final StandardDestinationDefinition destinationDefinition = DestinationDefinitionHelpers.generateDestination();
+    destinationDefinition.setIcon(DESTINATION_ICON);
     final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
+    when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
+        .thenReturn(Collections.singletonList(standardSync));
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
     operationReadList = new OperationReadList()
         .operations(List.of(new OperationRead()
@@ -183,6 +193,14 @@ class WebBackendConnectionsHandlerTest {
             .endedAt(now.getEpochSecond())));
 
     when(jobHistoryHandler.getLatestSyncJob(connectionRead.getConnectionId())).thenReturn(Optional.of(jobRead.getJob()));
+
+    expectedListItem = ConnectionHelpers.generateExpectedWebBackendConnectionListItem(
+        standardSync,
+        sourceRead,
+        destinationRead,
+        false,
+        jobRead.getJob().getCreatedAt(),
+        jobRead.getJob().getStatus());
 
     expected = new WebBackendConnectionRead()
         .connectionId(connectionRead.getConnectionId())
@@ -281,20 +299,20 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testWebBackendListConnectionsForWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testWebBackendListConnectionsForWorkspace() throws ConfigNotFoundException, IOException,
+      JsonValidationException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
 
-    final ConnectionReadList connectionReadList = new ConnectionReadList();
-    connectionReadList.setConnections(Collections.singletonList(connectionRead));
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
-    connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
-    when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
-    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
+    final WebBackendConnectionReadList WebBackendConnectionReadList =
+        wbHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
 
-    final WebBackendConnectionReadList WebBackendConnectionReadList = wbHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
     assertEquals(1, WebBackendConnectionReadList.getConnections().size());
-    assertEquals(expected, WebBackendConnectionReadList.getConnections().get(0));
+    assertEquals(expectedListItem, WebBackendConnectionReadList.getConnections().get(0));
+
+    // make sure the icons were loaded into actual svg content
+    assertTrue(expectedListItem.getSource().getIcon().startsWith(SVG));
+    assertTrue(expectedListItem.getDestination().getIcon().startsWith(SVG));
   }
 
   @Test
@@ -311,6 +329,10 @@ class WebBackendConnectionsHandlerTest {
     final WebBackendConnectionRead WebBackendConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionRequestBody);
 
     assertEquals(expected, WebBackendConnectionRead);
+
+    // make sure the icons were loaded into actual svg content
+    assertTrue(expected.getSource().getIcon().startsWith(SVG));
+    assertTrue(expected.getDestination().getIcon().startsWith(SVG));
   }
 
   WebBackendConnectionRead testWebBackendGetConnection(final boolean withCatalogRefresh)

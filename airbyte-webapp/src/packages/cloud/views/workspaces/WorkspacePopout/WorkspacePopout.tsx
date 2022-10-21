@@ -4,7 +4,7 @@ import { components, MenuListProps } from "react-select";
 import styled from "styled-components";
 
 import { Popout } from "components";
-import { IDataItem } from "components/base/DropDown/components/Option";
+import { IDataItem } from "components/ui/DropDown/components/Option";
 
 import { useListCloudWorkspacesAsync } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { useCurrentWorkspace, useWorkspaceService } from "services/workspaces/WorkspacesService";

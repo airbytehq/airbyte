@@ -6,8 +6,9 @@ package io.airbyte.integrations.source.mysql_strict_encrypt;
 
 import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -253,7 +254,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
 
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
-    assertEquals("Unsecured connection not allowed", actual.getMessage());
+    assertTrue(actual.getMessage().contains("Unsecured connection not allowed"));
   }
 
   @Test
@@ -278,7 +279,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
 
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
-    assertNotEquals("Unsecured connection not allowed", actual.getMessage());
+    assertFalse(actual.getMessage().contains("Unsecured connection not allowed"));
   }
 
   @Test

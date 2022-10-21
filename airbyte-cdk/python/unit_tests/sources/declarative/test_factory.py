@@ -27,7 +27,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_h
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import DefaultPaginator
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
@@ -280,9 +280,8 @@ selector:
     class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
     condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
-    type: "LimitPaginator"
-    page_size: 10
-    limit_option:
+    type: "DefaultPaginator"
+    page_size_option:
       inject_into: request_parameter
       field_name: page_size
     page_token_option:
@@ -290,6 +289,7 @@ metadata_paginator:
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ response._metadata.next }}"
+      page_size: 10
     url_base: "https://api.sendgrid.com/v3/"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
@@ -476,9 +476,8 @@ def test_config_with_defaults():
           file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
         retriever:
           paginator:
-            type: "LimitPaginator"
-            page_size: 10
-            limit_option:
+            type: "DefaultPaginator"
+            page_size_option:
               inject_into: request_parameter
               field_name: page_size
             page_token_option:
@@ -486,6 +485,7 @@ def test_config_with_defaults():
             pagination_strategy:
               type: "CursorPagination"
               cursor_value: "{{ response._metadata.next }}"
+              page_size: 10
           requester:
             path: "/v3/marketing/lists"
             authenticator:
@@ -515,25 +515,25 @@ def test_config_with_defaults():
     assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
     assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["result"]
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
-    assert isinstance(stream.retriever.paginator, LimitPaginator)
+    assert isinstance(stream.retriever.paginator, DefaultPaginator)
 
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com"
-    assert stream.retriever.paginator.page_size == 10
+    assert stream.retriever.paginator.pagination_strategy.get_page_size() == 10
 
 
-def test_create_limit_paginator():
+def test_create_default_paginator():
     content = """
       paginator:
-        type: "LimitPaginator"
-        page_size: 10
+        type: "DefaultPaginator"
         url_base: "https://airbyte.io"
-        limit_option:
+        page_size_option:
           inject_into: request_parameter
           field_name: page_size
         page_token_option:
           inject_into: path
         pagination_strategy:
           type: "CursorPagination"
+          page_size: 50
           cursor_value: "{{ response._metadata.next }}"
     """
     config = parser.parse(content)
@@ -542,7 +542,7 @@ def test_create_limit_paginator():
 
     paginator_config = config["paginator"]
     paginator = factory.create_component(paginator_config, input_config)()
-    assert isinstance(paginator, LimitPaginator)
+    assert isinstance(paginator, DefaultPaginator)
     page_token_option = paginator.page_token_option
     assert isinstance(page_token_option, RequestOption)
     assert page_token_option.inject_into == RequestOptionType.path
@@ -679,10 +679,10 @@ def test_validation_type_missing_required_fields():
 def test_validation_wrong_interface_type():
     content = """
     paginator:
-      type: "LimitPaginator"
+      type: "DefaultPaginator"
       page_size: 10
       url_base: "https://airbyte.io"
-      limit_option:
+      page_size_option:
         inject_into: request_parameter
         field_name: page_size
       page_token_option:
@@ -717,10 +717,10 @@ def test_validation_create_composite_error_handler():
 def test_validation_wrong_object_type():
     content = """
       paginator:
-        type: "LimitPaginator"
+        type: "DefaultPaginator"
         page_size: 10
         url_base: "https://airbyte.io"
-        limit_option:
+        page_size_option:
           inject_into: request_parameter
           field_name: page_size
         page_token_option:

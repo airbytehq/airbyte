@@ -7,24 +7,18 @@ import { ITableDataItem } from "components/EntityTable/types";
 import { getConnectionTableData } from "components/EntityTable/utils";
 
 import { RoutePaths } from "pages/routePaths";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
-import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
+import { WebBackendConnectionListItem } from "../../../../../core/request/AirbyteClient";
 
 interface IProps {
-  connections: WebBackendConnectionRead[];
+  connections: WebBackendConnectionListItem[];
 }
 
 const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
   const navigate = useNavigate();
   const { syncManualConnection } = useSyncActions();
 
-  const { sourceDefinitions } = useSourceDefinitionList();
-
-  const { destinationDefinitions } = useDestinationDefinitionList();
-
-  const data = getConnectionTableData(connections, sourceDefinitions, destinationDefinitions, "source");
+  const data = getConnectionTableData(connections, "source");
 
   const onSync = useCallback(
     async (connectionId: string) => {

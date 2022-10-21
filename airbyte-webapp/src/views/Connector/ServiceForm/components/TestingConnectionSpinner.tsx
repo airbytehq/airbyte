@@ -5,15 +5,13 @@ import styled from "styled-components";
 import { Button } from "components";
 import { ProgressBar } from "components/ui/ProgressBar";
 
+import styles from "./TestingConnectionSpinner.module.scss";
+
 const LoadingContainer = styled.div`
   margin: 34px 0 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-`;
-
-const StyledButton = styled(Button)`
-  margin-left: 10px;
 `;
 
 // Progress Bar runs 2min for checking connections
@@ -29,9 +27,14 @@ const TestingConnectionSpinner: React.FC<TestingConnectionSpinnerProps> = (props
     <LoadingContainer>
       <ProgressBar runTime={PROGRESS_BAR_TIME} />
       {props.isCancellable && (
-        <StyledButton secondary type="button" onClick={() => props.onCancelTesting?.()}>
+        <Button
+          className={styles.styledButton}
+          variant="secondary"
+          type="button"
+          onClick={() => props.onCancelTesting?.()}
+        >
           <FormattedMessage id="form.cancel" />
-        </StyledButton>
+        </Button>
       )}
     </LoadingContainer>
   );

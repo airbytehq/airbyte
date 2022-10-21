@@ -54,7 +54,7 @@ public class PostgresDestinationStrictEncrypt extends SpecModifyingDestination i
           //Fail in case SSL mode is disable, allow or prefer
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
-              .withMessage("Unsecured connection not allowed");
+              .withMessage("Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: require, verify-ca, verify-full");
         }
       }
     }

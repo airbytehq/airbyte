@@ -1,10 +1,12 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { useSearchParams } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
-import { Button, LoadingButton } from "components";
+import { Button } from "components";
 
 import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";
@@ -30,7 +32,7 @@ const Block = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 10px 0px;
+  margin: 10px 0;
 `;
 const CreditView = styled.div`
   text-transform: uppercase;
@@ -123,15 +125,17 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         </Count>
       </CreditView>
       <Actions>
-        <LoadingButton
+        <Button
           disabled={!selfServiceCheckoutEnabled}
           type="button"
+          size="xs"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
+          icon={<FontAwesomeIcon icon={faPlus} />}
         >
           <FormattedMessage id="credits.buyCredits" />
-        </LoadingButton>
-        <Button as="a" target="_blank" href={config.links.contactSales}>
+        </Button>
+        <Button size="xs" onClick={() => window.open(config.links.contactSales, "_blank")}>
           <FormattedMessage id="credits.talkToSales" />
         </Button>
       </Actions>

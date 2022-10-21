@@ -6,7 +6,7 @@ import styled from "styled-components";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
-import PageTitle from "components/PageTitle";
+import { PageHeader } from "components/ui/PageHeader";
 import { SideMenu, CategoryItem } from "components/ui/SideMenu";
 
 import useConnector from "hooks/services/useConnector";
@@ -95,7 +95,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
-      pageTitle={<PageTitle title={<FormattedMessage id="sidebar.settings" />} />}
+      pageTitle={<PageHeader title={<FormattedMessage id="sidebar.settings" />} />}
     >
       <Content>
         <SideMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />

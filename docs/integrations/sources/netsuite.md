@@ -114,6 +114,7 @@ The connector is restricted by Netsuite [Concurrency Limit per Integration](http
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.1.0  | 2022-09-15 | [16093](https://github.com/airbytehq/airbyte/pull/16093) | Initial Alpha release |
+| Version | Date       | Pull Request                                             | Subject                     |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.1.1   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state |
+| 0.1.0   | 2022-09-15 | [16093](https://github.com/airbytehq/airbyte/pull/16093) | Initial Alpha release       |

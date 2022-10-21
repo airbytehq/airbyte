@@ -195,8 +195,7 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("checkWorkerConfigs")
   public WorkerConfigs checkWorkerConfigs(
                                           final WorkerEnvironment workerEnvironment,
@@ -257,8 +256,7 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("discoverWorkerConfigs")
   public WorkerConfigs discoverWorkerConfigs(
                                              final WorkerEnvironment workerEnvironment,
@@ -319,8 +317,7 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            pattern = "(?i)^(?!data_plane).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("specWorkerConfigs")
   public WorkerConfigs specWorkerConfigs(
                                          final WorkerEnvironment workerEnvironment,

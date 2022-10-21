@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 import withMock from "storybook-addon-mock";
 
-import { Card } from "components/base/Card";
+import { Card } from "components/ui/Card";
 
 import { ConnectorSpecification } from "core/domain/connector";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";

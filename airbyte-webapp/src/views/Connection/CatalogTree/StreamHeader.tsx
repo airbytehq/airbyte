@@ -10,7 +10,7 @@ import { Cell, CheckBox, DropDownRow, Row, Switch } from "components";
 import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import { Arrow as ArrowBlock } from "./components/Arrow";
 import { IndexerType, PathPopout } from "./components/PathPopout";

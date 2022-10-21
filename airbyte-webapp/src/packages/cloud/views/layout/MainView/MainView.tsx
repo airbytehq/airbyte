@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Link, Outlet } from "react-router-dom";
 
 import { LoadingPage } from "components";
-import { AlertBanner } from "components/base/Banner/AlertBanner";
+import { AlertBanner } from "components/ui/Banner/AlertBanner";
 
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";

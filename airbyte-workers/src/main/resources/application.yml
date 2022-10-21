@@ -149,7 +149,6 @@ airbyte:
           memory:
             limit: ${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT:}
             request: ${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST:}
-    plane: ${WORKER_PLANE:CONTROL_PLANE}
     replication:
       orchestrator:
         cpu:
