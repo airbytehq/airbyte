@@ -45,6 +45,7 @@ setup(
     install_requires=[
         "click~=8.0.3",
         "fastapi>=0.68.0,<0.69.0",
+        "Flask>=2.0.2",
         "pydantic>=1.8.0,<2.0.0",
         "uvicorn>=0.15.0,<0.16.0",
         f"airbyte_api_client @ file://{os.getcwd()}/build/airbyte_api_client",
