@@ -1094,6 +1094,7 @@ class Users(JiraStream):
             return "user/search?maxResults=" + str(self._max_results) + "&query="
         return "user/search?query="
 
+
 class Workflows(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get
