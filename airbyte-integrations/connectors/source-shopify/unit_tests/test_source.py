@@ -81,18 +81,22 @@ def test_check_connection(config, mocker):
     assert source.check_connection(logger_mock, config) == (True, None)
 
 
-# def test_read_records(config, mocker):
-#     records = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
-#     stream_slice = records[0]
-#     stream = OrderRefunds(config)
-#     mocker.patch("source_shopify.source.IncrementalShopifyStream.read_records", return_value=records)
-#     assert next(stream.read_records(stream_slice=stream_slice)) == records[0]
+def test_read_records(config, mocker):
+    records = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
+    stream_slice = records[0]
+    stream = OrderRefunds(config)
+    mocker.patch("source_shopify.source.IncrementalShopifyStream.read_records", return_value=records)
+    assert next(stream.read_records(stream_slice=stream_slice)) == records[0]
 
 
-# def test_get_updated_state(config, mocker):
-#     current_stream_state = [{"created_at": "2022-10-10T06:21:53-07:00"}]
-#     latest_record = {"created_at": "2022-10-10T06:22:53-07:00"}
-#     parent_state = {"orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}
-#     updated_state = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
-#     stream = OrderRefunds(config)
-#     assert stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record) == updated_state
+def test_request_params(config):
+    stream = OrderRefunds(config)
+    assert stream.request_params(next_page_token={"next_page": 2}) == {"limit": 250, "next_page": 2}
+
+
+def test_get_updated_state(config, mocker):
+    current_stream_state = {"created_at": ""}
+    latest_record = {"created_at": "2022-10-10T06:21:53-07:00"}
+    updated_state = {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}
+    stream = OrderRefunds(config)
+    assert stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record) == updated_state
