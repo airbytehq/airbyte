@@ -237,7 +237,8 @@ class DefaultSynchronousSchedulerClientTest {
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withDiscoverCatalogId(expectedCatalogId);
       when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), any(JobDiscoverCatalogConfig.class)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
-      final SynchronousResponse<UUID> response = schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE, DOCKER_IMAGE_TAG);
+      final SynchronousResponse<UUID> response =
+          schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE, DOCKER_IMAGE_TAG, PROTOCOL_VERSION);
       assertEquals(expectedCatalogId, response.getOutput());
     }
 
