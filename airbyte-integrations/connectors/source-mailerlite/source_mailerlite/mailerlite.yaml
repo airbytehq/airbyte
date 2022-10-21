@@ -105,17 +105,40 @@ definitions:
       path: "/api/timezones"
   
   # API Docs: https://developers.mailerlite.com/docs/forms.html
-  # forms_stream:
-  #   $ref: "*ref(definitions.base_stream)"
-  #   $options:
-  #     name: "forms"
-  #     primary_key: "id"
-  #     path: "/api/forms/promotion" # add type requester promotion, popup, embedded
-  #   retriever:
-  #     $ref: "*ref(definitions.retriever)"
-  #     paginator:
-  #       $ref: "*ref(definitions.increment_paginator)"
+  forms_popup_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "forms_popup"
+      primary_key: "id"
+      path: "/api/forms/popup"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+  
+  # API Docs: https://developers.mailerlite.com/docs/forms.html
+  forms_embedded_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "forms_embedded"
+      primary_key: "id"
+      path: "/api/forms/embedded"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
 
+  # API Docs: https://developers.mailerlite.com/docs/forms.html
+  forms_promotion_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "forms_promotion"
+      primary_key: "id"
+      path: "/api/forms/promotion"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
 
 streams:
   - "*ref(definitions.subscribers_stream)"
@@ -123,7 +146,10 @@ streams:
   - "*ref(definitions.automations_stream)"
   - "*ref(definitions.campaigns_stream)"
   - "*ref(definitions.timezones_stream)"
-  # - "*ref(definitions.forms_stream)"
+  - "*ref(definitions.forms_popup_stream)"
+  - "*ref(definitions.forms_embedded_stream)"
+  - "*ref(definitions.forms_promotion_stream)"
 
 check:
-  stream_names: ["subscribers"]
+  stream_names: ["timezones"]
+
