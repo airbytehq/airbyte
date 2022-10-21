@@ -42,7 +42,7 @@ class RedisDestination extends BaseConnector implements Destination {
     RedisCache redisCache = null;
     try {
       if (redisConfig.isSsl()) {
-        RedisSslUtil.setupSsl(config.get(PARAM_SSL_MODE));
+        RedisSslUtil.setupCertificates(config.get(PARAM_SSL_MODE));
       }
       redisCache = RedisCacheFactory.newInstance(redisConfig);
       // check connection and write permissions

@@ -6,8 +6,12 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RedisSslUtil {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedisSslUtil.class);
 
   public static final String PARAM_CLIENT_CERTIFICATE = "client_certificate";
   public static final String PARAM_CLIENT_KEY = "client_key";
@@ -25,18 +29,34 @@ public class RedisSslUtil {
   private static final String TRUST_PASSWORD = "truststore_pwd";
   private static final String TRUST_TYPE = "JKS";
 
-  public static void setupSsl(final JsonNode encryption) {
+  /**
+   * set javax.net.ssl.keyStore and javax.net.ssl.trustStore based on provided ca.crt, client.crt, client.kay
+   *
+   * @param sslModeConfig json ssl mode config
+   */
+  public static void setupCertificates(final JsonNode sslModeConfig) {
     try {
-      if (encryption.has(PARAM_SSL_MODE) && encryption.get(PARAM_SSL_MODE).asText().equals(PARAM_SSL_MODE_VERIFY_FULL)) {
-        final String clientKeyPassword = getOrGeneratePassword(encryption);
-        initCertificateStores(encryption.get(PARAM_CA_CERTIFICATE).asText(),
-            encryption.get(PARAM_CLIENT_CERTIFICATE).asText(), encryption.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
+      if (isFullVerifyMode(sslModeConfig)) {
+        LOGGER.info("Preparing ssl certificates for {} mode", PARAM_SSL_MODE_VERIFY_FULL);
+        final String clientKeyPassword = getOrGeneratePassword(sslModeConfig);
+        initCertificateStores(sslModeConfig.get(PARAM_CA_CERTIFICATE).asText(),
+            sslModeConfig.get(PARAM_CLIENT_CERTIFICATE).asText(), sslModeConfig.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
       }
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
   }
 
+  private static boolean isFullVerifyMode(JsonNode sslModeParam) {
+    return sslModeParam.has(PARAM_SSL_MODE) && sslModeParam.get(PARAM_SSL_MODE).asText().equals(PARAM_SSL_MODE_VERIFY_FULL);
+  }
+
+  /**
+   * Generate random pass if key pass param is empty
+   *
+   * @param sslModeConfig json ssl mode config
+   * @return client key password
+   */
   private static String getOrGeneratePassword(final JsonNode sslModeConfig) {
     final String clientKeyPassword;
     if (sslModeConfig.has(PARAM_CLIENT_KEY_PASSWORD) && !sslModeConfig.get(PARAM_CLIENT_KEY_PASSWORD).asText().isEmpty()) {
@@ -47,6 +67,15 @@ public class RedisSslUtil {
     return clientKeyPassword;
   }
 
+  /**
+   * The method generate certificates based on provided ca.crt, client.crt, client.kay.
+   * Generated keys
+   *
+   * @param caCertificate certificate to validate client certificate and key.
+   * @param clientCertificate The client certificate.
+   * @param clientKey The client key.
+   * @param clientKeyPassword The client key password.
+   */
   private static void initCertificateStores(
       final String caCertificate,
       final String clientCertificate,
@@ -54,14 +83,18 @@ public class RedisSslUtil {
       final String clientKeyPassword)
       throws IOException, InterruptedException {
 
-    createFile(CLIENT_CERTIFICATE, clientCertificate);
-    createFile(CLIENT_KEY, clientKey);
+    LOGGER.info("Try to generate {}", CLIENT_KEY_STORE);
+    createCertificateFile(CLIENT_CERTIFICATE, clientCertificate);
+    createCertificateFile(CLIENT_KEY, clientKey);
     runProcess("openssl pkcs12 -export -in " + CLIENT_CERTIFICATE + " -inkey " + CLIENT_KEY + " -out " + CLIENT_KEY_STORE + " -passout pass:"
         + clientKeyPassword + "", Runtime.getRuntime());
+    LOGGER.info("{} Generated", CLIENT_KEY_STORE);
 
-    createFile(CLIENT_CA_CERTIFICATE, caCertificate);
+    LOGGER.info("Try to generate {}", TRUST_STORE);
+    createCertificateFile(CLIENT_CA_CERTIFICATE, caCertificate);
     runProcess("keytool -import -file " + CLIENT_CA_CERTIFICATE + " -alias redis-ca -keystore " + TRUST_STORE + " -storepass " + TRUST_PASSWORD
         + "  -noprompt", Runtime.getRuntime());
+    LOGGER.info("{} Generated", TRUST_STORE);
 
     setSystemProperty(clientKeyPassword);
   }
@@ -74,7 +107,7 @@ public class RedisSslUtil {
     }
   }
 
-  private static void createFile(final String fileName, final String fileValue) throws IOException {
+  private static void createCertificateFile(final String fileName, final String fileValue) throws IOException {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
     }
