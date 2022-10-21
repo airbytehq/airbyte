@@ -780,6 +780,7 @@ public class AirbyteAcceptanceTestHarness {
       throws InterruptedException, ApiException {
     JobRead job = originalJob;
 
+    LOGGER.info("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());
     final Instant waitStart = Instant.now();
     while (jobStatuses.contains(job.getStatus())) {
       if (Duration.between(waitStart, Instant.now()).compareTo(maxWaitTime) > 0) {
@@ -789,7 +790,7 @@ public class AirbyteAcceptanceTestHarness {
       sleep(1000);
 
       job = jobsApi.getJobInfo(new JobIdRequestBody().id(job.getId())).getJob();
-      LOGGER.info("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());
+      LOGGER.debug("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());
     }
     return job;
   }
@@ -797,13 +798,15 @@ public class AirbyteAcceptanceTestHarness {
   @SuppressWarnings("BusyWait")
   public static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId)
       throws ApiException, InterruptedException {
+    LOGGER.info("fetching connection state.");
     ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     int count = 0;
     while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {
-      LOGGER.info("fetching connection state. attempt: {}", count++);
+      LOGGER.debug("fetching connection state. attempt: {}", count++);
       connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
       sleep(1000);
     }
+    LOGGER.info("fetched connection state. attempt: {}", count);
     return connectionState;
   }
 
