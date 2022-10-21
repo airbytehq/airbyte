@@ -1,26 +1,70 @@
 # Connector Specification Reference
 
-The [connector specification](../understanding-airbyte/airbyte-protocol.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.
+The [connector specification](../understanding-airbyte/airbyte-protocol.md#spec) describes what inputs can be used to configure a connector.
+The connector specification uses YAML syntax to build the configuration.
 
-## Demoing your specification
+This is an empty specification. It has some fields used by Airbyte to display the guide during setup and other additional properties.
 
-While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-webapp/docs/HowTo-ConnectionSpecification.md).
-
-
-### Secret obfuscation
-
-By default, any fields in a connector's specification are visible can be read in the UI. However, if you want to obfuscate fields in the UI and API \(for example when working with a password\), add the `airbyte_secret` annotation to your connector's `spec.json` e.g:
-
-```text
-"password": {
-  "type": "string",
-  "examples": ["hunter2"],
-  "airbyte_secret": true
-},
+```yaml
+documentationUrl: https://docs.airbyte.io/integrations/sources/example
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Example Spec
+  type: object
+  required:
+    - api_key
+  additionalProperties: true
+  properties:
+    {}
 ```
 
-Here is an example of what the password field would look like: ![Screen Shot 2021-08-04 at 11 15 04 PM](https://user-images.githubusercontent.com/6246757/128300633-7f379b05-5f4a-46e8-ad88-88155e7f4260.png)
+### Types 
+Each property must have a `type`. The speficiation allows you to use string, integer, number, boolean and array.
+You can also use the object type to create more complex structures which will be described later, see Using `oneOf`s section. 
+Also properties have a title and description and examples.
 
+Let's start building our example configuration:
+
+```yaml
+properties:
+  api_key:
+    type: string
+    title: API Key
+    description:  The API key generated following the instructions in the docs
+  max_request_per_minute:
+    type: integer
+    title: Maximum Requests per Minute
+    description: >-
+      The maximum request your account allow to request to Example API.
+      Check the <a href="https://docs.example.com/max-request-per-minute">docs</a>.
+      You can use reference links using the example above.
+  categories_to_remove:
+    type: array
+    title: Categories to Remove from Reports
+    description: Check all categories in the documentation
+    examples:
+      - blue
+      - green
+      - red
+  sandbox:
+    type: boolean
+    title: Sandbox Account
+    description: If your account is using sandbox endpoint or production one.
+```
+
+### Use of the Default value
+...
+### Secret obfuscation
+
+By default, any fields in a connector's specification are visible can be read in the UI. However, if you want to obfuscate fields in the UI and API \(for example when working with a password\), add the `airbyte_secret` annotation to your connector's `spec.yaml` e.g:
+
+```yaml
+  api_key:
+    type: string
+    title: API Key
+    description:  The API key generated following the instructions in the docs
+    airbyte_secret: true
+```
 
 ### Ordering fields in the UI
 
@@ -28,27 +72,26 @@ Use the `order` property inside a definition to determine the order in which it 
 
 For example, using the following spec: 
 
+```yaml
+properties:
+  api_key:
+    type: string
+    order: 0
+  max_request_per_minute:
+    type: integer
+    order: 1
+  categories_to_remove:
+    type: array
+    order: 2
+  sandbox:
+    type: boolean
+    order: 3
+  region: 
+    type: string
+    order: 4
 ```
-{
-  "username": {"type": "string", "order": 1},
-  "password": {"type": "string", "order": 2},
-  "cloud_provider": {
-    "order": 0,
-    "type": "object",
-    "properties" : {
-      "name": {"type": "string", "order": 0},
-      "region": {"type": "string", "order": 1}
-    }
-  }
-}
-```
-
-will result in the following configuration on the UI: 
-
-![Screen Shot 2021-11-18 at 7 14 04 PM](https://user-images.githubusercontent.com/6246757/142558797-135f6c73-f05d-479f-9d88-e20cae85870c.png)
-
-
-
+### Restrict Inputs using Pattern Match
+...
 
 ### Multi-line String inputs
 
@@ -66,39 +109,49 @@ we need to preserve the line-breaks. In other words, the string `---- BEGIN PRIV
 
 By default, string inputs in the UI can lose their linebreaks. In order to accept multi-line strings in the UI, annotate your string field with `multiline: true` e.g:
 
-```text
-"private_key": {
-  "type": "string",
-  "description": "RSA private key to use for SSH connection",
-  "airbyte_secret": true,
-  "multiline": true
-},
+```yaml
+private_key:
+  type: string
+  description: RSA private key to use for SSH connection
+  airbyte_secret: true
+  multiline": true
 ```
 
 this will display a multi-line textbox in the UI like the following screenshot: ![Screen Shot 2021-08-04 at 11 13 09 PM](https://user-images.githubusercontent.com/6246757/128300404-1dc35323-bceb-4f93-9b81-b23cc4beb670.png)
 
-### Hiding inputs in the UI
+### Using Enum 
+...
+
+### Datetime Inputs
+...
+### Hiding Inputs in the UI
 In some rare cases, a connector may wish to expose an input that is not available in the UI, but is still potentially configurable when running the connector outside of Airbyte, or via the UI. For example, exposing a very technical configuration like the page size of an outgoing HTTP requests may only be relevant to power users, and therefore shouldn't be available via the UI but might make sense to expose via the API. 
 
 In this case, use the `"airbyte_hidden": true` keyword to hide that field from the UI. E.g: 
 
-```
-{
-  "first_name": {
-    "type": "string",
-    "title": "First Name"
-  },
-  "secret_name": {
-    "type": "string",
-    "title": "You can't see me!!!",
-    "airbyte_hidden": true
-  }
-}
+```yaml
+properties:
+  api_key:
+    type: string
+    order: 0
+  max_request_per_minute:
+    type: integer
+    order: 1
+  categories_to_remove:
+    type: array
+    order: 2
+  sandbox:
+    type: boolean
+    order: 3
+  page_size:
+    type: integer
+    title: Page Size
+    description: The number of records retrieve by each request.
+    default: 100
+    airbyte_hidden: true
 ```
 
 ![hidden fields](../.gitbook/assets/spec_reference_hidden_field_screenshot.png)
-
-Results in the following form: 
 
 
 ### Using `oneOf`s
@@ -121,60 +174,40 @@ Let's look at the [source-file](../integrations/sources/file.md) implementation 
 
 In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned `const` value unique to that item. This helps the UI and the connector distinguish between the option that was chosen by the user. This can be displayed with adapting the file source spec to this example:
 
-```javascript
-{
-  "connection_specification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "File Source Spec",
-    "type": "object",
-    "required": ["dataset_name", "format", "url", "provider"],
-    "properties": {
-      "dataset_name": {
-        ...
-      },
-      "format": {
-        ...
-      },
-      "reader_options": {
-        ...
-      },
-      "url": {
-        ...
-      },
-      "provider": {
-        "type": "object",
-        "oneOf": [
-          {
-            "required": [
-              "option_title"
-            ],
-            "properties": {
-              "option_title": {
-                "type": "string",
-                "const": "HTTPS: Public Web",
-                "order": 0
-              }
-            }
-          },
-          {
-            "required": [
-              "option_title"
-            ],
-            "properties": {
-              "option_title": {
-                "type": "string",
-                "const": "GCS: Google Cloud Storage",
-                "order": 0
-              },
-              "service_account_json": {
-                "type": "string",
-                "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\" target=\"_blank\">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
-              }
-            }
-          }
-        ]
-      }
-  }
-}
+```yaml
+credentials:
+  type: object
+  title: Authentication
+  description: Credentials for connecting to the Example Connector
+  oneOf:
+   - title: Authenticate via Example (OAuth)
+     type: object
+     required:
+       - auth_type
+       - api_key
+     properties:
+        auth_type:
+          type: string
+          const: APIKEY
+        api_key:
+          title: API Key
+          type: string
+   - title: Service Account Key Authentication
+     type: object
+     required:
+       - auth_type
+       - username
+       - password
+     properties:
+        auth_type:
+          type: string
+          const: USERNAME
+        username:
+          type: string
+          title: Service Account Information.
+          description: Enter your Service Account
+        password:
+          type: string
+          title: Another Parameter.
+          pattern: 
 ```
-
