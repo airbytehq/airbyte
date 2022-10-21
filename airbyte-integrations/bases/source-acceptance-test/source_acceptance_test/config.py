@@ -145,10 +145,12 @@ class TestConfig(BaseConfig):
 class Config(BaseConfig):
     class StrictMode(str, Enum):
         strict = "strict"
+        medium = "medium"
+        light = "light"
 
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     tests: TestConfig = Field(description="List of the tests with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")
-    strict_mode: Optional[StrictMode] = Field(
+    test_mode: Optional[StrictMode] = Field(
         description="Strict mode corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run."
     )
