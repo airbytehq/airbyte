@@ -6,14 +6,21 @@ package io.airbyte.workers.temporal.sync;
 
 public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
+   private final SchedulerHandler schedulerHandler;
+
+  @Override
   public boolean shouldRefreshSchema() {
     return false;
   }
 
+  @Override
   public void refreshSchema() {
+
   }
 
-  public boolean shouldRunSync(){
+  @Override
+  public boolean shouldRunSync() {
     return true;
   }
+
 }

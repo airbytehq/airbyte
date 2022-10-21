@@ -18,4 +18,5 @@ public interface RefreshSchemaActivity {
 
   @ActivityMethod()
   boolean shouldRunSync();
+
 }
