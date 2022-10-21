@@ -11,17 +11,17 @@ import { pathDisplayName } from "../PathPopout";
 import { StreamFieldTableProps } from "../StreamFieldTable";
 import { TreeRowWrapper } from "../TreeRowWrapper";
 import { StreamConnectionHeader } from "./StreamConnectionHeader";
-import styles from "./StreamPanel.module.scss";
+import styles from "./StreamDetailsPanel.module.scss";
 import { StreamPanelHeader } from "./StreamPanelHeader";
 
-interface StreamPanelProps extends StreamFieldTableProps {
+interface StreamDetailsPanelProps extends StreamFieldTableProps {
   disabled?: boolean;
   onClose: () => void;
   onSelectedChange: () => void;
   stream?: AirbyteStream;
 }
 
-export const StreamPanel: React.FC<StreamPanelProps> = ({
+export const StreamDetailsPanel: React.FC<StreamDetailsPanelProps> = ({
   config,
   disabled,
   onPkSelect,

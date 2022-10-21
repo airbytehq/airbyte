@@ -19,7 +19,7 @@ import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/Connecti
 
 import styles from "./CatalogSection.module.scss";
 import { CatalogTreeTableRow } from "./next/CatalogTreeTableRow";
-import { StreamPanel } from "./next/StreamPanel";
+import { StreamDetailsPanel } from "./next/StreamDetailsPanel";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
@@ -165,7 +165,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
       {isRowExpanded &&
         hasFields &&
         (isNewStreamsTableEnabled ? (
-          <StreamPanel
+          <StreamDetailsPanel
             config={config}
             disabled={mode === "readonly"}
             syncSchemaFields={flattenedFields}

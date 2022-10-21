@@ -96,6 +96,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             {syncSchema.syncMode}
           </HeaderCell>
         ) : (
+          // TODO: Replace with Dropdown/Popout
           syncSchema.syncMode
         )}
       </Cell>
