@@ -10,7 +10,6 @@ from typing import Generic, List, Mapping, Optional, Set, TypeVar
 
 from pydantic import BaseModel, Field, root_validator, validator
 from pydantic.generics import GenericModel
-from source_acceptance_test import strict_mode_validations
 
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
@@ -185,8 +184,3 @@ class Config(BaseConfig):
         for test_name, test_configurations in values["tests"].items():
             migrated_config["acceptance_tests"][test_name] = {"tests": test_configurations}
         return migrated_config
-
-    @root_validator(pre=False, skip_on_failure=True)
-    def strict_mode_validation(cls, values: dict):
-        [validator(values) for validator in strict_mode_validations.VALIDATORS if values.get("test_mode") == Config.TestMode.strict]
-        return values
