@@ -150,12 +150,14 @@ export const ConnectionReplicationTab: React.FC = () => {
           validationSchema={connectionValidationSchema(mode)}
           onSubmit={onFormSubmit}
           enableReinitialize
+          validateOnChange={false}
         >
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
             <Form>
               <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
               <EditControls
                 isSubmitting={isSubmitting}
+                submitDisabled={!isValid}
                 dirty={dirty}
                 resetForm={async () => {
                   resetForm();
