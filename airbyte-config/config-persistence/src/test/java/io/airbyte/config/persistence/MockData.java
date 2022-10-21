@@ -625,8 +625,8 @@ public class MockData {
         .withId(ACTOR_CATALOG_FETCH_EVENT_ID_2)
         .withActorCatalogId(ACTOR_CATALOG_ID_2)
         .withActorId(SOURCE_ID_2)
-        .withConfigHash("1394")
-        .withConnectorVersion("1.2.0");
+        .withConfigHash("1395")
+        .withConnectorVersion("1.42.0");
     return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
   }
 
