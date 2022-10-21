@@ -24,10 +24,7 @@ class InterpolatedRequestInputProvider:
 
     def __post_init__(self, options: Mapping[str, Any]):
 
-        if self.request_inputs is None:
-            self._request_inputs = {}
-        else:
-            self._request_inputs = self.request_inputs
+        self._request_inputs = self.request_inputs or {}
         if isinstance(self.request_inputs, str):
             self._interpolator = InterpolatedString(self.request_inputs, default="", options=options)
         else:
