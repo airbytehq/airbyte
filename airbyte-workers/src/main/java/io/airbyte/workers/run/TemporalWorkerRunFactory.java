@@ -47,6 +47,7 @@ public class TemporalWorkerRunFactory {
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(),
+            // TODO ProtocolVersion
             attemptId, job.getConfig().getSync(), connectionId);
         return toOutputAndStatus(output);
       };
