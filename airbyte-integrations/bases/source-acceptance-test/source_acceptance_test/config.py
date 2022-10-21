@@ -3,6 +3,7 @@
 #
 
 
+import logging
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
@@ -189,6 +190,7 @@ class Config(BaseConfig):
     @root_validator(pre=True)
     def legacy_format_adapter(cls, values: dict) -> dict:
         if ALLOW_LEGACY_CONFIG and cls.is_legacy(values):
+            logging.warn("The acceptance-test-config.yml file is in a legacy format. Please migrate to the latest format.")
             return cls.migrate_legacy_to_current_config(values)
         else:
             return values
