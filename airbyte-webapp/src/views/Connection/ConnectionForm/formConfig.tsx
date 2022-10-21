@@ -113,8 +113,10 @@ export const createConnectionValidationSchema = ({
                 .trim()
                 .required("form.empty.error")
                 .test("validCron", "form.cronExpression.error", validateCronExpression)
-                .test("validCronFrequency", "form.cronExpression.underOneHourNotAllowed", (expression) =>
-                  allowSubOneHourCronExpressions ? true : validateCronFrequencyOneHourOrMore(expression)
+                .test(
+                  "validCronFrequency",
+                  "form.cronExpression.underOneHourNotAllowed",
+                  (expression) => allowSubOneHourCronExpressions || validateCronFrequencyOneHourOrMore(expression)
                 ),
               cronTimeZone: yup.string().required("form.empty.error"),
             })
