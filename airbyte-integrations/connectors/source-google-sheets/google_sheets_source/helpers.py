@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog
+from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
 from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
 from googleapiclient import discovery
@@ -72,7 +72,8 @@ class Helpers(object):
         }
 
         return AirbyteStream(
-            name=sheet_name, json_schema=sheet_json_schema, supported_sync_modes=["full_refresh"], source_defined_primary_key=[["row_id"]]
+            name=sheet_name, json_schema=sheet_json_schema,
+            supported_sync_modes=[SyncMode.full_refresh], source_defined_primary_key=[["row_id"]]
         )
 
     @staticmethod
