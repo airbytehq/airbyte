@@ -4,7 +4,7 @@ import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
 export class ConnectorBuilderRequestService extends AirbyteRequestService {
   public readStream(readParams: StreamReadRequestBody) {
-    // TODO: uncomment this once there is a real API to call
+    // TODO: uncomment this and remove mock responses once there is a real API to call
     // return readStream(readParams, this.requestOptions);
     console.log("------------");
     console.log(`Stream: ${readParams.stream}`);
@@ -84,7 +84,7 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
   }
 
   public listStreams(listParams: StreamsListRequestBody) {
-    // TODO: uncomment this once there is a real API to call
+    // TODO: uncomment this and remove mock responses once there is a real API to call
     // return listStreams(listParams, this.requestOptions);
     console.log(`Received listStreams body: ${JSON.stringify(listParams)}`);
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
