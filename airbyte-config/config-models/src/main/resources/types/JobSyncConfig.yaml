@@ -52,6 +52,10 @@ properties:
     type: array
     items:
       "$ref": StandardSyncOperation.yaml
+  webhookOperationConfigs:
+    description: The webhook operation configs belonging to this workspace. Must conform to WebhookOperationConfigs.yaml.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   state:
     description: optional state of the previous run. this object is defined per integration.
     "$ref": State.yaml

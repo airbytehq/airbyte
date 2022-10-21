@@ -34,6 +34,7 @@ from source_github.streams import (
     PullRequestStats,
     Releases,
     Repositories,
+    RepositoryStats,
     Reviews,
     Stargazers,
     Tags,
@@ -72,8 +73,12 @@ def test_internal_server_error_retry(time_mock):
     [
         (HTTPStatus.BAD_GATEWAY, {}, None),
         (HTTPStatus.INTERNAL_SERVER_ERROR, {}, None),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": 120}, 120),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": 1655804724}, 300.0),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, None),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "30"}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "120"}, 120),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804454"}, 60.0),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804724"}, 300.0),
     ],
 )
 @patch("time.time", return_value=1655804424.0)
@@ -84,6 +89,28 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+@pytest.mark.parametrize(
+    ("http_status", "response_headers", "text"),
+    [
+        (HTTPStatus.OK, {"X-RateLimit-Resource": "graphql"}, '{"errors": [{"type": "RATE_LIMITED"}]}'),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0"}, ""),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, ""),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, ""),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, ""),
+        (HTTPStatus.BAD_GATEWAY, {}, ""),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, ""),
+    ],
+)
+def test_should_retry(http_status, response_headers, text):
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock()
+    response_mock.status_code = http_status
+    response_mock.headers = response_headers
+    response_mock.text = text
+    response_mock.json = lambda: json.loads(text)
+    assert stream.should_retry(response_mock)
 
 
 @responses.activate
@@ -468,7 +495,8 @@ def test_stream_project_columns():
 
     ProjectsResponsesAPI.register(data)
 
-    stream = ProjectColumns(Projects(**repository_args_with_start_date), **repository_args_with_start_date)
+    projects_stream = Projects(**repository_args_with_start_date)
+    stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
 
     stream_state = {}
 
@@ -510,6 +538,8 @@ def test_stream_project_columns():
 
     ProjectsResponsesAPI.register(data)
 
+    projects_stream._session.cache.clear()
+    stream._session.cache.clear()
     records = read_incremental(stream, stream_state=stream_state)
     assert records == [
         {"id": 24, "name": "column_24", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-04-01T10:00:00Z"},
@@ -580,6 +610,9 @@ def test_stream_project_cards():
     ProjectsResponsesAPI.register(data)
 
     stream_state = {}
+
+    projects_stream._session.cache.clear()
+    project_columns_stream._session.cache.clear()
     records = read_incremental(stream, stream_state=stream_state)
 
     assert records == [
@@ -860,7 +893,9 @@ def test_stream_team_members_full_refresh():
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/members", json=[{"login": "login2"}])
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/memberships/login2", json={"username": "login2"})
 
-    stream = TeamMembers(parent=Teams(**organization_args), **repository_args)
+    teams_stream = Teams(**organization_args)
+    stream = TeamMembers(parent=teams_stream, **repository_args)
+    teams_stream._session.cache.clear()
     records = list(read_full_refresh(stream))
 
     assert records == [
@@ -950,6 +985,7 @@ def test_stream_commit_comment_reactions_incremental_read():
         json=[{"id": 154935433, "created_at": "2022-02-01T17:00:00Z"}],
     )
 
+    stream._parent_stream._session.cache.clear()
     records = read_incremental(stream, stream_state)
 
     assert records == [
