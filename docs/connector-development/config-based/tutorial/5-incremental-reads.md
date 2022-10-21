@@ -58,7 +58,7 @@ The file should look like
 
 where the start date should be 7 days in the past.
 
-And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`.
+And we'll update the `path` in the connector manifest to point to `/{{ config.start_date }}`.
 Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/exchangerates_data/latest`:
 
 ```yaml
@@ -85,11 +85,11 @@ For example:
 The connector will now always read data for the start date, which is not exactly what we want.
 Instead, we would like to iterate over all the dates between the `start_date` and today and read data for each day.
 
-We can do this by adding a `DatetimeStreamSlicer` to the connector definition, and update the `path` to point to the stream_slice's `start_date`:
+We can do this by adding a `DatetimeStreamSlicer` to the connector manifest, and update the `path` to point to the stream_slice's `start_date`:
 
 More details on the stream slicers can be found [here](../understanding-the-yaml-file/stream-slicers.md).
 
-Let's first define a stream slicer at the top level of the connector definition:
+Let's first define a stream slicer at the top level of the connector manifest:
 
 ```yaml
 definitions:
@@ -166,7 +166,7 @@ definitions:
       stream_cursor_field: "date"
 ```
 
-The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
+The full connector manifest should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
 
 ```yaml
 version: "0.1.0"

@@ -32,7 +32,7 @@ definitions:
           type: string
   Version:
     type: string
-    description: "connector definition version"
+    description: "connector manifest version"
   Streams:
     type: array
     items:

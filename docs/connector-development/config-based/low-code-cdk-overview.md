@@ -51,8 +51,8 @@ To use the low-code framework to build an REST API Source connector:
 1. Generate the API key for the source you want to build a connector for
 2. Set up the project on your local machine
 3. Set up your local development environment
-4. Update the connector spec and config​uration
-5. Update the connector definition
+4. Update the connector spec and configuration
+5. Update the connector manifest
 6. Test the connector
 7. Add the connector to the Airbyte platform
 

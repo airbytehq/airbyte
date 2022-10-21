@@ -37,7 +37,7 @@ paths:
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/streams/list:
     post:
-      summary: List all streams present in the connector definition, along with their specific request URLs
+      summary: List all streams present in the connector manifest, along with their specific request URLs
       requestBody:
         content:
           application/json:
@@ -102,7 +102,7 @@ components:
       properties:
         definition:
           $ref: "#/components/schemas/ConnectorDefinitionBody"
-          description: The config-based connector definition contents
+          description: The config-based connector manifest contents
         stream:
           type: string
           description: Name of the stream to read
@@ -155,7 +155,7 @@ components:
       properties:
         definition:
           $ref: "#/components/schemas/ConnectorDefinitionBody"
-          description: The config-based connector definition contents
+          description: The config-based connector manifest contents
     StreamsListRead:
       type: object
       required:
@@ -165,7 +165,7 @@ components:
           type: array
           items:
             type: object
-            description: The stream names present in the connector definition
+            description: The stream names present in the connector manifest
             required:
               - name
               - url

@@ -129,7 +129,7 @@ Once you've finished iterating on the changes to a connector as specified in its
    ```
    
 4. OPTIONAL: Necessary if this is a new connector, or the automated connector version bump fails
-   * Update/Add the connector definition in the Airbyte connector index to use the new version:
+   * Update/Add the connector manifest in the Airbyte connector index to use the new version:
         * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
         * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
    
