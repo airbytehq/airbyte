@@ -191,30 +191,6 @@ public class WebBackendConnectionsHandler {
     return webBackendConnectionRead;
   }
 
-  /*
-   * A breakingChange boolean is stored on the connectionRead object and corresponds to the boolean
-   * breakingChange field on the connection table. If there is not a breaking change, we still have to
-   * check whether there is a non-breaking schema change by fetching the most recent
-   * ActorCatalogFetchEvent. A new ActorCatalogFetchEvent is stored each time there is a source schema
-   * refresh, so if the most recent ActorCatalogFetchEvent has a different actor catalog than the
-   * existing actor catalog, there is a schema change.
-   */
-  /*
-   * private SchemaChange getSchemaChange(final ConnectionRead connectionRead, final Optional<UUID>
-   * currentSourceCatalogId) throws IOException { SchemaChange schemaChange = SchemaChange.NO_CHANGE;
-   *
-   * if (connectionRead.getBreakingChange()) { schemaChange = SchemaChange.BREAKING; } else if
-   * (currentSourceCatalogId.isPresent()) { final Optional<ActorCatalogFetchEvent>
-   * mostRecentFetchEvent =
-   * configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
-   *
-   * if (mostRecentFetchEvent.isPresent()) { if
-   * (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentSourceCatalogId.get())) {
-   * schemaChange = SchemaChange.NON_BREAKING; } } }
-   *
-   * return schemaChange; }
-   */
-
   private WebBackendConnectionListItem buildWebBackendConnectionListItem(
                                                                          final StandardSync standardSync,
                                                                          final Map<UUID, SourceRead> sourceReadById,
@@ -259,6 +235,14 @@ public class WebBackendConnectionsHandler {
     return listItem;
   }
 
+  /*
+   * A breakingChange boolean is stored on the connectionRead object and corresponds to the boolean
+   * breakingChange field on the connection table. If there is not a breaking change, we still have to
+   * check whether there is a non-breaking schema change by fetching the most recent
+   * ActorCatalogFetchEvent. A new ActorCatalogFetchEvent is stored each time there is a source schema
+   * refresh, so if the most recent ActorCatalogFetchEvent has a different actor catalog than the
+   * existing actor catalog, there is a schema change.
+   */
   @VisibleForTesting
   SchemaChange getSchemaChange(
                                final ConnectionRead connectionRead,
