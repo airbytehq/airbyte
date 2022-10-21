@@ -608,7 +608,7 @@ class WebBackendConnectionsHandlerTest {
             .prefix(expected.getPrefix())
             .syncCatalog(expected.getSyncCatalog())
             .status(expected.getStatus())
-            .schedule(expected.getSchedule()));
+            .schedule(expected.getSchedule()).breakingChange(false));
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
 
@@ -652,7 +652,8 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
         new ConnectionRead()
             .connectionId(expected.getConnectionId())
-            .operationIds(connectionRead.getOperationIds()));
+            .operationIds(connectionRead.getOperationIds())
+            .breakingChange(false));
     when(connectionsHandler.updateConnection(any())).thenReturn(
         new ConnectionRead()
             .connectionId(expected.getConnectionId())
@@ -665,7 +666,7 @@ class WebBackendConnectionsHandlerTest {
             .prefix(expected.getPrefix())
             .syncCatalog(expected.getSyncCatalog())
             .status(expected.getStatus())
-            .schedule(expected.getSchedule()));
+            .schedule(expected.getSchedule()).breakingChange(false));
     when(operationsHandler.updateOperation(operationUpdate)).thenReturn(new OperationRead().operationId(operationUpdate.getOperationId()));
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
 
@@ -712,7 +713,7 @@ class WebBackendConnectionsHandlerTest {
         .prefix(expected.getPrefix())
         .syncCatalog(expectedWithNewSchema.getSyncCatalog())
         .status(expected.getStatus())
-        .schedule(expected.getSchedule());
+        .schedule(expected.getSchedule()).breakingChange(false);
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
@@ -769,7 +770,7 @@ class WebBackendConnectionsHandlerTest {
 
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
-        new ConnectionRead().connectionId(expected.getConnectionId()));
+        new ConnectionRead().connectionId(expected.getConnectionId()).breakingChange(false));
     final ConnectionRead connectionRead = new ConnectionRead()
         .connectionId(expected.getConnectionId())
         .sourceId(expected.getSourceId())
@@ -780,7 +781,8 @@ class WebBackendConnectionsHandlerTest {
         .prefix(expected.getPrefix())
         .syncCatalog(expectedWithNewSchema.getSyncCatalog())
         .status(expected.getStatus())
-        .schedule(expected.getSchedule());
+        .schedule(expected.getSchedule())
+        .breakingChange(false);
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
@@ -839,7 +841,7 @@ class WebBackendConnectionsHandlerTest {
         .prefix(expected.getPrefix())
         .syncCatalog(expectedWithNewSchema.getSyncCatalog())
         .status(expected.getStatus())
-        .schedule(expected.getSchedule());
+        .schedule(expected.getSchedule()).breakingChange(false);
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
@@ -887,7 +889,8 @@ class WebBackendConnectionsHandlerTest {
         .prefix(expected.getPrefix())
         .syncCatalog(expectedWithNewSchema.getSyncCatalog())
         .status(expected.getStatus())
-        .schedule(expected.getSchedule());
+        .schedule(expected.getSchedule())
+        .breakingChange(false);
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
 
     final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);

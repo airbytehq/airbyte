@@ -177,17 +177,15 @@ public class WebBackendConnectionsHandler {
 
     SchemaChange schemaChange = SchemaChange.NO_CHANGE;
 
-    if (currentSourceCatalogId.isPresent()) {
+    if (connectionRead.getBreakingChange()) {
+      schemaChange = SchemaChange.BREAKING;
+    } else if (currentSourceCatalogId.isPresent()) {
       final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
           configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
 
       if (mostRecentFetchEvent.isPresent()) {
         if (!mostRecentFetchEvent.get().getActorCatalogId().equals(currentSourceCatalogId.get())) {
-          if (connectionRead.getBreakingChange()) {
-            schemaChange = SchemaChange.BREAKING;
-          } else {
-            schemaChange = SchemaChange.NON_BREAKING;
-          }
+          schemaChange = SchemaChange.NON_BREAKING;
         }
       }
     }
