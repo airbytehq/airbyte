@@ -64,7 +64,6 @@ airbyte:
     sync:
       task-queue: ${DATA_SYNC_TASK_QUEUES:SYNC}
     plane:
-      connection-ids-mvp: ${CONNECTION_IDS_FOR_MVP_DATA_PLANE:}
       service-account:
         credentials-path: ${DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH:}
         email: ${DATA_PLANE_SERVICE_ACCOUNT_EMAIL:}
