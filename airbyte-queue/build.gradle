@@ -1,7 +1,0 @@
-plugins {
-    id 'java-library'
-}
-
-dependencies {
-    implementation 'com.baidu:leansoft-bigqueue:0.7.3'
-}
