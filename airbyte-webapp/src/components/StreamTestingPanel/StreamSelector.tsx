@@ -15,7 +15,7 @@ export const StreamSelector: React.FC<unknown> = () => {
   return (
     <Listbox value={selectedStream.name} onChange={setSelectedStream}>
       <Listbox.Button className={classNames(styles.button, styles.centered)}>
-        <Text as="h1" size="sm">
+        <Text className={styles.capitalized} as="h1" size="sm">
           {selectedStream.name}
         </Text>
         <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
@@ -27,7 +27,9 @@ export const StreamSelector: React.FC<unknown> = () => {
             <Listbox.Option key={streamName} value={streamName} className={styles.option}>
               {({ active }) => (
                 <div className={classNames(styles.optionValue, { [styles.active]: active })}>
-                  <Text size="lg">{streamName}</Text>
+                  <Text className={styles.capitalized} size="lg">
+                    {streamName}
+                  </Text>
                 </div>
               )}
             </Listbox.Option>
