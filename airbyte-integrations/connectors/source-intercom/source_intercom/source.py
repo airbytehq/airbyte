@@ -500,7 +500,7 @@ class SourceIntercom(AbstractSource):
     """
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        authenticator = VersionApiAuthenticator(token=config["access_token"])
+        authenticator = VersionApiAuthenticator(token=config["credentials"]["access_token"])
         try:
             url = urljoin(IntercomStream.url_base, "/tags")
             auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
@@ -514,7 +514,7 @@ class SourceIntercom(AbstractSource):
         config["start_date"] = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
 
-        auth = VersionApiAuthenticator(token=config["access_token"])
+        auth = VersionApiAuthenticator(token=config["credentials"]["access_token"])
         return [
             Admins(authenticator=auth, **config),
             Companies(authenticator=auth, **config),

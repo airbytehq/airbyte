@@ -14,20 +14,42 @@
         "examples": ["2020-11-16T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
-      "access_token": {
-        "title": "Access token",
-        "type": "string",
-        "description": "Access token for making authenticated requests. See the Intercom docs for more information https://go.estuary.dev/b5C9aN",
-        "airbyte_secret": true
+      "credentials": {
+        "oneOf": [{
+          "type": "object",
+          "title": "OAuth2",
+          "x-oauth2-provider": "intercom",
+          "required": ["access_token"],
+          "properties": {
+            "access_token": {
+              "title": "Access token",
+              "type": "string",
+              "description": "Access token for making authenticated requests. See the Intercom docs for more information https://go.estuary.dev/b5C9aN",
+              "airbyte_secret": true
+            }
+          }
+        }, {
+          "type": "object",
+          "title": "Access Token",
+          "required": ["access_token"],
+          "properties": {
+            "access_token": {
+              "title": "Access token",
+              "type": "string",
+              "description": "Access token for making authenticated requests. See the Intercom docs for more information https://go.estuary.dev/b5C9aN",
+              "airbyte_secret": true
+            }
+          }
+        }]
       }
     }
   },
   "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": [],
-      "oauthFlowInitParameters": [],
-      "oauthFlowOutputParameters": [["access_token"]]
-    }
+    "provider": "intercom",
+    "authUrlTemplate": "https://app.intercom.com/oauth?client_id={{ client_id }}&state={{ state }}",
+    "accessTokenUrlTemplate": "https://api.intercom.io/auth/eagle/token",
+    "accessTokenBody": "client_id={{ urlencode client_id }}&client_secret={{ urlencode client_secret }}&code={{ urlencode code }}",
+    "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
+    "accessTokenResponseMap": "{\"access_token\": \"/token"}"
   }
 }
