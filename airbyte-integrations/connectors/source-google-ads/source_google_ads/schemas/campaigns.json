@@ -246,7 +246,7 @@
       "type": ["null", "integer"]
     },
     "metrics.ctr": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "metrics.conversions": {
       "type": ["null", "integer"]
@@ -271,8 +271,7 @@
       "format": "date"
     },
     "segments.hour": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": ["null", "number"]
     }
   }
 }
