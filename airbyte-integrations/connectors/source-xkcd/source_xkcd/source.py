@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Dict
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -18,14 +18,13 @@ class XkcdStream(HttpStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-    
+
     def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
         if next_page_token:
             next_token: str = next_page_token["next_token"]
             return f"/{next_token}/info.0.json"
         return "/info.0.json"
-    
-    
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self.last_comic < response.json().get("num"):
             self.last_comic = response.json().get("num")
@@ -47,8 +46,10 @@ class XkcdStream(HttpStream):
         record = response.json()
         yield record
 
+
 class Xkcd(XkcdStream):
     primary_key = "num"
+
 
 # Source
 class SourceXkcd(AbstractSource):
