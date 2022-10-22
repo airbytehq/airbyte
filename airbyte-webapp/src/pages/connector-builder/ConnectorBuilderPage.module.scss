@@ -1,12 +1,13 @@
 @use "scss/colors";
+@use "scss/variables";
 
 .leftPanel {
   overflow: hidden;
 }
 
 .rightPanel {
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
+  border-top-left-radius: variables.$border-radius-md;
+  border-bottom-left-radius: variables.$border-radius-md;
   background-color: colors.$white;
 }
 
