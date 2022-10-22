@@ -4,6 +4,13 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
+
+import datadog.trace.api.Trace;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -15,6 +22,7 @@ import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
@@ -22,6 +30,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
@@ -43,6 +52,7 @@ import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
@@ -50,6 +60,7 @@ import io.temporal.activity.ActivityExecutionContext;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -101,11 +112,18 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.airbyteApiClient = airbyteApiClient;
   }
 
+  // Marking task queue as nullable because we changed activity signature; thus runs started before
+  // this new change will have taskQueue set to null. We should remove it after the old runs are all
+  // finished in next release.
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
                                       final IntegrationLauncherConfig sourceLauncherConfig,
                                       final IntegrationLauncherConfig destinationLauncherConfig,
-                                      final StandardSyncInput syncInput) {
+                                      final StandardSyncInput syncInput,
+                                      @Nullable final String taskQueue) {
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+        destinationLauncherConfig.getDockerImage(), SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
     final ActivityExecutionContext context = Activity.getExecutionContext();
     return temporalUtils.withBackgroundHeartbeat(
         () -> {
@@ -148,7 +166,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   new CancellationHandler.TemporalCancellationHandler(context),
                   airbyteApiClient,
                   airbyteVersion,
-                  () -> context);
+                  () -> context,
+                  Optional.ofNullable(taskQueue));
 
           final ReplicationOutput attemptOutput = temporalAttempt.get();
           final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
@@ -168,19 +187,18 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   }
 
   private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
-    final long totalBytesReplicated = output.getReplicationAttemptSummary().getBytesSynced();
-    final long totalRecordsReplicated = output.getReplicationAttemptSummary().getRecordsSynced();
-
-    final StandardSyncSummary syncSummary = new StandardSyncSummary();
-    syncSummary.setBytesSynced(totalBytesReplicated);
-    syncSummary.setRecordsSynced(totalRecordsReplicated);
-    syncSummary.setStartTime(output.getReplicationAttemptSummary().getStartTime());
-    syncSummary.setEndTime(output.getReplicationAttemptSummary().getEndTime());
-    syncSummary.setStatus(output.getReplicationAttemptSummary().getStatus());
-    syncSummary.setTotalStats(output.getReplicationAttemptSummary().getTotalStats());
-    syncSummary.setStreamStats(output.getReplicationAttemptSummary().getStreamStats());
-
     final StandardSyncOutput standardSyncOutput = new StandardSyncOutput();
+    final StandardSyncSummary syncSummary = new StandardSyncSummary();
+    final ReplicationAttemptSummary replicationSummary = output.getReplicationAttemptSummary();
+
+    syncSummary.setBytesSynced(replicationSummary.getBytesSynced());
+    syncSummary.setRecordsSynced(replicationSummary.getRecordsSynced());
+    syncSummary.setStartTime(replicationSummary.getStartTime());
+    syncSummary.setEndTime(replicationSummary.getEndTime());
+    syncSummary.setStatus(replicationSummary.getStatus());
+    syncSummary.setTotalStats(replicationSummary.getTotalStats());
+    syncSummary.setStreamStats(replicationSummary.getStreamStats());
+
     standardSyncOutput.setState(output.getState());
     standardSyncOutput.setOutputCatalog(output.getOutputCatalog());
     standardSyncOutput.setStandardSyncSummary(syncSummary);

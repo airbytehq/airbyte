@@ -10,12 +10,12 @@ airbytePython {
 }
 
 dependencies {
-    implementation project(':airbyte-workers')
+    implementation project(':airbyte-commons-worker')
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
-task copySshScript(type: Copy, dependsOn: [project(':airbyte-workers').processResources]) {
-    from "${project(':airbyte-workers').buildDir}/resources/main"
+task copySshScript(type: Copy, dependsOn: [project(':airbyte-commons-worker').processResources]) {
+    from "${project(':airbyte-commons-worker').buildDir}/resources/main"
     into "${buildDir}"
     include "sshtunneling.sh"
 }

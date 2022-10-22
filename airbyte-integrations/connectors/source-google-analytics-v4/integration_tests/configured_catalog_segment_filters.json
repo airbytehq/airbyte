@@ -1,0 +1,15 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "new_users_per_day",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["ga_date"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}
