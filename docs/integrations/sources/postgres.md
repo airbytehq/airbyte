@@ -231,6 +231,7 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'wal2json');
 #### Step 4: Create publications and replication identities for tables​
 
 For each table you want to replicate with CDC, add the replication identity (the method of distinguishing between rows) first:
+
 To use primary keys to distinguish between rows for tables that don't have a large amount of data per row, run:
 ```
 ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
