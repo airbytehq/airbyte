@@ -141,7 +141,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Recurly](sources/recurly.md)                                                               | Alpha                | Yes                 |
 | [Redshift](sources/redshift.md)                                                             | Alpha                | Yes                 |
 | [Retently](sources/retently.md)                                                             | Alpha                | Yes                 |
-| [S3](sources/s3.md)                                                                         | Generally Available  | No                 |
+| [S3](sources/s3.md)                                                                         | Generally Available  | No                  |
 | [Salesforce](sources/salesforce.md)                                                         | Generally Available  | Yes                 |
 | [Salesloft](sources/salesloft.md)                                                           | Alpha                | No                  |
 | [SAP Business One](sources/sap-business-one.md)                                             | Alpha                | No                  |
@@ -155,6 +155,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Smartsheets](sources/smartsheets.md)                                                       | Beta                 | Yes                 |
 | [Snapchat Marketing](sources/snapchat-marketing.md)                                         | Generally Available  | Yes                 |
 | [Snowflake](sources/snowflake.md)                                                           | Alpha                | Yes                 |
+| [SpaceX-API](sources/spacex-api.md)                                                         | Alpha                | No                  |
 | [Spree Commerce](sources/spree-commerce.md)                                                 | Alpha                | No                  |
 | [Square](sources/square.md)                                                                 | Alpha                | Yes                 |
 | [Strava](sources/strava.md)                                                                 | Alpha                | No                  |
