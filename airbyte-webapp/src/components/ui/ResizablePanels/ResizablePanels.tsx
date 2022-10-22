@@ -3,105 +3,129 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
-import { useWindowSize } from "react-use";
 
+import { Text } from "../Text";
 import styles from "./ResizablePanels.module.scss";
 
 interface ResizablePanelsProps {
-  leftPanel: {
-    children: React.ReactNode;
-    smallWidthHeader: React.ReactNode;
-    className?: string;
-  };
-  rightPanel: {
-    children: React.ReactNode;
-    smallWidthHeader: React.ReactNode;
-    showPanel: boolean;
-    className?: string;
-    startingFlex?: number;
-  };
-  containerClassName?: string;
+  className?: string;
+}
+
+// NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
+
+// export const ResizablePanels: React.FC<React.PropsWithChildren<ResizablePanelsProps>> & {
+//   Panel: React.FC<PropsWithChildren<PanelProps>>;
+//   Splitter: React.FC;
+// } = ({ children, className }) => {
+//   return (
+//     <ReflexContainer className={className} orientation="vertical">
+//       {children}
+//     </ReflexContainer>
+//   );
+// };
+
+export class ResizablePanels extends React.Component<React.PropsWithChildren<ResizablePanelsProps>> {
+  render() {
+    const { children, className } = this.props;
+
+    return (
+      <ReflexContainer className={className} orientation="vertical">
+        {children}
+      </ReflexContainer>
+    );
+  }
+}
+
+interface Overlay {
+  displayThreshold: number;
+  header: string;
+  rotation: "clockwise" | "counter-clockwise";
 }
 
 interface PanelContainerProps {
-  smallWidthHeader: React.ReactNode;
+  className?: string;
   dimensions?: {
     width: number;
     height: number;
   };
-  className?: string;
+  overlay?: Overlay;
 }
 
-const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({
+const PanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({
   children,
-  dimensions,
-  smallWidthHeader,
   className,
-}) => {
-  const width = dimensions?.width ?? 0;
-  const screenWidth = useWindowSize().width;
-
-  return (
-    <div className={classNames(className, styles.leftPanelContainer)}>
-      {screenWidth > 500 && width < 550 && (
-        <div className={styles.darkOverlay}>
-          <h3>{smallWidthHeader}</h3>
-        </div>
-      )}
-      {children}
-    </div>
-  );
-};
-
-const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = ({
-  children,
   dimensions,
-  smallWidthHeader,
-  className,
+  overlay,
 }) => {
   const width = dimensions?.width ?? 0;
 
   return (
-    <div className={classNames(className, styles.rightPanelContainer)}>
-      {width < 350 && (
+    <div className={classNames(className, styles.panelContainer)}>
+      {overlay && width <= overlay.displayThreshold && (
         <div className={styles.lightOverlay}>
-          <h2 className={styles.rotatedHeader}>{smallWidthHeader}</h2>
+          <Text as="h2" className={styles.rotatedHeader}>
+            {overlay.header}
+          </Text>
         </div>
       )}
       {children}
     </div>
   );
 };
-// NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
 
-export const ResizablePanels: React.FC<ResizablePanelsProps> = ({ leftPanel, rightPanel, containerClassName }) => {
-  return (
-    <ReflexContainer className={containerClassName} orientation="vertical">
-      <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
-        <LeftPanelContainer className={leftPanel.className} smallWidthHeader={leftPanel.smallWidthHeader}>
-          {leftPanel.children}
-        </LeftPanelContainer>
+interface PanelProps {
+  className?: string;
+  startingFlex?: number;
+  minWidth?: number;
+  overlay?: Overlay;
+}
+
+// export const Panel: React.FC<PropsWithChildren<PanelProps>> = ({
+//   children,
+//   className,
+//   startingFlex,
+//   minWidth,
+//   overlay,
+// }) => {
+// return (
+//   <ReflexElement className={styles.panelStyle} propagateDimensions minSize={minWidth} flex={startingFlex}>
+//     <PanelContainer className={className} overlay={overlay}>
+//       {children}
+//     </PanelContainer>
+//   </ReflexElement>
+// );
+// };
+
+export class Panel extends React.Component<React.PropsWithChildren<PanelProps>> {
+  render() {
+    const { children, className, startingFlex, minWidth, overlay } = this.props;
+
+    return (
+      <ReflexElement className={styles.panelStyle} propagateDimensions minSize={minWidth} flex={startingFlex}>
+        <PanelContainer className={className} overlay={overlay}>
+          {children}
+        </PanelContainer>
       </ReflexElement>
-      {rightPanel.showPanel && (
-        <ReflexSplitter className={styles.splitter}>
-          <div className={styles.panelGrabber}>
-            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
-          </div>
-        </ReflexSplitter>
-      )}
-      {rightPanel.showPanel && (
-        <ReflexElement
-          className={styles.rightPanelStyle}
-          size={1000}
-          propagateDimensions
-          minSize={60}
-          flex={rightPanel.startingFlex}
-        >
-          <RightPanelContainer className={rightPanel.className} smallWidthHeader={rightPanel.smallWidthHeader}>
-            {rightPanel.children}
-          </RightPanelContainer>
-        </ReflexElement>
-      )}
-    </ReflexContainer>
-  );
-};
+    );
+  }
+}
+
+// export const Splitter: React.FC<unknown> = () => (
+//   <ReflexSplitter className={styles.splitter}>
+//     <div className={styles.panelGrabber}>
+//       <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
+//     </div>
+//   </ReflexSplitter>
+// );
+
+export class Splitter extends React.Component {
+  render() {
+    return (
+      <ReflexSplitter className={styles.splitter}>
+        <div className={styles.panelGrabber}>
+          <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
+        </div>
+      </ReflexSplitter>
+    );
+  }
+}
