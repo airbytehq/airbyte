@@ -1,0 +1,12 @@
+{
+  "streams": [
+    {
+      "name": "contacts",
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_cursor": false,
+      "json_schema": {}
+    }
+  ]
+}

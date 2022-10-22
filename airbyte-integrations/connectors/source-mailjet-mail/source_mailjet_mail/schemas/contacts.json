@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Name": {
+      "type": ["null", "string"]
+    },
+    "Address": {
+      "type": ["null", "string"]
+    },
+    "CreatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ID": {
+      "type": ["null", "number"]
+    },
+    "SubscriberCount": {
+      "type": ["null", "number"]
+    }
+  }
+}
