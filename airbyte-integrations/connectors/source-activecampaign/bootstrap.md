@@ -5,10 +5,9 @@ provides metrics for yor transactional email, email marketing, marketing automat
 sales automation, and CRM software.
 
 [Authentication](https://developers.activecampaign.com/reference/authentication)
-is handled via a regular `Authorization` HTTP header which can be found in the UI.
+is handled via a regular `Authorization` HTTP header.
 
 Account username is used as part of API [base URL](https://developers.activecampaign.com/reference/url).
 
 See the [official documentation](https://developers.activecampaign.com/reference/overview)
 for details on how the API works.
-

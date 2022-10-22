@@ -8,6 +8,10 @@ This source can sync data from the [ActiveCampaign API](https://developers.activ
 
 * campaigns
 * contacts
+* lists
+* deals
+* segments
+* forms
 
 ### Features
 
