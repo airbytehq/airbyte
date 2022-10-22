@@ -1,7 +1,6 @@
 # Google Mobility Reports Source
 
-This is the repository for the Google Mobility Reports configuration based source connector.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/google-mobility-reports).
+This is the repository for the Google Mobility Reports configuration based source connector which implements a feed for the [Google Community Mobility Reports](https://www.google.com/covid19/mobility/data_documentation.html?hl=en)For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/google-mobility-reports).
 
 ## Local development
 
