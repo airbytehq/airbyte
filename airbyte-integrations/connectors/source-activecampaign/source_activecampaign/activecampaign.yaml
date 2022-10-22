@@ -41,18 +41,18 @@ definitions:
       primary_key: "id"
       path: "/api/3/contacts"
 
-  # deals_stream:
-  #   $ref: "*ref(definitions.base_stream)"
-  #   $options:
-  #     name: "deals"
-  #     primary_key: "id"
-  #     path: "/api/3/deals"
+  deals_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "deals"
+      primary_key: "id"
+      path: "/api/3/deals"
 
 streams:
   - "*ref(definitions.campaigns_stream)"
   - "*ref(definitions.contacts_stream)"
   # - "*ref(definitions.automations_stream)"
-  # - "*ref(definitions.deals_stream)"
+  - "*ref(definitions.deals_stream)"
   # - "*ref(definitions.contacts_stream)"
 
 check:
