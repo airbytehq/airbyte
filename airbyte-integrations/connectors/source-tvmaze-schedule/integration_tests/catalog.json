@@ -1,39 +1,25 @@
 {
   "streams": [
     {
-      "name": "TODO fix this file",
-      "supported_sync_modes": ["full_refresh", "incremental"],
+      "name": "domestic",
+      "supported_sync_modes": ["full_refresh"],
       "source_defined_cursor": true,
-      "default_cursor_field": "column1",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "column1": {
-            "type": "string"
-          },
-          "column2": {
-            "type": "number"
-          }
-        }
-      }
+      "default_cursor_field": "airdate",
+      "json_schema": {}
     },
     {
-      "name": "table1",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": false,
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "column1": {
-            "type": "string"
-          },
-          "column2": {
-            "type": "number"
-          }
-        }
-      }
+      "name": "web",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "airdate",
+      "json_schema": {}
+    },
+    {
+      "name": "future",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "airdate",
+      "json_schema": {}
     }
   ]
 }
