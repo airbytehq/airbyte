@@ -17,6 +17,7 @@ For more information about the grading system, see [Product Release Stages](http
 | Connector                                                                                   | Product Release Stage| Available in Cloud? |
 |:--------------------------------------------------------------------------------------------| :------------------- | :------------------ |
 | [3PL Central](sources/tplcentral.md)                                                        | Alpha                | No                  |
+| [ActiveCampaign](sources/activecampaign.md)                                                 | Alpha                | No                  |
 | [Adjust](sources/adjust.md)                                                                 | Alpha                | No                  |
 | [Airtable](sources/airtable.md)                                                             | Alpha                | Yes                 |
 | [AlloyDB](sources/alloydb.md)                                                               | Generally Available  | Yes                 |
