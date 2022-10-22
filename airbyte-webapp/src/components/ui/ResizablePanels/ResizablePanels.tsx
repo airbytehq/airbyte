@@ -22,48 +22,6 @@ interface PanelProps {
   overlay?: Overlay;
 }
 
-export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
-  className,
-  hideRightPanel = false,
-  leftPanel,
-  rightPanel,
-}) => {
-  return (
-    <ReflexContainer className={className} orientation="vertical">
-      <ReflexElement
-        className={styles.panelStyle}
-        propagateDimensions
-        minSize={leftPanel.minWidth}
-        flex={leftPanel.startingFlex}
-      >
-        <PanelContainer className={leftPanel.className} overlay={leftPanel.overlay}>
-          {leftPanel.children}
-        </PanelContainer>
-      </ReflexElement>
-      {/* NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately. */}
-      {!hideRightPanel && (
-        <ReflexSplitter className={styles.splitter}>
-          <div className={styles.panelGrabber}>
-            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
-          </div>
-        </ReflexSplitter>
-      )}
-      {!hideRightPanel && (
-        <ReflexElement
-          className={styles.panelStyle}
-          propagateDimensions
-          minSize={rightPanel.minWidth}
-          flex={rightPanel.startingFlex}
-        >
-          <PanelContainer className={rightPanel.className} overlay={rightPanel.overlay}>
-            {rightPanel.children}
-          </PanelContainer>
-        </ReflexElement>
-      )}
-    </ReflexContainer>
-  );
-};
-
 interface Overlay {
   displayThreshold: number;
   header: string;
@@ -103,5 +61,47 @@ const PanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = (
       )}
       {children}
     </div>
+  );
+};
+
+export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
+  className,
+  hideRightPanel = false,
+  leftPanel,
+  rightPanel,
+}) => {
+  return (
+    <ReflexContainer className={className} orientation="vertical">
+      <ReflexElement
+        className={styles.panelStyle}
+        propagateDimensions
+        minSize={leftPanel.minWidth}
+        flex={leftPanel.startingFlex}
+      >
+        <PanelContainer className={leftPanel.className} overlay={leftPanel.overlay}>
+          {leftPanel.children}
+        </PanelContainer>
+      </ReflexElement>
+      {/* NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately. */}
+      {!hideRightPanel && (
+        <ReflexSplitter className={styles.splitter}>
+          <div className={styles.panelGrabber}>
+            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
+          </div>
+        </ReflexSplitter>
+      )}
+      {!hideRightPanel && (
+        <ReflexElement
+          className={styles.panelStyle}
+          propagateDimensions
+          minSize={rightPanel.minWidth}
+          flex={rightPanel.startingFlex}
+        >
+          <PanelContainer className={rightPanel.className} overlay={rightPanel.overlay}>
+            {rightPanel.children}
+          </PanelContainer>
+        </ReflexElement>
+      )}
+    </ReflexContainer>
   );
 };
