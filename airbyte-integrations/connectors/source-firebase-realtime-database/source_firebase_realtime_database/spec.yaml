@@ -11,7 +11,7 @@ connectionSpecification:
     database_name:
       title: Database Name
       type: string
-      description: Database name
+      description: Database name (This will be part of the url pointing to the database, https://<database_name>.firebaseio.com/)
     google_application_credentials:
       title: Service Account Key JSON
       type: string
