@@ -50,10 +50,16 @@
       "type": "string"
     },
     "sdate": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "ldate": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "send_amt": {
       "type": "string"
@@ -158,10 +164,16 @@
       "type": "string"
     },
     "htmlunsubdata": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "textunsubdata": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "recurring": {
       "type": "string"
@@ -200,7 +212,10 @@
       "type": "string"
     },
     "reminder_format": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "reminder_type": {
       "type": "string"
@@ -215,13 +230,19 @@
       "type": "string"
     },
     "reminder_last_cron_run": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "activerss_interval": {
       "type": "string"
     },
     "activerss_url": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "activerss_items": {
       "type": "string"
@@ -239,13 +260,22 @@
       "type": "string"
     },
     "scheduleddate": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "waitpreview": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "deletestamp": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "replysys": {
       "type": "string"
@@ -288,7 +318,10 @@
       "type": "string"
     },
     "automation": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "required": [

@@ -32,19 +32,28 @@
             "type": "string"
         },
         "bounced_date": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "ip": {
             "type": "string"
         },
         "ua": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "hash": {
             "type": "string"
         },
         "socialdata_lastcheck": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "email_local": {
             "type": "string"
@@ -56,7 +65,10 @@
             "type": "string"
         },
         "rating_tstamp": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "gravatar": {
             "type": "string"
@@ -68,16 +80,25 @@
             "type": "string"
         },
         "adate": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "udate": {
             "type": "string"
         },
         "edate": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "deleted_at": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "created_utc_timestamp": {
             "type": "string"
@@ -92,10 +113,16 @@
             "type": "string"
         },
         "created_by": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "updated_by": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "email_empty": {
             "type": "boolean"
@@ -112,7 +139,7 @@
         "accountContacts": {
             "type": "array",
             "items": {
-               "type": "string" 
+                "type": "string"
             }
         },
         "links": {
