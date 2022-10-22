@@ -23,6 +23,8 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.concurrent.TimeUnit;
@@ -91,7 +93,9 @@ public class DefaultAirbyteSource implements AirbyteSource {
     Preconditions.checkState(sourceProcess != null);
     // As this check is done on every message read, it is important for this operation to be efficient.
     // Short circuit early to avoid checking the underlying process.
-    final var isEmpty = messageIterator.getExactSizeIfKnown() == 0; // hasNext is blocking.
+    // TODO(Davin): Confirm getExactSizeIfKnown can be trusted.
+    final var isEmpty = messageIterator.getExactSizeIfKnown() <= 0; // hasNext is blocking.
+    LOGGER.info("Items left: {}", messageIterator.getExactSizeIfKnown());
     if (!isEmpty) {
       return false;
     }
@@ -114,13 +118,16 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Override
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(sourceProcess != null);
+    List<AirbyteMessage> result = new ArrayList<>(1);
 
-    // return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
+    if (tryAdvance(result::add)) {
+      return Optional.of(result.get(0));
+    }
     return Optional.empty();
   }
 
   @Override
-  public boolean tryAttempt(final Consumer<AirbyteMessage> consumer) {
+  public boolean tryAdvance(final Consumer<AirbyteMessage> consumer) {
     return messageIterator.tryAdvance(consumer);
   }
 

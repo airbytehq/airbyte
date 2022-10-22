@@ -51,7 +51,7 @@ public interface AirbyteSource extends AutoCloseable {
    */
   Optional<AirbyteMessage> attemptRead();
 
-  boolean tryAttempt(Consumer<AirbyteMessage> consumer);
+  boolean tryAdvance(Consumer<AirbyteMessage> consumer);
 
   /**
    * Attempts to shut down the Source's container. Waits for a graceful shutdown, capped by a timeout.

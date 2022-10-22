@@ -42,6 +42,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -339,47 +340,26 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      final var wrapper = new Object() {
-
-        long recordsRead = 0;
-
-      };
+      final AtomicLong recordsRead = new AtomicLong(0);
       final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       try {
         // if we turn this into a stream, how do we cancel?
         // we can turn this into a spliterator?
         // while (!cancelled.get() && !source.isFinished()) {
-        while (!cancelled.get() && !source.tryAttempt(airbyteMessage -> {
-          validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
-          final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
+        // instead of a while loop, replace with an executor service
+        while (!cancelled.get() && !source.isFinished() &&
+            !source.tryAdvance(airbyteMessage -> consumeAirbyteMessage(destination, mapper, messageTracker, recordSchemaValidator, recordsRead,
+                validationErrors, airbyteMessage))) {}
 
-          messageTracker.acceptFromSource(message);
-
-          try {
-            if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
-              destination.accept(message);
-            }
-          } catch (final Exception e) {
-            throw new DestinationException("Destination process message delivery failed", e);
-          }
-
-          wrapper.recordsRead += 1;
-
-          if (wrapper.recordsRead % 1000 == 0) {
-            LOGGER.info("Records read: {} ({})", wrapper.recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
-          }
-        })) {
-          // } else {
-          // LOGGER.info("Source has no more messages, closing connection.");
-          // try {
-          // source.close();
-          // } catch (final Exception e) {
-          // throw new SourceException("Source cannot be stopped!", e);
-          // }
-          // }
+        LOGGER.info("Source has no more messages, closing connection.");
+        try {
+          source.close();
+        } catch (final Exception e) {
+          throw new SourceException("Source cannot be stopped!", e);
         }
+
         timeHolder.trackSourceReadEndTime();
-        LOGGER.info("Total records read: {} ({})", wrapper.recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+        LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
@@ -412,6 +392,34 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       }
     };
+  }
+
+  private static void consumeAirbyteMessage(
+                                            final AirbyteDestination destination,
+                                            final AirbyteMapper mapper,
+                                            final MessageTracker messageTracker,
+                                            final RecordSchemaValidator recordSchemaValidator,
+                                            final AtomicLong recordsRead,
+                                            final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
+                                            final AirbyteMessage airbyteMessage) {
+    validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
+    final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
+    LOGGER.info("poop====");
+
+    messageTracker.acceptFromSource(message);
+
+    try {
+      if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
+        destination.accept(message);
+      }
+    } catch (final Exception e) {
+      throw new DestinationException("Destination process message delivery failed", e);
+    }
+    recordsRead.incrementAndGet();
+    // TODO(Davin): This can probably be moved somewhere else.
+    if (recordsRead.get() % 1000 == 0) {
+      LOGGER.info("Records read: {} ({})", recordsRead.get(), FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+    }
   }
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,

@@ -136,7 +136,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public boolean tryAttempt(Consumer<AirbyteMessage> consumer) {
+  public boolean tryAdvance(Consumer<AirbyteMessage> consumer) {
     return false;
   }
 
