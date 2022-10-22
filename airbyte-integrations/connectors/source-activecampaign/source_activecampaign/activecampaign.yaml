@@ -1,15 +1,20 @@
 version: "0.1.0"
 
 definitions:
+
   selector:
     extractor:
-      field_pointer: []
+      # API Docs: https://developers.activecampaign.com/reference/schema
+      field_pointer: ["{{ options['name'] }}"]
+
   requester:
-    url_base: "https://example.com"
+    url_base: "https://{{ config['account_username'] }}.api-us1.com"
     http_method: "GET"
     authenticator:
-      type: BearerAuthenticator
+      type: ApiKeyAuthenticator
+      header: "Api-Token"
       api_token: "{{ config['api_key'] }}"
+
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -17,19 +22,38 @@ definitions:
       type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
+
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  customers_stream:
+
+  campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "customers"
+      name: "campaigns"
       primary_key: "id"
-      path: "/example"
+      path: "/api/3/campaigns"
+
+  contacts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "contacts"
+      primary_key: "id"
+      path: "/api/3/contacts"
+
+  # deals_stream:
+  #   $ref: "*ref(definitions.base_stream)"
+  #   $options:
+  #     name: "deals"
+  #     primary_key: "id"
+  #     path: "/api/3/deals"
 
 streams:
-  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.campaigns_stream)"
+  - "*ref(definitions.contacts_stream)"
+  # - "*ref(definitions.automations_stream)"
+  # - "*ref(definitions.deals_stream)"
+  # - "*ref(definitions.contacts_stream)"
 
 check:
-  stream_names:
-    - "customers"
+  stream_names: ["campaigns"]
