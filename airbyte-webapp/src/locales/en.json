@@ -24,6 +24,7 @@
   "sidebar.recipes": "Tutorials - Use cases",
 
   "form.continue": "Continue",
+  "form.error": "Error: {message}",
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "Enter a valid email",
@@ -247,6 +248,7 @@
   "sources.full_refresh": "Full refresh",
   "sources.incremental": "Incremental - based on...",
   "sources.newSource": "New source",
+  "sources.createFirst": "Connect your first source",
   "sources.newSourceTitle": "New Source",
   "sources.selectSource": "Select a source",
   "sources.status": "Status",
@@ -310,6 +312,7 @@
 
   "destination.destinationSettings": "Destination Settings",
   "destinations.newDestination": "New destination",
+  "destinations.createFirst": "Connect your first destination",
   "destinations.description": "<b>Destinations</b> are where you <b>send</b> or <b>push</b> your data to.",
   "destinations.noDestinations": "Destination list is empty",
   "destinations.noSources": "No sources yet",
@@ -361,6 +364,7 @@
   "connection.catalogTree.destinationSchema": "'<destination schema>",
 
   "connection.newConnection": "New connection",
+  "connection.createFirst": "Create your first connection",
   "connection.newConnectionTitle": "New connection",
   "connection.noConnections": "Connection list is empty",
   "connection.disabledConnection": "Disabled connection",
@@ -384,6 +388,7 @@
   "form.frequency": "Replication frequency*",
   "form.cronExpression": "Cron expression*",
   "form.cronExpression.placeholder": "Cron expression",
+  "form.cronExpression.error": "Invalid cron expression",
   "form.cronExpression.message": "Enter a <lnk>cron expression</lnk> for when syncs should run (ex. \"0 0 12 * * ?\" => Will sync at 12:00 PM every day)",
   "form.frequency.placeholder": "Select a frequency",
   "form.frequency.message": "Set how often data should sync to the destination",
@@ -495,7 +500,7 @@
   "settings.accountSettings.updateEmailSuccess": "Email updated",
   "settings.cookiePreferences": "Cookie Preferences",
 
-  "connector.requestConnectorBlock": "+ Request a new connector",
+  "connector.requestConnectorBlock": "Request a new connector",
   "connector.requestConnector": "Request a new connector",
   "connector.request": "Request",
   "connector.requested": "Requested",

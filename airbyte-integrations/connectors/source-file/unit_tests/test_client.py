@@ -18,6 +18,16 @@ def wrong_format_client():
     )
 
 
+@pytest.fixture
+def csv_format_client():
+    return Client(
+        dataset_name="test_dataset",
+        url="scp://test_dataset",
+        provider={"provider": {"storage": "HTTPS", "reader_impl": "gcsfs", "user_agent": False}},
+        format="csv",
+    )
+
+
 @pytest.mark.parametrize(
     "storage, expected_scheme",
     [
@@ -48,6 +58,12 @@ def test_load_dataframes(client, wrong_format_client, absolute_path, test_files)
 
     with pytest.raises(StopIteration):
         next(client.load_dataframes(fp=f, skip_data=True))
+
+
+def test_raises_configuration_error_with_incorrect_file_type(csv_format_client, absolute_path, test_files):
+    f = f"{absolute_path}/{test_files}/archive_with_test_xlsx.zip"
+    with pytest.raises(ConfigurationError):
+        next(csv_format_client.load_dataframes(fp=f))
 
 
 def test_load_dataframes_xlsb(config, absolute_path, test_files):
@@ -118,13 +134,3 @@ def test_open_gcs_url():
     provider.update({"service_account_json": '{service_account_json": "service_account_json"}'})
     with pytest.raises(ConfigurationError):
         assert URLFile(url="", provider=provider)._open_gcs_url()
-
-
-def test_client_wrong_reader_options():
-    with pytest.raises(ConfigurationError):
-        Client(
-            dataset_name="test_dataset",
-            url="scp://test_dataset",
-            provider={"provider": {"storage": "HTTPS", "reader_impl": "gcsfs", "user_agent": False}},
-            reader_options='{encoding":"utf_16"}',
-        )

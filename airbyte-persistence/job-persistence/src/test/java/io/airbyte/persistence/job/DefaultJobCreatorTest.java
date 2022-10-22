@@ -73,10 +73,17 @@ class DefaultJobCreatorTest {
   private JobCreator jobCreator;
   private ResourceRequirements workerResourceRequirements;
 
+  private static final JsonNode PERSISTED_WEBHOOK_CONFIGS;
+
+  private static final UUID WEBHOOK_CONFIG_ID;
+  private static final String WEBHOOK_NAME;
+
   static {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
     final UUID sourceDefinitionId = UUID.randomUUID();
+    WEBHOOK_CONFIG_ID = UUID.randomUUID();
+    WEBHOOK_NAME = "test-name";
 
     final JsonNode implementationJson = Jsons.jsonNode(ImmutableMap.builder()
         .put("apiKey", "123-abc")
@@ -129,6 +136,10 @@ class DefaultJobCreatorTest {
         .withTombstone(false)
         .withOperatorType(OperatorType.NORMALIZATION)
         .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
+
+    PERSISTED_WEBHOOK_CONFIGS = Jsons.deserialize(
+        String.format("{\"webhookConfigs\": [{\"id\": \"%s\", \"name\": \"%s\", \"authToken\": {\"_secret\": \"a-secret_v1\"}}]}",
+            WEBHOOK_CONFIG_ID, WEBHOOK_NAME));
   }
 
   @BeforeEach
@@ -157,7 +168,8 @@ class DefaultJobCreatorTest {
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
         .withSourceResourceRequirements(workerResourceRequirements)
-        .withDestinationResourceRequirements(workerResourceRequirements);
+        .withDestinationResourceRequirements(workerResourceRequirements)
+        .withWebhookOperationConfigs(PERSISTED_WEBHOOK_CONFIGS);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -173,6 +185,7 @@ class DefaultJobCreatorTest {
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
+        PERSISTED_WEBHOOK_CONFIGS,
         null,
         null).orElseThrow();
     assertEquals(JOB_ID, jobId);
@@ -207,6 +220,7 @@ class DefaultJobCreatorTest {
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
         null,
+        null,
         null).isEmpty());
   }
 
@@ -219,6 +233,7 @@ class DefaultJobCreatorTest {
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
+        null,
         null,
         null);
 
@@ -261,6 +276,7 @@ class DefaultJobCreatorTest {
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
+        null,
         null,
         null);
 
@@ -307,6 +323,7 @@ class DefaultJobCreatorTest {
         SOURCE_IMAGE_NAME,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
+        null,
         new ActorDefinitionResourceRequirements().withDefault(sourceResourceRequirements),
         new ActorDefinitionResourceRequirements().withJobSpecific(List.of(
             new JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(destResourceRequirements))));
