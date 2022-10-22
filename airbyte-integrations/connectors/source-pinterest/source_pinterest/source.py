@@ -128,8 +128,8 @@ class BoardSectionPins(PinterestSubStream, PinterestStream):
 
 class IncrementalPinterestStream(PinterestStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field, self.start_date)
-        current_state = current_stream_state.get(self.cursor_field, self.start_date)
+        latest_state = latest_record.get(self.cursor_field, self.start_date.format("YYYY-MM-DD"))
+        current_state = current_stream_state.get(self.cursor_field, self.start_date.format("YYYY-MM-DD"))
 
         if isinstance(latest_state, int) and isinstance(current_state, str):
             current_state = datetime.strptime(current_state, "%Y-%m-%d").timestamp()
