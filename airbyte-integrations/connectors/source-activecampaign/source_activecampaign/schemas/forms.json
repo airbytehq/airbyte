@@ -4,13 +4,19 @@
   "type": "object",
   "properties": {
     "name": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "Testing"
       ]
     },
     "action": {
-      "type": ["string","null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "actiondata": {
       "type": "object",
@@ -21,19 +27,28 @@
             "type": "object",
             "properties": {
               "type": {
-                "type": ["string","null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "examples": [
                   "subscribe-to-list"
                 ]
               },
               "email": {
-                "type": ["string","null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "examples": [
                   "johndoe@example.com"
                 ]
               },
               "list": {
-                "type": ["string","null"],
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "examples": [
                   "1"
                 ]
@@ -44,7 +59,10 @@
       }
     },
     "submit": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "show-thank-you"
       ]
@@ -53,33 +71,54 @@
       "type": "object",
       "properties": {
         "url": {
-          "type": ["string","null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "url": {
-      "type": ["string","null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "layout": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "inline-form"
       ]
     },
     "title": {
-      "type": ["string","null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "body": {
-      "type": ["string","null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "button": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "Submit"
       ]
     },
     "thanks": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "Thanks for signing up!"
       ]
@@ -88,26 +127,38 @@
       "type": "object",
       "properties": {
         "background": {
-          "type": ["string","null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "examples": [
             "FFFFFF"
           ]
         },
         "dark": {
-          "type": ["boolean","null"],
+          "type": [
+            "boolean",
+            "null"
+          ],
           "examples": [
             true,
             false
           ]
         },
         "fontcolor": {
-          "type": ["string","null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "examples": [
             "000000"
           ]
         },
         "layout": {
-          "type": ["string","null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "examples": [
             "normal"
           ]
@@ -116,25 +167,37 @@
           "type": "object",
           "properties": {
             "width": {
-              "type": ["integer","null"],
+              "type": [
+                "integer",
+                "null"
+              ],
               "examples": [
                 0
               ]
             },
             "style": {
-              "type": ["string","null"],
+              "type": [
+                "string",
+                "null"
+              ],
               "examples": [
                 "solid"
               ]
             },
             "color": {
-              "type": ["string","null"],
+              "type": [
+                "string",
+                "null"
+              ],
               "examples": [
                 "B0B0B0"
               ]
             },
             "radius": {
-              "type": ["integer","null"],
+              "type": [
+                "integer",
+                "null"
+              ],
               "default": 0,
               "examples": [
                 0
@@ -143,13 +206,19 @@
           }
         },
         "width": {
-          "type": ["integer","null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "examples": [
             500
           ]
         },
         "ac_branding": {
-          "type": ["boolean","null"],
+          "type": [
+            "boolean",
+            "null"
+          ],
           "examples": [
             true,
             false
@@ -159,19 +228,28 @@
           "type": "object",
           "properties": {
             "padding": {
-              "type": ["integer","null"],
+              "type": [
+                "integer",
+                "null"
+              ],
               "examples": [
                 10
               ]
             },
             "background": {
-              "type": ["string","null"],
+              "type": [
+                "string",
+                "null"
+              ],
               "examples": [
                 "333333"
               ]
             },
             "fontcolor": {
-              "type": ["string","null"],
+              "type": [
+                "string",
+                "null"
+              ],
               "examples": [
                 "FFFFFF"
               ]
@@ -180,25 +258,37 @@
               "type": "object",
               "properties": {
                 "radius": {
-                  "type": ["integer","null"],
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
                   "examples": [
                     4
                   ]
                 },
                 "color": {
-                  "type": ["string","null"],
+                  "type": [
+                    "string",
+                    "null"
+                  ],
                   "examples": [
                     "333333"
                   ]
                 },
                 "style": {
-                  "type": ["string","null"],
+                  "type": [
+                    "string",
+                    "null"
+                  ],
                   "examples": [
                     "solid"
                   ]
                 },
                 "width": {
-                  "type": ["integer","null"],
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
                   "examples": [
                     0
                   ]
@@ -213,27 +303,39 @@
       "type": "object",
       "properties": {
         "blanks_overwrite": {
-          "type": ["boolean","null"],
+          "type": [
+            "boolean",
+            "null"
+          ],
           "examples": [
             true,
             false
           ]
         },
         "confaction": {
-          "type": ["string","null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "examples": [
             "show-message"
           ]
         },
         "sendoptin": {
-          "type": ["boolean","null"],
+          "type": [
+            "boolean",
+            "null"
+          ],
           "examples": [
             true,
             false
           ]
         },
         "optin_id": {
-          "type": ["integer","null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "examples": [
             1
           ]
@@ -247,7 +349,10 @@
           ]
         },
         "confform": {
-          "type": ["string","null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "examples": [
             "2"
           ]
@@ -260,19 +365,28 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": ["string","null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "examples": [
               "header"
             ]
           },
           "header": {
-            "type": ["string","null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "examples": [
               "Subscribe for Email Updates"
             ]
           },
           "class": {
-            "type": ["string","null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "examples": [
               "_x41699710"
             ]
@@ -281,50 +395,74 @@
       }
     },
     "parentformid": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "0"
       ]
     },
     "userid": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "1"
       ]
     },
     "addressid": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "0"
       ]
     },
     "cdate": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "2018-08-17T13:47:31-05:00"
       ]
     },
     "udate": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "2018-08-17T13:47:38-05:00"
       ]
     },
     "entries": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "examples": [
         "0"
       ]
     },
     "aid": {
-      "type": ["string","null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "default": "0",
       "examples": [
         "0"
       ]
     },
     "defaultscreenshot": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "default": "http://img-us1.com/default-form.gif",
       "examples": [
         "http://img-us1.com/default-form.gif"
@@ -351,7 +489,10 @@
       "type": "object",
       "properties": {
         "address": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": "https://:account.api-us1.com/api/3/forms/1/address",
           "examples": [
             "https://:account.api-us1.com/api/3/forms/1/address"
@@ -367,7 +508,10 @@
       ]
     },
     "address": {
-      "type": ["string","null"]
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "required": [
