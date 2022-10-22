@@ -18,15 +18,13 @@ The instructions have been tested on a `Debian GNU/Linux 10` VM instance.
 
 ## Set up the environment
 
-1. Create a new GCP instance.
-2. Set variables in your local terminal
+1. Create a [new GCP instance](https://cloud.google.com/compute/docs/instances/create-start-instance).
+2. Set variables in your local terminal:
 
 ```bash
 PROJECT_ID=PROJECT_ID_WHERE_YOU_CREATED_YOUR_INSTANCE
 INSTANCE_NAME=airbyte # or any other name that you've used
 ```
-
-Follow the steps below if you’re working on macOS:
 
 3. Install Google Cloud SDK and initialize the gcloud command-line tool using the following commands in your local terminal:
 
@@ -35,7 +33,7 @@ brew install --cask google-cloud-sdk
 gcloud init
 ```
 
-4. List all instances in your project and verify that you can see the Airbyte instance you created in step 1 in your local terminal.
+4. List all instances in your project and verify that you can see the Airbyte instance you created in step 1 in your local terminal:
 
 ```bash
 # Verify you can see your instance
@@ -43,13 +41,13 @@ gcloud --project $PROJECT_ID compute instances list
 [...] # You should see the airbyte instance you just created
 ```
 
-5. Connect to your instance in your local terminal.
+5. Connect to your instance in your local terminal:
 
 ```bash
-gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
+gcloud --project=$PROJECT_ID beta compute SSH $INSTANCE_NAME
 ```
 
-6. Install docker on your VM instance terminal by following the below commands in your ssh session on the instance terminal.
+6. Install Docker on your VM instance by following the below commands in your VM terminal:
 
 ```bash
 sudo apt-get update
@@ -61,7 +59,7 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 sudo usermod -a -G docker $USER
 ```
 
-7. Install docker-compose on your VM instance terminal by following the below commands in your ssh session on the instance terminal.
+7. Install `docker-compose` on your VM instance by following the below commands in your VM terminal:
 
 ```bash
 sudo apt-get -y install wget
@@ -70,7 +68,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
 
-8.  Close the ssh connection on your VM instance terminal to ensure the group modification is taken into account by following the below command in your ssh session on the instance terminal.
+8.  Close the SSH connection on your VM instance to ensure the group modification is taken into account by following the below command in your VM terminal:
 
 ```bash
 logout
@@ -80,13 +78,13 @@ logout
 
 To install and launch Airbyte:
 
-1. In your local terminal, connect to your Google Cloud instance
+1. In your local terminal, connect to your Google Cloud instance:
 
 ```bash
-gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
+gcloud --project=$PROJECT_ID beta compute SSH $INSTANCE_NAME
 ```
 
-2. In your ssh session on the instance terminal, install Airbyte
+2. In your VM terminal, install Airbyte:
 
 ```bash
 mkdir airbyte && cd airbyte
@@ -100,13 +98,13 @@ docker-compose up -d
 Warning: For security reasons, we strongly recommended not exposing Airbyte publicly.
 :::
 
-1. In your local terminal, create an SSH tunnel to connect the GCP instance to Airbyte
+1. In your local terminal, create an SSH tunnel to connect the GCP instance to Airbyte:
 
 ```bash
-gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME -- -L 8000:localhost:8000 -N -f
+gcloud --project=$PROJECT_ID beta compute SSH $INSTANCE_NAME -- -L 8000:localhost:8000 -N -f
 ```
 
-2. Verify the connection by visiting [http://localhost:8000](http://localhost:8000) in your browser
+2. Verify the connection by visiting [http://localhost:8000](http://localhost:8000) in your browser.
 
 ## Troubleshooting
 
