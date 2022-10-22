@@ -39,23 +39,26 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
+  private final AirbyteMessageBufferedWriterFactory messageWriterFactory;
 
   private final AtomicBoolean inputHasEnded = new AtomicBoolean(false);
 
   private Process destinationProcess = null;
-  private BufferedWriter writer = null;
+  private AirbyteMessageBufferedWriter writer = null;
   private Iterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultAirbyteMessageBufferedWriterFactory());
 
   }
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher,
-                                   final AirbyteStreamFactory streamFactory) {
+                                   final AirbyteStreamFactory streamFactory,
+                                   final AirbyteMessageBufferedWriterFactory messageWriterFactory) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
+    this.messageWriterFactory = messageWriterFactory;
   }
 
   @Override
@@ -72,7 +75,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
 
-    writer = new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8));
+    writer = messageWriterFactory.createWriter(new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8)));
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(destinationProcess.getInputStream()))
         .filter(message -> message.getType() == Type.STATE || message.getType() == Type.TRACE)
@@ -83,8 +86,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   public void accept(final AirbyteMessage message) throws IOException {
     Preconditions.checkState(destinationProcess != null && !inputHasEnded.get());
 
-    writer.write(Jsons.serialize(message));
-    writer.newLine();
+    writer.write(message);
   }
 
   @Override
