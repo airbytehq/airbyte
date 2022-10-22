@@ -84,11 +84,11 @@ class DefaultSyncJobFactoryTest {
                 .thenReturn(Optional.of(jobId));
     when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
         .thenReturn(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
-            .withDockerImageTag(srcDockerTag));
+            .withDockerImageTag(srcDockerTag).withProtocolVersion(srcProtocolVersion.serialize()));
 
     when(configRepository.getStandardDestinationDefinition(destinationDefinitionId))
         .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinitionId).withDockerRepository(dstDockerRepo)
-            .withDockerImageTag(dstDockerTag));
+            .withDockerImageTag(dstDockerTag).withProtocolVersion(dstProtocolVersion.serialize()));
 
     when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(true))).thenReturn(
         new StandardWorkspace().withWebhookOperationConfigs(persistedWebhookConfigs));

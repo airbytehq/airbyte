@@ -47,7 +47,6 @@ public class TemporalWorkerRunFactory {
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(),
-            // TODO ProtocolVersion
             attemptId, job.getConfig().getSync(), connectionId);
         return toOutputAndStatus(output);
       };
@@ -59,6 +58,7 @@ public class TemporalWorkerRunFactory {
             .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
+            .withDestinationProtocolVersion(resetConnection.getDestinationProtocolVersion())
             .withSourceConfiguration(Jsons.emptyObject())
             .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
