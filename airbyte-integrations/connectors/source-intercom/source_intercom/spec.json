@@ -16,7 +16,6 @@
       },
       "credentials": {
         "type": "object",
-        "required": ["auth_type"],
         "discriminator": {
           "propertyName": "auth_type"
         },
