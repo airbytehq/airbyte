@@ -181,7 +181,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["stat_time_day"]
+        "default_cursor_field": ["stat_time_hour"]
       },
       {
         "name": "ads_audience_reports_by_province_daily",
