@@ -86,6 +86,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         .peek(message -> heartbeatMonitor.beat())
         .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE || message.getType() == Type.TRACE)
         .spliterator();
+    LOGGER.info("==== spliterator characteristic: {}", messageIterator.characteristics());
   }
 
   @Override
@@ -118,7 +119,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Override
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(sourceProcess != null);
-    List<AirbyteMessage> result = new ArrayList<>(1);
+    final List<AirbyteMessage> result = new ArrayList<>(1);
 
     if (tryAdvance(result::add)) {
       return Optional.of(result.get(0));
@@ -128,6 +129,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   @Override
   public boolean tryAdvance(final Consumer<AirbyteMessage> consumer) {
+    LOGGER.info("=== try advance");
     return messageIterator.tryAdvance(consumer);
   }
 

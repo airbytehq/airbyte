@@ -101,7 +101,6 @@ public class AirbyteMessageTracker implements MessageTracker {
   @Override
   public void acceptFromSource(final AirbyteMessage message) {
     logMessageAsJSON("source", message);
-
     switch (message.getType()) {
       case TRACE -> handleEmittedTrace(message.getTrace(), ConnectorType.SOURCE);
       case RECORD -> handleSourceEmittedRecord(message.getRecord());

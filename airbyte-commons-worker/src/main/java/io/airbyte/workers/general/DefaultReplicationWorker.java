@@ -348,8 +348,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         // while (!cancelled.get() && !source.isFinished()) {
         // instead of a while loop, replace with an executor service
         while (!cancelled.get() && !source.isFinished() &&
-            !source.tryAdvance(airbyteMessage -> consumeAirbyteMessage(destination, mapper, messageTracker, recordSchemaValidator, recordsRead,
-                validationErrors, airbyteMessage))) {}
+            source.tryAdvance(airbyteMessage -> consumeAirbyteMessage(destination, mapper, messageTracker, recordSchemaValidator, recordsRead,
+                validationErrors, airbyteMessage))) {
+          LOGGER.info("==== Processing");
+        }
 
         LOGGER.info("Source has no more messages, closing connection.");
         try {
@@ -402,9 +404,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                             final AtomicLong recordsRead,
                                             final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors,
                                             final AirbyteMessage airbyteMessage) {
+    LOGGER.info("poop====");
     validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
     final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
-    LOGGER.info("poop====");
 
     messageTracker.acceptFromSource(message);
 

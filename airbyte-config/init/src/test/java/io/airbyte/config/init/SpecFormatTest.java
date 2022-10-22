@@ -7,7 +7,6 @@ package io.airbyte.config.init;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
-import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +19,7 @@ import org.junit.jupiter.api.Test;
 class SpecFormatTest {
 
   @Test
-  void testOnAllExistingConfig() throws IOException, JsonValidationException {
+  void testOnAllExistingConfig() throws IOException {
     final DefinitionsProvider definitionsProvider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
 
     final List<JsonNode> sourceSpecs = definitionsProvider.getSourceDefinitions()

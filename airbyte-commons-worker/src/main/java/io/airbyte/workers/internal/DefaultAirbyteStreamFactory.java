@@ -14,7 +14,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,14 +122,6 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
       case TRACE -> logger.trace(combinedMessage);
       default -> logger.info(combinedMessage);
     }
-  }
-
-  public static void main(final String[] args) {
-    // create a stream of string
-    // evoke parallel
-    // test flatmap, peek, filter
-
-    System.out.println(Stream.generate(() -> "x").limit(110).collect(Collectors.toList()));
   }
 
 }
