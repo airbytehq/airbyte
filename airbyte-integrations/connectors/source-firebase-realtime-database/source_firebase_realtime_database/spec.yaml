@@ -15,7 +15,7 @@ connectionSpecification:
     google_application_credentials:
       title: Service Account Key JSON
       type: string
-      description: JSON cert credentials in JSON format
+      description: Cert credentials in JSON format of Service Account with Firebase Realtime Database Viewer role. (see, https://firebase.google.com/docs/projects/iam/roles-predefined-product#realtime-database)
       airbyte_secret: true
     path:
       title: Node Path
