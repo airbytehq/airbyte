@@ -1,36 +1,17 @@
 {
   "streams": [
     {
-      "name": "TODO fix this file",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": "column1",
+      "name": "users",
+      "supported_sync_modes": ["full_refresh"],
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-          "column1": {
+          "key": {
             "type": "string"
           },
-          "column2": {
-            "type": "number"
-          }
-        }
-      }
-    },
-    {
-      "name": "table1",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": false,
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "column1": {
+          "value": {
             "type": "string"
-          },
-          "column2": {
-            "type": "number"
           }
         }
       }
