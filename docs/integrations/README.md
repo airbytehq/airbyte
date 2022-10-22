@@ -170,10 +170,12 @@ For more information about the grading system, see [Product Release Stages](http
 | [US Census](sources/us-census.md)                                                           | Alpha                | Yes                 |
 | [VictorOps](sources/victorops.md)                                                           | Alpha                | No                  |
 | [Webflow](sources/webflow.md        )                                                       | Alpha                | Yes                 |
+| [Whisky Hunter](sources/whisky-hunter.md        )                                           | Alpha                | No                  |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
 | [Wordpress](sources/wordpress.md)                                                           | Alpha                | No                  |
 | [Wrike](sources/wrike.md)                                                                   | Alpha                | No                  |
 | [YouTube Analytics](sources/youtube-analytics.md)                                           | Beta                 | Yes                 |
+| [Xkcd](sources/xkcd.md)                                                                     | Alpha                | No                  |
 | [Zencart](sources/zencart.md)                                                               | Alpha                | No                  |
 | [Zendesk Chat](sources/zendesk-chat.md)                                                     | Generally Available  | Yes                 |
 | [Zendesk Sunshine](sources/zendesk-sunshine.md)                                             | Alpha                | Yes                 |
