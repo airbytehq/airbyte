@@ -1,230 +1,605 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "fairings": {
-      "type": "null"
-    },
-    "links": {
-      "type": "object",
-      "properties": {
-        "patch": {
-          "type": "object",
-          "properties": {
-            "small": {
-              "type": "string"
-            },
-            "large": {
-              "type": "string"
-            }
-          },
-          "required": ["small", "large"]
-        },
-        "reddit": {
-          "type": "object",
-          "properties": {
-            "campaign": {
-              "type": "null"
-            },
-            "launch": {
-              "type": "string"
-            },
-            "media": {
-              "type": "null"
-            },
-            "recovery": {
-              "type": "null"
-            }
-          },
-          "required": ["campaign", "launch", "media", "recovery"]
-        },
-        "flickr": {
-          "type": "object",
-          "properties": {
-            "small": {
-              "type": "array",
-              "items": {}
-            },
-            "original": {
-              "type": "array",
-              "items": {}
-            }
-          },
-          "required": ["small", "original"]
-        },
-        "presskit": {
-          "type": "null"
-        },
-        "webcast": {
-          "type": "string"
-        },
-        "youtube_id": {
-          "type": "string"
-        },
-        "article": {
-          "type": "null"
-        },
-        "wikipedia": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "patch",
-        "reddit",
-        "flickr",
-        "presskit",
-        "webcast",
-        "youtube_id",
-        "article",
-        "wikipedia"
-      ]
-    },
-    "static_fire_date_utc": {
-      "type": "null"
-    },
-    "static_fire_date_unix": {
-      "type": "null"
-    },
-    "net": {
-      "type": "boolean"
-    },
-    "window": {
-      "type": "null"
-    },
-    "rocket": {
-      "type": "string"
-    },
-    "success": {
-      "type": "boolean"
-    },
-    "failures": {
-      "type": "array",
-      "items": {}
-    },
-    "details": {
-      "type": "null"
-    },
-    "crew": {
-      "type": "array",
-      "items": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "string"
-        },
-        {
-          "type": "string"
-        },
-        {
-          "type": "string"
-        }
-      ]
-    },
-    "ships": {
-      "type": "array",
-      "items": {}
-    },
-    "capsules": {
-      "type": "array",
-      "items": [
-        {
-          "type": "string"
-        }
-      ]
-    },
-    "payloads": {
-      "type": "array",
-      "items": [
-        {
-          "type": "string"
-        }
-      ]
-    },
-    "launchpad": {
-      "type": "string"
-    },
-    "flight_number": {
-      "type": "integer"
-    },
-    "name": {
-      "type": "string"
-    },
-    "date_utc": {
-      "type": "string"
-    },
-    "date_unix": {
-      "type": "integer"
-    },
-    "date_local": {
-      "type": "string"
-    },
-    "date_precision": {
-      "type": "string"
-    },
-    "upcoming": {
-      "type": "boolean"
-    },
-    "cores": {
-      "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "core": {
-              "type": "string"
-            },
-            "flight": {
-              "type": "integer"
-            },
-            "gridfins": {
-              "type": "boolean"
-            },
-            "legs": {
-              "type": "boolean"
-            },
-            "reused": {
-              "type": "boolean"
-            },
-            "landing_attempt": {
-              "type": "boolean"
-            },
-            "landing_success": {
-              "type": "boolean"
-            },
-            "landing_type": {
-              "type": "string"
-            },
-            "landpad": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "core",
-            "flight",
-            "gridfins",
-            "legs",
-            "reused",
-            "landing_attempt",
-            "landing_success",
-            "landing_type",
-            "landpad"
-          ]
-        }
-      ]
-    },
-    "auto_update": {
-      "type": "boolean"
-    },
-    "tbd": {
-      "type": "boolean"
-    },
-    "launch_library_id": {
-      "type": "string"
-    },
-    "id": {
-      "type": "string"
-    }
-  },
-  "primaryKey": ["id"]
+	"definitions": {},
+	"$schema": "http://json-schema.org/draft-07/schema#", 
+	"$id": "https://example.com/object1666433453.json", 
+	"title": "Root", 
+	"type": "object",
+	"required": [
+		"fairings",
+		"links",
+		"static_fire_date_utc",
+		"static_fire_date_unix",
+		"net",
+		"window",
+		"rocket",
+		"success",
+		"failures",
+		"details",
+		"crew",
+		"ships",
+		"capsules",
+		"payloads",
+		"launchpad",
+		"flight_number",
+		"name",
+		"date_utc",
+		"date_unix",
+		"date_local",
+		"date_precision",
+		"upcoming",
+		"cores",
+		"auto_update",
+		"tbd",
+		"launch_library_id",
+		"id"
+	],
+	"properties": {
+		"fairings": {
+			"$id": "#root/fairings", 
+			"title": "Fairings", 
+			"type": "object",
+			"required": [
+				"reused",
+				"recovery_attempt",
+				"recovered",
+				"ships"
+			],
+			"properties": {
+				"reused": {
+					"$id": "#root/fairings/reused", 
+					"title": "Reused", 
+					"type": "boolean",
+					"examples": [
+						false
+					],
+					"default": true
+				},
+				"recovery_attempt": {
+					"$id": "#root/fairings/recovery_attempt", 
+					"title": "Recovery_attempt", 
+					"type": "boolean",
+					"examples": [
+						true
+					],
+					"default": true
+				},
+				"recovered": {
+					"$id": "#root/fairings/recovered", 
+					"title": "Recovered", 
+					"type": "boolean",
+					"examples": [
+						true
+					],
+					"default": true
+				},
+				"ships": {
+					"$id": "#root/fairings/ships", 
+					"title": "Ships", 
+					"type": "array",
+					"default": [],
+					"items":{
+						"$id": "#root/fairings/ships/items", 
+						"title": "Items", 
+						"type": "string",
+						"default": "",
+						"examples": [
+							"6059166413f40e27e8af34b6"
+						],
+						"pattern": "^.*$"
+					}
+				}
+			}
+		}
+,
+		"links": {
+			"$id": "#root/links", 
+			"title": "Links", 
+			"type": "object",
+			"required": [
+				"patch",
+				"reddit",
+				"flickr",
+				"presskit",
+				"webcast",
+				"youtube_id",
+				"article",
+				"wikipedia"
+			],
+			"properties": {
+				"patch": {
+					"$id": "#root/links/patch", 
+					"title": "Patch", 
+					"type": "object",
+					"required": [
+						"small",
+						"large"
+					],
+					"properties": {
+						"small": {
+							"$id": "#root/links/patch/small", 
+							"title": "Small", 
+							"type": "string",
+							"default": "",
+							"examples": [
+								"https://images2.imgbox.com/cd/30/UYfjAmuT_o.png"
+							],
+							"pattern": "^.*$"
+						},
+						"large": {
+							"$id": "#root/links/patch/large", 
+							"title": "Large", 
+							"type": "string",
+							"default": "",
+							"examples": [
+								"https://images2.imgbox.com/2e/a8/bvzKCiwf_o.png"
+							],
+							"pattern": "^.*$"
+						}
+					}
+				}
+,
+				"reddit": {
+					"$id": "#root/links/reddit", 
+					"title": "Reddit", 
+					"type": "object",
+					"required": [
+						"campaign",
+						"launch",
+						"media",
+						"recovery"
+					],
+					"properties": {
+						"campaign": {
+							"$id": "#root/links/reddit/campaign", 
+							"title": "Campaign", 
+							"type": "string",
+							"default": "",
+							"examples": [
+								"https://www.reddit.com/r/spacex/comments/jhu37i/starlink_general_discussion_and_deployment_thread/"
+							],
+							"pattern": "^.*$"
+						},
+						"launch": {
+							"$id": "#root/links/reddit/launch", 
+							"title": "Launch", 
+							"type": "string",
+							"default": "",
+							"examples": [
+								"https://www.reddit.com/r/spacex/comments/mzol0k/rspacex_starlink24_launch_discussion_updates/"
+							],
+							"pattern": "^.*$"
+						},
+						"media": {
+							"$id": "#root/links/reddit/media", 
+							"title": "Media", 
+							"type": "null",
+							"default": null
+						},
+						"recovery": {
+							"$id": "#root/links/reddit/recovery", 
+							"title": "Recovery", 
+							"type": "string",
+							"default": "",
+							"examples": [
+								"https://www.reddit.com/r/spacex/comments/k2ts1q/rspacex_fleet_updates_discussion_thread/"
+							],
+							"pattern": "^.*$"
+						}
+					}
+				}
+,
+				"flickr": {
+					"$id": "#root/links/flickr", 
+					"title": "Flickr", 
+					"type": "object",
+					"required": [
+						"small",
+						"original"
+					],
+					"properties": {
+						"small": {
+							"$id": "#root/links/flickr/small", 
+							"title": "Small", 
+							"type": "array",
+							"default": []
+						},
+						"original": {
+							"$id": "#root/links/flickr/original", 
+							"title": "Original", 
+							"type": "array",
+							"default": [],
+							"items":{
+								"$id": "#root/links/flickr/original/items", 
+								"title": "Items", 
+								"type": "string",
+								"default": "",
+								"examples": [
+									"https://live.staticflickr.com/65535/51146838376_4667d78231_o.jpg"
+								],
+								"pattern": "^.*$"
+							}
+						}
+					}
+				}
+,
+				"presskit": {
+					"$id": "#root/links/presskit", 
+					"title": "Presskit", 
+					"type": "null",
+					"default": null
+				},
+				"webcast": {
+					"$id": "#root/links/webcast", 
+					"title": "Webcast", 
+					"type": "string",
+					"default": "",
+					"examples": [
+						"https://youtu.be/RBxkRKZ34yo"
+					],
+					"pattern": "^.*$"
+				},
+				"youtube_id": {
+					"$id": "#root/links/youtube_id", 
+					"title": "Youtube_id", 
+					"type": "string",
+					"default": "",
+					"examples": [
+						"RBxkRKZ34yo"
+					],
+					"pattern": "^.*$"
+				},
+				"article": {
+					"$id": "#root/links/article", 
+					"title": "Article", 
+					"type": "string",
+					"default": "",
+					"examples": [
+						"https://spaceflightnow.com/2021/04/29/spacex-launches-60-more-starlink-spacecraft-fcc-clears-spacex-to-fly-satellites-at-lower-altitudes/"
+					],
+					"pattern": "^.*$"
+				},
+				"wikipedia": {
+					"$id": "#root/links/wikipedia", 
+					"title": "Wikipedia", 
+					"type": "string",
+					"default": "",
+					"examples": [
+						"https://en.wikipedia.org/wiki/Starlink"
+					],
+					"pattern": "^.*$"
+				}
+			}
+		}
+,
+		"static_fire_date_utc": {
+			"$id": "#root/static_fire_date_utc", 
+			"title": "Static_fire_date_utc", 
+			"type": "null",
+			"default": null
+		},
+		"static_fire_date_unix": {
+			"$id": "#root/static_fire_date_unix", 
+			"title": "Static_fire_date_unix", 
+			"type": "null",
+			"default": null
+		},
+		"net": {
+			"$id": "#root/net", 
+			"title": "Net", 
+			"type": "boolean",
+			"examples": [
+				false
+			],
+			"default": true
+		},
+		"window": {
+			"$id": "#root/window", 
+			"title": "Window", 
+			"type": "null",
+			"default": null
+		},
+		"rocket": {
+			"$id": "#root/rocket", 
+			"title": "Rocket", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"5e9d0d95eda69973a809d1ec"
+			],
+			"pattern": "^.*$"
+		},
+		"success": {
+			"$id": "#root/success", 
+			"title": "Success", 
+			"type": "boolean",
+			"examples": [
+				true
+			],
+			"default": true
+		},
+		"failures": {
+			"$id": "#root/failures", 
+			"title": "Failures", 
+			"type": "array",
+			"default": []
+		},
+		"details": {
+			"$id": "#root/details", 
+			"title": "Details", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"This mission launches the 24th batch of operational Starlink satellites, which are version 1.0, from LC-39A or SLC-40. It is the 25th Starlink launch overall. The satellites will be delivered to low Earth orbit and will spend a few weeks maneuvering to their operational altitude. The booster is expected to land on an ASDS."
+			],
+			"pattern": "^.*$"
+		},
+		"crew": {
+			"$id": "#root/crew", 
+			"title": "Crew", 
+			"type": "array",
+			"default": []
+		},
+		"ships": {
+			"$id": "#root/ships", 
+			"title": "Ships", 
+			"type": "array",
+			"default": [],
+			"items":{
+				"$id": "#root/ships/items", 
+				"title": "Items", 
+				"type": "string",
+				"default": "",
+				"examples": [
+					"5ea6ed2f080df4000697c910"
+				],
+				"pattern": "^.*$"
+			}
+		},
+		"capsules": {
+			"$id": "#root/capsules", 
+			"title": "Capsules", 
+			"type": "array",
+			"default": []
+		},
+		"payloads": {
+			"$id": "#root/payloads", 
+			"title": "Payloads", 
+			"type": "array",
+			"default": [],
+			"items":{
+				"$id": "#root/payloads/items", 
+				"title": "Items", 
+				"type": "string",
+				"default": "",
+				"examples": [
+					"605b4be3aa5433645e37d046"
+				],
+				"pattern": "^.*$"
+			}
+		},
+		"launchpad": {
+			"$id": "#root/launchpad", 
+			"title": "Launchpad", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"5e9e4501f509094ba4566f84"
+			],
+			"pattern": "^.*$"
+		},
+		"flight_number": {
+			"$id": "#root/flight_number", 
+			"title": "Flight_number", 
+			"type": "integer",
+			"examples": [
+				124
+			],
+			"default": 0
+		},
+		"name": {
+			"$id": "#root/name", 
+			"title": "Name", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"Starlink-24 (v1.0)"
+			],
+			"pattern": "^.*$"
+		},
+		"date_utc": {
+			"$id": "#root/date_utc", 
+			"title": "Date_utc", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"2021-04-29T03:44:00.000Z"
+			],
+			"pattern": "^.*$"
+		},
+		"date_unix": {
+			"$id": "#root/date_unix", 
+			"title": "Date_unix", 
+			"type": "integer",
+			"examples": [
+				1619667840
+			],
+			"default": 0
+		},
+		"date_local": {
+			"$id": "#root/date_local", 
+			"title": "Date_local", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"2021-04-28T23:44:00-04:00"
+			],
+			"pattern": "^.*$"
+		},
+		"date_precision": {
+			"$id": "#root/date_precision", 
+			"title": "Date_precision", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"hour"
+			],
+			"pattern": "^.*$"
+		},
+		"upcoming": {
+			"$id": "#root/upcoming", 
+			"title": "Upcoming", 
+			"type": "boolean",
+			"examples": [
+				false
+			],
+			"default": true
+		},
+		"cores": {
+			"$id": "#root/cores", 
+			"title": "Cores", 
+			"type": "array",
+			"default": [],
+			"items":{
+				"$id": "#root/cores/items", 
+				"title": "Items", 
+				"type": "object",
+				"required": [
+					"core",
+					"flight",
+					"gridfins",
+					"legs",
+					"reused",
+					"landing_attempt",
+					"landing_success",
+					"landing_type",
+					"landpad"
+				],
+				"properties": {
+					"core": {
+						"$id": "#root/cores/items/core", 
+						"title": "Core", 
+						"type": "string",
+						"default": "",
+						"examples": [
+							"5ef670f10059c33cee4a826c"
+						],
+						"pattern": "^.*$"
+					},
+					"flight": {
+						"$id": "#root/cores/items/flight", 
+						"title": "Flight", 
+						"type": "integer",
+						"examples": [
+							7
+						],
+						"default": 0
+					},
+					"gridfins": {
+						"$id": "#root/cores/items/gridfins", 
+						"title": "Gridfins", 
+						"type": "boolean",
+						"examples": [
+							true
+						],
+						"default": true
+					},
+					"legs": {
+						"$id": "#root/cores/items/legs", 
+						"title": "Legs", 
+						"type": "boolean",
+						"examples": [
+							true
+						],
+						"default": true
+					},
+					"reused": {
+						"$id": "#root/cores/items/reused", 
+						"title": "Reused", 
+						"type": "boolean",
+						"examples": [
+							true
+						],
+						"default": true
+					},
+					"landing_attempt": {
+						"$id": "#root/cores/items/landing_attempt", 
+						"title": "Landing_attempt", 
+						"type": "boolean",
+						"examples": [
+							true
+						],
+						"default": true
+					},
+					"landing_success": {
+						"$id": "#root/cores/items/landing_success", 
+						"title": "Landing_success", 
+						"type": "boolean",
+						"examples": [
+							true
+						],
+						"default": true
+					},
+					"landing_type": {
+						"$id": "#root/cores/items/landing_type", 
+						"title": "Landing_type", 
+						"type": "string",
+						"default": "",
+						"examples": [
+							"ASDS"
+						],
+						"pattern": "^.*$"
+					},
+					"landpad": {
+						"$id": "#root/cores/items/landpad", 
+						"title": "Landpad", 
+						"type": "string",
+						"default": "",
+						"examples": [
+							"5e9e3033383ecbb9e534e7cc"
+						],
+						"pattern": "^.*$"
+					}
+				}
+			}
+
+		},
+		"auto_update": {
+			"$id": "#root/auto_update", 
+			"title": "Auto_update", 
+			"type": "boolean",
+			"examples": [
+				true
+			],
+			"default": true
+		},
+		"tbd": {
+			"$id": "#root/tbd", 
+			"title": "Tbd", 
+			"type": "boolean",
+			"examples": [
+				false
+			],
+			"default": true
+		},
+		"launch_library_id": {
+			"$id": "#root/launch_library_id", 
+			"title": "Launch_library_id", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"fbd23c86-89d0-4d3f-b5fb-5d7165d05cca"
+			],
+			"pattern": "^.*$"
+		},
+		"id": {
+			"$id": "#root/id", 
+			"title": "Id", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"605b4b6aaa5433645e37d03f"
+			],
+			"pattern": "^.*$"
+		}
+	}
 }
