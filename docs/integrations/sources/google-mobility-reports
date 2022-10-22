@@ -1,0 +1,41 @@
+# Google Mobility Reports
+
+This page contains the setup guide and reference information for the Google Mobility Reports source connector.
+
+## Prerequisites
+
+You can read more about the Google Mobility Reports on the [official Google documentation](https://www.google.com/covid19/mobility/).
+
+## Setup guide
+
+No API keys required, add source and use right away.
+
+## Supported sync modes
+
+The Sentry source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | No         |
+| SSL connection    | Yes        |
+| Namespaces        | No         |
+
+## Supported Streams
+
+* [Global CSV](https://www.google.com/covid19/mobility/data_documentation.html?hl=en)
+
+## Data type map
+
+| Integration Type    | Airbyte Type |
+| :------------------ | :----------- |
+| `string`            | `string`     |
+| `integer`, `number` | `number`     |
+| `array`             | `array`      |
+| `object`            | `object`     |
+
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject                                           |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.1.0   | 2022-10-22 | [18330](https://github.com/airbytehq/airbyte/pull/18330)   | New Source: Google Mobility Reports                                |
