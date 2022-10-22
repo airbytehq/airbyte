@@ -6,8 +6,8 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1.56",
-    "firebase-admin~=6.0.0",
+    "airbyte-cdk",
+    "firebase-admin",
 ]
 
 TEST_REQUIREMENTS = [
