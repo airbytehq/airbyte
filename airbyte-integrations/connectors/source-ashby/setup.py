@@ -18,8 +18,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_ashby",
     description="Source implementation for Ashby.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Elliot Trabac",
+    author_email="elliot.trabac1@gmail.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},

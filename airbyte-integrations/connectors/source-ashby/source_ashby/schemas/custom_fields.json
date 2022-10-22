@@ -5,15 +5,17 @@
     "id": {
       "type": ["null", "string"]
     },
-    "name": {
+    "title": {
       "type": ["null", "string"]
     },
-    "years_of_service": {
-      "type": ["null", "integer"]
+    "objectType": {
+      "type": ["null", "string"]
     },
-    "start_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "isArchived": {
+      "type": ["null", "boolean"]
+    },
+    "fieldType": {
+      "type": ["null", "string"]
     }
   }
 }

@@ -5,12 +5,14 @@
     "id": {
       "type": ["null", "string"]
     },
-    "name": {
+    "status": {
       "type": ["null", "string"]
     },
-    "signup_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "applicationId": {
+      "type": ["null", "string"]
+    },
+    "interviewStageId": {
+      "type": ["null", "string"]
     }
   }
 }
