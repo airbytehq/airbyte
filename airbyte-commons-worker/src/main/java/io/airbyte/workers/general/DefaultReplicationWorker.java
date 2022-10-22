@@ -339,7 +339,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      Long recordsRead = 0L;
+      final var wrapper = new Object(){ long recordsRead = 0; };
+//      final Long recordsRead = 0L;
       final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       try {
         // if we turn this into a stream, how do we cancel?
@@ -359,10 +360,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             throw new DestinationException("Destination process message delivery failed", e);
           }
 
-          recordsRead += 1;
+          wrapper.recordsRead += 1;
 
-          if (recordsRead % 1000 == 0) {
-            LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+          if (wrapper.recordsRead % 1000 == 0) {
+            LOGGER.info("Records read: {} ({})", wrapper.recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
           }
         })) {
 //          } else {
@@ -375,7 +376,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 //          }
         }
         timeHolder.trackSourceReadEndTime();
-        LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+        LOGGER.info("Total records read: {} ({})", wrapper.recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());

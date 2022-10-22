@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -132,6 +133,11 @@ public class EmptyAirbyteSource implements AirbyteSource {
     } else {
       return emitLegacyState();
     }
+  }
+
+  @Override
+  public boolean tryAttempt(Consumer<AirbyteMessage> consumer) {
+    return false;
   }
 
   @Override
