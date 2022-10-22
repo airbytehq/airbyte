@@ -115,7 +115,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(sourceProcess != null);
 
-//    return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
+    // return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
     return Optional.empty();
   }
 

@@ -339,13 +339,16 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      final var wrapper = new Object(){ long recordsRead = 0; };
-//      final Long recordsRead = 0L;
+      final var wrapper = new Object() {
+
+        long recordsRead = 0;
+
+      };
       final Map<String, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       try {
         // if we turn this into a stream, how do we cancel?
         // we can turn this into a spliterator?
-//        while (!cancelled.get() && !source.isFinished()) {
+        // while (!cancelled.get() && !source.isFinished()) {
         while (!cancelled.get() && !source.tryAttempt(airbyteMessage -> {
           validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
           final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
@@ -366,14 +369,14 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             LOGGER.info("Records read: {} ({})", wrapper.recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
           }
         })) {
-//          } else {
-//            LOGGER.info("Source has no more messages, closing connection.");
-//            try {
-//              source.close();
-//            } catch (final Exception e) {
-//              throw new SourceException("Source cannot be stopped!", e);
-//            }
-//          }
+          // } else {
+          // LOGGER.info("Source has no more messages, closing connection.");
+          // try {
+          // source.close();
+          // } catch (final Exception e) {
+          // throw new SourceException("Source cannot be stopped!", e);
+          // }
+          // }
         }
         timeHolder.trackSourceReadEndTime();
         LOGGER.info("Total records read: {} ({})", wrapper.recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));

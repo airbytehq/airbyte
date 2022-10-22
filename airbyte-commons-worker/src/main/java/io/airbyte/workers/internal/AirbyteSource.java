@@ -46,10 +46,11 @@ public interface AirbyteSource extends AutoCloseable {
   /**
    * Attempts to read an AirbyteMessage from the Source.
    *
-   * @return returns an AirbyteMessage is the Source emits one. Otherwise, empty. This method BLOCKS on waiting for the Source to emit data to STDOUT.
+   * @return returns an AirbyteMessage is the Source emits one. Otherwise, empty. This method BLOCKS
+   *         on waiting for the Source to emit data to STDOUT.
    */
   Optional<AirbyteMessage> attemptRead();
-  
+
   boolean tryAttempt(Consumer<AirbyteMessage> consumer);
 
   /**
