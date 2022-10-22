@@ -12,7 +12,7 @@ dependencies {
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation 'org.apache.ant:ant:1.10.10'
-    implementation 'org.apache.commons:commons-text:1.9'
+    implementation 'org.apache.commons:commons-text:1.10.0'
 
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-protocol')
