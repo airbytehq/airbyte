@@ -9,8 +9,9 @@ import pkgutil
 import typing
 from dataclasses import dataclass, fields
 from enum import Enum, EnumMeta
-from typing import Any, List, Mapping, Union
+from typing import Any, List, Mapping, Optional, Union
 
+from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
@@ -30,10 +31,18 @@ class ConcreteDeclarativeSource(JsonSchemaMixin):
     streams: List[DeclarativeStream]
 
 
+def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
+    """Gets a resource from a package, returning None if it does not exist"""
+    try:
+        return pkgutil.get_data(package, filename)
+    except FileNotFoundError:
+        return None
+
+
 class YamlDeclarativeSource(DeclarativeSource):
     """Declarative source defined by a yaml file"""
 
-    VALID_TOP_LEVEL_FIELDS = {"definitions", "streams", "check", "version"}
+    VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "spec", "streams", "version"}
 
     def __init__(self, path_to_yaml):
         """
@@ -69,9 +78,32 @@ class YamlDeclarativeSource(DeclarativeSource):
             self._apply_log_level_to_stream_logger(self.logger, stream)
         return source_streams
 
-    def _read_and_parse_yaml_file(self, path_to_yaml_file):
-        package = self.__class__.__module__.split(".")[0]
+    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
+        """
+        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username
+        and password) required to run this integration. For low-code connectors, this will first attempt to load the spec from the
+        manifest's spec block, otherwise it will load it from "spec.yaml" or "spec.json" in the project root.
+        """
 
+        spec = self._source_config.get("spec")
+        if spec:
+            return ConnectorSpecification.parse_obj(spec)
+        else:
+            return super().spec(logger)
+
+    def _read_and_parse_yaml_file(self, path_to_yaml_file):
+        # This is a hack, but operates on the assumption that during unit tests we write manifests to a temporary directory
+        # (ex. /var/folders/...). In production, source_manifest.yaml is loaded into the package in setup.py, but for our
+        # unit testing, the temporary file doesn't get loaded in so we have to access it using the open instead
+        path_parts = list(filter(None, path_to_yaml_file.split("/")))
+        is_unit_test = len(path_parts) > 0 and path_parts[0] == "var"
+        if is_unit_test:
+            with open(path_to_yaml_file, "r") as f:
+                config_content = f.read()
+                parsed_config = YamlParser().parse(config_content)
+                return parsed_config
+
+        package = self.__class__.__module__.split(".")[0]
         yaml_config = pkgutil.get_data(package, path_to_yaml_file)
         decoded_yaml = yaml_config.decode()
         return YamlParser().parse(decoded_yaml)
