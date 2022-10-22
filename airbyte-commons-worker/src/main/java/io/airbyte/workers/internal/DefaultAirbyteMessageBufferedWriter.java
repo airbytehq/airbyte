@@ -11,14 +11,14 @@ import java.io.IOException;
 
 public class DefaultAirbyteMessageBufferedWriter implements AirbyteMessageBufferedWriter {
 
-  private final BufferedWriter writer;
+  protected final BufferedWriter writer;
 
   public DefaultAirbyteMessageBufferedWriter(final BufferedWriter writer) {
     this.writer = writer;
   }
 
   @Override
-  public void write(AirbyteMessage message) throws IOException {
+  public void write(final AirbyteMessage message) throws IOException {
     writer.write(Jsons.serialize(message));
     writer.newLine();
   }
