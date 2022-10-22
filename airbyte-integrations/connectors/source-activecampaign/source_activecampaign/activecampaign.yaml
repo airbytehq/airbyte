@@ -47,6 +47,13 @@ definitions:
       name: "deals"
       primary_key: "id"
       path: "/api/3/deals"
+  
+  lists_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "lists"
+      primary_key: "id"
+      path: "/api/3/lists"
 
   segments_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -58,7 +65,7 @@ definitions:
 streams:
   - "*ref(definitions.campaigns_stream)"
   - "*ref(definitions.contacts_stream)"
-  # - "*ref(definitions.automations_stream)"
+  - "*ref(definitions.lists_stream)"
   - "*ref(definitions.deals_stream)"
   - "*ref(definitions.segments_stream)"
 
