@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "country_region_code": {
+      "type": ["null", "string"]
+    },
+    "country_region": {
+      "type": ["null", "string"]
+    },
+    "sub_region_1": {
+      "type": ["null", "string"]
+    },
+    "sub_region_2": {
+      "type": ["null", "string"]
+    },
+    "metro_area": {
+      "type": ["null", "string"]
+    },
+    "iso_3166_2_code": {
+      "type": ["null", "string"]
+    },
+    "census_fips_code": {
+      "type": ["null", "string"]
+    },
+    "place_id": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "retail_and_recreation_percent_change_from_baseline": {
+      "type": ["null", "number"]
+    },
+    "grocery_and_pharmacy_percent_change_from_baseline": {
+      "type": ["null", "number"]
+    },
+    "parks_percent_change_from_baseline": {
+      "type": ["null", "number"]
+    },
+    "workplaces_percent_change_from_baseline": {
+      "type": ["null", "number"]
+    },
+    "residential_percent_change_from_baseline": {
+      "type": ["null", "number"]
+    }
+  }
+}
