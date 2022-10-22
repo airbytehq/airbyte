@@ -8,6 +8,7 @@ definitions:
       field_pointer: ["{{ options['name'] }}"]
 
   requester:
+    # API Docs: https://developers.activecampaign.com/reference/url
     url_base: "https://{{ config['account_username'] }}.api-us1.com"
     http_method: "GET"
     authenticator:
@@ -27,6 +28,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
 
+  # API Docs: https://developers.activecampaign.com/reference/list-all-campaigns
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -34,6 +36,7 @@ definitions:
       primary_key: "id"
       path: "/api/3/campaigns"
 
+  # API Docs: https://developers.activecampaign.com/reference/list-all-contacts
   contacts_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -41,6 +44,7 @@ definitions:
       primary_key: "id"
       path: "/api/3/contacts"
 
+  # API Docs: https://developers.activecampaign.com/reference/list-all-deals
   deals_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -48,6 +52,7 @@ definitions:
       primary_key: "id"
       path: "/api/3/deals"
   
+  # API Docs: https://developers.activecampaign.com/reference/retrieve-all-lists
   lists_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -55,6 +60,7 @@ definitions:
       primary_key: "id"
       path: "/api/3/lists"
 
+  # API Docs: https://developers.activecampaign.com/reference/list-all-segments
   segments_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
