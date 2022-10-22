@@ -2,13 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import time
 from collections.abc import Mapping
 from uuid import uuid4
-
 from meilisearch import Client
+from logging import getLogger
 
-
+logger = getLogger("airbyte")
 class MeiliWriter:
     write_buffer = []
     flush_interval = 50000
@@ -25,23 +24,12 @@ class MeiliWriter:
             self.flush()
 
     def flush(self):
-        if len(self.write_buffer) == 0:
+        buffer_size = len(self.write_buffer)
+        if buffer_size == 0:
             return
-
+        logger.info(f"flushing {buffer_size} records")
         response = self.client.index(self.steam_name).add_documents(self.write_buffer)
-        self.wait_for_job(response.task_uid)
+        self.client.wait_for_task(response.task_uid, 1800000, 1000)
         self.write_buffer.clear()
 
-    def wait_for_job(self, task_uid: str):
-        timer = 1
-        while True:
-            time.sleep(timer)
-            if timer < 60:
-                timer = timer * 2
-            try:
-                task = self.client.get_task(task_uid)
-                status = task["status"]
-                if status == "succeeded" or status == "failed":
-                    break
-            except:
-                timer = 60
+

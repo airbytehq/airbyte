@@ -49,7 +49,7 @@ class DestinationMeilisearch(Destination):
             writer = MeiliWriter(client, "_airbyte", self.primary_key)
 
             create_index_job = client.create_index("_airbyte", {"primaryKey": "id"})
-            writer.wait_for_job(create_index_job["taskUid"])
+            client.wait_for_task(create_index_job["taskUid"])
 
             add_documents_job = client.index("_airbyte").add_documents(
                 [
@@ -60,7 +60,7 @@ class DestinationMeilisearch(Destination):
                     }
                 ]
             )
-            writer.wait_for_job(add_documents_job.task_uid)
+            client.wait_for_task(add_documents_job.task_uid)
 
             client.index("_airbyte").search("Shazam")
             client.delete_index("_airbyte")
