@@ -36,7 +36,17 @@
               "type": "string",
               "description": "Access token for making authenticated requests. See the Intercom docs for more information https://go.estuary.dev/b5C9aN",
               "airbyte_secret": true
-            }
+            },  
+          "client_id": {
+            "title": "Client ID",
+            "type": "string",
+            "airbyte_secret": true
+          },  
+          "client_secret": {
+            "title": "Client Secret",
+            "type": "string",
+            "airbyte_secret": true
+          }
           }
         }, {
           "type": "object",
