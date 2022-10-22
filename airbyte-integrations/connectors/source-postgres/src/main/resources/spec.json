@@ -147,7 +147,7 @@
               },
               "ca_certificate": {
                 "type": "string",
-                "title": "CA certificate",
+                "title": "CA Certificate",
                 "description": "CA certificate",
                 "airbyte_secret": true,
                 "multiline": true,
