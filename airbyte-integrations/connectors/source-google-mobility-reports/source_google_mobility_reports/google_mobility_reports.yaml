@@ -1,0 +1,32 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://www.gstatic.com/covid19/mobility/"
+    http_method: "GET"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  global_mobility_report_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "global_mobility_report"
+      primary_key: ["placeid","date"]
+      path: "/Global_Mobility_Report.csv"
+
+streams:
+  - "*ref(definitions.global_mobility_report_stream)"
+
+check:
+  stream_names:
+    - "global_mobility_report"
