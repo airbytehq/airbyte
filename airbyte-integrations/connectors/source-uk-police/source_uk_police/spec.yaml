@@ -1,13 +1,56 @@
 documentationUrl: https://docsurl.com
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Uk Police Spec
+  title: UK Police Spec
   type: object
   required:
-    - api_key
+    - start_month
+    - lat
+    - lng
   additionalProperties: true
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    api_key:
+    start_month:
       type: string
-      description: API Key
+      description: The month to start from
+      examples:
+        - 2019-01
+      pattern: "^[0-9]{4}-[0-9]{2}$"
+      order: 0
+    end_month:
+      type: string
+      description: The month to end at
+      examples:
+        - 2019-01
+      pattern: "^[0-9]{4}-[0-9]{2}$"
+      order: 1
+    crime_category:
+      type: string
+      description: |
+        The crime category to filter by. See the /crime-categories endpoint
+        for a list of valid categories. Defaults to 'all-crime'.
+      examples:
+        - anti-social-behaviour
+        - burglary
+      order: 2
+    lat:
+      type: number
+      description: Latitude of the centre of the search area.
+      examples:
+        - 51.509865
+      order: 3
+    lng:
+      type: number
+      description: Longitude of the centre of the search area.
+      examples:
+        - -0.118092
+      order: 4
+    force:
+      type: string
+      description: |
+        The force to filter by. See the /forces endpoint for a list of valid
+        forces. Required for the '*_no_location' and '*_by_force' streams.
+      examples:
+        - avon-and-somerset
+        - city-of-london
+      order: 5
+

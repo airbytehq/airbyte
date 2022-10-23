@@ -1,3 +1,7 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "start_month": "2032-08",
+  "lat": 151.5074,
+  "lng": -0.1278,
+  "crime_category": "made-up-category",
+  "force": "unknown-force"
 }

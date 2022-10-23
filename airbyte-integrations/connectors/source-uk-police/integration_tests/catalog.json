@@ -1,39 +1,65 @@
 {
   "streams": [
     {
-      "name": "TODO fix this file",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": "column1",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "column1": {
-            "type": "string"
-          },
-          "column2": {
-            "type": "number"
-          }
-        }
-      }
+      "name": "all_forces",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": false,
+      "json_schema": {}
     },
     {
-      "name": "table1",
-      "supported_sync_modes": ["full_refresh", "incremental"],
+      "name": "crime_categories",
+      "supported_sync_modes": ["full_refresh"],
       "source_defined_cursor": false,
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "column1": {
-            "type": "string"
-          },
-          "column2": {
-            "type": "number"
-          }
-        }
-      }
+      "json_schema": {}
+    },
+    {
+      "name": "street_level_crime",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "month",
+      "json_schema": {}
+    },
+    {
+      "name": "street_level_outcomes",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "month",
+      "json_schema": {}
+    },
+    {
+      "name": "crimes_at_location",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "month",
+      "json_schema": {}
+    },
+    {
+      "name": "crimes_with_no_location",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "month",
+      "json_schema": {}
+    },
+    {
+      "name": "stop_and_search_for_area",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "month",
+      "json_schema": {}
+    },
+    {
+      "name": "stop_and_search_with_no_location",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "month",
+      "json_schema": {}
+    },
+    {
+      "name": "stop_and_search_for_force",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "month",
+      "json_schema": {}
     }
   ]
 }

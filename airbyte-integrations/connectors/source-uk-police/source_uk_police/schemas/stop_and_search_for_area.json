@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "age_range": {
+      "type": ["string", "null"]
+    },
+    "outcome": {
+      "type": ["string", "null"]
+    },
+    "involved_person": {
+      "type": ["boolean", "null"]
+    },
+    "self_defined_ethnicity": {
+      "type": ["string", "null"]
+    },
+    "gender": {
+      "type": ["string", "null"]
+    },
+    "legislation": {
+      "type": ["string", "null"]
+    },
+    "outcome_linked_to_object_of_search": {
+      "type": ["boolean", "null"]
+    },
+    "datetime": {
+      "type": ["string", "null"]
+    },
+    "removal_of_more_than_outer_clothing": {
+      "type": ["boolean", "null"]
+    },
+    "outcome_object": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "location": {
+      "type": ["object", "null"],
+      "properties": {
+        "latitude": {
+          "type": ["string", "null"]
+        },
+        "street": {
+          "type": ["object", "null"],
+          "properties": {
+            "id": {
+              "type": ["number", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "longitude": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "operation": {},
+    "officer_defined_ethnicity": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "operation_name": {},
+    "object_of_search": {
+      "type": ["string", "null"]
+    }
+  }
+}

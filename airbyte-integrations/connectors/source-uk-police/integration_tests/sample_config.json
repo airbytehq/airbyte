@@ -1,3 +1,7 @@
 {
-  "fix-me": "TODO"
+  "start_month": "2022-08",
+  "lat": 51.5074,
+  "lng": -0.1278,
+  "crime_category": "burglary",
+  "force": "metropolitan"
 }

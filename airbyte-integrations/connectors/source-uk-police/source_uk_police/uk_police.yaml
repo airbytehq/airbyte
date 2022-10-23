@@ -5,11 +5,28 @@ definitions:
     extractor:
       field_pointer: []
   requester:
-    url_base: "https://example.com"
+    url_base: "https://data.police.uk/api"
     http_method: "GET"
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['api_key'] }}"
+    request_options_provider:
+      request_parameters:
+        lat: "{{ config['lat'] }}"
+        lng: "{{ config['lng'] }}"
+        category: "{{ config['crime_category'] }}"
+        force: "{{ config['force'] }}"
+  month_stream_slicer:
+    type: DatetimeStreamSlicer
+    start_datetime:
+      datetime: "{{ config['start_month'] }}"
+      format: "%Y-%m"
+    end_datetime:
+      datetime: "{{ config['end_month'] or now_utc().strftime('%Y-%m') }}"
+      format: "%Y-%m"
+    datetime_format: "%Y-%m"
+    step: 28d
+    cursor_field: "month"
+    start_time_option:
+      field_name: "date"
+      inject_into: "request_parameter"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -17,19 +34,83 @@ definitions:
       type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
+  month_sliced_retriever:
+    $ref: "*ref(definitions.retriever)"
+    stream_slicer:
+      $ref: "*ref(definitions.month_stream_slicer)"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  customers_stream:
+  month_sliced_stream:
+    retriever:
+      $ref: "*ref(definitions.month_sliced_retriever)"
+  all_forces_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "customers"
+      name: "all_forces"
       primary_key: "id"
-      path: "/example"
+      path: "/forces"
+  crime_categories_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "crime_categories"
+      primary_key: "url"
+      path: "/crime-categories?date={{ now_utc().strftime('%Y-%m') }}"
+  street_level_crime_stream:
+    $ref: "*ref(definitions.month_sliced_stream)"
+    $options:
+      name: "street_level_crime"
+      primary_key: "persistent_id"
+      path: "/crimes-street/{{ config['crime_category'] or 'all-crime' }}"
+  street_level_outcomes_stream:
+    $ref: "*ref(definitions.month_sliced_stream)"
+    $options:
+      name: "street_level_outcomes"
+      primary_key: "crime"
+      path: "/outcomes-at-location"
+  crimes_at_location_stream:
+    $ref: "*ref(definitions.month_sliced_stream)"
+    $options:
+      name: "crimes_at_location"
+      primary_key: "persistent_id"
+      path: "/crimes-at-location"
+  crimes_with_no_location_stream:
+    $ref: "*ref(definitions.month_sliced_stream)"
+    $options:
+      name: "crimes_with_no_location"
+      primary_key: "persistent_id"
+      path: "/crimes-no-location"
+  stop_and_search_for_area_stream:
+    $ref: "*ref(definitions.month_sliced_stream)"
+    $options:
+      name: "stop_and_search_for_area"
+      primary_key: "datetime"
+      path: "/stops-street"
+  stop_and_search_with_no_location_stream:
+    $ref: "*ref(definitions.month_sliced_stream)"
+    $options:
+      name: "stop_and_search_with_no_location"
+      primary_key: "datetime"
+      path: "/stops-no-location"
+  stop_and_search_for_force_stream:
+    $ref: "*ref(definitions.month_sliced_stream)"
+    $options:
+      name: "stop_and_search_for_force"
+      primary_key: "datetime"
+      path: "/stops-force"
+
 
 streams:
-  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.all_forces_stream)"
+  - "*ref(definitions.crime_categories_stream)"
+  - "*ref(definitions.street_level_crime_stream)"
+  - "*ref(definitions.street_level_outcomes_stream)"
+  - "*ref(definitions.crimes_at_location_stream)"
+  - "*ref(definitions.crimes_with_no_location_stream)"
+  - "*ref(definitions.stop_and_search_for_area_stream)"
+  - "*ref(definitions.stop_and_search_with_no_location_stream)"
+  - "*ref(definitions.stop_and_search_for_force_stream)"
 
 check:
   stream_names:
-    - "customers"
+    - "street_level_crime"

@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "date": {
+      "type": ["string", "null"]
+    },
+    "person_id": {},
+    "crime": {
+      "type": ["object", "null"],
+      "properties": {
+        "category": {
+          "type": ["string", "null"]
+        },
+        "location_type": {
+          "type": ["string", "null"]
+        },
+        "location": {
+          "type": ["object", "null"],
+          "properties": {
+            "latitude": {
+              "type": ["string", "null"]
+            },
+            "street": {
+              "type": ["object", "null"],
+              "properties": {
+                "id": {
+                  "type": ["number", "null"]
+                },
+                "name": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "longitude": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "context": {
+          "type": ["string", "null"]
+        },
+        "persistent_id": {
+          "type": ["string", "null"]
+        },
+        "id": {
+          "type": ["number", "null"]
+        },
+        "location_subtype": {
+          "type": ["string", "null"]
+        },
+        "month": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

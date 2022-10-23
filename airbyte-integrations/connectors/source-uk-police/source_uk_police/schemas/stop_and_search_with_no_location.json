@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "age_range": {
+      "type": ["string", "null"]
+    },
+    "self_defined_ethnicity": {
+      "type": ["string", "null"]
+    },
+    "outcome_linked_to_object_of_search": {},
+    "datetime": {
+      "type": ["string", "null"]
+    },
+    "removal_of_more_than_outer_clothing": {},
+    "operation": {},
+    "officer_defined_ethnicity": {
+      "type": ["string", "null"]
+    },
+    "object_of_search": {
+      "type": ["string", "null"]
+    },
+    "involved_person": {
+      "type": ["boolean", "null"]
+    },
+    "gender": {
+      "type": ["string", "null"]
+    },
+    "legislation": {
+      "type": ["string", "null"]
+    },
+    "location": {},
+    "outcome": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "operation_name": {}
+  }
+}
