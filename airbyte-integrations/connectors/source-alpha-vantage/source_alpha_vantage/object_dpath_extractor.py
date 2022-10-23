@@ -71,7 +71,7 @@ class ObjectDpathExtractor(DpathExtractor):
             extracted = dpath.util.get(response_body, pointer, default=[])
         if isinstance(extracted, list):
             return extracted
-        elif isinstance(extracted, dict) and isinstance(extracted[list(extracted.keys())[0]], dict):  # Ensure object is dict[str, dict]
+        elif isinstance(extracted, dict) and all(isinstance(v, dict) for v in extracted.values()):  # Ensure object is dict[Hashable, dict]
             if not self.inject_key_as_field:
                 return [value for _, value in extracted.items()]
             else:
