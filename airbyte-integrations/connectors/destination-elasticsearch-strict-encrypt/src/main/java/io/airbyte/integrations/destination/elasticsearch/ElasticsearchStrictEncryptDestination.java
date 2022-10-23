@@ -4,12 +4,19 @@
 
 package io.airbyte.integrations.destination.elasticsearch;
 
+import static co.elastic.clients.elasticsearch.watcher.Input.HTTP;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingDestination;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.net.URL;
+import java.util.Objects;
 import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +24,7 @@ import org.slf4j.LoggerFactory;
 public class ElasticsearchStrictEncryptDestination extends SpecModifyingDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchStrictEncryptDestination.class);
+  private final ObjectMapper mapper = new ObjectMapper();
 
   public ElasticsearchStrictEncryptDestination() {
     super(new ElasticsearchDestination());
@@ -36,6 +44,27 @@ public class ElasticsearchStrictEncryptDestination extends SpecModifyingDestinat
     IntStream.range(0, authMethod.size()).filter(i -> authMethod.get(i).get("title").asText().equals("None")).findFirst()
         .ifPresent(authMethod::remove);
     return spec;
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(JsonNode config) throws Exception {
+
+    final ConnectorConfiguration configObject = convertConfig(config);
+    if (Objects.isNull(configObject.getEndpoint())) {
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("endpoint must not be empty");
+    }
+
+    if (new URL(configObject.getEndpoint()).getProtocol().equals(HTTP)) {
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("only https protocol is allowed");
+    }
+
+    return super.check(config);
+  }
+
+  private ConnectorConfiguration convertConfig(JsonNode config) {
+    return mapper.convertValue(config, ConnectorConfiguration.class);
   }
 
 }
