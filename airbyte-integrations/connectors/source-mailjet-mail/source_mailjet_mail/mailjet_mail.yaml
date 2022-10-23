@@ -11,6 +11,19 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['username'] }}"
       password: "{{ config['password'] }}"
+  offset_paginator:
+    type: DefaultPaginator
+    $options:
+      url_base: "*ref(definitions.requester.url_base)"
+    pagination_strategy:
+      type: "OffsetIncrement"
+      page_size: 50
+    page_token_option:
+      field_name: "offset"
+      inject_into: "request_parameter"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "limit"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -21,16 +34,58 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+  contactslist_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "contactslist"
+      primary_key: "ID"
+      path: "/contactslist?limit=100"
   contacts_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      paginator:
+        $ref: "*ref(definitions.offset_paginator)"
+      requester:
+        $ref: "*ref(definitions.requester)"
     $options:
       name: "contacts"
       primary_key: "ID"
-      path: "/contactslist"
+      path: "/contact"
+  stats_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "stats"
+      primary_key: "APIKeyID"
+      path: "/statcounters?CounterSource=APIKey&CounterResolution=Lifetime&CounterTiming=Message"
+  campaign_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "campaign"
+      primary_key: "ID"
+      path: "/campaign?FromTS=972314998"
+  message_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      paginator:
+        $ref: "*ref(definitions.offset_paginator)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+    $options:
+      name: "message"
+      primary_key: "ID"
+      path: "/message"
 
 streams:
+  - "*ref(definitions.contactslist_stream)"
   - "*ref(definitions.contacts_stream)"
+  - "*ref(definitions.stats_stream)"
+  - "*ref(definitions.campaign_stream)"
+  - "*ref(definitions.message_stream)"
 
 check:
   stream_names:
-    - "contacts"
+    - "contactslist"
