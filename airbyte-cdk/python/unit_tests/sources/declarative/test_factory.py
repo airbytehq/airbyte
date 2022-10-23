@@ -69,9 +69,9 @@ def test_factory():
     request_options_provider = factory.create_component(config["request_options"], input_config)()
 
     assert type(request_options_provider) == InterpolatedRequestOptionsProvider
-    assert request_options_provider._parameter_interpolator._config == input_config
+    assert request_options_provider._parameter_interpolator.config == input_config
     assert request_options_provider._parameter_interpolator._interpolator.mapping["offset"] == "{{ next_page_token['offset'] }}"
-    assert request_options_provider._body_json_interpolator._config == input_config
+    assert request_options_provider._body_json_interpolator.config == input_config
     assert request_options_provider._body_json_interpolator._interpolator.mapping["body_offset"] == "{{ next_page_token['offset'] }}"
 
 
