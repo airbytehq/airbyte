@@ -8,19 +8,28 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
-from destination_meilisearch.writer import MeiliWriter
-from meilisearch import Client
-
+from destination_meilisearch.writer import TypesenseWriter
+from typesense import Client
 
 def get_client(config: Mapping[str, Any]) -> Client:
-    host = config.get("host")
     api_key = config.get("api_key")
-    return Client(host, api_key)
+    host = config.get("host")
+    port = config.get("port") or "8108"
+    protocol = config.get("protocol") or "https"
 
+    client = Client({
+    'api_key': api_key,
+    'nodes': [{
+        'host': host,
+        'port': port,
+        'protocol': protocol
+    }],
+    'connection_timeout_seconds': 2
+    })
+
+    return client
 
 class DestinationMeilisearch(Destination):
-    primary_key = "_ab_pk"
-
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -29,10 +38,16 @@ class DestinationMeilisearch(Destination):
         for configured_stream in configured_catalog.streams:
             steam_name = configured_stream.stream.name
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                client.delete_index(steam_name)
-            client.create_index(steam_name, {"primaryKey": self.primary_key})
+                try:
+                    client.collections[steam_name].delete()
+                except Exception as e:
+                    pass
+                client.collections.create({
+                    "name": steam_name,
+                    "fields": [{"name": ".*", "type": "auto" }]
+                })
 
-            writer = MeiliWriter(client, steam_name, self.primary_key)
+            writer = TypesenseWriter(client, steam_name, config.get("batch_size"))
             for message in input_messages:
                 if message.type == Type.STATE:
                     writer.flush()
@@ -46,25 +61,13 @@ class DestinationMeilisearch(Destination):
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
             client = get_client(config=config)
-            writer = MeiliWriter(client, "_airbyte", self.primary_key)
-
-            create_index_job = client.create_index("_airbyte", {"primaryKey": "id"})
-            client.wait_for_task(create_index_job["taskUid"])
-
-            add_documents_job = client.index("_airbyte").add_documents(
-                [
-                    {
-                        "id": 287947,
-                        "title": "Shazam",
-                        "overview": "A boy is given the ability",
-                    }
-                ]
-            )
-            client.wait_for_task(add_documents_job.task_uid)
-
-            client.index("_airbyte").search("Shazam")
-            client.delete_index("_airbyte")
+            resp = client.collections.create({
+                "name": "_airbyte",
+                "fields": [{"name": "title", "type": "string"}]
+            })
+            client.collections['_airbyte'].documents.create({'id': '1', 'title': 'The Hunger Games'})
+            client.collections['_airbyte'].documents['1'].retrieve()
+            client.collections['_airbyte'].delete()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            logger.error(f"Check connection failed. Error: {e}")
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")

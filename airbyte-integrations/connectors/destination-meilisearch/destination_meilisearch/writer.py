@@ -4,23 +4,23 @@
 
 from collections.abc import Mapping
 from uuid import uuid4
-from meilisearch import Client
+from typesense import Client
 from logging import getLogger
 
 logger = getLogger("airbyte")
-class MeiliWriter:
+class TypesenseWriter:
     write_buffer = []
-    flush_interval = 50000
 
-    def __init__(self, client: Client, steam_name: str, primary_key: str):
+    def __init__(self, client: Client, steam_name: str, batch_size: int = 1000):
         self.client = client
         self.steam_name = steam_name
-        self.primary_key = primary_key
+        self.batch_size = batch_size
 
     def queue_write_operation(self, data: Mapping):
         random_key = str(uuid4())
-        self.write_buffer.append({**data, self.primary_key: random_key})
-        if len(self.write_buffer) == self.flush_interval:
+        data_with_id = data if "id" in data else {**data, "id": random_key}
+        self.write_buffer.append(data_with_id)
+        if len(self.write_buffer) == self.batch_size:
             self.flush()
 
     def flush(self):
@@ -28,8 +28,7 @@ class MeiliWriter:
         if buffer_size == 0:
             return
         logger.info(f"flushing {buffer_size} records")
-        response = self.client.index(self.steam_name).add_documents(self.write_buffer)
-        self.client.wait_for_task(response.task_uid, 1800000, 1000)
+        self.client.collections[self.steam_name].documents.import_(self.write_buffer)
         self.write_buffer.clear()
 
 

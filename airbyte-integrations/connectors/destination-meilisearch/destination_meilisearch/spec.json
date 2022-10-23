@@ -8,21 +8,38 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Meilisearch",
     "type": "object",
-    "required": ["host"],
+    "required": ["api_key", "host"],
     "additionalProperties": false,
     "properties": {
-      "host": {
-        "title": "Host",
-        "description": "Hostname of the MeiliSearch instance.",
-        "type": "string",
-        "order": 0
-      },
       "api_key": {
         "title": "API Key",
-        "airbyte_secret": true,
-        "description": "MeiliSearch API Key. See the <a href=\"https://docs.airbyte.com/integrations/destinations/meilisearch\">docs</a> for more information on how to obtain this key.",
         "type": "string",
+        "description": "Typesense API Key",
+        "order": 0
+      },
+      "host": {
+        "title": "Host",
+        "type": "string",
+        "description": "Hostname of the Typesense instance.",
         "order": 1
+      },
+      "port": {
+        "title": "Port",
+        "type": "string",
+        "description": "Port of the Typesense instance. Ex: 8108, 80, 443",
+        "order": 2
+      },
+      "protocol": {
+        "title": "Protocol",
+        "type": "string",
+        "description": "Protocol of the Typesense instance. Ex: http or https",
+        "order": 3
+      },
+      "batch_size": {
+        "title": "Batch size",
+        "type": "string",
+        "description": "Protocol of the Typesense instance. Ex: http or https",
+        "order": 4
       }
     }
   }

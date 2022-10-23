@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "meilisearch>=0.22.0"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "meilisearch>=0.22.0", "typesense>=0.14.0"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1"]
 
