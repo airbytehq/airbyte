@@ -10,13 +10,14 @@ connectionSpecification:
     - client_id
     - client_secret
     - refresh_token
+    - access_token
   additionalProperties: True
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
     developer_token:
-      type: string,
-      title: Developer Token,
-      order: 0,
+      type: string
+      title: Developer Token
+      order: 0
       description: "Developer token granted by Google to use their APIs. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>"
       airbyte_secret": true   
     client_id:
@@ -87,8 +88,8 @@ connectionSpecification:
             title: Destination Table Name
             description: "The table name in your destination database for choosen query."
     login_customer_id:
-      type: string,
-      title: Login Customer ID for Managed Accounts,
+      type: string
+      title: Login Customer ID for Managed Accounts
       description: "If your access to the customer account is through a manager account, this field is required and must be set to the customer ID of the manager account (10-digit number without dashes). More information about this field you can see <a href=\"https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid\">here</a>"
       pattern: ^([0-9]{10})?$
       examples: 
