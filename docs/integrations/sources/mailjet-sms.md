@@ -23,4 +23,4 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 ### Requirements
 
-* Mailjet Mail TOKEN
+* Mailjet SMS TOKEN
