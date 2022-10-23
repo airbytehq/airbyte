@@ -93,6 +93,13 @@
   icon: asana.svg
   sourceType: api
   releaseStage: beta
+- name: Auth0
+  sourceDefinitionId: 6c504e48-14aa-4221-9a72-19cf5ff1ae78
+  dockerRepository: airbyte/source-auth0
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/auth0
+  sourceType: api
+  releaseStage: alpha
 - name: Azure Table Storage
   sourceDefinitionId: 798ae795-5189-42b6-b64e-3cb91db93338
   dockerRepository: airbyte/source-azure-table
