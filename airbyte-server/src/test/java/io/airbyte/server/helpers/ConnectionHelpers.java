@@ -85,7 +85,8 @@ public class ConnectionHelpers {
         .withOperationIds(List.of(UUID.randomUUID()))
         .withManual(false)
         .withSchedule(generateBasicSchedule())
-        .withResourceRequirements(TESTING_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(TESTING_RESOURCE_REQUIREMENTS)
+        .withBreakingChange(false);
   }
 
   public static StandardSync generateSyncWithDestinationId(final UUID destinationId) {
@@ -105,7 +106,7 @@ public class ConnectionHelpers {
         .withManual(true);
   }
 
-  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId) {
+  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId, final boolean isBroken) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -116,10 +117,12 @@ public class ConnectionHelpers {
         .withPrefix(STANDARD_SYNC_PREFIX)
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
+        .withSourceCatalogId(UUID.randomUUID())
         .withSourceId(sourceId)
         .withDestinationId(destinationId)
         .withOperationIds(List.of(UUID.randomUUID()))
-        .withManual(true);
+        .withManual(true)
+        .withBreakingChange(isBroken);
   }
 
   public static ConnectionSchedule generateBasicConnectionSchedule() {
@@ -150,7 +153,8 @@ public class ConnectionHelpers {
                                                               final UUID destinationId,
                                                               final List<UUID> operationIds,
                                                               final UUID sourceCatalogId,
-                                                              final Geography geography) {
+                                                              final Geography geography,
+                                                              final boolean breaking) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
@@ -172,7 +176,8 @@ public class ConnectionHelpers {
             .memoryRequest(TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
             .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()))
         .sourceCatalogId(sourceCatalogId)
-        .geography(geography);
+        .geography(geography)
+        .breakingChange(breaking);
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
@@ -182,7 +187,8 @@ public class ConnectionHelpers {
         standardSync.getDestinationId(),
         standardSync.getOperationIds(),
         standardSync.getSourceCatalogId(),
-        Enums.convertTo(standardSync.getGeography(), Geography.class));
+        Enums.convertTo(standardSync.getGeography(), Geography.class),
+        standardSync.getBreakingChange());
 
     if (standardSync.getSchedule() == null) {
       connectionRead.schedule(null);
@@ -206,7 +212,8 @@ public class ConnectionHelpers {
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .sourceCatalogId(standardSync.getSourceCatalogId())
-        .geography(ApiPojoConverters.toApiGeography(standardSync.getGeography()));
+        .geography(ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        .breakingChange(standardSync.getBreakingChange());
 
     if (standardSync.getNamespaceDefinition() != null) {
       connectionRead
