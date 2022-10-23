@@ -15,7 +15,7 @@
         "type": "object",
         "properties": {
             "Code": {
-              "type": "integer"
+              "type": "number"
             },
             "Name": {
               "type": "string"

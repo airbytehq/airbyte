@@ -4,18 +4,12 @@ connectionSpecification:
   title: Mailjet Sms Spec
   type: object
   required:
-    - username
-    - password
+    - token
   additionalProperties: true
   properties:
-    username:
-      type: string
-      description: >-
-        The username is your API Key. See <a
-        href="https://dev.mailjet.com/sms/reference/overview/authentication">here</a>.
-    password:
+    token:
       type: string
       description: >- 
-        The password is your API Secret Key. See <a
+        Your access token. See <a
         href="https://dev.mailjet.com/sms/reference/overview/authentication">here</a>.
       airbyte_secret: true
