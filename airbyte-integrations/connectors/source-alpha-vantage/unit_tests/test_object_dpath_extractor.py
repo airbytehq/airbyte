@@ -136,3 +136,34 @@ def test_list_of_records():
             "name": "name2",
         },
     ]
+
+
+def test_no_records():
+    extractor = ObjectDpathExtractor(
+        field_pointer=["data"],
+        config={},
+        options={},
+    )
+
+    obj_response = _create_response_with_body({"data": {}})
+    obj_records = extractor.extract_records(obj_response)
+
+    assert obj_records == []
+
+    list_response = _create_response_with_body({"data": []})
+    list_records = extractor.extract_records(list_response)
+
+    assert list_records == []
+
+
+def test_single_record():
+    extractor = ObjectDpathExtractor(
+        field_pointer=["data"],
+        config={},
+        options={},
+    )
+
+    response = _create_response_with_body({"data": {"id": "id1", "name": "name1"}})
+    records = extractor.extract_records(response)
+
+    assert records == [{"id": "id1", "name": "name1"}]
