@@ -42,6 +42,7 @@ def addScaffoldTemplateTask(name, packageName, outputDirName, scaffoldParams=[])
 
 addScaffoldTemplateTask('Python Source', 'scaffold-source-python', 'source-scaffold-source-python')
 addScaffoldTemplateTask('Python HTTP API Source', 'scaffold-source-http', 'source-scaffold-source-http')
+addScaffoldTemplateTask('Python Files Source', 'scaffold-source-files', 'source-scaffold-source-files')
 addScaffoldTemplateTask('Java JDBC Source', 'scaffold-java-jdbc', 'source-scaffold-java-jdbc')
 addScaffoldTemplateTask('Python Destination', 'scaffold-destination-python', 'destination-scaffold-destination-python')
 // TODO: enable Singer template testing

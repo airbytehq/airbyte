@@ -1,0 +1,12 @@
+{
+  "dataset": "test",
+  "provider": {
+    "bucket": "airbyte-integration-test-source-gcs",
+    "service_account_json": "{}"
+  },
+  "format": {
+    "filetype": "csv"
+  },
+  "path_pattern": "**.csv",
+  "schema": "{}"
+}
