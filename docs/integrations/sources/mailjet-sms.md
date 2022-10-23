@@ -23,5 +23,4 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 ### Requirements
 
-* Mailjet Mail API_KEY (username)
-* Mailjet Mail SECRET_KEY (password)
+* Mailjet Mail TOKEN
