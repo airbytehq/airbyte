@@ -1,3 +1,12 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "project": "en.wikipedia.org",
+  "access": "all-access",
+  "agent": "all-agents",
+  "article": "Are_You_the_One%3F",
+  "start": "",
+  "end": "20220101",
+  "year": "2022",
+  "month": "13",
+  "day": "01",
+  "country": "EN"
 }
