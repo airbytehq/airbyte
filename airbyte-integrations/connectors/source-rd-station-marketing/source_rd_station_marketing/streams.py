@@ -13,8 +13,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class RDStationMarketingStream(HttpStream, ABC):
     url_base = "https://api.rd.services"
     primary_key = None
-    page = 2
-    page_size=125
+    page = 1
     extra_params = {}
     data_field = None
 
@@ -32,18 +31,18 @@ class RDStationMarketingStream(HttpStream, ABC):
         else:
             json_response = response.json()
         if json_response:
-            page_params = dict(page=self.page)
             self.page = self.page + 1
-            return page_params
+            return {"next_page": self.page}
         else:
             return None
     
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"page_size": self.page_size}
+        params = {"page_size": 125, "page": self.page}
         if next_page_token:
-            params.update(**next_page_token)
+            params = {"page_size": 125, "page": next_page_token["next_page"]}
+        print(params)
         return params
 
     def parse_response(
