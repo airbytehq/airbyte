@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class RefreshSchemaActivityTest {
+class RefreshSchemaActivityTest {
 
   static private ConfigRepository mConfigRepository;
   static private RefreshSchemaActivityImpl refreshSchemaActivity;
