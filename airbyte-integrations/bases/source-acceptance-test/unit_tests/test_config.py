@@ -99,3 +99,100 @@ class TestConfig:
         with expected_error:
             parsed_config = config.Config.parse_obj(raw_config)
             assert parsed_config == expected_output_config
+
+    @pytest.mark.parametrize(
+        "legacy_config, expected_parsed_config",
+        [
+            pytest.param(
+                {
+                    "connector_image": "airbyte/source-pokeapi",
+                    "tests": {
+                        "connection": [
+                            {"config_path": "integration_tests/config.json", "status": "succeed"},
+                            {"config_path": "integration_tests/bad_config.json", "status": "failed"},
+                        ],
+                        "discovery": [{"config_path": "integration_tests/config.json"}],
+                        "basic_read": [
+                            {
+                                "config_path": "integration_tests/config.json",
+                                "configured_catalog_path": "integration_tests/configured_catalog.json",
+                            }
+                        ],
+                    },
+                },
+                config.Config(
+                    connector_image="airbyte/source-pokeapi",
+                    test_strictness_level=config.Config.TestStrictnessLevel.low,
+                    acceptance_tests=config.AcceptanceTestConfigurations(
+                        connection=config.GenericTestConfig(
+                            tests=[
+                                config.ConnectionTestConfig(
+                                    config_path="integration_tests/config.json", status=config.ConnectionTestConfig.Status.Succeed
+                                ),
+                                config.ConnectionTestConfig(
+                                    config_path="integration_tests/bad_config.json", status=config.ConnectionTestConfig.Status.Failed
+                                ),
+                            ]
+                        ),
+                        discovery=config.GenericTestConfig(tests=[config.DiscoveryTestConfig(config_path="integration_tests/config.json")]),
+                        basic_read=config.GenericTestConfig(
+                            tests=[
+                                config.BasicReadTestConfig(
+                                    config_path="integration_tests/config.json",
+                                    configured_catalog_path="integration_tests/configured_catalog.json",
+                                )
+                            ]
+                        ),
+                    ),
+                ),
+                id="A legacy raw config is parsed into a new config structure without error.",
+            ),
+            pytest.param(
+                {
+                    "connector_image": "airbyte/source-pokeapi",
+                    "test_strictness_level": "high",
+                    "tests": {
+                        "connection": [
+                            {"config_path": "integration_tests/config.json", "status": "succeed"},
+                            {"config_path": "integration_tests/bad_config.json", "status": "failed"},
+                        ],
+                        "discovery": [{"config_path": "integration_tests/config.json"}],
+                        "basic_read": [
+                            {
+                                "config_path": "integration_tests/config.json",
+                                "configured_catalog_path": "integration_tests/configured_catalog.json",
+                            }
+                        ],
+                    },
+                },
+                config.Config(
+                    connector_image="airbyte/source-pokeapi",
+                    test_strictness_level=config.Config.TestStrictnessLevel.high,
+                    acceptance_tests=config.AcceptanceTestConfigurations(
+                        connection=config.GenericTestConfig(
+                            tests=[
+                                config.ConnectionTestConfig(
+                                    config_path="integration_tests/config.json", status=config.ConnectionTestConfig.Status.Succeed
+                                ),
+                                config.ConnectionTestConfig(
+                                    config_path="integration_tests/bad_config.json", status=config.ConnectionTestConfig.Status.Failed
+                                ),
+                            ]
+                        ),
+                        discovery=config.GenericTestConfig(tests=[config.DiscoveryTestConfig(config_path="integration_tests/config.json")]),
+                        basic_read=config.GenericTestConfig(
+                            tests=[
+                                config.BasicReadTestConfig(
+                                    config_path="integration_tests/config.json",
+                                    configured_catalog_path="integration_tests/configured_catalog.json",
+                                )
+                            ]
+                        ),
+                    ),
+                ),
+                id="A legacy raw config, with a test_strictness_level defined, is parsed into a new config structure without error.",
+            ),
+        ],
+    )
+    def test_legacy_config_migration(self, legacy_config, expected_parsed_config):
+        assert config.Config.parse_obj(legacy_config) == expected_parsed_config
