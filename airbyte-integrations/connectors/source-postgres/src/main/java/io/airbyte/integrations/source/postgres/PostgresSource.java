@@ -16,6 +16,7 @@ import static java.util.stream.Collectors.toSet;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -79,8 +80,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
-  public static final String SSL_MODE_ALLOW = "allow";
-  public static final String SSL_MODE_PREFER = "prefer";
+//  public static final String SSL_MODE_ALLOW = "allow";
+//  public static final String SSL_MODE_PREFER = "prefer";
   public static final String PARAM_SSL = "ssl";
   public static final String PARAM_SSL_TRUE = "true";
   public static final String PARAM_SSL_FALSE = "false";
@@ -94,11 +95,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
       "sslmode", "require");
-  public static final String REPLICATION_METHOD = "replication_method";
-  public static final String METHOD = "method";
-  public static final String CDC_METHOD = "CDC";
   private List<String> schemas;
   private final FeatureFlags featureFlags;
+  private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -473,21 +472,17 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    if (isCdcReplicationMethod(config)){
+    if (PostgresUtils.isCdc(config)) {
       String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
-      if(SSL_MODE_ALLOW.equals(sslModeValue) || SSL_MODE_PREFER.equals(sslModeValue) ){
+      if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
         return new AirbyteConnectionStatus()
-                .withStatus(Status.FAILED)
-                .withMessage(String.format(
-                        "In CDC replication mode ssl value '%s' is invalid. Please use one of the following SSL modes: disable, require, verify-ca, verify-full", sslModeValue));
+            .withStatus(Status.FAILED)
+            .withMessage(String.format(
+                "In CDC replication mode ssl value '%s' is invalid. Please use one of the following SSL modes: disable, require, verify-ca, verify-full",
+                sslModeValue));
       }
     }
     return super.check(config);
-  }
-
-  private boolean isCdcReplicationMethod(final JsonNode config) {
-    JsonNode replication_method = config.get(REPLICATION_METHOD);
-    return replication_method != null && replication_method.get(METHOD) != null && CDC_METHOD.equals(replication_method.get(METHOD).asText());
   }
 
   @Override
