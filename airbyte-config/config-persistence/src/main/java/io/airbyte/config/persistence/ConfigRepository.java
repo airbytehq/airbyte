@@ -592,6 +592,23 @@ public class ConfigRepository {
   }
 
   /**
+   * Returns all sources for a workspace. Does not contain secrets.
+   *
+   * @param workspaceId - id of the workspace
+   * @return sources
+   * @throws JsonValidationException - throws if returned sources are invalid
+   * @throws IOException - you never know when you IO
+   */
+  public List<SourceConnection> listWorkspaceSourceConnection(final UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .and(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildSourceConnection).collect(Collectors.toList());
+  }
+
+  /**
    * Returns destination with a given id. Does not contain secrets. To hydrate with secrets see
    * { @link SecretsRepositoryReader#getDestinationConnectionWithSecrets(final UUID destinationId) }.
    *
