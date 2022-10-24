@@ -22,6 +22,7 @@ function callApi {
    --show-error \
    --header 'Content-Type: application/json' \
    --header "X-Endpoint-API-UserInfo: ${x_endpoint_header}" \
+   --user "${BASIC_AUTH_USERNAME}:${BASIC_AUTH_PASSWORD}" \
    --data "${payload}" \
     "${hostname}:${api_port}/api/v1/${endpoint}"
 }

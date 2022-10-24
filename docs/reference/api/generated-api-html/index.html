@@ -488,6 +488,7 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
+  "breakingChange" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -733,6 +734,7 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
+  "breakingChange" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -990,6 +992,7 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
+    "breakingChange" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1052,6 +1055,7 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
+    "breakingChange" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1172,6 +1176,7 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
+    "breakingChange" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1234,6 +1239,7 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
+    "breakingChange" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1529,6 +1535,7 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
+    "breakingChange" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1591,6 +1598,7 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
+    "breakingChange" : true,
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -1885,6 +1893,7 @@ containing the updated stream needs to be sent.</div>
     "units" : 0,
     "timeUnit" : "minutes"
   },
+  "breakingChange" : true,
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -9940,6 +9949,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#ReleaseStage"><code>ReleaseStage</code> - </a></li>
     <li><a href="#ResetConfig"><code>ResetConfig</code> - </a></li>
     <li><a href="#ResourceRequirements"><code>ResourceRequirements</code> - </a></li>
+    <li><a href="#SchemaChange"><code>SchemaChange</code> - </a></li>
     <li><a href="#SetInstancewideDestinationOauthParamsRequestBody"><code>SetInstancewideDestinationOauthParamsRequestBody</code> - </a></li>
     <li><a href="#SetInstancewideSourceOauthParamsRequestBody"><code>SetInstancewideSourceOauthParamsRequestBody</code> - </a></li>
     <li><a href="#SetWorkflowInAttemptRequestBody"><code>SetWorkflowInAttemptRequestBody</code> - </a></li>
@@ -10240,6 +10250,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">breakingChange </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11075,6 +11086,12 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SchemaChange"><code>SchemaChange</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SetInstancewideDestinationOauthParamsRequestBody"><code>SetInstancewideDestinationOauthParamsRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11421,6 +11438,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">catalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">catalogDiff (optional)</div><div class="param-desc"><span class="param-type"><a href="#CatalogDiff">CatalogDiff</a></span>  </div>
 <div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">schemaChange </div><div class="param-desc"><span class="param-type"><a href="#SchemaChange">SchemaChange</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

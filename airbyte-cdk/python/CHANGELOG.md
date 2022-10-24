@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3
+- Propagate options to InterpolatedRequestInputProvider
+
+## 0.2.2
+- Report config validation errors as failed connection status during `check`.
+- Report config validation errors as `config_error` failure type.
+
 ## 0.2.1
 
 - Low-code: Always convert stream slices output to an iterator
