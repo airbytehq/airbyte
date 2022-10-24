@@ -59,7 +59,6 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .lines()
         .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
         .flatMap(this::parseJson)
-        .peek(json -> metricClient.distribution(OssMetricsRegistry.JSON_SIZE, json.size()))
         .filter(this::validate)
         .flatMap(this::toAirbyteMessage)
         .filter(this::filterLog);
