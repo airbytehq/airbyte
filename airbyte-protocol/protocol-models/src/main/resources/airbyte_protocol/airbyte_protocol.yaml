@@ -28,7 +28,7 @@ definitions:
           - CONNECTION_STATUS
           - CATALOG
           - TRACE
-          - CONNECTOR_CONFIG
+          - ORCHESTRATOR
       log:
         description: "log message: any kind of logging you want the platform to know about."
         "$ref": "#/definitions/AirbyteLogMessage"
@@ -49,9 +49,9 @@ definitions:
       trace:
         description: "trace message: a message to communicate information about the status and performance of a connector"
         "$ref": "#/definitions/AirbyteTraceMessage"
-      connectorConfig:
+      orchestrator:
         description: "connector config message: a message to communicate an updated configuration from a connector that should be persisted"
-        "$ref": "#/definitions/AirbyteConnectorConfigMessage"
+        "$ref": "#/definitions/AirbyteOrchestratorMessage"
   AirbyteRecordMessage:
     type: object
     additionalProperties: true
@@ -201,16 +201,31 @@ definitions:
         enum:
           - system_error
           - config_error
-  AirbyteConnectorConfigMessage:
+  AirbyteOrchestratorMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - emitted_at
+    properties:
+      type:
+        title: orchestrator type
+        description: "the type of orchestrator message"
+        type: string
+        enum:
+          - CONNECTOR_CONFIG
+      emitted_at:
+        description: "the time in ms that the message was emitted"
+        type: number
+      connectorConfig:
+        description: "connector config orchestrator message: the updated config for the platform to store for this connector"
+        "$ref": "#/definitions/AirbyteOrchestratorConnectorConfigMessage"
+  AirbyteOrchestratorConnectorConfigMessage:
     type: object
     additionalProperties: true
     required:
       - config
-      - emitted_at
     properties:
-      emitted_at:
-        description: "the time in ms that the message was emitted"
-        type: number
       config:
         description: "the config items from this connector's spec to update"
         type: object

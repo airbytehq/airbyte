@@ -21,7 +21,7 @@ class Type(Enum):
     CONNECTION_STATUS = "CONNECTION_STATUS"
     CATALOG = "CATALOG"
     TRACE = "TRACE"
-    CONNECTOR_CONFIG = "CONNECTOR_CONFIG"
+    ORCHESTRATOR = "ORCHESTRATOR"
 
 
 class AirbyteRecordMessage(BaseModel):
@@ -98,11 +98,14 @@ class AirbyteErrorTraceMessage(BaseModel):
     failure_type: Optional[FailureType] = Field(None, description="The type of error")
 
 
-class AirbyteConnectorConfigMessage(BaseModel):
+class OrchestratorType(Enum):
+    CONNECTOR_CONFIG = "CONNECTOR_CONFIG"
+
+
+class AirbyteOrchestratorConnectorConfigMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    emitted_at: float = Field(..., description="the time in ms that the message was emitted")
     config: Dict[str, Any] = Field(..., description="the config items from this connector's spec to update")
 
 
@@ -210,6 +213,18 @@ class AirbyteTraceMessage(BaseModel):
     type: TraceType = Field(..., description="the type of trace message", title="trace type")
     emitted_at: float = Field(..., description="the time in ms that the message was emitted")
     error: Optional[AirbyteErrorTraceMessage] = Field(None, description="error trace message: the error object")
+
+
+class AirbyteOrchestratorMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: OrchestratorType = Field(..., description="the type of orchestrator message", title="orchestrator type")
+    emitted_at: float = Field(..., description="the time in ms that the message was emitted")
+    connectorConfig: Optional[AirbyteOrchestratorConnectorConfigMessage] = Field(
+        None,
+        description="connector config orchestrator message: the updated config for the platform to store for this connector",
+    )
 
 
 class AirbyteStream(BaseModel):
@@ -342,7 +357,7 @@ class AirbyteMessage(BaseModel):
         None,
         description="trace message: a message to communicate information about the status and performance of a connector",
     )
-    connectorConfig: Optional[AirbyteConnectorConfigMessage] = Field(
+    orchestrator: Optional[AirbyteOrchestratorMessage] = Field(
         None,
         description="connector config message: a message to communicate an updated configuration from a connector that should be persisted",
     )
