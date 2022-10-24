@@ -981,7 +981,7 @@ public class ConfigRepository {
     return database.query(ctx -> ctx.fetch(
         """
         select actor_catalog_id, actor_id from
-          (select id, actor_catalog_id, actor_id, config_hash, actor_version, created_at, rank() over (partition by actor_id order by created_at desc) as creation_order_rank, modified_at
+          (select actor_catalog_id, actor_id, rank() over (partition by actor_id order by created_at desc) as creation_order_rank
           from public.actor_catalog_fetch_event
           ) table_with_rank
         where creation_order_rank = 1;
