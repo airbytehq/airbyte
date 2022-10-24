@@ -298,6 +298,15 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
+  void testListWorkspaceSources() throws IOException {
+    UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
+    final List<SourceConnection> expectedSources = MockData.sourceConnections().stream()
+        .filter(source -> source.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
+    final List<SourceConnection> sources = configRepository.listWorkspaceSourceConnection(workspaceId);
+    assertThat(sources).hasSameElementsAs(expectedSources);
+  }
+
+  @Test
   void testSourceDefinitionGrants() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final StandardSourceDefinition grantableDefinition1 = MockData.grantableSourceDefinition1();
