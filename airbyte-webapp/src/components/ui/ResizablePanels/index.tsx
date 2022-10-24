@@ -1,1 +1,1 @@
-export { ResizablePanels } from "./ResizablePanels";
+export { ResizablePanels, Panel, Splitter } from "./ResizablePanels";

@@ -9,18 +9,17 @@ import styles from "./ResizablePanels.module.scss";
 
 interface ResizablePanelsProps {
   className?: string;
-  hideRightPanel?: boolean;
-  leftPanel: PanelProps;
-  rightPanel: PanelProps;
 }
 
-interface PanelProps {
-  children: React.ReactNode;
-  minWidth: number;
-  className?: string;
-  startingFlex?: number;
-  overlay?: Overlay;
-}
+// NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately.
+
+export const ResizablePanels: React.FC<React.PropsWithChildren<ResizablePanelsProps>> = ({ children, className }) => {
+  return (
+    <ReflexContainer className={className} orientation="vertical">
+      {children}
+    </ReflexContainer>
+  );
+};
 
 interface Overlay {
   displayThreshold: number;
@@ -63,45 +62,36 @@ const PanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>> = (
     </div>
   );
 };
+interface PanelProps {
+  className?: string;
+  flex?: number;
+  minWidth?: number;
+  overlay?: Overlay;
+}
 
-export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
-  className,
-  hideRightPanel = false,
-  leftPanel,
-  rightPanel,
-}) => {
-  return (
-    <ReflexContainer className={className} orientation="vertical">
+export const Panel = React.forwardRef<ReflexElement, React.PropsWithChildren<PanelProps>>(
+  ({ children, className, minWidth, overlay, ...rest }, ref) => {
+    return (
       <ReflexElement
+        flex={0.5}
         className={styles.panelStyle}
         propagateDimensions
-        minSize={leftPanel.minWidth}
-        flex={leftPanel.startingFlex}
+        minSize={minWidth}
+        ref={ref}
+        {...rest}
       >
-        <PanelContainer className={leftPanel.className} overlay={leftPanel.overlay}>
-          {leftPanel.children}
+        <PanelContainer className={className} overlay={overlay}>
+          {children}
         </PanelContainer>
       </ReflexElement>
-      {/* NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately. */}
-      {!hideRightPanel && (
-        <ReflexSplitter className={styles.splitter}>
-          <div className={styles.panelGrabber}>
-            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
-          </div>
-        </ReflexSplitter>
-      )}
-      {!hideRightPanel && (
-        <ReflexElement
-          className={styles.panelStyle}
-          propagateDimensions
-          minSize={rightPanel.minWidth}
-          flex={rightPanel.startingFlex}
-        >
-          <PanelContainer className={rightPanel.className} overlay={rightPanel.overlay}>
-            {rightPanel.children}
-          </PanelContainer>
-        </ReflexElement>
-      )}
-    </ReflexContainer>
-  );
-};
+    );
+  }
+);
+
+export const Splitter = React.forwardRef<ReflexSplitter>((props, ref) => (
+  <ReflexSplitter className={styles.splitter} ref={ref} {...props}>
+    <div className={styles.panelGrabber}>
+      <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
+    </div>
+  </ReflexSplitter>
+));
