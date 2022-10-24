@@ -21,8 +21,8 @@ tests:
         "incidents",
         "integrations",
         "teams",
-        "users",
         "user_teams",
+        "services",
       ]
   incremental:
     - config_path: "secrets/config.json"
