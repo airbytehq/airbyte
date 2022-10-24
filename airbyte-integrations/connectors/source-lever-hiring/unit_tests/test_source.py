@@ -47,7 +47,7 @@ from source_lever_hiring.source import SourceLeverHiring
 @responses.activate
 def test_source(response, url, payload, test_config):
     if response:
-        responses.add(response, url, payload)
+        responses.add(response, url, json = payload)
     source = SourceLeverHiring()
     logger_mock = MagicMock()
     assert source.check_connection(logger_mock, test_config) == (True, None)
