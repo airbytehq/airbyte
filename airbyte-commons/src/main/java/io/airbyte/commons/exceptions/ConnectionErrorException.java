@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.db.exception;
+package io.airbyte.commons.exceptions;
 
 public class ConnectionErrorException extends RuntimeException {
 

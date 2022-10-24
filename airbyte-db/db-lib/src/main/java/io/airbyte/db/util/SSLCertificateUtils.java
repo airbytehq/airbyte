@@ -28,6 +28,9 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLContext;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,6 +161,23 @@ public class SSLCertificateUtils {
                                                   final String directory)
       throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, KeyStoreException, InterruptedException {
     return keyStoreFromClientCertificate(certString, keyString, keyStorePassword, FileSystems.getDefault(), directory);
+  }
+
+  public static SSLContext createContextFromCaCert(String caCertificate) {
+    try {
+      CertificateFactory factory = CertificateFactory.getInstance(X509);
+      Certificate trustedCa = factory.generateCertificate(
+          new ByteArrayInputStream(caCertificate.getBytes(StandardCharsets.UTF_8))
+      );
+      KeyStore trustStore = KeyStore.getInstance(PKCS_12);
+      trustStore.load(null, null);
+      trustStore.setCertificateEntry("ca", trustedCa);
+      SSLContextBuilder sslContextBuilder =
+          SSLContexts.custom().loadTrustMaterial(trustStore, null);
+      return sslContextBuilder.build();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }
