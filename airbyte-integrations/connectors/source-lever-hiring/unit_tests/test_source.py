@@ -3,19 +3,29 @@
 #
 
 from unittest.mock import MagicMock
+
 import pytest
 import responses
+from conftest import test_config
 from source_lever_hiring.source import SourceLeverHiring
 
 
 @pytest.mark.parametrize(
-    ("response, url, payload, test_config"), 
+    ("response", "url", "payload", "test_config"),
     [
-        (responses.POST, "https://sandbox-lever.auth0.com/oauth/token", json={"access_token": "fake_access_token", "expires_in": 3600}), test_config_client() 
-        (responses.GET, "https://api.lever.co/v1/opportunities", json={"api_key": "fake_api_key", "expires_in": 3600}), test_config_key(),
+        (
+            responses.POST,
+            "https://sandbox-lever.auth0.com/oauth/token",
+            {"access_token": "fake_access_token", "expires_in": 3600},
+            test_config(auth_type="Client"),
+        )(
+            responses.GET,
+            "https://api.lever.co/v1/opportunities",
+            {"api_key": "fake_api_key", "expires_in": 3600},
+            test_config(auth_type="Api Key"),
+        ),
     ],
 )
-
 @responses.activate
 def test_check_connection(response, url, payload, test_config):
     responses.add(response, url, payload)

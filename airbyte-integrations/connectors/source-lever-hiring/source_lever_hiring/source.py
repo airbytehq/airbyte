@@ -6,7 +6,7 @@ from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, BasicHttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, Oauth2Authenticator
 
 from .streams import Applications, Interviews, Notes, Offers, Opportunities, Referrals, Users
 
@@ -14,13 +14,14 @@ from .streams import Applications, Interviews, Notes, Offers, Opportunities, Ref
 def _auth_from_config(config):
     try:
         if config["credentials"]["auth_type"] == "Api Key":
-            return BasicHttpAuthenticator(username=config["credentials"]["api_key"], password = None, auth_method="Basic")
+            return BasicHttpAuthenticator(username=config["credentials"]["api_key"], password=None, auth_method="Basic")
         elif config["credentials"]["auth_type"] == "Client":
             return Oauth2Authenticator(
                 client_id=config["credentials"]["client_id"],
                 client_secret=config["credentials"]["client_secret"],
                 refresh_token=config["credentials"]["refresh_token"],
-                token_refresh_endpoint=f"{SourceLeverHiring.URL_MAP_ACCORDING_ENVIRONMENT[config['environment']]['login']}oauth/token")
+                token_refresh_endpoint=f"{SourceLeverHiring.URL_MAP_ACCORDING_ENVIRONMENT[config['environment']]['login']}oauth/token",
+            )
         else:
             print("Auth type was not configured properly")
             return None

@@ -4,29 +4,31 @@
 
 from pytest import fixture
 
+
 @fixture
-def test_config_client():
-    return {
-        "credentials": {
-            "client_id": "test_client_id",
-            "client_secret": "test_client_secret",
-            "refresh_token": "test_refresh_token",
-            "access_token": "test_access_token",
-            "expires_in": 3600,
-        },
-        "environment": "Sandbox",
-        "start_date": "2021-05-07T00:00:00Z",
-    }
-    
-@fixture
-def test_config_key():
-    return {
-        "credentials": {
-            "api_key": "test_api_key",
-        },
-        "environment": "Sandbox",
-        "start_date": "2021-05-07T00:00:00Z",
-    }
+def test_config(auth_type):
+    if auth_type == "Client":
+        return {
+            "credentials": {
+                "client_id": "test_client_id",
+                "client_secret": "test_client_secret",
+                "refresh_token": "test_refresh_token",
+                "access_token": "test_access_token",
+                "expires_in": 3600,
+            },
+            "environment": "Sandbox",
+            "start_date": "2021-05-07T00:00:00Z",
+        }
+    elif auth_type == "Api Key":
+        return {
+            "credentials": {
+                "api_key": "test_api_key",
+            },
+            "environment": "Sandbox",
+            "start_date": "2021-05-07T00:00:00Z",
+        }
+    else:
+        return None
 
 
 @fixture
