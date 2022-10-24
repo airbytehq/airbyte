@@ -26,26 +26,21 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
       return false;
     }
 
-    Optional<ActorCatalogFetchEvent> mostRecentFetchEvent = configRepository.get().getMostRecentActorCatalogFetchEventForSource(sourceCatalogId);
-    if (mostRecentFetchEvent.isEmpty() || !schemaRefreshRanRecently(mostRecentFetchEvent.get())) {
+    if (!schemaRefreshRanRecently(sourceCatalogId)) {
       return true;
     }
 
     return false;
   }
 
-  @Override
-  public void refreshSchema() {
+  private boolean schemaRefreshRanRecently(UUID sourceCatalogId) throws IOException {
+    Optional<ActorCatalogFetchEvent> mostRecentFetchEvent = configRepository.get().getMostRecentActorCatalogFetchEventForSource(sourceCatalogId);
 
-  }
+    if (mostRecentFetchEvent.isEmpty()) {
+      return false;
+    }
 
-  @Override
-  public boolean shouldRunSync() {
-    return true;
-  }
-
-  private boolean schemaRefreshRanRecently(ActorCatalogFetchEvent mostRecentFetchEvent){
-    return mostRecentFetchEvent.getCreatedAt() > OffsetDateTime.now().minusHours(24l).toEpochSecond();
+    return mostRecentFetchEvent.get().getCreatedAt() > OffsetDateTime.now().minusHours(24l).toEpochSecond();
   }
 
 }

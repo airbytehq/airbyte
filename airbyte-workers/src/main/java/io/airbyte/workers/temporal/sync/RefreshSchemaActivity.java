@@ -15,10 +15,4 @@ public interface RefreshSchemaActivity {
   @ActivityMethod
   boolean shouldRefreshSchema(UUID sourceCatalogId) throws IOException;
 
-  @ActivityMethod
-  void refreshSchema();
-
-  @ActivityMethod()
-  boolean shouldRunSync();
-
 }
