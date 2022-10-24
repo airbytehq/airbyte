@@ -4,5 +4,6 @@
   "category": "business",
   "country": "gb",
   "sort_by": "publishedAt",
-  "from_date": "2022-10-21T14:40:00"
+  "start_date": "2022-10-21T14:40:00",
+  "search_query": "+bitcoin OR +crypto"
 }
