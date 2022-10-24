@@ -1,12 +1,13 @@
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
+import React from "react";
 import { useEffect } from "react";
 
 import { FeatureService, IfFeatureEnabled, useFeature, useFeatureService } from "./FeatureService";
 import { FeatureItem, FeatureSet } from "./types";
 
 const wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
-  <FeatureService features={[FeatureItem.AllowCreateConnection, FeatureItem.AllowSync]}>{children}</FeatureService>
+  <FeatureService features={[FeatureItem.AllowSync]}>{children}</FeatureService>
 );
 
 type FeatureOverwrite = FeatureItem[] | FeatureSet | undefined;
@@ -44,7 +45,6 @@ describe("Feature Service", () => {
   describe("FeatureService", () => {
     it("should allow setting default features", () => {
       const getFeature = (feature: FeatureItem) => renderHook(() => useFeature(feature), { wrapper }).result.current;
-      expect(getFeature(FeatureItem.AllowCreateConnection)).toBe(true);
       expect(getFeature(FeatureItem.AllowCustomDBT)).toBe(false);
       expect(getFeature(FeatureItem.AllowSync)).toBe(true);
       expect(getFeature(FeatureItem.AllowUpdateConnectors)).toBe(false);
@@ -55,18 +55,13 @@ describe("Feature Service", () => {
         getFeatures({
           workspace: [FeatureItem.AllowCustomDBT, FeatureItem.AllowUploadCustomImage],
         }).result.current.sort()
-      ).toEqual([
-        FeatureItem.AllowCreateConnection,
-        FeatureItem.AllowCustomDBT,
-        FeatureItem.AllowSync,
-        FeatureItem.AllowUploadCustomImage,
-      ]);
+      ).toEqual([FeatureItem.AllowCustomDBT, FeatureItem.AllowSync, FeatureItem.AllowUploadCustomImage]);
     });
 
     it("workspace features can disable default features", () => {
       expect(
         getFeatures({
-          workspace: { [FeatureItem.AllowCustomDBT]: true, [FeatureItem.AllowCreateConnection]: false } as FeatureSet,
+          workspace: { [FeatureItem.AllowCustomDBT]: true } as FeatureSet,
         }).result.current.sort()
       ).toEqual([FeatureItem.AllowCustomDBT, FeatureItem.AllowSync]);
     });
@@ -78,7 +73,6 @@ describe("Feature Service", () => {
           user: [FeatureItem.AllowOAuthConnector],
         }).result.current.sort()
       ).toEqual([
-        FeatureItem.AllowCreateConnection,
         FeatureItem.AllowCustomDBT,
         FeatureItem.AllowOAuthConnector,
         FeatureItem.AllowSync,
@@ -93,7 +87,6 @@ describe("Feature Service", () => {
           user: {
             [FeatureItem.AllowOAuthConnector]: true,
             [FeatureItem.AllowUploadCustomImage]: false,
-            [FeatureItem.AllowCreateConnection]: false,
           } as FeatureSet,
         }).result.current.sort()
       ).toEqual([FeatureItem.AllowCustomDBT, FeatureItem.AllowOAuthConnector, FeatureItem.AllowSync]);
@@ -105,12 +98,7 @@ describe("Feature Service", () => {
           workspace: { [FeatureItem.AllowCustomDBT]: true, [FeatureItem.AllowSync]: false } as FeatureSet,
           user: [FeatureItem.AllowOAuthConnector, FeatureItem.AllowSync],
         }).result.current.sort()
-      ).toEqual([
-        FeatureItem.AllowCreateConnection,
-        FeatureItem.AllowCustomDBT,
-        FeatureItem.AllowOAuthConnector,
-        FeatureItem.AllowSync,
-      ]);
+      ).toEqual([FeatureItem.AllowCustomDBT, FeatureItem.AllowOAuthConnector, FeatureItem.AllowSync]);
     });
 
     it("overwritte features can overwrite workspace and user features", () => {
@@ -120,12 +108,10 @@ describe("Feature Service", () => {
           user: {
             [FeatureItem.AllowOAuthConnector]: true,
             [FeatureItem.AllowSync]: true,
-            [FeatureItem.AllowCreateConnection]: false,
           } as FeatureSet,
-          overwrite: [FeatureItem.AllowUploadCustomImage, FeatureItem.AllowCreateConnection],
+          overwrite: [FeatureItem.AllowUploadCustomImage],
         }).result.current.sort()
       ).toEqual([
-        FeatureItem.AllowCreateConnection,
         FeatureItem.AllowCustomDBT,
         FeatureItem.AllowOAuthConnector,
         FeatureItem.AllowSync,
@@ -137,34 +123,34 @@ describe("Feature Service", () => {
       const { result, rerender } = getFeatures({
         workspace: { [FeatureItem.AllowCustomDBT]: true, [FeatureItem.AllowSync]: false } as FeatureSet,
       });
-      expect(result.current.sort()).toEqual([FeatureItem.AllowCreateConnection, FeatureItem.AllowCustomDBT]);
+      expect(result.current.sort()).toEqual([FeatureItem.AllowCustomDBT]);
       rerender({ workspace: undefined });
-      expect(result.current.sort()).toEqual([FeatureItem.AllowCreateConnection, FeatureItem.AllowSync]);
+      expect(result.current.sort()).toEqual([FeatureItem.AllowSync]);
     });
 
     it("user features can be cleared again", () => {
       const { result, rerender } = getFeatures({
         user: { [FeatureItem.AllowCustomDBT]: true, [FeatureItem.AllowSync]: false } as FeatureSet,
       });
-      expect(result.current.sort()).toEqual([FeatureItem.AllowCreateConnection, FeatureItem.AllowCustomDBT]);
+      expect(result.current.sort()).toEqual([FeatureItem.AllowCustomDBT]);
       rerender({ user: undefined });
-      expect(result.current.sort()).toEqual([FeatureItem.AllowCreateConnection, FeatureItem.AllowSync]);
+      expect(result.current.sort()).toEqual([FeatureItem.AllowSync]);
     });
 
     it("overwritten features can be cleared again", () => {
       const { result, rerender } = getFeatures({
         overwrite: { [FeatureItem.AllowCustomDBT]: true, [FeatureItem.AllowSync]: false } as FeatureSet,
       });
-      expect(result.current.sort()).toEqual([FeatureItem.AllowCreateConnection, FeatureItem.AllowCustomDBT]);
+      expect(result.current.sort()).toEqual([FeatureItem.AllowCustomDBT]);
       rerender({ overwrite: undefined });
-      expect(result.current.sort()).toEqual([FeatureItem.AllowCreateConnection, FeatureItem.AllowSync]);
+      expect(result.current.sort()).toEqual([FeatureItem.AllowSync]);
     });
   });
 
   describe("IfFeatureEnabled", () => {
     it("renders its children if the given feature is enabled", () => {
       const { getByTestId } = render(
-        <IfFeatureEnabled feature={FeatureItem.AllowCreateConnection}>
+        <IfFeatureEnabled feature={FeatureItem.AllowSync}>
           <span data-testid="content" />
         </IfFeatureEnabled>,
         { wrapper }
@@ -184,7 +170,7 @@ describe("Feature Service", () => {
 
     it("allows changing features and rerenders correctly", () => {
       const { queryByTestId, rerender } = render(
-        <FeatureService features={[FeatureItem.AllowCreateConnection]}>
+        <FeatureService features={[FeatureItem.AllowSync]}>
           <IfFeatureEnabled feature={FeatureItem.AllowOAuthConnector}>
             <span data-testid="content" />
           </IfFeatureEnabled>
