@@ -159,8 +159,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    API_VERSION = "v15.0"
-    SDK_VERSION = "v15.0.0"
+    API_VERSION = "v14.0"
+    SDK_VERSION = "v14.0.0"
 
     def __init__(self, account_id: str, access_token: str):
         self._configure_api_and_sdk_version()
