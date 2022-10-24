@@ -50,7 +50,7 @@ def test_check_connection(mocker):
     assert source.check_connection(
         logger_mock,
         {
-            "instance_name": "murky-swan-635",
+            "deployment_name": "murky-swan-635",
             "access_key": "test_api_key",
         },
     ) == (True, None)
@@ -62,7 +62,7 @@ def test_streams(mocker):
     source = SourceConvex()
     streams = source.streams(
         {
-            "instance_name": "murky-swan-635",
+            "deployment_name": "murky-swan-635",
             "access_key": "test_api_key",
         }
     )
@@ -70,7 +70,7 @@ def test_streams(mocker):
     streams.sort(key=lambda stream: stream.table_name)
     assert streams[0].table_name == "posts"
     assert streams[1].table_name == "users"
-    assert all(stream.instance_name == "murky-swan-635" for stream in streams)
+    assert all(stream.deployment_name == "murky-swan-635" for stream in streams)
     assert all(stream._session.auth.get_auth_header() == {"Authorization": "Convex test_api_key"} for stream in streams)
     shapes = [stream.get_json_schema() for stream in streams]
     assert all(shape["type"] == "object" for shape in shapes)

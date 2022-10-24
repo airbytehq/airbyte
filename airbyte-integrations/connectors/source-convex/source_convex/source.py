@@ -4,52 +4,44 @@
 
 
 from datetime import datetime
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Tuple,
-    TypedDict,
-)
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypedDict
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth.token import (
-    TokenAuthenticator,
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
+
+ConvexConfig = TypedDict(
+    "ConvexConfig",
+    {
+        "deployment_name": str,
+        "access_key": str,
+    },
+)
+
+ConvexState = TypedDict(
+    "ConvexState",
+    {
+        "snapshot_cursor": Optional[str],
+        "snapshot_has_more": bool,
+        "delta_cursor": Optional[int],
+    },
 )
 
 
-ConvexConfig = TypedDict('ConvexConfig', {
-    'instance_name': str,
-    'access_key': str,
-})
-
-ConvexState = TypedDict('ConvexState', {
-    'snapshot_cursor': Optional[str],
-    'snapshot_has_more': bool,
-    'delta_cursor': Optional[int],
-})
-
-
-def convex_url_base(instance_name: str) -> str:
-    if "localhost" in instance_name:
-        return instance_name
-    return f"https://{instance_name}.convex.cloud"
+def convex_url_base(deployment_name: str) -> str:
+    if "localhost" in deployment_name:
+        return deployment_name
+    return f"https://{deployment_name}.convex.cloud"
 
 
 # Source
 class SourceConvex(AbstractSource):
     def _json_schemas(self, config: ConvexConfig) -> requests.Response:
-        instance_name = config["instance_name"]
+        deployment_name = config["deployment_name"]
         access_key = config["access_key"]
-        url = f"{convex_url_base(instance_name)}/api/json_schemas?deltaSchema=true"
+        url = f"{convex_url_base(deployment_name)}/api/json_schemas?deltaSchema=true"
         headers = {"Authorization": f"Convex {access_key}"}
         return requests.get(url, headers=headers)
 
@@ -77,7 +69,7 @@ class SourceConvex(AbstractSource):
         table_names = list(json_schemas.keys())
         return [
             ConvexStream(
-                config["instance_name"],
+                config["deployment_name"],
                 config["access_key"],
                 table_name,
                 json_schemas[table_name],
@@ -87,8 +79,8 @@ class SourceConvex(AbstractSource):
 
 
 class ConvexStream(HttpStream, IncrementalMixin):
-    def __init__(self, instance_name: str, access_key: str, table_name: str, json_schema: Mapping[str, Any]):
-        self.instance_name = instance_name
+    def __init__(self, deployment_name: str, access_key: str, table_name: str, json_schema: Mapping[str, Any]):
+        self.deployment_name = deployment_name
         self.table_name = table_name
         if json_schema:
             json_schema["properties"]["_ab_cdc_lsn"] = {"type": "number"}
@@ -109,7 +101,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
 
     @property
     def url_base(self) -> str:
-        return convex_url_base(self.instance_name)
+        return convex_url_base(self.deployment_name)
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self.json_schema

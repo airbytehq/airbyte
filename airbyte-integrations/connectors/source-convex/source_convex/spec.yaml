@@ -4,10 +4,10 @@ connectionSpecification:
   title: Convex Spec
   type: object
   required:
-    - instance_name
+    - deployment_name
     - access_key
   properties:
-    instance_name:
+    deployment_name:
       type: string
       examples:
         - murky-swan-635
