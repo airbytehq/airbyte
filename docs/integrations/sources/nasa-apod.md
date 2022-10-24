@@ -32,7 +32,7 @@ The NASA APOD connector should not run into NASA APOD API limitations under norm
 2. Use the generated `API Key` in the Airbyte connection.
 
 ## Changelog
-TODO: add PR id
+
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
-| 0.1.0   | 2022-10-24 | [](https://github.com/airbytehq/airbyte/pull/)   | 🎉 New Source: NASA APOD                           |
+| 0.1.0   | 2022-10-24 | [18394](https://github.com/airbytehq/airbyte/pull/18394) | 🎉 New Source: NASA APOD                        |
