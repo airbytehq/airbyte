@@ -1152,8 +1152,8 @@ class BasicAcceptanceTests {
       testHarness.assertSourceAndDestinationDbInSync(false);
     } finally {
       // Set source back to version it was set to at beginning of test
-      testHarness.updateSourceDefinitionVersion(sourceDefinitionId, currentSourceDefinitionVersion);
       LOGGER.info("Set source connector back to per-stream state supported version {}.", currentSourceDefinitionVersion);
+      testHarness.updateSourceDefinitionVersion(sourceDefinitionId, currentSourceDefinitionVersion);
     }
   }
 
