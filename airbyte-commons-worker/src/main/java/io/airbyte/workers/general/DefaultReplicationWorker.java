@@ -4,7 +4,13 @@
 
 package io.airbyte.workers.general;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
@@ -16,6 +22,7 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -120,6 +127,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @return output of the replication attempt (including state)
    * @throws WorkerException
    */
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public final ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
@@ -145,6 +153,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       final WorkerSourceConfig sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
 
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
+
+      ApmTraceUtils.addTagsToTrace(generateTraceTags(destinationConfig, jobRoot));
 
       // note: resources are closed in the opposite order in which they are declared. thus source will be
       // closed first (which is what we want).
@@ -195,6 +205,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
       } catch (final Exception e) {
         hasFailed.set(true);
+        ApmTraceUtils.addExceptionToTrace(e);
         LOGGER.error("Sync worker failed.", e);
       } finally {
         executors.shutdownNow();
@@ -321,6 +332,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LineGobbler.endSection("REPLICATION");
       return output;
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       throw new WorkerException("Sync failed", e);
     }
 
@@ -514,6 +526,21 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LOGGER.info("Error cancelling source: ", e);
     }
 
+  }
+
+  private Map<String, Object> generateTraceTags(final WorkerDestinationConfig destinationConfig, final Path jobRoot) {
+    final Map<String, Object> tags = new HashMap<>();
+
+    tags.put(JOB_ID_KEY, jobId);
+    tags.put(JOB_ROOT_KEY, jobRoot);
+
+    if (destinationConfig != null) {
+      if (destinationConfig.getConnectionId() != null) {
+        tags.put(CONNECTION_ID_KEY, destinationConfig.getConnectionId());
+      }
+    }
+
+    return tags;
   }
 
   private static class SourceException extends RuntimeException {
