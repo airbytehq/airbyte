@@ -5270,7 +5270,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.21"
+- dockerImage: "airbyte/source-jira:0.2.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -5300,6 +5300,11 @@
           type: "string"
           title: "Email"
           description: "The user email for your Jira account."
+        max_results:
+          type: "number"
+          title: "Max Results"
+          description: "Pagination max results (only for users stream)"
+          default: 50
         projects:
           type: "array"
           title: "Projects"
