@@ -12,13 +12,9 @@ jobs:
         with:
           fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
 
-      - name: Extract current branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${{ github.head_ref }})"
-        id: extract_branch
-      - name: Extract git-dif change file
+      - name: Extract git-diff changed files
         run: |
-          git diff --name-only remotes/origin/master...origin/${{ steps.extract_branch.outputs.branch }} -- airbyte-integrations/ > ./changed_files.txt
+          git diff --name-only remotes/origin/master...HEAD -- airbyte-integrations/ > ./changed_files.txt
         id: extract_changed_files
       - name: Install dependencies
         run: |
