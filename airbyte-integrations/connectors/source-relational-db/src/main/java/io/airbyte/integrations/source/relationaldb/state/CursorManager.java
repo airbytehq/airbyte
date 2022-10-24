@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -47,6 +48,8 @@ public class CursorManager<S> {
    *        the connector's state.
    * @param cursorFieldFunction A {@link Function} that extracts the cursor field name from a stream
    *        stored in the connector's state.
+   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a
+   *        stream stored in the connector's state.
    * @param namespacePairFunction A {@link Function} that generates a
    *        {@link AirbyteStreamNameNamespacePair} that identifies each stream in the connector's
    *        state.
@@ -55,8 +58,10 @@ public class CursorManager<S> {
                        final Supplier<Collection<S>> streamSupplier,
                        final Function<S, String> cursorFunction,
                        final Function<S, List<String>> cursorFieldFunction,
+                       final Function<S, Long> cursorRecordCountFunction,
                        final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction) {
-    pairToCursorInfo = createCursorInfoMap(catalog, streamSupplier, cursorFunction, cursorFieldFunction, namespacePairFunction);
+    pairToCursorInfo = createCursorInfoMap(
+        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction);
   }
 
   /**
@@ -70,6 +75,8 @@ public class CursorManager<S> {
    *        the connector's state.
    * @param cursorFieldFunction A {@link Function} that extracts the cursor field name from a stream
    *        stored in the connector's state.
+   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a
+   *        stream stored in the connector's state.
    * @param namespacePairFunction A {@link Function} that generates a
    *        {@link AirbyteStreamNameNamespacePair} that identifies each stream in the connector's
    *        state.
@@ -81,13 +88,14 @@ public class CursorManager<S> {
                                                                                 final Supplier<Collection<S>> streamSupplier,
                                                                                 final Function<S, String> cursorFunction,
                                                                                 final Function<S, List<String>> cursorFieldFunction,
+                                                                                final Function<S, Long> cursorRecordCountFunction,
                                                                                 final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction) {
     final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStreamNameNamespacePair::fromAirbyteSteam)
         .collect(Collectors.toSet());
-    allStreamNames.addAll(streamSupplier.get().stream().map(namespacePairFunction).filter(n -> n != null).collect(Collectors.toSet()));
+    allStreamNames.addAll(streamSupplier.get().stream().map(namespacePairFunction).filter(Objects::nonNull).collect(Collectors.toSet()));
 
     final Map<AirbyteStreamNameNamespacePair, CursorInfo> localMap = new HashMap<>();
     final Map<AirbyteStreamNameNamespacePair, S> pairToState = streamSupplier.get()
@@ -99,7 +107,8 @@ public class CursorManager<S> {
     for (final AirbyteStreamNameNamespacePair pair : allStreamNames) {
       final Optional<S> stateOptional = Optional.ofNullable(pairToState.get(pair));
       final Optional<ConfiguredAirbyteStream> streamOptional = Optional.ofNullable(pairToConfiguredAirbyteStream.get(pair));
-      localMap.put(pair, createCursorInfoForStream(pair, stateOptional, streamOptional, cursorFunction, cursorFieldFunction));
+      localMap.put(pair,
+          createCursorInfoForStream(pair, stateOptional, streamOptional, cursorFunction, cursorFieldFunction, cursorRecordCountFunction));
     }
 
     return localMap;
@@ -118,6 +127,8 @@ public class CursorManager<S> {
    *        associated with the stream.
    * @param cursorFieldFunction A {@link Function} that provides the cursor field name for the cursor
    *        stored in the state associated with the stream.
+   * @param cursorRecordCountFunction A {@link Function} that extracts the cursor record count for a
+   *        stream stored in the connector's state.
    * @return A {@link CursorInfo} object based on the data currently stored in the connector's state
    *         for the given stream.
    */
@@ -127,15 +138,18 @@ public class CursorManager<S> {
                                                  final Optional<S> stateOptional,
                                                  final Optional<ConfiguredAirbyteStream> streamOptional,
                                                  final Function<S, String> cursorFunction,
-                                                 final Function<S, List<String>> cursorFieldFunction) {
+                                                 final Function<S, List<String>> cursorFieldFunction,
+                                                 final Function<S, Long> cursorRecordCountFunction) {
     final String originalCursorField = stateOptional
         .map(cursorFieldFunction)
         .flatMap(f -> f.size() > 0 ? Optional.of(f.get(0)) : Optional.empty())
         .orElse(null);
     final String originalCursor = stateOptional.map(cursorFunction).orElse(null);
+    final long originalCursorRecordCount = stateOptional.map(cursorRecordCountFunction).orElse(0L);
 
     final String cursor;
     final String cursorField;
+    final long cursorRecordCount;
 
     // if cursor field is set in catalog.
     if (streamOptional.map(ConfiguredAirbyteStream::getCursorField).isPresent()) {
@@ -148,19 +162,23 @@ public class CursorManager<S> {
         // if cursor field in catalog and state are the same.
         if (stateOptional.map(cursorFieldFunction).equals(streamOptional.map(ConfiguredAirbyteStream::getCursorField))) {
           cursor = stateOptional.map(cursorFunction).orElse(null);
-          LOGGER.info("Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {}", pair, cursorField, cursor);
+          cursorRecordCount = stateOptional.map(cursorRecordCountFunction).orElse(0L);
+          LOGGER.info("Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {} Count: {}",
+              pair, cursorField, cursor, cursorRecordCount);
           // if cursor field in catalog and state are different.
         } else {
           cursor = null;
+          cursorRecordCount = 0L;
           LOGGER.info(
-              "Found cursor field. Does not match previous cursor field. Stream: {}. Original Cursor Field: {}. New Cursor Field: {}. Resetting cursor value.",
-              pair, originalCursorField, cursorField);
+              "Found cursor field. Does not match previous cursor field. Stream: {}. Original Cursor Field: {} (count {}). New Cursor Field: {}. Resetting cursor value.",
+              pair, originalCursorField, originalCursorRecordCount, cursorField);
         }
         // if cursor field is not set in state but is set in catalog.
       } else {
         LOGGER.info("No cursor field set in catalog but not present in state. Stream: {}, New Cursor Field: {}. Resetting cursor value", pair,
             cursorField);
         cursor = null;
+        cursorRecordCount = 0L;
       }
       // if cursor field is not set in catalog.
     } else {
@@ -169,9 +187,10 @@ public class CursorManager<S> {
           pair, originalCursorField, originalCursor);
       cursorField = null;
       cursor = null;
+      cursorRecordCount = 0L;
     }
 
-    return new CursorInfo(originalCursorField, originalCursor, cursorField, cursor);
+    return new CursorInfo(originalCursorField, originalCursor, originalCursorRecordCount, cursorField, cursor, cursorRecordCount);
   }
 
   /**
