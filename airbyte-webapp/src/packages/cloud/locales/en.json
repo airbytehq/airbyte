@@ -102,6 +102,7 @@
   "settings.generalSettings.form.advancedMode.tooltip": "When Advanced Mode is enabled, certain views will display additional technical information.",
   "settings.generalSettings.deleteLabel": "Delete your workspace",
   "settings.generalSettings.deleteText": "Delete",
+  "settings.dataResidency": "Default Data residency",
   "settings.accessManagementSettings": "Access Management",
   "userSettings.table.title": "Current users",
   "userSettings.table.column.fullname": "Full Name",

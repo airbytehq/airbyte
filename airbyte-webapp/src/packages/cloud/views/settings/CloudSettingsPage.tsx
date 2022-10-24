@@ -6,6 +6,7 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { DbtCloudSettingsView } from "packages/cloud/views/settings/integrations/DbtCloudSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
+import { DataResidencyView } from "packages/cloud/views/workspaces/DataResidencyView";
 import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
 import SettingsPage from "pages/SettingsPage";
 import {
@@ -54,6 +55,12 @@ export const CloudSettingsPage: React.FC = () => {
               name: <FormattedMessage id="settings.generalSettings" />,
               component: WorkspaceSettingsView,
               id: "workspaceSettings.generalSettings",
+            },
+            {
+              path: CloudSettingsRoutes.DataResidency,
+              name: <FormattedMessage id="settings.dataResidency" />,
+              component: DataResidencyView,
+              id: "workspaceSettings.dataResidency",
             },
             {
               path: CloudSettingsRoutes.Source,
