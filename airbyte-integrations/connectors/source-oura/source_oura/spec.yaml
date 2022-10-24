@@ -12,23 +12,15 @@ connectionSpecification:
       description: API Key
       airbyte_secret: true
       order: 0
-    start_date:
-      type: string
-      description: Start date
-      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-      order: 1
-    end_date:
-      type: string
-      description: End date
-      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-      order: 2
     start_datetime:
       type: string
-      description: Start datetime for heart rate data in ISO 8601 format
+      description: |
+        Start datetime to sync from. Default is current UTC datetime minus 1
+        day.
       pattern: ^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$
-      order: 3
+      order: 1
     end_datetime:
       type: string
-      description: End datetime for heart rate data in ISO 8601 format
+      description: End datetime to sync until. Default is current UTC datetime.
       pattern: ^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$
-      order: 4
+      order: 2

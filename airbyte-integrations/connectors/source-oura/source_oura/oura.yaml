@@ -14,8 +14,8 @@ definitions:
     $ref: "*ref(definitions.base_requester)"
     request_options_provider:
       request_parameters:
-        start_date: "{{ config['start_date'] }}"
-        end_date: "{{ config['end_date'] }}"
+        start_date: "{{ config['start_date'].split('T')[0] }}"
+        end_date: "{{ config['end_date'].split('T')[0] }}"
   datetime_requester:
     $ref: "*ref(definitions.base_requester)"
     request_options_provider:
