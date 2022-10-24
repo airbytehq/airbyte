@@ -4,6 +4,9 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
@@ -20,6 +23,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
   }
 
   @Override
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   public boolean shouldRefreshSchema(UUID sourceCatalogId) throws IOException {
     // if job persistence is unavailable, default to skipping the schema refresh
     if (configRepository.isEmpty()) {
