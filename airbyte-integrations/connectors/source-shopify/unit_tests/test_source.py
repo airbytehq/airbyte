@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 
 from unittest.mock import MagicMock
 
@@ -5,6 +9,8 @@ import pytest
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.source import (
     AbandonedCheckouts,
+    Articles,
+    Blogs,
     Collects,
     CustomCollections,
     Customers,
@@ -14,13 +20,26 @@ from source_shopify.source import (
     Fulfillments,
     InventoryLevels,
     Locations,
-    Metafields,
+    MetafieldArticles,
+    MetafieldBlogs,
+    MetafieldCollections,
+    MetafieldCustomers,
+    MetafieldDraftOrders,
+    MetafieldLocations,
+    MetafieldOrders,
+    MetafieldPages,
+    MetafieldProducts,
+    MetafieldProductVariants,
+    MetafieldShops,
+    MetafieldSmartCollections,
     OrderRefunds,
     OrderRisks,
     Orders,
     Pages,
     PriceRules,
+    ProductImages,
     Products,
+    ProductVariants,
     Shop,
     SourceShopify,
     TenderTransactions,
@@ -36,26 +55,45 @@ def config(basic_config):
 
 
 @pytest.mark.parametrize(
-    "stream,expected_path",
+    "stream,stream_slice,expected_path",
     [
-        (Customers, "customers.json"),
-        (Orders, "orders.json"),
-        (DraftOrders, "draft_orders.json"),
-        (Products, "products.json"),
-        (AbandonedCheckouts, "checkouts.json"),
-        (Metafields, "metafields.json"),
-        (Collects, "collects.json"),
-        (TenderTransactions, "tender_transactions.json"),
-        (Pages, "pages.json"),
-        (PriceRules, "price_rules.json"),
-        (Locations, "locations.json"),
-        (Shop, "shop.json"),
-        (CustomCollections, "custom_collections.json"),
+        (Articles, None, "articles.json"),
+        (Blogs, None, "blogs.json"),
+        (MetafieldBlogs, {"id": 123}, "blogs/123/metafields.json"),
+        (MetafieldArticles, {"id": 123}, "articles/123/metafields.json"),
+        (MetafieldCustomers, {"id": 123}, "customers/123/metafields.json"),
+        (MetafieldOrders, {"id": 123}, "orders/123/metafields.json"),
+        (MetafieldDraftOrders, {"id": 123}, "draft_orders/123/metafields.json"),
+        (MetafieldProducts, {"id": 123}, "products/123/metafields.json"),
+        (MetafieldProductVariants, {"variants": 123}, "variants/123/metafields.json"),
+        (MetafieldSmartCollections, {"id": 123}, "smart_collections/123/metafields.json"),
+        (MetafieldCollections, {"collection_id": 123}, "collections/123/metafields.json"),
+        (MetafieldPages, {"id": 123}, "pages/123/metafields.json"),
+        (MetafieldLocations, {"id": 123}, "locations/123/metafields.json"),
+        (MetafieldShops, None, "metafields.json"),
+        (ProductImages, {"product_id": 123}, "products/123/images.json"),
+        (ProductVariants, {"product_id": 123}, "products/123/variants.json"),
+        (Customers, None, "customers.json"),
+        (Orders, None, "orders.json"),
+        (DraftOrders, None, "draft_orders.json"),
+        (Products, None, "products.json"),
+        (AbandonedCheckouts, None, "checkouts.json"),
+        (Collects, None, "collects.json"),
+        (TenderTransactions, None, "tender_transactions.json"),
+        (Pages, None, "pages.json"),
+        (PriceRules, None, "price_rules.json"),
+        (Locations, None, "locations.json"),
+        (Shop, None, "shop.json"),
+        (CustomCollections, None, "custom_collections.json"),
     ],
 )
-def test_customers_path(stream, expected_path, config):
+def test_customers_path(stream, stream_slice, expected_path, config):
     stream = stream(config)
-    assert stream.path() == expected_path
+    if stream_slice:
+        result = stream.path(stream_slice)
+    else:
+        result = stream.path()
+    assert result == expected_path
 
 
 @pytest.mark.parametrize(

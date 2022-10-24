@@ -1,9 +1,14 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 
 import pytest
 from source_shopify.auth import NotImplementedAuth, ShopifyAuthenticator
 
 TEST_ACCESS_TOKEN = "test_access_token"
 TEST_API_PASSWORD = "test_api_password"
+
 
 @pytest.fixture
 def config_access_token():
@@ -13,6 +18,7 @@ def config_access_token():
 @pytest.fixture
 def config_api_password():
     return {"credentials": {"api_password": TEST_API_PASSWORD, "auth_method": "api_password"}}
+
 
 @pytest.fixture
 def config_not_implemented_auth_method():
@@ -44,5 +50,3 @@ def test_raises_notimplemented_auth(config_not_implemented_auth_method):
     with pytest.raises(NotImplementedAuth) as not_implemented_exc:
         print(not_implemented_exc)
         authenticator.get_auth_header()
-
-    
