@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.11
+Declare `test_strictness_level` field in test configuration. [#18218](https://github.com/airbytehq/airbyte/pull/18218).
+
+## 0.2.10
+Bump `airbyte-cdk~=0.2.0`
+
 ## 0.2.9
 Update tests after protocol change making `supported_sync_modes` a required property of `AirbyteStream` [#15591](https://github.com/airbytehq/airbyte/pull/15591/)
 
