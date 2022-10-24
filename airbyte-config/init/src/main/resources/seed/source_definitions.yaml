@@ -817,7 +817,7 @@
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
@@ -1146,13 +1146,6 @@
   dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/victorops
   icon: victorops.svg
-  sourceType: api
-  releaseStage: alpha
-- name: xkcd
-  sourceDefinitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
-  dockerRepository: airbyte/source-xkcd
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/sources/xkcd
   sourceType: api
   releaseStage: alpha
 - name: Webflow
