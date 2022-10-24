@@ -1,5 +1,3 @@
-from re import A
-from unittest.mock import MagicMock, patch
 
 import pytest
 from source_shopify.auth import ShopifyAuthenticator
