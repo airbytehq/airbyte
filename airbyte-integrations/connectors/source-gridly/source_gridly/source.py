@@ -22,7 +22,7 @@ from source_gridly.helpers import Helpers
 class GridlyStream(HttpStream, ABC):
     url_base = "https://api.gridly.com/v1/"
     primary_key = "id"
-    current_page = 0
+    current_page = 1
     limit = 100
 
     def __init__(self, view_id: str, view_name: str, schema: Dict[str, Any], **kwargs):
