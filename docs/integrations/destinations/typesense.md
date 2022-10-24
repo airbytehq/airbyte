@@ -31,7 +31,7 @@ To use the Typesense destination, you'll need an existing Typesense instance. Yo
 
 ### Setup guide
 
-The setup only requires two fields. First is the `host` which is the address at which MeiliSearch can be reached. The second piece of information is the API key.
+The setup only requires two fields. First is the `host` which is the address at which Typesense can be reached. The second piece of information is the API key.
 
 ## Changelog
 
