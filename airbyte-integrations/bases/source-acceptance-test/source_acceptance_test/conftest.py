@@ -28,6 +28,12 @@ from source_acceptance_test.config import Config
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, load_config, load_yaml_or_json_path
 
 
+@pytest.fixture(name="acceptance_test_config", scope="session")
+def acceptance_test_config_fixture(pytestconfig) -> Config:
+    """Fixture with test's config"""
+    return load_config(pytestconfig.getoption("--acceptance-test-config", skip=True))
+
+
 @pytest.fixture(name="base_path")
 def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
     """Fixture to define base path for every path-like fixture"""
@@ -36,10 +42,9 @@ def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
     return Path(pytestconfig.getoption("--acceptance-test-config")).absolute()
 
 
-@pytest.fixture(name="acceptance_test_config", scope="session")
-def acceptance_test_config_fixture(pytestconfig) -> Config:
-    """Fixture with test's config"""
-    return load_config(pytestconfig.getoption("--acceptance-test-config", skip=True))
+@pytest.fixture(name="test_strictness_level", scope="session")
+def test_strictness_level_fixture(acceptance_test_config: Config):
+    return acceptance_test_config.test_strictness_level
 
 
 @pytest.fixture(name="connector_config_path")
