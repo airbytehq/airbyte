@@ -29,3 +29,21 @@ properties:
     type: integer
   meanSecondsBetweenStateMessageEmittedandCommitted:
     type: integer
+  replicationStartTime:
+    type: integer
+    description: The start of the replication activity
+  replicationEndTime:
+    type: integer
+    description: The end of the replication activity
+  sourceReadStartTime:
+    type: integer
+    description: The boot time of the source container/pod
+  sourceReadEndTime:
+    type: integer
+    description: The exit time of the source container/pod
+  destinationWriteStartTime:
+    type: integer
+    description: The boot time of the destination container/pod
+  destinationWriteEndTime:
+    type: integer
+    description: The exit time of the destination container/pod

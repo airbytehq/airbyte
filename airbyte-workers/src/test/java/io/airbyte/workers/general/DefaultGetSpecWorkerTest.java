@@ -20,16 +20,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.internal.AirbyteMessageUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -57,7 +55,7 @@ class DefaultGetSpecWorkerTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
     when(integrationLauncher.spec(jobRoot)).thenReturn(process);
 
-    worker = new DefaultGetSpecWorker(new WorkerConfigs(new EnvConfigs()), integrationLauncher);
+    worker = new DefaultGetSpecWorker(integrationLauncher);
   }
 
   @Test

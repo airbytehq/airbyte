@@ -20,6 +20,10 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.JobMetadata;
+import io.airbyte.commons.temporal.TemporalClient;
+import io.airbyte.commons.temporal.TemporalResponse;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -33,11 +37,7 @@ import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.persistence.job.tracker.JobTracker.JobState;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.workers.temporal.JobMetadata;
-import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -55,6 +55,8 @@ class DefaultSynchronousSchedulerClientTest {
 
   private static final Path LOG_PATH = Path.of("/tmp");
   private static final String DOCKER_IMAGE = "foo/bar";
+  private static final String DOCKER_IMAGE_TAG = "baz/qux";
+  private static final Version PROTOCOL_VERSION = new Version("0.2.3");
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
@@ -201,14 +203,15 @@ class DefaultSynchronousSchedulerClientTest {
     void testCreateSourceCheckConnectionJob() throws IOException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
           .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE);
+          .withDockerImage(DOCKER_IMAGE)
+          .withProtocolVersion(PROTOCOL_VERSION);
 
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withCheckConnection(mockOutput);
       when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
       final SynchronousResponse<StandardCheckConnectionOutput> response =
-          schedulerClient.createSourceCheckConnectionJob(SOURCE_CONNECTION, DOCKER_IMAGE);
+          schedulerClient.createSourceCheckConnectionJob(SOURCE_CONNECTION, DOCKER_IMAGE, PROTOCOL_VERSION);
       assertEquals(mockOutput, response.getOutput());
     }
 
@@ -216,29 +219,27 @@ class DefaultSynchronousSchedulerClientTest {
     void testCreateDestinationCheckConnectionJob() throws IOException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
           .withConnectionConfiguration(DESTINATION_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE);
+          .withDockerImage(DOCKER_IMAGE)
+          .withProtocolVersion(PROTOCOL_VERSION);
 
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withCheckConnection(mockOutput);
       when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
       final SynchronousResponse<StandardCheckConnectionOutput> response =
-          schedulerClient.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DOCKER_IMAGE);
+          schedulerClient.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DOCKER_IMAGE, PROTOCOL_VERSION);
       assertEquals(mockOutput, response.getOutput());
     }
 
     @Test
     void testCreateDiscoverSchemaJob() throws IOException {
-      final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
-          .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
-          .withDockerImage(DOCKER_IMAGE);
-
-      final AirbyteCatalog mockOutput = mock(AirbyteCatalog.class);
-      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withDiscoverCatalog(mockOutput);
-      when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), eq(jobDiscoverCatalogConfig)))
+      final UUID expectedCatalogId = UUID.randomUUID();
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withDiscoverCatalogId(expectedCatalogId);
+      when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), any(JobDiscoverCatalogConfig.class)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
-      final SynchronousResponse<AirbyteCatalog> response = schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE);
-      assertEquals(mockOutput, response.getOutput());
+      final SynchronousResponse<UUID> response =
+          schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE, DOCKER_IMAGE_TAG, PROTOCOL_VERSION);
+      assertEquals(expectedCatalogId, response.getOutput());
     }
 
     @Test

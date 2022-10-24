@@ -220,7 +220,7 @@ cmd_publish() {
 
   # Install docker emulators
   # TODO: Don't run this command on M1 macs locally (it won't work and isn't needed)
-  docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+  apt-get update && apt-get install -y qemu-user-static
 
   # log into docker
   if test -z "${DOCKER_HUB_USERNAME}"; then
@@ -300,7 +300,7 @@ cmd_publish() {
     docker manifest rm $versioned_image
 
     # delete the temporary image tags made with arch_versioned_image
-    sleep 5
+    sleep 10
     for arch in $(echo $build_arch | sed "s/,/ /g")
     do
       local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version

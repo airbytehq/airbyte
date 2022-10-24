@@ -60,7 +60,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = pendulum.parse(start_date)
+        self._start_date = pendulum.parse(start_date) if isinstance(start_date, str) else start_date
 
     @property
     @abstractmethod
@@ -98,7 +98,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # save state value in source native format
-        latest_field = latest_record[self.cursor_field] or latest_record['event_time']
+        latest_field = latest_record.get(self.cursor_field) or latest_record.get('event_time')
         if self.compare_date_template:
             latest_state = pendulum.parse(latest_field).strftime(self.compare_date_template)
         else:
@@ -134,6 +134,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
                     "end": self._get_end_date(start_datetime).strftime(self.date_template),
                 }
             )
+
         return params
 
 
@@ -180,6 +181,7 @@ class Events(IncrementalAmplitudeStream):
                 }
             )
             start = start.add(**self.time_interval)
+
         return slices
 
     def read_records(
@@ -235,7 +237,7 @@ class ActiveUsers(IncrementalAmplitudeStream):
         if response_data:
             series = list(map(list, zip(*response_data["series"])))
             for i, date in enumerate(response_data["xValues"]):
-                yield {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
+                yield from [{"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}] if series else []
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/users"

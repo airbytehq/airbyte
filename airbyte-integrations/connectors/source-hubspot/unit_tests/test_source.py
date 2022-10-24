@@ -142,15 +142,11 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, 
     """
 
     # Mapping tipical response for mocker
-    responses = [
-        {
-            "json": {
-                "status": "error",
-                "message": f'This hapikey ({creds_with_wrong_permissions.get("api_key")}) does not have proper permissions! (requires any of [automation-access])',
-                "correlationId": "2fe0a9af-3609-45c9-a4d7-83a1774121aa",
-            }
-        }
-    ]
+    json = {
+        "status": "error",
+        "message": f'This hapikey ({creds_with_wrong_permissions.get("api_key")}) does not have proper permissions! (requires any of [automation-access])',
+        "correlationId": "2fe0a9af-3609-45c9-a4d7-83a1774121aa",
+    }
 
     # We expect something like this
     expected_warining_message = {
@@ -165,11 +161,12 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, 
     test_stream = Workflows(**common_params)
 
     # Mocking Request
-    requests_mock.register_uri("GET", test_stream.url, responses)
-    list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
+    requests_mock.register_uri("GET", test_stream.url, json=json, status_code=403)
+    records = list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
 
     # match logged expected logged warning message with output given from preudo-output
     assert expected_warining_message["log"]["message"] in caplog.text
+    assert not records
 
 
 class TestSplittingPropertiesFunctionality:
@@ -354,7 +351,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                 "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(100)],
                 "paging": {
                     "next": {
-                        "after": f"{x*100}",
+                        "after": f"{x * 100}",
                     }
                 },
             },
@@ -370,7 +367,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                     "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)],
                     "paging": {
                         "next": {
-                            "after": f"{x*100}",
+                            "after": f"{x * 100}",
                         }
                     },
                 },

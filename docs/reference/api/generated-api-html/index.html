@@ -369,6 +369,7 @@ font-style: italic;
   <li><a href="#webBackendGetConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/get</code></a></li>
   <li><a href="#webBackendGetWorkspaceState"><code><span class="http-method">post</span> /v1/web_backend/workspace/state</code></a></li>
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
+  <li><a href="#webBackendListGeographies"><code><span class="http-method">post</span> /v1/web_backend/geographies/list</code></a></li>
   <li><a href="#webBackendUpdateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/update</code></a></li>
   </ul>
   <h4><a href="#Workspace">Workspace</a></h4>
@@ -5664,6 +5665,11 @@ containing the updated stream needs to be sent.</div>
   "name" : "name",
   "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "operatorConfiguration" : {
+    "webhook" : {
+      "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "executionUrl" : "executionUrl",
+      "executionBody" : "executionBody"
+    },
     "normalization" : {
       "option" : "basic"
     },
@@ -5780,6 +5786,11 @@ containing the updated stream needs to be sent.</div>
   "name" : "name",
   "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "operatorConfiguration" : {
+    "webhook" : {
+      "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "executionUrl" : "executionUrl",
+      "executionBody" : "executionBody"
+    },
     "normalization" : {
       "option" : "basic"
     },
@@ -5852,6 +5863,11 @@ containing the updated stream needs to be sent.</div>
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
+      "webhook" : {
+        "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "executionUrl" : "executionUrl",
+        "executionBody" : "executionBody"
+      },
       "normalization" : {
         "option" : "basic"
       },
@@ -5867,6 +5883,11 @@ containing the updated stream needs to be sent.</div>
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
+      "webhook" : {
+        "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "executionUrl" : "executionUrl",
+        "executionBody" : "executionBody"
+      },
       "normalization" : {
         "option" : "basic"
       },
@@ -5939,6 +5960,11 @@ containing the updated stream needs to be sent.</div>
   "name" : "name",
   "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "operatorConfiguration" : {
+    "webhook" : {
+      "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "executionUrl" : "executionUrl",
+      "executionBody" : "executionBody"
+    },
     "normalization" : {
       "option" : "basic"
     },
@@ -8285,13 +8311,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     }, {
       "streamDescriptor" : {
@@ -8304,13 +8332,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     } ]
   },
@@ -8328,6 +8358,11 @@ containing the updated stream needs to be sent.</div>
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
+      "webhook" : {
+        "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "executionUrl" : "executionUrl",
+        "executionBody" : "executionBody"
+      },
       "normalization" : {
         "option" : "basic"
       },
@@ -8343,6 +8378,11 @@ containing the updated stream needs to be sent.</div>
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
+      "webhook" : {
+        "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "executionUrl" : "executionUrl",
+        "executionBody" : "executionBody"
+      },
       "normalization" : {
         "option" : "basic"
       },
@@ -8496,13 +8536,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     }, {
       "streamDescriptor" : {
@@ -8515,13 +8557,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     } ]
   },
@@ -8539,6 +8583,11 @@ containing the updated stream needs to be sent.</div>
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
+      "webhook" : {
+        "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "executionUrl" : "executionUrl",
+        "executionBody" : "executionBody"
+      },
       "normalization" : {
         "option" : "basic"
       },
@@ -8554,6 +8603,11 @@ containing the updated stream needs to be sent.</div>
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
+      "webhook" : {
+        "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "executionUrl" : "executionUrl",
+        "executionBody" : "executionBody"
+      },
       "normalization" : {
         "option" : "basic"
       },
@@ -8831,6 +8885,49 @@ containing the updated stream needs to be sent.</div>
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="webBackendListGeographies"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/geographies/list</code></pre></div>
+    <div class="method-summary">Returns available geographies can be selected to run data syncs in a particular geography.
+The 'auto' entry indicates that the sync will be automatically assigned to a geography according
+to the platform default behavior. Entries other than 'auto' are two-letter country codes that
+follow the ISO 3166-1 alpha-2 standard. (<span class="nickname">webBackendListGeographies</span>)</div>
+    <div class="method-notes">Returns all available geographies in which a data sync can run.</div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WebBackendGeographiesListResult">WebBackendGeographiesListResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "geographies" : [ null, null ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WebBackendGeographiesListResult">WebBackendGeographiesListResult</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="webBackendUpdateConnection"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -8912,13 +9009,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     }, {
       "streamDescriptor" : {
@@ -8931,13 +9030,15 @@ containing the updated stream needs to be sent.</div>
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       }, {
         "updateFieldSchema" : { },
         "fieldName" : [ "fieldName", "fieldName" ],
         "addField" : { },
         "transformType" : "add_field",
-        "removeField" : { }
+        "removeField" : { },
+        "breaking" : true
       } ]
     } ]
   },
@@ -8955,6 +9056,11 @@ containing the updated stream needs to be sent.</div>
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
+      "webhook" : {
+        "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "executionUrl" : "executionUrl",
+        "executionBody" : "executionBody"
+      },
       "normalization" : {
         "option" : "basic"
       },
@@ -8970,6 +9076,11 @@ containing the updated stream needs to be sent.</div>
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
+      "webhook" : {
+        "webhookConfigId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "executionUrl" : "executionUrl",
+        "executionBody" : "executionBody"
+      },
       "normalization" : {
         "option" : "basic"
       },
@@ -9086,6 +9197,13 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "news" : true,
+  "webhookConfigs" : [ {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ],
   "displaySetupWizard" : true,
   "initialSetupComplete" : true,
   "anonymousDataCollection" : true,
@@ -9215,6 +9333,13 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "news" : true,
+  "webhookConfigs" : [ {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ],
   "displaySetupWizard" : true,
   "initialSetupComplete" : true,
   "anonymousDataCollection" : true,
@@ -9299,6 +9424,13 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "news" : true,
+  "webhookConfigs" : [ {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ],
   "displaySetupWizard" : true,
   "initialSetupComplete" : true,
   "anonymousDataCollection" : true,
@@ -9372,6 +9504,13 @@ containing the updated stream needs to be sent.</div>
     <pre class="example"><code>{
   "workspaces" : [ {
     "news" : true,
+    "webhookConfigs" : [ {
+      "name" : "name",
+      "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }, {
+      "name" : "name",
+      "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    } ],
     "displaySetupWizard" : true,
     "initialSetupComplete" : true,
     "anonymousDataCollection" : true,
@@ -9400,6 +9539,13 @@ containing the updated stream needs to be sent.</div>
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "news" : true,
+    "webhookConfigs" : [ {
+      "name" : "name",
+      "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }, {
+      "name" : "name",
+      "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    } ],
     "displaySetupWizard" : true,
     "initialSetupComplete" : true,
     "anonymousDataCollection" : true,
@@ -9479,6 +9625,13 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "news" : true,
+  "webhookConfigs" : [ {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ],
   "displaySetupWizard" : true,
   "initialSetupComplete" : true,
   "anonymousDataCollection" : true,
@@ -9608,6 +9761,13 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "news" : true,
+  "webhookConfigs" : [ {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "name" : "name",
+    "id" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ],
   "displaySetupWizard" : true,
   "initialSetupComplete" : true,
   "anonymousDataCollection" : true,
@@ -9729,6 +9889,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#FieldRemove"><code>FieldRemove</code> - </a></li>
     <li><a href="#FieldSchemaUpdate"><code>FieldSchemaUpdate</code> - </a></li>
     <li><a href="#FieldTransform"><code>FieldTransform</code> - </a></li>
+    <li><a href="#Geography"><code>Geography</code> - </a></li>
     <li><a href="#GlobalState"><code>GlobalState</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
@@ -9770,6 +9931,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#OperatorDbt"><code>OperatorDbt</code> - </a></li>
     <li><a href="#OperatorNormalization"><code>OperatorNormalization</code> - </a></li>
     <li><a href="#OperatorType"><code>OperatorType</code> - </a></li>
+    <li><a href="#OperatorWebhook"><code>OperatorWebhook</code> - </a></li>
     <li><a href="#Pagination"><code>Pagination</code> - </a></li>
     <li><a href="#PrivateDestinationDefinitionRead"><code>PrivateDestinationDefinitionRead</code> - </a></li>
     <li><a href="#PrivateDestinationDefinitionReadList"><code>PrivateDestinationDefinitionReadList</code> - </a></li>
@@ -9814,9 +9976,12 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
     <li><a href="#WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a></li>
+    <li><a href="#WebBackendGeographiesListResult"><code>WebBackendGeographiesListResult</code> - </a></li>
     <li><a href="#WebBackendOperationCreateOrUpdate"><code>WebBackendOperationCreateOrUpdate</code> - </a></li>
     <li><a href="#WebBackendWorkspaceState"><code>WebBackendWorkspaceState</code> - </a></li>
     <li><a href="#WebBackendWorkspaceStateResult"><code>WebBackendWorkspaceStateResult</code> - </a></li>
+    <li><a href="#WebhookConfigRead"><code>WebhookConfigRead</code> - </a></li>
+    <li><a href="#WebhookConfigWrite"><code>WebhookConfigWrite</code> - </a></li>
     <li><a href="#WorkspaceCreate"><code>WorkspaceCreate</code> - </a></li>
     <li><a href="#WorkspaceGiveFeedback"><code>WorkspaceGiveFeedback</code> - </a></li>
     <li><a href="#WorkspaceIdRequestBody"><code>WorkspaceIdRequestBody</code> - </a></li>
@@ -10045,6 +10210,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10073,6 +10239,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10191,6 +10358,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10295,6 +10463,7 @@ containing the updated stream needs to be sent.</div>
     <div class="field-items">
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10475,10 +10644,17 @@ containing the updated stream needs to be sent.</div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">add_field</div><div class="param-enum">remove_field</div><div class="param-enum">update_field_schema</div>
 <div class="param">fieldName </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> A field name is a list of strings that form the path to the field. </div>
+<div class="param">breaking </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">addField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldAdd">FieldAdd</a></span>  </div>
 <div class="param">removeField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldRemove">FieldRemove</a></span>  </div>
 <div class="param">updateFieldSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldSchemaUpdate">FieldSchemaUpdate</a></span>  </div>
     </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Geography"><code>Geography</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="GlobalState"><code>GlobalState</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -10800,6 +10976,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">operatorType </div><div class="param-desc"><span class="param-type"><a href="#OperatorType">OperatorType</a></span>  </div>
 <div class="param">normalization (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperatorNormalization">OperatorNormalization</a></span>  </div>
 <div class="param">dbt (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperatorDbt">OperatorDbt</a></span>  </div>
+<div class="param">webhook (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperatorWebhook">OperatorWebhook</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10826,6 +11003,15 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperatorWebhook"><code>OperatorWebhook</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">executionUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The URL to call to execute the webhook operation via POST request. </div>
+<div class="param">executionBody (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> If populated, this will be sent with the POST request. </div>
+<div class="param">webhookConfigId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span> The id of the webhook configs to use from the workspace. format: uuid</div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="Pagination"><code>Pagination</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -10911,6 +11097,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">jobId </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">attemptNumber </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
 <div class="param">workflowId </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">processingTaskQueue (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10949,6 +11136,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class="field-items">
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11185,6 +11373,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11231,6 +11420,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">catalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">catalogDiff (optional)</div><div class="param-desc"><span class="param-type"><a href="#CatalogDiff">CatalogDiff</a></span>  </div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11266,6 +11456,14 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">skipReset (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">geography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendGeographiesListResult"><code>WebBackendGeographiesListResult</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">geographies </div><div class="param-desc"><span class="param-type"><a href="#Geography">array[Geography]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11295,6 +11493,23 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="WebhookConfigRead"><code>WebhookConfigRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>the readable info for a webhook config; omits sensitive info e.g. auth token</div>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> human-readable name e.g. for display in UI </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebhookConfigWrite"><code>WebhookConfigWrite</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> human readable name for this webhook e.g. for UI display. </div>
+<div class="param">authToken (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> an auth token, to be passed as the value for an HTTP Authorization header. </div>
+<div class="param">validationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> if supplied, the webhook config will be validated by checking that this URL returns a 2xx response. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="WorkspaceCreate"><code>WorkspaceCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11305,6 +11520,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
 <div class="param">displaySetupWizard (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">defaultGeography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">webhookConfigs (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebhookConfigWrite">array[WebhookConfigWrite]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11338,6 +11555,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
 <div class="param">firstCompletedSync (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">feedbackDone (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">defaultGeography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">webhookConfigs (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebhookConfigRead">array[WebhookConfigRead]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11359,6 +11578,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">news (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
+<div class="param">defaultGeography (optional)</div><div class="param-desc"><span class="param-type"><a href="#Geography">Geography</a></span>  </div>
+<div class="param">webhookConfigs (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebhookConfigWrite">array[WebhookConfigWrite]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
