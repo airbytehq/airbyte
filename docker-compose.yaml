@@ -214,7 +214,7 @@ services:
     container_name: airbyte-proxy
     ports:
       - 8000:8000
-      - 8001:8001
+      - 9000:8001
     environment:
       - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
       - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}

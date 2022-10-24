@@ -23,9 +23,12 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +48,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private final HeartbeatMonitor heartbeatMonitor;
 
   private Process sourceProcess = null;
-  private Iterator<AirbyteMessage> messageIterator = null;
+  private Spliterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
@@ -82,18 +85,23 @@ public class DefaultAirbyteSource implements AirbyteSource {
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
         .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE || message.getType() == Type.TRACE)
-        .iterator();
+        .spliterator();
+    LOGGER.info("==== spliterator characteristic: {}", messageIterator.characteristics());
   }
 
   @Override
   public boolean isFinished() {
     Preconditions.checkState(sourceProcess != null);
+    // As this check is done on every message read, it is important for this operation to be efficient.
+    // Short circuit early to avoid checking the underlying process.
+    // TODO(Davin): Confirm getExactSizeIfKnown can be trusted.
+    final var isEmpty = messageIterator.getExactSizeIfKnown() <= 0; // hasNext is blocking.
+    LOGGER.info("Items left: {}", messageIterator.getExactSizeIfKnown());
+    if (!isEmpty) {
+      return false;
+    }
 
-    /*
-     * As this check is done on every message read, it is important for this operation to be efficient.
-     * Short circuit early to avoid checking the underlying process. note: hasNext is blocking.
-     */
-    return !messageIterator.hasNext() && !sourceProcess.isAlive();
+    return !sourceProcess.isAlive();
   }
 
   @Override
@@ -111,8 +119,18 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Override
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(sourceProcess != null);
+    final List<AirbyteMessage> result = new ArrayList<>(1);
 
-    return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
+    if (tryAdvance(result::add)) {
+      return Optional.of(result.get(0));
+    }
+    return Optional.empty();
+  }
+
+  @Override
+  public boolean tryAdvance(final Consumer<AirbyteMessage> consumer) {
+    LOGGER.info("=== try advance");
+    return messageIterator.tryAdvance(consumer);
   }
 
   @Override

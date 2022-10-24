@@ -123,7 +123,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
       }
       bufferedReader.reset();
       return Optional.empty();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       logger.warn(
           "Protocol version detection failed, it is likely than the connector sent more than {}B without an complete SPEC message." +
               " A SPEC message that is too long could be the root cause here.",
@@ -152,13 +152,13 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   }
 
   @Override
-  protected Stream<AirbyteMessage> toAirbyteMessage(final JsonNode json) {
+  protected AirbyteMessage toAirbyteMessage(final JsonNode json) {
     try {
       final io.airbyte.protocol.models.v0.AirbyteMessage message = migrator.upgrade(deserializer.deserialize(json));
-      return Stream.of(convert(message));
-    } catch (RuntimeException e) {
+      return convert(message);
+    } catch (final RuntimeException e) {
       logger.warn("Failed to upgrade a message from version {}: {}", protocolVersion, Jsons.serialize(json), e);
-      return Stream.empty();
+      return null;
     }
   }
 
