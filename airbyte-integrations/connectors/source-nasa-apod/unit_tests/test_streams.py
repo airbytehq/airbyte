@@ -36,7 +36,7 @@ def test_next_page_token(patch_base_class):
 
 def test_parse_response(patch_base_class):
     stream = NasaApodStream(config=config)
-    response_object = {"foo": "bar", "baz": ["qux"]}
+    response_object = [{"foo": "bar", "baz": ["qux"]}]
     response_mock = MagicMock()
     response_mock.configure_mock(**{"json.return_value": response_object})
     inputs = {"response": response_mock}

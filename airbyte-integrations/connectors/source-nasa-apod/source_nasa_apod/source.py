@@ -41,7 +41,7 @@ class NasaApodStream(HttpStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         r = response.json()
-        return [r] if type(r) is dict else r
+        yield [r] if type(r) is dict else r
 
 
 # Source

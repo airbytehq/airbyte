@@ -36,7 +36,7 @@
             "title": {
               "type": [
                 "null",
-                "boolean"
+                "string"
               ]
             },
             "date": {
@@ -44,7 +44,7 @@
                 "null",
                 "string"
               ],
-              "format": "date-time"
+              "format": "%Y-%m-%d"
             },
             "url": {
               "type": [
