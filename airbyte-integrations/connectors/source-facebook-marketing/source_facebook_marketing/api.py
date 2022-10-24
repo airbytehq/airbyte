@@ -13,8 +13,12 @@ from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
+from facebook_business.apiconfig import ads_api_config
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import retry_pattern
+
+ads_api_config["API_VERSION"] = "v15.0"
+ads_api_config["SDK_VERSION"] = "v15.0"
 
 logger = logging.getLogger("airbyte")
 
