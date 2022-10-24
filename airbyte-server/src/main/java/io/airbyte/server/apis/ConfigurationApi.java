@@ -140,6 +140,7 @@ import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.NotImplementedException;
 import org.flywaydb.core.Flyway;
 
 @javax.ws.rs.Path("/v1")
@@ -430,9 +431,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     });
   }
 
+  /**
+   * This implementation has been moved to {@link AttemptApiImpl}. Since the path of {@link AttemptApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody setWorkflowInAttemptRequestBody) {
-    return null;
+    throw new NotImplementedException();
   }
 
   // SOURCE IMPLEMENTATION
