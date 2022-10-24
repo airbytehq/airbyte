@@ -2,18 +2,17 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": {
+    "campaign.resource_name": {
       "type": ["null", "string"]
     },
-    "name": {
+    "campaign_label.resource_name": {
       "type": ["null", "string"]
     },
-    "years_of_service": {
-      "type": ["null", "integer"]
+    "label.name": {
+      "type": ["null", "string"]
     },
-    "start_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "label.resource_name": {
+      "type": ["null", "string"]
     }
   }
 }

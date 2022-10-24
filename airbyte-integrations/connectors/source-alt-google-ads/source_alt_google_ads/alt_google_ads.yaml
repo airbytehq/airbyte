@@ -1,24 +1,24 @@
 version: "0.1.0"
 
 definitions:
-  campaigns_query:
-  accounts_query:
-  ad_group_ads_query:
-  ad_group_ad_labels_query:
-  ad_groups_query:
-  ad_group_labels_query:
-  campaign_labels_query:
-  click_view_query:
-  keyword_query:
-  geographic_query:
-  account_performance_report_query:
-  ad_group_ad_report_query:
-  display_keyword_report_query:
-  display_topics_report_query:
-  shopping_performance_report_query:
-  user_location_report_query:
+  query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  accounts_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  ad_group_ads_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  ad_group_ad_labels_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  ad_groups_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  ad_group_labels_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  campaign_labels_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  click_view_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  keyword_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  geographic_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  account_performance_report_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  ad_group_ad_report_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  display_keyword_performance_report_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  display_topics_performance_report_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  shopping_performance_report_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  user_location_report_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
   selector:
-    extractor:
+    extractor: 
       field_pointer: []
   requester:
     url_base: "https://googleads.googleapis.com/v11"
@@ -28,8 +28,6 @@ definitions:
         Content-Type: application/json
         developer-token: "{{ config['developer_token'] }}"
         login-customer-id: "{{ config['login_customer_id'] }}"
-      request_body_json:
-        query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
     authenticator:
       type: "OAuthAuthenticator"
       token_refresh_endpoint: "https://www.googleapis.com/oauth2/v3/token"
@@ -48,9 +46,22 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.query)"
+
     $options:
       name: "campaigns"
-      primary_key: "campaign.id"
+      primary_key: [
+          ["campaign.id"],
+          ["segments.date"],
+          ["segments.hour"]
+        ]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   accounts_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -96,15 +107,15 @@ definitions:
       days_of_data_storage: 90
       range_days: 1
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
-  keyword_stream:
+  keyword_report_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "keyword"
+      name: "keyword_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
-  geographic_stream:
+  geographic_report_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "geographic"
+      name: "geographic_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   account_performance_report_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -116,15 +127,15 @@ definitions:
     $options:
       name: "ad_group_ad_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
-  display_keyword_report_stream:
+  display_keyword_performance_report_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "display_keyword_report"
+      name: "display_keyword_performance_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
-  display_topics_report_stream:
+  display_topics_performance_report_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "display_topics_report"
+      name: "display_topics_performance_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   shopping_performance_report_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -145,12 +156,12 @@ streams:
   - "*ref(definitions.ad_group_labels_stream)"
   - "*ref(definitions.campaign_labels_stream)"
   - "*ref(definitions.click_view_stream)"
-  - "*ref(definitions.keyword_stream)"
-  - "*ref(definitions.geographic_stream)"
+  - "*ref(definitions.keyword_report_stream)"
+  - "*ref(definitions.geographic_report_stream)"
   - "*ref(definitions.account_performance_report_stream)"
   - "*ref(definitions.ad_group_ad_report_stream)"
-  - "*ref(definitions.display_keyword_report_stream)"
-  - "*ref(definitions.display_topics_report_stream)"
+  - "*ref(definitions.display_keyword_performance_report_stream)"
+  - "*ref(definitions.display_topics_performance_report_stream)"
   - "*ref(definitions.shopping_performance_report_stream)"
   - "*ref(definitions.user_location_report_stream)"
 
