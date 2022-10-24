@@ -165,7 +165,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[ConvexState] = None,
     ) -> MutableMapping[str, Any]:
-        params: Dict[str, Any] = {"tableName": self.table_name}
+        params: Dict[str, Any] = {"tableName": self.table_name, "format": "convex_json"}
         if self._snapshot_has_more:
             if self._snapshot_cursor_value:
                 params["cursor"] = self._snapshot_cursor_value
