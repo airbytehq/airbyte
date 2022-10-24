@@ -61,7 +61,7 @@ public class ElasticsearchConnection {
     final RestClientBuilder builder = RestClient.builder(httpHost);
 
     // Set custom user's certificate if provided
-    if (config.getCaCertificate() != null && !config.getCaCertificate().isEmpty()){
+    if (config.getCaCertificate() != null && !config.getCaCertificate().isEmpty()) {
       builder.setHttpClientConfigCallback(clientBuilder -> {
         clientBuilder.setSSLContext(SSLCertificateUtils.createContextFromCaCert(config.getCaCertificate()));
         return clientBuilder;
