@@ -27,3 +27,4 @@ properties:
     type: string
   createdAt:
     type: integer
+    format: int64

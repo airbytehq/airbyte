@@ -29,7 +29,7 @@ class RefreshSchemaActivityTest {
   static private final UUID SOURCE_ID = UUID.randomUUID();
 
   @BeforeEach
-  static void setUp() {
+  void setUp() {
     mConfigRepository = mock(ConfigRepository.class);
     refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository));
   }
