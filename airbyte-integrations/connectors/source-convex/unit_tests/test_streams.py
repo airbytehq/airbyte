@@ -20,14 +20,14 @@ def patch_base_class(mocker):
 def test_request_params(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {"tableName": "messages"}
+    expected_params = {"tableName": "messages", "format": "convex_json"}
     assert stream.request_params(**inputs) == expected_params
     stream._snapshot_cursor_value = 1234
-    expected_params = {"tableName": "messages", "cursor": 1234}
+    expected_params = {"tableName": "messages", "format": "convex_json", "cursor": 1234}
     assert stream.request_params(**inputs) == expected_params
     stream._snapshot_has_more = False
     stream._delta_cursor_value = 2345
-    expected_params = {"tableName": "messages", "cursor": 2345}
+    expected_params = {"tableName": "messages", "format": "convex_json", "cursor": 2345}
     assert stream.request_params(**inputs) == expected_params
 
 
