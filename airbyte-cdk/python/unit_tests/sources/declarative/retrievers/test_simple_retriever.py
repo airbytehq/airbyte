@@ -115,7 +115,7 @@ def test_simple_retriever_full(mock_http_stream):
     ],
 )
 def test_should_retry(test_name, requester_response, expected_should_retry, expected_backoff_time):
-    requester = MagicMock()
+    requester = MagicMock(use_cache=False)
     retriever = SimpleRetriever(name="stream_name", primary_key=primary_key, requester=requester, record_selector=MagicMock(), options={})
     requester.should_retry.return_value = requester_response
     assert retriever.should_retry(requests.Response()) == expected_should_retry
@@ -132,7 +132,7 @@ def test_should_retry(test_name, requester_response, expected_should_retry, expe
     ],
 )
 def test_parse_response(test_name, status_code, response_status, len_expected_records):
-    requester = MagicMock()
+    requester = MagicMock(use_cache=False)
     record_selector = MagicMock()
     record_selector.select_records.return_value = [{"id": 100}]
     retriever = SimpleRetriever(
@@ -162,7 +162,7 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
     ],
 )
 def test_backoff_time(test_name, response_action, retry_in, expected_backoff_time):
-    requester = MagicMock()
+    requester = MagicMock(use_cache=False)
     record_selector = MagicMock()
     record_selector.select_records.return_value = [{"id": 100}]
     response = requests.Response()
@@ -205,7 +205,7 @@ def test_get_request_options_from_pagination(test_name, paginator_mapping, strea
     stream_slicer.get_request_body_json.return_value = stream_slicer_mapping
 
     base_mapping = {"key": "value"}
-    requester = MagicMock()
+    requester = MagicMock(use_cache=False)
     requester.get_request_params.return_value = base_mapping
     requester.get_request_body_data.return_value = base_mapping
     requester.get_request_body_json.return_value = base_mapping
@@ -251,7 +251,7 @@ def test_get_request_headers(test_name, paginator_mapping, expected_mapping):
     # This test is separate from the other request options because request headers must be strings
     paginator = MagicMock()
     paginator.get_request_headers.return_value = paginator_mapping
-    requester = MagicMock()
+    requester = MagicMock(use_cache=False)
 
     base_mapping = {"key": "value"}
     requester.get_request_headers.return_value = base_mapping
@@ -290,7 +290,7 @@ def test_get_request_headers(test_name, paginator_mapping, expected_mapping):
 def test_request_body_data(test_name, requester_body_data, paginator_body_data, expected_body_data):
     paginator = MagicMock()
     paginator.get_request_body_data.return_value = paginator_body_data
-    requester = MagicMock()
+    requester = MagicMock(use_cache=False)
 
     requester.get_request_body_data.return_value = requester_body_data
 
@@ -325,7 +325,7 @@ def test_request_body_data(test_name, requester_body_data, paginator_body_data, 
 def test_path(test_name, requester_path, paginator_path, expected_path):
     paginator = MagicMock()
     paginator.path.return_value = paginator_path
-    requester = MagicMock()
+    requester = MagicMock(use_cache=False)
 
     requester.get_path.return_value = requester_path
 
