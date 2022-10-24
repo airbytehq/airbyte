@@ -82,6 +82,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
     return null;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     LOGGER.info("Cancelling Dbt Transformation runner...");
@@ -89,6 +90,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
       cancelled.set(true);
       dbtTransformationRunner.close();
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.error("Unable to cancel Dbt Transformation runner.", e);
     }
   }

@@ -136,6 +136,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
     return tags;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     WorkerUtils.cancelProcess(process);

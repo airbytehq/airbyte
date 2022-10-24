@@ -501,6 +501,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     // Resources are closed in the opposite order they are declared.
@@ -508,7 +509,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     try {
       executors.awaitTermination(10, TimeUnit.SECONDS);
     } catch (final InterruptedException e) {
-      e.printStackTrace();
+      ApmTraceUtils.addExceptionToTrace(e);
+      LOGGER.error("Unable to cancel due to interruption.", e);
     }
     cancelled.set(true);
 
@@ -516,6 +518,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     try {
       destination.cancel();
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.info("Error cancelling destination: ", e);
     }
 
@@ -523,6 +526,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     try {
       source.cancel();
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.info("Error cancelling source: ", e);
     }
 

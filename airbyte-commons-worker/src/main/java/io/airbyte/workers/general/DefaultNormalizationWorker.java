@@ -116,6 +116,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     failed = true;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     LOGGER.info("Cancelling normalization runner...");
@@ -123,7 +124,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
       cancelled.set(true);
       normalizationRunner.close();
     } catch (final Exception e) {
-      e.printStackTrace();
+      ApmTraceUtils.addExceptionToTrace(e);
+      LOGGER.error("Unable to cancel normalization runner.", e);
     }
   }
 
