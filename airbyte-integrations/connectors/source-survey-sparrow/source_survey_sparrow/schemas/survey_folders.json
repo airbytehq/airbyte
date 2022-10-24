@@ -3,12 +3,21 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "name": {
       "type": ["null", "string"]
     },
-    "signup_date": {
+    "description": {
+      "type": ["null", "string"]
+    },
+    "auto_created": {
+      "type": ["null", "boolean"]
+    },
+    "visibility": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
     }

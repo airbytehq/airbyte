@@ -1,13 +1,20 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://developers.surveysparrow.com/
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Survey Sparrow Spec
   type: object
   required:
-    - api_key
+    - access_token
   additionalProperties: true
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    api_key:
+    access_token:
       type: string
-      description: API Key
+      description: >-
+        Your access token. See <a
+        href="https://developers.surveysparrow.com/rest-apis#authentication">here</a>. The key is
+        case sensitive.
+      airbyte_secret: true
+    survey_id:
+      type: integer
+      description: Your survey id for survey-specific stream

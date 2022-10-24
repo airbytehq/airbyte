@@ -3,15 +3,18 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "name": {
       "type": ["null", "string"]
     },
-    "years_of_service": {
-      "type": ["null", "integer"]
+    "archived": {
+      "type": ["null", "boolean"]
     },
-    "start_date": {
+    "survey_type": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
     }
