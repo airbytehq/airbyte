@@ -80,8 +80,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
-//  public static final String SSL_MODE_ALLOW = "allow";
-//  public static final String SSL_MODE_PREFER = "prefer";
   public static final String PARAM_SSL = "ssl";
   public static final String PARAM_SSL_TRUE = "true";
   public static final String PARAM_SSL_FALSE = "false";
