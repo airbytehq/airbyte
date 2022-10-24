@@ -58,6 +58,11 @@ public class ApiClientBeanFactory {
   }
 
   @Singleton
+  public HttpClient httpClient() {
+    return HttpClient.newHttpClient();
+  }
+
+  @Singleton
   @Named("internalApiScheme")
   public String internalApiScheme(final Environment environment) {
     // control plane workers communicate with the Airbyte API within their internal network, so https

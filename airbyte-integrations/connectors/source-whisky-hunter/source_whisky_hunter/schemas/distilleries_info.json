@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "whiskybase_votes": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "whiskybase_whiskies": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "whiskybase_rating": {
+      "type": "string"
+    }
+  }
+}
