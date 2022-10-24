@@ -8,10 +8,11 @@
   color: colors.$grey-30;
   width: 100%;
   cursor: pointer;
-  border-radius: 12px;
-  height: 70px;
+
+  // border-radius: 12px;
+  height: 50px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
   font-weight: normal;
@@ -23,19 +24,21 @@
 
   &:hover,
   &:focus-visible {
-    background: colors.$dark-blue-800;
+    background: #eae9ff;
     transition: variables.$transition-out;
   }
 
   &.active {
     color: colors.$white;
-    background: colors.$blue-400;
+    background: #eae9ff;
+    border-right: 6px solid;
+    border-right-color: #4f46e5;
     transition: variables.$transition-out;
 
     &:hover,
     &:focus-visible {
       color: colors.$white;
-      background: colors.$blue-300;
+      background: #eae9ff;
       transition: variables.$transition-out;
     }
   }

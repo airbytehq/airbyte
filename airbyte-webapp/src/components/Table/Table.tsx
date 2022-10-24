@@ -32,7 +32,7 @@ const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
   border-spacing: 0;
   width: 100%;
   max-width: 100%;
-  border-radius: 10px;
+  border-radius: 5px;
   box-shadow: ${({ light, theme }) => (light ? "none" : `0 2px 4px ${theme.cardShadowColor}`)};
 };
 `;
@@ -78,12 +78,12 @@ const Td = styled.td<{
 `;
 
 const Th = styled.th<IThProps>`
-  background: ${({ theme, light }) => (light ? "none" : theme.textColor)};
+  background: ${({ theme, light }) => (light ? "none" : theme.whiteColor)};
   padding: ${({ customPadding }) => `9px ${customPadding?.right ?? 13}px 10px ${customPadding?.left ?? 13}px`};
   text-align: left;
   font-size: ${({ light }) => (light ? 11 : 10)}px;
   line-height: 12px;
-  color: ${({ theme, highlighted }) => (highlighted ? theme.whiteColor : theme.lightTextColor)};
+  color: ${({ theme, highlighted }) => (highlighted ? theme.lightTextColor : theme.lightTextColor)};
   border-bottom: ${({ theme, light }) => (light ? "none" : ` 1px solid ${theme.backgroundColor}`)};
   width: ${({ collapse, customWidth }) => (customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto")};
   font-weight: ${({ light }) => (light ? 400 : 600)};
