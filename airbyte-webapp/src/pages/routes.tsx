@@ -14,12 +14,14 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
+import SignupPage from "./AuthPage/SignupPage";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
+// import OnboardingPage from "./OnboardingPage";
 import OnboardingPage from "./OnboardingPage";
 import PreferencesPage from "./PreferencesPage";
 import { RoutePaths } from "./routePaths";
-import SettingsPage from "./SettingsPage";
+// import SettingsPage from "./SettingsPage";
 import SourcesPage from "./SourcesPage";
 
 const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
@@ -42,7 +44,7 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) =
           <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
-          <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
+          <Route path={`${RoutePaths.Settings}/*`} element={<SignupPage />} />
           {workspace.displaySetupWizard ? (
             <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
           ) : null}
