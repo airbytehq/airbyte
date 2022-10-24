@@ -26,11 +26,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
       return false;
     }
 
-    if (!schemaRefreshRanRecently(sourceCatalogId)) {
-      return true;
-    }
-
-    return false;
+    return !schemaRefreshRanRecently(sourceCatalogId);
   }
 
   private boolean schemaRefreshRanRecently(UUID sourceCatalogId) throws IOException {
