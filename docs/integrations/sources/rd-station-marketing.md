@@ -9,8 +9,8 @@ RD Station Marketing is the leading Marketing Automation tool in Latin America. 
 
 ## Airbyte Open Source
 * Start Date
-* client_id
-* client_secret
+* Client Id
+* Client Secret
 * Refresh token
 
 ## Supported sync modes
