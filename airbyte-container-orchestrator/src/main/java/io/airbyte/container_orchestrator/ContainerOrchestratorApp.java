@@ -8,13 +8,13 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.sync.OrchestratorConstants;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.DockerProcessFactory;
@@ -99,7 +99,7 @@ public class ContainerOrchestratorApp {
     logClient.setJobMdc(
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
+        TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
   }
 
   /**
