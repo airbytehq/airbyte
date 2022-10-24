@@ -364,7 +364,7 @@ public class SshTunnel implements AutoCloseable {
           remoteServiceHost, remoteServicePort, address.toInetSocketAddress()));
       return session;
     } catch (final IOException | GeneralSecurityException e) {
-      throw new RuntimeException(e);
+      throw new ConnectionErrorException(e.getMessage());
     }
   }
 
