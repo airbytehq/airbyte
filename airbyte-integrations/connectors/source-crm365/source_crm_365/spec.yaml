@@ -1,0 +1,52 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Crm 365 Spec
+  type: object
+  required:
+    - client_id
+    - tenant_id
+    - client_secret_value
+    - url
+  additionalProperties: true
+  properties:
+    url:
+      type: string
+      description: URL da instância do Dynamics 365.
+      title: URL
+      examples:
+        - https://<org-id>.crm.dynamics.com
+      order: 0
+
+    client_id:
+      type: string
+      description: Application Id (Client Id) do registro da aplicação no App registration
+      title: Application Id (Client Id)
+      order: 1
+
+    tenant_id:
+      type: string
+      description: Directory Id (Tenant Id) do registro da aplicação no App registration
+      title: Directory Id (Tenant Id)
+      order: 2
+
+    client_secret_value:
+      type: string
+      description: Valor do secret criado no App registration
+      title: Client secret value
+      airbyte_secret: true
+      order: 3
+
+    max_num_pages:
+      type: integer
+      description: Número máximo de páginas que serão requisitadas. Não necessariamente irá buscar todos os dados do request. Insira 0 se não quiser limitar o número de páginas. (** Apenas para testes **) 
+      title: Número máximo de páginas do request
+      default: 0
+      order: 4
+
+    odata_maxpagesize:
+      type: integer
+      description: Número máximo de resultados por páginas. Default=5000
+      title: Tamanho máximo da página
+      default: 5000
+      order: 5
