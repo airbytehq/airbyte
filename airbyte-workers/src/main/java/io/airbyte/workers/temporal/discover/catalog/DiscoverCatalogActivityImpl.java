@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
+import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -27,7 +29,7 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
-import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
+import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -57,6 +59,8 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   private final String airbyteVersion;
 
   private final ConfigRepository configRepository;
+  private final AirbyteMessageSerDeProvider serDeProvider;
+  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
 
   public DiscoverCatalogActivityImpl(@Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
                                      @Named("discoverProcessFactory") final ProcessFactory processFactory,
@@ -66,7 +70,9 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
                                      final AirbyteApiClient airbyteApiClient,
-                                     @Value("${airbyte.version}") final String airbyteVersion) {
+                                     @Value("${airbyte.version}") final String airbyteVersion,
+                                     final AirbyteMessageSerDeProvider serDeProvider,
+                                     final AirbyteMessageVersionedMigratorFactory migratorFactory) {
     this.configRepository = configRepository;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
@@ -76,6 +82,8 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     this.logConfigs = logConfigs;
     this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
+    this.serDeProvider = serDeProvider;
+    this.migratorFactory = migratorFactory;
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -115,7 +123,8 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
       final IntegrationLauncher integrationLauncher =
           new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
               processFactory, workerConfigs.getResourceRequirements());
-      final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
+      final AirbyteStreamFactory streamFactory =
+          new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion());
       return new DefaultDiscoverCatalogWorker(configRepository, integrationLauncher, streamFactory);
     };
   }
