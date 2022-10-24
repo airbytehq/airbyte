@@ -76,3 +76,6 @@ charts/**/charts
 
 # Snyk
 .dccache
+
+# Datadog
+dd-java-agent.jar
