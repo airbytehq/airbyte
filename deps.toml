@@ -21,6 +21,7 @@ connectors-testcontainers-scylla = "1.16.2"
 connectors-testcontainers-tidb = "1.16.3"
 connectors-destination-testcontainers-clickhouse = "1.17.3"
 connectors-destination-testcontainers-oracle-xe = "1.17.3"
+connectors-destination-testcontainers-elasticsearch = "1.17.3"
 connectors-source-testcontainers-clickhouse = "1.17.3"
 platform-testcontainers = "1.17.3"
 
@@ -54,7 +55,7 @@ connectors-testcontainers = { module = "org.testcontainers:testcontainers", vers
 connectors-testcontainers-cassandra = { module = "org.testcontainers:cassandra", version.ref = "connectors-testcontainers-cassandra" }
 connectors-testcontainers-cockroachdb = { module = "org.testcontainers:cockroachdb", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-db2 = { module = "org.testcontainers:db2", version.ref = "connectors-testcontainers" }
-connectors-testcontainers-elasticsearch = { module = "org.testcontainers:elasticsearch", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-elasticsearch = { module = "org.testcontainers:elasticsearch", version.ref = "connectors-destination-testcontainers-elasticsearch" }
 connectors-testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-mariadb = { module = "org.testcontainers:mariadb", version.ref = "connectors-testcontainers-mariadb" }
