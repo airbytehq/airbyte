@@ -159,6 +159,9 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
+    API_VERSION = "v15.0"
+    SDK_VERSION = "v15.0.0"
+
     def __init__(self, account_id: str, access_token: str):
         self._configure_api_and_sdk_version()
         self._account_id = account_id
@@ -184,5 +187,5 @@ class API:
         # This is a hack because we need to start using API version v15.0 before it is available through the python SDK
         # This is only a config change as per https://github.com/facebook/facebook-python-business-sdk/pull/620
         # TODO: Delete this when facebook_marketing v15.0 is released through pypi
-        ads_api_config["API_VERSION"] = "v15.0"
-        ads_api_config["SDK_VERSION"] = "v15.0.0"
+        ads_api_config["API_VERSION"] = self.API_VERSION
+        ads_api_config["SDK_VERSION"] = self.SDK_VERSION

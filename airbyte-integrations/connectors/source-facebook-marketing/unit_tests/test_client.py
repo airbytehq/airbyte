@@ -7,11 +7,12 @@ import json
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
-from facebook_business import FacebookAdsApi, FacebookSession
+from facebook_business import FacebookSession
 from facebook_business.exceptions import FacebookRequestError
+from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import AdAccount, AdCreatives, Campaigns
 
-FB_API_VERSION = FacebookAdsApi.API_VERSION
+FB_API_VERSION = API.API_VERSION
 
 
 @pytest.fixture(name="fb_call_rate_response")

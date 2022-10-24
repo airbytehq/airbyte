@@ -8,11 +8,14 @@ from copy import deepcopy
 import pydantic
 import pytest
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, Status
-from facebook_business import FacebookAdsApi, FacebookSession
+from facebook_business import FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
+from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 
 from .utils import command_check
+
+FB_API_VERSION = API.API_VERSION
 
 
 @pytest.fixture(name="config")
@@ -116,7 +119,7 @@ class TestSourceFacebookMarketing:
 
 
 def test_check_config(config_gen, requests_mock):
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/", {})
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{API.API_VERSION}/act_123/", {})
 
     source = SourceFacebookMarketing()
     assert command_check(source, config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)

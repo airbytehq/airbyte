@@ -5,10 +5,11 @@
 import pendulum
 import pytest
 import source_facebook_marketing
-from facebook_business import FacebookAdsApi, FacebookSession
+from facebook_business import FacebookSession
 from facebook_business.adobjects.adaccount import AdAccount
+from source_facebook_marketing.api import API
 
-FB_API_VERSION = FacebookAdsApi.API_VERSION
+FB_API_VERSION = API.API_VERSION
 
 
 class TestMyFacebookAdsApi:

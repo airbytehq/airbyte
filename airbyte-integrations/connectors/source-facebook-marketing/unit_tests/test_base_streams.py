@@ -8,14 +8,16 @@ from typing import Any, Iterable, Mapping
 
 import pytest
 from facebook_business import FacebookSession
-from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookRequest
-from source_facebook_marketing.api import MyFacebookAdsApi
+from facebook_business.api import FacebookAdsApiBatch, FacebookRequest
+from source_facebook_marketing.api import API, MyFacebookAdsApi
 from source_facebook_marketing.streams.base_streams import FBMarketingStream
+
+FB_API_VERSION = API.API_VERSION
 
 
 @pytest.fixture(name="mock_batch_responses")
 def mock_batch_responses_fixture(requests_mock):
-    return partial(requests_mock.register_uri, "POST", f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/")
+    return partial(requests_mock.register_uri, "POST", f"{FacebookSession.GRAPH}/{API.API_VERSION}/")
 
 
 @pytest.fixture(name="batch")
