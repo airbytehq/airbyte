@@ -4,7 +4,6 @@ set -e
 # List of directories without "airbyte-" prefix.
 projectDir=(
   "bootloader"
-  "cli"
   "config/init"
   "container-orchestrator"
   "cron"

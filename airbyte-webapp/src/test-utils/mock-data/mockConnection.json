@@ -345,5 +345,6 @@
   "latestSyncJobCreatedAt": 1660227512,
   "latestSyncJobStatus": "succeeded",
   "isSyncing": false,
-  "catalogId": "bf31d1df-d7ba-4bae-b1ec-dac617b4f70c"
+  "catalogId": "bf31d1df-d7ba-4bae-b1ec-dac617b4f70c",
+  "schemaChange": "no_change"
 }
