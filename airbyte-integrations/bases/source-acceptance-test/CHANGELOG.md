@@ -1,7 +1,11 @@
 # Changelog
 
 ## 0.2.11
+<<<<<<< HEAD
 Declare `test_mode` field in test configuration. [#18218](https://github.com/airbytehq/airbyte/pull/18218).
+=======
+Declare `test_strictness_level` field in test configuration. [#18218](https://github.com/airbytehq/airbyte/pull/18218).
+>>>>>>> master
 
 ## 0.2.10
 Bump `airbyte-cdk~=0.2.0`

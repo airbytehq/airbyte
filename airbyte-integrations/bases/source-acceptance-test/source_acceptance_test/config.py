@@ -161,17 +161,16 @@ class AcceptanceTestConfigurations(BaseConfig):
 
 
 class Config(BaseConfig):
-    class TestMode(str, Enum):
-        strict = "strict"
-        medium = "medium"
-        light = "light"
+    class TestStrictnessLevel(str, Enum):
+        high = "high"
+        low = "low"
 
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")
-    test_mode: Optional[TestMode] = Field(
-        default=TestMode.light,
-        description="Strict mode corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
+    test_strictness_level: Optional[TestStrictnessLevel] = Field(
+        default=TestStrictnessLevel.low,
+        description="Corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
     )
 
     @staticmethod
