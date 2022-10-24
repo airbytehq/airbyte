@@ -18,9 +18,9 @@ class RDStationMarketingStream(HttpStream, ABC):
     extra_params = {}
     data_field = None
 
-    def __init__(self, authenticator, replication_start_date=None, **kwargs):
+    def __init__(self, authenticator, start_date=None, **kwargs):
         super().__init__(authenticator=authenticator, **kwargs)
-        self._replication_start_date = replication_start_date
+        self._start_date = start_date
 
     def path(self, **kwargs) -> str:
         class_name = self.__class__.__name__
@@ -71,15 +71,15 @@ class IncrementalRDStationMarketingStream(RDStationMarketingStream):
         stream_state: Mapping[str, Any],
         **kwargs
     ) -> MutableMapping[str, Any]:
-        replication_start_date = self._replication_start_date
+        start_date = self._start_date
         
-        if replication_start_date:
+        if start_date:
             if stream_state.get(self.cursor_field):
-                replication_start_date = max(pendulum.parse(stream_state[self.cursor_field]), replication_start_date)
+                start_date = max(pendulum.parse(stream_state[self.cursor_field]), start_date)
         
         params = {}
         params.update(
-            {"start_date": replication_start_date.strftime("%Y-%m-%d"),
+            {"start_date": start_date.strftime("%Y-%m-%d"),
              "end_date": date.today().strftime("%Y-%m-%d"),
             })
 

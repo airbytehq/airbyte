@@ -5,7 +5,7 @@
     "title": "RD Station Marketing Spec",
     "type": "object",
     "required": [
-      "replication_start_date"
+      "start_date"
     ],
     "additionalProperties": true,
     "properties": {
@@ -48,7 +48,7 @@
           }
         ]
       },
-      "replication_start_date": {
+      "start_date": {
         "title": "Start Date",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. When specified and not None, then stream will behave as incremental",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",

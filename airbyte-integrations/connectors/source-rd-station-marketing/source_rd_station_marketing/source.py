@@ -46,7 +46,7 @@ class SourceRDStationMarketing(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         stream_kwargs = self.get_stream_kwargs(config)
-        incremental_kwargs = {**stream_kwargs, "replication_start_date": pendulum.parse(config["replication_start_date"])}
+        incremental_kwargs = {**stream_kwargs, "start_date": pendulum.parse(config["start_date"])}
         streams = [
             AnalyticsEmails(**incremental_kwargs),
             AnalyticsConversions(**incremental_kwargs),
