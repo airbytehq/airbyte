@@ -5,35 +5,39 @@ import classNames from "classnames";
 import { Text } from "../Text";
 import styles from "./PillButton.module.scss";
 
+type PillButtonTint = "grey" | "light-grey" | "red" | "light-red" | "blue" | "green";
+
 interface PillButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  withCaret?: boolean;
-  isActive?: boolean;
-  light: boolean;
+  asDropdown?: boolean;
+  active?: boolean;
+  outline?: boolean;
+  tint?: PillButtonTint;
 }
 
 export const PillButton: React.FC<React.PropsWithChildren<PillButtonProps>> = ({
   children,
-  isActive,
-  withCaret,
-  light,
+  active,
+  asDropdown,
+  outline,
+  tint = "grey",
   ...buttonProps
 }) => {
+  const buttonClassName = classNames(
+    styles.button,
+    {
+      [styles.active]: active,
+      [styles.light]: outline,
+      // TODO: Implement tint styles
+    },
+    buttonProps.className
+  );
+
   return (
-    <button
-      {...buttonProps}
-      className={classNames(
-        styles.button,
-        {
-          [styles.active]: isActive,
-          [styles.light]: light,
-        },
-        buttonProps.className
-      )}
-    >
+    <button {...buttonProps} className={buttonClassName}>
       <Text as="span" size="xs">
         {children}
       </Text>
-      {withCaret && <FontAwesomeIcon icon={isActive ? faCaretUp : faCaretDown} className={styles.caret} />}
+      {asDropdown && <FontAwesomeIcon icon={active ? faCaretUp : faCaretDown} className={styles.caret} />}
     </button>
   );
 };
