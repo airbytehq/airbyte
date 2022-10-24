@@ -13,15 +13,15 @@ application {
 dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium-v1-9-2')
+    implementation project(':airbyte-integrations:bases:debezium-v1-9-6')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
-    implementation 'mysql:mysql-connector-java:8.0.22'
+    implementation 'mysql:mysql-connector-java:8.0.30'
     implementation 'org.apache.commons:commons-lang3:3.11'
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-2'))
+    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-6'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'

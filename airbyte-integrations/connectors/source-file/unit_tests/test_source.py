@@ -4,6 +4,7 @@
 
 import json
 import logging
+from copy import deepcopy
 from unittest.mock import PropertyMock
 
 import jsonschema
@@ -68,6 +69,7 @@ def get_catalog(properties):
                 stream=AirbyteStream(
                     name="test",
                     json_schema={"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": properties},
+                    supported_sync_modes=[SyncMode.full_refresh],
                 ),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
@@ -91,7 +93,7 @@ def test_nan_to_null(absolute_path, test_files):
     )
 
     source = SourceFile()
-    records = source.read(logger=logger, config=config, catalog=catalog)
+    records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
     records = [r.record.data for r in records]
     assert records == [
         {"col1": "key1", "col2": 1.11, "col3": None},
@@ -101,7 +103,7 @@ def test_nan_to_null(absolute_path, test_files):
     ]
 
     config.update({"format": "yaml", "url": f"{absolute_path}/{test_files}/formats/yaml/demo.yaml"})
-    records = source.read(logger=logger, config=config, catalog=catalog)
+    records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
     records = [r.record.data for r in records]
     assert records == []
 
@@ -128,6 +130,10 @@ def test_check_invalid_config(source, invalid_config):
     assert actual.status == expected.status
 
 
+def test_discover_dropbox_link(source, config_dropbox_link):
+    source.discover(logger=logger, config=config_dropbox_link)
+
+
 def test_discover(source, config, client):
     catalog = source.discover(logger=logger, config=config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
@@ -139,3 +145,9 @@ def test_discover(source, config, client):
 
     with pytest.raises(Exception):
         source.discover(logger=logger, config=config)
+
+
+def test_check_wrong_reader_options(source, config):
+    config["reader_options"] = '{encoding":"utf_16"}'
+    with pytest.raises(Exception):
+        source.check(logger=logger, config=config)

@@ -20,6 +20,8 @@
   display: none;
   position: absolute;
   right: variables.$spacing-xl;
+
+  // used to control svg size, not text size
   font-size: 18px;
   color: colors.$blue;
 }
@@ -35,11 +37,7 @@
     width: 100%;
 
     h2 {
-      font-weight: 700;
-      font-size: 24px;
-      line-height: 29px;
       text-align: center;
-      color: colors.$dark-blue-900;
       margin: variables.$spacing-md;
       word-wrap: break-word;
     }

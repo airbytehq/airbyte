@@ -3,8 +3,7 @@ import { ActionMeta, ControlProps, StylesConfig } from "react-select";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { DropDown } from "components";
-import { DropdownProps } from "components/ui/DropDown";
+import { DropDown, DropdownProps } from "components/ui/DropDown";
 
 const OutsideClickListener = styled.div`
   bottom: 0;

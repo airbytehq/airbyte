@@ -47,6 +47,8 @@ jobs:
           filters: |
             backend:
               - 'airbyte-!(cdk|integrations|webapp|webapp-e2e-tests)/**'
+              - 'airbyte-integrations/connectors/(destination-jdbc|destination-postgres|source-jdbc|source-postgres)/**'
+              - 'airbyte-config/init/src/main/resources/seed/(source|destination)_definitions.yaml'
             build:
               - '.github/**'
               - 'buildSrc/**'
@@ -59,6 +61,7 @@ jobs:
               - 'airbyte-cdk/**'
               - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
+              - 'airbyte-commons-worker/**'
             db:
               - 'airbyte-db/**'
             frontend:
@@ -229,7 +232,7 @@ jobs:
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 
       - name: Build
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build -x :airbyte-workers:test --scan
+        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
 
       - name: Ensure no file change
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
@@ -530,6 +533,25 @@ jobs:
           path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml'
           reporter: java-junit
 
+      - name: Upload test results to BuildPulse for flaky test detection
+        if: '!cancelled()' # Run this step even when the tests fail. Skip if the workflow is cancelled.
+        uses: Workshop64/buildpulse-action@main
+        with:
+          account: 59758427
+          repository: 283046497
+          path: '/actions-runner/_work/airbyte/airbyte/*'
+          key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
+          secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
+          
+      - name: Upload test results to Github for analysis 
+        if: '!cancelled()' # Run this step even when the tests fail. Skip if the workflow is cancelled.
+        uses: actions/upload-artifact@v3
+        with:
+          path: |
+            /actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml
+            /actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml
+          name: test-results-build
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
@@ -668,6 +690,25 @@ jobs:
           name: Platform Kubernetes E2E Test Report
           path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml'
           reporter: java-junit
+
+      - name: Upload test results to BuildPulse for flaky test detection
+        if: '!cancelled()' # Run this step even when the tests fail. Skip if the workflow is cancelled.
+        uses: Workshop64/buildpulse-action@main
+        with:
+          account: 59758427
+          repository: 283046497
+          path: '/actions-runner/_work/airbyte/airbyte/*'
+          key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
+          secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
+          
+      - name: Upload test results to Github for analysis 
+        if: '!cancelled()' # Run this step even when the tests fail. Skip if the workflow is cancelled.
+        uses: actions/upload-artifact@v3
+        with:
+          path: |
+            /actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml
+            /actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml
+          name: test-results-kube
 
       - uses: actions/upload-artifact@v2
         if: failure()

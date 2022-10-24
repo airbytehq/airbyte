@@ -6,11 +6,14 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Button, DropDown, Input } from "components";
 import { H5 } from "components/base/Titles";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
+import { Button } from "components/ui/Button";
+import { DropDown } from "components/ui/DropDown";
+import { Input } from "components/ui/Input";
 import { Modal } from "components/ui/Modal";
 
+import { useNotificationService } from "hooks/services/Notification";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUserHook } from "packages/cloud/services/users/UseUserHook";
 
@@ -57,6 +60,7 @@ export const InviteUsersModal: React.FC<{
   const { formatMessage } = useIntl();
   const { workspaceId } = useCurrentWorkspace();
   const { inviteUserLogic } = useUserHook();
+  const { registerNotification } = useNotificationService();
   const { mutateAsync: invite } = inviteUserLogic;
 
   const isRoleVisible = false; // Temporarily hiding roles because there's only 'Admin' in cloud.
@@ -79,7 +83,13 @@ export const InviteUsersModal: React.FC<{
           await invite(
             { users: values.users, workspaceId },
             {
-              onSuccess: () => props.onClose(),
+              onSuccess: () => {
+                registerNotification({
+                  title: formatMessage({ id: "addUsers.success.title" }),
+                  id: "invite-users-success",
+                });
+                props.onClose();
+              },
             }
           );
         }}

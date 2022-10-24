@@ -34,7 +34,6 @@ public class ClickhouseDestinationSpecTest {
       + "\"username\" : \"clickhouse\",  "
       + "\"database\" : \"clickhouse_db\",  "
       + "\"port\" : 8123,  "
-      + "\"tcp-port\" : 9000,  "
       + "\"host\" : \"localhost\",  "
       + "\"jdbc_url_params\" : \"property1=pValue1&property2=pValue2\",  "
       + "\"ssl\" : true "

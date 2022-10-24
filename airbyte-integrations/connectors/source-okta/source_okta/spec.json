@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/okta",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/okta",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Okta Spec",
@@ -10,7 +10,7 @@
       "domain": {
         "type": "string",
         "title": "Okta domain",
-        "description": "The Okta domain. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\">docs</a> for instructions on how to find it.",
+        "description": "The Okta domain. See the <a href=\"https://docs.airbyte.com/integrations/sources/okta\">docs</a> for instructions on how to find it.",
         "airbyte_secret": false
       },
       "start_date": {
@@ -21,7 +21,7 @@
         "title": "Start Date"
       },
       "credentials": {
-        "title": "Authorization Method *",
+        "title": "Authorization Method",
         "type": "object",
         "oneOf": [
           {
@@ -72,7 +72,7 @@
               "api_token": {
                 "type": "string",
                 "title": "Personal API Token",
-                "description": "An Okta token. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\">docs</a> for instructions on how to generate it.",
+                "description": "An Okta token. See the <a href=\"https://docs.airbyte.com/integrations/sources/okta\">docs</a> for instructions on how to generate it.",
                 "airbyte_secret": true
               }
             }

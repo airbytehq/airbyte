@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/jira",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/jira",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Jira Spec",
@@ -10,7 +10,7 @@
       "api_token": {
         "type": "string",
         "title": "API Token",
-        "description": "Jira API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/jira\">docs</a> for more information on how to generate this key.",
+        "description": "Jira API Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/jira\">docs</a> for more information on how to generate this key.",
         "airbyte_secret": true
       },
       "domain": {
@@ -24,6 +24,12 @@
         "type": "string",
         "title": "Email",
         "description": "The user email for your Jira account."
+      },
+      "max_results": {
+        "type": "number",
+        "title": "Max Results",
+        "description": "Pagination max results (only for users stream)",
+        "default": 50
       },
       "projects": {
         "type": "array",
@@ -65,7 +71,7 @@
       "enable_experimental_streams": {
         "type": "boolean",
         "title": "Enable Experimental Streams",
-        "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See https://docs.airbyte.io/integrations/sources/jira#experimental-tables for more info.",
+        "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See https://docs.airbyte.com/integrations/sources/jira#experimental-tables for more info.",
         "default": false
       }
     }

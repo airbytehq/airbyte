@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.integrations.io.airbyte.integration_tests.sources.utils.TestConstants.INITIAL_CDC_WAITING_SECONDS;
 import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,7 +20,6 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -103,7 +103,7 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
     container.start();
     certs = MySqlUtils.getCertificate(container, true);
 
-    var sslMode = ImmutableMap.builder()
+    final var sslMode = ImmutableMap.builder()
         .put(JdbcUtils.MODE_KEY, "verify_ca")
         .put("ca_certificate", certs.getCaCertificate())
         .put("client_certificate", certs.getClientCertificate())
@@ -111,8 +111,9 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
         .put("client_key_password", "Passw0rd")
         .build();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-            .put("method", "CDC")
-            .build());
+        .put("method", "CDC")
+        .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
+        .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
@@ -123,6 +124,7 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
         .put(JdbcUtils.SSL_KEY, true)
         .put(JdbcUtils.SSL_MODE_KEY, sslMode)
         .put("replication_method", replicationMethod)
+        .put("is_test", true)
         .build());
 
     revokeAllPermissions();

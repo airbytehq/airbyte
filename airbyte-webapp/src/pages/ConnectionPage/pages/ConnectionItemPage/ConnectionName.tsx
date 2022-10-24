@@ -2,28 +2,23 @@ import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { ChangeEvent, useState } from "react";
 
-import { Input } from "components";
+import { Input } from "components/ui/Input";
+import { Text } from "components/ui/Text";
 
-import { buildConnectionUpdate } from "core/domain/connection";
-import { WebBackendConnectionRead } from "core/request/AirbyteClient";
-import { useUpdateConnection } from "hooks/services/useConnectionHook";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import withKeystrokeHandler from "utils/withKeystrokeHandler";
 
 import styles from "./ConnectionName.module.scss";
 
-interface ConnectionNameProps {
-  connection: WebBackendConnectionRead;
-}
-
 const InputWithKeystroke = withKeystrokeHandler(Input);
 
-export const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
+export const ConnectionName: React.FC = () => {
+  const { connection, updateConnection } = useConnectionEditService();
   const { name } = connection;
   const [editingState, setEditingState] = useState(false);
   const [loading, setLoading] = useState(false);
   const [connectionName, setConnectionName] = useState<string | undefined>(connection.name);
   const [connectionNameBackup, setConnectionNameBackup] = useState(connectionName);
-  const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const inputChange = ({ currentTarget: { value } }: ChangeEvent<HTMLInputElement>) => setConnectionName(value);
 
@@ -53,7 +48,10 @@ export const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) =>
     try {
       setLoading(true);
 
-      await updateConnection(buildConnectionUpdate(connection, { name: connectionNameTrimmed }));
+      await updateConnection({
+        name: connectionNameTrimmed,
+        connectionId: connection.connectionId,
+      });
 
       setConnectionName(connectionNameTrimmed);
       setConnectionNameBackup(connectionNameTrimmed);
@@ -85,7 +83,9 @@ export const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) =>
       ) : (
         <button className={styles.nameContainer} onClick={() => setEditingState(true)}>
           <div>
-            <h2>{name}</h2>
+            <Text as="h2" size="lg">
+              {name}
+            </Text>
           </div>
           <FontAwesomeIcon className={styles.icon} icon={faPenToSquare} />
         </button>

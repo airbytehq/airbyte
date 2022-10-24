@@ -40,7 +40,7 @@ def prod_config():
     """
     return {
         "client_id": "some_client_id",
-        "secret": "some_secret",
+        "client_secret": "some_secret",
         "start_date": "2021-07-01T00:00:00+00:00",
         "end_date": "2021-07-10T00:00:00+00:00",
         "is_sandbox": False,
@@ -54,7 +54,7 @@ def sandbox_config():
     """
     return {
         "client_id": "some_client_id",
-        "secret": "some_secret",
+        "client_secret": "some_secret",
         "start_date": "2021-07-01T00:00:00+00:00",
         "end_date": "2021-07-10T00:00:00+00:00",
         "is_sandbox": True,
