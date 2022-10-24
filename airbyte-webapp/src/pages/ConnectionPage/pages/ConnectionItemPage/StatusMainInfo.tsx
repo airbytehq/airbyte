@@ -5,8 +5,8 @@ import { Link } from "react-router-dom";
 
 import { ConnectorCard } from "components";
 
-import { getFrequencyType } from "config/utils";
-import { ConnectionStatus, SourceRead, DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionStatus } from "core/request/AirbyteClient";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
@@ -15,19 +15,10 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import EnabledControl from "./EnabledControl";
 import styles from "./StatusMainInfo.module.scss";
 
-interface StatusMainInfoProps {
-  connection: WebBackendConnectionRead;
-  source: SourceRead;
-  destination: DestinationRead;
-  onStatusUpdating?: (updating: boolean) => void;
-}
-
-export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
-  onStatusUpdating,
-  connection,
-  source,
-  destination,
-}) => {
+export const StatusMainInfo: React.FC = () => {
+  const {
+    connection: { source, destination, status },
+  } = useConnectionEditService();
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
@@ -57,14 +48,9 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
           />
         </Link>
       </div>
-      {connection.status !== ConnectionStatus.deprecated && (
+      {status !== ConnectionStatus.deprecated && (
         <div className={styles.enabledControlContainer}>
-          <EnabledControl
-            onStatusUpdating={onStatusUpdating}
-            disabled={!allowSync}
-            connection={connection}
-            frequencyType={getFrequencyType(connection.scheduleData?.basicSchedule)}
-          />
+          <EnabledControl disabled={!allowSync} />
         </div>
       )}
     </div>

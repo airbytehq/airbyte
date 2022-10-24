@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
  */
 final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
+  public static final Class<?> DEFAULT_SEED_DEFINITION_RESOURCE_CLASS = SeedType.class;
+
   private final static String PROTOCOL_VERSION = "protocol_version";
   private final static String SPEC = "spec";
 
