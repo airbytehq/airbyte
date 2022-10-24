@@ -29,9 +29,10 @@ dependencies {
     implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation 'org.apache.ant:ant:1.10.10'
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'org.apache.commons:commons-text:1.9'
+    implementation 'org.apache.commons:commons-text:1.10.0'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
     implementation libs.micrometer.statsd
+    implementation libs.bundles.datadog
     implementation 'io.sentry:sentry:6.3.1'
     implementation 'net.bytebuddy:byte-buddy:1.12.14'
     implementation 'org.springframework:spring-core:5.3.22'
@@ -58,7 +59,7 @@ dependencies {
         exclude group: 'io.micronaut.security'
         exclude group: 'io.micronaut.sql'
     }
-    implementation project(':airbyte-api')
+    implementation project(':airbyte-worker-models')
 
     testAnnotationProcessor platform(libs.micronaut.bom)
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor

@@ -2688,6 +2688,12 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
+        schemaChange:
+          enum:
+            - no_change
+            - non_breaking
+            - breaking
+          type: string
       required:
         - connectionId
         - name
@@ -2698,6 +2704,7 @@ components:
         - source
         - destination
         - isSyncing
+        - schemaChange
       type: object
     WebBackendConnectionReadList:
       properties:

@@ -397,3 +397,18 @@ def test_is_data_golden_flag_missing_equals_false(
     for message in source.read(logging.getLogger(), test_config, configured_catalog):
         if message.type == Type.RECORD:
             assert message.record.data["isDataGolden"] is False
+
+
+@pytest.mark.parametrize(
+    "configured_response, expected_token",
+    (
+        ({}, None),
+        ({"reports": []}, None),
+        ({"reports": [{"data": {}, "columnHeader": {}}]}, None),
+        ({"reports": [{"data": {}, "columnHeader": {}, "nextPageToken": 100000}]}, {"pageToken": 100000}),
+    ),
+)
+def test_next_page_token(test_config, configured_response, expected_token):
+    response = MagicMock(json=MagicMock(return_value=configured_response))
+    token = GoogleAnalyticsV4Stream(test_config).next_page_token(response)
+    assert token == expected_token
