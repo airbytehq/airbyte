@@ -19,7 +19,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_rd_station_marketing",
-    description="Source implementation for Rd Station Marketing.",
+    description="Source implementation for RD Station Marketing.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
