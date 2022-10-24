@@ -25,7 +25,6 @@ public class ConnectorConfiguration {
     return new ObjectMapper().convertValue(config, ConnectorConfiguration.class);
   }
 
-
   @Data
   static class AuthenticationMethod {
 
