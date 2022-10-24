@@ -1,29 +1,32 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+from urllib.parse import urljoin
 from typing import Any, List, Mapping, Tuple
+
+import requests
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .full_refresh_streams import (
-    Hardware,
-    Companies,
-    Locations,
+from .streams import (
     Accessories,
-    Consumables,
-    Components,
-    Users,
-    StatusLabels,
-    Models,
-    Licenses,
     Categories,
+    Consumables,
+    Companies,
+    Components,
+    Departments,
+    Events,
+    Hardware,
+    Licenses,
+    Locations,
+    Models,
     Manufacturers,
     Maintenances,
-    Departments,
+    StatusLabels,
+    Users,
 )
-from .incremental_streams import Events
 
 """
 This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
@@ -50,13 +53,28 @@ class SourceSnipeit(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        ok = False
+        err_message = None
+
         token = config.get("access_token", None)
-        if token is None:
-            return False, "You need to provide an Access Token! Check config and try again."
-        elif token == "":
-            return False, "Token cannot be an empty string! Check config and try again."
-        else:
-            return True, None
+        logger.debug(f"Token present? {bool(token)}")
+        base_url = config.get("base_url", None)
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/json"
+        }
+        full_url = urljoin(base_url, "/api/v1/hardware")
+        logger.debug(f"Sending a request to: {full_url}")
+        z = requests.get(full_url, headers=headers)
+        logger.debug(f"Status code of response: {z.status_code}")
+        try:
+            z.raise_for_status()
+            ok = True
+        except Exception as e:
+            err_message = repr(e)
+
+        return ok, err_message
+
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -65,7 +83,7 @@ class SourceSnipeit(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         access_jwt = config.get("access_token")
-        auth = TokenAuthenticator(token=access_jwt)  # Oauth2Authenticator is also available if you need oauth support
+        auth = TokenAuthenticator(token=access_jwt) 
         return [
             Accessories(authenticator=auth, config=config),
             Categories(authenticator=auth, config=config),

@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Tuple
 from copy import deepcopy
 
 import requests
@@ -59,12 +59,12 @@ class SnipeitStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
         if self.stop_immediately:
-            return {}
+            return None
         elif self.offset < self.total:
             self.offset += self.limit_per_page
             return {"offset": self.offset}
         else:
-            return {}
+            return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -87,10 +87,7 @@ class SnipeitStream(HttpStream, ABC):
 
 # NOTE: Temporary, dirty hack to account for the import differences
 #       between airbyte_cdk 0.1.53 and 0.1.55
-try:
-    from airbyte_cdk.sources.streams import IncrementalMixin
-except ImportError:
-    from airbyte_cdk.sources.streams.core import IncrementalMixin
+from airbyte_cdk.sources.streams import IncrementalMixin
 
 class Events(SnipeitStream, IncrementalMixin):
     primary_key = "id"
