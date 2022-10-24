@@ -113,7 +113,6 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
-import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
@@ -164,7 +163,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final OpenApiConfigHandler openApiConfigHandler;
   private final DbMigrationHandler dbMigrationHandler;
   private final OAuthHandler oAuthHandler;
-  private final AttemptHandler attemptHandler;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final Path workspaceRoot;
@@ -249,7 +247,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
-    attemptHandler = new AttemptHandler(jobPersistence);
   }
 
   // WORKSPACE
@@ -431,6 +428,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
       oAuthHandler.setSourceInstancewideOauthParams(requestBody);
       return null;
     });
+  }
+
+  @Override
+  public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody setWorkflowInAttemptRequestBody) {
+    return null;
   }
 
   // SOURCE IMPLEMENTATION
@@ -835,12 +837,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
   }
 
-  @Override
-  public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody requestBody) {
-    return execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
-  }
-
-  private static <T> T execute(final HandlerCall<T> call) {
+  // TODO: Move to common when all the api are moved
+  static <T> T execute(final HandlerCall<T> call) {
     try {
       return call.call();
     } catch (final ConfigNotFoundException e) {
@@ -854,7 +852,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     }
   }
 
-  private interface HandlerCall<T> {
+  interface HandlerCall<T> {
 
     T call() throws ConfigNotFoundException, IOException, JsonValidationException;
 

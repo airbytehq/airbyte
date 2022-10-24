@@ -8,12 +8,6 @@ configurations.all {
 }
 
 dependencies {
-    annotationProcessor platform(libs.micronaut.bom)
-    annotationProcessor libs.bundles.micronaut.annotation.processor
-
-    implementation platform(libs.micronaut.bom)
-    implementation libs.bundles.micronaut
-
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-docker')
