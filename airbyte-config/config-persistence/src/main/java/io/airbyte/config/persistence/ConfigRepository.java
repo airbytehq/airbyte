@@ -29,6 +29,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -143,10 +144,7 @@ public class ConfigRepository {
           .where(WORKSPACE.SLUG.eq(slug)).andNot(WORKSPACE.TOMBSTONE)).fetch();
     }
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildStandardWorkspace(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildStandardWorkspace);
   }
 
   public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)
@@ -788,10 +786,7 @@ public class ConfigRepository {
           ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(sourceDefinitionId)).fetch();
     });
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildSourceOAuthParameter(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildSourceOAuthParameter);
   }
 
   public void writeSourceOAuthParam(final SourceOAuthParameter sourceOAuthParameter) throws JsonValidationException, IOException {
@@ -817,10 +812,7 @@ public class ConfigRepository {
           ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(destinationDefinitionId)).fetch();
     });
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildDestinationOAuthParameter(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildDestinationOAuthParameter);
   }
 
   public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter) throws JsonValidationException, IOException {
@@ -917,6 +909,7 @@ public class ConfigRepository {
       throws IOException, ConfigNotFoundException {
     final Result<Record> result = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
         .from(ACTOR_CATALOG).where(ACTOR_CATALOG.ID.eq(actorCatalogId))).fetch();
+
     if (result.size() > 0) {
       return DbConverter.buildActorCatalog(result.get(0));
     }
@@ -934,8 +927,8 @@ public class ConfigRepository {
    * @return the db identifier for the cached catalog.
    */
   private UUID getOrInsertActorCatalog(final AirbyteCatalog airbyteCatalog,
-                                       final DSLContext context) {
-    final OffsetDateTime timestamp = OffsetDateTime.now();
+                                       final DSLContext context,
+                                       final OffsetDateTime timestamp) {
     final HashFunction hashFunction = Hashing.murmur3_32_fixed();
     final String catalogHash = hashFunction.hashBytes(Jsons.serialize(airbyteCatalog).getBytes(
         Charsets.UTF_8)).toString();
@@ -969,11 +962,17 @@ public class ConfigRepository {
         .and(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH.eq(configHash))
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1)).fetch();
 
-    if (records.size() >= 1) {
-      return Optional.of(DbConverter.buildActorCatalog(records.get(0)));
-    }
-    return Optional.empty();
+    return records.stream().findFirst().map(DbConverter::buildActorCatalog);
+  }
 
+  public Optional<ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSource(final UUID sourceId) throws IOException {
+
+    final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
+        .from(ACTOR_CATALOG_FETCH_EVENT)
+        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(sourceId))
+        .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1).fetch());
+
+    return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
   }
 
   /**
@@ -1001,7 +1000,7 @@ public class ConfigRepository {
     final OffsetDateTime timestamp = OffsetDateTime.now();
     final UUID fetchEventID = UUID.randomUUID();
     return database.transaction(ctx -> {
-      final UUID catalogId = getOrInsertActorCatalog(catalog, ctx);
+      final UUID catalogId = getOrInsertActorCatalog(catalog, ctx, timestamp);
       ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
           .set(ACTOR_CATALOG_FETCH_EVENT.ID, fetchEventID)
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, actorId)
