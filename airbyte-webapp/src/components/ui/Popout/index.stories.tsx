@@ -2,6 +2,7 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 import React from "react";
 
 import { Button } from "../Button";
+import { PillButton } from "../PillButton";
 import { Popout } from "./Popout";
 
 export default {
@@ -9,7 +10,7 @@ export default {
   component: Popout,
 } as ComponentMeta<typeof Popout>;
 
-const Target: React.FC<{ onOpen: () => void; title: string }> = ({ onOpen, title }) => {
+const ButtonTarget: React.FC<{ onOpen: () => void; title: string }> = ({ onOpen, title }) => {
   return <Button onClick={() => onOpen()}>{title}</Button>;
 };
 
@@ -33,13 +34,30 @@ const Template: ComponentStory<typeof Popout> = (args) => (
     {...args}
     options={options}
     targetComponent={(targetProps) => (
-      <Target onOpen={targetProps.onOpen} title={`isSearchable: ${args.isSearchable}`} />
+      <ButtonTarget onOpen={targetProps.onOpen} title={`isSearchable: ${args.isSearchable}`} />
     )}
   />
 );
 
-export const Example = Template.bind({});
-Example.args = {
+const PillButtonTemplate: ComponentStory<typeof Popout> = (args) => (
+  <Popout
+    {...args}
+    options={options}
+    targetComponent={(targetProps) => (
+      <PillButton asDropdown onClick={() => targetProps.onOpen()} active={targetProps.isOpen}>
+        {args.title}
+      </PillButton>
+    )}
+  />
+);
+
+export const Primary = Template.bind({});
+Primary.args = {
   title: "Title",
   isSearchable: false,
+};
+
+export const WithPillButton = PillButtonTemplate.bind({});
+WithPillButton.args = {
+  title: "With PillButton",
 };
