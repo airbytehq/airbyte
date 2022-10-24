@@ -1148,6 +1148,13 @@
   icon: victorops.svg
   sourceType: api
   releaseStage: alpha
+- name: xkcd
+  sourceDefinitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
+  dockerRepository: airbyte/source-xkcd
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/xkcd
+  sourceType: api
+  releaseStage: alpha
 - name: Webflow
   sourceDefinitionId: ef580275-d9a9-48bb-af5e-db0f5855be04
   dockerRepository: airbyte/source-webflow
