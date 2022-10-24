@@ -10,7 +10,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 date_format = "%Y-%m-%d"
 
@@ -126,8 +125,7 @@ class SourceNasaApod(AbstractSource):
                 )
 
         try:
-            auth = NoAuth()
-            stream = NasaApodStream(authenticator=auth, config=config)
+            stream = NasaApodStream(authenticator=None, config=config)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
@@ -135,5 +133,4 @@ class SourceNasaApod(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = NoAuth()
-        return [NasaApodStream(authenticator=auth, config=config)]
+        return [NasaApodStream(authenticator=None, config=config)]
