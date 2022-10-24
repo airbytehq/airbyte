@@ -143,6 +143,12 @@ class TestConfig(BaseConfig):
 
 
 class Config(BaseConfig):
+    class TestStrictnessLevel(str, Enum):
+        high = "high"
+
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
-    base_path: Optional[str] = Field(description="Base path for all relative paths")
     tests: TestConfig = Field(description="List of the tests with their configs")
+    base_path: Optional[str] = Field(description="Base path for all relative paths")
+    test_strictness_level: Optional[TestStrictnessLevel] = Field(
+        description="Corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run."
+    )
