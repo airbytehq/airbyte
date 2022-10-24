@@ -193,7 +193,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                 .map(f -> {
                   final Datatype datatype = getFieldType(f);
                   final JsonSchemaType jsonType = getType(datatype);
-                  LOGGER.info("Table {} column {} (type {}[{}]) -> {}",
+                  LOGGER.info("Table {} column {} (type {}[{}], nullable {}) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
@@ -387,7 +387,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                                          final Connection connection,
                                          final List<String> columnNames,
                                          final String schemaName,
-                                         final String tableName) throws SQLException {
+                                         final String tableName)
+      throws SQLException {
     return sourceOperations.enquoteIdentifierList(connection, columnNames);
   }
 

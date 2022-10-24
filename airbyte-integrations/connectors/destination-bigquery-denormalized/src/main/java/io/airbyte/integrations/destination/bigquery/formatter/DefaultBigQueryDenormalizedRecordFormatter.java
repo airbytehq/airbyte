@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery.formatter;
 
+import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.TYPE_FIELD;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,7 +48,6 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultBigQueryDenormalizedRecordFormatter.class);
 
   public static final String PROPERTIES_FIELD = "properties";
-  public static final String TYPE_FIELD = "type";
   private static final String ALL_OF_FIELD = "allOf";
   private static final String ANY_OF_FIELD = "anyOf";
   private static final String FORMAT_FIELD = "format";
@@ -79,17 +80,6 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     getArrayFormatter().populateEmptyArrays(modifiedJsonSchema);
     getArrayFormatter().surroundArraysByObjects(modifiedJsonSchema);
     return modifiedJsonSchema;
-  }
-
-  private JsonNode formatAllOfAndAnyOfFields(final StandardNameTransformer namingResolver, final JsonNode jsonSchema) {
-    LOGGER.info("getSchemaFields : " + jsonSchema + " namingResolver " + namingResolver);
-    final JsonNode modifiedSchema = jsonSchema.deepCopy();
-    Preconditions.checkArgument(modifiedSchema.isObject() && modifiedSchema.has(PROPERTIES_FIELD));
-    ObjectNode properties = (ObjectNode) modifiedSchema.get(PROPERTIES_FIELD);
-    Jsons.keys(properties).stream()
-        .peek(addToRefList(properties))
-        .forEach(key -> properties.replace(key, getFileDefinition(properties.get(key))));
-    return modifiedSchema;
   }
 
   @Override

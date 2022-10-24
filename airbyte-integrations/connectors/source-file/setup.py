@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk~=0.2",
     "gcsfs==2022.7.1",
     "genson==1.2.2",
     "google-cloud-storage==2.5.0",
