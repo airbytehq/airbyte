@@ -6,7 +6,7 @@
 import setuptools
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1.56",
+    "airbyte-cdk~=0.2",
     "docker~=5.0.3",
     "PyYAML~=5.4",
     "icdiff~=1.9",

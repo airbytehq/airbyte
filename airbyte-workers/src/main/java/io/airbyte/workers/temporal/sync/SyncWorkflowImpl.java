@@ -70,7 +70,9 @@ public class SyncWorkflowImpl implements SyncWorkflow {
             DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
 
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
-    StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+    final String taskQueue = Workflow.getInfo().getTaskQueue();
+    StandardSyncOutput syncOutput =
+        replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);
 
     if (version > Workflow.DEFAULT_VERSION) {
       // the state is persisted immediately after the replication succeeded, because the

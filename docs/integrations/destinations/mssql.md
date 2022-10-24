@@ -115,37 +115,40 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request                                             | Subject                                                                                             |
 |:--------| :--- |:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
-| 0.1.20  | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors |
-| 0.1.19  | 2022-05-25 | [13054](https://github.com/airbytehq/airbyte/pull/13054) | Destination MSSQL: added custom JDBC parameters support.                                            |
-| 0.1.18  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
-| 0.1.17  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                   |
-| 0.1.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
-| 0.1.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                        |
-| 0.1.13  | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158) | Update connector fields title/description                                                           |
-| 0.1.12  | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                            |
-| 0.1.11  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)  | Improve handling of wide rows by buffering records based on their byte size rather than their count |
-| 0.1.10  | 2021-10-11 | [\#6877](https://github.com/airbytehq/airbyte/pull/6877) | Add `normalization` capability, add `append+deduplication` sync mode                                |
-| 0.1.9   | 2021-09-29 | [\#5970](https://github.com/airbytehq/airbyte/pull/5970) | Add support & test cases for MSSQL Destination via SSH tunnels                                      |
-| 0.1.8   | 2021-08-07 | [\#5272](https://github.com/airbytehq/airbyte/pull/5272) | Add batch method to insert records                                                                  |
-| 0.1.7   | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json                                                        |
-| 0.1.6   | 2021-06-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer                                                           |
-| 0.1.5   | 2021-07-20 | [\#4874](https://github.com/airbytehq/airbyte/pull/4874) | declare object types correctly in spec                                                              |
-| 0.1.4   | 2021-06-17 | [\#3744](https://github.com/airbytehq/airbyte/pull/3744) | Fix doc/params in specification file                                                                |
-| 0.1.3   | 2021-05-28 | [\#3728](https://github.com/airbytehq/airbyte/pull/3973) | Change dockerfile entrypoint                                                                        |
-| 0.1.2   | 2021-05-13 | [\#3367](https://github.com/airbytehq/airbyte/pull/3671) | Fix handle symbols unicode                                                                          |
-| 0.1.1   | 2021-05-11 | [\#3566](https://github.com/airbytehq/airbyte/pull/3195) | MS SQL Server Destination Release!                                                                  |
+| 0.1.22  | 2022-10-21 | [18275](https://github.com/airbytehq/airbyte/pull/18275)   | Upgrade commons-text for CVE 2022-42889                                                              |
+| 0.1.20  | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors                                 |
+| 0.1.19  | 2022-05-25 | [13054](https://github.com/airbytehq/airbyte/pull/13054)   | Destination MSSQL: added custom JDBC parameters support.                                             |
+| 0.1.18  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820)   | Improved 'check' operation performance                                                               |
+| 0.1.17  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729)   | Bump mina-sshd from 2.7.0 to 2.8.0                                                                   |
+| 0.1.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421)   | Refactor JDBC parameters handling                                                                    |
+| 0.1.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                         |
+| 0.1.13  | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158)   | Update connector fields title/description                                                            |
+| 0.1.12  | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371)   | Fixed incorrect handling "\n" in ssh key                                                             |
+| 0.1.11  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)    | Improve handling of wide rows by buffering records based on their byte size rather than their count  |
+| 0.1.10  | 2021-10-11 | [\#6877](https://github.com/airbytehq/airbyte/pull/6877)   | Add `normalization` capability, add `append+deduplication` sync mode                                 |
+| 0.1.9   | 2021-09-29 | [\#5970](https://github.com/airbytehq/airbyte/pull/5970)   | Add support & test cases for MSSQL Destination via SSH tunnels                                       |
+| 0.1.8   | 2021-08-07 | [\#5272](https://github.com/airbytehq/airbyte/pull/5272)   | Add batch method to insert records                                                                   |
+| 0.1.7   | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                         |
+| 0.1.6   | 2021-06-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555)   | Partial Success in BufferedStreamConsumer                                                            |
+| 0.1.5   | 2021-07-20 | [\#4874](https://github.com/airbytehq/airbyte/pull/4874)   | declare object types correctly in spec                                                               |
+| 0.1.4   | 2021-06-17 | [\#3744](https://github.com/airbytehq/airbyte/pull/3744)   | Fix doc/params in specification file                                                                 |
+| 0.1.3   | 2021-05-28 | [\#3728](https://github.com/airbytehq/airbyte/pull/3973)   | Change dockerfile entrypoint                                                                         |
+| 0.1.2   | 2021-05-13 | [\#3367](https://github.com/airbytehq/airbyte/pull/3671)   | Fix handle symbols unicode                                                                           |
+| 0.1.1   | 2021-05-11 | [\#3566](https://github.com/airbytehq/airbyte/pull/3195)   | MS SQL Server Destination Release!                                                                   |
 
 ### Changelog (Strict Encrypt)
 
 | Version | Date | Pull Request | Subject                                                                                             |
 |:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------|
-| 0.1.20  | 2022-07-14 | [\#15260](https://github.com/airbytehq/airbyte/pull/15260) | Align version of strict encrypt connector with regular connector                                    |
-| 0.1.10  | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors                                |
-| 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                                              |
-| 0.1.8   | 2022-05-25 | [13054](https://github.com/airbytehq/airbyte/pull/13054) | Destination MSSQL: added custom JDBC parameters support.                                            |
-| 0.1.6   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                              |
-| 0.1.5   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
-| 0.1.4   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                        |
-| 0.1.3   | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158) | Update connector fields title/description                                                           |
-| 0.1.2   | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                            |
-| 0.1.1   | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
+| 0.1.22  | 2022-10-21 | [18275](https://github.com/airbytehq/airbyte/pull/18275)   | Upgrade commons-text for CVE 2022-42889                                                              |
+| 0.1.21  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668)   | Wrap logs in AirbyteLogMessage                                                                       |
+| 0.1.20  | 2022-07-14 | [\#15260](https://github.com/airbytehq/airbyte/pull/15260) | Align version of strict encrypt connector with regular connector                                     |
+| 0.1.10  | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors                                 |
+| 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)   | Updated stacktrace format for any trace message errors                                               |
+| 0.1.8   | 2022-05-25 | [13054](https://github.com/airbytehq/airbyte/pull/13054)   | Destination MSSQL: added custom JDBC parameters support.                                             |
+| 0.1.6   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820)   | Improved 'check' operation performance                                                               |
+| 0.1.5   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421)   | Refactor JDBC parameters handling                                                                    |
+| 0.1.4   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                         |
+| 0.1.3   | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158)   | Update connector fields title/description                                                            |
+| 0.1.2   | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371)     | Fixed incorrect handling "\n" in ssh key                                                             |
+| 0.1.1   | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)    | Improve handling of wide rows by buffering records based on their byte size rather than their count  |
