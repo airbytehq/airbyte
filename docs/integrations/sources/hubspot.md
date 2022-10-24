@@ -9,21 +9,21 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | Stream                      | Required Scope                                                                   |
 | :-------------------------- | :------------------------------------------------------------------------------- |
 | `campaigns`                 | `content`                                                                        |
-| `companies`                 | `crm.objects.contacts.read`                                                                       |
-| `contact_lists`             | `crm.objects.contacts.read`                                                                       |
-| `contacts`                  | `crm.objects.contacts.read`                                                                       |
-| `contacts_list_memberships` | `crm.objects.contacts.read`                                                                       |
+| `companies`                 | `crm.objects.contacts.read`                                                      |
+| `contact_lists`             | `crm.objects.contacts.read`                                                      |
+| `contacts`                  | `crm.objects.contacts.read`                                                      |
+| `contacts_list_memberships` | `crm.objects.contacts.read`                                                      |
 | `deal_pipelines`            | either the `crm.objects.contacts.read` scope \(to fetch deals pipelines\) or the `tickets` scope. |
-| `deals`                     | `crm.objects.contacts.read`                                                                       |
+| `deals`                     | `crm.objects.contacts.read`                                                      |
 | `email_events`              | `content`                                                                        |
-| `engagements`               | `crm.objects.contacts.read`                                                                       |
+| `engagements`               | `crm.objects.contacts.read`                                                      |
 | `engagements_emails`        | `sales-email-read`                                                               |
 | `forms`                     | `forms`                                                                          |
 | `form_submissions`          | `forms`                                                                          |
 | `line_items`                | `e-commerce`                                                                     |
-| `owners`                    | `crm.objects.contacts.read`                                                                       |
+| `owners`                    | `crm.objects.contacts.read`                                                      |
 | `products`                  | `e-commerce`                                                                     |
-| `property_history`          | `crm.objects.contacts.read`                                                                       |
+| `property_history`          | `crm.objects.contacts.read`                                                      |
 | `quotes`                    | no scope required                                                                |
 | `subscription_changes`      | `content`                                                                        |
 | `tickets`                   | `tickets`                                                                        |
