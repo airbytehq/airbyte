@@ -126,7 +126,7 @@ interface AuthenticationHook {
 
 export const useAuthentication = (): AuthenticationHook => {
   const { values, getFieldMeta, submitCount } = useFormikContext<ServiceFormValues>();
-  const { selectedConnector, getValues } = useServiceForm();
+  const { selectedConnector } = useServiceForm();
 
   const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
 
@@ -136,13 +136,12 @@ export const useAuthentication = (): AuthenticationHook => {
   const spec = selectedConnector?.connectionSpecification as JSONSchema7;
 
   const isAuthButtonVisible = useMemo(() => {
-    const vals = getValues(values);
     const shouldShowAdvancedAuth =
-      advancedAuth && shouldShowButtonForAdvancedAuth(advancedAuth.predicateKey, advancedAuth.predicateValue, vals);
+      advancedAuth && shouldShowButtonForAdvancedAuth(advancedAuth.predicateKey, advancedAuth.predicateValue, values);
     const shouldShowLegacyAuth =
-      legacyOauthSpec && shouldShowButtonForLegacyAuth(spec, legacyOauthSpec.rootObject as Path, vals);
+      legacyOauthSpec && shouldShowButtonForLegacyAuth(spec, legacyOauthSpec.rootObject as Path, values);
     return Boolean(allowOAuthConnector && (shouldShowAdvancedAuth || shouldShowLegacyAuth));
-  }, [getValues, values, advancedAuth, legacyOauthSpec, spec, allowOAuthConnector]);
+  }, [values, advancedAuth, legacyOauthSpec, spec, allowOAuthConnector]);
 
   // Fields that are filled by the OAuth flow and thus won't need to be shown in the UI if OAuth is available
   const implicitAuthFieldPaths = useMemo(

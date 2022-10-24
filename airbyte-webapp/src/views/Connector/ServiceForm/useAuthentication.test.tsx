@@ -35,7 +35,6 @@ const mockContext = ({ connector, values, submitCount, fieldMeta = {} }: MockPar
   mockServiceForm.mockReturnValue({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selectedConnector: { ...connector, sourceDefinitionId: "12345", jobInfo: {} as any },
-    getValues: (values) => values,
   });
 };
 
