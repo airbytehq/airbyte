@@ -653,8 +653,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   // CONNECTION
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate) {
@@ -662,8 +662,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate) {
@@ -671,8 +671,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
@@ -680,8 +680,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
@@ -689,8 +689,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
@@ -698,8 +698,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
@@ -707,8 +707,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
@@ -716,8 +716,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
@@ -725,8 +725,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
@@ -746,8 +746,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
@@ -778,8 +778,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
@@ -873,8 +873,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
-   * implementation
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of
+   * {@link ConnectionApiImpl} is more granular, it will override this implementation
    */
   @Override
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis;
 
 import io.airbyte.analytics.TrackingClient;
@@ -94,13 +98,16 @@ public class ConnectionApiImpl implements ConnectionApi {
         schemaValidator,
         connectionsHandler);
 
-    final SourceDefinitionsHandler sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient, sourceHandler);
+    final SourceDefinitionsHandler sourceDefinitionsHandler =
+        new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient, sourceHandler);
 
-    final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient,
-        destinationHandler);
+    final DestinationDefinitionsHandler destinationDefinitionsHandler =
+        new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient,
+            destinationHandler);
 
-    final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler,
-        sourceDefinitionsHandler, destinationHandler, destinationDefinitionsHandler, airbyteVersion);
+    final JobHistoryHandler jobHistoryHandler =
+        new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler,
+            sourceDefinitionsHandler, destinationHandler, destinationDefinitionsHandler, airbyteVersion);
 
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(
         connectionsHandler,
@@ -178,4 +185,5 @@ public class ConnectionApiImpl implements ConnectionApi {
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
     return ConfigurationApi.execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
+
 }
