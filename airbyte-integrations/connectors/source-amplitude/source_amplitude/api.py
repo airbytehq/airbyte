@@ -98,11 +98,12 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # save state value in source native format
+        latest_field = latest_record[self.cursor_field] or latest_record['event_time']
         if self.compare_date_template:
-            latest_state = pendulum.parse(latest_record[self.cursor_field]).strftime(self.compare_date_template)
+            latest_state = pendulum.parse(latest_field).strftime(self.compare_date_template)
         else:
-            latest_state = latest_record[self.cursor_field]
-        return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
+            latest_state = latest_field
+        return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""), current_stream_state.get('event_time', ""))}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         parsed = urlparse.urlparse(response.url)
@@ -124,6 +125,8 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
             start_datetime = self._start_date
             if stream_state.get(self.cursor_field):
                 start_datetime = pendulum.parse(stream_state[self.cursor_field])
+            elif stream_state.get("event_time"):
+                start_datetime = pendulum.parse(stream_state[self.cursor_field])
 
             params.update(
                 {
@@ -143,7 +146,7 @@ class Events(IncrementalAmplitudeStream):
     time_interval = {"days": 1}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
+        state_value = stream_state[self.cursor_field] or stream_state['event_time'] if stream_state else self._start_date.strftime(self.compare_date_template)
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         except zipfile.BadZipFile as e:
@@ -167,7 +170,7 @@ class Events(IncrementalAmplitudeStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
-        start = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
+        start = pendulum.parse(stream_state.get(self.cursor_field) or stream_state.get("event_time")) if stream_state else self._start_date
         end = pendulum.now()
         while start <= end:
             slices.append(
