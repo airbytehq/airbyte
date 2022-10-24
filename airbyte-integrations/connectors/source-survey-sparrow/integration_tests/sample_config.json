@@ -1,3 +1,4 @@
 {
-  "fix-me": "TODO"
+  "access_token": "<sample token>",
+  "survey_id": 1234
 }
