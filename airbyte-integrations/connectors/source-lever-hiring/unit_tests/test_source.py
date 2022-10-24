@@ -6,7 +6,6 @@ from unittest.mock import MagicMock
 
 import pytest
 import responses
-from conftest import test_config
 from source_lever_hiring.source import SourceLeverHiring
 
 
@@ -16,28 +15,40 @@ from source_lever_hiring.source import SourceLeverHiring
         (
             responses.POST,
             "https://sandbox-lever.auth0.com/oauth/token",
-            {"access_token": "fake_access_token", "expires_in": 3600},
-            test_config(auth_type="Client"),
-        )(
-            responses.GET,
-            "https://api.lever.co/v1/opportunities",
-            {"api_key": "fake_api_key", "expires_in": 3600},
-            test_config(auth_type="Api Key"),
+            {"access_token": "test_access_token", "expires_in": 3600},
+            {
+                "credentials": {
+                    "auth_type": "Client",
+                    "client_id": "test_client_id",
+                    "client_secret": "test_client_secret",
+                    "refresh_token": "test_refresh_token",
+                    "access_token": "test_access_token",
+                    "expires_in": 3600,
+                },
+                "environment": "Sandbox",
+                "start_date": "2021-05-07T00:00:00Z",
+            },
+        ),
+        (
+            None,
+            None,
+            None,
+            {
+                "credentials": {
+                    "auth_type": "Api Key",
+                    "api_key": "test_api_key",
+                },
+                "environment": "Sandbox",
+                "start_date": "2021-05-07T00:00:00Z",
+            },
         ),
     ],
 )
 @responses.activate
-def test_check_connection(response, url, payload, test_config):
-    responses.add(response, url, payload)
+def test_source(response, url, payload, test_config):
+    if response:
+        responses.add(response, url, payload)
     source = SourceLeverHiring()
     logger_mock = MagicMock()
     assert source.check_connection(logger_mock, test_config) == (True, None)
-
-
-@responses.activate
-def test_streams(response, url, payload, test_config):
-    responses.add(response, url, payload)
-    source = SourceLeverHiring()
-    streams = source.streams(test_config)
-    expected_streams_number = 7
-    assert len(streams) == expected_streams_number
+    assert len(source.streams(test_config)) == 7
