@@ -28,7 +28,8 @@ public interface SynchronousSchedulerClient {
                                                                                          Version protocolVersion)
       throws IOException;
 
-  SynchronousResponse<UUID> createDiscoverSchemaJob(SourceConnection source, String dockerImage, String connectorVersion) throws IOException;
+  SynchronousResponse<UUID> createDiscoverSchemaJob(SourceConnection source, String dockerImage, String connectorVersion, Version protocolVersion)
+      throws IOException;
 
   SynchronousResponse<ConnectorSpecification> createGetSpecJob(String dockerImage) throws IOException;
 
