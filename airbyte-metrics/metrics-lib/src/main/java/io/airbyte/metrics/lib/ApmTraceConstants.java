@@ -7,7 +7,7 @@ package io.airbyte.metrics.lib;
 /**
  * Collection of constants for APM tracing.
  */
-public class ApmTraceConstants {
+public final class ApmTraceConstants {
 
   /**
    * Operation name for an APM trace of a Temporal activity.
