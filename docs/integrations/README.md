@@ -87,6 +87,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Iterable](sources/iterable.md)                                                             | Generally Available  | Yes                 |
 | [Jenkins](sources/jenkins.md)                                                               | Alpha                | No                  |
 | [Jira](sources/jira.md)                                                                     | Alpha                | No                  |
+| [K6 Cloud](sources/k6-cloud.md)                                                             | Alpha                | Yes                  |
 | [Kafka](sources/kafka.md)                                                                   | Alpha                | No                  |
 | [Klaviyo](sources/klaviyo.md)                                                               | Generally Available  | Yes                 |
 | [Kustomer](sources/kustomer.md)                                                             | Alpha                | Yes                 |

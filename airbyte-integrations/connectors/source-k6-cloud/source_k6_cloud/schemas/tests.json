@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "k6-runs": {
+      "type": "array"
+    },
+    "k6-runs-trending-metrics": {
+      "type": "array"
+    },
+    "k6-tests": {
+      "type": "array"
+    },
+    "load_zones": {
+      "type": "array"
+    },
+    "meta": {
+      "type": "object"
+    }
+  }
+}
