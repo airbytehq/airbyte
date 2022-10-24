@@ -17,9 +17,6 @@ from facebook_business.apiconfig import ads_api_config
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import retry_pattern
 
-ads_api_config["API_VERSION"] = "v15.0"
-ads_api_config["SDK_VERSION"] = "v15.0"
-
 logger = logging.getLogger("airbyte")
 
 
@@ -163,9 +160,11 @@ class API:
     """Simple wrapper around Facebook API"""
 
     def __init__(self, account_id: str, access_token: str):
+        self._configure_api_and_sdk_version()
         self._account_id = account_id
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
-        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False, api_version=ads_api_config["API_VERSION"])
+        self.api.SDK_VERSION = ads_api_config["SDK_VERSION"]
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
@@ -180,3 +179,10 @@ class API:
             return AdAccount(f"act_{account_id}").api_get()
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+
+    def _configure_api_and_sdk_version(self):
+        # This is a hack because we need to start using API version v15.0 before it is available through the python SDK
+        # This is only a config change as per https://github.com/facebook/facebook-python-business-sdk/pull/620
+        # TODO: Delete this when facebook_marketing v15.0 is released through pypi
+        ads_api_config["API_VERSION"] = "v15.0"
+        ads_api_config["SDK_VERSION"] = "v15.0"
