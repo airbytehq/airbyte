@@ -652,53 +652,85 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // CONNECTION
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate) {
-    return execute(() -> connectionsHandler.createConnection(connectionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate) {
-    return execute(() -> connectionsHandler.updateConnection(connectionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
-    return execute(() -> connectionsHandler.searchConnections(connectionSearch));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    execute(() -> {
-      operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
-      connectionsHandler.deleteConnection(connectionIdRequestBody.getConnectionId());
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
   // Operations
@@ -713,9 +745,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> operationsHandler.createOperation(operationCreate));
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
-    return execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
+    throw new NotImplementedException();
   }
 
   @Override
@@ -741,9 +777,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> operationsHandler.updateOperation(operationUpdate));
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> stateHandler.getState(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
   // SCHEDULER
@@ -832,9 +872,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiImpl}. Since the path of {@link ConnectionApiImpl} is more granular, it will override this
+   * implementation
+   */
   @Override
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
   @Override
