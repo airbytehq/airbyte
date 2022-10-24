@@ -1,6 +1,22 @@
 version: "0.1.0"
 
 definitions:
+  campaigns_query:
+  accounts_query:
+  ad_group_ads_query:
+  ad_group_ad_labels_query:
+  ad_groups_query:
+  ad_group_labels_query:
+  campaign_labels_query:
+  click_view_query:
+  keyword_query:
+  geographic_query:
+  account_performance_report_query:
+  ad_group_ad_report_query:
+  display_keyword_report_query:
+  display_topics_report_query:
+  shopping_performance_report_query:
+  user_location_report_query:
   selector:
     extractor:
       field_pointer: []
@@ -9,17 +25,17 @@ definitions:
     http_method: "POST"
     request_options_provider:
       request_headers:
+        Content-Type: application/json
         developer-token: "{{ config['developer_token'] }}"
         login-customer-id: "{{ config['login_customer_id'] }}"
       request_body_json:
-        query: SELECT  campaign.id,  campaign.name,  campaign.status,  metrics.impressions,  segments.date FROM campaign  WHERE campaign.status = 'PAUSED'  AND metrics.impressions > 1000  AND segments.date during LAST_30_DAYS ORDER BY campaign.id
+        query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
     authenticator:
       type: "OAuthAuthenticator"
       token_refresh_endpoint: "https://www.googleapis.com/oauth2/v3/token"
       client_id: "{{ config['client_id'] }}"
       client_secret: "{{ config['client_secret'] }}"
       refresh_token: "{{ config['refresh_token'] }}"
-      developer_token: "{{ config['developer_token'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -36,9 +52,109 @@ definitions:
       name: "campaigns"
       primary_key: "campaign.id"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
-
+  accounts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "accounts"
+      primary_key: ["customer.id", "segments.date"]
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  ad_group_ads_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "ad_group_ads"
+      primary_key: ["ad_group_ad.ad.id", "segments.date"]
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  ad_group_ad_labels_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "ad_group_ad_labels"
+      primary_key: ["ad_group_ad_label.resource_name"]
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  ad_groups_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "ad_groups"
+      primary_key: ["ad_group.id", "segments.date"]
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  ad_group_labels_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "ad_group_labels"
+      primary_key: ["ad_group_label.resource_name"]
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  campaign_labels_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "campaign_labels"
+      primary_key: ["campaign_label.resource_name"]
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  click_view_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "click_view"
+      primary_key: ["click_view.gclid", "segments.date", "segments.ad_network_type"]
+      days_of_data_storage: 90
+      range_days: 1
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  keyword_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "keyword"
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  geographic_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "geographic"
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  account_performance_report_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "account_performance_report"
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  ad_group_ad_report_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "ad_group_ad_report"
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  display_keyword_report_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "display_keyword_report"
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  display_topics_report_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "display_topics_report"
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  shopping_performance_report_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "shopping_performance_report"
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
+  user_location_report_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "user_location_report"
+      path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
 streams:
   - "*ref(definitions.campaigns_stream)"
+  - "*ref(definitions.accounts_stream)"
+  - "*ref(definitions.ad_group_ads_stream)"
+  - "*ref(definitions.ad_group_ad_labels_stream)"
+  - "*ref(definitions.ad_groups_stream)"
+  - "*ref(definitions.ad_group_labels_stream)"
+  - "*ref(definitions.campaign_labels_stream)"
+  - "*ref(definitions.click_view_stream)"
+  - "*ref(definitions.keyword_stream)"
+  - "*ref(definitions.geographic_stream)"
+  - "*ref(definitions.account_performance_report_stream)"
+  - "*ref(definitions.ad_group_ad_report_stream)"
+  - "*ref(definitions.display_keyword_report_stream)"
+  - "*ref(definitions.display_topics_report_stream)"
+  - "*ref(definitions.shopping_performance_report_stream)"
+  - "*ref(definitions.user_location_report_stream)"
+
+
 
 check:
   stream_names:
