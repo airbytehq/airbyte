@@ -17,7 +17,7 @@ def test_config():
                 "client_secret": "test_client_secret",
                 "refresh_token": "test_refresh_token",
                 },
-            "replication_start_date": "2022-01-01T00:00:00Z"
+            "start_date": "2022-01-01T00:00:00Z"
     }
 
 def setup_responses():

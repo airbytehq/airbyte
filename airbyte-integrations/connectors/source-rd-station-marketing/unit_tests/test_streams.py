@@ -6,16 +6,19 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_rd_station_marketing.streams import RDStationMarketingStream
+from source_rd_station_marketing.streams import RDStationMarketingStream, Segmentations
 
 
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(RDStationMarketingStream, "path", "v0/example_endpoint")
     mocker.patch.object(RDStationMarketingStream, "primary_key", "test_primary_key")
     mocker.patch.object(RDStationMarketingStream, "__abstractmethods__", set())
 
+
+def test_path(patch_base_class):
+    stream = Segmentations(authenticator=MagicMock())
+    assert stream.path() == "/platform/segmentations"
 
 def test_request_params(patch_base_class):
     stream = RDStationMarketingStream(authenticator=MagicMock())
