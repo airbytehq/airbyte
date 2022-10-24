@@ -39,7 +39,6 @@ import io.airbyte.config.State;
 import io.airbyte.config.WebhookConfig;
 import io.airbyte.config.WebhookOperationConfigs;
 import io.airbyte.config.WorkspaceServiceAccount;
-import io.airbyte.config.persistence.ConfigRepository.ActorCatalogFetchEventWithCreationDate;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AuthSpecification;
 import io.airbyte.protocol.models.AuthSpecification.AuthType;
@@ -59,6 +58,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.Data;
 
 public class MockData {
 
@@ -644,6 +644,14 @@ public class MockData {
         .withConfigHash("1394")
         .withConnectorVersion("1.2.0");
     return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
+  }
+
+  @Data
+  public static class ActorCatalogFetchEventWithCreationDate {
+
+    private final ActorCatalogFetchEvent actorCatalogFetchEvent;
+    private final OffsetDateTime createdAt;
+
   }
 
   public static List<ActorCatalogFetchEventWithCreationDate> actorCatalogFetchEventsForAggregationTest() {

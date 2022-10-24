@@ -30,7 +30,6 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.persistence.ConfigRepository.ActorCatalogFetchEventWithCreationDate;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -547,21 +546,21 @@ class ConfigRepositoryE2EReadWriteTest {
     }
 
     database.transaction(ctx -> {
-      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEventWithCreationDate -> insertCatalogFetchEvent(
+      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEvent -> insertCatalogFetchEvent(
           ctx,
-          actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent().getActorId(),
-          actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent().getActorCatalogId(),
-          actorCatalogFetchEventWithCreationDate.getCreatedAt()));
+          actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+          actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+          actorCatalogFetchEvent.getCreatedAt()));
 
       return null;
     });
 
-    final Map<UUID, ActorCatalogFetchEventWithCreationDate> result =
+    final Map<UUID, ActorCatalogFetchEvent> result =
         configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
             MockData.SOURCE_ID_2));
 
-    assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogFetchEvent().getActorCatalogId());
-    assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogFetchEvent().getActorCatalogId());
+    assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
+    assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
   }
 
   private void insertCatalogFetchEvent(final DSLContext ctx, final UUID sourceId, final UUID catalogId, final OffsetDateTime creationDate) {

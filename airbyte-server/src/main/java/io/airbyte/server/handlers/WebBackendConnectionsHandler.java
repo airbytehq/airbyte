@@ -48,7 +48,6 @@ import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.ConfigRepository.ActorCatalogFetchEventWithCreationDate;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
@@ -115,7 +114,7 @@ public class WebBackendConnectionsHandler {
     final Map<UUID, JobRead> runningJobByConnectionId =
         getRunningJobByConnectionId(standardSyncs.stream().map(StandardSync::getConnectionId).toList());
 
-    final Map<UUID, ActorCatalogFetchEventWithCreationDate> newestFetchEventsByActorId =
+    final Map<UUID, ActorCatalogFetchEvent> newestFetchEventsByActorId =
         configRepository.getMostRecentActorCatalogFetchEventForSources(new ArrayList<>());
 
     final List<WebBackendConnectionListItem> connectionItems = Lists.newArrayList();
@@ -197,7 +196,7 @@ public class WebBackendConnectionsHandler {
                                                                          final Map<UUID, DestinationRead> destinationReadById,
                                                                          final Map<UUID, JobRead> latestJobByConnectionId,
                                                                          final Map<UUID, JobRead> runningJobByConnectionId,
-                                                                         final Optional<ActorCatalogFetchEventWithCreationDate> latestFetchEvent)
+                                                                         final Optional<ActorCatalogFetchEvent> latestFetchEvent)
       throws JsonValidationException, ConfigNotFoundException, IOException {
 
     final SourceRead source = sourceReadById.get(standardSync.getSourceId());
@@ -207,11 +206,7 @@ public class WebBackendConnectionsHandler {
     final ConnectionRead connectionRead = connectionsHandler.getConnection(standardSync.getConnectionId());
     final Optional<UUID> currentCatalogId = connectionRead == null ? Optional.empty() : Optional.ofNullable(connectionRead.getSourceCatalogId());
 
-    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
-        latestFetchEvent
-            .map(actorCatalogFetchEventWithCreationDate -> actorCatalogFetchEventWithCreationDate.getActorCatalogFetchEvent());
-
-    final SchemaChange schemaChange = getSchemaChange(connectionRead, currentCatalogId, mostRecentFetchEvent);
+    final SchemaChange schemaChange = getSchemaChange(connectionRead, currentCatalogId, latestFetchEvent);
 
     final WebBackendConnectionListItem listItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())

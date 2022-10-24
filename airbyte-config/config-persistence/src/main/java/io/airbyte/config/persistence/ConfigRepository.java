@@ -71,7 +71,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.Data;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -976,45 +975,20 @@ public class ConfigRepository {
     return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
   }
 
-  @Data
-  public static class ActorCatalogFetchEventWithCreationDate {
-
-    private final ActorCatalogFetchEvent actorCatalogFetchEvent;
-    private final OffsetDateTime createdAt;
-
-  }
-
-  public Map<UUID, ActorCatalogFetchEventWithCreationDate> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds)
+  public Map<UUID, ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds)
       throws IOException {
 
-    return database.query(ctx -> ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
-        .from(ACTOR_CATALOG_FETCH_EVENT)
-        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.in(sourceIds))
-        .fetch()
-        .stream()
-        .map(record -> new ActorCatalogFetchEventWithCreationDate(
-            DbConverter.buildActorCatalogFetchEvent(record),
-            record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT)))
-        .collect(
-            () -> new HashMap<>(),
-            this::insertInAccumulatorIfNeeded,
-            (left, right) -> {
-              right.forEach((actorId, value) -> {
-                insertInAccumulatorIfNeeded(left, value);
-              });
-            }));
-  }
-
-  private void insertInAccumulatorIfNeeded(final Map<UUID, ActorCatalogFetchEventWithCreationDate> acc,
-                                           final ActorCatalogFetchEventWithCreationDate value) {
-    if (acc.containsKey(value.getActorCatalogFetchEvent().getActorId())) {
-      final ActorCatalogFetchEventWithCreationDate currentNewest = acc.get(value.actorCatalogFetchEvent.getActorId());
-      if (currentNewest.getCreatedAt().isBefore(value.getCreatedAt())) {
-        acc.put(value.getActorCatalogFetchEvent().getActorId(), value);
-      }
-    } else {
-      acc.put(value.actorCatalogFetchEvent.getActorId(), value);
-    }
+    return database.query(ctx -> ctx.fetch(
+        """
+        select actor_catalog_id, actor_id from
+          (select id, actor_catalog_id, actor_id, config_hash, actor_version, created_at, rank() over (partition by actor_id order by created_at desc) as creation_order_rank, modified_at
+          from public.actor_catalog_fetch_event
+          ) table_with_rank
+        where creation_order_rank = 1;
+        """))
+        .stream().map(DbConverter::buildActorCatalogFetchEvent)
+        .collect(Collectors.toMap(record -> record.getActorId(),
+            record -> record));
   }
 
   /**
