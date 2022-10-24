@@ -11,7 +11,7 @@ import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.AttemptNormalizationStatusRead;
-import io.airbyte.api.client.model.generated.AttemptNormalizationStatuses;
+import io.airbyte.api.client.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.temporal.activity.Activity;
@@ -45,16 +45,16 @@ public class NormalizationSummaryCheckActivityImpl implements NormalizationSumma
       return true;
     }
 
-    final AttemptNormalizationStatuses attemptNormalizationStatuses;
+    final AttemptNormalizationStatusReadList AttemptNormalizationStatusReadList;
     try {
-      attemptNormalizationStatuses = airbyteApiClient.getJobsApi().getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(jobId));
+      AttemptNormalizationStatusReadList = airbyteApiClient.getJobsApi().getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(jobId));
     } catch (ApiException e) {
       throw Activity.wrap(e);
     }
     final AtomicLong totalRecordsCommitted = new AtomicLong(0L);
     final AtomicBoolean shouldReturnTrue = new AtomicBoolean(false);
 
-    attemptNormalizationStatuses.getAttemptNormalizationStatus().stream().sorted(Comparator.comparing(
+    AttemptNormalizationStatusReadList.getAttemptNormalizationStatuses().stream().sorted(Comparator.comparing(
         AttemptNormalizationStatusRead::getAttemptNumber).reversed()).toList()
         .forEach(n -> {
           // Have to cast it because attemptNumber is read from JobRunConfig.

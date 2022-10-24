@@ -5,7 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.api.model.generated.AttemptNormalizationStatuses;
+import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -147,9 +147,9 @@ public class JobHistoryHandler {
         .collect(Collectors.toList());
   }
 
-  public AttemptNormalizationStatuses getAttemptNormalizationStatuses(final JobIdRequestBody jobIdRequestBody) throws IOException {
-    return new AttemptNormalizationStatuses()
-        .attemptNormalizationStatus(jobPersistence.getAttemptNormalizationStatusesForJob(jobIdRequestBody.getId()).stream()
+  public AttemptNormalizationStatusReadList getAttemptNormalizationStatuses(final JobIdRequestBody jobIdRequestBody) throws IOException {
+    return new AttemptNormalizationStatusReadList()
+        .attemptNormalizationStatuses(jobPersistence.getAttemptNormalizationStatusesForJob(jobIdRequestBody.getId()).stream()
             .map(JobConverter::convertAttemptNormalizationStatus).collect(Collectors.toList()));
   }
 

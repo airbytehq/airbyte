@@ -11,7 +11,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.JobsApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.AttemptNormalizationStatusRead;
-import io.airbyte.api.client.model.generated.AttemptNormalizationStatuses;
+import io.airbyte.api.client.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.workers.temporal.sync.NormalizationSummaryCheckActivityImpl;
 import java.util.List;
@@ -50,7 +50,7 @@ class NormalizationSummaryCheckActivityTest {
         new AttemptNormalizationStatusRead().attemptNumber(2).hasRecordsCommitted(true).recordsCommitted(0L).hasNormalizationFailed(true);
 
     when(jobsApi.getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(JOB_ID)))
-        .thenReturn(new AttemptNormalizationStatuses().attemptNormalizationStatus(List.of(attempt1, attempt2)));
+        .thenReturn(new AttemptNormalizationStatusReadList().AttemptNormalizationStatuses(List.of(attempt1, attempt2)));
 
     Assertions.assertThat(true).isEqualTo(normalizationSummaryCheckActivity.shouldRunNormalization(JOB_ID, 3L, Optional.of(0L)));
   }
@@ -70,7 +70,7 @@ class NormalizationSummaryCheckActivityTest {
         new AttemptNormalizationStatusRead().attemptNumber(2).hasRecordsCommitted(true).recordsCommitted(0L).hasNormalizationFailed(true);
 
     when(jobsApi.getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(JOB_ID)))
-        .thenReturn(new AttemptNormalizationStatuses().attemptNormalizationStatus(List.of(attempt1, attempt2)));
+        .thenReturn(new AttemptNormalizationStatusReadList().AttemptNormalizationStatuses(List.of(attempt1, attempt2)));
     Assertions.assertThat(false).isEqualTo(normalizationSummaryCheckActivity.shouldRunNormalization(JOB_ID, 3L, Optional.of(0L)));
   }
 
@@ -84,7 +84,7 @@ class NormalizationSummaryCheckActivityTest {
         new AttemptNormalizationStatusRead().attemptNumber(2).hasRecordsCommitted(true).recordsCommitted(20L).hasNormalizationFailed(false);
 
     when(jobsApi.getAttemptNormalizationStatusesForJob(new JobIdRequestBody().id(JOB_ID)))
-        .thenReturn(new AttemptNormalizationStatuses().attemptNormalizationStatus(List.of(attempt1, attempt2)));
+        .thenReturn(new AttemptNormalizationStatusReadList().AttemptNormalizationStatuses(List.of(attempt1, attempt2)));
     Assertions.assertThat(false).isEqualTo(normalizationSummaryCheckActivity.shouldRunNormalization(JOB_ID, 3L, Optional.of(0L)));
   }
 

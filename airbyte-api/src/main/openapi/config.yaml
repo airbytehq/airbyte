@@ -2187,7 +2187,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AttemptNormalizationStatuses"
+                $ref: "#/components/schemas/AttemptNormalizationStatusReadList"
 
   /v1/health:
     get:
@@ -4844,10 +4844,10 @@ components:
       properties:
         succeeded:
           type: boolean
-    AttemptNormalizationStatuses:
+    AttemptNormalizationStatusReadList:
       type: object
       properties:
-        attemptNormalizationStatus:
+        attemptNormalizationStatuses:
           type: array
           items:
             $ref: "#/components/schemas/AttemptNormalizationStatusRead"

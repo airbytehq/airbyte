@@ -244,9 +244,11 @@ public class JobConverter {
 
   public static AttemptNormalizationStatusRead convertAttemptNormalizationStatus(
                                                                                  AttemptNormalizationStatus databaseStatus) {
-    return new AttemptNormalizationStatusRead().attemptNumber(databaseStatus.attemptNumber())
+    return new AttemptNormalizationStatusRead()
+        .attemptNumber(databaseStatus.attemptNumber())
         .hasRecordsCommitted(!databaseStatus.recordsCommitted().isEmpty())
-        .recordsCommitted(databaseStatus.recordsCommitted().orElse(0L)).hasNormalizationFailed(databaseStatus.normalizationFailed());
+        .recordsCommitted(databaseStatus.recordsCommitted().orElse(0L))
+        .hasNormalizationFailed(databaseStatus.normalizationFailed());
   }
 
 }
