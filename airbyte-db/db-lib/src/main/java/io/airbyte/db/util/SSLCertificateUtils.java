@@ -167,8 +167,7 @@ public class SSLCertificateUtils {
     try {
       CertificateFactory factory = CertificateFactory.getInstance(X509);
       Certificate trustedCa = factory.generateCertificate(
-          new ByteArrayInputStream(caCertificate.getBytes(StandardCharsets.UTF_8))
-      );
+          new ByteArrayInputStream(caCertificate.getBytes(StandardCharsets.UTF_8)));
       KeyStore trustStore = KeyStore.getInstance(PKCS_12);
       trustStore.load(null, null);
       trustStore.setCertificateEntry("ca", trustedCa);
