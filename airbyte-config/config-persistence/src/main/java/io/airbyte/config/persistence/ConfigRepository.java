@@ -992,6 +992,22 @@ public class ConfigRepository {
     return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
   }
 
+  public Map<UUID, ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds)
+      throws IOException {
+
+    return database.query(ctx -> ctx.fetch(
+        """
+        select actor_catalog_id, actor_id from
+          (select actor_catalog_id, actor_id, rank() over (partition by actor_id order by created_at desc) as creation_order_rank
+          from public.actor_catalog_fetch_event
+          ) table_with_rank
+        where creation_order_rank = 1;
+        """))
+        .stream().map(DbConverter::buildActorCatalogFetchEvent)
+        .collect(Collectors.toMap(record -> record.getActorId(),
+            record -> record));
+  }
+
   /**
    * Stores source catalog information.
    *
