@@ -11,7 +11,8 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from airbyte_cdk.models import SyncMode
 from requests.auth import HTTPBasicAuth
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -55,7 +56,7 @@ class KlarnaStream(HttpStream, ABC):
 
     See the reference docs for the full list of configurable options.
     """
-    def __init__(self, region: str,  playground: bool, authenticator: HTTPBasicAuth, **kwargs):
+    def __init__(self, region: str,  playground: bool, authenticator: BasicHttpAuthenticator, **kwargs):
         self.region = region
         self.playground = playground
         self.kwargs = kwargs
@@ -197,8 +198,6 @@ class Employees(IncrementalKlarnaStream):
 class SourceKlarna(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
 
@@ -206,7 +205,18 @@ class SourceKlarna(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        return True, None
+        try:
+            auth = HTTPBasicAuth(username=config['username'], password=config['password'])
+            conn_test_stream = Transactions(authenticator=auth, **config)
+            conn_test_stream.page_size = 1
+            conn_test_stream.next_page_token = lambda x: None
+            records = conn_test_stream.read_records(sync_mode=SyncMode.full_refresh)
+            # Try to read one value from records iterator
+            next(records, None)
+            return True, None
+        except Exception as e:
+            print(e)
+            return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -215,5 +225,5 @@ class SourceKlarna(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = HTTPBasicAuth(username=config['username'], password=config['password'])
+        auth = BasicHttpAuthenticator(username=config['username'], password=config['password'])
         return [Transactions(authenticator=auth, **config)]
