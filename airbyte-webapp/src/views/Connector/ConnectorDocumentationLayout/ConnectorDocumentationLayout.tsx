@@ -20,12 +20,12 @@ export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unkn
 
   return (
     <ResizablePanels>
-      <Panel className={styles.leftPanel} minWidth={300} startingFlex={0.5}>
+      <Panel className={styles.leftPanel} minWidth={300} flex={0.5}>
         {children}
       </Panel>
       {showDocumentationPanel && <Splitter />}
       {showDocumentationPanel && (
-        <Panel startingFlex={0.5}>
+        <Panel flex={0.5}>
           <Suspense fallback={<LoadingPage />}>
             <LazyDocumentationPanel />
           </Suspense>

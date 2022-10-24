@@ -1,1 +1,1 @@
-export { ResizablePanels } from "./ResizablePanels";
+export * from "./ResizablePanels";

@@ -13,7 +13,9 @@
 .panelStyle {
   overflow: hidden;
   position: relative;
+  background: rebeccapurple;
 }
+
 // .leftPanelStyle.leftPanelStyle,
 // .rightPanelStyle.rightPanelStyle {
 //   overflow: hidden;
@@ -86,6 +88,6 @@
 
 .splitter {
   // !important is necessary to override the default reflex styles
-  border: 0px !important;
+  border: 0 !important;
   background-color: transparent !important;
 }
