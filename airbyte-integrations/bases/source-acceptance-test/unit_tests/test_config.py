@@ -195,4 +195,5 @@ class TestConfig:
         ],
     )
     def test_legacy_config_migration(self, legacy_config, expected_parsed_config):
+        assert config.Config.is_legacy(legacy_config)
         assert config.Config.parse_obj(legacy_config) == expected_parsed_config
