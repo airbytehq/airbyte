@@ -4,13 +4,14 @@
 
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib import parse
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests.exceptions import HTTPError
 
 from .graphql import CursorStorage, QueryReactions, get_query_pull_requests, get_query_reviews
@@ -65,47 +66,63 @@ class GithubStream(HttpStream, ABC):
         return False
 
     def should_retry(self, response: requests.Response) -> bool:
-        # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
-        # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
+        if super().should_retry(response):
+            return True
+
         retry_flag = (
             # The GitHub GraphQL API has limitations
             # https://docs.github.com/en/graphql/overview/resource-limitations
             (response.headers.get("X-RateLimit-Resource") == "graphql" and self.check_graphql_rate_limited(response.json()))
             # Rate limit HTTP headers
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
-            or response.headers.get("X-RateLimit-Remaining") == "0"
+            or (response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0")
             # Secondary rate limits
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-            or response.headers.get("Retry-After")
-            or response.status_code
-            in (
-                requests.codes.SERVER_ERROR,
-                requests.codes.BAD_GATEWAY,
-            )
+            or "Retry-After" in response.headers
         )
         if retry_flag:
+            headers = [
+                "X-RateLimit-Resource",
+                "X-RateLimit-Remaining",
+                "X-RateLimit-Reset",
+                "X-RateLimit-Limit",
+                "X-RateLimit-Used",
+                "Retry-After",
+            ]
+            headers = ", ".join([f"{h}: {response.headers[h]}" for h in headers if h in response.headers])
+            if headers:
+                headers = f"HTTP headers: {headers},"
+
             self.logger.info(
-                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
+                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code, {headers} with message: {response.text}"
             )
 
         return retry_flag
 
-    def backoff_time(self, response: requests.Response) -> Union[int, float]:
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
 
-        if response.status_code == requests.codes.SERVER_ERROR:
-            return None
+        min_backoff_time = 60.0
 
-        retry_after = int(response.headers.get("Retry-After", 0))
-        if retry_after:
-            return retry_after
+        retry_after = response.headers.get("Retry-After")
+        if retry_after is not None:
+            return max(float(retry_after), min_backoff_time)
 
         reset_time = response.headers.get("X-RateLimit-Reset")
-        backoff_time = float(reset_time) - time.time() if reset_time else 60
+        if reset_time:
+            return max(float(reset_time) - time.time(), min_backoff_time)
 
-        return max(backoff_time, 60)  # This is a guarantee that no negative value will be returned.
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        if (
+            isinstance(exception, DefaultBackoffException)
+            and exception.response.status_code == requests.codes.BAD_GATEWAY
+            and self.large_stream
+            and self.page_size > 1
+        ):
+            return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
+        return super().get_error_display_message(exception)
 
     def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get out the stream_slice parts for later use.
@@ -152,6 +169,8 @@ class GithubStream(HttpStream, ABC):
                     f"Syncing `{self.name}` stream isn't available for repository "
                     f"`{stream_slice['repository']}`, it seems like this repository is empty."
                 )
+            elif e.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
+                error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
             else:
                 # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
                 self.logger.error(f"Undefined error while reading records: {e.response.text}")
@@ -595,6 +614,7 @@ class Comments(IncrementalMixin, GithubStream):
 
     use_cache = True
     large_stream = True
+    max_retries = 7
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
@@ -1353,18 +1373,26 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/actions/runs/{stream_slice['run_id']}/jobs"
 
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        )
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        parent_stream_state = None
+        if stream_state is not None:
+            parent_stream_state = {repository: {self.parent.cursor_field: v[self.cursor_field]} for repository, v in stream_state.items()}
+        parent_stream_slices = self.parent.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_stream_state)
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=parent_stream_state
             )
             for record in parent_records:
-                yield {"repository": record["repository"]["full_name"], "run_id": record["id"]}
+                stream_slice["run_id"] = record["id"]
+                yield from super().read_records(
+                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                )
 
     def parse_response(
         self,
@@ -1373,14 +1401,16 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        for record in response.json().get("jobs"):  # GitHub puts records in an array.
-            yield self.transform(record=record, stream_slice=stream_slice)
+        for record in response.json()["jobs"]:
+            if record.get(self.cursor_field):
+                yield self.transform(record=record, stream_slice=stream_slice)
 
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-        record["run_id"] = stream_slice["run_id"]
-        record["repository"] = stream_slice["repository"]
-        return record
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params["filter"] = "all"
+        return params
 
 
 class TeamMembers(GithubStream):

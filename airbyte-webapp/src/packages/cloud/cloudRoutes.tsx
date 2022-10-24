@@ -6,10 +6,12 @@ import ApiErrorBoundary from "components/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
+import { useExperiment } from "hooks/services/Experiment";
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useQuery } from "hooks/useQuery";
+import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 import { Auth } from "packages/cloud/views/auth";
@@ -57,6 +59,7 @@ const MainRoutes: React.FC = () => {
   const { setWorkspaceFeatures } = useFeatureService();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
+  const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
 
   useEffect(() => {
     const outOfCredits =
@@ -81,8 +84,11 @@ const MainRoutes: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
 
-  const mainNavigate = workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections;
+  const mainNavigate =
+    workspace.displaySetupWizard && !hideOnboardingExperiment ? RoutePaths.Onboarding : RoutePaths.Connections;
 
+  // exp-speedy-connection
+  const { isExperimentVariant } = useExperimentSpeedyConnection();
   return (
     <ApiErrorBoundary>
       <Routes>
@@ -92,7 +98,7 @@ const MainRoutes: React.FC = () => {
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
 
-        {workspace.displaySetupWizard && (
+        {(workspace.displaySetupWizard || isExperimentVariant) && !hideOnboardingExperiment && (
           <Route
             path={RoutePaths.Onboarding}
             element={

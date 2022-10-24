@@ -225,7 +225,7 @@ class SourceGithub(AbstractSource):
             team_members_stream,
             Users(**organization_args),
             Workflows(**repository_args_with_start_date),
-            WorkflowRuns(**repository_args_with_start_date),
+            workflow_runs_stream,
             WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]

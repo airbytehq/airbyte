@@ -113,7 +113,6 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveIpAddress(db))
-        .put(JdbcUtils.TCP_PORT_KEY, NATIVE_SECURE_PORT)
         .put(JdbcUtils.PORT_KEY, HTTPS_PORT)
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, USER_NAME)

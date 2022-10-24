@@ -103,13 +103,16 @@ class SourceMixpanel(AbstractSource):
         streams = [
             Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
-            CohortMembers(authenticator=auth, **config),
             Funnels(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
         ]
 
         # streams with dynamically generated schema
-        for stream in [Engage(authenticator=auth, **config), Export(authenticator=auth, **config)]:
+        for stream in [
+            CohortMembers(authenticator=auth, **config),
+            Engage(authenticator=auth, **config),
+            Export(authenticator=auth, **config),
+        ]:
             try:
                 stream.get_json_schema()
             except requests.HTTPError as e:

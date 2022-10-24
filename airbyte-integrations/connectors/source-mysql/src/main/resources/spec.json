@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/mysql",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MySql Source Spec",
@@ -42,8 +42,8 @@
         "order": 4
       },
       "jdbc_url_params": {
-        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
-        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-jdbc-url-format.html\">JDBC URL parameters</a>.",
+        "title": "JDBC URL Parameters (Advanced)",
         "type": "string",
         "order": 5
       },
@@ -126,7 +126,7 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
+                "title": "Client key password",
                 "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
@@ -171,7 +171,7 @@
               },
               "client_key_password": {
                 "type": "string",
-                "title": "Client key password (Optional)",
+                "title": "Client key password",
                 "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
                 "airbyte_secret": true,
                 "order": 4
@@ -187,7 +187,7 @@
         "order": 8,
         "oneOf": [
           {
-            "title": "STANDARD",
+            "title": "Standard",
             "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
             "required": ["method"],
             "properties": {
@@ -211,6 +211,21 @@
                 "enum": ["CDC"],
                 "default": "CDC",
                 "order": 0
+              },
+              "initial_waiting_seconds": {
+                "type": "integer",
+                "title": "Initial Waiting Time in Seconds (Advanced)",
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">initial waiting time</a>.",
+                "default": 300,
+                "min": 120,
+                "max": 1200,
+                "order": 1
+              },
+              "server_time_zone": {
+                "type": "string",
+                "title": "Configured server timezone for the MySQL source (Advanced)",
+                "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
+                "order": 2
               }
             }
           }

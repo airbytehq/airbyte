@@ -1,8 +1,6 @@
-import { links } from "./links";
 import { Config } from "./types";
 
 const defaultConfig: Config = {
-  links,
   segment: { enabled: true, token: "" },
   healthCheckInterval: 20000,
   version: "dev",

@@ -35,6 +35,9 @@ import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.ErrorCode;
+import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
@@ -63,8 +66,6 @@ import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.temporal.ErrorCode;
-import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -131,8 +132,9 @@ public class SchedulerHandler {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final Version protocolVersion = new Version(sourceDef.getProtocolVersion());
 
-    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
+    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion));
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(final SourceCoreConfig sourceConfig)
@@ -146,10 +148,13 @@ public class SchedulerHandler {
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
-        .withConfiguration(partialConfig);
+        .withConfiguration(partialConfig)
+        .withWorkspaceId(sourceConfig.getWorkspaceId());
+
+    final Version protocolVersion = new Version(sourceDef.getProtocolVersion());
 
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
+    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion));
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(final SourceUpdate sourceUpdate)
@@ -172,7 +177,8 @@ public class SchedulerHandler {
     final DestinationConnection destination = configRepository.getDestinationConnection(destinationIdRequestBody.getDestinationId());
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-    return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
+    final Version protocolVersion = new Version(destinationDef.getProtocolVersion());
+    return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion));
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(final DestinationCoreConfig destinationConfig)
@@ -186,10 +192,12 @@ public class SchedulerHandler {
     // technically declared as required.
     final DestinationConnection destination = new DestinationConnection()
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
-        .withConfiguration(partialConfig);
+        .withConfiguration(partialConfig)
+        .withWorkspaceId(destinationConfig.getWorkspaceId());
 
     final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
-    return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
+    final Version protocolVersion = new Version(destDef.getProtocolVersion());
+    return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion));
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(final DestinationUpdate destinationUpdate)
@@ -220,14 +228,8 @@ public class SchedulerHandler {
         configRepository.getActorCatalog(discoverSchemaRequestBody.getSourceId(), connectorVersion, configHash);
     final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
-      final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
-      final SourceDiscoverSchemaRead returnValue = discoverJobToOutput(response);
-      if (response.isSuccess()) {
-        final UUID catalogId =
-            configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
-        returnValue.catalogId(catalogId);
-      }
-      return returnValue;
+      final SynchronousResponse<UUID> persistedCatalogId = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, connectorVersion);
+      return retrieveDiscoveredSchema(persistedCatalogId);
     }
     final AirbyteCatalog airbyteCatalog = Jsons.object(currentCatalog.get().getCatalog(), AirbyteCatalog.class);
     final SynchronousJobRead emptyJob = new SynchronousJobRead()
@@ -256,17 +258,22 @@ public class SchedulerHandler {
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
-        .withConfiguration(partialConfig);
-    final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
-    return discoverJobToOutput(response);
+        .withConfiguration(partialConfig)
+        .withWorkspaceId(sourceCreate.getWorkspaceId());
+    final SynchronousResponse<UUID> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, sourceDef.getDockerImageTag());
+    return retrieveDiscoveredSchema(response);
   }
 
-  private SourceDiscoverSchemaRead discoverJobToOutput(final SynchronousResponse<AirbyteCatalog> response) {
+  private SourceDiscoverSchemaRead retrieveDiscoveredSchema(final SynchronousResponse<UUID> response) throws ConfigNotFoundException, IOException {
     final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
     if (response.isSuccess()) {
-      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(response.getOutput()));
+      ActorCatalog catalog = configRepository.getActorCatalogById(response.getOutput());
+      final AirbyteCatalog persistenceCatalog = Jsons.object(catalog.getCatalog(),
+          io.airbyte.protocol.models.AirbyteCatalog.class);
+      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(persistenceCatalog));
+      sourceDiscoverSchemaRead.catalogId(response.getOutput());
     }
 
     return sourceDiscoverSchemaRead;
@@ -380,7 +387,8 @@ public class SchedulerHandler {
   private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException, JsonValidationException, ConfigNotFoundException {
     final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(
         connectionId,
-        configRepository.getAllStreamsForConnection(connectionId));
+        configRepository.getAllStreamsForConnection(connectionId),
+        false);
 
     return readJobFromResult(resetConnectionResult);
   }

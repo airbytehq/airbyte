@@ -7,12 +7,12 @@ package io.airbyte.workers.config;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.SecretPersistenceType;
 import io.airbyte.config.Configs.TrackingStrategy;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -65,11 +65,6 @@ public class ApplicationBeanFactory {
   @Singleton
   public TrackingStrategy trackingStrategy(@Value("${airbyte.tracking-strategy}") final String trackingStrategy) {
     return convertToEnum(trackingStrategy, TrackingStrategy::valueOf, TrackingStrategy.LOGGING);
-  }
-
-  @Singleton
-  public WorkerEnvironment workerEnvironment(@Value("${airbyte.worker.env}") final String workerEnv) {
-    return convertToEnum(workerEnv, WorkerEnvironment::valueOf, WorkerEnvironment.DOCKER);
   }
 
   @Singleton
@@ -126,7 +121,6 @@ public class ApplicationBeanFactory {
   @Requires(env = WorkerMode.CONTROL_PLANE)
   public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
     return JsonSecretsProcessor.builder()
-        .maskSecrets(!featureFlags.exposeSecretsInExport())
         .copySecrets(false)
         .build();
   }

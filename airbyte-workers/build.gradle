@@ -1,8 +1,5 @@
-import org.jsonschema2pojo.SourceType
-
 plugins {
     id 'application'
-    id 'com.github.eirnym.js2p' version '1.0'
     id 'airbyte-integration-test-java'
 }
 
@@ -35,6 +32,7 @@ dependencies {
     implementation 'org.apache.commons:commons-text:1.9'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
     implementation libs.micrometer.statsd
+    implementation libs.bundles.datadog
     implementation 'io.sentry:sentry:6.3.1'
     implementation 'net.bytebuddy:byte-buddy:1.12.14'
     implementation 'org.springframework:spring-core:5.3.22'
@@ -42,9 +40,12 @@ dependencies {
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-docker')
+    implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
+    implementation project(':airbyte-commons-worker')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-config:init')
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-metrics:metrics-lib')
@@ -58,7 +59,7 @@ dependencies {
         exclude group: 'io.micronaut.security'
         exclude group: 'io.micronaut.sql'
     }
-    implementation project(':airbyte-api')
+    implementation project(':airbyte-worker-models')
 
     testAnnotationProcessor platform(libs.micronaut.bom)
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
@@ -79,20 +80,6 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-workers')
     integrationTestJavaImplementation libs.bundles.micronaut.test
-}
-
-jsonSchema2Pojo {
-    sourceType = SourceType.YAMLSCHEMA
-    source = files("${sourceSets.main.output.resourcesDir}/workers_models")
-    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
-    removeOldOutput = true
-
-    targetPackage = 'io.airbyte.persistence.job.models'
-
-    useLongIntegers = true
-    generateBuilders = true
-    includeConstructors = false
-    includeSetters = true
 }
 
 mainClassName = 'io.airbyte.workers.Application'
