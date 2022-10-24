@@ -46,7 +46,6 @@ definitions:
         field_name: "limit"
         inject_into: "request_parameter"
 
-
 streams:
   - type: DeclarativeStream
     $options:

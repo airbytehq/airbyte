@@ -28,7 +28,7 @@
     },
     "metadata": {
       "type": ["null", "object"],
-      "properties":{
+      "properties": {
         "order_dispatch_date": {
           "type": ["null", "string"]
         }
@@ -43,10 +43,10 @@
         "fx_currency": {
           "type": ["null", "string"]
         },
-        "fx_amount":  {
+        "fx_amount": {
           "type": ["null", "integer"]
         },
-        "exchange_rate":  {
+        "exchange_rate": {
           "type": ["null", "string"]
         },
         "estimated_exchange_rate": {
@@ -57,15 +57,15 @@
     "links": {
       "type": ["null", "object"],
       "properties": {
-        "mandate":  {
+        "mandate": {
           "type": ["null", "string"]
         },
-        "creditor":  {
+        "creditor": {
           "type": ["null", "string"]
         }
       }
     },
-    "retry_if_possible":  {
+    "retry_if_possible": {
       "type": ["null", "boolean"]
     }
   }
