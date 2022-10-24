@@ -185,4 +185,4 @@ class API:
         # This is only a config change as per https://github.com/facebook/facebook-python-business-sdk/pull/620
         # TODO: Delete this when facebook_marketing v15.0 is released through pypi
         ads_api_config["API_VERSION"] = "v15.0"
-        ads_api_config["SDK_VERSION"] = "v15.0"
+        ads_api_config["SDK_VERSION"] = "v15.0.0"
