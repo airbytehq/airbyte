@@ -1,4 +1,6 @@
 
+from unittest.mock import MagicMock
+
 import pytest
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.source import (
