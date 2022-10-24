@@ -43,7 +43,7 @@ def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
 
 
 @pytest.fixture(name="test_strictness_level", scope="session")
-def test_strictness_level(acceptance_test_config: Config):
+def test_strictness_level_fixture(acceptance_test_config: Config):
     return acceptance_test_config.test_strictness_level
 
 
