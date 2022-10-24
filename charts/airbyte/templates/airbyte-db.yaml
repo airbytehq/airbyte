@@ -16,25 +16,8 @@ spec:
   selector:
     {{ include "airbyte.databaseSelectorLabels" . | nindent 4 }}
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: airbyte-volume-db
-  annotations:
-    helm.sh/hook: pre-install,pre-upgrade
-    helm.sh/hook-weight: "-1"
-  labels:
-    {{ include "airbyte.databaseLabels" . | nindent 4 }}
-  finalizers: null
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 500Mi
----
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: airbyte-db
   annotations:
@@ -44,9 +27,7 @@ metadata:
     {{ include "airbyte.databaseLabels" . | nindent 4 }}
 spec:
   replicas: 1
-  # Recreate strategy is necessary to avoid multiple simultaneous db pods running and corrupting the db state
-  strategy:
-    type: Recreate
+  serviceName: airbyte-db-svc
   selector:
     matchLabels:
       {{ include "airbyte.databaseSelectorLabels" . | nindent 6 }}
@@ -57,7 +38,7 @@ spec:
     spec:
       containers:
         - name: airbyte-db-container
-          image: airbyte/db:a03509b
+          image: airbyte/db:{{ ((.Values.global.image).tag) | default .Chart.AppVersion }}
           env:
             - name: POSTGRES_DB
               value: {{ .Values.postgresql.postgresqlDatabase }}
@@ -72,8 +53,12 @@ spec:
           volumeMounts:
             - name: airbyte-volume-db
               mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: airbyte-volume-db
-          persistentVolumeClaim:
-            claimName: airbyte-volume-db
+  volumeClaimTemplates:
+  - metadata:
+      name: airbyte-volume-db
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 500Mi
 {{- end }}

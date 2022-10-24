@@ -2,28 +2,21 @@ import { Field, FieldArray } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
-import styled from "styled-components";
 
 import { Card } from "components/ui/Card";
 import { Text } from "components/ui/Text";
 
-import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
-import {
-  ConnectionStatus,
-  OperationCreate,
-  OperationRead,
-  OperatorType,
-  WebBackendConnectionRead,
-} from "core/request/AirbyteClient";
+import { NormalizationType } from "core/domain/connection";
+import { OperationCreate, OperationRead, OperatorType } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
-import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { FormikOnSubmit } from "types/formik";
 import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
 import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
-import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 import {
   getInitialNormalization,
   getInitialTransformations,
@@ -31,32 +24,15 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
-interface ConnectionTransformationTabProps {
-  connection: WebBackendConnectionRead;
-}
-
-const Content = styled.div`
-  max-width: 1073px;
-  margin: 0 auto;
-  padding-bottom: 10px;
-`;
-
-const NoSupportedTransformationCard = styled(Card)`
-  max-width: 500px;
-  margin: 0 auto;
-  min-height: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
+import styles from "./ConnectionTransformationTab.module.scss";
+import { DbtCloudTransformationsCard } from "./ConnectionTransformationTab/DbtCloudTransformationsCard";
 
 const CustomTransformationsCard: React.FC<{
   operations?: OperationCreate[];
   onSubmit: FormikOnSubmit<{ transformations?: OperationRead[] }>;
-  mode: ConnectionFormMode;
-}> = ({ operations, onSubmit, mode }) => {
+}> = ({ operations, onSubmit }) => {
   const [editingTransformation, toggleEditingTransformation] = useToggle(false);
-
+  const { mode } = useConnectionFormService();
   const initialValues = useMemo(
     () => ({
       transformations: getInitialTransformations(operations || []),
@@ -75,7 +51,6 @@ const CustomTransformationsCard: React.FC<{
         onSubmit,
       }}
       submitDisabled={editingTransformation}
-      mode={mode}
     >
       <FieldArray name="transformations">
         {(formProps) => (
@@ -94,8 +69,8 @@ const CustomTransformationsCard: React.FC<{
 const NormalizationCard: React.FC<{
   operations?: OperationRead[];
   onSubmit: FormikOnSubmit<{ normalization?: NormalizationType }>;
-  mode: ConnectionFormMode;
-}> = ({ operations, onSubmit, mode }) => {
+}> = ({ operations, onSubmit }) => {
+  const { mode } = useConnectionFormService();
   const initialValues = useMemo(
     () => ({
       normalization: getInitialNormalization(operations, true),
@@ -111,23 +86,23 @@ const NormalizationCard: React.FC<{
       }}
       title={<FormattedMessage id="connection.normalization" />}
       collapsible
-      mode={mode}
     >
       <Field name="normalization" component={NormalizationField} mode={mode} />
     </FormCard>
   );
 };
 
-export const ConnectionTransformationTab: React.FC<ConnectionTransformationTabProps> = ({ connection }) => {
+export const ConnectionTransformationTab: React.FC = () => {
+  const { connection, updateConnection } = useConnectionEditService();
+  const { mode } = useConnectionFormService();
   const definition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
-  const { mutateAsync: updateConnection } = useUpdateConnection();
   const workspace = useCurrentWorkspace();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_TRANSFORMATION);
   const { supportsNormalization } = definition;
   const supportsDbt = useFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
-
-  const mode = connection.status === ConnectionStatus.deprecated ? "readonly" : "edit";
+  const supportsCloudDbtIntegration = useFeature(FeatureItem.AllowDBTCloudIntegration) && definition.supportsDbt;
+  const noSupportedTransformations = !supportsNormalization && !supportsDbt && !supportsCloudDbtIntegration;
 
   const onSubmit: FormikOnSubmit<{ transformations?: OperationRead[]; normalization?: NormalizationType }> = async (
     values,
@@ -143,11 +118,7 @@ export const ConnectionTransformationTab: React.FC<ConnectionTransformationTabPr
           (connection.operations ?? [])?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.dbt)
         );
 
-    await updateConnection(
-      buildConnectionUpdate(connection, {
-        operations,
-      })
-    );
+    await updateConnection({ connectionId: connection.connectionId, operations });
 
     const nextFormValues: typeof values = {};
     if (values.transformations) {
@@ -159,25 +130,22 @@ export const ConnectionTransformationTab: React.FC<ConnectionTransformationTabPr
   };
 
   return (
-    <Content>
+    <div className={styles.content}>
       <fieldset
         disabled={mode === "readonly"}
         style={{ border: "0", pointerEvents: `${mode === "readonly" ? "none" : "auto"}` }}
       >
-        {supportsNormalization && (
-          <NormalizationCard operations={connection.operations} onSubmit={onSubmit} mode={mode} />
-        )}
-        {supportsDbt && (
-          <CustomTransformationsCard operations={connection.operations} onSubmit={onSubmit} mode={mode} />
-        )}
-        {!supportsNormalization && !supportsDbt && (
-          <NoSupportedTransformationCard>
+        {supportsNormalization && <NormalizationCard operations={connection.operations} onSubmit={onSubmit} />}
+        {supportsDbt && <CustomTransformationsCard operations={connection.operations} onSubmit={onSubmit} />}
+        {supportsCloudDbtIntegration && <DbtCloudTransformationsCard connection={connection} />}
+        {noSupportedTransformations && (
+          <Card className={styles.customCard}>
             <Text as="p" size="lg" centered>
               <FormattedMessage id="connectionForm.operations.notSupported" />
             </Text>
-          </NoSupportedTransformationCard>
+          </Card>
         )}
       </fieldset>
-    </Content>
+    </div>
   );
 };

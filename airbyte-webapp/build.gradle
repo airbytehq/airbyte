@@ -22,7 +22,7 @@ node {
 
 npm_run_build {
     inputs.files commonConfigs
-    inputs.file '.eslintrc'
+    inputs.file '.eslintrc.js'
     inputs.dir 'public'
     inputs.dir 'src'
 
