@@ -34,7 +34,7 @@
         "type": "integer"
       },
       "reply_to_post_number": {
-        "type": ["null", "string"]
+        "type": ["null", "integer"]
       },
       "quote_count": {
         "type": "integer"
@@ -109,13 +109,13 @@
         "type": ["null", "string"]
       },
       "actions_summary": {
-        "type": ["object"],
+        "type": "array",
           "properties": {
             "id": {
-              "type": "integer"
+              "type": ["null", "integer"]
             },
             "can_act": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             }
           }
       },
@@ -138,13 +138,13 @@
         "type": "integer"
       },
       "deleted_at": {
-        "type": "string"
+        "type": ["null", "string"]
       },
       "user_deleted": {
         "type": "boolean"
       },
       "edit_reason": {
-        "type": "string"
+        "type": ["null", "string"]
       },
       "can_view_edit_history": {
         "type": "boolean"

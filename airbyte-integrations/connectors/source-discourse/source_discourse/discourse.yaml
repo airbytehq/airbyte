@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_pointer: ["latest_posts"]
   requester:
     url_base: "{{ config['url_base'] }}"
     http_method: "GET"
