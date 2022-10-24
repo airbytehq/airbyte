@@ -209,6 +209,12 @@ allprojects {
 // Java projects common configurations
 subprojects { subproj ->
 
+
+    configurations {
+        runtimeClasspath
+    }
+
+
     // Common Docker Configuration:
     // If subprojects have the dockerImageName property configured in their gradle.properties file,
     // register:
@@ -508,6 +514,7 @@ subprojects {
             licenseTask.dependsOn generateFilesTask
         }
     }
+    task listAllDependencies(type: DependencyReportTask) {}
 }
 
 task('generate-docker') {
