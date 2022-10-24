@@ -1,9 +1,14 @@
 package io.airbyte.integrations.destination.redis;
 
+import static io.airbyte.integrations.destination.redis.RedisSslUtil.SslMode.VERIFY_IDENTITY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -19,6 +24,7 @@ public class RedisSslUtil {
   public static final String PARAM_CLIENT_KEY_PASSWORD = "client_key_password";
   public static final String PARAM_SSL_MODE = "mode";
   public static final String PARAM_SSL_MODE_VERIFY_FULL = "verify-full";
+  public static final String PARAM_SSL = "ssl";
 
   private static final String CLIENT_CERTIFICATE = "client.crt";
   private static final String CLIENT_CA_CERTIFICATE = "client-ca.crt";
@@ -32,23 +38,19 @@ public class RedisSslUtil {
   /**
    * set javax.net.ssl.keyStore and javax.net.ssl.trustStore based on provided ca.crt, client.crt, client.kay
    *
-   * @param sslModeConfig json ssl mode config
+   * @param redisSslMode json ssl mode config
    */
-  public static void setupCertificates(final JsonNode sslModeConfig) {
+  public static void setupCertificates(final JsonNode redisSslMode) {
     try {
-      if (isFullVerifyMode(sslModeConfig)) {
+      if (getSslVerifyMode(redisSslMode) == VERIFY_IDENTITY) {
         LOGGER.info("Preparing ssl certificates for {} mode", PARAM_SSL_MODE_VERIFY_FULL);
-        final String clientKeyPassword = getOrGeneratePassword(sslModeConfig);
-        initCertificateStores(sslModeConfig.get(PARAM_CA_CERTIFICATE).asText(),
-            sslModeConfig.get(PARAM_CLIENT_CERTIFICATE).asText(), sslModeConfig.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
+        final String clientKeyPassword = getOrGeneratePassword(redisSslMode);
+        initCertificateStores(redisSslMode.get(PARAM_CA_CERTIFICATE).asText(),
+            redisSslMode.get(PARAM_CLIENT_CERTIFICATE).asText(), redisSslMode.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
       }
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
-  }
-
-  private static boolean isFullVerifyMode(JsonNode sslModeParam) {
-    return sslModeParam.has(PARAM_SSL_MODE) && sslModeParam.get(PARAM_SSL_MODE).asText().equals(PARAM_SSL_MODE_VERIFY_FULL);
   }
 
   /**
@@ -121,5 +123,33 @@ public class RedisSslUtil {
     System.setProperty("javax.net.ssl.trustStore", TRUST_STORE);
     System.setProperty("javax.net.ssl.trustStorePassword", TRUST_PASSWORD);
   }
+
+  public static boolean isSsl(JsonNode jsonConfig) {
+    return jsonConfig.has(PARAM_SSL) && jsonConfig.get(PARAM_SSL).asBoolean();
+  }
+
+  private static SslMode getSslVerifyMode(JsonNode sslModeParam) {
+    return SslMode.bySpec(sslModeParam.get(PARAM_SSL_MODE).asText()).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode"));
+  }
+
+  public enum SslMode {
+
+    DISABLED("disable"),
+    VERIFY_IDENTITY( "verify-full");
+
+    public final List<String> spec;
+
+    SslMode(final String... spec) {
+      this.spec = Arrays.asList(spec);
+    }
+
+    public static Optional<SslMode> bySpec(final String spec) {
+      return Arrays.stream(SslMode.values())
+          .filter(sslMode -> sslMode.spec.contains(spec))
+          .findFirst();
+    }
+
+  }
+
 
 }

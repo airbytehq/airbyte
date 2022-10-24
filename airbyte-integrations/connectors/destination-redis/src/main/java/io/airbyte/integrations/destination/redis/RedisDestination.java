@@ -22,7 +22,6 @@ class RedisDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestination.class);
 
-  private static final String PARAM_SSL_MODE = "ssl_mode";
 
   public static void main(String[] args) throws Exception {
     LOGGER.info("starting destination: {}", RedisDestination.class);
@@ -37,14 +36,7 @@ class RedisDestination extends BaseConnector implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    var redisConfig = new RedisConfig(config);
-
-    RedisCache redisCache = null;
-    try {
-      if (redisConfig.isSsl()) {
-        RedisSslUtil.setupCertificates(config.get(PARAM_SSL_MODE));
-      }
-      redisCache = RedisCacheFactory.newInstance(redisConfig);
+    try (RedisCache redisCache = RedisCacheFactory.newInstance(config)) {
       // check connection and write permissions
       redisCache.ping("Connection check");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
@@ -54,10 +46,6 @@ class RedisDestination extends BaseConnector implements Destination {
           .withMessage("Could not connect to the Redis with the provided configuration. \n" + e
               .getMessage())
           .withStatus(AirbyteConnectionStatus.Status.FAILED);
-    } finally {
-      if (redisCache != null) {
-        redisCache.close();
-      }
     }
 
   }
@@ -66,7 +54,7 @@ class RedisDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog configuredCatalog,
                                             Consumer<AirbyteMessage> outputRecordCollector) {
-    return new RedisMessageConsumer(new RedisConfig(config), configuredCatalog, outputRecordCollector);
+    return new RedisMessageConsumer(config, configuredCatalog, outputRecordCollector);
   }
 
 }

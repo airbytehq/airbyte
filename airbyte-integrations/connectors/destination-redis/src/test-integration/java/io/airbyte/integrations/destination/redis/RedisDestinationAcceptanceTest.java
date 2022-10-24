@@ -38,8 +38,7 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
     configJson = RedisDataFactory.jsonConfig(
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());
-    var redisConfig = new RedisConfig(configJson);
-    redisCache = new RedisHCache(redisConfig);
+    redisCache = new RedisHCache(configJson);
     redisNameTransformer = new RedisNameTransformer();
   }
 

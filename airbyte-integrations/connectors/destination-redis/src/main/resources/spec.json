@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Redis Destination Spec",
     "type": "object",
-    "required": ["host", "port", "cache_type"],
+    "required": ["host", "username", "port", "cache_type"],
     "additionalProperties": false,
     "properties": {
       "host": {
