@@ -4,7 +4,7 @@
 
 import time
 
-from flask import Flask  # Importing the class flask
+from flask import Flask, jsonify, request  # Importing the class flask
 
 # app is the object or instance of Flask
 app = Flask(__name__)
@@ -23,6 +23,12 @@ def hello():
 def wait(wait_time):
     time.sleep(int(wait_time))
     return f"waited {wait_time} before returning"
+
+
+@app.route("/data", methods=["POST"])
+def foo():
+    data = request.json
+    return jsonify(data)
 
 
 # Programs executes from here in a development server (locally on your system)
