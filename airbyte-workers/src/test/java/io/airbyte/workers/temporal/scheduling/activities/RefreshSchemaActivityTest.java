@@ -14,7 +14,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -28,7 +28,7 @@ class RefreshSchemaActivityTest {
 
   static private final UUID SOURCE_ID = UUID.randomUUID();
 
-  @BeforeAll
+  @BeforeEach
   static void setUp() {
     mConfigRepository = mock(ConfigRepository.class);
     refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository));
