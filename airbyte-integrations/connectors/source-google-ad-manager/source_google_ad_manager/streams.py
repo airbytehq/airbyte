@@ -13,10 +13,10 @@ from googleads import ad_manager
 from googleads.errors import AdManagerReportError
 from typing import Any, Mapping, Union, List
 from csv import DictReader as csv_dict_reader
-from .data_classes import AdUnitPerHourItem, AdUnitPerReferrerItem
+from .data_classes import AdUnitPerHourItem, AdUnitPerReferrerItem, ReportStatus
 
 _CHUNK_SIZE = 16 * 1024
-
+API_VERSION = 'v202208'
 
 logger = logging.getLogger('{}.{}'.format(__name__, 'google_ad_manager_report_downloader'))
 
@@ -29,7 +29,7 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
     def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient) -> None:
         super().__init__()
         self.google_ad_manager_client = google_ad_manager_client
-        self.report_downloader = self.google_ad_manager_client.GetDataDownloader(version='v202208')
+        self.report_downloader = self.google_ad_manager_client.GetDataDownloader(version=API_VERSION)
     
     def download_report(self, report_job_id: str, export_format: str, include_report_properties: bool = False,
                         include_totals_row: bool = None, use_gzip_compression: bool = True) -> requests.Response:
@@ -66,10 +66,10 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
         this is the base method to parse the api response
         """
         logger.info("start parsing the response stream, should be replaced with logger")
-
+        timeout = time.time() + 60*10   # 10 minutes from now
         while True:
             chunk = response.read(_CHUNK_SIZE)
-            if not chunk:
+            if not chunk or time.time() > timeout: # timeout after 10 minutes
                 break
             lines = chunk.decode('utf-8')
             reader = csv_dict_reader(lines.splitlines())
@@ -95,12 +95,12 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
 
         status = service.getReportJobStatus(report_job_id)
 
-        while status != 'COMPLETED' and status != 'FAILED':
+        while status != ReportStatus.COMPLETED and status != ReportStatus.FAILED:
             logger.debug('Report job status: %s', status)
             time.sleep(30)
             status = service.getReportJobStatus(report_job_id)
 
-        if status == 'FAILED':
+        if status == ReportStatus.FAILED:
             raise AdManagerReportError(report_job_id)
         else:
             logger.debug('Report has completed successfully')
@@ -248,7 +248,7 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         report_job["reportQuery"]["dimensions"] = dimensions
         report_job["reportQuery"]["columns"] = custom_traffic_source_columns
         report_job["reportQuery"]["adUnitView"] = 'HIERARCHICAL'
-        statement_builder = ad_manager.StatementBuilder(version='v202208')
+        statement_builder = ad_manager.StatementBuilder(version=API_VERSION)
         statement_builder.Where(f"CUSTOM_TARGETING_VALUE_ID IN ({targets_ids})")
         statement_builder.Limit(None).Offset(None)
         report_job["reportQuery"]["statement"] = statement_builder.ToStatement()
@@ -257,17 +257,21 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
 
     def get_custom_targeting_keys_ids(self, name: str) -> List:
         all_keys = []
-        custom_targeting_service = self.google_ad_manager_client.GetService('CustomTargetingService', version='v202208')
-        statement_builder = ad_manager.StatementBuilder(version='v202208')
+        custom_targeting_service = self.google_ad_manager_client.GetService('CustomTargetingService', version=API_VERSION)
+        statement_builder = ad_manager.StatementBuilder(version=API_VERSION)
         page_size = ad_manager.SUGGESTED_PAGE_LIMIT
         if name:
             statement_builder = statement_builder.Where("name = :name").WithBindVariable('name', name)
         statement_builder.limit = page_size
+        timeout = time.time() + 60 * 10  # 10 minutes from now
         while True:
             response = custom_targeting_service.getCustomTargetingKeysByStatement(statement_builder.ToStatement())
-            if 'results' in response and len(response['results']):
-                all_keys.extend(response['results'])
-                statement_builder.offset += statement_builder.limit
+            if time.time() <= timeout:
+                if 'results' in response and len(response['results']):
+                    all_keys.extend(response['results'])
+                    statement_builder.offset += statement_builder.limit
+                else:
+                    break
             else:
                 break
         customs_target_values = self.get_custom_targeting_values(all_keys)
@@ -284,8 +288,8 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         """
         targeting_values = list()
         if all_keys:
-            statement_builder = ad_manager.StatementBuilder(version='v202208')
-            custom_targeting_service = self.google_ad_manager_client.GetService('CustomTargetingService', version='v202208')
+            statement_builder = ad_manager.StatementBuilder(version=API_VERSION)
+            custom_targeting_service = self.google_ad_manager_client.GetService('CustomTargetingService', version=API_VERSION)
             statement = statement_builder.Where("customTargetingKeyId IN ({})".format(",".join([str(key['id']) for key in all_keys])))
             while True:
                 response = custom_targeting_service.getCustomTargetingValuesByStatement(statement.ToStatement())

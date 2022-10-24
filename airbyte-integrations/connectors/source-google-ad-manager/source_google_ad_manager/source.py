@@ -19,7 +19,7 @@ class SourceGoogleAdManager(AbstractSource):
             google_ad_manager_authenticator = self._get_authenticator(config=config)
             networks = google_ad_manager_authenticator.get_networks()
             for network in networks:
-                logger.info('Network with network code "{}" and display name "{}" was found. at the following timezone "{}"'.format(network['networkCode'], network['displayName'], network["timeZone"]))
+                logger.info(f"Network with network code {network['networkCode']} and display name {network['displayName']} was found. at the following timezone {network['timeZone']}")
             return True, None
         except Exception as e:
             return False, e
