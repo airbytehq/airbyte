@@ -76,4 +76,4 @@ https://dashboard.convex.dev/{team}/{project}/{deployment_name}/data
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-10-17 | [7241](https://github.com/airbytehq/airbyte/pull/7241) | 🎉 New Source: Convex |
+| 0.1.0 | 2022-10-24 | [18403](https://github.com/airbytehq/airbyte/pull/18403) | 🎉 New Source: Convex |
