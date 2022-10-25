@@ -42,9 +42,10 @@ class SourceDecidim(Source):
             response = requests.post(
                 config[DECIDIM_GRAPHQL_URL],
                 json={"query":"{decidim{version}}"}
-            ).json()
+            )
+            data = response.json()['data']
             
-            if response.status_code == 200 and response['data']['decidim']['version']:
+            if response.status_code == 200 and data['decidim']['version']:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:
                 return AirbyteConnectionStatus(status=Status.FAILED, message=f"Provided URL of Decidim instance isn't correct. Please recheck decidim graphql URL.")
