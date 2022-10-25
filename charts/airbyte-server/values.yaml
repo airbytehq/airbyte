@@ -139,6 +139,7 @@ resources:
 service:
   type: ClusterIP
   port: 8001
+  annotations: {}
 
 ##  nodeSelector [object] Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
