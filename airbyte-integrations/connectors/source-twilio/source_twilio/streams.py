@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import copy
 from abc import ABC, abstractmethod
 from functools import cached_property
@@ -408,9 +409,7 @@ class MessageMedia(IncrementalTwilioStream, TwilioNestedStream):
 
     @cached_property
     def parent_stream_instance(self):
-        return self.parent_stream(
-            authenticator=self.authenticator, start_date=self._start_date, lookback_window=self._lookback_window
-        )
+        return self.parent_stream(authenticator=self.authenticator, start_date=self._start_date, lookback_window=self._lookback_window)
 
 
 class UsageNestedStream(TwilioNestedStream):

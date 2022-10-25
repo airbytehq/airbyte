@@ -2,27 +2,16 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from contextlib import nullcontext
 from unittest.mock import patch
 
 import pendulum
 import pytest
 import requests
-from contextlib import nullcontext
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_twilio.auth import HttpBasicAuthenticator
 from source_twilio.source import SourceTwilio
-from source_twilio.streams import (
-    Accounts,
-    Addresses,
-    Alerts,
-    Calls,
-    DependentPhoneNumbers,
-    MessageMedia,
-    Messages,
-    TwilioNestedStream,
-    UsageTriggers
-)
-
+from source_twilio.streams import Accounts, Addresses, Alerts, Calls, DependentPhoneNumbers, MessageMedia, TwilioNestedStream, UsageTriggers
 
 TEST_CONFIG = {
     "account_sid": "airbyte.io",
@@ -159,7 +148,7 @@ class TestIncrementalTwilioStream:
                     "EndTime<=": "2022-01-02",
                     "Page": "2",
                     "PageSize": "1000",
-                    "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95"
+                    "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95",
                 },
             ),
         ],
@@ -185,13 +174,12 @@ class TestIncrementalTwilioStream:
         "stream_cls, parent_cls_records, extra_slice_keywords",
         [
             (Calls, [{"subresource_uris": {"calls": "123"}}, {"subresource_uris": {"calls": "124"}}], ["subresource_uri"]),
-            (Alerts, [{}], [])
-        ]
+            (Alerts, [{}], []),
+        ],
     )
     def test_stream_slices(self, mocker, stream_cls, parent_cls_records, extra_slice_keywords):
         stream = stream_cls(
-            authenticator=TEST_CONFIG.get("authenticator"),
-            start_date=pendulum.now().subtract(hours=47).to_iso8601_string()
+            authenticator=TEST_CONFIG.get("authenticator"), start_date=pendulum.now().subtract(hours=47).to_iso8601_string()
         )
         expected_slices = 2 * len(parent_cls_records)  # 2 per day slices per each parent slice
         if isinstance(stream, TwilioNestedStream):
@@ -241,7 +229,7 @@ class TestTwilioNestedStream:
                 Addresses,
                 [{"subresource_uris": {"addresses": "123"}, "sid": "123", "account_sid": "456"}],
                 [{"sid": "123", "account_sid": "456"}],
-            )
+            ),
         ],
     )
     def test_stream_slices(self, stream_cls, parent_stream, record, expected):
