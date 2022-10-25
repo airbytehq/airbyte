@@ -25,7 +25,7 @@ const stripNumericalEntries = (paths: Path): string[] => {
 
 /**
  * Takes a list of paths in an array representation as well as a root path in array representation, concats
- * them as well as prefix them with the `configurationConfiguration` prefix that Formik uses for all connector
+ * them as well as prefix them with the `connectionConfiguration` prefix that Formik uses for all connector
  * parameter values, and joins them to string paths.
  */
 const convertAndPrefixPaths = (paths?: Path[], rootPath: Path = []): string[] => {
