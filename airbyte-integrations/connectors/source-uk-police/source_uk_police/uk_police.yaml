@@ -16,7 +16,7 @@ definitions:
   month_stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime:
-      datetime: "{{ config['start_month'] }}"
+      datetime: "{{ config['start_year_month'] }}"
       format: "%Y-%m"
     end_datetime:
       datetime: "{{ config['end_month'] or now_utc().strftime('%Y-%m') }}"

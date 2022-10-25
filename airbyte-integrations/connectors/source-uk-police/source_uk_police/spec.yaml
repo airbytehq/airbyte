@@ -4,12 +4,12 @@ connectionSpecification:
   title: UK Police Spec
   type: object
   required:
-    - start_month
+    - start_year_month
     - lat
     - lng
   additionalProperties: true
   properties:
-    start_month:
+    start_year_month:
       type: string
       description: The month to start from
       examples:
