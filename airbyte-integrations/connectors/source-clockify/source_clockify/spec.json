@@ -1,5 +1,5 @@
 {
-    "documentationUrl": "https://clockify.me/developers-api",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/clockify",
     "connectionSpecification": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "Clockify Spec",
@@ -10,8 +10,9 @@
         ],
         "properties": {
             "workspace_id": {
-                "type": "string",
-                "description": "WorkSpace Id"
+                "title": "Workspace Id",
+                "description": "WorkSpace Id",
+                "type": "string"
             },
             "api_key": {
                 "title": "API Key",
