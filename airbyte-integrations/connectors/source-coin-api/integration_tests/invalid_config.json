@@ -3,6 +3,6 @@
   "environment": "production",
   "symbol_id": "KRAKENFTS_PERP_BTC_USD",
   "period": "SOME_PERIOD",
-  "start_time": "2025-01-01T00:00:00",
+  "start_date": "2025-01-01T00:00:00",
   "limit": 100000
 }

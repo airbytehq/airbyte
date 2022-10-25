@@ -34,18 +34,18 @@ connectionSpecification:
       examples:
         - 5SEC
         - 2MTH
-    start_time:
+    start_date:
       type: string
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
-      description: The start time in ISO 8601 format.
+      description: The start date in ISO 8601 format.
       examples:
         - "2019-01-01T00:00:00"
-    end_time:
+    end_date:
       type: string
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
       description: |
-        The end time in ISO 8601 format. If not supplied, data will be returned
-        from the start time to the current time, or when the count of result
+        The end date in ISO 8601 format. If not supplied, data will be returned
+        from the start date to the current time, or when the count of result
         elements reaches its limit.
       examples:
         - "2019-01-01T00:00:00"

@@ -14,8 +14,8 @@ definitions:
     request_options_provider:
       request_parameters:
         period_id: "{{ config['period'] }}"
-        time_start: "{{ config['start_time'] }}"
-        time_end: "{{ config['end_time'] }}"
+        time_start: "{{ config['start_date'] }}"
+        time_end: "{{ config['end_date'] }}"
         limit: "{{ config['limit'] }}"
   stream_slicer:
     type: DatetimeStreamSlicer
