@@ -42,7 +42,6 @@ class RDStationMarketingStream(HttpStream, ABC):
         params = {"page_size": 125, "page": self.page}
         if next_page_token:
             params = {"page_size": 125, "page": next_page_token["next_page"]}
-        print(params)
         return params
 
     def parse_response(
