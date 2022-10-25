@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.14
+Fail basic read in `high` `test_strictness_level` if no `bypass_reason` is set on empty_streams. [#18425](https://github.com/airbytehq/airbyte/pull/18425/).
+
 ## 0.2.13
 Fail tests in `high` `test_strictness_level` if all tests are not configured. [#18414](https://github.com/airbytehq/airbyte/pull/18414/).
 
