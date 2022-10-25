@@ -101,13 +101,22 @@ public final class S3BaseChecks {
     attemptWriteAndDeleteS3Object(storageOperations, s3Config, outputTableName, s3);
   }
 
+  /**
+   * Runs some permissions checks:
+   * 1. Check whether the bucket exists; create it if not
+   * 2. Check whether s3://bucketName://bucketPath/ exists; create it (with empty contents) if not
+   * 3. Attempt to create and delete s3://bucketName/outputTableName
+   * 4. Attempt to list all objects in the bucket
+   */
   private static void attemptWriteAndDeleteS3Object(final S3StorageOperations storageOperations,
                                                     final S3DestinationConfig s3Config,
                                                     final String outputTableName,
                                                     final AmazonS3 s3) {
     final var s3Bucket = s3Config.getBucketName();
 
-    storageOperations.createBucketObjectIfNotExists(s3Bucket);
+    if (!s3Config.getBucketPath().isEmpty()) {
+      storageOperations.createBucketObjectIfNotExists(s3Config.getBucketPath());
+    }
     s3.putObject(s3Bucket, outputTableName, "check-content");
     testIAMUserHasListObjectPermission(s3, s3Bucket);
     s3.deleteObject(s3Bucket, outputTableName);

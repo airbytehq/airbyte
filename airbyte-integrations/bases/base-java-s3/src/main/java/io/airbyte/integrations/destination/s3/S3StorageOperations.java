@@ -93,6 +93,11 @@ public class S3StorageOperations extends BlobStorageOperations {
             .replaceAll("/+", "/"));
   }
 
+  /**
+   * Create an object within this bucket with empty contents. Creates the bucket if necessary.
+   *
+   * @param objectPath The path to the object. Must be nonempty.
+   */
   @Override
   public void createBucketObjectIfNotExists(final String objectPath) {
     final String bucket = s3Config.getBucketName();
