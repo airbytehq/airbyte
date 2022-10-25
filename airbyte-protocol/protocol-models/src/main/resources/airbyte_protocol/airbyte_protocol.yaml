@@ -170,6 +170,8 @@ definitions:
         type: string
         enum:
           - ERROR
+          - SOURCE_REQUEST
+          - SOURCE_RESPONSE
       emitted_at:
         description: "the time in ms that the message was emitted"
         type: number
