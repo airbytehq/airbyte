@@ -8,6 +8,7 @@ import { Text } from "components/ui/Text";
 import { ConnectorSpecification } from "core/domain/connector";
 
 import { useServiceForm } from "../../../serviceFormContext";
+import { useAuthentication } from "../../../useAuthentication";
 import styles from "./AuthButton.module.scss";
 import GoogleAuthButton from "./GoogleAuthButton";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
@@ -39,8 +40,9 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
 }
 
 export const AuthButton: React.FC = () => {
-  const { selectedService, authErrors, selectedConnector } = useServiceForm();
-  const hasAuthError = Object.values(authErrors).includes("form.empty.error");
+  const { selectedService, selectedConnector } = useServiceForm();
+  const { hiddenAuthFieldErrors } = useAuthentication();
+  const authRequiredError = Object.values(hiddenAuthFieldErrors).includes("form.empty.error");
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnector!);
@@ -54,8 +56,8 @@ export const AuthButton: React.FC = () => {
   const Component = getButtonComponent(definitionId);
 
   const messageStyle = classnames(styles.message, {
-    [styles.error]: hasAuthError,
-    [styles.success]: !hasAuthError,
+    [styles.error]: authRequiredError,
+    [styles.success]: !authRequiredError,
   });
   const buttonLabel = done ? (
     <FormattedMessage id="connectorForm.reauthenticate" />
@@ -72,7 +74,7 @@ export const AuthButton: React.FC = () => {
           <FormattedMessage id="connectorForm.authenticate.succeeded" />
         </Text>
       )}
-      {hasAuthError && (
+      {authRequiredError && (
         <Text as="div" size="lg" className={messageStyle}>
           <FormattedMessage id="connectorForm.authenticate.required" />
         </Text>

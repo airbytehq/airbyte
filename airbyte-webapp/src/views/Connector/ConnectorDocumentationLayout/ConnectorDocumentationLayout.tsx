@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 import { useWindowSize } from "react-use";
 
 import { LoadingPage } from "components/LoadingPage";
@@ -13,8 +13,10 @@ const LazyDocumentationPanel = lazy(() =>
 );
 
 export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const { formatMessage } = useIntl();
   const { documentationPanelOpen } = useDocumentationPanelContext();
   const screenWidth = useWindowSize().width;
+  const showDocumentationPanel = screenWidth > 500 && documentationPanelOpen;
 
   const documentationPanel = (
     <Suspense fallback={<LoadingPage />}>
@@ -24,15 +26,20 @@ export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unkn
 
   return (
     <ResizablePanels
+      hideRightPanel={!showDocumentationPanel}
       leftPanel={{
         children,
-        smallWidthHeader: <FormattedMessage id="connectorForm.expandForm" />,
         className: styles.leftPanel,
+        minWidth: 500,
       }}
       rightPanel={{
         children: documentationPanel,
-        smallWidthHeader: <FormattedMessage id="connector.setupGuide" />,
-        showPanel: screenWidth > 500 && documentationPanelOpen,
+        minWidth: 60,
+        overlay: {
+          displayThreshold: 350,
+          header: formatMessage({ id: "connector.setupGuide" }),
+          rotation: "counter-clockwise",
+        },
       }}
     />
   );
