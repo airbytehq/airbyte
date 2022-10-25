@@ -8,6 +8,7 @@ export interface Experiments {
   "connector.inviteUsersHint.visible": boolean;
   "connector.inviteUsersHint.linkToUsersPage": boolean;
   "connector.orderOverwrite": Record<string, number>;
+  "connector.revealSort": boolean;
   "connector.frequentlyUsedDestinationIds": string[];
   "connector.startWithDestinationId": string;
   "authPage.rightSideUrl": string | undefined;

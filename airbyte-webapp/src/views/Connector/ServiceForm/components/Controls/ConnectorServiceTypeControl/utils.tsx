@@ -20,7 +20,7 @@ const getOrderForReleaseStage = (stage?: ReleaseStage): number => {
       return 0;
   }
 };
-interface ServiceDropdownOption {
+export interface ServiceDropdownOption {
   label: string;
   value: string;
   img: JSX.Element;

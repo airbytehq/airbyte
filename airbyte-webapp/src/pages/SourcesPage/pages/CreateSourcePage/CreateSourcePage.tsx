@@ -19,7 +19,6 @@ const CreateSourcePage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_NEW);
   const navigate = useNavigate();
   const [successRequest, setSuccessRequest] = useState(false);
-
   const { sourceDefinitions } = useSourceDefinitionList();
   const { mutateAsync: createSource } = useCreateSource();
 
