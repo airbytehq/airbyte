@@ -2,7 +2,6 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 import React from "react";
 
 import { Button } from "../Button";
-import { PillButton } from "../PillButton";
 import { Popout } from "./Popout";
 
 export default {
@@ -39,25 +38,8 @@ const Template: ComponentStory<typeof Popout> = (args) => (
   />
 );
 
-const PillButtonTemplate: ComponentStory<typeof Popout> = (args) => (
-  <Popout
-    {...args}
-    options={options}
-    targetComponent={(targetProps) => (
-      <PillButton asDropdown onClick={() => targetProps.onOpen()} active={targetProps.isOpen}>
-        {args.title}
-      </PillButton>
-    )}
-  />
-);
-
 export const Primary = Template.bind({});
 Primary.args = {
   title: "Title",
   isSearchable: false,
-};
-
-export const WithPillButton = PillButtonTemplate.bind({});
-WithPillButton.args = {
-  title: "With PillButton",
 };
