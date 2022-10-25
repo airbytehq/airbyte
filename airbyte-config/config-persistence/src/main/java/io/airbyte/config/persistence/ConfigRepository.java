@@ -655,7 +655,6 @@ public class ConfigRepository {
    *
    * @param workspaceId - id of the workspace
    * @return destinations
-   * @throws JsonValidationException - throws if returned sources are invalid
    * @throws IOException - you never know when you IO
    */
   public List<DestinationConnection> listWorkspaceDestinationConnection(UUID workspaceId) throws IOException {
