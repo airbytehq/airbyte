@@ -16,5 +16,5 @@ connectionSpecification:
         case sensitive.
       airbyte_secret: true
     survey_id:
-      type: integer
-      description: Your survey id for survey-specific stream
+      type: array
+      description: A List of your survey ids for survey-specific stream
