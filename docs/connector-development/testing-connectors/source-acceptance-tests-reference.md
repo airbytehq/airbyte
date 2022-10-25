@@ -142,7 +142,9 @@ Set `validate_data_points=True` if possible. This validation is going to be enab
 |:----------------------------------| :--- | :--- | :--- |
 | `config_path`                     | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
 | `configured_catalog_path`         | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
-| `empty_streams`                   | array | \[\] | List of streams that might be empty |
+| `empty_streams`                   | array of objects | \[\] | List of streams that might be empty with a `bypass_reason` |
+| `empty_streams[0].name`           | string | | Name of the empty stream |
+| `empty_streams[0].bypass_reason`  | string | None | Reason why this stream is empty |
 | `validate_schema`                 | boolean | True | Verify that structure and types of records matches the schema from discovery command |
 | `validate_data_points`            | boolean | False | Validate that all fields in all streams contained at least one data point |
 | `timeout_seconds`                 | int | 5\*60 | Test execution timeout in seconds |
@@ -278,3 +280,25 @@ acceptance_tests:
     bypass_reason: "Incremental syncs are not supported on this connector."
 ```
 
+#### Basic read: no empty streams are allowed without a `bypass_reason`
+In `high` test strictness level we expect that all streams declared in `empty-streams` to have a `bypass_reason` filled in.
+
+
+E.G. Two streams from `source-recharge` can't be seeded with test data, they are declared as `empty_stream` we an explicit bypass reason.
+
+```yaml
+connector_image: airbyte/source-recharge:dev
+test_strictness_level: high
+acceptance_tests:
+  basic_read:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/streams_with_output_records_catalog.json
+        empty_streams:
+          - name: collections
+            bypass_reason: "This stream can't be seeded in our sandbox account"
+          - name: discounts
+            bypass_reason: "This stream can't be seeded in our sandbox account"
+        timeout_seconds: 1200
+...
+```
