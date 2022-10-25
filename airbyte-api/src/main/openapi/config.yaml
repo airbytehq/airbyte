@@ -4649,6 +4649,7 @@ components:
         - destination
         - status
         - isSyncing
+        - schemaChange
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -4674,6 +4675,8 @@ components:
           $ref: "#/components/schemas/JobStatus"
         isSyncing:
           type: boolean
+        schemaChange:
+          $ref: "#/components/schemas/SchemaChange"
     WebBackendConnectionRead:
       type: object
       required:

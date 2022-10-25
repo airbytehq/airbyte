@@ -198,6 +198,7 @@ public class DbConverter {
 
   public static ActorCatalogFetchEvent buildActorCatalogFetchEvent(final Record record) {
     return new ActorCatalogFetchEvent()
+        .withActorId(record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID))
         .withActorCatalogId(record.get(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID));
   }
 
