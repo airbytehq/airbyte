@@ -133,10 +133,10 @@
             }
         },
         "crew": {
-            "type": "array",
+            "type": ["array","string"],
             "items": {
                 "title": "itemOf_crew",
-                "type": "object",
+                "type": ["object","string"],
                 "properties": {
                     "crew": {
                         "type": [
