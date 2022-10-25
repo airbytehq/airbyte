@@ -14,7 +14,7 @@ You must be the owner of a Notion workspace to create a new integration.
 
 :::
 
-2. Fill out the form. Make sure to check **Read content** and check any other [capabilities](https://developers.notion.com/reference/capabilities) you want to authorize.
+2. Fill out the form. Make sure to check **Read content** and any other [capabilities](https://developers.notion.com/reference/capabilities) you want to authorize.
 3. Click **Submit**.
 4. In the **Integration type** section, select either **Internal integration** (token authorization) or **Public integration** (OAuth2.0 authentication).
 5. Check the capabilities you want to authorize.
