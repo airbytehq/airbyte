@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.DbMigrationApi;
@@ -16,11 +20,14 @@ public class DbMigrationApiController implements DbMigrationApi {
     this.dbMigrationHandler = dbMigrationHandler;
   }
 
-  @Override public DbMigrationExecutionRead executeMigrations(final DbMigrationRequestBody dbMigrationRequestBody) {
+  @Override
+  public DbMigrationExecutionRead executeMigrations(final DbMigrationRequestBody dbMigrationRequestBody) {
     return ConfigurationApi.execute(() -> dbMigrationHandler.migrate(dbMigrationRequestBody));
   }
 
-  @Override public DbMigrationReadList listMigrations(final DbMigrationRequestBody dbMigrationRequestBody) {
+  @Override
+  public DbMigrationReadList listMigrations(final DbMigrationRequestBody dbMigrationRequestBody) {
     return ConfigurationApi.execute(() -> dbMigrationHandler.list(dbMigrationRequestBody));
   }
+
 }

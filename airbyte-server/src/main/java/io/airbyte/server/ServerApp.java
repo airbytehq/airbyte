@@ -340,6 +340,8 @@ public class ServerApp implements ServerRunnable {
         eventRunner,
         configRepository);
 
+    final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -361,6 +363,7 @@ public class ServerApp implements ServerRunnable {
         jobsFlyway,
         attemptHandler,
         connectionsHandler,
+        dbMigrationHandler,
         operationsHandler,
         schedulerHandler,
         stateHandler,

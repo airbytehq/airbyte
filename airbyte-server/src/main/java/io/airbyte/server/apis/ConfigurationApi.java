@@ -109,7 +109,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.StatePersistence;
-import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
@@ -141,7 +140,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
-import org.flywaydb.core.Flyway;
 
 @javax.ws.rs.Path("/v1")
 @Slf4j
@@ -172,8 +170,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
-                          final Database configsDatabase,
-                          final Database jobsDatabase,
                           final StatePersistence statePersistence,
                           final TrackingClient trackingClient,
                           final WorkerEnvironment workerEnvironment,
@@ -181,9 +177,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final AirbyteVersion airbyteVersion,
                           final Path workspaceRoot,
                           final HttpClient httpClient,
-                          final EventRunner eventRunner,
-                          final Flyway configsFlyway,
-                          final Flyway jobsFlyway) {
+                          final EventRunner eventRunner) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;

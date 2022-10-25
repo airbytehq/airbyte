@@ -21,8 +21,10 @@ import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
+import io.airbyte.server.apis.factories.DbMigrationApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
+import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.StateHandler;
@@ -56,6 +58,7 @@ public interface ServerFactory {
                         final Flyway jobsFlyway,
                         final AttemptHandler attemptHandler,
                         final ConnectionsHandler connectionsHandler,
+                        final DbMigrationHandler dbMigrationHandler,
                         final OperationsHandler operationsHandler,
                         final SchedulerHandler schedulerHandler,
                         final StateHandler stateHandler,
@@ -82,6 +85,7 @@ public interface ServerFactory {
                                  final Flyway jobsFlyway,
                                  final AttemptHandler attemptHandler,
                                  final ConnectionsHandler connectionsHandler,
+                                 final DbMigrationHandler dbMigrationHandler,
                                  final OperationsHandler operationsHandler,
                                  final SchedulerHandler schedulerHandler,
                                  final StateHandler stateHandler,
@@ -118,6 +122,8 @@ public interface ServerFactory {
           stateHandler,
           webBackendConnectionsHandler,
           mdc);
+
+      DbMigrationApiFactory.setValues(dbMigrationHandler, mdc);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiController.class, ConnectionApiController.class);
