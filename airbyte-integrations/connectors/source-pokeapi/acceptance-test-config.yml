@@ -1,10 +1,8 @@
-# For demo, we expect tests to fail in high strictness level because configuration for spec and incremental tests are missing.
 connector_image: airbyte/source-pokeapi:dev
 test_strictness_level: high
 acceptance_tests:
   spec:
-    tests:
-      - spec_path: "source_pokeapi/spec.json"
+    bypass_reason: "The spec is currently invalid: it has additionalProperties set to false"
   connection:
     tests:
       - config_path: "integration_tests/config.json"
