@@ -167,7 +167,7 @@ public class SourceHandler {
 
     final List<SourceRead> reads = Lists.newArrayList();
     for (final SourceConnection sc : sourceConnections) {
-      reads.add(buildSourceRead(sc.getSourceId()));
+      reads.add(buildSourceRead(sc));
     }
 
     return new SourceReadList().sources(reads);
@@ -184,7 +184,7 @@ public class SourceHandler {
 
     final List<SourceRead> reads = Lists.newArrayList();
     for (final SourceConnection sourceConnection : sourceConnections) {
-      reads.add(buildSourceRead(sourceConnection.getSourceId()));
+      reads.add(buildSourceRead(sourceConnection));
     }
 
     return new SourceReadList().sources(reads);
@@ -196,7 +196,7 @@ public class SourceHandler {
 
     for (final SourceConnection sci : configRepository.listSourceConnection()) {
       if (!sci.getTombstone()) {
-        final SourceRead sourceRead = buildSourceRead(sci.getSourceId());
+        final SourceRead sourceRead = buildSourceRead(sci);
         if (connectionsHandler.matchSearch(sourceSearch, sourceRead)) {
           reads.add(sourceRead);
         }
