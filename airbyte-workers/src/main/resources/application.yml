@@ -56,7 +56,7 @@ airbyte:
       image: ${CONTAINER_ORCHESTRATOR_IMAGE:}
       secret-mount-path: ${CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH:}
       secret-name: ${CONTAINER_ORCHESTRATOR_SECRET_NAME:}
-      service-account: ${CONTAINER_ORCHESTRATOR_SERVICE_ACCOUNT:}
+      service-account: ${CONTAINER_ORCHESTRATOR_SERVICE_ACCOUNT:`airbyte-admin`}
   control:
     plane:
       auth-endpoint: ${CONTROL_PLANE_AUTH_ENDPOINT:}
