@@ -23,3 +23,9 @@ This source can sync data from the [K6 Cloud API](https://developers.k6.io). At 
 ### Requirements
 
 * API Token
+
+## Changelog
+
+| Version | Date       | Pull Request                                              | Subject                                    |
+| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| 0.1.0   | 2022-10-27 | [#18393](https://github.com/airbytehq/airbyte/pull/18393) | 🎉 New Source: K6 Cloud API [low-code CDK] |
