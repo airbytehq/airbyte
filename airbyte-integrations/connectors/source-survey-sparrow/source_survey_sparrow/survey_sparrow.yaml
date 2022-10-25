@@ -6,7 +6,7 @@ definitions:
     extractor:
       field_pointer: ["data"]
   requester:
-    url_base: "https://eu-api.surveysparrow.com/v3"
+    url_base: "https://api.surveysparrow.com/v3"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -57,7 +57,7 @@ definitions:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
           request_parameters:
-            survey_id: "{{ config['survey_id'] }}"
+            survey_id: "{{ config.get('survey_id') }}"
   responses_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -70,7 +70,7 @@ definitions:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
           request_parameters:
-            survey_id: "{{ config['survey_id'] }}"
+            survey_id: "{{ config.get('survey_id') }}"
   roles_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
