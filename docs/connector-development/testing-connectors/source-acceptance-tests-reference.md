@@ -102,22 +102,22 @@ Verify that a `spec` operation issued to the connector returns a valid connector
 Additional tests are validating the backward compatibility of the current specification compared to the specification of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped. 
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
 
-| Input | Type | Default | Note                                                                                             |
-| :--- | :--- | :--- |:-------------------------------------------------------------------------------------------------|
-| `spec_path` | string | `secrets/spec.json` | Path to a YAML or JSON file representing the spec expected to be output by this connector |
-| `backward_compatibility_tests_config.previous_connector_version` | string | `latest` | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
-| `backward_compatibility_tests_config.disable_for_version` | string | None | Disable the backward compatibility test for a specific version (expects a version following semantic versioning). |
-| `timeout_seconds` | int | 10 | Test execution timeout in seconds                                                                |
+| Input                                                            | Type   | Default             | Note                                                                                                                  |
+| :--------------------------------------------------------------- | :----- | :------------------ | :-------------------------------------------------------------------------------------------------------------------- |
+| `spec_path`                                                      | string | `secrets/spec.json` | Path to a YAML or JSON file representing the spec expected to be output by this connector                             |
+| `backward_compatibility_tests_config.previous_connector_version` | string | `latest`            | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
+| `backward_compatibility_tests_config.disable_for_version`        | string | None                | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
+| `timeout_seconds`                                                | int    | 10                  | Test execution timeout in seconds                                                                                     |
 
 ## Test Connection
 
 Verify that a check operation issued to the connector with the input config file returns a successful response.
 
-| Input | Type | Default | Note |
-| :--- | :--- | :--- | :--- |
-| `config_path` | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
-| `status` | `succeed` `failed` `exception` |  | Indicate if connection check should succeed with provided config |
-| `timeout_seconds` | int | 30 | Test execution timeout in seconds |
+| Input             | Type                           | Default               | Note                                                               |
+| :---------------- | :----------------------------- | :-------------------- | :----------------------------------------------------------------- |
+| `config_path`     | string                         | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
+| `status`          | `succeed` `failed` `exception` |                       | Indicate if connection check should succeed with provided config   |
+| `timeout_seconds` | int                            | 30                    | Test execution timeout in seconds                                  |
 
 ## Test Discovery
 
@@ -125,43 +125,45 @@ Verifies when a `discover` operation is run on the connector using the given con
 Additional tests are validating the backward compatibility of the discovered catalog compared to the catalog of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped. 
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
 
-| Input | Type | Default | Note |
-| :--- | :--- | :--- | :--- |
-| `config_path` | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
-| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
-| `timeout_seconds` | int | 30 | Test execution timeout in seconds |
-| `backward_compatibility_tests_config.previous_connector_version` | string | `latest` | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
-| `backward_compatibility_tests_config.disable_for_version` | string | None | Disable the backward compatibility test for a specific version (expects a version following semantic versioning). |
+| Input                                                            | Type   | Default                                     | Note                                                                                                                  |
+| :--------------------------------------------------------------- | :----- | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- |
+| `config_path`                                                    | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                    |
+| `configured_catalog_path`                                        | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                            |
+| `timeout_seconds`                                                | int    | 30                                          | Test execution timeout in seconds                                                                                     |
+| `backward_compatibility_tests_config.previous_connector_version` | string | `latest`                                    | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
+| `backward_compatibility_tests_config.disable_for_version`        | string | None                                        | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
 
 ## Test Basic Read
 
 Configuring all streams in the input catalog to full refresh mode verifies that a read operation produces some RECORD messages. Each stream should have some data, if you can't guarantee this for particular streams - add them to the `empty_streams` list.
 Set `validate_data_points=True` if possible. This validation is going to be enabled by default and won't be configurable in future releases.
 
-| Input                             | Type | Default | Note |
-|:----------------------------------| :--- | :--- | :--- |
-| `config_path`                     | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
-| `configured_catalog_path`         | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
-| `empty_streams`                   | array | \[\] | List of streams that might be empty |
-| `validate_schema`                 | boolean | True | Verify that structure and types of records matches the schema from discovery command |
-| `validate_data_points`            | boolean | False | Validate that all fields in all streams contained at least one data point |
-| `timeout_seconds`                 | int | 5\*60 | Test execution timeout in seconds |
-| `expect_trace_message_on_failure` | boolean | True | Ensure that a trace message is emitted when the connector crashes |
-| `expect_records`                  | object | None | Compare produced records with expected records, see details below |
-| `expect_records.path`             | string |  | File with expected records |
-| `expect_records.extra_fields`     | boolean | False | Allow output records to have other fields i.e: expected records are a subset |
-| `expect_records.exact_order`      | boolean | False | Ensure  that records produced in exact same order |
-| `expect_records.extra_records`    | boolean | True | Allow connector to produce extra records, but still enforce all records from the expected file to be produced |
+| Input                             | Type             | Default                                     | Note                                                                                                          |
+| :-------------------------------- | :--------------- | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------ |
+| `config_path`                     | string           | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                            |
+| `configured_catalog_path`         | string           | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                    |
+| `empty_streams`                   | array of objects | \[\]                                        | List of streams that might be empty with a `bypass_reason`                                                    |
+| `empty_streams[0].name`           | string           |                                             | Name of the empty stream                                                                                      |
+| `empty_streams[0].bypass_reason`  | string           | None                                        | Reason why this stream is empty                                                                               |
+| `validate_schema`                 | boolean          | True                                        | Verify that structure and types of records matches the schema from discovery command                          |
+| `validate_data_points`            | boolean          | False                                       | Validate that all fields in all streams contained at least one data point                                     |
+| `timeout_seconds`                 | int              | 5\*60                                       | Test execution timeout in seconds                                                                             |
+| `expect_trace_message_on_failure` | boolean          | True                                        | Ensure that a trace message is emitted when the connector crashes                                             |
+| `expect_records`                  | object           | None                                        | Compare produced records with expected records, see details below                                             |
+| `expect_records.path`             | string           |                                             | File with expected records                                                                                    |
+| `expect_records.extra_fields`     | boolean          | False                                       | Allow output records to have other fields i.e: expected records are a subset                                  |
+| `expect_records.exact_order`      | boolean          | False                                       | Ensure  that records produced in exact same order                                                             |
+| `expect_records.extra_records`    | boolean          | True                                        | Allow connector to produce extra records, but still enforce all records from the expected file to be produced |
 
 `expect_records` is a nested configuration, if omitted - the part of the test responsible for record matching will be skipped. Due to the fact that we can't identify records without primary keys, only the following flag combinations are supported:
 
 | extra\_fields | exact\_order | extra\_records |
-| :--- | :--- | :--- |
-| x | x |  |
-|  | x | x |
-|  | x |  |
-|  |  | x |
-|  |  |  |
+| :------------ | :----------- | :------------- |
+| x             | x            |                |
+|               | x            | x              |
+|               | x            |                |
+|               |              | x              |
+|               |              |                |
 
 ### Schema format checking
 
@@ -186,12 +188,12 @@ In general, the expected\_records.json should contain the subset of output of th
 
 This test performs two read operations on all streams which support full refresh syncs. It then verifies that the RECORD messages output from both were identical or the former is a strict subset of the latter.
 
-| Input | Type | Default | Note |
-| :--- | :--- | :--- | :--- |
-| `config_path` | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
-| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
-| `timeout_seconds` | int | 20\*60 | Test execution timeout in seconds |
-| `ignored_fields` | dict | None |For each stream, list of fields path ignoring in sequential reads test|
+| Input                     | Type   | Default                                     | Note                                                                   |
+| :------------------------ | :----- | :------------------------------------------ | :--------------------------------------------------------------------- |
+| `config_path`             | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration     |
+| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                             |
+| `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                      |
+| `ignored_fields`          | dict   | None                                        | For each stream, list of fields path ignoring in sequential reads test |
 
 ## Test Incremental sync
 
@@ -200,7 +202,7 @@ This test performs two read operations on all streams which support full refresh
 This test verifies that all streams in the input catalog which support incremental sync can do so correctly. It does this by running two read operations: the first takes the configured catalog and config provided to this test as input. It then verifies that the sync produced a non-zero number of `RECORD` and `STATE` messages. The second read takes the same catalog and config used in the first test, plus the last `STATE` message output by the first read operation as the input state file. It verifies that either no records are produced \(since we read all records in the first sync\) or all records that produced have cursor value greater or equal to cursor value from `STATE` message. This test is performed only for streams that support incremental. Streams that do not support incremental sync are ignored. If no streams in the input catalog support incremental sync, this test is skipped.
 
 | Input                     | Type   | Default                                     | Note                                                                                                                                                                 |
-|:--------------------------|:-------|:--------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------------------------ | :----- | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `config_path`             | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                                                                   |
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                                                                           |
 | `cursor_paths`            | dict   | {}                                          | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor\_field. |
@@ -211,14 +213,14 @@ This test verifies that all streams in the input catalog which support increment
 
 This test offers more comprehensive verification that all streams in the input catalog which support incremental syncs perform the sync correctly. It does so in two phases. The first phase uses the configured catalog and config provided to this test as input to make a request to the partner API and assemble the complete set of messages to be synced. It then verifies that the sync produced a non-zero number of `RECORD` and `STATE` messages. This set of messages is partitioned into batches of a `STATE` message followed by zero or more `RECORD` messages. For each batch of messages, the initial `STATE` message is used as input for a read operation to get records with respect to the cursor. The test then verifies that all of the `RECORDS` retrieved have a cursor value greater or equal to the cursor from the current `STATE` message. This test is performed only for streams that support incremental. Streams that do not support incremental sync are ignored. If no streams in the input catalog support incremental sync, this test is skipped.
 
-| Input                     | Type   | Default                                     | Note                                                                                                                                                                 |
-|:--------------------------|:-------|:--------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Input                                  | Type   | Default                                     | Note                                                                                                                                                                 |
+| :------------------------------------- | :----- | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `config_path`                          | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                                                                   |
 | `configured_catalog_path`              | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                                                                           |
 | `cursor_paths`                         | dict   | {}                                          | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor\_field. |
 | `timeout_seconds`                      | int    | 20\*60                                      | Test execution timeout in seconds                                                                                                                                    |
 | `threshold_days`                       | int    | 0                                           | For date-based cursors, allow records to be emitted with a cursor value this number of days before the state value.                                                  |
-| `skip_comprehensive_incremental_tests` | bool   | false                                       | For non-GA and in-development connectors, control whether the more comprehensive incremental tests will be skipped                                                 |
+| `skip_comprehensive_incremental_tests` | bool   | false                                       | For non-GA and in-development connectors, control whether the more comprehensive incremental tests will be skipped                                                   |
 
 **Note that this test samples a fraction of stream slices across an incremental sync in order to reduce test duration and avoid spamming partner APIs**
 
@@ -226,12 +228,12 @@ This test offers more comprehensive verification that all streams in the input c
 
 This test verifies that sync produces no records when run with the STATE with abnormally large values
 
-| Input                     | Type   | Default | Note |                                                                           |
-|:--------------------------|:-------|:--------|:-----|:--------------------------------------------------------------------------|
-| `config_path`             | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
-| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                   |
-| `future_state_path`       | string | None | Path to the state file with abnormally large cursor values                          |
-| `timeout_seconds`         | int    | 20\*60 | Test execution timeout in seconds                                                 |
+| Input                     | Type   | Default                                     | Note                                                               |     |
+| :------------------------ | :----- | :------------------------------------------ | :----------------------------------------------------------------- | :-- |
+| `config_path`             | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration |     |
+| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                         |     |
+| `future_state_path`       | string | None                                        | Path to the state file with abnormally large cursor values         |     |
+| `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                  |     |
 
 
 ## Strictness level
@@ -278,3 +280,25 @@ acceptance_tests:
     bypass_reason: "Incremental syncs are not supported on this connector."
 ```
 
+#### Basic read: no empty streams are allowed without a `bypass_reason`
+In `high` test strictness level we expect that all streams declared in `empty-streams` to have a `bypass_reason` filled in.
+
+
+E.G. Two streams from `source-recharge` can't be seeded with test data, they are declared as `empty_stream` we an explicit bypass reason.
+
+```yaml
+connector_image: airbyte/source-recharge:dev
+test_strictness_level: high
+acceptance_tests:
+  basic_read:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/streams_with_output_records_catalog.json
+        empty_streams:
+          - name: collections
+            bypass_reason: "This stream can't be seeded in our sandbox account"
+          - name: discounts
+            bypass_reason: "This stream can't be seeded in our sandbox account"
+        timeout_seconds: 1200
+...
+```
