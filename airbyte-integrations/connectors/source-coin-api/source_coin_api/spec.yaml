@@ -26,11 +26,15 @@ connectionSpecification:
       order: 1
     symbol_id:
       type: string
-      description: The symbol ID to use. See the documentation for a list.
+      description: |
+        The symbol ID to use. See the documentation for a list.
+        https://docs.coinapi.io/#list-all-symbols-get
       order: 2
     period:
       type: string
-      description: The period to use. See the documentation for a list.
+      description:
+        The period to use. See the documentation for a list.
+        https://docs.coinapi.io/#list-all-periods-get
       examples:
         - 5SEC
         - 2MTH
