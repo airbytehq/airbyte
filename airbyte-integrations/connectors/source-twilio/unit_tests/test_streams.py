@@ -141,11 +141,11 @@ class TestIncrementalTwilioStream:
         [
             (
                 Calls,
-                {"EndTime>": "2022-01-01", "EndTime<=": "2022-01-02"},
+                {"EndTime>": "2022-01-01", "EndTime<": "2022-01-02"},
                 {"Page": "2", "PageSize": "1000", "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95"},
                 {
                     "EndTime>": "2022-01-01",
-                    "EndTime<=": "2022-01-02",
+                    "EndTime<": "2022-01-02",
                     "Page": "2",
                     "PageSize": "1000",
                     "PageToken": "PAAD42931b949c0dedce94b2f93847fdcf95",
@@ -179,9 +179,9 @@ class TestIncrementalTwilioStream:
     )
     def test_stream_slices(self, mocker, stream_cls, parent_cls_records, extra_slice_keywords):
         stream = stream_cls(
-            authenticator=TEST_CONFIG.get("authenticator"), start_date=pendulum.now().subtract(hours=47).to_iso8601_string()
+            authenticator=TEST_CONFIG.get("authenticator"), start_date=pendulum.now().subtract(months=13).to_iso8601_string()
         )
-        expected_slices = 2 * len(parent_cls_records)  # 2 per day slices per each parent slice
+        expected_slices = 2 * len(parent_cls_records)  # 2 per year slices per each parent slice
         if isinstance(stream, TwilioNestedStream):
             slices_mock_context = mocker.patch.object(stream.parent_stream_instance, "stream_slices", return_value=[{}])
             records_mock_context = mocker.patch.object(stream.parent_stream_instance, "read_records", return_value=parent_cls_records)

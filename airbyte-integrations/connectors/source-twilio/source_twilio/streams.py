@@ -100,6 +100,11 @@ class TwilioStream(HttpStream, ABC):
 
 class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     time_filter_template = "YYYY-MM-DD HH:mm:ss[Z]"
+    # This attribute allows balancing between sync speed and memory consumption.
+    # The greater a slice is - the bigger memory consumption and the faster syncs are since fewer requests are made.
+    slice_step = pendulum.duration(years=1)
+    # time gap between when previous slice ends and current slice begins
+    slice_granularity = pendulum.duration(microseconds=1)
     state_checkpoint_interval = 1000
 
     def __init__(self, start_date: str = None, lookback_window: int = 0, **kwargs):
@@ -147,12 +152,12 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         current_start = start_datetime
         current_end = start_datetime
         while current_end < end_datetime:
-            current_end = min(end_datetime, current_start.add(days=1))
+            current_end = min(end_datetime, current_start + self.slice_step)
             slice_ = copy.deepcopy(super_slice) if super_slice else {}
             slice_[self.lower_boundary_filter_field] = current_start.format(self.time_filter_template)
             slice_[self.upper_boundary_filter_field] = current_end.format(self.time_filter_template)
             yield slice_
-            current_start = current_end
+            current_start = current_end + self.slice_granularity
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -332,9 +337,10 @@ class Calls(IncrementalTwilioStream, TwilioNestedStream):
 
     parent_stream = Accounts
     lower_boundary_filter_field = "EndTime>"
-    upper_boundary_filter_field = "EndTime<="
+    upper_boundary_filter_field = "EndTime<"
     cursor_field = "end_time"
     time_filter_template = "YYYY-MM-DD"
+    slice_granularity = pendulum.duration(days=1)
 
 
 class Conferences(IncrementalTwilioStream, TwilioNestedStream):
@@ -342,9 +348,10 @@ class Conferences(IncrementalTwilioStream, TwilioNestedStream):
 
     parent_stream = Accounts
     lower_boundary_filter_field = "DateCreated>"
-    upper_boundary_filter_field = "DateCreated<="
+    upper_boundary_filter_field = "DateCreated<"
     cursor_field = "date_created"
     time_filter_template = "YYYY-MM-DD"
+    slice_granularity = pendulum.duration(days=1)
 
 
 class ConferenceParticipants(TwilioNestedStream):
@@ -371,7 +378,7 @@ class Recordings(IncrementalTwilioStream, TwilioNestedStream):
 
     parent_stream = Accounts
     lower_boundary_filter_field = "DateCreated>"
-    upper_boundary_filter_field = "DateCreated<="
+    upper_boundary_filter_field = "DateCreated<"
     cursor_field = "date_created"
 
 
@@ -391,8 +398,9 @@ class Messages(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources"""
 
     parent_stream = Accounts
+    slice_step = pendulum.duration(days=1)
     lower_boundary_filter_field = "DateSent>"
-    upper_boundary_filter_field = "DateSent<="
+    upper_boundary_filter_field = "DateSent<"
     cursor_field = "date_sent"
 
 
@@ -404,7 +412,7 @@ class MessageMedia(IncrementalTwilioStream, TwilioNestedStream):
     subresource_uri_key = "media"
     media_exist_validation = {"num_media": "0"}
     lower_boundary_filter_field = "DateCreated>"
-    upper_boundary_filter_field = "DateCreated<="
+    upper_boundary_filter_field = "DateCreated<"
     cursor_field = "date_created"
 
     @cached_property
@@ -434,10 +442,11 @@ class UsageRecords(IncrementalTwilioStream, UsageNestedStream):
     """https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources"""
 
     parent_stream = Accounts
-    lower_boundary_filter_field = "StartDate="
-    upper_boundary_filter_field = "EndDate="
+    lower_boundary_filter_field = "StartDate"
+    upper_boundary_filter_field = "EndDate"
     cursor_field = "start_date"
     time_filter_template = "YYYY-MM-DD"
+    slice_granularity = pendulum.duration(days=1)
     path_name = "Records"
     primary_key = [["account_sid"], ["category"]]
     changeable_fields = ["as_of"]
