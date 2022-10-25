@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.2.13
-Make mandatory tests fail in strict mode if they don't have a `bypass_reason` in test configuration. [#TBD](https://github.com/airbytehq/airbyte/pull/TBD).
+Fail tests in `high` `test_strictness_level` if all tests are not configured. [#18414](https://github.com/airbytehq/airbyte/pull/18414/).
 
 ## 0.2.12
 Declare `bypass_reason` field in test configuration. [#18364](https://github.com/airbytehq/airbyte/pull/18364).
