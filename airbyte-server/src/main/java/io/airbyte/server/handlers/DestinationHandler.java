@@ -100,7 +100,7 @@ public class DestinationHandler {
         false);
 
     // read configuration from db
-    return buildDestinationRead(destinationId, spec);
+    return buildDestinationRead(configRepository.getDestinationConnection(destinationId), spec);
   }
 
   public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody)
@@ -157,7 +157,8 @@ public class DestinationHandler {
         updatedDestination.getTombstone());
 
     // read configuration from db
-    return buildDestinationRead(destinationUpdate.getDestinationId(), spec);
+    return buildDestinationRead(
+        configRepository.getDestinationConnection(destinationUpdate.getDestinationId()), spec);
   }
 
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody)
@@ -274,14 +275,15 @@ public class DestinationHandler {
 
   private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
     final ConnectorSpecification spec = getSpec(configRepository.getDestinationConnection(destinationId).getDestinationDefinitionId());
-    return buildDestinationRead(destinationId, spec);
+    final DestinationConnection destinationConnection = configRepository.getDestinationConnection(destinationId);
+    return buildDestinationRead(destinationConnection, spec);
   }
 
-  private DestinationRead buildDestinationRead(final UUID destinationId, final ConnectorSpecification spec)
+  private DestinationRead buildDestinationRead(final DestinationConnection destinationConnection, final ConnectorSpecification spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     // remove secrets from config before returning the read
-    final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
+    final DestinationConnection dci = Jsons.clone(destinationConnection);
     dci.setConfiguration(secretsProcessor.prepareSecretsForOutput(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =
