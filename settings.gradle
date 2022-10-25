@@ -64,39 +64,40 @@ include ':airbyte-commons'
 include ':airbyte-api'
 include ':airbyte-commons-cli'
 include ':airbyte-commons-docker'
+include ':airbyte-commons-protocol'
+include ':airbyte-config:init'
 include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
 include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
 include ':airbyte-metrics:metrics-lib'
 include ':airbyte-oauth'
 include ':airbyte-protocol:protocol-models'
-include ':airbyte-queue'
 include ':airbyte-test-utils'
 
 // airbyte-workers has a lot of dependencies.
-include ':airbyte-workers' // reused by acceptance tests in connector base.
 include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-commons-temporal'
+include ':airbyte-commons-worker'
 include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
 include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
+include ':airbyte-worker-models'
 
 // platform
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-bootloader'
-    include ':airbyte-cli'
-    include ':airbyte-commons-protocol'
-    include ':airbyte-config:init'
     include ':airbyte-config:specs'
     include ':airbyte-container-orchestrator'
     include ':airbyte-cron'
     include ':airbyte-metrics:reporter'
+    include ':airbyte-proxy'
     include ':airbyte-server'
     include ':airbyte-temporal'
     include ':airbyte-tests'
     include ':airbyte-webapp'
     include ':airbyte-webapp-e2e-tests'
+    include ':airbyte-workers'
 }
 
 // connectors base
@@ -113,7 +114,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:bases:standard-source-test'
     include ':airbyte-integrations:connector-templates:generator'
     include ':airbyte-integrations:bases:debezium-v1-4-2'
-    include ':airbyte-integrations:bases:debezium-v1-9-2'
+    include ':airbyte-integrations:bases:debezium-v1-9-6'
 
     // Needed by normalization integration tests
     include ':airbyte-integrations:connectors:destination-bigquery'
@@ -151,4 +152,3 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
         }
     }
 }
-

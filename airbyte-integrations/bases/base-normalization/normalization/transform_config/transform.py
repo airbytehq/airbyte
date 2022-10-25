@@ -318,7 +318,8 @@ class TransformConfig:
         # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
         dbt_config = {
             "type": "clickhouse",
-            "driver": "native",
+            "driver": "http",
+            "verify": False,
             "host": config["host"],
             "port": config["port"],
             "schema": config["database"],
@@ -327,8 +328,6 @@ class TransformConfig:
         }
         if "password" in config:
             dbt_config["password"] = config["password"]
-        if "tcp-port" in config:
-            dbt_config["port"] = config["tcp-port"]
         return dbt_config
 
     @staticmethod

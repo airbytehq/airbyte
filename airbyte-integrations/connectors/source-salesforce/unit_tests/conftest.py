@@ -99,6 +99,12 @@ def stream_api_v2(stream_config):
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 
+@pytest.fixture(scope="module")
+def stream_api_pk(stream_config):
+    describe_response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}, {"name": "Id", "type": "string"}]}
+    return _stream_api(stream_config, describe_response_data=describe_response_data)
+
+
 def generate_stream(stream_name, stream_config, stream_api):
     return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api)[0]
 

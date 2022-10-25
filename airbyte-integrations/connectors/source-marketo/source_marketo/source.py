@@ -4,7 +4,6 @@
 
 import csv
 import datetime
-import io
 import json
 from abc import ABC
 from time import sleep
@@ -228,8 +227,7 @@ class MarketoExportBase(IncrementalMarketoStream):
         default_prop = {"type": ["null", "string"]}
         schema = self.get_json_schema()["properties"]
 
-        fp = io.StringIO(response.text)
-        reader = csv.DictReader(fp)
+        reader = csv.DictReader(response.iter_lines(chunk_size=1024, decode_unicode=True))
         for record in reader:
             new_record = {**record}
             attributes = json.loads(new_record.pop("attributes", "{}"))

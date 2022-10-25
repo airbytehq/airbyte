@@ -71,6 +71,9 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 0.2.21  | 2022-10-04 | [15591](https://github.com/airbytehq/airbyte/pull/15591) | Clean instantiation of AirbyteStream                                          |
+| 0.2.20  | 2022-10-10 | [17766](https://github.com/airbytehq/airbyte/pull/17766) | Fix null pointer exception when parsing the spreadsheet id. |
+| 0.2.19  | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Use latest CDK.                                                               |
 | 0.2.18  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                 |
 | 0.2.17  | 2022-08-03 | [15107](https://github.com/airbytehq/airbyte/pull/15107) | Expose Row Batch Size in Connector Specification                              |
 | 0.2.16  | 2022-07-07 | [13729](https://github.com/airbytehq/airbyte/pull/13729) | Improve configuration field description                                       |

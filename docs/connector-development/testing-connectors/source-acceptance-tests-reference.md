@@ -16,15 +16,16 @@ Each test suite has a timeout and will fail if the limit is exceeded.
 
 See all the test cases, their description, and inputs in [Source Acceptance Tests](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md).
 
-## Setting up standard tests for your connector
+## Setting up standard acceptance tests for your connector
 
 Create `acceptance-test-config.yml`. In most cases, your connector already has this file in its root folder. Here is an example of the minimal `acceptance-test-config.yml`:
 
 ```yaml
 connector_image: airbyte/source-some-connector:dev
-tests:
+acceptance-tests:
   spec:
-    - spec_path: "some_folder/spec.yaml"
+    tests:
+      - spec_path: "some_folder/spec.yaml"
 ```
 
 Build your connector image if needed.
@@ -78,17 +79,21 @@ These tests are configurable via `acceptance-test-config.yml`. Each test has a n
 Example of `acceptance-test-config.yml`:
 
 ```yaml
-connector_image: string  # Docker image to test, for example 'airbyte/source-hubspot:0.1.0'
+connector_image: string  # Docker image to test, for example 'airbyte/source-pokeapi:0.1.0'
 base_path: string  # Base path for all relative paths, optional, default - ./
-tests:  # Tests configuration 
+acceptance_tests:  # Tests configuration 
   spec: # list of the test inputs
+    bypass_reason: "Explain why you skipped this test"
   connection: # list of the test inputs
-    - config_path: string  # set #1 of inputs
-      status: string
-    - config_path: string  # set #2 of inputs
-      status: string
-  # discovery:  # skip this test
-  incremental: []  # skip this test as well
+    tests:
+      - config_path: string  # set #1 of inputs
+        status: string
+      - config_path: string  # set #2 of inputs
+        status: string
+    # discovery:  # skip this test
+  incremental:
+    bypass_reason: "Incremental sync are not supported on this connector"
+
 ```
 
 ## Test Spec

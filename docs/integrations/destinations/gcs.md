@@ -31,6 +31,8 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 
 Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future, please [submit an issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+needs-triage&template=feature-request.md&title=) with your request.
 
+Additionally, your bucket must be encrypted using a Google-managed encryption key (this is the default setting when creating a new bucket). We currently do not support buckets using customer-managed encryption keys (CMEK). You can view this setting under the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
+
 ⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each sync. We recommend you to provision a dedicated S3 resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
 
 The full path of the output data is:
@@ -235,6 +237,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.2.12  | 2022-10-18 | [\#17901](https://github.com/airbytehq/airbyte/pull/17901) | Fix logging to GCS |
 | 0.2.11  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
 | 0.2.10  | 2022-08-05 | [\#14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings |
 | 0.2.9   | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging  |

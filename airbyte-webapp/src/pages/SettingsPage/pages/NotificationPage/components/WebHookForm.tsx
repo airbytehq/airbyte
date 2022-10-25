@@ -4,8 +4,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Label, Input, LabeledSwitch, Button } from "components";
+import { Label, LabeledSwitch } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
+import { Button } from "components/ui/Button";
+import { Input } from "components/ui/Input";
 
 import { WebhookPayload } from "hooks/services/useWorkspace";
 import { equal } from "utils/objects";
@@ -97,11 +99,11 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
       validateOnBlur
       validateOnChange={false}
       validationSchema={webhookValidationSchema}
-      onSubmit={async (values: WebhookPayload) => {
+      onSubmit={(values: WebhookPayload) => {
         if (equal(webhook, values)) {
-          await onTest(values);
+          onTest(values);
         } else {
-          await onSubmit(values);
+          onSubmit(values);
         }
       }}
     >

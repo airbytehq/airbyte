@@ -33,8 +33,8 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
 
     var sslMode = getSslConfig();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-            .put("method", "STANDARD")
-            .build());
+        .put("method", "STANDARD")
+        .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
