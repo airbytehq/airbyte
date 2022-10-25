@@ -86,6 +86,11 @@ class AdUnitPerReferrerItem(CustomBaseModel):
 
 
 class ReportStatus(Enum):
+    """Handle report status from the google ad manager api
+
+    Args:
+        Enum (_type_): _description_
+    """
     COMPLETED = "COMPLETED"
     DONE = "DONE"
     FAILED = "FAILED"

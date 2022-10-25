@@ -8,12 +8,14 @@ from typing import Any, Iterable, Mapping, Optional, List
 import logging
 import time
 import requests
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import Stream, IncrementalMixin
+from datetime import datetime
 from googleads import ad_manager
 from googleads.errors import AdManagerReportError
 from typing import Any, Mapping, Union, List
 from csv import DictReader as csv_dict_reader
 from .data_classes import AdUnitPerHourItem, AdUnitPerReferrerItem, ReportStatus
+from .utils import convert_time_to_dict
 
 _CHUNK_SIZE = 16 * 1024
 API_VERSION = 'v202208'
@@ -21,7 +23,7 @@ API_VERSION = 'v202208'
 logger = logging.getLogger('{}.{}'.format(__name__, 'google_ad_manager_report_downloader'))
 
 
-class BaseGoogleAdManagerReportStream(Stream, ABC):
+class BaseGoogleAdManagerReportStream(Stream, IncrementalMixin):
     """
     this is the base stream class used to generate the report
     """
@@ -30,6 +32,26 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
         super().__init__()
         self.google_ad_manager_client = google_ad_manager_client
         self.report_downloader = self.google_ad_manager_client.GetDataDownloader(version=API_VERSION)
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if getattr(self, '_cursor_value', None):
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {self.cursor_field: datetime.today().strftime('%Y-%m-%d')}
+
+    @property
+    def cursor_field(self) -> str:
+        """
+        Name of the field in the API response body used as cursor.
+        """
+        return "date"
+    
+
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = value[self.cursor_field]
     
     def download_report(self, report_job_id: str, export_format: str, include_report_properties: bool = False,
                         include_totals_row: bool = None, use_gzip_compression: bool = True) -> requests.Response:
@@ -69,12 +91,17 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
         timeout = time.time() + 60*10   # 10 minutes from now
         while True:
             chunk = response.read(_CHUNK_SIZE)
-            if not chunk or time.time() > timeout: # timeout after 10 minutes
+            if not chunk or time.time() > timeout:  # timeout after 10 minutes
                 break
             lines = chunk.decode('utf-8')
             reader = csv_dict_reader(lines.splitlines())
             for row in reader:
                 item = self.generate_item(row)
+                # this section deals with the cursor, to be revisited
+                upcoming_cursor_value = datetime.strftime(getattr(item, self.cursor_field), '%Y-%m-%d')
+                current_cursor_value = self.state.get(self.cursor_field)
+                max_cursor_value = {self.cursor_field: max(upcoming_cursor_value, current_cursor_value)}
+                self.state = max_cursor_value
                 yield item.dict()
     
     def run_report(self, report_job: str) -> str:
@@ -94,20 +121,19 @@ class BaseGoogleAdManagerReportStream(Stream, ABC):
         report_job_id = service.runReportJob(report_job)['id']
 
         status = service.getReportJobStatus(report_job_id)
-
-        while status != ReportStatus.COMPLETED and status != ReportStatus.FAILED:
+        while status != ReportStatus.COMPLETED.value and status != ReportStatus.FAILED.value:
             logger.debug('Report job status: %s', status)
             time.sleep(30)
             status = service.getReportJobStatus(report_job_id)
 
-        if status == ReportStatus.FAILED:
+        if status == ReportStatus.FAILED.value:
             raise AdManagerReportError(report_job_id)
         else:
             logger.debug('Report has completed successfully')
             return report_job_id
     
     @staticmethod
-    def add_dates_ranges(report_job, start_date, end_date):
+    def add_dates_ranges(report_job, start_date: Mapping[str, int], end_date: Mapping[str, int]) -> Mapping[str, Any]:
         """add the start date and the end date to the report job.
 
         Args:
@@ -164,9 +190,12 @@ class AdUnitPerHourReportStream(BaseGoogleAdManagerReportStream):
         _type_: _description_
     """
 
-    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, start_date: Mapping, end_date: Mapping, customer_name: str) -> None:
+    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, customer_name: str) -> None:
         super().__init__(google_ad_manager_client)
         self.customer_name = customer_name
+        start_date = datetime.strptime(self.state[self.cursor_field], "%Y-%m-%d").date()
+        start_date = convert_time_to_dict(start_date)
+        end_date = convert_time_to_dict(datetime.today())
         self.report_job = self.generate_report_query(start_date=start_date, end_date=end_date)
 
     def generate_report_query(self, start_date: Mapping, end_date: Mapping) -> Mapping:
@@ -220,9 +249,12 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
         BaseGoogleAdManagerReportStream (_type_): _description_
     """
     
-    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, start_date: Mapping, end_date: Mapping, customer_name: str) -> None:
+    def __init__(self, google_ad_manager_client: ad_manager.AdManagerClient, customer_name: str) -> None:
         super().__init__(google_ad_manager_client)
         targeting_values = self.get_custom_targeting_keys_ids("referrer")  # @TODO: I can make this manual instead of getting from the api.
+        start_date = datetime.strptime(self.state[self.cursor_field], "%Y-%m-%d").date()
+        start_date = convert_time_to_dict(start_date)
+        end_date = convert_time_to_dict(datetime.today())
         self.customer_name = customer_name
         self.report_job = self.generate_report_query(targeting_values, start_date=start_date, end_date=end_date)
 
@@ -291,16 +323,20 @@ class AdUnitPerReferrerReportStream(BaseGoogleAdManagerReportStream):
             statement_builder = ad_manager.StatementBuilder(version=API_VERSION)
             custom_targeting_service = self.google_ad_manager_client.GetService('CustomTargetingService', version=API_VERSION)
             statement = statement_builder.Where("customTargetingKeyId IN ({})".format(",".join([str(key['id']) for key in all_keys])))
+            timeout = time.time() + 60 * 10  # 10 minutes from now
             while True:
                 response = custom_targeting_service.getCustomTargetingValuesByStatement(statement.ToStatement())
-                if 'results' in response and len(response['results']):
-                    for custom_targeting_value in response['results']:
-                        custom_targe_dict = {"id": custom_targeting_value['id'],
-                                             "name": custom_targeting_value['name'],
-                                             "displayName": custom_targeting_value['displayName'],
-                                             "customTargetingKeyId": custom_targeting_value['customTargetingKeyId']}
-                        targeting_values.append(custom_targe_dict)
-                    statement.offset += statement.limit
+                if time.time() <= timeout:
+                    if 'results' in response and len(response['results']):
+                        for custom_targeting_value in response['results']:
+                            custom_targe_dict = {"id": custom_targeting_value['id'],
+                                                 "name": custom_targeting_value['name'],
+                                                 "displayName": custom_targeting_value['displayName'],
+                                                 "customTargetingKeyId": custom_targeting_value['customTargetingKeyId']}
+                            targeting_values.append(custom_targe_dict)
+                        statement.offset += statement.limit
+                    else:
+                        break
                 else:
                     break
         logger.info("found {} custom targeting values".format(len(targeting_values)))

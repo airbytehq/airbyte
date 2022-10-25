@@ -25,8 +25,6 @@ Column.TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE,Column.TOTAL_LINE_ITEM_LEVEL_WI
 1,1,0,1,0,Ad unit 1,2,2021-10-01""")
     mocker.patch.object(AdUnitPerHourReportStream, "download_report", MagicMock(return_value=fake_ad_unit_per_hour_response))
     ad_unit_per_hour_stream = AdUnitPerHourReportStream(google_ad_manager_client=google_ad_manager_client,
-                                                        start_date=start_date,
-                                                        end_date=end_date,
                                                         customer_name="test_customer_name")
     yield ad_unit_per_hour_stream
 
@@ -48,8 +46,6 @@ Column.TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE,Column.TOTAL_LINE_ITEM_LEVEL_WI
     mocker.patch.object(AdUnitPerReferrerReportStream, "download_report", MagicMock(return_value=fake_ad_unit_per_referrer_response))
     mocker.patch.object(AdUnitPerReferrerReportStream, "get_custom_targeting_values", MagicMock(return_value=[{"id": "Referrer 1"}, {"id": "Referrer 2"}, {"id": "Referrer 3"}]))
     ad_unit_per_referrer_stream = AdUnitPerReferrerReportStream(google_ad_manager_client=google_ad_manager_client,
-                                                                start_date=start_date,
-                                                                end_date=end_date,
                                                                 customer_name="test_customer_name")
     yield ad_unit_per_referrer_stream
 

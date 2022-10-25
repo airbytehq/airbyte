@@ -33,16 +33,9 @@ class SourceGoogleAdManager(AbstractSource):
         customer_name = config.pop("customer_name")
         google_ad_manager_authenticator = self._get_authenticator(config=config)
         google_ad_manager_client = google_ad_manager_authenticator.get_client()
-        today_date = datetime.today()
-        start_date = convert_time_to_dict(today_date)
-        end_date = convert_time_to_dict(today_date)
         ad_unit_per_hour_report_stream = AdUnitPerHourReportStream(google_ad_manager_client=google_ad_manager_client,
-                                                                   start_date=start_date,
-                                                                   end_date=end_date,
                                                                    customer_name=customer_name)
         ad_unit_per_referrer_report_stream = AdUnitPerReferrerReportStream(google_ad_manager_client=google_ad_manager_client,
-                                                                           start_date=start_date,
-                                                                           end_date=end_date,
                                                                            customer_name=customer_name)
         return [ad_unit_per_hour_report_stream, ad_unit_per_referrer_report_stream]
 
