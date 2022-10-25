@@ -28,11 +28,10 @@ connectionSpecification:
     web_schedule_country_code:
       type: string
       description: |
-        Country code for web TV schedule retrieval. Leave blank for all
-        countries plus global web channels (e.g. Netflix). Alternatively, set
-        to 'global' for just global web channels.
+        ISO 3166-1 country code for web TV schedule retrieval. Leave blank for
+        all countries plus global web channels (e.g. Netflix). Alternatively,
+        set to 'global' for just global web channels.
       examples:
         - US
         - GB
-
-
+        - global
