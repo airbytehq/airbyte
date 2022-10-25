@@ -115,7 +115,6 @@ import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
@@ -163,7 +162,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final HealthCheckHandler healthCheckHandler;
   private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
-  private final DbMigrationHandler dbMigrationHandler;
   private final OAuthHandler oAuthHandler;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
@@ -248,7 +246,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     healthCheckHandler = new HealthCheckHandler(configRepository);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
-    dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
   }
 
   // WORKSPACE
@@ -498,14 +495,22 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // DB MIGRATION
 
+  /**
+   * This implementation has been moved to {@link DbMigrationApiController}. Since the path of
+   * {@link DbMigrationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DbMigrationReadList listMigrations(final DbMigrationRequestBody request) {
-    return execute(() -> dbMigrationHandler.list(request));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DbMigrationApiController}. Since the path of
+   * {@link DbMigrationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DbMigrationExecutionRead executeMigrations(final DbMigrationRequestBody request) {
-    return execute(() -> dbMigrationHandler.migrate(request));
+    throw new NotImplementedException();
   }
 
   // DESTINATION
