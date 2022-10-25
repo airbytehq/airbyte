@@ -2169,6 +2169,31 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-convex:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/convex"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Convex Source Spec"
+      type: "object"
+      required:
+      - "deployment_name"
+      - "access_key"
+      properties:
+        deployment_name:
+          type: "string"
+          title: "Deployment Name"
+          examples:
+          - "murky-swan-635"
+          - "cluttered-owl-337"
+        access_key:
+          type: "string"
+          title: "Access Key"
+          description: "API access key used to retrieve data from Convex."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-courier:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/courier"

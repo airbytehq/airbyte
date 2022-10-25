@@ -30,18 +30,12 @@ ConvexState = TypedDict(
 )
 
 
-def convex_url_base(deployment_name: str) -> str:
-    if "localhost" in deployment_name:
-        return deployment_name
-    return f"https://{deployment_name}.convex.cloud"
-
-
 # Source
 class SourceConvex(AbstractSource):
     def _json_schemas(self, config: ConvexConfig) -> requests.Response:
         deployment_name = config["deployment_name"]
         access_key = config["access_key"]
-        url = f"{convex_url_base(deployment_name)}/api/json_schemas?deltaSchema=true"
+        url = f"{ConvexStream.convex_url_base(deployment_name)}/api/json_schemas?deltaSchema=true&format=convex_json"
         headers = {"Authorization": f"Convex {access_key}"}
         return requests.get(url, headers=headers)
 
@@ -95,13 +89,19 @@ class ConvexStream(HttpStream, IncrementalMixin):
         self._delta_has_more = True
         super().__init__(TokenAuthenticator(access_key, "Convex"))
 
+    @staticmethod
+    def convex_url_base(deployment_name: str) -> str:
+        if "localhost" in deployment_name:
+            return deployment_name
+        return f"https://{deployment_name}.convex.cloud"
+
     @property
     def name(self) -> str:
         return self.table_name
 
     @property
     def url_base(self) -> str:
-        return convex_url_base(self.deployment_name)
+        return self.convex_url_base(self.deployment_name)
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self.json_schema

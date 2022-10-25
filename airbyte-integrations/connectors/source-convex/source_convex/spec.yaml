@@ -1,7 +1,7 @@
 documentationUrl: https://docs.airbyte.com/integrations/sources/convex
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Convex Spec
+  title: Convex Source Spec
   type: object
   required:
     - deployment_name
@@ -9,11 +9,12 @@ connectionSpecification:
   properties:
     deployment_name:
       type: string
+      title: Deployment Name
       examples:
         - murky-swan-635
         - cluttered-owl-337
-      description: Convex deployment name.
     access_key:
       type: string
+      title: Access Key
       description: API access key used to retrieve data from Convex.
       airbyte_secret: true
