@@ -1,5 +1,10 @@
 import { SyncSchema, SyncSchemaStream } from "core/domain/catalog";
-import { DestinationSyncMode, SyncMode, AirbyteStreamConfiguration, StreamTransform } from "core/request/AirbyteClient";
+import {
+  DestinationSyncMode,
+  SyncMode,
+  AirbyteStreamConfiguration,
+  StreamDescriptor,
+} from "core/request/AirbyteClient";
 
 const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
   if (streamNode.stream?.defaultCursorField?.length) {
@@ -120,14 +125,13 @@ const calculateInitialCatalog = (
   schema: SyncSchema,
   supportedDestinationSyncModes: DestinationSyncMode[],
   isNotCreateMode?: boolean,
-  newStreams?: StreamTransform[]
+  newStreamDescriptors?: StreamDescriptor[]
 ): SyncSchema => {
-  const streamIds = newStreams?.map((stream) => stream.streamDescriptor);
   return {
     streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
       const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
       const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isNotCreateMode || false);
-      const matches = streamIds?.filter(
+      const matches = newStreamDescriptors?.filter(
         (streamId) => streamId.name === nodeStream?.stream?.name && streamId.namespace === nodeStream.stream?.namespace
       );
       if (isNotCreateMode && (matches?.length === 0 || !matches)) {
