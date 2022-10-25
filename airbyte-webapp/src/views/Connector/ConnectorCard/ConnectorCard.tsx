@@ -1,6 +1,5 @@
 import { Formik } from "formik";
 import React from "react";
-import { FormattedMessage } from "react-intl";
 
 import { JobItem } from "components/JobItem/JobItem";
 import { Card } from "components/ui/Card";
@@ -39,10 +38,8 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = (props) => {
     job,
     jsonSchema,
     onFormSubmit,
-    onHandleSubmit,
     onStopTesting,
     resetUiWidgetsInfo,
-    saved,
     selectedConnectorDefinitionSpecificationId,
     setUiWidgetsInfo,
     testConnector,
@@ -88,17 +85,13 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = (props) => {
               {additionalSelectorComponent}
               <div>
                 <ServiceForm
-                  {...props}
                   formId={uniqueFormId}
                   jsonSchema={jsonSchema}
                   isTestConnectionInProgress={isTestConnectionInProgress}
-                  onSubmit={onHandleSubmit}
                   formFields={formFields}
                   initialValues={initialValues}
                   validationSchema={validationSchema}
-                  successMessage={
-                    props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
-                  }
+                  availableServices={availableServices}
                 />
                 {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
                 {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}

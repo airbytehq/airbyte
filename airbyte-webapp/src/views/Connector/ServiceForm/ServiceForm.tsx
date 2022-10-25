@@ -102,21 +102,15 @@ const SetDefaultName: React.FC = () => {
 };
 
 export interface ServiceFormProps {
-  formId?: string;
   availableServices: ConnectorDefinition[];
-  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
-  onServiceSelect?: (id: string) => void;
-  onSubmit: (values: ServiceFormValues) => Promise<void> | void;
-  isEditMode?: boolean;
-  formValues?: Partial<ServiceFormValues>;
-  hasSuccess?: boolean;
-  fetchingConnectorError?: Error | null;
-  successMessage?: React.ReactNode;
-  initialValues: ServiceFormValues;
   formFields: FormBlock;
-  validationSchema: AnySchema;
-  jsonSchema: JSONSchema7;
+  formId?: string;
+  initialValues: ServiceFormValues;
+  isEditMode?: boolean;
   isTestConnectionInProgress?: boolean;
+  jsonSchema: JSONSchema7;
+  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
+  validationSchema: AnySchema;
 }
 
 export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
@@ -165,7 +159,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       <FormikPatch />
       <FormChangeTracker changed={dirty} formId={formId} />
       <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
-      <FormRoot {...props} isTestConnectionInProgress={isTestConnectionInProgress} formFields={formFields} />
+      <FormRoot isTestConnectionInProgress={isTestConnectionInProgress} formFields={formFields} />
     </>
   );
 };
