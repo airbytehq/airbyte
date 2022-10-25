@@ -8,7 +8,7 @@ connectionSpecification:
     - environment
     - symbol_id
     - period
-    - start_time
+    - start_date
   properties:
     api_key:
       type: string
