@@ -225,6 +225,7 @@
   dockerRepository: airbyte/source-clockify
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/clockify
+  icon: clockify.svg
   sourceType: api
   releaseStage: alpha
 - name: Customer.io
