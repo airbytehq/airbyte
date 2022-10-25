@@ -7,7 +7,11 @@ export default {
   component: PillSelect,
 } as ComponentMeta<typeof PillSelect>;
 
-const Template: ComponentStory<typeof PillSelect> = (args) => <PillSelect {...args} />;
+const Template: ComponentStory<typeof PillSelect> = (args) => (
+  <div style={{ width: "120px" }}>
+    <PillSelect {...args} />
+  </div>
+);
 
 const options = [
   {

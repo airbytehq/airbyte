@@ -18,17 +18,16 @@ export const PillButton: React.FC<React.PropsWithChildren<PillButtonProps>> = ({
     styles.button,
     {
       [styles.active]: active,
-      // TODO: Implement tint styles
     },
     buttonProps.className
   );
 
   return (
     <button {...buttonProps} className={buttonClassName}>
-      <Text as="span" size="xs">
+      <Text as="span" size="xs" className={styles.text}>
         {children}
       </Text>
-      <FontAwesomeIcon icon={faCaretDown} className={styles.caret} />
+      <FontAwesomeIcon icon={faCaretDown} />
     </button>
   );
 };
