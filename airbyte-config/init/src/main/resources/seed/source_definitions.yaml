@@ -1241,14 +1241,6 @@
   icon: sentry.svg
   sourceType: api
   releaseStage: generally_available
-- name: Zoom
-  sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
-  dockerRepository: airbyte/source-zoom-singer
-  dockerImageTag: 0.2.4
-  documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
-  icon: zoom.svg
-  sourceType: api
-  releaseStage: alpha
 - name: Zuora
   sourceDefinitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
   dockerRepository: airbyte/source-zuora
@@ -1298,4 +1290,12 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
   sourceType: api
+  releaseStage: alpha
+- name: Zoom
+  sourceDefinitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
+  dockerRepository: airbyte/source-zoom
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/zoom
+  sourceType: api
+  icon: zoom.svg
   releaseStage: alpha

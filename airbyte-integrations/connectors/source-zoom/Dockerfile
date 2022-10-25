@@ -7,9 +7,7 @@ WORKDIR /airbyte/integration_code
 # upgrade pip to the latest version
 RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata \
-    && apk --no-cache add git \
-    && apk --no-cache add build-base
+    && apk --no-cache add tzdata build-base
 
 
 COPY setup.py ./
@@ -31,10 +29,12 @@ RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
-COPY source_zoom_singer ./source_zoom_singer
+COPY source_zoom ./source_zoom
+
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.4
-LABEL io.airbyte.name=airbyte/source-zoom-singer
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-zoom
