@@ -69,9 +69,9 @@ const shouldShowButtonForLegacyAuth = (
   }
 
   // If the spec had a root path inside a conditional, e.g. `credentials.0`, we need to figure
-  // out if that conditional is currently on the correct selected option. Since the connector spec
-  // in contrast to `advancedAuth`, which has `predicateValue` doesn't have the value for the conditional
-  // we need to find that ourselves first.
+  // out if that conditional is currently on the correct selected option. Unlike `advancedAuth`
+  // which has a `predicateValue`, the legacy auth configuration doesn't have the value for the conditional,
+  // so we need to find that ourselves first.
 
   // To find the path inside the connector spec that matches the `rootPath` we'll need to insert `properties`
   // and `oneOf`, since they'll appear in the JSONSchema, e.g. this turns `credentials.0` to `properties.credentials.oneOf.0`
