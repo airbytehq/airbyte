@@ -41,7 +41,11 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
       const text = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
 
       return (
-        <Tooltip placement="bottom-start" control={<div className={styles.text}>{text}</div>}>
+        <Tooltip
+          placement="bottom-start"
+          control={<div className={styles.text}>{text}</div>}
+          disabled={!props.isMulti || props.path.length <= 1}
+        >
           {text}
         </Tooltip>
       );
