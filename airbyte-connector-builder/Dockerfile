@@ -3,8 +3,6 @@ FROM python:3.9-slim as base
 RUN apt-get upgrade \
     && pip install --upgrade pip
 
-ENV APPLICATION airbyte-connector-builder
-
 WORKDIR /home/connector-builder
 COPY . ./
 
