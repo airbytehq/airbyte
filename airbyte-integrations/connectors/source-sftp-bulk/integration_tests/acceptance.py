@@ -5,6 +5,7 @@
 import os
 import shutil
 import time
+import uuid
 
 import docker
 import pytest
@@ -27,7 +28,7 @@ def connector_setup():
     container = docker_client.containers.run(
         "atmoz/sftp",
         "foo:pass",
-        name="mysftpacceptance",
+        name=f"mysftpacceptance_{uuid.uuid4().hex}",
         ports={22: 1122},
         volumes={
             f"{TMP_FOLDER}": {"bind": "/home/foo/files", "mode": "rw"},
