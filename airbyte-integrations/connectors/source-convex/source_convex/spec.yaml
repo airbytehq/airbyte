@@ -12,7 +12,7 @@ connectionSpecification:
       examples:
         - murky-swan-635
         - cluttered-owl-337
-      description: Instance name.
+      description: Convex deployment name.
     access_key:
       type: string
       description: API access key used to retrieve data from Convex.
