@@ -7,7 +7,9 @@ acceptance_tests:
         configured_catalog_path: integration_tests/streams_with_output_records_catalog.json
         empty_streams:
           - name: collections
+            bypass_reason: "This stream can't be seeded"
           - name: discounts
+            bypass_reason: "This stream can't be seeded"
         timeout_seconds: 1200
   connection:
     tests:
