@@ -81,7 +81,6 @@
             "required": [
               "method",
               "s3_bucket_name",
-              "s3_bucket_path",
               "s3_bucket_region",
               "access_key_id",
               "secret_access_key"
