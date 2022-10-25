@@ -5,12 +5,12 @@
 package io.airbyte.server.apis.factories;
 
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.server.apis.AttemptApiImpl;
+import io.airbyte.server.apis.AttemptApiController;
 import java.util.Map;
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.MDC;
 
-public class AttemptApiFactory implements Factory<AttemptApiImpl> {
+public class AttemptApiFactory implements Factory<AttemptApiController> {
 
   private static JobPersistence jobPersistence;
   private static Map<String, String> mdc;
@@ -21,14 +21,14 @@ public class AttemptApiFactory implements Factory<AttemptApiImpl> {
   }
 
   @Override
-  public AttemptApiImpl provide() {
+  public AttemptApiController provide() {
     MDC.setContextMap(AttemptApiFactory.mdc);
 
-    return new AttemptApiImpl(jobPersistence);
+    return new AttemptApiController(jobPersistence);
   }
 
   @Override
-  public void dispose(final AttemptApiImpl instance) {
+  public void dispose(final AttemptApiController instance) {
     /* no op */
   }
 

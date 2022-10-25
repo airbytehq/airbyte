@@ -12,11 +12,11 @@ import io.airbyte.server.handlers.AttemptHandler;
 import javax.ws.rs.Path;
 
 @Path("/v1/attempt/set_workflow_in_attempt")
-public class AttemptApiImpl implements AttemptApi {
+public class AttemptApiController implements AttemptApi {
 
   private final AttemptHandler attemptHandler;
 
-  public AttemptApiImpl(final JobPersistence jobPersistence) {
+  public AttemptApiController(final JobPersistence jobPersistence) {
     attemptHandler = new AttemptHandler(jobPersistence);
   }
 

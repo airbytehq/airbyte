@@ -14,7 +14,7 @@ import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.server.apis.AttemptApiImpl;
+import io.airbyte.server.apis.AttemptApiController;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.server.apis.ConnectionApiImpl;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
@@ -90,7 +90,7 @@ public interface ServerFactory {
       AttemptApiFactory.setValues(jobPersistence, MDC.getCopyOfContextMap());
 
       // server configurations
-      final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiImpl.class, ConnectionApiImpl.class);
+      final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiController.class, ConnectionApiImpl.class);
       final Set<Object> components = Set.of(new CorsFilter(), new ConfigurationApiBinder(), new AttemptApiBinder(), new ConnectionApiBinder());
 
       // construct server
