@@ -280,11 +280,13 @@ font-style: italic;
   <h4><a href="#Internal">Internal</a></h4>
   <ul>
   <li><a href="#createOrUpdateState"><code><span class="http-method">post</span> /v1/state/create_or_update</code></a></li>
+  <li><a href="#getAttemptNormalizationStatusesForJob"><code><span class="http-method">post</span> /v1/jobs/get_normalization_status</code></a></li>
   <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
   </ul>
   <h4><a href="#Jobs">Jobs</a></h4>
   <ul>
   <li><a href="#cancelJob"><code><span class="http-method">post</span> /v1/jobs/cancel</code></a></li>
+  <li><a href="#getAttemptNormalizationStatusesForJob"><code><span class="http-method">post</span> /v1/jobs/get_normalization_status</code></a></li>
   <li><a href="#getJobDebugInfo"><code><span class="http-method">post</span> /v1/jobs/get_debug_info</code></a></li>
   <li><a href="#getJobInfo"><code><span class="http-method">post</span> /v1/jobs/get</code></a></li>
   <li><a href="#getJobInfoLight"><code><span class="http-method">post</span> /v1/jobs/get_light</code></a></li>
@@ -3907,6 +3909,68 @@ containing the updated stream needs to be sent.</div>
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="getAttemptNormalizationStatusesForJob"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/jobs/get_normalization_status</code></pre></div>
+    <div class="method-summary">Get normalization status to determine if we can bypass normalization phase (<span class="nickname">getAttemptNormalizationStatusesForJob</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">JobIdRequestBody <a href="#JobIdRequestBody">JobIdRequestBody</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#AttemptNormalizationStatusReadList">AttemptNormalizationStatusReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "attemptNormalizationStatuses" : [ {
+    "attemptNumber" : 0,
+    "recordsCommitted" : 6,
+    "hasRecordsCommitted" : true,
+    "hasNormalizationFailed" : true
+  }, {
+    "attemptNumber" : 0,
+    "recordsCommitted" : 6,
+    "hasRecordsCommitted" : true,
+    "hasNormalizationFailed" : true
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#AttemptNormalizationStatusReadList">AttemptNormalizationStatusReadList</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="setWorkflowInAttempt"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -4133,6 +4197,68 @@ containing the updated stream needs to be sent.</div>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getAttemptNormalizationStatusesForJob"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/jobs/get_normalization_status</code></pre></div>
+    <div class="method-summary">Get normalization status to determine if we can bypass normalization phase (<span class="nickname">getAttemptNormalizationStatusesForJob</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">JobIdRequestBody <a href="#JobIdRequestBody">JobIdRequestBody</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#AttemptNormalizationStatusReadList">AttemptNormalizationStatusReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "attemptNormalizationStatuses" : [ {
+    "attemptNumber" : 0,
+    "recordsCommitted" : 6,
+    "hasRecordsCommitted" : true,
+    "hasNormalizationFailed" : true
+  }, {
+    "attemptNumber" : 0,
+    "recordsCommitted" : 6,
+    "hasRecordsCommitted" : true,
+    "hasNormalizationFailed" : true
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#AttemptNormalizationStatusReadList">AttemptNormalizationStatusReadList</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getJobDebugInfo"/>
@@ -9845,6 +9971,8 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#AttemptFailureSummary"><code>AttemptFailureSummary</code> - </a></li>
     <li><a href="#AttemptFailureType"><code>AttemptFailureType</code> - </a></li>
     <li><a href="#AttemptInfoRead"><code>AttemptInfoRead</code> - </a></li>
+    <li><a href="#AttemptNormalizationStatusRead"><code>AttemptNormalizationStatusRead</code> - </a></li>
+    <li><a href="#AttemptNormalizationStatusReadList"><code>AttemptNormalizationStatusReadList</code> - </a></li>
     <li><a href="#AttemptRead"><code>AttemptRead</code> - </a></li>
     <li><a href="#AttemptStats"><code>AttemptStats</code> - </a></li>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
@@ -10104,6 +10232,23 @@ containing the updated stream needs to be sent.</div>
     <div class="field-items">
       <div class="param">attempt </div><div class="param-desc"><span class="param-type"><a href="#AttemptRead">AttemptRead</a></span>  </div>
 <div class="param">logs </div><div class="param-desc"><span class="param-type"><a href="#LogRead">LogRead</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AttemptNormalizationStatusRead"><code>AttemptNormalizationStatusRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">attemptNumber (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
+<div class="param">hasRecordsCommitted (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">recordsCommitted (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">hasNormalizationFailed (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="AttemptNormalizationStatusReadList"><code>AttemptNormalizationStatusReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">attemptNormalizationStatuses (optional)</div><div class="param-desc"><span class="param-type"><a href="#AttemptNormalizationStatusRead">array[AttemptNormalizationStatusRead]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
