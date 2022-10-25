@@ -76,5 +76,5 @@ def test_read_config():
             "storage": "HTTPS",
             "reader_impl": "gcsfs",
             "user_agent": False,
-        }
+        },
     }

@@ -3,10 +3,11 @@
 #
 
 
+from unittest.mock import patch
+
 import pytest
 from pandas import read_csv, read_excel
 from source_file.client import Client, ConfigurationError, URLFile
-from unittest.mock import patch
 
 
 @pytest.fixture
@@ -100,7 +101,6 @@ def test_cache_stream(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/test.csv"
     with open(f, mode="rb") as file:
         assert client._cache_stream(file)
-    
 
 
 def test_open_aws_url():
@@ -137,21 +137,14 @@ def test_open_gcs_url():
     with pytest.raises(ConfigurationError):
         assert URLFile(url="", provider=provider)._open_gcs_url()
 
-        
+
 def test_read(test_read_config):
     client = Client(**test_read_config)
-    fields = ['date', 'key']
-    client.sleep_on_retry_sec = 0 # just for test
+    fields = ["date", "key"]
+    client.sleep_on_retry_sec = 0  # just for test
     with patch.object(client, "_read", side_effect=ConnectionResetError) as mock_method:
         try:
             list(client.read(fields))
         except ConnectionResetError:
             pass
         mock_method.assert_called()
-        
-    
-    
-    
-    
-    
-    

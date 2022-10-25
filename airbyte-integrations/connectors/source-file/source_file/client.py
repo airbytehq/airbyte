@@ -7,9 +7,9 @@ import json
 import tempfile
 import traceback
 from os import environ
+from time import sleep
 from typing import Iterable
 from urllib.parse import urlparse
-from time import sleep
 
 import boto3
 import botocore
@@ -230,7 +230,7 @@ class Client:
     CSV_CHUNK_SIZE = 10_000
     reader_class = URLFile
     binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
-    
+
     # sleeping 30 sec, on connection errors, such as 104
     sleep_on_retry_sec = 30
 
@@ -374,11 +374,11 @@ class Client:
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
                     df.replace({np.nan: None}, inplace=True)
                     yield from df[list(columns)].to_dict(orient="records")
-            
+
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         try:
             yield from self._read(fields)
-        except ConnectionResetError as err:
+        except ConnectionResetError:
             logger.warning(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
             logger.info(f"Retrying once again after: {self.sleep_on_retry_sec} sec.")
             sleep(self.sleep_on_retry_sec)
