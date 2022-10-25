@@ -27,7 +27,7 @@ definitions:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      type: NoPagination
+      $ref: "*ref(definitions.cursor_paginator)"
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
@@ -35,39 +35,18 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   tables_stream:
     $ref: "*ref(definitions.base_stream)"
-    retriever:
-      record_selector:
-        $ref: "*ref(definitions.selector)"
-      paginator:
-        $ref: "*ref(definitions.cursor_paginator)"
-      requester:
-        $ref: "*ref(definitions.requester)"
     $options:
       name: "tables"
       primary_key: "id"
       path: "/table/tables/"
   terms_stream:
     $ref: "*ref(definitions.base_stream)"
-    retriever:
-      record_selector:
-        $ref: "*ref(definitions.selector)"
-      paginator:
-        $ref: "*ref(definitions.cursor_paginator)"
-      requester:
-        $ref: "*ref(definitions.requester)"
     $options:
       name: "terms"
       primary_key: "id"
       path: "/dictionary/terms/"
   collections_stream:
     $ref: "*ref(definitions.base_stream)"
-    retriever:
-      record_selector:
-        $ref: "*ref(definitions.selector)"
-      paginator:
-        $ref: "*ref(definitions.cursor_paginator)"
-      requester:
-        $ref: "*ref(definitions.requester)"
     $options:
       name: "collections"
       primary_key: "id"
