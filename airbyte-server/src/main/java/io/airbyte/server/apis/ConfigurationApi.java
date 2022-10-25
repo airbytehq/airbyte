@@ -173,6 +173,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final JobPersistence jobPersistence,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
+
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final Database configsDatabase,
                           final Database jobsDatabase,
@@ -603,52 +604,85 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // DESTINATION IMPLEMENTATION
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead createDestination(final DestinationCreate destinationCreate) {
-    return execute(() -> destinationHandler.createDestination(destinationCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    execute(() -> {
-      destinationHandler.deleteDestination(destinationIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead updateDestination(final DestinationUpdate destinationUpdate) {
-    return execute(() -> destinationHandler.updateDestination(destinationUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationReadList searchDestinations(final DestinationSearch destinationSearch) {
-    return execute(() -> destinationHandler.searchDestinations(destinationSearch));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody) {
-    return execute(() -> destinationHandler.cloneDestination(destinationCloneRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead checkConnectionToDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead checkConnectionToDestinationForUpdate(final DestinationUpdate destinationUpdate) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate));
+    throw new NotImplementedException();
   }
 
   // CONNECTION
