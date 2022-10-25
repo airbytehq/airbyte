@@ -1,18 +1,21 @@
 import { Formik } from "formik";
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
 import { JobItem } from "components/JobItem/JobItem";
 import { Card } from "components/ui/Card";
 
 import { ServiceForm } from "views/Connector/ServiceForm";
 
+import { useAdvancedModeSetting } from "../../../hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "../../../utils/errorStatusMessage";
 import { ConnectorServiceTypeControl } from "../ServiceForm/components/Controls/ConnectorServiceTypeControl";
 import { FormControls } from "../ServiceForm/FormControls";
 import { ServiceFormContextProvider } from "../ServiceForm/serviceFormContext";
 import styles from "./ConnectorCard.module.scss";
+import { useConnectorCardService } from "./hooks/useConnectorCardService";
 import { ConnectorCardProps } from "./interfaces";
-import { useConnectorCardService } from "./useConnectorCardService";
+import { useTestConnector } from "./useTestConnector";
 
 export const ConnectorCard: React.FC<ConnectorCardProps> = (props) => {
   const {
@@ -28,25 +31,23 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = (props) => {
     onDelete,
   } = props;
   const {
-    advancedMode,
-    error,
     formFields,
     getValues,
     initialValues,
     isFormSubmitting,
-    isTestConnectionInProgress,
     job,
     jsonSchema,
     onFormSubmit,
-    onStopTesting,
     resetUiWidgetsInfo,
+    saved,
     selectedConnectorDefinitionSpecificationId,
     setUiWidgetsInfo,
-    testConnector,
     uiWidgetsInfo,
     uniqueFormId,
     validationSchema,
   } = useConnectorCardService(props);
+  const [advancedMode] = useAdvancedModeSetting();
+  const { testConnector, isTestConnectionInProgress, onStopTesting, error } = useTestConnector(props);
 
   return (
     <Formik
@@ -106,6 +107,9 @@ export const ConnectorCard: React.FC<ConnectorCardProps> = (props) => {
             onRetest={testConnector ? async () => await testConnector() : undefined}
             formFields={formFields}
             selectedConnector={selectedConnectorDefinitionSpecification}
+            successMessage={
+              props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
+            }
           />
         </div>
       </ServiceFormContextProvider>

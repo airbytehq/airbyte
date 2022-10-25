@@ -1,11 +1,8 @@
 import { JSONSchema7 } from "json-schema";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { AnySchema } from "yup";
 
 import { ConnectorSpecification } from "core/domain/connector";
-import { CheckConnectionRead, SynchronousJobRead } from "core/request/AirbyteClient";
-import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { ServiceFormValues } from "views/Connector/ServiceForm";
 
 import {
@@ -14,61 +11,33 @@ import {
   FormComponentOverrideProps,
   WidgetConfig,
   WidgetConfigMap,
-} from "../../../core/form/types";
-import { useFormChangeTrackerService, useUniqueFormId } from "../../../hooks/services/FormChangeTracker";
-import { ConnectorNameControl } from "../ServiceForm/components/Controls/ConnectorNameControl";
+} from "../../../../core/form/types";
+import { ConnectorNameControl } from "../../ServiceForm/components/Controls/ConnectorNameControl";
 import {
   useBuildForm,
   useBuildInitialSchema,
   useBuildUiWidgetsContext,
   useConstructValidationSchema,
-} from "../ServiceForm/useBuildForm";
-import { ConnectorCardProps } from "./interfaces";
-import { useTestConnector } from "./useTestConnector";
+} from "../../ServiceForm/useBuildForm";
+import { ConnectorCardProps } from "../interfaces";
 
-interface UseConnectorCardServiceHookResult {
-  advancedMode: boolean;
-  error: Error | null;
+interface UseUIWidgetHookResult {
   formFields: FormBlock;
   getValues: <T = unknown>(values: ServiceFormValues<T>) => ServiceFormValues<T>;
   initialValues: ServiceFormValues;
-  isFormSubmitting: boolean;
-  isTestConnectionInProgress: boolean;
-  job?: SynchronousJobRead | null;
   jsonSchema: JSONSchema7;
-  onFormSubmit: (values: ServiceFormValues) => Promise<void>;
-  onStopTesting: () => void;
   resetUiWidgetsInfo: () => void;
   selectedConnectorDefinitionSpecificationId?: string;
   setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
-  testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
   uiWidgetsInfo: WidgetConfigMap;
-  uniqueFormId?: string;
   validationSchema: AnySchema;
 }
 
-export const useConnectorCardService = (props: ConnectorCardProps): UseConnectorCardServiceHookResult => {
-  const { selectedConnectorDefinitionSpecification, isLoading, formType, formValues, onSubmit, jobInfo, formId } =
-    props;
-  const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
-  const [isFormSubmitting] = useState(false);
-  const [advancedMode] = useAdvancedModeSetting();
-
-  const { testConnector, isTestConnectionInProgress, onStopTesting, error, reset } = useTestConnector(props);
-
-  useEffect(() => {
-    // Whenever the selected connector changed, reset the check connection call and other errors
-    reset();
-    setErrorStatusRequest(null);
-  }, [selectedConnectorDefinitionSpecification, reset]);
-
-  const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
+export const useUIWidget = (props: ConnectorCardProps): UseUIWidgetHookResult => {
+  const { selectedConnectorDefinitionSpecification, isLoading, formType, formValues } = props;
 
   const selectedConnectorDefinitionSpecificationId =
     selectedConnectorDefinitionSpecification && ConnectorSpecification.id(selectedConnectorDefinitionSpecification);
-
-  const uniqueFormId = useUniqueFormId(formId);
-  const { clearFormChange } = useFormChangeTrackerService();
 
   const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
 
@@ -124,34 +93,15 @@ export const useConnectorCardService = (props: ConnectorCardProps): UseConnector
     [validationSchema]
   );
 
-  const onFormSubmit = useCallback(
-    async (values: ServiceFormValues) => {
-      const valuesToSend = getValues(values);
-      await onSubmit(valuesToSend);
-
-      clearFormChange(uniqueFormId);
-    },
-    [clearFormChange, uniqueFormId, getValues, onSubmit]
-  );
-
   return {
-    advancedMode,
-    error,
     formFields,
     getValues,
     initialValues,
-    isFormSubmitting,
-    isTestConnectionInProgress,
-    job,
     jsonSchema,
-    onFormSubmit,
-    onStopTesting,
     resetUiWidgetsInfo,
     selectedConnectorDefinitionSpecificationId,
     setUiWidgetsInfo,
-    testConnector,
     uiWidgetsInfo,
-    uniqueFormId,
     validationSchema,
   };
 };
