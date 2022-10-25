@@ -78,13 +78,13 @@
                 "type": "object",
                 "properties": {
                     "time": {
-                        "type": "number"
+                        "type": ["null","number"]
                     },
                     "altitude": {
-                        "type": "number"
+                        "type": ["null","number"]
                     },
                     "reason": {
-                        "type": "string"
+                        "type": ["null", "string"]
                     }
                 }
             }
@@ -258,7 +258,7 @@
             "properties": {
                 "patch": {
                     "title": "patch",
-                    "type": "object",
+                    "type": ["object","null"],
                     "properties": {
                         "small": {
                             "type": [
@@ -278,7 +278,7 @@
                 },
                 "reddit": {
                     "title": "reddit",
-                    "type": "object",
+                    "type": ["object","null"],
                     "properties": {
                         "campaign": {
                             "type": [
