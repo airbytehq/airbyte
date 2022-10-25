@@ -17,36 +17,33 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.metrics.lib.ApmTraceUtils;
-import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
-import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
-import io.airbyte.workers.general.ReplicationWorker;
 import io.airbyte.workers.internal.AirbyteMessageTracker;
-import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.internal.EmptyAirbyteSource;
 import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncInput> {
 
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final ProcessFactory processFactory;
   private final Configs configs;
   private final FeatureFlags featureFlags;
@@ -72,22 +69,26 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   @Trace(operationName = JOB_ORCHESTRATOR_OPERATION_NAME)
   @Override
   public Optional<String> runJob() throws Exception {
-    final JobRunConfig jobRunConfig = JobOrchestrator.readJobRunConfig();
-    final StandardSyncInput syncInput = readInput();
+    final var jobRunConfig = readJobRunConfig();
+    final var syncInput = readInput();
 
-    final IntegrationLauncherConfig sourceLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
+    final var sourceLauncherConfig = JobOrchestrator.readAndDeserializeFile(
+        Path.of(KubePodProcess.CONFIG_DIR,
+            ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
-    final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+    final var destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
+        Path.of(KubePodProcess.CONFIG_DIR,
+            ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
-    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
-        SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
+    ApmTraceUtils.addTagsToTrace(
+        Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+            destinationLauncherConfig.getDockerImage(),
+            SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
 
     log.info("Setting up source launcher...");
-    final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
+    final var sourceLauncher = new AirbyteIntegrationLauncher(
         sourceLauncherConfig.getJobId(),
         Math.toIntExact(sourceLauncherConfig.getAttemptId()),
         sourceLauncherConfig.getDockerImage(),
@@ -95,7 +96,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         syncInput.getSourceResourceRequirements());
 
     log.info("Setting up destination launcher...");
-    final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
+    final var destinationLauncher = new AirbyteIntegrationLauncher(
         destinationLauncherConfig.getJobId(),
         Math.toIntExact(destinationLauncherConfig.getAttemptId()),
         destinationLauncherConfig.getDockerImage(),
@@ -104,28 +105,33 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
 
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
-    final AirbyteSource airbyteSource =
-        WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage()) ? new EmptyAirbyteSource(
-            featureFlags.useStreamCapableState())
-            : new DefaultAirbyteSource(sourceLauncher);
+    final var airbyteSource =
+        WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(
+            sourceLauncherConfig.getDockerImage())
+                ? new EmptyAirbyteSource(
+                    featureFlags.useStreamCapableState())
+                : new DefaultAirbyteSource(sourceLauncher);
 
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
-    final MetricClient metricClient = MetricClientFactory.getMetricClient();
-    final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
+    final var metricClient = MetricClientFactory.getMetricClient();
+    final var metricReporter = new WorkerMetricReporter(metricClient,
+        sourceLauncherConfig.getDockerImage());
 
     log.info("Setting up replication worker...");
-    final ReplicationWorker replicationWorker = new DefaultReplicationWorker(
+    final var replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
         airbyteSource,
-        new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
+        new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(),
+            syncInput.getPrefix()),
         new DefaultAirbyteDestination(destinationLauncher),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter);
 
     log.info("Running replication worker...");
-    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    final var jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),
+        jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     final ReplicationOutput replicationOutput = replicationWorker.run(syncInput, jobRoot);
 
     log.info("Returning output...");

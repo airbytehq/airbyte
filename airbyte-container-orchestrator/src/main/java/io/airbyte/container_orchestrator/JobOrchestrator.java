@@ -7,13 +7,10 @@ package io.airbyte.container_orchestrator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.sync.OrchestratorConstants;
 import io.airbyte.persistence.job.models.JobRunConfig;
-import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
-import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.process.KubePodProcess;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -32,35 +29,18 @@ public interface JobOrchestrator<INPUT> {
 
   // reads input from a file that was copied to the container launcher
   default INPUT readInput() throws IOException {
-    return readAndDeserializeFile(Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_INPUT), getInputClass());
-  }
-
-  /**
-   * reads the application name from a file that was copied to the container launcher
-   */
-  static String readApplicationName() throws IOException {
-    return Files.readString(Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_APPLICATION));
-  }
-
-  /**
-   * reads the environment variable map from a file that was copied to the container launcher
-   */
-  static Map<String, String> readEnvMap() throws IOException {
-    return (Map<String, String>) readAndDeserializeFile(Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_ENV_MAP), Map.class);
+    return Jsons.deserialize(
+        Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_INPUT).toFile(),
+        getInputClass());
   }
 
   /**
    * reads the job run config from a file that was copied to the container launcher
    */
-  static JobRunConfig readJobRunConfig() throws IOException {
-    return readAndDeserializeFile(Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG), JobRunConfig.class);
-  }
-
-  /**
-   * reads the kube pod info from a file that was copied to the container launcher
-   */
-  static KubePodInfo readKubePodInfo() throws IOException {
-    return readAndDeserializeFile(Path.of(KubePodProcess.CONFIG_DIR, AsyncOrchestratorPodProcess.KUBE_POD_INFO), KubePodInfo.class);
+  default JobRunConfig readJobRunConfig() throws IOException {
+    return Jsons.deserialize(
+        Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG).toFile(),
+        JobRunConfig.class);
   }
 
   /**

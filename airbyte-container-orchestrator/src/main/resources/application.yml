@@ -1,0 +1,3 @@
+micronaut:
+  server:
+    port: 9000

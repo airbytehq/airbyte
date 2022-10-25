@@ -4,8 +4,10 @@
 
 package io.airbyte.container_orchestrator;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.temporal.TemporalUtils;
@@ -29,15 +31,18 @@ import io.airbyte.workers.sync.NormalizationLauncherWorker;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.micronaut.runtime.Micronaut;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.InetAddress;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
-import sun.misc.Signal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message
@@ -50,9 +55,10 @@ import sun.misc.Signal;
  * This app uses default logging which is directly captured by the calling Temporal worker. In the
  * future this will need to independently interact with cloud storage.
  */
-@Slf4j
 @SuppressWarnings({"PMD.AvoidCatchingThrowable", "PMD.DoNotTerminateVM"})
 public class Application {
+
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static final int MAX_SECONDS_TO_WAIT_FOR_FILE_COPY = 60;
 
@@ -71,11 +77,11 @@ public class Application {
   private final FeatureFlags featureFlags;
 
   public Application(
-      final String application,
-      final Map<String, String> envMap,
-      final JobRunConfig jobRunConfig,
-      final KubePodInfo kubePodInfo,
-      final FeatureFlags featureFlags) {
+                     final String application,
+                     final Map<String, String> envMap,
+                     final JobRunConfig jobRunConfig,
+                     final KubePodInfo kubePodInfo,
+                     final FeatureFlags featureFlags) {
     this.application = application;
     this.envMap = envMap;
     this.jobRunConfig = jobRunConfig;
@@ -86,10 +92,10 @@ public class Application {
 
   /**
    * Handles state updates (including writing failures) and running the job orchestrator. As much of
-   * the initialization as possible should go in here so it's logged properly and the state storage
+   * the initialization as possible should go in here, so it's logged properly and the state storage
    * is updated appropriately.
    */
-  private void runInternal(final DefaultAsyncStateManager asyncStateManager) {
+  private void runInternal(final AsyncStateManager asyncStateManager) {
     try {
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.INITIALIZING);
 
@@ -102,9 +108,6 @@ public class Application {
         throw new IllegalStateException(
             "Could not find job orchestrator for application: " + application);
       }
-
-      final var heartbeatServer = new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT);
-      heartbeatServer.startBackground();
 
       asyncStateManager.write(kubePodInfo, AsyncKubePodStatus.RUNNING);
 
@@ -138,19 +141,23 @@ public class Application {
       // version is deployed!
       final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(),
           STATE_STORAGE_PREFIX);
-      final var asyncStateManager = new DefaultAsyncStateManager(documentStoreClient);
+      final var asyncStateManager = new AsyncStateManager(documentStoreClient);
 
       runInternal(asyncStateManager);
     }
   }
 
   public static void main(final String[] args) {
+    final var ctx = Micronaut.run(Application.class, args);
+    log.info("stopping 2!!!");
+    ctx.close();
+
     try {
       // otherwise the pod hangs on closing
-      Signal.handle(new Signal("TERM"), sig -> {
-        log.error("Received termination signal, failing...");
-        System.exit(1);
-      });
+      // Signal.handle(new Signal("TERM"), sig -> {
+      // log.error("Received termination signal, failing...");
+      // System.exit(1);
+      // });
 
       // wait for config files to be copied
       final var successFile = Path.of(KubePodProcess.CONFIG_DIR, KubePodProcess.SUCCESS_FILE_NAME);
@@ -168,10 +175,18 @@ public class Application {
         System.exit(1);
       }
 
-      final var applicationName = JobOrchestrator.readApplicationName();
-      final var envMap = JobOrchestrator.readEnvMap();
-      final var jobRunConfig = JobOrchestrator.readJobRunConfig();
-      final var kubePodInfo = JobOrchestrator.readKubePodInfo();
+      final var applicationName = Files.readString(
+          Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_APPLICATION));
+      final var envMap = Jsons.deserialize(
+          Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_ENV_MAP).toFile(),
+          new TypeReference<Map<String, String>>() {});
+      final var jobRunConfig = Jsons.deserialize(
+          Path.of(KubePodProcess.CONFIG_DIR, OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG)
+              .toFile(),
+          JobRunConfig.class);
+      final var kubePodInfo = Jsons.deserialize(
+          Path.of(KubePodProcess.CONFIG_DIR, AsyncOrchestratorPodProcess.KUBE_POD_INFO).toFile(),
+          KubePodInfo.class);
       final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
       final var app = new Application(applicationName, envMap, jobRunConfig, kubePodInfo,
@@ -201,15 +216,13 @@ public class Application {
   }
 
   private static JobOrchestrator<?> getJobOrchestrator(final Configs configs,
-      final WorkerConfigs workerConfigs,
-      final ProcessFactory processFactory,
-      final String application,
-      final FeatureFlags featureFlags) {
+                                                       final WorkerConfigs workerConfigs,
+                                                       final ProcessFactory processFactory,
+                                                       final String application,
+                                                       final FeatureFlags featureFlags) {
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION ->
-          new ReplicationJobOrchestrator(configs, processFactory, featureFlags);
-      case NormalizationLauncherWorker.NORMALIZATION ->
-          new NormalizationJobOrchestrator(configs, processFactory);
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, processFactory, featureFlags);
+      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, processFactory);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
       default -> null;
@@ -220,7 +233,7 @@ public class Application {
    * Creates a process builder factory that will be used to create connector containers/pods.
    */
   private static ProcessFactory getProcessBuilderFactory(final Configs configs,
-      final WorkerConfigs workerConfigs)
+                                                         final WorkerConfigs workerConfigs)
       throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();

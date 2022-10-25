@@ -34,7 +34,9 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
   private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
 
-  public DbtJobOrchestrator(final Configs configs, final WorkerConfigs workerConfigs, final ProcessFactory processFactory) {
+  public DbtJobOrchestrator(final Configs configs,
+                            final WorkerConfigs workerConfigs,
+                            final ProcessFactory processFactory) {
     this.configs = configs;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
@@ -53,15 +55,17 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
   @Trace(operationName = JOB_ORCHESTRATOR_OPERATION_NAME)
   @Override
   public Optional<String> runJob() throws Exception {
-    final JobRunConfig jobRunConfig = JobOrchestrator.readJobRunConfig();
+    final JobRunConfig jobRunConfig = readJobRunConfig();
     final OperatorDbtInput dbtInput = readInput();
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        Path.of(KubePodProcess.CONFIG_DIR,
+            ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
     ApmTraceUtils
-        .addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
+        .addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+            destinationLauncherConfig.getDockerImage()));
 
     log.info("Setting up dbt worker...");
     final DbtTransformationWorker worker = new DbtTransformationWorker(
@@ -75,7 +79,8 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
                 NormalizationRunnerFactory.NORMALIZATION_VERSION)));
 
     log.info("Running dbt worker...");
-    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),
+        jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     worker.run(dbtInput, jobRoot);
 
     return Optional.empty();

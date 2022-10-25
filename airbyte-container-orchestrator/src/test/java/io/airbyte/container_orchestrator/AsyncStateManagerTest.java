@@ -19,7 +19,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DefaultAsyncStateManagerTest {
+class AsyncStateManagerTest {
 
   public static final String FAKE_IMAGE = "fake_image";
   private static final KubePodInfo KUBE_POD_INFO = new KubePodInfo("default", "pod1",
@@ -27,12 +27,12 @@ class DefaultAsyncStateManagerTest {
   private static final String OUTPUT = "some output value";
 
   private DocumentStoreClient documentStore;
-  private DefaultAsyncStateManager stateManager;
+  private AsyncStateManager stateManager;
 
   @BeforeEach
   void setup() {
     documentStore = mock(DocumentStoreClient.class);
-    stateManager = new DefaultAsyncStateManager(documentStore);
+    stateManager = new AsyncStateManager(documentStore);
   }
 
   @Test
@@ -109,7 +109,7 @@ class DefaultAsyncStateManagerTest {
   }
 
   private static String getKey(final AsyncKubePodStatus status) {
-    return DefaultAsyncStateManager.getDocumentStoreKey(KUBE_POD_INFO, status);
+    return AsyncStateManager.getDocumentStoreKey(KUBE_POD_INFO, status);
   }
 
 }
