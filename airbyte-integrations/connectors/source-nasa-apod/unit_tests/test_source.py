@@ -19,28 +19,6 @@ valid_date_str = (min_date + timedelta(days=10)).strftime(date_format)
     ("config", "expected_return"),
     [
         ({"api_key": "foobar"}, (True, None)),
-        ({"api_key": "foobar", "date": valid_date_str}, (True, None)),
-        ({"api_key": "foobar", "date": "x"}, (False, "Invalid date value: x. It should be formatted as '%Y-%m-%d'.")),
-        (
-            {"api_key": "foobar", "date": "1990-01-01"},
-            (False, f"Invalid date value: 1990-01-01. The value should be in the range [{min_date},{tomorrow})."),
-        ),
-        (
-            {"api_key": "foobar", "date": after_tomorrow_str},
-            (False, f"Invalid date value: {after_tomorrow_str}. The value should be in the range [{min_date},{tomorrow})."),
-        ),
-        (
-            {"api_key": "foobar", "date": valid_date_str, "count": 5},
-            (False, "Invalid parameter combination. Cannot use date and any of count, start_date, end_date together."),
-        ),
-        (
-            {"api_key": "foobar", "date": valid_date_str, "start_date": valid_date_str},
-            (False, "Invalid parameter combination. Cannot use date and any of count, start_date, end_date together."),
-        ),
-        (
-            {"api_key": "foobar", "date": valid_date_str, "end_date": valid_date_str},
-            (False, "Invalid parameter combination. Cannot use date and any of count, start_date, end_date together."),
-        ),
         ({"api_key": "foobar", "start_date": valid_date_str}, (True, None)),
         (
             {"api_key": "foobar", "start_date": valid_date_str, "count": 5},
@@ -55,7 +33,7 @@ valid_date_str = (min_date + timedelta(days=10)).strftime(date_format)
             {"api_key": "foobar", "start_date": valid_date_str, "end_date": min_date.strftime(date_format)},
             (
                 False,
-                f"Invalid values. start_date ({datetime.strptime(valid_date_str, date_format)}) needs to be lower than end_date ({min_date}).",
+                f"Invalid values. start_date ({datetime.strptime(valid_date_str, date_format)}) needs to be lower than or equal to end_date ({min_date}).",
             ),
         ),
         ({"api_key": "foobar", "start_date": min_date.strftime(date_format), "end_date": valid_date_str}, (True, None)),

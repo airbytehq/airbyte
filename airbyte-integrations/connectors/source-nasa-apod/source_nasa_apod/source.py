@@ -39,15 +39,13 @@ class NasaApodStream(HttpStream):
         return self.config
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        r = response.json()
-        yield [r] if type(r) is dict else r
+        yield response.json()
 
 
 # Source
 class SourceNasaApod(AbstractSource):
 
     count_key = "count"
-    date_key = "date"
     start_date_key = "start_date"
     end_date_key = "end_date"
     min_count_value, max_count_value = 1, 101
@@ -83,16 +81,6 @@ class SourceNasaApod(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        if self.date_key in config:
-            date = self._parse_date(config[self.date_key])
-            if type(date) is not datetime:
-                return False, date
-
-            if self.count_key in config or self.start_date_key in config or self.end_date_key in config:
-                return False, self.invalid_conbination_message_template.format(
-                    self.date_key, f"any of {', '.join([self.count_key, self.start_date_key, self.end_date_key])}"
-                )
-
         if self.start_date_key in config:
             start_date = self._parse_date(config[self.start_date_key])
             if type(start_date) is not datetime:
@@ -112,8 +100,8 @@ class SourceNasaApod(AbstractSource):
             if self.start_date_key not in config:
                 return False, f"Cannot use {self.end_date_key} without specifying {self.start_date_key}."
 
-            if start_date >= end_date:
-                return False, f"Invalid values. start_date ({start_date}) needs to be lower than end_date ({end_date})."
+            if start_date > end_date:
+                return False, f"Invalid values. start_date ({start_date}) needs to be lower than or equal to end_date ({end_date})."
 
         if self.count_key in config:
             count_value = config[self.count_key]
