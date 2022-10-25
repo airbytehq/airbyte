@@ -16,27 +16,19 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
-import io.airbyte.server.handlers.StateHandler;
-import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 
 public class ConnectionApiController implements ConnectionApi {
 
   private final ConnectionsHandler connectionsHandler;
   private final OperationsHandler operationsHandler;
   private final SchedulerHandler schedulerHandler;
-  private final StateHandler stateHandler;
-  private final WebBackendConnectionsHandler webBackendConnectionsHandler;
 
   public ConnectionApiController(final ConnectionsHandler connectionsHandler,
                                  final OperationsHandler operationsHandler,
-                                 final SchedulerHandler schedulerHandler,
-                                 final StateHandler stateHandler,
-                                 final WebBackendConnectionsHandler webBackendConnectionsHandler) {
+                                 final SchedulerHandler schedulerHandler) {
     this.connectionsHandler = connectionsHandler;
     this.operationsHandler = operationsHandler;
     this.schedulerHandler = schedulerHandler;
-    this.stateHandler = stateHandler;
-    this.webBackendConnectionsHandler = webBackendConnectionsHandler;
   }
 
   @Override

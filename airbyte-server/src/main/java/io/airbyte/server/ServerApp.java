@@ -27,7 +27,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -58,19 +57,11 @@ import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
-import io.airbyte.server.handlers.DestinationDefinitionsHandler;
-import io.airbyte.server.handlers.DestinationHandler;
-import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
-import io.airbyte.server.handlers.SourceDefinitionsHandler;
-import io.airbyte.server.handlers.SourceHandler;
-import io.airbyte.server.handlers.StateHandler;
-import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
-import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -291,55 +282,6 @@ public class ServerApp implements ServerRunnable {
         configs.getLogConfigs(),
         eventRunner);
 
-    final StatePersistence statePersistence = new StatePersistence(configsDatabase);
-
-    final StateHandler stateHandler = new StateHandler(statePersistence);
-
-    final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-
-    final SourceHandler sourceHandler = new SourceHandler(
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        schemaValidator,
-        connectionsHandler);
-
-    final DestinationHandler destinationHandler = new DestinationHandler(
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        schemaValidator,
-        connectionsHandler);
-
-    final SourceDefinitionsHandler sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler);
-
-    final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(
-        configRepository,
-        syncSchedulerClient,
-        destinationHandler);
-
-    final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
-        jobPersistence,
-        configs.getWorkerEnvironment(),
-        configs.getLogConfigs(),
-        connectionsHandler,
-        sourceHandler,
-        sourceDefinitionsHandler,
-        destinationHandler,
-        destinationDefinitionsHandler,
-        configs.getAirbyteVersion());
-
-    final WebBackendConnectionsHandler webBackendConnectionsHandler = new WebBackendConnectionsHandler(
-        connectionsHandler,
-        stateHandler,
-        sourceHandler,
-        destinationHandler,
-        jobHistoryHandler,
-        schedulerHandler,
-        operationsHandler,
-        eventRunner,
-        configRepository);
-
     final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
 
     LOGGER.info("Starting server...");
@@ -365,9 +307,7 @@ public class ServerApp implements ServerRunnable {
         connectionsHandler,
         dbMigrationHandler,
         operationsHandler,
-        schedulerHandler,
-        stateHandler,
-        webBackendConnectionsHandler);
+        schedulerHandler);
   }
 
   @VisibleForTesting

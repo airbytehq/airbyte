@@ -27,8 +27,6 @@ import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
-import io.airbyte.server.handlers.StateHandler;
-import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import java.net.http.HttpClient;
@@ -60,9 +58,7 @@ public interface ServerFactory {
                         final ConnectionsHandler connectionsHandler,
                         final DbMigrationHandler dbMigrationHandler,
                         final OperationsHandler operationsHandler,
-                        final SchedulerHandler schedulerHandler,
-                        final StateHandler stateHandler,
-                        final WebBackendConnectionsHandler webBackendConnectionsHandler);
+                        final SchedulerHandler schedulerHandler);
 
   class Api implements ServerFactory {
 
@@ -87,9 +83,7 @@ public interface ServerFactory {
                                  final ConnectionsHandler connectionsHandler,
                                  final DbMigrationHandler dbMigrationHandler,
                                  final OperationsHandler operationsHandler,
-                                 final SchedulerHandler schedulerHandler,
-                                 final StateHandler stateHandler,
-                                 final WebBackendConnectionsHandler webBackendConnectionsHandler) {
+                                 final SchedulerHandler schedulerHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
       // set static values for factory
@@ -119,8 +113,6 @@ public interface ServerFactory {
           connectionsHandler,
           operationsHandler,
           schedulerHandler,
-          stateHandler,
-          webBackendConnectionsHandler,
           mdc);
 
       DbMigrationApiFactory.setValues(dbMigrationHandler, mdc);
