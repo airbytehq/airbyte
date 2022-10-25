@@ -32,10 +32,10 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   protected static final String DATABASE_NAME = "admin";
   private static final String DATABASE_FAIL_NAME = "fail_db";
   protected static final String AUTH_TYPE = "auth_type";
-  private static final String AIRBYTE_DATA = "_airbyte_data";
+  protected static final String AIRBYTE_DATA = "_airbyte_data";
 
   private MongoDBContainer container;
-  private final MongodbNameTransformer namingResolver = new MongodbNameTransformer();
+  protected final MongodbNameTransformer namingResolver = new MongodbNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -118,7 +118,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
       final MongodbDestination destination = new MongodbDestination();
       final AirbyteConnectionStatus status = destination.check(invalidConfig);
       assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-      assertTrue(status.getMessage().contains("State code: 18"));
     } catch (final Exception e) {
       assertTrue(e instanceof IOException);
     }
@@ -133,7 +132,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
       final MongodbDestination destination = new MongodbDestination();
       final AirbyteConnectionStatus status = destination.check(invalidConfig);
       assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-      assertTrue(status.getMessage().contains("State code: 18"));
     } catch (final Exception e) {
       assertTrue(e instanceof IOException);
     }
@@ -148,7 +146,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
       final MongodbDestination destination = new MongodbDestination();
       final AirbyteConnectionStatus status = destination.check(invalidConfig);
       assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-      assertTrue(status.getMessage().contains("State code: 18"));
     } catch (final Exception e) {
       assertTrue(e instanceof IOException);
     }
@@ -163,7 +160,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
       final MongodbDestination destination = new MongodbDestination();
       final AirbyteConnectionStatus status = destination.check(invalidConfig);
       assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-      assertTrue(status.getMessage().contains("State code: -3"));
     } catch (final Exception e) {
       assertTrue(e instanceof IOException);
     }
@@ -178,7 +174,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
       final MongodbDestination destination = new MongodbDestination();
       final AirbyteConnectionStatus status = destination.check(invalidConfig);
       assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-      assertTrue(status.getMessage().contains("State code: -3"));
     } catch (final Exception e) {
       assertTrue(e instanceof IOException);
     }
@@ -204,7 +199,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
         + "}");
   }
 
-  private MongoDatabase getMongoDatabase(final String host, final int port, final String databaseName) {
+  protected MongoDatabase getMongoDatabase(final String host, final int port, final String databaseName) {
     try {
       final String connectionString = String.format("mongodb://%s:%s/", host, port);
       return new MongoDatabase(connectionString, databaseName);
