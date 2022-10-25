@@ -790,7 +790,7 @@ worker:
   containerOrchestrator:
     enabled: true
     image: ""
-    serviceAccount: ""
+    serviceAccount: "airbyte-admin"
 
 ## @section Metrics parameters
 metrics:

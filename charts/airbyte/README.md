@@ -240,7 +240,7 @@ Helm chart to deploy airbyte
 | worker.affinity | object | `{}` |  |
 | worker.containerOrchestrator.enabled | bool | `true` |  |
 | worker.containerOrchestrator.image | string | `""` |  |
-| worker.containerOrchestrator.serviceAccount | string | `""` |  |
+| worker.containerOrchestrator.serviceAccount | string | `"airbyte-admin"` |  |
 | worker.containerSecurityContext | object | `{}` |  |
 | worker.enabled | bool | `true` |  |
 | worker.extraEnv | list | `[]` |  |
