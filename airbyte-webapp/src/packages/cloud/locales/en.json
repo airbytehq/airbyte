@@ -103,6 +103,7 @@
   "settings.generalSettings.deleteLabel": "Delete your workspace",
   "settings.generalSettings.deleteText": "Delete",
   "settings.dataResidency": "Default Data residency",
+  "settings.dataResidency.description": "Choose the default preferred data processing location for all of your connections. Setting this choice means your data never leaves this region. Learn more.",
   "settings.accessManagementSettings": "Access Management",
   "userSettings.table.title": "Current users",
   "userSettings.table.column.fullname": "Full Name",

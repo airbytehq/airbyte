@@ -37,6 +37,7 @@
     "@sentry/tracing": "^6.19.6",
     "@types/segment-analytics": "^0.0.34",
     "classnames": "^2.3.1",
+    "country-flag-icons": "^1.5.5",
     "dayjs": "^1.11.3",
     "firebase": "^9.8.2",
     "flat": "^5.0.2",
