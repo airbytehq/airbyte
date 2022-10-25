@@ -54,7 +54,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
-          final ConnectionState previousState = airbyteApiClient.getConnectionApi()
+          final ConnectionState previousState = airbyteApiClient.getStateApi()
               .getState(new ConnectionIdRequestBody().connectionId(connectionId));
           if (featureFlags.needStateValidation() && previousState != null) {
             final StateType newStateType = maybeStateWrapper.get().getStateType();
@@ -65,7 +65,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
             }
           }
 
-          airbyteApiClient.getConnectionApi().createOrUpdateState(
+          airbyteApiClient.getStateApi().createOrUpdateState(
               new ConnectionStateCreateOrUpdate()
                   .connectionId(connectionId)
                   .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));
