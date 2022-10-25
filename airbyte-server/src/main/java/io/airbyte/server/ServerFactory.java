@@ -20,6 +20,7 @@ import io.airbyte.server.apis.ConnectionApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
+import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import java.net.http.HttpClient;
@@ -88,6 +89,20 @@ public interface ServerFactory {
           jobsFlyway);
 
       AttemptApiFactory.setValues(jobPersistence, MDC.getCopyOfContextMap());
+
+      ConnectionApiFactory.setValues(
+          configRepository,
+          jobPersistence,
+          trackingClient,
+          eventRunner,
+          secretsRepositoryReader,
+          secretsRepositoryWriter,
+          synchronousSchedulerClient,
+          workerEnvironment,
+          logConfigs,
+          new StatePersistence(configsDatabase),
+          airbyteVersion,
+          MDC.getCopyOfContextMap());
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiController.class, ConnectionApiController.class);
