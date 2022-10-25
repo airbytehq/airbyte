@@ -11,8 +11,6 @@ interface ResultDisplayProps {
 }
 
 export const ResultDisplay: React.FC<ResultDisplayProps> = ({ data }) => {
-  console.log(JSON.stringify(data));
-
   return (
     <div className={styles.container}>
       {data.slices.map((slice) => (
