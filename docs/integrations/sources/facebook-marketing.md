@@ -1,5 +1,11 @@
 # Facebook Marketing
 
+:::warning
+We are currently experiencing an issue for anyone setting up a Facebook Marketing Source Connector who's Facebook Graph API has been updated to v15.0. Our team is blocked until the v15.0 SDK is made available, but once we have access to it we will begin working on a fix. 
+
+Thank you for your patience and understanding! 
+:::
+
 This page guides you through the process of setting up the Facebook Marketing source connector.
 
 ## Prerequisites
