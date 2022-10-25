@@ -8797,7 +8797,6 @@ containing the updated stream needs to be sent.</div>
   "connections" : [ {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
-    "name" : "name",
     "destination" : {
       "connectionConfiguration" : {
         "user" : "charles"
@@ -8809,7 +8808,6 @@ containing the updated stream needs to be sent.</div>
       "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -8823,6 +8821,8 @@ containing the updated stream needs to be sent.</div>
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "name" : "name",
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "scheduleData" : {
       "cron" : {
         "cronExpression" : "cronExpression",
@@ -8836,7 +8836,6 @@ containing the updated stream needs to be sent.</div>
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
-    "name" : "name",
     "destination" : {
       "connectionConfiguration" : {
         "user" : "charles"
@@ -8848,7 +8847,6 @@ containing the updated stream needs to be sent.</div>
       "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -8862,6 +8860,8 @@ containing the updated stream needs to be sent.</div>
       "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "name" : "name",
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "scheduleData" : {
       "cron" : {
         "cronExpression" : "cronExpression",
@@ -11409,6 +11409,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">latestSyncJobCreatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> epoch time of the latest sync job. null if no sync job has taken place. format: int64</div>
 <div class="param">latestSyncJobStatus (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
 <div class="param">isSyncing </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">schemaChange </div><div class="param-desc"><span class="param-type"><a href="#SchemaChange">SchemaChange</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

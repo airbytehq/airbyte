@@ -13,6 +13,7 @@ dependencies {
     implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation 'org.apache.ant:ant:1.10.10'
     implementation 'org.apache.commons:commons-text:1.10.0'
+    implementation libs.bundles.datadog
 
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-protocol')

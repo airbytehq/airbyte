@@ -3,11 +3,14 @@
 #
 
 
+import logging
+from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import List, Mapping, Optional, Set
+from typing import Generic, List, Mapping, Optional, Set, TypeVar
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, root_validator, validator
+from pydantic.generics import GenericModel
 
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
@@ -18,11 +21,15 @@ configured_catalog_path: Optional[str] = Field(default=None, description="Path t
 timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
 
 SEMVER_REGEX = r"(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*)))?(?:\-([\w][\w\.\-_]*))?)?"
+ALLOW_LEGACY_CONFIG = True
 
 
 class BaseConfig(BaseModel):
     class Config:
         extra = "forbid"
+
+
+TestConfigT = TypeVar("TestConfigT")
 
 
 class BackwardCompatibilityTestsConfig(BaseConfig):
@@ -133,22 +140,86 @@ class IncrementalConfig(BaseConfig):
     )
 
 
-class TestConfig(BaseConfig):
-    spec: Optional[List[SpecTestConfig]] = Field(description="TODO")
-    connection: Optional[List[ConnectionTestConfig]] = Field(description="TODO")
-    discovery: Optional[List[DiscoveryTestConfig]] = Field(description="TODO")
-    basic_read: Optional[List[BasicReadTestConfig]] = Field(description="TODO")
-    full_refresh: Optional[List[FullRefreshConfig]] = Field(description="TODO")
-    incremental: Optional[List[IncrementalConfig]] = Field(description="TODO")
+class GenericTestConfig(GenericModel, Generic[TestConfigT]):
+    bypass_reason: Optional[str]
+    tests: Optional[List[TestConfigT]]
+
+    @validator("tests", always=True)
+    def no_bypass_reason_when_tests_is_set(cls, tests, values):
+        if tests and values.get("bypass_reason"):
+            raise ValueError("You can't set a bypass_reason if tests are set.")
+        return tests
+
+
+class AcceptanceTestConfigurations(BaseConfig):
+    spec: Optional[GenericTestConfig[SpecTestConfig]]
+    connection: Optional[GenericTestConfig[ConnectionTestConfig]]
+    discovery: Optional[GenericTestConfig[DiscoveryTestConfig]]
+    basic_read: Optional[GenericTestConfig[BasicReadTestConfig]]
+    full_refresh: Optional[GenericTestConfig[FullRefreshConfig]]
+    incremental: Optional[GenericTestConfig[IncrementalConfig]]
 
 
 class Config(BaseConfig):
     class TestStrictnessLevel(str, Enum):
         high = "high"
+        low = "low"
 
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
-    tests: TestConfig = Field(description="List of the tests with their configs")
+    acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")
     test_strictness_level: Optional[TestStrictnessLevel] = Field(
-        description="Corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run."
+        default=TestStrictnessLevel.low,
+        description="Corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
     )
+
+    @staticmethod
+    def is_legacy(config: dict) -> bool:
+        """Check if a configuration is 'legacy'.
+        We consider it is legacy if a 'tests' field exists at its root level (prior to v0.2.12).
+
+        Args:
+            config (dict): A configuration
+
+        Returns:
+            bool: Whether the configuration is legacy.
+        """
+        return "tests" in config
+
+    @staticmethod
+    def migrate_legacy_to_current_config(legacy_config: dict) -> dict:
+        """Convert configuration structure created prior to v0.2.12 into the current structure.
+        e.g.
+        This structure:
+            {"connector_image": "my-connector-image", "tests": {"spec": [{"spec_path": "my/spec/path.json"}]}
+        Gets converted to:
+            {"connector_image": "my-connector-image", "acceptance_tests": {"spec": {"tests": [{"spec_path": "my/spec/path.json"}]}}
+
+        Args:
+            legacy_config (dict): A legacy configuration
+
+        Returns:
+            dict: A migrated configuration
+        """
+        migrated_config = deepcopy(legacy_config)
+        migrated_config.pop("tests")
+        migrated_config["acceptance_tests"] = {}
+        for test_name, test_configs in legacy_config["tests"].items():
+            migrated_config["acceptance_tests"][test_name] = {"tests": test_configs}
+        return migrated_config
+
+    @root_validator(pre=True)
+    def legacy_format_adapter(cls, values: dict) -> dict:
+        """Root level validator executed 'pre' field validation to migrate a legacy config to the current structure.
+
+        Args:
+            values (dict): The raw configuration.
+
+        Returns:
+            dict: The migrated configuration if needed.
+        """
+        if ALLOW_LEGACY_CONFIG and cls.is_legacy(values):
+            logging.warn("The acceptance-test-config.yml file is in a legacy format. Please migrate to the latest format.")
+            return cls.migrate_legacy_to_current_config(values)
+        else:
+            return values
