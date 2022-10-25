@@ -98,7 +98,7 @@ const shouldShowButtonForLegacyAuth = (
     return true;
   }
 
-  // Check if the value in the form match the found `const` value from the spec. If so we know the conditional
+  // Check if the value in the form matches the found `const` value from the spec. If so we know the conditional
   // is on the right option.
   const [key, constValue] = constProperty;
   const value = getIn(values, makeConnectionConfigurationPath(stripNumericalEntries([...rootPath, key])));
