@@ -1297,4 +1297,5 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/zoom
   sourceType: api
+  icon: zoom.svg
   releaseStage: alpha
