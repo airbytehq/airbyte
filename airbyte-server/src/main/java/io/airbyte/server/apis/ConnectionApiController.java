@@ -10,9 +10,6 @@ import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSearch;
-import io.airbyte.api.model.generated.ConnectionState;
-import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
-import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
@@ -48,11 +45,6 @@ public class ConnectionApiController implements ConnectionApi {
   }
 
   @Override
-  public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
-    return ConfigurationApi.execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
-  }
-
-  @Override
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate) {
     return ConfigurationApi.execute(() -> connectionsHandler.updateConnection(connectionUpdate));
   }
@@ -75,17 +67,6 @@ public class ConnectionApiController implements ConnectionApi {
   @Override
   public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
     return ConfigurationApi.execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
-  }
-
-  @Override
-  public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return ConfigurationApi.execute(() -> stateHandler.getState(connectionIdRequestBody));
-  }
-
-  @Override
-  public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
-    // TODO: move to connectionHandler
-    return ConfigurationApi.execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
   }
 
   @Override

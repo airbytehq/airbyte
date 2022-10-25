@@ -746,13 +746,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> operationsHandler.createOperation(operationCreate));
   }
 
-  /**
-   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
-   * {@link ConnectionApiController} is more granular, it will override this implementation
-   */
   @Override
   public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
-    throw new NotImplementedException();
+    return ConfigurationApi.execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
   }
 
   @Override
@@ -778,13 +774,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> operationsHandler.updateOperation(operationUpdate));
   }
 
-  /**
-   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
-   * {@link ConnectionApiController} is more granular, it will override this implementation
-   */
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
-    throw new NotImplementedException();
+    return ConfigurationApi.execute(() -> stateHandler.getState(connectionIdRequestBody));
   }
 
   // SCHEDULER
@@ -878,13 +870,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
   }
 
-  /**
-   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
-   * {@link ConnectionApiController} is more granular, it will override this implementation
-   */
   @Override
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
-    throw new NotImplementedException();
+    return ConfigurationApi.execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
   }
 
   @Override
