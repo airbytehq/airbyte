@@ -21,6 +21,7 @@ import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SchemaChange;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
@@ -243,7 +244,8 @@ public class ConnectionHelpers {
                                                                                           final DestinationRead destination,
                                                                                           final boolean isSyncing,
                                                                                           final Long latestSyncJobCreatedAt,
-                                                                                          final JobStatus latestSynJobStatus) {
+                                                                                          final JobStatus latestSynJobStatus,
+                                                                                          final SchemaChange schemaChange) {
 
     final WebBackendConnectionListItem connectionListItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())
@@ -257,7 +259,8 @@ public class ConnectionHelpers {
         .latestSyncJobCreatedAt(latestSyncJobCreatedAt)
         .latestSyncJobStatus(latestSynJobStatus)
         .scheduleType(ApiPojoConverters.toApiConnectionScheduleType(standardSync))
-        .scheduleData(ApiPojoConverters.toApiConnectionScheduleData(standardSync));
+        .scheduleData(ApiPojoConverters.toApiConnectionScheduleData(standardSync))
+        .schemaChange(schemaChange);
 
     return connectionListItem;
   }
