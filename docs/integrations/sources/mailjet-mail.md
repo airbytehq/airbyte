@@ -27,5 +27,11 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 ### Requirements
 
-* Mailjet Mail API_KEY (username)
-* Mailjet Mail SECRET_KEY (password)
+* Mailjet Mail API_KEY
+* Mailjet Mail SECRET_KEY
+
+## Changelog
+
+| Version | Date       | Pull Request                                              | Subject                                    |
+| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| 0.1.0   | 2022-10-26 | [#18332](https://github.com/airbytehq/airbyte/pull/18332) | 🎉 New Source: Mailjet Mail API [low-code CDK] |

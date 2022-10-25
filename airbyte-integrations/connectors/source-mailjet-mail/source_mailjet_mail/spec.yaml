@@ -4,18 +4,18 @@ connectionSpecification:
   title: Mailjet Mail Spec
   type: object
   required:
-    - username
-    - password
+    - api_key
+    - api_key_secret
   additionalProperties: true
   properties:
-    username:
+    api_key:
       type: string
       description: >-
-        The username is your API Key. See <a
+        Your API Key. See <a
         href="https://dev.mailjet.com/email/guides/#authentication">here</a>.
-    password:
+    api_key_secret:
       type: string
       description: >- 
-        The password is your API Secret Key. See <a
+        Your API Secret Key. See <a
         href="https://dev.mailjet.com/email/guides/#authentication">here</a>.
       airbyte_secret: true

@@ -13,7 +13,7 @@
     },
     {
       "stream": {
-        "name": "stats",
+        "name": "stats_api_lifetime_message",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh"
