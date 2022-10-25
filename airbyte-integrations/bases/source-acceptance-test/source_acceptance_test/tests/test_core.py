@@ -582,7 +582,8 @@ class TestBasicRead(BaseTest):
 
         return result
 
-    def enforce_strictness_level(self, test_strictness_level, inputs):
+    @staticmethod
+    def enforce_strictness_level(test_strictness_level: Config.TestStrictnessLevel, inputs: BasicReadTestConfig):
         if test_strictness_level is Config.TestStrictnessLevel.high:
             if inputs.empty_streams:
                 all_empty_streams_have_bypass_reasons = all([bool(empty_stream.bypass_reason) for empty_stream in inputs.empty_streams])
