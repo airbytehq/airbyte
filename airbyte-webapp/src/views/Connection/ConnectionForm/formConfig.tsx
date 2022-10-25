@@ -252,14 +252,19 @@ export const useInitialValues = (
   destDefinition: DestinationDefinitionSpecificationRead,
   isNotCreateMode?: boolean
 ): FormikConnectionFormValues => {
+  const { catalogDiff } = connection;
+
+  const newStreams = catalogDiff?.transforms.filter((transform) => transform.transformType === "add_stream");
+
   const initialSchema = useMemo(
     () =>
       calculateInitialCatalog(
         connection.syncCatalog,
         destDefinition?.supportedDestinationSyncModes || [],
-        isNotCreateMode
+        isNotCreateMode,
+        newStreams
       ),
-    [connection.syncCatalog, destDefinition, isNotCreateMode]
+    [connection.syncCatalog, destDefinition?.supportedDestinationSyncModes, isNotCreateMode, newStreams]
   );
 
   return useMemo(() => {

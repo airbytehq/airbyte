@@ -1,5 +1,5 @@
 import { SyncSchema, SyncSchemaStream } from "core/domain/catalog";
-import { DestinationSyncMode, SyncMode, AirbyteStreamConfiguration } from "core/request/AirbyteClient";
+import { DestinationSyncMode, SyncMode, AirbyteStreamConfiguration, StreamTransform } from "core/request/AirbyteClient";
 
 const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
   if (streamNode.stream?.defaultCursorField?.length) {
@@ -119,18 +119,24 @@ const getOptimalSyncMode = (
 const calculateInitialCatalog = (
   schema: SyncSchema,
   supportedDestinationSyncModes: DestinationSyncMode[],
-  isNotCreateMode?: boolean
-): SyncSchema => ({
-  streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
-    const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
-    const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isNotCreateMode || false);
+  isNotCreateMode?: boolean,
+  newStreams?: StreamTransform[]
+): SyncSchema => {
+  const streamIds = newStreams?.map((stream) => stream.streamDescriptor);
+  return {
+    streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
+      const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+      const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isNotCreateMode || false);
+      const matches = streamIds?.filter(
+        (streamId) => streamId.name === nodeStream?.stream?.name && streamId.namespace === nodeStream.stream?.namespace
+      );
+      if (isNotCreateMode && (matches?.length === 0 || !matches)) {
+        return nodeStream;
+      }
 
-    if (isNotCreateMode) {
-      return nodeStream;
-    }
-
-    return getOptimalSyncMode(verifyConfigCursorField(nodeStream), supportedDestinationSyncModes);
-  }),
-});
+      return getOptimalSyncMode(verifyConfigCursorField(nodeStream), supportedDestinationSyncModes);
+    }),
+  };
+};
 
 export default calculateInitialCatalog;
