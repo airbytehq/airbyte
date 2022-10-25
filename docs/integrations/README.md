@@ -117,7 +117,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
 | [Oracle DB](sources/oracle.md)                                                              | Alpha                | Yes                 |
-| [Oracle Netsuite](sources/netsuite.md)                                                      | Generally Available  | Yes                 |
+| [Oracle Netsuite](sources/netsuite.md)                                                      | Alpha                | Yes                 |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md)                                           | Alpha                | No                  |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md)                                           | Alpha                | No                  |
 | [Orb](sources/orb.md)                                                                       | Alpha                | Yes                 |
