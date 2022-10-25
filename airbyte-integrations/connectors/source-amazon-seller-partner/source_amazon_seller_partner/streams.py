@@ -604,6 +604,27 @@ class FlatFileReturnsDataByReturnDate(ReportsAmazonSPStream):
     name = "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE"
 
 
+class FbaInventoryPlaningReport(ReportsAmazonSPStream):
+    name = "GET_FBA_INVENTORY_PLANNING_DATA"
+
+
+class LedgerSummaryViewReport(ReportsAmazonSPStream):
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        options = self.report_options()
+        if options is not None:
+            params.update({"reportOptions": options})
+        return params
+
+    name = "GET_LEDGER_SUMMARY_VIEW_DATA"
+
+
 class AnalyticsStream(ReportsAmazonSPStream):
     def parse_document(self, document):
         parsed = json_lib.loads(document)

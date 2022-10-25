@@ -104,6 +104,8 @@ This source is capable of syncing the following tables and their data:
 - [FBA Stranded Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Manage Inventory Health Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 
 ## Report options
 
@@ -125,7 +127,7 @@ Make sure to configure the [required parameters](https://developer-docs.amazon.c
 
 | Version  | Date       | Pull Request                                               | Subject                                                                |
 |:---------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------|
-| `0.2.28` | 2022-10-20 | [\#18283](https://github.com/airbytehq/airbyte/pull/18283) | Added multiple (21) report types                                       |
+| `0.2.28` | 2022-10-20 | [\#18283](https://github.com/airbytehq/airbyte/pull/18283) | Added multiple (23) report types                                       |
 | `0.2.26` | 2022-09-24 | [\#16629](https://github.com/airbytehq/airbyte/pull/16629) | Report API version to 2021-06-30, added multiple (5) report types      |
 | `0.2.25` | 2022-07-27 | [\#15063](https://github.com/airbytehq/airbyte/pull/15063) | Add Restock Inventory Report                                           |
 | `0.2.24` | 2022-07-12 | [\#14625](https://github.com/airbytehq/airbyte/pull/14625) | Add FBA Storage Fees Report                                            |

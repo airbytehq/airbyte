@@ -29,6 +29,7 @@ from source_amazon_seller_partner.streams import (
     FbaFulfillmentInventoryReceiptsReport,
     FbaFulfillmentInventorySummaryReport,
     FbaFulfillmentMonthlyInventoryReport,
+    FbaInventoryPlaningReport,
     FbaInventoryReports,
     FbaMyiUnsuppressedInventoryReport,
     FbaOrdersReports,
@@ -46,6 +47,7 @@ from source_amazon_seller_partner.streams import (
     FulfilledShipmentsReports,
     GetXmlBrowseTreeData,
     LedgerDetailedViewReports,
+    LedgerSummaryViewReport,
     ListFinancialEventGroups,
     ListFinancialEvents,
     MerchantCancelledListingsReport,
@@ -208,6 +210,8 @@ class SourceAmazonSellerPartner(AbstractSource):
             FbaSnsPerformanceReport(**stream_kwargs),
             FlatFileArchivedOrdersDataByOrderDate(**stream_kwargs),
             FlatFileReturnsDataByReturnDate(**stream_kwargs),
+            FbaInventoryPlaningReport(**stream_kwargs),
+            LedgerSummaryViewReport(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
