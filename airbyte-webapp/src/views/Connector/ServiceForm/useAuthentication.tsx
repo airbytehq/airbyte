@@ -54,7 +54,7 @@ const shouldShowButtonForAdvancedAuth = (
 };
 
 /**
- * Returns true if the auth button should be shown for a authSpecification connector.
+ * Returns true if the auth button should be shown for an authSpecification connector.
  */
 const shouldShowButtonForLegacyAuth = (
   spec: JSONSchema7,
