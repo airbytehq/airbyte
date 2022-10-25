@@ -70,7 +70,6 @@ definitions:
       path: "/spi/v3/recruiters"
       field_pointer: ["recruiters"]
 
-
 streams:
   - "*ref(definitions.jobs_stream)"
   - "*ref(definitions.candidates_stream)"
