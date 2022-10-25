@@ -1,7 +1,13 @@
 # Changelog
 
+## 0.2.13
+Make mandatory tests fail in strict mode if they don't have a `bypass_reason` in test configuration. [#TBD](https://github.com/airbytehq/airbyte/pull/TBD).
+
+## 0.2.12
+Declare `bypass_reason` field in test configuration. [#18364](https://github.com/airbytehq/airbyte/pull/18364).
+
 ## 0.2.11
-Declare `test_mode` field in test configuration. [#18218](https://github.com/airbytehq/airbyte/pull/18218).
+Declare `test_strictness_level` field in test configuration. [#18218](https://github.com/airbytehq/airbyte/pull/18218).
 
 ## 0.2.10
 Bump `airbyte-cdk~=0.2.0`

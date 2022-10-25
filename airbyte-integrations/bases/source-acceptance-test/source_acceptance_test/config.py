@@ -161,25 +161,46 @@ class AcceptanceTestConfigurations(BaseConfig):
 
 
 class Config(BaseConfig):
-    class TestMode(str, Enum):
-        strict = "strict"
-        medium = "medium"
-        light = "light"
+    class TestStrictnessLevel(str, Enum):
+        high = "high"
+        low = "low"
 
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")
-    test_mode: Optional[TestMode] = Field(
-        default=TestMode.light,
-        description="Strict mode corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
+    test_strictness_level: Optional[TestStrictnessLevel] = Field(
+        default=TestStrictnessLevel.low,
+        description="Corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
     )
 
     @staticmethod
     def is_legacy(config: dict) -> bool:
+        """Check if a configuration is 'legacy'.
+        We consider it is legacy if a 'tests' field exists at its root level (prior to v0.2.12).
+
+        Args:
+            config (dict): A configuration
+
+        Returns:
+            bool: Whether the configuration is legacy.
+        """
         return "tests" in config
 
     @staticmethod
     def migrate_legacy_to_current_config(legacy_config: dict) -> dict:
+        """Convert configuration structure created prior to v0.2.12 into the current structure.
+        e.g.
+        This structure:
+            {"connector_image": "my-connector-image", "tests": {"spec": [{"spec_path": "my/spec/path.json"}]}
+        Gets converted to:
+            {"connector_image": "my-connector-image", "acceptance_tests": {"spec": {"tests": [{"spec_path": "my/spec/path.json"}]}}
+
+        Args:
+            legacy_config (dict): A legacy configuration
+
+        Returns:
+            dict: A migrated configuration
+        """
         migrated_config = deepcopy(legacy_config)
         migrated_config.pop("tests")
         migrated_config["acceptance_tests"] = {}
@@ -189,6 +210,14 @@ class Config(BaseConfig):
 
     @root_validator(pre=True)
     def legacy_format_adapter(cls, values: dict) -> dict:
+        """Root level validator executed 'pre' field validation to migrate a legacy config to the current structure.
+
+        Args:
+            values (dict): The raw configuration.
+
+        Returns:
+            dict: The migrated configuration if needed.
+        """
         if ALLOW_LEGACY_CONFIG and cls.is_legacy(values):
             logging.warn("The acceptance-test-config.yml file is in a legacy format. Please migrate to the latest format.")
             return cls.migrate_legacy_to_current_config(values)

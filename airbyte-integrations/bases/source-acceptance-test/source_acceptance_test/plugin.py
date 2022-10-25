@@ -53,7 +53,9 @@ def pytest_generate_tests(metafunc):
         test_config_key = metafunc.cls.config_key()
         global_config = load_config(metafunc.config.getoption("--acceptance-test-config"))
         test_configuration: GenericTestConfig = getattr(global_config.acceptance_tests, test_config_key, None)
-        test_action, reason = parametrize_skip_or_fail(metafunc.cls, metafunc.function, global_config.test_mode, test_configuration)
+        test_action, reason = parametrize_skip_or_fail(
+            metafunc.cls, metafunc.function, global_config.test_strictness_level, test_configuration
+        )
 
         if test_action == TestAction.PARAMETRIZE:
             metafunc.parametrize("inputs", test_configuration.tests)
@@ -66,10 +68,10 @@ def pytest_generate_tests(metafunc):
 def parametrize_skip_or_fail(
     TestClass: Type[BaseTest],
     test_function: Callable,
-    global_test_mode: AcceptanceTestConfig.TestMode,
+    global_test_mode: AcceptanceTestConfig.TestStrictnessLevel,
     test_configuration: GenericTestConfig,
 ) -> Tuple[TestAction, str]:
-    """Use the current test mode and test configuration to determine if the discovered test should be parametrized, skipped or failed.
+    """Use the current test strictness level and test configuration to determine if the discovered test should be parametrized, skipped or failed.
     We parametrize a test if:
       - the configuration declares tests.
     We skip a test if:
@@ -77,18 +79,18 @@ def parametrize_skip_or_fail(
         - the current test mode allows this test to be skipped.
         - Or a bypass_reason is declared in the test configuration.
     We fail a test if:
-        - the configuration does not declare the test but the discovered test is declared as mandatory for the current test mode.
+        - the configuration does not declare the test but the discovered test is declared as mandatory for the current test strictness level.
     Args:
         TestClass (Type[BaseTest]): The discovered test class
         test_function (Callable): The discovered test function
-        global_test_mode (AcceptanceTestConfig.TestMode): The global test mode (from the global configuration object)
+        global_test_mode (AcceptanceTestConfig.TestStrictnessLevel): The global test strictness level (from the global configuration object)
         test_configuration (GenericTestConfig): The current test configuration.
 
     Returns:
         Tuple[TestAction, str]: The test action the execution should take and the reason why.
     """
     test_name = f"{TestClass.__name__}.{test_function.__name__}"
-    test_mode_can_skip_this_test = global_test_mode not in TestClass.MANDATORY_FOR_TEST_MODES
+    test_mode_can_skip_this_test = global_test_mode not in TestClass.MANDATORY_FOR_TEST_STRICTNESS_LEVELS
     skipping_reason_prefix = f"Skipping {test_name}: "
     default_skipping_reason = skipping_reason_prefix + "not found in the config."
 
@@ -98,7 +100,7 @@ def parametrize_skip_or_fail(
         else:
             return (
                 TestAction.FAIL,
-                f"{test_name} failed: it was not configured but must be according to the current {global_test_mode} test mode.",
+                f"{test_name} failed: it was not configured but must be according to the current {global_test_mode} test strictness level.",
             )
     else:
         if test_configuration.tests is not None:

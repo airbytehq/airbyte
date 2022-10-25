@@ -18,4 +18,4 @@ class BaseTest:
             class_name = class_name[len("Test") :]
         return inflection.underscore(class_name)
 
-    MANDATORY_FOR_TEST_MODES = Config.TestMode.strict
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = Config.TestStrictnessLevel.high

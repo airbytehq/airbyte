@@ -72,7 +72,6 @@ include ':airbyte-json-validation'
 include ':airbyte-metrics:metrics-lib'
 include ':airbyte-oauth'
 include ':airbyte-protocol:protocol-models'
-include ':airbyte-queue'
 include ':airbyte-test-utils'
 
 // airbyte-workers has a lot of dependencies.
