@@ -87,7 +87,7 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
         return acc;
       }, {} as Record<string, unknown>);
 
-      await run(oauthInputParams);
+      run(oauthInputParams);
     },
   };
 }

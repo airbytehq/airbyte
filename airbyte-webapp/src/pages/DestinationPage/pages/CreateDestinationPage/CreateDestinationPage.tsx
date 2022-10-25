@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
+import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
 import { FormPageContent } from "components/ConnectorBlocks";
 import HeadTitle from "components/HeadTitle";
-import PageTitle from "components/PageTitle";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -43,13 +44,14 @@ export const CreateDestinationPage: React.FC = () => {
     <>
       <HeadTitle titles={[{ id: "destinations.newDestinationTitle" }]} />
       <ConnectorDocumentationWrapper>
-        <PageTitle title={null} middleTitleBlock={<FormattedMessage id="destinations.newDestinationTitle" />} />
+        <PageHeader title={null} middleTitleBlock={<FormattedMessage id="destinations.newDestinationTitle" />} />
         <FormPageContent>
           <DestinationForm
             onSubmit={onSubmitDestinationForm}
             destinationDefinitions={destinationDefinitions}
             hasSuccess={successRequest}
           />
+          <CloudInviteUsersHint connectorType="destination" />
         </FormPageContent>
       </ConnectorDocumentationWrapper>
     </>

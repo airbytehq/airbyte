@@ -90,23 +90,25 @@ Airbyte fetches and handles all the possible and available streams dynamically b
 **Note:** [BULK API](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm) cannot be used to receive data from the following streams due to Salesforce API limitations. The Salesforce connector syncs them using the REST API which will occasionally cost more of your API quota:
 
 * AcceptedEventRelation
-* AssetTokenEvent
-* AttachedContentNote
 * Attachment
 * CaseStatus
 * ContractStatus
 * DeclinedEventRelation
-* EventWhoRelation
 * FieldSecurityClassification
+* KnowledgeArticle
+* KnowledgeArticleVersion
+* KnowledgeArticleVersionHistory
+* KnowledgeArticleViewStat
+* KnowledgeArticleVoteStat
 * OrderStatus
 * PartnerRole
-* QuoteTemplateRichTextData
 * RecentlyViewed
 * ServiceAppointmentStatus
+* ShiftStatus
 * SolutionStatus
 * TaskPriority
 * TaskStatus
-* TaskWhoRelation
+* UndecidedEventRelation
 
 ## Salesforce tutorials
 
@@ -119,6 +121,10 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.22  | 2022-10-12 | [17615](https://github.com/airbytehq/airbyte/pull/17615) | Make paging work, if `cursor_field` is not changed inside one page                                                               |
+| 1.0.21  | 2022-10-10 | [17778](https://github.com/airbytehq/airbyte/pull/17778) | Add `EventWhoRelation` to the list of unsupported Bulk API objects.                                                              |
+| 1.0.20  | 2022-09-30 | [17453](https://github.com/airbytehq/airbyte/pull/17453) | Check objects that are not supported by the Bulk API (v52.0)                                                                     |
+| 1.0.19  | 2022-09-29 | [17314](https://github.com/airbytehq/airbyte/pull/17314) | Fixed bug with decoding response                                                                                                 |
 | 1.0.18  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states.                                                                                                    |
 | 1.0.17  | 2022-09-23 | [17094](https://github.com/airbytehq/airbyte/pull/17094) | Tune connection check: fetch a list of available streams                                                                         |
 | 1.0.16  | 2022-09-21 | [17001](https://github.com/airbytehq/airbyte/pull/17001) | Improve writing file of decode                                                                                                   |

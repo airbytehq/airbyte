@@ -158,7 +158,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-airtable:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/airtable"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Airtable Source Spec"
@@ -198,7 +198,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.0"
+- dockerImage: "airbyte/source-alloydb:1.0.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -362,21 +362,21 @@
                 order: 1
               client_certificate:
                 type: "string"
-                title: "Client Certificate (Optional)"
+                title: "Client Certificate"
                 description: "Client certificate"
                 airbyte_secret: true
                 multiline: true
                 order: 2
               client_key:
                 type: "string"
-                title: "Client Key (Optional)"
+                title: "Client Key"
                 description: "Client key"
                 airbyte_secret: true
                 multiline: true
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. If you do not add it - the\
                   \ password will be generated automatically."
                 airbyte_secret: true
@@ -404,21 +404,21 @@
                 order: 1
               client_certificate:
                 type: "string"
-                title: "Client Certificate (Optional)"
+                title: "Client Certificate"
                 description: "Client certificate"
                 airbyte_secret: true
                 multiline: true
                 order: 2
               client_key:
                 type: "string"
-                title: "Client Key (Optional)"
+                title: "Client Key"
                 description: "Client key"
                 airbyte_secret: true
                 multiline: true
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. If you do not add it - the\
                   \ password will be generated automatically."
                 airbyte_secret: true
@@ -605,7 +605,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-aws-cloudtrail:0.1.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/aws-cloudtrail"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/aws-cloudtrail"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Aws CloudTrail Spec"
@@ -620,13 +620,13 @@
         aws_key_id:
           type: "string"
           title: "Key ID"
-          description: "AWS CloudTrail Access Key ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/aws-cloudtrail\"\
+          description: "AWS CloudTrail Access Key ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/aws-cloudtrail\"\
             >docs</a> for more information on how to obtain this key."
           airbyte_secret: true
         aws_secret_key:
           type: "string"
           title: "Secret Key"
-          description: "AWS CloudTrail Access Key ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/aws-cloudtrail\"\
+          description: "AWS CloudTrail Access Key ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/aws-cloudtrail\"\
             >docs</a> for more information on how to obtain this key."
           airbyte_secret: true
         aws_region_name:
@@ -647,7 +647,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.22"
+- dockerImage: "airbyte/source-amazon-ads:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -682,7 +682,7 @@
           order: 3
           type: "string"
         region:
-          title: "Region *"
+          title: "Region"
           description: "Region to pull data from (EU/NA/FE). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\"\
             >docs</a> for more details."
           enum:
@@ -693,7 +693,7 @@
           default: "NA"
           order: 4
         report_wait_timeout:
-          title: "Report Wait Timeout *"
+          title: "Report Wait Timeout"
           description: "Timeout duration in minutes for Reports. Default is 60 minutes."
           default: 60
           examples:
@@ -702,7 +702,7 @@
           order: 5
           type: "integer"
         report_generation_max_retries:
-          title: "Report Generation Maximum Retries *"
+          title: "Report Generation Maximum Retries"
           description: "Maximum retries Airbyte will attempt for fetching report data.\
             \ Default is 5."
           default: 5
@@ -713,7 +713,7 @@
           order: 6
           type: "integer"
         start_date:
-          title: "Start Date (Optional)"
+          title: "Start Date"
           description: "The Start date for collecting reports, should not be more\
             \ than 60 days in the past. In YYYY-MM-DD format"
           examples:
@@ -722,13 +722,27 @@
           order: 7
           type: "string"
         profiles:
-          title: "Profile IDs (Optional)"
+          title: "Profile IDs"
           description: "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\"\
             >docs</a> for more details."
           order: 8
           type: "array"
           items:
             type: "integer"
+        state_filter:
+          title: "State Filter"
+          description: "Reflects the state of the Display, Product, and Brand Campaign\
+            \ streams as enabled, paused, or archived. If you do not populate this\
+            \ field, it will be ignored completely."
+          items:
+            type: "string"
+            enum:
+            - "enabled"
+            - "paused"
+            - "archived"
+          type: "array"
+          uniqueItems: true
+          order: 9
       required:
       - "client_id"
       - "client_secret"
@@ -773,14 +787,14 @@
               - "client_secret"
 - dockerImage: "airbyte/source-amazon-seller-partner:0.2.27"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
-    changelogUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
+    changelogUrl: "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
     connectionSpecification:
       title: "Amazon Seller Partner Spec"
       type: "object"
       properties:
         app_id:
-          title: "App Id *"
+          title: "App Id"
           description: "Your Amazon App ID"
           airbyte_secret: true
           order: 0
@@ -998,7 +1012,7 @@
               - "lwa_client_secret"
 - dockerImage: "airbyte/source-amazon-sqs:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-sqs"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-sqs"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Amazon SQS Source Spec"
@@ -1105,9 +1119,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.14"
+- dockerImage: "airbyte/source-amplitude:0.1.16"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/amplitude"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Amplitude Spec"
@@ -1121,13 +1135,13 @@
         api_key:
           type: "string"
           title: "API Key"
-          description: "Amplitude API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/amplitude#setup-guide\"\
+          description: "Amplitude API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/amplitude#setup-guide\"\
             >setup guide</a> for more information on how to obtain this key."
           airbyte_secret: true
         secret_key:
           type: "string"
           title: "Secret Key"
-          description: "Amplitude Secret Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/amplitude#setup-guide\"\
+          description: "Amplitude Secret Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/amplitude#setup-guide\"\
             >setup guide</a> for more information on how to obtain this key."
           airbyte_secret: true
         start_date:
@@ -1143,7 +1157,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-apify-dataset:0.1.11"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/apify-dataset"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/apify-dataset"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Apify Dataset Spec"
@@ -1167,7 +1181,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-appfollow:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/appfollow"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/appfollow"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Appfollow Spec"
@@ -1202,7 +1216,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-appstore-singer:0.2.6"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/appstore"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/appstore"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Appstore Singer Spec"
@@ -1218,24 +1232,24 @@
         key_id:
           type: "string"
           title: "Key ID"
-          description: "Appstore Key ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\"\
+          description: "Appstore Key ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\"\
             >docs</a> for more information on how to obtain this key."
         private_key:
           type: "string"
           title: "Private Key"
-          description: "Appstore Private Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\"\
+          description: "Appstore Private Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\"\
             >docs</a> for more information on how to obtain this key."
           airbyte_secret: true
           multiline: true
         issuer_id:
           type: "string"
           title: "Issuer ID"
-          description: "Appstore Issuer ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\"\
+          description: "Appstore Issuer ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\"\
             >docs</a> for more information on how to obtain this ID."
         vendor:
           type: "string"
           title: "Vendor ID"
-          description: "Appstore Vendor ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\"\
+          description: "Appstore Vendor ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\"\
             >docs</a> for more information on how to obtain this ID."
         start_date:
           type: "string"
@@ -1319,7 +1333,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-azure-table:0.1.2"
+- dockerImage: "airbyte/source-azure-table:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -1329,7 +1343,6 @@
       required:
       - "storage_account_name"
       - "storage_access_key"
-      additionalProperties: false
       properties:
         storage_account_name:
           title: "Account Name"
@@ -1340,7 +1353,7 @@
         storage_access_key:
           title: "Access Key"
           type: "string"
-          description: "Azure Table Storage Access Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/azure-table\"\
+          description: "Azure Table Storage Access Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/azure-table\"\
             >docs</a> for more information on how to obtain this key."
           order: 1
           airbyte_secret: true
@@ -1348,7 +1361,7 @@
           title: "Endpoint Suffix"
           type: "string"
           description: "Azure Table Storage service account URL suffix. See the <a\
-            \ href=\"https://docs.airbyte.io/integrations/sources/azure-table\">docs</a>\
+            \ href=\"https://docs.airbyte.com/integrations/sources/azure-table\">docs</a>\
             \ for more information on how to obtain endpoint suffix"
           order: 2
           default: "core.windows.net"
@@ -1359,9 +1372,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bamboo-hr:0.2.1"
+- dockerImage: "airbyte/source-bamboo-hr:0.2.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/bamboo-hr"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/bamboo-hr"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Bamboo HR Spec"
@@ -1390,9 +1403,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigcommerce:0.1.6"
+- dockerImage: "airbyte/source-bigcommerce:0.1.7"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/bigcommerce"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/bigcommerce"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "BigCommerce Source CDK Specifications"
@@ -1425,7 +1438,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-bigquery:0.2.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/bigquery"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/bigquery"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "BigQuery Source Spec"
@@ -1448,7 +1461,7 @@
         credentials_json:
           type: "string"
           description: "The contents of your Service Account Key JSON file. See the\
-            \ <a href=\"https://docs.airbyte.io/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\"\
+            \ <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\"\
             >docs</a> for more information on how to obtain this key."
           title: "Credentials JSON"
           airbyte_secret: true
@@ -1460,9 +1473,9 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.14"
+- dockerImage: "airbyte/source-bing-ads:0.1.16"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Bing Ads Spec"
@@ -1569,7 +1582,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-braintree:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/braintree"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/braintree"
     connectionSpecification:
       title: "Braintree Spec"
       type: "object"
@@ -1577,19 +1590,19 @@
         merchant_id:
           title: "Merchant ID"
           description: "The unique identifier for your entire gateway account. See\
-            \ the <a href=\"https://docs.airbyte.io/integrations/sources/braintree\"\
+            \ the <a href=\"https://docs.airbyte.com/integrations/sources/braintree\"\
             >docs</a> for more information on how to obtain this ID."
           name: "Merchant ID"
           type: "string"
         public_key:
           title: "Public Key"
-          description: "Braintree Public Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/braintree\"\
+          description: "Braintree Public Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/braintree\"\
             >docs</a> for more information on how to obtain this key."
           name: "Public Key"
           type: "string"
         private_key:
           title: "Private Key"
-          description: "Braintree Private Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/braintree\"\
+          description: "Braintree Private Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/braintree\"\
             >docs</a> for more information on how to obtain this key."
           name: "Private Key"
           airbyte_secret: true
@@ -1630,7 +1643,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-cart:0.2.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/cart"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/cart"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Cart.com Spec"
@@ -1735,7 +1748,7 @@
         site_api_key:
           type: "string"
           title: "API Key"
-          description: "Chargebee API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/chargebee\"\
+          description: "Chargebee API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/chargebee\"\
             >docs</a> for more information on how to obtain this key."
           examples:
           - "test_3yzfanAXF66USdWC9wQcM555DQJkSYoppu"
@@ -1762,7 +1775,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-chargify:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/chargify"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/chargify"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Chargify Spec"
@@ -1785,7 +1798,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-chartmogul:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/chartmogul"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/chartmogul"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Chartmogul Spec"
@@ -1825,7 +1838,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-clickhouse:0.1.14"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/clickhouse"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "ClickHouse Source Spec"
@@ -1990,7 +2003,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-close-com:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/close-com"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/close-com"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Close.com Spec"
@@ -2017,7 +2030,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-cockroachdb:0.1.18"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/cockroachdb"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Cockroach Source Spec"
@@ -2079,7 +2092,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-commercetools:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/commercetools"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/commercetools"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Commercetools Source CDK Specifications"
@@ -2156,6 +2169,24 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-courier:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/courier"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Courier Source Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          description: "Courier API Key to retrieve your data."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "farosai/airbyte-customer-io-source:0.1.23"
   spec:
     documentationUrl: "https://docs.faros.ai"
@@ -2205,7 +2236,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-dixa:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/dixa"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/dixa"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Dixa Spec"
@@ -2238,7 +2269,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-dockerhub:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/dockerhub"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/dockerhub"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Dockerhub Spec"
@@ -2259,7 +2290,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-drift:0.2.5"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/drift"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/drift"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Drift Spec"
@@ -2322,7 +2353,7 @@
               access_token:
                 type: "string"
                 title: "Access Token"
-                description: "Drift Access Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/drift\"\
+                description: "Drift Access Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/drift\"\
                   >docs</a> for more information on how to generate this key."
                 airbyte_secret: true
     supportsNormalization: false
@@ -2410,9 +2441,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-e2e-test:2.1.1"
+- dockerImage: "airbyte/source-e2e-test:2.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/e2e-test"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/e2e-test"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "E2E Test Source Spec"
@@ -2523,9 +2554,10 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    protocol_version: "0.2.1"
 - dockerImage: "airbyte/source-exchange-rates:1.2.6"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/exchangeratesapi"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/exchangeratesapi"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "exchangeratesapi.io Source Spec"
@@ -2561,10 +2593,10 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.66"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.69"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
-    changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
+    changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     connectionSpecification:
       title: "Source Facebook Marketing"
       type: "object"
@@ -2599,11 +2631,10 @@
           examples:
           - "2017-01-26T00:00:00Z"
           type: "string"
-          format: "date-time"
         access_token:
           title: "Access Token"
           description: "The value of the access token generated. See the <a href=\"\
-            https://docs.airbyte.io/integrations/sources/facebook-marketing\">docs</a>\
+            https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a>\
             \ for more information"
           order: 3
           airbyte_secret: true
@@ -2920,7 +2951,7 @@
         - - "access_token"
 - dockerImage: "airbyte/source-facebook-pages:0.1.6"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-pages"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-pages"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Facebook Pages Spec"
@@ -2949,7 +2980,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.1.6"
+- dockerImage: "airbyte/source-faker:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -3092,9 +3123,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.23"
+- dockerImage: "airbyte/source-file:0.2.26"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "File Source Spec"
@@ -3327,7 +3358,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-freshcaller:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/freshcaller"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/freshcaller"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Freshcaller Spec"
@@ -3347,7 +3378,7 @@
         api_key:
           type: "string"
           title: "API Key"
-          description: "Freshcaller API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/freshcaller\"\
+          description: "Freshcaller API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/freshcaller\"\
             >docs</a> for more information on how to obtain this key."
           airbyte_secret: true
         requests_per_minute:
@@ -3374,7 +3405,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-flexport:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/flexport"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/flexport"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Flexport Spec"
@@ -3397,9 +3428,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshdesk:0.3.5"
+- dockerImage: "airbyte/source-freshdesk:0.3.6"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/freshdesk"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/freshdesk"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Freshdesk Spec"
@@ -3419,7 +3450,7 @@
         api_key:
           type: "string"
           title: "API Key"
-          description: "Freshdesk API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/freshdesk\"\
+          description: "Freshdesk API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/freshdesk\"\
             >docs</a> for more information on how to obtain this key."
           airbyte_secret: true
         requests_per_minute:
@@ -3442,7 +3473,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-freshsales:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/freshsales"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/freshsales"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Freshsales Spec"
@@ -3469,7 +3500,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-freshservice:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/freshservice"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/freshservice"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Freshservice Spec"
@@ -3503,7 +3534,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.3.2"
+- dockerImage: "airbyte/source-github:0.3.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -3516,7 +3547,7 @@
       additionalProperties: true
       properties:
         credentials:
-          title: "Authentication *"
+          title: "Authentication"
           description: "Choose how to authenticate to GitHub"
           type: "object"
           order: 0
@@ -3579,7 +3610,7 @@
           order: 2
         branch:
           type: "string"
-          title: "Branch (Optional)"
+          title: "Branch"
           examples:
           - "airbytehq/airbyte/master airbytehq/airbyte/my-branch"
           description: "Space-delimited list of GitHub repository branches to pull\
@@ -3588,7 +3619,7 @@
           order: 3
         page_size_for_large_streams:
           type: "integer"
-          title: "Page size for large streams (Optional)"
+          title: "Page size for large streams"
           minimum: 1
           maximum: 100
           default: 10
@@ -3640,7 +3671,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-gitlab:0.1.6"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/gitlab"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source GitLab Singer Spec"
@@ -3690,7 +3721,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-glassfrog:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/glassfrog"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/glassfrog"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Glassfrog Spec"
@@ -3706,7 +3737,55 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.1"
+- dockerImage: "airbyte/source-gocardless:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/gocardless"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Gocardless Spec"
+      type: "object"
+      required:
+      - "access_token"
+      - "gocardless_environment"
+      - "gocardless_version"
+      - "start_date"
+      properties:
+        access_token:
+          title: "Access Token"
+          type: "string"
+          pattern: "^(sandbox|live)_.+$"
+          description: "Gocardless API TOKEN"
+          airbyte_secret: true
+          order: 0
+        gocardless_environment:
+          title: "GoCardless API Environment"
+          type: "string"
+          enum:
+          - "sandbox"
+          - "live"
+          default: "sandbox"
+          description: "Environment you are trying to connect to."
+          order: 1
+        gocardless_version:
+          title: "GoCardless API Version"
+          type: "string"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          description: "GoCardless version. This is a date. You can find the latest\
+            \ here: \nhttps://developer.gocardless.com/api-reference/#api-usage-making-requests\n"
+          order: 2
+        start_date:
+          title: "Start Date"
+          type: "string"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
+            \ data\nbefore this date will not be replicated.\n"
+          examples:
+          - "2017-01-25T00:00:00Z"
+          order: 3
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-google-ads:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -3763,7 +3842,7 @@
               airbyte_secret: true
             access_token:
               type: "string"
-              title: "Access Token (Optional)"
+              title: "Access Token"
               order: 4
               description: "Access Token for making authenticated requests. More instruction\
                 \ on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\"\
@@ -3792,7 +3871,7 @@
           order: 2
         end_date:
           type: "string"
-          title: "End Date (Optional)"
+          title: "End Date"
           description: "UTC date and time in the format 2017-01-25. Any data after\
             \ this date will not be replicated."
           pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
@@ -3801,7 +3880,7 @@
           order: 6
         custom_queries:
           type: "array"
-          title: "Custom GAQL Queries (Optional)"
+          title: "Custom GAQL Queries"
           description: ""
           order: 3
           items:
@@ -3827,7 +3906,7 @@
                   \ query."
         login_customer_id:
           type: "string"
-          title: "Login Customer ID for Managed Accounts (Optional)"
+          title: "Login Customer ID for Managed Accounts"
           description: "If your access to the customer account is through a manager\
             \ account, this field is required and must be set to the customer ID of\
             \ the manager account (10-digit number without dashes). More information\
@@ -3838,7 +3917,7 @@
           - "7349206847"
           order: 4
         conversion_window_days:
-          title: "Conversion Window (Optional)"
+          title: "Conversion Window"
           type: "integer"
           description: "A conversion window is the period of time after an ad interaction\
             \ (such as an ad click or video view) during which a conversion, such\
@@ -3866,7 +3945,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.26"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
@@ -3915,7 +3994,7 @@
                 airbyte_secret: true
                 order: 3
               access_token:
-                title: "Access Token (Optional)"
+                title: "Access Token"
                 type: "string"
                 description: "Access Token for making authenticated requests."
                 airbyte_secret: true
@@ -3955,14 +4034,14 @@
         custom_reports:
           order: 3
           type: "string"
-          title: "Custom Reports (Optional)"
+          title: "Custom Reports"
           description: "A JSON array describing the custom reports you want to sync\
-            \ from Google Analytics. See <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4#data-processing-latency\"\
+            \ from Google Analytics. See <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4#data-processing-latency\"\
             >the docs</a> for more information about the exact format you can use\
             \ to fill out this field."
         window_in_days:
           type: "integer"
-          title: "Data request time increment in days (Optional)"
+          title: "Data request time increment in days"
           description: "The time increment used by the connector when requesting data\
             \ from the Google Analytics API. More information is available in the\
             \ <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\"\
@@ -4051,7 +4130,7 @@
                 airbyte_secret: true
                 order: 3
               access_token:
-                title: "Access Token (Optional)"
+                title: "Access Token"
                 type: "string"
                 description: "Access Token for making authenticated requests."
                 airbyte_secret: true
@@ -4082,14 +4161,14 @@
         custom_reports:
           order: 3
           type: "string"
-          title: "Custom Reports (Optional)"
+          title: "Custom Reports"
           description: "A JSON array describing the custom reports you want to sync\
-            \ from Google Analytics. See <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4#data-processing-latency\"\
+            \ from Google Analytics. See <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4#data-processing-latency\"\
             >the docs</a> for more information about the exact format you can use\
             \ to fill out this field."
         window_in_days:
           type: "integer"
-          title: "Data request time increment in days (Optional)"
+          title: "Data request time increment in days"
           description: "The time increment used by the connector when requesting data\
             \ from the Google Analytics API. More information is available in the\
             \ <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\"\
@@ -4125,7 +4204,7 @@
         - - "refresh_token"
 - dockerImage: "airbyte/source-google-directory:0.1.9"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-directory"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-directory"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Directory Spec"
@@ -4217,9 +4296,9 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-search-console:0.1.16"
+- dockerImage: "airbyte/source-google-search-console:0.1.17"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-search-console"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-search-console"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Search Console Spec"
@@ -4238,8 +4317,8 @@
             \ Read more <a href=\"https://support.google.com/webmasters/answer/34592?hl=en\"\
             >here</a>."
           examples:
-          - "https://example1.com"
-          - "https://example2.com"
+          - "https://example1.com/"
+          - "https://example2.com/"
           order: 0
         start_date:
           type: "string"
@@ -4257,7 +4336,7 @@
             \ will not be replicated. Must be greater or equal to the start date field."
           examples:
           - "2021-12-12"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          pattern: "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 2
         authorization:
           type: "object"
@@ -4334,7 +4413,7 @@
         custom_reports:
           order: 4
           type: "string"
-          title: "Custom Reports (Optional)"
+          title: "Custom Reports"
           description: "A JSON array describing the custom reports you want to sync\
             \ from Google Search Console. See <a href=\"https://docs.airbyte.com/integrations/sources/google-search-console#step-2-set-up-the-google-search-console-connector-in-airbyte\"\
             >the docs</a> for more information about the exact format you can use\
@@ -4354,9 +4433,9 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.18"
+- dockerImage: "airbyte/source-google-sheets:0.2.21"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-sheets"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Sheets Source Spec"
@@ -4443,7 +4522,7 @@
         - - "refresh_token"
 - dockerImage: "airbyte/source-google-workspace-admin-reports:0.1.8"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Directory Spec"
@@ -4489,10 +4568,88 @@
         api_key:
           title: "API Key"
           type: "string"
-          description: "Greenhouse API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/greenhouse\"\
+          description: "Greenhouse API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/greenhouse\"\
             >docs</a> for more information on how to generate this key."
           airbyte_secret: true
           order: 0
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-gutendex:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/gutendex"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Gutendex Spec"
+      type: "object"
+      additionalProperties: true
+      properties:
+        author_year_start:
+          type: "string"
+          description: "(Optional) Defines the minimum birth year of the authors.\
+            \ Books by authors born prior to the start year will not be returned.\
+            \ Supports both positive (CE) or negative (BCE) integer values"
+          pattern: "^[-]?[0-9]{1,4}$"
+          examples:
+          - 2002
+          - 500
+          - -500
+          - 2020
+        author_year_end:
+          type: "string"
+          description: "(Optional) Defines the maximum birth year of the authors.\
+            \ Books by authors born after the end year will not be returned. Supports\
+            \ both positive (CE) or negative (BCE) integer values"
+          pattern: "^[-]?[0-9]{1,4}$"
+          examples:
+          - 2002
+          - 500
+          - -500
+          - 2020
+        copyright:
+          type: "string"
+          description: "(Optional) Use this to find books with a certain copyright\
+            \ status - true for books with existing copyrights, false for books in\
+            \ the public domain in the USA, or null for books with no available copyright\
+            \ information."
+          pattern: "^(true|false|null)$"
+          examples:
+          - true
+          - false
+          - null
+        languages:
+          type: "string"
+          description: "(Optional) Use this to find books in any of a list of languages.\
+            \ They must be comma-separated, two-character language codes."
+          examples:
+          - "en"
+          - "en,fr,fi"
+        search:
+          type: "string"
+          description: "(Optional) Use this to search author names and book titles\
+            \ with given words. They must be separated by a space (i.e. %20 in URL-encoded\
+            \ format) and are case-insensitive."
+          examples:
+          - "dickens%20great%20expect"
+          - "dickens"
+        sort:
+          type: "string"
+          description: "(Optional) Use this to sort books - ascending for Project\
+            \ Gutenberg ID numbers from lowest to highest, descending for IDs highest\
+            \ to lowest, or popular (the default) for most popular to least popular\
+            \ by number of downloads."
+          pattern: "^(ascending|descending|popular)$"
+          examples:
+          - "ascending"
+          - "descending"
+          - "popular"
+        topic:
+          type: "string"
+          description: "(Optional) Use this to search for a case-insensitive key-phrase\
+            \ in books' bookshelves or subjects."
+          examples:
+          - "children"
+          - "fantasy"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -4542,7 +4699,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-harvest:0.1.11"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/harvest"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/harvest"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Harvest Spec"
@@ -4698,7 +4855,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-hubplanner:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/hubplanner"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/hubplanner"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Hubplanner Spec"
@@ -4715,9 +4872,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.2.1"
+- dockerImage: "airbyte/source-hubspot:0.2.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/hubspot"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "HubSpot Source Spec"
@@ -4832,7 +4989,7 @@
         - - "refresh_token"
 - dockerImage: "airbyte/source-db2:0.1.16"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/db2"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "IBM Db2 Source Spec"
@@ -4925,10 +5082,43 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-insightly:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/insightly"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Insightly Spec"
+      type: "object"
+      required:
+      - "token"
+      - "start_date"
+      additionalProperties: true
+      properties:
+        token:
+          type:
+          - "string"
+          - "null"
+          title: "API Token"
+          description: "Your Insightly API token."
+          airbyte_secret: true
+        start_date:
+          type:
+          - "string"
+          - "null"
+          title: "Start Date"
+          description: "The date from which you'd like to replicate data for Insightly\
+            \ in the format YYYY-MM-DDT00:00:00Z. All data generated after this date\
+            \ will be replicated. Note that it will be used only for incremental streams."
+          examples:
+          - "2021-03-01T00:00:00Z"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-instagram:1.0.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/instagram"
-    changelogUrl: "https://docs.airbyte.io/integrations/sources/instagram"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/instagram"
+    changelogUrl: "https://docs.airbyte.com/integrations/sources/instagram"
     connectionSpecification:
       title: "Source Instagram"
       type: "object"
@@ -4946,7 +5136,7 @@
         access_token:
           title: "Access Token"
           description: "The value of the access token generated. See the <a href=\"\
-            https://docs.airbyte.io/integrations/sources/instagram\">docs</a> for\
+            https://docs.airbyte.com/integrations/sources/instagram\">docs</a> for\
             \ more information"
           airbyte_secret: true
           type: "string"
@@ -4965,9 +5155,9 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.27"
+- dockerImage: "airbyte/source-intercom:0.1.28"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Intercom Spec"
@@ -5002,9 +5192,9 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-iterable:0.1.17"
+- dockerImage: "airbyte/source-iterable:0.1.20"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/iterable"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Iterable Spec"
@@ -5017,7 +5207,7 @@
         api_key:
           type: "string"
           title: "API Key"
-          description: "Iterable API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/iterable\"\
+          description: "Iterable API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/iterable\"\
             >docs</a> for more information on how to obtain this key."
           airbyte_secret: true
           order: 0
@@ -5080,9 +5270,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.21"
+- dockerImage: "airbyte/source-jira:0.2.22"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/jira"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Jira Spec"
@@ -5096,7 +5286,7 @@
         api_token:
           type: "string"
           title: "API Token"
-          description: "Jira API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/jira\"\
+          description: "Jira API Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/jira\"\
             >docs</a> for more information on how to generate this key."
           airbyte_secret: true
         domain:
@@ -5110,6 +5300,11 @@
           type: "string"
           title: "Email"
           description: "The user email for your Jira account."
+        max_results:
+          type: "number"
+          title: "Max Results"
+          description: "Pagination max results (only for users stream)"
+          default: 50
         projects:
           type: "array"
           title: "Projects"
@@ -5153,7 +5348,7 @@
           type: "boolean"
           title: "Enable Experimental Streams"
           description: "Allow the use of experimental streams which rely on undocumented\
-            \ Jira API endpoints. See https://docs.airbyte.io/integrations/sources/jira#experimental-tables\
+            \ Jira API endpoints. See https://docs.airbyte.com/integrations/sources/jira#experimental-tables\
             \ for more info."
           default: false
     supportsNormalization: false
@@ -5161,7 +5356,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-kafka:0.2.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/kafka"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/kafka"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Kafka Source Spec"
@@ -5451,10 +5646,10 @@
     supported_destination_sync_modes: []
     supported_source_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-klaviyo:0.1.9"
+- dockerImage: "airbyte/source-klaviyo:0.1.10"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
-    changelogUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
+    changelogUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Klaviyo Spec"
@@ -5462,7 +5657,7 @@
       properties:
         api_key:
           title: "Api Key"
-          description: "Klaviyo API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/klaviyo\"\
+          description: "Klaviyo API Key. See our <a href=\"https://docs.airbyte.com/integrations/sources/klaviyo\"\
             >docs</a> if you need help finding this key."
           airbyte_secret: true
           type: "string"
@@ -5548,8 +5743,8 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-lever-hiring:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/lever-hiring"
-    changelogUrl: "https://docs.airbyte.io/integrations/sources/lever-hiring#changelog"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/lever-hiring"
+    changelogUrl: "https://docs.airbyte.com/integrations/sources/lever-hiring#changelog"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Lever Hiring Source Spec"
@@ -5674,9 +5869,9 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-linkedin-ads:0.1.10"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.12"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/linkedin-ads"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-ads"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Linkedin Ads Spec"
@@ -5686,7 +5881,7 @@
       additionalProperties: true
       properties:
         credentials:
-          title: "Authentication *"
+          title: "Authentication"
           type: "object"
           oneOf:
           - type: "object"
@@ -5738,7 +5933,7 @@
           examples:
           - "2021-05-17"
         account_ids:
-          title: "Account IDs (Optional)"
+          title: "Account IDs"
           type: "array"
           description: "Specify the account IDs separated by a space, to pull the\
             \ data from. Leave empty, if you want to pull the data from all associated\
@@ -5780,7 +5975,7 @@
           examples:
           - "123456789"
         credentials:
-          title: "Authentication *"
+          title: "Authentication"
           type: "object"
           oneOf:
           - type: "object"
@@ -5841,7 +6036,7 @@
         - - "refresh_token"
 - dockerImage: "airbyte/source-linnworks:0.1.5"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/linnworks"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/linnworks"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Linnworks Spec"
@@ -5876,7 +6071,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-looker:0.2.7"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/looker"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/looker"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Looker Spec"
@@ -5900,7 +6095,7 @@
           title: "Client ID"
           type: "string"
           description: "The Client ID is first part of an API3 key that is specific\
-            \ to each Looker user. See the <a href=\"https://docs.airbyte.io/integrations/sources/looker\"\
+            \ to each Looker user. See the <a href=\"https://docs.airbyte.com/integrations/sources/looker\"\
             >docs</a> for more information on how to generate this key."
         client_secret:
           title: "Client Secret"
@@ -5912,13 +6107,13 @@
           items:
             type: "string"
             pattern: "^[0-9]*$"
-          description: "The IDs of any Looks to run (optional)"
+          description: "The IDs of any Looks to run"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-mailchimp:0.2.15"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/mailchimp"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/mailchimp"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Mailchimp Spec"
@@ -5928,7 +6123,7 @@
       properties:
         credentials:
           type: "object"
-          title: "Authentication *"
+          title: "Authentication"
           oneOf:
           - title: "OAuth2.0"
             type: "object"
@@ -5969,7 +6164,7 @@
               apikey:
                 type: "string"
                 title: "API Key"
-                description: "Mailchimp API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/mailchimp\"\
+                description: "Mailchimp API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/mailchimp\"\
                   >docs</a> for information on how to generate this key."
                 airbyte_secret: true
     supportsNormalization: false
@@ -6015,7 +6210,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-mailgun:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/mailgun"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/mailgun"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Mailgun Spec"
@@ -6046,9 +6241,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:0.1.9"
+- dockerImage: "airbyte/source-marketo:0.1.11"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/marketo"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/marketo"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Marketo Spec"
@@ -6064,7 +6259,7 @@
           title: "Domain URL"
           type: "string"
           order: 3
-          description: "Your Marketo Base URL. See <a href=\"https://docs.airbyte.io/integrations/sources/marketo\"\
+          description: "Your Marketo Base URL. See <a href=\"https://docs.airbyte.com/integrations/sources/marketo\"\
             > the docs </a> for info on how to obtain this."
           examples:
           - "https://000-AAA-000.mktorest.com"
@@ -6073,15 +6268,15 @@
           title: "Client ID"
           type: "string"
           description: "The Client ID of your Marketo developer application. See <a\
-            \ href=\"https://docs.airbyte.io/integrations/sources/marketo\"> the docs\
-            \ </a> for info on how to obtain this."
+            \ href=\"https://docs.airbyte.com/integrations/sources/marketo\"> the\
+            \ docs </a> for info on how to obtain this."
           order: 0
           airbyte_secret: true
         client_secret:
           title: "Client Secret"
           type: "string"
           description: "The Client Secret of your Marketo developer application. See\
-            \ <a href=\"https://docs.airbyte.io/integrations/sources/marketo\"> the\
+            \ <a href=\"https://docs.airbyte.com/integrations/sources/marketo\"> the\
             \ docs </a> for info on how to obtain this."
           order: 1
           airbyte_secret: true
@@ -6099,7 +6294,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-metabase:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/metabase"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/metabase"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Metabase Source Spec"
@@ -6135,9 +6330,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.20"
+- dockerImage: "airbyte/source-mssql:0.4.23"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MSSQL Source Spec"
@@ -6415,7 +6610,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-microsoft-teams:0.2.5"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/microsoft-teams"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/microsoft-teams"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Microsoft Teams Spec"
@@ -6560,16 +6755,16 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.27"
+- dockerImage: "airbyte/source-mixpanel:0.1.28"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Mixpanel Spec"
       type: "object"
       properties:
         credentials:
-          title: "Authentication *"
+          title: "Authentication"
           description: "Choose how to authenticate to Mixpanel"
           type: "object"
           order: 0
@@ -6690,7 +6885,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-monday:0.1.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/monday"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/monday"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Monday Spec"
@@ -6712,7 +6907,7 @@
             properties:
               subdomain:
                 type: "string"
-                title: "Subdomain/Slug (Optional)"
+                title: "Subdomain/Slug"
                 description: "Slug/subdomain of the account, or the first part of\
                   \ the URL that comes before .monday.com"
                 default: ""
@@ -6801,10 +6996,10 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mongodb-v2:0.1.17"
+- dockerImage: "airbyte/source-mongodb-v2:0.1.19"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
-    changelogUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/mongodb-v2"
+    changelogUrl: "https://docs.airbyte.com/integrations/sources/mongodb-v2"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MongoDb Source Spec"
@@ -6851,7 +7046,7 @@
                 type: "boolean"
                 description: "Indicates whether TLS encryption protocol will be used\
                   \ to connect to MongoDB. It is recommended to use TLS connection\
-                  \ if possible. For more information see <a href=\"https://docs.airbyte.io/integrations/sources/mongodb-v2\"\
+                  \ if possible. For more information see <a href=\"https://docs.airbyte.com/integrations/sources/mongodb-v2\"\
                   >documentation</a>."
                 default: false
                 order: 2
@@ -6924,7 +7119,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-my-hours:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/my-hours"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/my-hours"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "My Hours Spec"
@@ -6965,9 +7160,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.0"
+- dockerImage: "airbyte/source-mysql:1.0.7"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MySql Source Spec"
@@ -7104,7 +7299,7 @@
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. This field is optional. If\
                   \ you do not add it - the password will be generated automatically."
                 airbyte_secret: true
@@ -7149,7 +7344,7 @@
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. This field is optional. If\
                   \ you do not add it - the password will be generated automatically."
                 airbyte_secret: true
@@ -7160,7 +7355,7 @@
           description: "Replication method to use for extracting data from the database."
           order: 8
           oneOf:
-          - title: "STANDARD"
+          - title: "Standard"
             description: "Standard replication requires no setup on the DB side but\
               \ will not be able to represent deletions incrementally."
             required:
@@ -7186,6 +7381,25 @@
                 - "CDC"
                 default: "CDC"
                 order: 0
+              initial_waiting_seconds:
+                type: "integer"
+                title: "Initial Waiting Time in Seconds (Advanced)"
+                description: "The amount of time the connector will wait when it launches\
+                  \ to determine if there is new data to sync or not. Defaults to\
+                  \ 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about\
+                  \ <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"\
+                  >initial waiting time</a>."
+                default: 300
+                min: 120
+                max: 1200
+                order: 1
+              server_time_zone:
+                type: "string"
+                title: "Configured server timezone for the MySQL source (Advanced)"
+                description: "Enter the configured MySQL server timezone. This should\
+                  \ only be done if the configured timezone in your MySQL instance\
+                  \ does not conform to IANNA standard."
+                order: 2
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -7339,7 +7553,7 @@
           airbyte_secret: true
         object_types:
           type: "array"
-          title: "Object Types (Optional)"
+          title: "Object Types"
           items:
             type: "string"
           description: "The API names of the Netsuite objects you want to sync. Setting\
@@ -7362,7 +7576,7 @@
           - "2017-01-25T00:00:00Z"
         window_in_days:
           type: "integer"
-          title: "Window in Days (Optional)"
+          title: "Window in Days"
           description: "The amount of days used to query the data with date chunks.\
             \ Set smaller value, if you have lots of data."
           order: 7
@@ -7372,7 +7586,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-notion:0.1.10"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Notion Source Spec"
@@ -7452,7 +7666,7 @@
         - - "access_token"
 - dockerImage: "airbyte/source-okta:0.1.13"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/okta"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Okta Spec"
@@ -7463,7 +7677,7 @@
         domain:
           type: "string"
           title: "Okta domain"
-          description: "The Okta domain. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\"\
+          description: "The Okta domain. See the <a href=\"https://docs.airbyte.com/integrations/sources/okta\"\
             >docs</a> for instructions on how to find it."
           airbyte_secret: false
         start_date:
@@ -7475,7 +7689,7 @@
           - "2022-07-22T00:00:00Z"
           title: "Start Date"
         credentials:
-          title: "Authorization Method *"
+          title: "Authorization Method"
           type: "object"
           oneOf:
           - type: "object"
@@ -7519,7 +7733,7 @@
               api_token:
                 type: "string"
                 title: "Personal API Token"
-                description: "An Okta token. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\"\
+                description: "An Okta token. See the <a href=\"https://docs.airbyte.com/integrations/sources/okta\"\
                   >docs</a> for instructions on how to generate it."
                 airbyte_secret: true
     supportsNormalization: false
@@ -7573,7 +7787,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-onesignal:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/onesignal"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/onesignal"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "OneSignal Source Spec"
@@ -7730,7 +7944,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-oracle:0.3.21"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/oracle"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/oracle"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Oracle Source Spec"
@@ -7982,7 +8196,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-orb:0.1.3"
+- dockerImage: "airbyte/source-orb:0.1.4"
   spec:
     documentationUrl: "https://docs.withorb.com/"
     connectionSpecification:
@@ -8073,7 +8287,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-outreach:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/outreach"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/outreach"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Outreach Spec"
@@ -8167,9 +8381,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paypal-transaction:0.1.9"
+- dockerImage: "airbyte/source-paypal-transaction:0.1.10"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/paypal-transactions"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/paypal-transactions"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Paypal Transaction Search"
@@ -8191,7 +8405,7 @@
           airbyte_secret: true
         refresh_token:
           type: "string"
-          title: "Refresh token (Optional)"
+          title: "Refresh token"
           description: "The key to refresh the expired access token."
           airbyte_secret: true
         start_date:
@@ -8213,7 +8427,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-paystack:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/paystack"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/paystack"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Paystack Source Spec"
@@ -8252,7 +8466,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-persistiq:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/persistiq"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/persistiq"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Persistiq Spec"
@@ -8269,9 +8483,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.1.6"
+- dockerImage: "airbyte/source-pinterest:0.1.8"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/pinterest"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Pinterest Spec"
@@ -8284,9 +8498,9 @@
           type: "string"
           title: "Start Date"
           description: "A date in the format YYYY-MM-DD. If you have not set a date,\
-            \ it would be defaulted to 2020-07-28."
+            \ it would be defaulted to latest allowed date by api (914 days from today)."
           examples:
-          - "2020-07-28"
+          - "2022-07-28"
         credentials:
           title: "Authorization Method"
           type: "object"
@@ -8375,7 +8589,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-pipedrive:0.1.13"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/pipedrive"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/pipedrive"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Pipedrive Spec"
@@ -8522,7 +8736,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-pokeapi:0.1.5"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/pokeapi"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/pokeapi"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Pokeapi Spec"
@@ -8578,7 +8792,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.12"
+- dockerImage: "airbyte/source-postgres:1.0.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -8742,21 +8956,21 @@
                 order: 1
               client_certificate:
                 type: "string"
-                title: "Client Certificate (Optional)"
+                title: "Client Certificate"
                 description: "Client certificate"
                 airbyte_secret: true
                 multiline: true
                 order: 2
               client_key:
                 type: "string"
-                title: "Client Key (Optional)"
+                title: "Client Key"
                 description: "Client key"
                 airbyte_secret: true
                 multiline: true
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. If you do not add it - the\
                   \ password will be generated automatically."
                 airbyte_secret: true
@@ -8784,21 +8998,21 @@
                 order: 1
               client_certificate:
                 type: "string"
-                title: "Client Certificate (Optional)"
+                title: "Client Certificate"
                 description: "Client certificate"
                 airbyte_secret: true
                 multiline: true
                 order: 2
               client_key:
                 type: "string"
-                title: "Client Key (Optional)"
+                title: "Client Key"
                 description: "Client key"
                 airbyte_secret: true
                 multiline: true
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password (Optional)"
+                title: "Client key password"
                 description: "Password for keystorage. If you do not add it - the\
                   \ password will be generated automatically."
                 airbyte_secret: true
@@ -9042,7 +9256,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-qualaroo:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/qualaroo"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/qualaroo"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Qualaroo Spec"
@@ -9156,7 +9370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.2.2"
+- dockerImage: "airbyte/source-recharge:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -9226,7 +9440,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-redshift:0.3.14"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
+    documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Redshift Source Spec"
@@ -9418,10 +9632,10 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.22"
+- dockerImage: "airbyte/source-s3:0.1.24"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
-    changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
+    changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
     connectionSpecification:
       title: "S3 Source Spec"
       type: "object"
@@ -9643,7 +9857,7 @@
                 order: 2
                 type: "integer"
         schema:
-          title: "Manually enforced data schema (Optional)"
+          title: "Manually enforced data schema"
           description: "Optionally provide a schema to enforce, as a valid JSON string.\
             \ Ensure this is a mapping of <strong>{ \"column\" : \"type\" }</strong>,\
             \ where types are valid <a href=\"https://json-schema.org/understanding-json-schema/reference/type.html\"\
@@ -9696,18 +9910,6 @@
               default: ""
               order: 4
               type: "string"
-            use_ssl:
-              title: "Use TLS"
-              description: "Whether the remote server is using a secure SSL/TLS connection.\
-                \ Only relevant if using an S3-compatible, non-AWS server"
-              order: 5
-              type: "boolean"
-            verify_ssl_cert:
-              title: "Verify TLS Certificates"
-              description: "Set this to false to allow self signed certificates. Only\
-                \ relevant if using an S3-compatible, non-AWS server"
-              order: 6
-              type: "boolean"
           required:
           - "bucket"
           order: 11
@@ -9725,7 +9927,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/source-salesloft:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/salesloft"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/salesloft"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Salesloft Spec"
@@ -9763,7 +9965,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.19"
+- dockerImage: "airbyte/source-salesforce:1.0.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -9845,7 +10047,7 @@
                 type: "string"
                 title: "Search value"
                 order: 2
-          title: "Filter Salesforce Objects (Optional)"
+          title: "Filter Salesforce Objects"
           description: "Filter streams relevant to you"
     supportsNormalization: false
     supportsDBT: false
@@ -9894,7 +10096,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-search-metrics:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/seacrh-metrics"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/seacrh-metrics"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Search Metrics Spec"
@@ -9966,9 +10168,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.14"
+- dockerImage: "airbyte/source-sendgrid:0.2.15"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/sendgrid"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/sendgrid"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Sendgrid Spec"
@@ -9979,6 +10181,7 @@
       properties:
         apikey:
           title: "Sendgrid API key"
+          airbyte_secret: true
           type: "string"
           description: "API Key, use <a href=\"https://app.sendgrid.com/settings/api_keys/\"\
             >admin</a> to generate this key."
@@ -9999,9 +10202,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.37"
+- dockerImage: "airbyte/source-shopify:0.2.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/shopify"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Shopify Source CDK Specifications"
@@ -10023,31 +10226,6 @@
           type: "object"
           order: 2
           oneOf:
-          - type: "object"
-            title: "OAuth2.0"
-            description: "OAuth2.0"
-            required:
-            - "auth_method"
-            properties:
-              auth_method:
-                type: "string"
-                const: "oauth2.0"
-                order: 0
-              client_id:
-                type: "string"
-                title: "Client ID"
-                description: "The Client ID of the Shopify developer application."
-                airbyte_secret: true
-              client_secret:
-                type: "string"
-                title: "Client Secret"
-                description: "The Client Secret of the Shopify developer application."
-                airbyte_secret: true
-              access_token:
-                type: "string"
-                title: "Access Token"
-                description: "The Access Token for making authenticated requests."
-                airbyte_secret: true
           - title: "API Password"
             description: "API Password Auth"
             type: "object"
@@ -10065,6 +10243,35 @@
                 description: "The API Password for your private application in the\
                   \ `Shopify` store."
                 airbyte_secret: true
+                order: 1
+          - type: "object"
+            title: "OAuth2.0"
+            description: "OAuth2.0"
+            required:
+            - "auth_method"
+            properties:
+              auth_method:
+                type: "string"
+                const: "oauth2.0"
+                order: 0
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of the Shopify developer application."
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: "string"
+                title: "Client Secret"
+                description: "The Client Secret of the Shopify developer application."
+                airbyte_secret: true
+                order: 2
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "The Access Token for making authenticated requests."
+                airbyte_secret: true
+                order: 3
         start_date:
           type: "string"
           title: "Replication Start Date"
@@ -10156,7 +10363,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-slack:0.1.18"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/slack"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/slack"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Slack Spec"
@@ -10219,7 +10426,7 @@
                 const: "Default OAuth2.0 authorization"
               client_id:
                 title: "Client ID"
-                description: "Slack client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\"\
+                description: "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\"\
                   >docs</a> if you need help finding this id."
                 type: "string"
                 examples:
@@ -10227,7 +10434,7 @@
                 airbyte_secret: true
               client_secret:
                 title: "Client Secret"
-                description: "Slack client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\"\
+                description: "Slack client_secret. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\"\
                   >docs</a> if you need help finding this secret."
                 type: "string"
                 examples:
@@ -10235,7 +10442,7 @@
                 airbyte_secret: true
               access_token:
                 title: "Access token"
-                description: "Slack access_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\"\
+                description: "Slack access_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\"\
                   >docs</a> if you need help generating the token."
                 type: "string"
                 examples:
@@ -10243,7 +10450,7 @@
                 airbyte_secret: true
               refresh_token:
                 title: "Refresh token"
-                description: "Slack refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\"\
+                description: "Slack refresh_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\"\
                   >docs</a> if you need help generating the token."
                 type: "string"
                 examples:
@@ -10262,7 +10469,7 @@
               api_token:
                 type: "string"
                 title: "API Token"
-                description: "A Slack bot token. See the <a href=\"https://docs.airbyte.io/integrations/sources/slack\"\
+                description: "A Slack bot token. See the <a href=\"https://docs.airbyte.com/integrations/sources/slack\"\
                   >docs</a> for instructions on how to generate it."
                 airbyte_secret: true
             order: 1
@@ -10283,7 +10490,7 @@
         - - "refresh_token"
 - dockerImage: "airbyte/source-smartsheets:0.1.12"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/smartsheets"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/smartsheets"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Smartsheets Source Spec"
@@ -10299,7 +10506,7 @@
             \ This access token must be generated by a user with at least read access\
             \ to the data you'd like to replicate. Generate an access token in the\
             \ Smartsheets main menu by clicking Account > Apps & Integrations > API\
-            \ Access. See the <a href=\"https://docs.airbyte.io/integrations/sources/amplitude#setup-guide\"\
+            \ Access. See the <a href=\"https://docs.airbyte.com/integrations/sources/amplitude#setup-guide\"\
             >setup guide</a> for information on how to obtain this token."
           type: "string"
           order: 0
@@ -10311,7 +10518,7 @@
           type: "string"
           order: 1
         start_datetime:
-          title: "Start Datetime (Optional)"
+          title: "Start Datetime"
           type: "string"
           examples:
           - "2000-01-01T13:00:00"
@@ -10350,9 +10557,9 @@
           type: "object"
           additionalProperties: false
           properties: {}
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.6"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.8"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/snapchat-marketing"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Snapchat Marketing Spec"
@@ -10392,7 +10599,7 @@
           order: 3
         end_date:
           type: "string"
-          title: "End Date (Optional)"
+          title: "End Date"
           description: "Date in the format 2017-01-25. Any data after this date will\
             \ not be replicated."
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
@@ -10413,7 +10620,7 @@
         - - "refresh_token"
 - dockerImage: "airbyte/source-snowflake:0.1.24"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Snowflake Source Spec"
@@ -10593,7 +10800,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-square:0.1.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/square"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/square"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Square Source CDK Specifications"
@@ -10735,7 +10942,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-strava:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/strava"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/strava"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Strava Spec"
@@ -10827,9 +11034,9 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.39"
+- dockerImage: "airbyte/source-stripe:0.1.40"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Stripe Source Spec"
@@ -10863,7 +11070,7 @@
           order: 2
         lookback_window_days:
           type: "integer"
-          title: "Lookback Window in days (Optional)"
+          title: "Lookback Window in days"
           default: 0
           minimum: 0
           description: "When set, the connector will always re-export data from the\
@@ -10873,7 +11080,7 @@
           order: 3
         slice_range:
           type: "integer"
-          title: "Data request time increment in days (Optional)"
+          title: "Data request time increment in days"
           default: 365
           minimum: 1
           examples:
@@ -10884,16 +11091,16 @@
           - 180
           - 360
           description: "The time increment used by the connector when requesting data\
-            \ from the Stripe API. The bigger the value is,  the less requests will\
+            \ from the Stripe API. The bigger the value is, the less requests will\
             \ be made and faster the sync will be. On the other hand, the more seldom\
-            \  the state is persisted."
+            \ the state is persisted."
           order: 4
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-surveymonkey:0.1.11"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/surveymonkey"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/surveymonkey"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "SurveyMonkey Spec"
@@ -10909,8 +11116,8 @@
           type: "string"
           airbyte_secret: true
           description: "Access Token for making authenticated requests. See the <a\
-            \ href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a>\
-            \ for information on how to generate this key."
+            \ href=\"https://docs.airbyte.com/integrations/sources/surveymonkey\"\
+            >docs</a> for information on how to generate this key."
         start_date:
           title: "Start Date"
           order: 1
@@ -10991,7 +11198,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-tempo:0.2.6"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Tempo Spec"
@@ -11010,7 +11217,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-tidb:0.2.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/tidb"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/tidb"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "TiDB Source Spec"
@@ -11169,10 +11376,10 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:0.1.16"
+- dockerImage: "airbyte/source-tiktok-marketing:0.1.17"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
-    changelogUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
+    changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     connectionSpecification:
       title: "TikTok Marketing Source Spec"
       type: "object"
@@ -11233,7 +11440,7 @@
             - "advertiser_id"
             - "access_token"
         start_date:
-          title: "Replication Start Date *"
+          title: "Replication Start Date"
           description: "The Start Date in format: YYYY-MM-DD. Any data before this\
             \ date will not be replicated. If this parameter is not set, all data\
             \ will be replicated."
@@ -11353,7 +11560,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-trello:0.1.6"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/trello"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/trello"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Trello Spec"
@@ -11403,9 +11610,9 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-twilio:0.1.9"
+- dockerImage: "airbyte/source-twilio:0.1.12"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/twilio"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Twilio Spec"
@@ -11443,6 +11650,8 @@
           examples:
           - 60
           default: 0
+          minimum: 0
+          maximum: 576000
           type: "integer"
           order: 4
     supportsIncremental: true
@@ -11452,7 +11661,7 @@
     - "append"
 - dockerImage: "airbyte/source-typeform:0.1.9"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/typeform"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/typeform"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Typeform Spec"
@@ -11491,7 +11700,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-us-census:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/us-census"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/us-census"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "https://api.census.gov/ Source Spec"
@@ -11525,9 +11734,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-youtube-analytics:0.1.2"
+- dockerImage: "airbyte/source-youtube-analytics:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/youtube-analytics"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/youtube-analytics"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "YouTube Analytics Spec"
@@ -11611,9 +11820,20 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-xkcd:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/xkcd"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Xkcd Spec"
+      type: "object"
+      properties: {}
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-webflow:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/webflow"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/webflow"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Webflow Spec"
@@ -11640,9 +11860,21 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-whisky-hunter:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/whisky-hunter"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Whisky Hunter Spec"
+      type: "object"
+      additionalProperties: true
+      properties: {}
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-woocommerce:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/woocommerce"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/woocommerce"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Woocommerce Source CDK Specifications"
@@ -11673,7 +11905,7 @@
           description: "The CUSTOMER SECRET for API in WooCommerce shop."
           airbyte_secret: true
         conversion_window_days:
-          title: "Conversion Window (Optional)"
+          title: "Conversion Window"
           type: "integer"
           description: "A conversion window is the period of time after an ad interaction\
             \ (such as an ad click or video view) during which a conversion, such\
@@ -11724,9 +11956,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-chat:0.1.10"
+- dockerImage: "airbyte/source-zendesk-chat:0.1.11"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-chat"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-chat"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Zendesk Chat Spec"
@@ -11745,7 +11977,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         subdomain:
           type: "string"
-          title: "Subdomain (Optional)"
+          title: "Subdomain"
           description: "Required if you access Zendesk Chat from a Zendesk Support\
             \ subdomain."
           default: ""
@@ -11850,7 +12082,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-zendesk-sunshine:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk_sunshine"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk_sunshine"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Zendesk Sunshine Spec"
@@ -11923,7 +12155,7 @@
               api_token:
                 type: "string"
                 title: "API Token"
-                description: "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk_sunshine\"\
+                description: "API Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk_sunshine\"\
                   >docs</a> for information on how to generate this key."
                 airbyte_secret: true
               email:
@@ -11981,7 +12213,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-zendesk-support:0.2.16"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Zendesk Support Spec"
@@ -12007,7 +12239,7 @@
             \ URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN\
             \ is the value of your subdomain."
         credentials:
-          title: "Authentication *"
+          title: "Authentication"
           type: "object"
           description: "Zendesk service provides two authentication methods. Choose\
             \ between: `OAuth2.0` or `API token`."
@@ -12026,8 +12258,8 @@
                 type: "string"
                 title: "Access Token"
                 description: "The value of the API token generated. See the <a href=\"\
-                  https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a>\
-                  \ for more information."
+                  https://docs.airbyte.com/integrations/sources/zendesk-support\"\
+                  >docs</a> for more information."
                 airbyte_secret: true
           - title: "API Token"
             type: "object"
@@ -12102,7 +12334,7 @@
               - "client_secret"
 - dockerImage: "airbyte/source-zendesk-talk:0.1.5"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-talk"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-talk"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Zendesk Talk Spec"
@@ -12160,7 +12392,7 @@
                 type: "string"
                 title: "Access Token"
                 description: "The value of the API token generated. See the <a href=\"\
-                  https://docs.airbyte.io/integrations/sources/zendesk-talk\">docs</a>\
+                  https://docs.airbyte.com/integrations/sources/zendesk-talk\">docs</a>\
                   \ for more information."
                 airbyte_secret: true
         start_date:
@@ -12243,7 +12475,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-zenloop:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/zenloop"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zenloop"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Zenloop Spec"
@@ -12276,9 +12508,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sentry:0.1.6"
+- dockerImage: "airbyte/source-sentry:0.1.7"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/sentry"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/sentry"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Sentry Spec"
@@ -12315,7 +12547,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-zoom-singer:0.2.4"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/zoom"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zoom"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Zoom Singer Spec"
@@ -12327,7 +12559,7 @@
         jwt:
           title: "JWT Token"
           type: "string"
-          description: "Zoom JWT Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/zoom\"\
+          description: "Zoom JWT Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/zoom\"\
             >docs</a> for more information on how to obtain this key."
           airbyte_secret: true
     supportsNormalization: false
@@ -12335,7 +12567,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-zuora:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/zuora"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zuora"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Zuora Connector Configuration"
@@ -12411,7 +12643,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-kustomer-singer:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/kustomer"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/kustomer"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Source Kustomer Singer Spec"
@@ -12518,7 +12750,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-sftp:0.1.2"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/source/sftp"
+    documentationUrl: "https://docs.airbyte.com/integrations/source/sftp"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "SFTP Source Spec"
@@ -12552,7 +12784,7 @@
           order: 2
         credentials:
           type: "object"
-          title: "Authentication *"
+          title: "Authentication"
           description: "The server authentication method"
           order: 3
           oneOf:
@@ -12601,7 +12833,7 @@
           - "csv,json"
           - "csv"
         folder_path:
-          title: "Folder Path (Optional)"
+          title: "Folder Path"
           description: "The directory to search files for sync"
           type: "string"
           default: ""
@@ -12609,7 +12841,7 @@
           - "/logs/2022"
           order: 5
         file_pattern:
-          title: "File Pattern (Optional)"
+          title: "File Pattern"
           description: "The regular expression to specify files for sync in a chosen\
             \ Folder Path"
           type: "string"
@@ -12622,7 +12854,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-firebolt:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/firebolt"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/firebolt"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Firebolt Spec"
@@ -12666,7 +12898,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-elasticsearch:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/source/elasticsearch"
+    documentationUrl: "https://docs.airbyte.com/integrations/source/elasticsearch"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Elasticsearch Connection Configuration"
