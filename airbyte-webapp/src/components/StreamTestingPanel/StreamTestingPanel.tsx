@@ -22,7 +22,7 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
           readStream();
         }}
       />
-      <ResultDisplay data={streamReadData ?? { logs: [], slices: [] }} />
+      <ResultDisplay streamRead={streamReadData ?? { logs: [], slices: [] }} />
     </div>
   );
 };

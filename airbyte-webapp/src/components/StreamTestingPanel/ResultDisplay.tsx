@@ -7,13 +7,13 @@ import { StreamRead } from "core/request/ConnectorBuilderClient";
 import styles from "./ResultDisplay.module.scss";
 
 interface ResultDisplayProps {
-  data: StreamRead;
+  streamRead: StreamRead;
 }
 
-export const ResultDisplay: React.FC<ResultDisplayProps> = ({ data }) => {
+export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead }) => {
   return (
     <div className={styles.container}>
-      {data.slices.map((slice) => (
+      {streamRead.slices.map((slice) => (
         <div className={classNames(styles.displayBox, styles.container, styles.slice)}>
           <Text>{`Slice ${JSON.stringify(slice.sliceDescriptor)}`}</Text>
           {slice.pages.map((page, pageNumber) => (
@@ -41,10 +41,10 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ data }) => {
           )}
         </div>
       ))}
-      {data.logs.length > 0 && (
+      {streamRead.logs.length > 0 && (
         <div className={classNames(styles.displayBox, styles.logs)}>
           Logs:
-          <pre>{JSON.stringify(data.logs, null, 2)}</pre>
+          <pre>{JSON.stringify(streamRead.logs, null, 2)}</pre>
         </div>
       )}
     </div>
