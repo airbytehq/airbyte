@@ -22,8 +22,6 @@
                 "auth_type": {
                   "type": "string",
                   "const": "Api Key",
-                  "enum": ["Api Key"],
-                  "default": "Api Key",
                   "order": 0
                 },
                 "api_key": {
@@ -43,8 +41,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "Client",
-                "enum": ["Client"],
-                "default": "Client",
                 "order": 0
               },
               "client_id": {
@@ -57,12 +53,6 @@
                 "type": "string",
                 "description": "The Client Secret of your Lever Hiring developer application.",
                 "airbyte_secret": true
-              },
-              "option_title": {
-                "type": "string",
-                "title": "Credentials Title",
-                "description": "OAuth Credentials",
-                "const": "OAuth Credentials"
               },
               "refresh_token": {
                 "type": "string",
