@@ -1,0 +1,17 @@
+documentationUrl: https://docs.decidim.org/bulletin-board/develop/guide_graphql.html#_about_the_graphql_api
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Decidim Source Spec
+  type: object
+  required:
+    - decidim_graphql_url
+  properties:
+    graphql_url:
+      type: string
+      description: >-
+        The URL from which you can retrieve data from your Decidim 
+        instance
+      examples:
+        - "https://try.decidim.org/api/graphiql"
+        - "https://demo.decidim.opensourcepolitics.eu/api/graphiql"
+      order: 0

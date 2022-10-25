@@ -6,25 +6,23 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
-    "requests>=2.28.0",
-    "types-requests>=2.27.30"
+    "airbyte-cdk~=0.1.56",
+    "requests>=2.28.0"
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "requests-mock",
-    "requests_mock~=1.8",
+    "source-acceptance-test",
 ]
 
 setup(
-    name="source_metabase",
-    description="Source implementation for Metabase.",
+    name="source_decidim",
+    description="Source implementation for Decidim.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "*.yaml"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
