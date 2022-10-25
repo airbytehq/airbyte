@@ -24,6 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class RefreshSchemaActivityTest {
 
   static private ConfigRepository mConfigRepository;
+  static private SchedulerHandler mSchedulerHandler;
+
   static private RefreshSchemaActivityImpl refreshSchemaActivity;
 
   static private final UUID SOURCE_ID = UUID.randomUUID();
@@ -31,7 +33,7 @@ class RefreshSchemaActivityTest {
   @BeforeEach
   void setUp() {
     mConfigRepository = mock(ConfigRepository.class);
-    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository));
+    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mSchedulerHandler);
   }
 
   @Test

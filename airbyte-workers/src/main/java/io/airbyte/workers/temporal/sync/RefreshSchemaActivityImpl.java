@@ -7,8 +7,12 @@ package io.airbyte.workers.temporal.sync;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.handlers.SchedulerHandler;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -17,9 +21,11 @@ import java.util.UUID;
 public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
   private final Optional<ConfigRepository> configRepository;
+  private final SchedulerHandler schedulerHandler;
 
-  public RefreshSchemaActivityImpl(Optional<ConfigRepository> configRepository) {
+  public RefreshSchemaActivityImpl(Optional<ConfigRepository> configRepository, SchedulerHandler schedulerHandler) {
     this.configRepository = configRepository;
+    this.schedulerHandler = schedulerHandler;
   }
 
   @Override
@@ -31,6 +37,12 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
     }
 
     return !schemaRefreshRanRecently(sourceCatalogId);
+  }
+
+  @Override
+  public void refreshSchema(UUID sourceCatalogId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    SourceDiscoverSchemaRequestBody requestBody = new SourceDiscoverSchemaRequestBody().sourceId(sourceCatalogId).disableCache(true);
+    schedulerHandler.discoverSchemaForSourceFromSourceId(requestBody);
   }
 
   private boolean schemaRefreshRanRecently(UUID sourceCatalogId) throws IOException {
