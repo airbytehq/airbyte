@@ -82,7 +82,7 @@ const shouldShowButtonForLegacyAuth = (
   const credentialsSpecRoot = getIn(spec, specPath) as JSONSchema7 | undefined;
 
   if (!credentialsSpecRoot?.properties) {
-    // if the part doesn't exist in the spec (which should not happen) we just show the auth button always.
+    // if the path doesn't exist in the spec (which should not happen) we just show the auth button always.
     return true;
   }
 
