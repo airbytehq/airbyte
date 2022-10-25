@@ -42,10 +42,19 @@ definitions:
       name: "sequences"
       primary_key: "id"
       path: "/sequences?api_secret={{ config['api_secret'] }}"
+  
+
+  tags_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "tags"
+      primary_key: "id"
+      path: "/tags?api_secret={{ config['api_secret'] }}"
 
 streams:
   - "*ref(definitions.forms_stream)"
   - "*ref(definitions.sequences_stream)"
+  - "*ref(definitions.tags_stream)"
 
 check:
   stream_names: ["forms"]
