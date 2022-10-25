@@ -12,6 +12,6 @@ connectionSpecification:
         The URL from which you can retrieve data from your Decidim 
         instance
       examples:
-        - "https://try.decidim.org/api/graphiql"
-        - "https://demo.decidim.opensourcepolitics.eu/api/graphiql"
+        - "https://try.decidim.org/api"
+        - "https://demo.decidim.opensourcepolitics.eu/api"
       order: 0
