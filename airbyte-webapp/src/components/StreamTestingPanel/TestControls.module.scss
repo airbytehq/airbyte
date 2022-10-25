@@ -4,10 +4,9 @@
 $testIconHeight: 17px;
 
 .container {
-  // background-color: hotpink;
-  margin: 15px 0px;
+  margin: variables.$spacing-lg 0;
   display: flex;
-  gap: 10px;
+  gap: variables.$spacing-md;
   height: 36px;
 }
 
@@ -17,7 +16,7 @@ $testIconHeight: 17px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-left: 10px;
+  padding-left: variables.$spacing-md;
   overflow-x: hidden;
   border-radius: variables.$border-radius-xs;
 
@@ -35,7 +34,7 @@ $testIconHeight: 17px;
 
 .testButton {
   width: 100px;
-  margin-right: 0px;
+  margin-right: 0;
   flex: 0 0 100px;
 }
 
