@@ -232,3 +232,49 @@ This test verifies that sync produces no records when run with the STATE with ab
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                   |
 | `future_state_path`       | string | None | Path to the state file with abnormally large cursor values                          |
 | `timeout_seconds`         | int    | 20\*60 | Test execution timeout in seconds                                                 |
+
+
+## Strictness level
+
+To enforce maximal coverage of acceptances tests we expose a `test_strictness_level` field at the root of the `acceptance-test-config.yml` configuration.
+The default `test_strictness_level` is `low`, but for generally available connectors it is expected to be eventually set to `high`.
+
+### Test enforcements in `high` test strictness level
+
+#### All acceptance tests are declared, a `bypass_reason` is filled if a test can't run
+In `high` test strictness level we expect all acceptance tests to be declared:
+* `spec`
+* `connection`
+* `discovery`
+* `basic_read`
+* `full_refresh`
+* `incremental`
+
+If a test can't be run for a valid technical or organizational reason a `bypass_reason` can be declared to skip this test.
+E.G. `source-pokeapi` does not support incremental syncs, we can skip this test when `test_strictness_level` is `high` by setting a `bypass_reason` under `incremental`.
+```yaml
+connector_image: "airbyte/source-pokeapi"
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+    - spec_path: "source_pokeapi/spec.json"
+  connection:
+    tests:
+      - config_path: "integration_tests/config.json"
+        status: "succeed"
+  discovery:
+    tests:
+      - config_path: "integration_tests/config.json"
+  basic_read:
+    tests:
+      - config_path: "integration_tests/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  full_refresh:
+    tests:
+      - config_path: "integration_tests/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    bypass_reason: "Incremental syncs are not supported on this connector."
+```
+
