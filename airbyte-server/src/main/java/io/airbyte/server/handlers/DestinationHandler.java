@@ -277,7 +277,8 @@ public class DestinationHandler {
     return buildDestinationRead(configRepository.getDestinationConnection(destinationId));
   }
 
-  private DestinationRead buildDestinationRead(final DestinationConnection destinationConnection) throws JsonValidationException, IOException, ConfigNotFoundException {
+  private DestinationRead buildDestinationRead(final DestinationConnection destinationConnection)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final ConnectorSpecification spec = getSpec(destinationConnection.getDestinationDefinitionId());
     return buildDestinationRead(destinationConnection, spec);
   }
