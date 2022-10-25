@@ -4,25 +4,13 @@
     "id": {
       "type": "integer"
     },
-    "name": {
+    "created_at": {
       "type": [
         "string",
         "null"
       ]
     },
-    "hold": {
-      "type": [
-        "boolean",
-        "null"
-      ]
-    },
-    "repeat": {
-      "type": [
-        "boolean",
-        "null"
-      ]
-    },
-    "created_at": {
+    "subject": {
       "type": [
         "string",
         "null"

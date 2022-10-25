@@ -5,10 +5,16 @@
       "type": "integer"
     },
     "name": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "created_at": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "required": [
