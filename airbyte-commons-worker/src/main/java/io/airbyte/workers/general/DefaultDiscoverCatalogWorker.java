@@ -4,6 +4,12 @@
 
 package io.airbyte.workers.general;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTOR_VERSION_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -11,6 +17,7 @@ import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -23,6 +30,7 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,8 +64,10 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
     this(configRepository, integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public ConnectorJobOutput run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
+    ApmTraceUtils.addTagsToTrace(generateTraceTags(discoverSchemaInput, jobRoot));
     try {
       process = integrationLauncher.discover(
           jobRoot,
@@ -101,12 +111,32 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
             String.format("Discover job subprocess finished with exit code %s", exitCode));
       }
     } catch (final WorkerException e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       throw e;
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       throw new WorkerException("Error while discovering schema", e);
     }
   }
 
+  private Map<String, Object> generateTraceTags(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) {
+    final Map<String, Object> tags = new HashMap<>();
+
+    tags.put(JOB_ROOT_KEY, jobRoot);
+
+    if (discoverSchemaInput != null) {
+      if (discoverSchemaInput.getSourceId() != null) {
+        tags.put(SOURCE_ID_KEY, discoverSchemaInput.getSourceId());
+      }
+      if (discoverSchemaInput.getConnectorVersion() != null) {
+        tags.put(CONNECTOR_VERSION_KEY, discoverSchemaInput.getConnectorVersion());
+      }
+    }
+
+    return tags;
+  }
+
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     WorkerUtils.cancelProcess(process);
