@@ -8,7 +8,7 @@ import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
-import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./ConfigMenu.module.scss";
 

@@ -5,7 +5,7 @@ import classNames from "classnames";
 
 import { Text } from "components/ui/Text";
 
-import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./StreamSelector.module.scss";
 

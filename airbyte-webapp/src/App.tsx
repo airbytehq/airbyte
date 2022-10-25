@@ -11,7 +11,7 @@ import { defaultFeatures, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ModalServiceProvider } from "hooks/services/Modal";
 import NotificationService from "hooks/services/Notification";
-import { ConnectorBuilderStateProvider } from "services/connector-builder/ConnectorBuilderStateService";
+import { ConnectorBuilderStateProvider } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
 

@@ -2,7 +2,7 @@ import { StreamTestingPanel } from "components/StreamTestingPanel";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 import { YamlEditor } from "components/YamlEditor";
 
-import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./ConnectorBuilderPage.module.scss";
 

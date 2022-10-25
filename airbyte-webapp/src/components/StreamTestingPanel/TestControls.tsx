@@ -4,7 +4,7 @@ import { RotateIcon } from "components/icons/RotateIcon";
 import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
-import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { ConfigMenu } from "./ConfigMenu";
 import styles from "./TestControls.module.scss";

@@ -5,49 +5,49 @@ import { useDebounce, useLocalStorage } from "react-use";
 import {
   StreamReadRequestBodyConfig,
   StreamsListReadStreamsItem,
-  StreamsListRequestBodyConnectorDefinition,
+  StreamsListRequestBodyManifest,
 } from "core/request/ConnectorBuilderClient";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
 import { template } from "./YamlTemplate";
 
 interface Context {
-  yamlDefinition: string;
-  jsonDefinition: StreamsListRequestBodyConnectorDefinition;
+  yamlManifest: string;
+  jsonManifest: StreamsListRequestBodyManifest;
   streams: StreamsListReadStreamsItem[];
   selectedStream: StreamsListReadStreamsItem;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
-  setYamlDefinition: (yamlValue: string) => void;
+  setYamlManifest: (yamlValue: string) => void;
   setSelectedStream: (streamName: string) => void;
   setConfigString: (configString: string) => void;
 }
 
 export const ConnectorBuilderStateContext = React.createContext<Context | null>(null);
 
-const useYamlDefinition = () => {
+const useYamlManifest = () => {
   const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
-  const [yamlDefinition, setYamlDefinition] = useState(locallyStoredYaml ?? "");
-  useDebounce(() => setLocallyStoredYaml(yamlDefinition), 500, [yamlDefinition]);
+  const [yamlManifest, setYamlManifest] = useState(locallyStoredYaml ?? "");
+  useDebounce(() => setLocallyStoredYaml(yamlManifest), 500, [yamlManifest]);
 
-  const [jsonDefinition, setJsonDefinition] = useState<StreamsListRequestBodyConnectorDefinition>({});
+  const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
   useEffect(() => {
     try {
-      const json = load(yamlDefinition) as StreamsListRequestBodyConnectorDefinition;
-      setJsonDefinition(json);
+      const json = load(yamlManifest) as StreamsListRequestBodyManifest;
+      setJsonManifest(json);
     } catch (err) {
       if (err instanceof YAMLException) {
-        console.log("Connector definition yaml is not valid!");
+        console.log("Connector manifest yaml is not valid!");
       }
     }
-  }, [yamlDefinition]);
+  }, [yamlManifest]);
 
-  return { yamlDefinition, jsonDefinition, setYamlDefinition };
+  return { yamlManifest, jsonManifest, setYamlManifest };
 };
 
 const useStreams = () => {
-  const { jsonDefinition } = useYamlDefinition();
-  const streamListRead = useListStreams({ connectorDefinition: jsonDefinition });
+  const { jsonManifest } = useYamlManifest();
+  const streamListRead = useListStreams({ manifest: jsonManifest });
   const streams = streamListRead.streams;
 
   const [selectedStreamName, setSelectedStream] = useState(streamListRead.streams[0].name);
@@ -76,18 +76,18 @@ const useConfig = () => {
 };
 
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
-  const { yamlDefinition, jsonDefinition, setYamlDefinition } = useYamlDefinition();
+  const { yamlManifest, jsonManifest, setYamlManifest } = useYamlManifest();
   const { streams, selectedStream, setSelectedStream } = useStreams();
   const { configString, configJson, setConfigString } = useConfig();
 
   const ctx = {
-    yamlDefinition,
-    jsonDefinition,
+    yamlManifest,
+    jsonManifest,
     streams,
     selectedStream,
     configString,
     configJson,
-    setYamlDefinition,
+    setYamlManifest,
     setSelectedStream,
     setConfigString,
   };

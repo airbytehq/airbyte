@@ -1,5 +1,5 @@
-import { useReadStream } from "services/connector-builder/ConnectorBuilderApiService";
-import { useConnectorBuilderState } from "services/connector-builder/ConnectorBuilderStateService";
+import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { ResultDisplay } from "./ResultDisplay";
 import { StreamSelector } from "./StreamSelector";
@@ -7,9 +7,9 @@ import styles from "./StreamTestingPanel.module.scss";
 import { TestControls } from "./TestControls";
 
 export const StreamTestingPanel: React.FC<unknown> = () => {
-  const { jsonDefinition, selectedStream, configJson } = useConnectorBuilderState();
+  const { jsonManifest, selectedStream, configJson } = useConnectorBuilderState();
   const { data: streamReadData, refetch: readStream } = useReadStream({
-    connectorDefinition: jsonDefinition,
+    manifest: jsonManifest,
     stream: selectedStream.name,
     config: configJson,
   });
@@ -22,7 +22,7 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
           readStream();
         }}
       />
-      <ResultDisplay data={streamReadData ?? { slices: [] }} />
+      <ResultDisplay data={streamReadData ?? { logs: [], slices: [] }} />
     </div>
   );
 };
