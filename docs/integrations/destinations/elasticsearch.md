@@ -57,11 +57,16 @@ The connector should be enhanced to support variable batch sizes.
   * Endpoint URL [ex. https://elasticsearch.savantly.net:9423]
   * Username [optional] (basic auth)
   * Password [optional] (basic auth)
+  * CA certificate [optional]
   * Api key ID [optional]
   * Api key secret [optional]
 * If authentication is used, the user should have permission to create an index if it doesn't exist, and/or be able to `create` documents
 
-
+### CA certificate
+Ca certificate may be fetched from the Elasticsearch server from /usr/share/elasticsearch/config/certs/http_ca.crt
+Fetching example from dockerized Elasticsearch:
+`docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt .` where es01 is a container's name. For more details please visit https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+ 
 ### Setup guide
 Enter the endpoint URL, select authentication method, and whether to use 'upsert' method when indexing new documents. 
 
@@ -89,6 +94,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.5 | 2022-10-24 | [18177](https://github.com/airbytehq/airbyte/pull/18177) | add custom CA certificate processing |
 | 0.1.4 | 2022-10-14 | [17805](https://github.com/airbytehq/airbyte/pull/17805) | add SSH Tunneling |
 | 0.1.3 | 2022-05-30 | [14640](https://github.com/airbytehq/airbyte/pull/14640) | Include lifecycle management |
 | 0.1.2 | 2022-04-19 | [11752](https://github.com/airbytehq/airbyte/pull/11752) | Reduce batch size to 32Mb |

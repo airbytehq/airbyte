@@ -395,10 +395,11 @@ class SchedulerHandlerTest {
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withProtocolVersion(SOURCE_PROTOCOL_VERSION)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configRepository.getActorCatalog(any(), any(), any())).thenReturn(Optional.empty());
-    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG))
+    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION)))
         .thenReturn(discoverResponse);
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
@@ -409,7 +410,7 @@ class SchedulerHandlerTest {
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
     verify(configRepository).getActorCatalog(eq(request.getSourceId()), eq(SOURCE_DOCKER_TAG), any());
-    verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG);
+    verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION));
   }
 
   @Test
@@ -436,7 +437,7 @@ class SchedulerHandlerTest {
         .withCatalogHash("")
         .withId(thisCatalogId);
     when(configRepository.getActorCatalog(any(), any(), any())).thenReturn(Optional.of(actorCatalog));
-    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG))
+    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION)))
         .thenReturn(discoverResponse);
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
@@ -448,7 +449,8 @@ class SchedulerHandlerTest {
     verify(configRepository).getSourceConnection(source.getSourceId());
     verify(configRepository).getActorCatalog(eq(request.getSourceId()), any(), any());
     verify(configRepository, never()).writeActorCatalogFetchEvent(any(), any(), any(), any());
-    verify(synchronousSchedulerClient, never()).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG);
+    verify(synchronousSchedulerClient, never()).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG,
+        new Version(SOURCE_PROTOCOL_VERSION));
   }
 
   @Test
@@ -468,6 +470,7 @@ class SchedulerHandlerTest {
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withProtocolVersion(SOURCE_PROTOCOL_VERSION)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     final ActorCatalog actorCatalog = new ActorCatalog()
@@ -475,7 +478,7 @@ class SchedulerHandlerTest {
         .withCatalogHash("")
         .withId(discoveredCatalogId);
     when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
-    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG))
+    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION)))
         .thenReturn(discoverResponse);
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
@@ -485,7 +488,7 @@ class SchedulerHandlerTest {
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
     verify(configRepository).getActorCatalog(eq(request.getSourceId()), any(), any());
-    verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG);
+    verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION));
   }
 
   @Test
@@ -497,9 +500,10 @@ class SchedulerHandlerTest {
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withProtocolVersion(SOURCE_PROTOCOL_VERSION)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
-    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG))
+    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION)))
         .thenReturn((SynchronousResponse<UUID>) jobResponse);
     when(completedJob.getSuccessOutput()).thenReturn(Optional.empty());
     when(completedJob.getStatus()).thenReturn(JobStatus.FAILED);
@@ -510,7 +514,7 @@ class SchedulerHandlerTest {
     assertNotNull(actual.getJobInfo());
     assertFalse(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
-    verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG);
+    verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION));
   }
 
   @Test
@@ -539,8 +543,9 @@ class SchedulerHandlerTest {
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withProtocolVersion(SOURCE_PROTOCOL_VERSION)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
-    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG))
+    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION)))
         .thenReturn(discoverResponse);
     when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(source.getConfiguration()),
@@ -552,7 +557,7 @@ class SchedulerHandlerTest {
     assertNotNull(actual.getJobInfo());
     assertEquals(actual.getCatalogId(), discoverResponse.getOutput());
     assertTrue(actual.getJobInfo().getSucceeded());
-    verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG);
+    verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION));
   }
 
   @Test
@@ -570,8 +575,9 @@ class SchedulerHandlerTest {
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
             .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withProtocolVersion(SOURCE_PROTOCOL_VERSION)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
-    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG))
+    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION)))
         .thenReturn((SynchronousResponse<UUID>) jobResponse);
     when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
         eq(source.getConfiguration()),
@@ -584,7 +590,7 @@ class SchedulerHandlerTest {
     assertNull(actual.getCatalog());
     assertNotNull(actual.getJobInfo());
     assertFalse(actual.getJobInfo().getSucceeded());
-    verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG);
+    verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION));
   }
 
   @Test
