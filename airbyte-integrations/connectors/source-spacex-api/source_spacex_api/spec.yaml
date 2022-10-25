@@ -15,3 +15,6 @@ connectionSpecification:
     id:
       type: string
       desciption: Optional, For a specific ID
+    options:
+      type: string
+      desciption: Optional, Possible values for an endpoint. Example values for launches-latest, upcoming, past
