@@ -1,12 +1,12 @@
 version: "0.1.0"
 
 definitions:
-  page_size: 50
+  page_size: 5
   selector:
     extractor:
       field_pointer: ["data"]
   requester:
-    url_base: "https://api.surveysparrow.com/v3"
+    url_base: "https://eu-api.surveysparrow.com/v3"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -53,11 +53,13 @@ definitions:
       path: "/questions"
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      requester:
-        $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            survey_id: "{{ config.get('survey_id') }}"
+      stream_slicer:
+        slice_values:
+          - "{{ config.get('survey_id') }}"
+        cursor_field: "survey_id"
+        request_option:
+          field_name: survey_id
+          inject_into: request_parameters
   responses_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
