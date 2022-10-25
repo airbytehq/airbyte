@@ -74,9 +74,6 @@ const EditControls: React.FC<IProps> = ({
         <div className={styles.buttonsContainer}>
           {dirty && (
             <>
-              <Button type="submit" disabled={isSubmitting || !dirty || Object.keys(unfinishedFlows).length > 0}>
-                <FormattedMessage id="form.saveChangesAndTest" />
-              </Button>
               <Button
                 className={styles.cancelButton}
                 type="button"
@@ -85,6 +82,9 @@ const EditControls: React.FC<IProps> = ({
                 onClick={onCancelClick}
               >
                 <FormattedMessage id="form.cancel" />
+              </Button>
+              <Button type="submit" disabled={isSubmitting || !dirty || Object.keys(unfinishedFlows).length > 0}>
+                <FormattedMessage id="form.saveChangesAndTest" />
               </Button>
             </>
           )}
