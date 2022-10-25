@@ -64,7 +64,7 @@ public class OrchestratorConstants {
           EnvConfigs.STATE_STORAGE_S3_BUCKET_NAME,
           EnvConfigs.STATE_STORAGE_S3_ACCESS_KEY,
           EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
-          EnvConfigs.STATE_STORAGE_S3_REGION,
+          EnvConfigs.STATE_STORAGE_S3_BUCKET_REGION,
           EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE))
       .build();
 
