@@ -21,17 +21,17 @@ This source is capable of syncing the following streams:
 
 ### Features
 
-| Feature           | Supported? \(Yes/No\) | Notes                                                                                             |
-|:------------------|:----------------------|:--------------------------------------------------------------------------------------------------|
-| Full Refresh Sync | Yes                   |                                                                                                   |
-| Incremental Sync  | No                    | Alpha Vantage always returns the full history, so `Full Refresh` with `Overwrite` is recommended. |
-| API Environments  | Yes                   | Both sandbox and production environments are supported.                                           |
+| Feature           | Supported? \(Yes/No\) | Notes                                                   |
+|:------------------|:----------------------|:--------------------------------------------------------|
+| Full Refresh Sync | Yes                   |                                                         |
+| Incremental Sync  | No                    |                                                         |
+| API Environments  | Yes                   | Both sandbox and production environments are supported. |
 
 ### Performance considerations
 
-Since a single API call returns the full history of a time series, it is
-recommended to use `Full Refresh` with `Overwrite` to avoid storing duplicate
-data.
+Since a single API call returns the full history of a time series if
+configured, it is recommended to use `Full Refresh` with `Overwrite` to avoid 
+storing duplicate data.
 
 Also, the data returned can be quite large.
 
@@ -51,6 +51,9 @@ The following fields are required fields for the connector to work:
 - (optional) `interval`: The time-series data point interval. Defaults to 1 minute.
 - (optional) `Adjusted?`: Whether the `intraday` endpoint should return adjusted
   data. Defaults to `false`.
+- (optional) `outputsize`: The size of the time series to retrieve. Defaults to
+  `compact`, which returns the last 100 data points. `full` returns the full
+  history.
 
 ## Changelog
 
