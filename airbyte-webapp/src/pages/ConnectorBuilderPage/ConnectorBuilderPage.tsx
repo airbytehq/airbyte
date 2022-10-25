@@ -1,3 +1,5 @@
+import { capitalize } from "lodash";
+
 import { StreamTestingPanel } from "components/StreamTestingPanel";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 import { YamlEditor } from "components/YamlEditor";
@@ -24,7 +26,7 @@ export const ConnectorBuilderPage: React.FC = () => {
         minWidth: 60,
         overlay: {
           displayThreshold: 300,
-          header: selectedStream.name,
+          header: capitalize(selectedStream.name),
           rotation: "counter-clockwise",
         },
       }}
