@@ -9,7 +9,7 @@ import pkgutil
 import typing
 from dataclasses import dataclass, fields
 from enum import Enum, EnumMeta
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Union
 
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.declarative.checks import CheckStream
@@ -29,14 +29,6 @@ class ConcreteDeclarativeSource(JsonSchemaMixin):
     version: str
     checker: CheckStream
     streams: List[DeclarativeStream]
-
-
-def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
-    """Gets a resource from a package, returning None if it does not exist"""
-    try:
-        return pkgutil.get_data(package, filename)
-    except FileNotFoundError:
-        return None
 
 
 class YamlDeclarativeSource(DeclarativeSource):
