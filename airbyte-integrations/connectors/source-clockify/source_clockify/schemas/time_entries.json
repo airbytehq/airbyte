@@ -17,16 +17,10 @@
       "type": "boolean"
     },
     "kioskId": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "projectId": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "tagIds": {
       "anyOf": [
@@ -42,10 +36,7 @@
       ]
     },
     "taskId": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "timeInterval": {
       "properties": {

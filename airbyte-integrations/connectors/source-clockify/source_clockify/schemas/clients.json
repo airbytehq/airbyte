@@ -2,10 +2,7 @@
   "$schema": "http://json-schema.org/schema#",
   "properties": {
     "address": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "archived": {
       "type": "boolean"
@@ -17,10 +14,7 @@
       "type": "string"
     },
     "note": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "workspaceId": {
       "type": "string"

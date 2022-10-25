@@ -2,10 +2,7 @@
   "$schema": "http://json-schema.org/schema#",
   "properties": {
     "assigneeId": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "assigneeIds": {
       "items": {
@@ -27,17 +24,10 @@
         {
           "properties": {
             "amount": {
-              "type": [
-                "null",
-                "string",
-                "integer"
-              ]
+              "type": ["null", "string", "integer"]
             },
             "currency": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object"

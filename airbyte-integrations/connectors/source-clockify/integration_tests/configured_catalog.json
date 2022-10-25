@@ -11,9 +11,7 @@
         "namespace": null,
         "source_defined_cursor": null,
         "source_defined_primary_key": null,
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     },
@@ -28,9 +26,7 @@
         "namespace": null,
         "source_defined_cursor": null,
         "source_defined_primary_key": null,
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     },
@@ -45,9 +41,7 @@
         "namespace": null,
         "source_defined_cursor": null,
         "source_defined_primary_key": null,
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     },
@@ -62,9 +56,7 @@
         "namespace": null,
         "source_defined_cursor": null,
         "source_defined_primary_key": null,
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     },
@@ -79,9 +71,7 @@
         "namespace": null,
         "source_defined_cursor": null,
         "source_defined_primary_key": null,
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     },
@@ -96,9 +86,7 @@
         "namespace": null,
         "source_defined_cursor": null,
         "source_defined_primary_key": null,
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     },
@@ -113,9 +101,7 @@
         "namespace": null,
         "source_defined_cursor": null,
         "source_defined_primary_key": null,
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh"
     }

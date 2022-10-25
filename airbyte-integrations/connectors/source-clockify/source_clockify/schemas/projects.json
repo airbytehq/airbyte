@@ -18,19 +18,13 @@
         {
           "properties": {
             "estimate": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "type": {
               "type": "string"
             },
             "resetOption": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "active": {
               "type": "boolean"
@@ -60,17 +54,10 @@
         {
           "properties": {
             "amount": {
-              "type": [
-                "null",
-                "string",
-                "integer"
-              ]
+              "type": ["null", "string", "integer"]
             },
             "currency": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object"
@@ -170,10 +157,7 @@
           "type": "boolean"
         },
         "resetOption": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "type": {
           "type": "string"
