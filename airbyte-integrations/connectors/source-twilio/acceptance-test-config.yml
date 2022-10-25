@@ -16,6 +16,7 @@ tests:
       configured_catalog_path: "integration_tests/no_empty_streams_catalog.json"
       expect_records:
         path: "integration_tests/expected_records.txt"
+      empty_streams: ["alerts"]
   incremental:
     - config_path: "secrets/config.json"
       # usage records stream produces and error if cursor date gte than current date

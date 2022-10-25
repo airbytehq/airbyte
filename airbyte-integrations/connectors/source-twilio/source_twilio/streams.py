@@ -1,8 +1,9 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import copy
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
@@ -23,9 +24,6 @@ class TwilioStream(HttpStream, ABC):
     primary_key = "sid"
     page_size = 1000
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     @property
     def data_field(self):
@@ -73,9 +71,12 @@ class TwilioStream(HttpStream, ABC):
             return float(backoff_time)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["PageSize"] = self.page_size
         if next_page_token:
             params.update(**next_page_token)
@@ -108,7 +109,14 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     @property
     @abstractmethod
-    def incremental_filter_field(self) -> str:
+    def lower_boundary_filter_field(self) -> str:
+        """
+        return: date filter query parameter name
+        """
+
+    @property
+    @abstractmethod
+    def upper_boundary_filter_field(self) -> str:
         """
         return: date filter query parameter name
         """
@@ -123,7 +131,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         return {}
 
     @state.setter
-    def state(self, value: Mapping[str, Any]):
+    def state(self, value: MutableMapping[str, Any]):
         if self._lookback_window and value.get(self.cursor_field):
             new_start_date = (
                 pendulum.parse(value[self.cursor_field]) - pendulum.duration(minutes=self._lookback_window)
@@ -132,12 +140,38 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
                 value[self.cursor_field] = new_start_date
         self._cursor_value = value.get(self.cursor_field)
 
+    def generate_date_ranges(self, super_slice: MutableMapping[str, Any]) -> Iterable[Optional[MutableMapping[str, Any]]]:
+        end_datetime = pendulum.now()
+        start_datetime = min(end_datetime, pendulum.parse(self.state.get(self.cursor_field, self._start_date)))
+        current_start = start_datetime
+        current_end = start_datetime
+        while current_end < end_datetime:
+            current_end = min(end_datetime, current_start.add(days=1))
+            slice_ = copy.deepcopy(super_slice) if super_slice else {}
+            slice_[self.lower_boundary_filter_field] = current_start.format(self.time_filter_template)
+            slice_[self.upper_boundary_filter_field] = current_end.format(self.time_filter_template)
+            yield slice_
+            current_start = current_end
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for super_slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
+            yield from self.generate_date_ranges(super_slice)
+
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        start_date = self.state.get(self.cursor_field, self._start_date)
-        params[self.incremental_filter_field] = pendulum.parse(start_date).format(self.time_filter_template)
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        lower_bound = stream_slice and stream_slice.get(self.lower_boundary_filter_field)
+        upper_bound = stream_slice and stream_slice.get(self.upper_boundary_filter_field)
+        if lower_bound:
+            params[self.lower_boundary_filter_field] = lower_bound
+        if upper_bound:
+            params[self.upper_boundary_filter_field] = upper_bound
         return params
 
     def read_records(
@@ -165,6 +199,7 @@ class TwilioNestedStream(TwilioStream):
     """
 
     media_exist_validation = {}
+    uri_from_subresource = True
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
         return stream_slice["subresource_uri"]
@@ -180,21 +215,30 @@ class TwilioNestedStream(TwilioStream):
         :return: parent stream class
         """
 
+    @cached_property
+    def parent_stream_instance(self):
+        return self.parent_stream(authenticator=self.authenticator)
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"subresource_uri": record["subresource_uris"][self.subresource_uri_key]}
+
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        stream_instance = self.parent_stream(authenticator=self.authenticator)
+        stream_instance = self.parent_stream_instance
         stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
         for stream_slice in stream_slices:
             for item in stream_instance.read_records(
                 sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field
             ):
-                if item.get("subresource_uris", {}).get(self.subresource_uri_key):
+                if not self.uri_from_subresource:
+                    yield self.parent_record_to_stream_slice(item)
+                elif item.get("subresource_uris", {}).get(self.subresource_uri_key):
                     validated = True
                     for key, value in self.media_exist_validation.items():
                         validated = item.get(key) and item.get(key) != value
                         if not validated:
                             break
                     if validated:
-                        yield {"subresource_uri": item["subresource_uris"][self.subresource_uri_key]}
+                        yield self.parent_record_to_stream_slice(item)
 
 
 class Accounts(TwilioStream):
@@ -214,18 +258,13 @@ class DependentPhoneNumbers(TwilioNestedStream):
 
     parent_stream = Addresses
     url_base = TWILIO_API_URL_BASE_VERSIONED
+    uri_from_subresource = False
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
         return f"Accounts/{stream_slice['account_sid']}/Addresses/{stream_slice['sid']}/DependentPhoneNumbers.json"
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        stream_instance = self.parent_stream(authenticator=self.authenticator)
-        stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
-        for stream_slice in stream_slices:
-            for item in stream_instance.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field
-            ):
-                yield {"sid": item["sid"], "account_sid": item["account_sid"]}
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"sid": record["sid"], "account_sid": record["account_sid"]}
 
 
 class Applications(TwilioNestedStream):
@@ -287,20 +326,22 @@ class Keys(TwilioNestedStream):
     parent_stream = Accounts
 
 
-class Calls(TwilioNestedStream, IncrementalTwilioStream):
+class Calls(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource"""
 
     parent_stream = Accounts
-    incremental_filter_field = "EndTime>"
+    lower_boundary_filter_field = "EndTime>"
+    upper_boundary_filter_field = "EndTime<="
     cursor_field = "end_time"
     time_filter_template = "YYYY-MM-DD"
 
 
-class Conferences(TwilioNestedStream, IncrementalTwilioStream):
+class Conferences(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "DateCreated>"
+    lower_boundary_filter_field = "DateCreated>"
+    upper_boundary_filter_field = "DateCreated<="
     cursor_field = "date_created"
     time_filter_template = "YYYY-MM-DD"
 
@@ -324,11 +365,12 @@ class OutgoingCallerIds(TwilioNestedStream):
     parent_stream = Accounts
 
 
-class Recordings(TwilioNestedStream, IncrementalTwilioStream):
+class Recordings(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "DateCreated>"
+    lower_boundary_filter_field = "DateCreated>"
+    upper_boundary_filter_field = "DateCreated<="
     cursor_field = "date_created"
 
 
@@ -344,46 +386,36 @@ class Queues(TwilioNestedStream):
     parent_stream = Accounts
 
 
-class Messages(TwilioNestedStream, IncrementalTwilioStream):
+class Messages(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "DateSent>"
+    lower_boundary_filter_field = "DateSent>"
+    upper_boundary_filter_field = "DateSent<="
     cursor_field = "date_sent"
 
 
-class MessageMedia(TwilioNestedStream, IncrementalTwilioStream):
+class MessageMedia(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources"""
 
     parent_stream = Messages
     data_field = "media_list"
     subresource_uri_key = "media"
     media_exist_validation = {"num_media": "0"}
-    incremental_filter_field = "DateCreated>"
+    lower_boundary_filter_field = "DateCreated>"
+    upper_boundary_filter_field = "DateCreated<="
     cursor_field = "date_created"
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        stream_instance = self.parent_stream(
+    @cached_property
+    def parent_stream_instance(self):
+        return self.parent_stream(
             authenticator=self.authenticator, start_date=self._start_date, lookback_window=self._lookback_window
         )
-        stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
-        for stream_slice in stream_slices:
-            for item in stream_instance.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field
-            ):
-                if item.get("subresource_uris", {}).get(self.subresource_uri_key):
-                    validated = True
-                    for key, value in self.media_exist_validation.items():
-                        validated = item.get(key) and item.get(key) != value
-                        if not validated:
-                            break
-                    if validated:
-
-                        yield {"subresource_uri": item["subresource_uris"][self.subresource_uri_key]}
 
 
 class UsageNestedStream(TwilioNestedStream):
     url_base = TWILIO_API_URL_BASE_VERSIONED
+    uri_from_subresource = False
 
     @property
     @abstractmethod
@@ -395,21 +427,16 @@ class UsageNestedStream(TwilioNestedStream):
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
         return f"Accounts/{stream_slice['account_sid']}/Usage/{self.path_name}.json"
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        stream_instance = self.parent_stream(authenticator=self.authenticator)
-        stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
-        for stream_slice in stream_slices:
-            for item in stream_instance.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field
-            ):
-                yield {"account_sid": item["sid"]}
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"account_sid": record["sid"]}
 
 
-class UsageRecords(UsageNestedStream, IncrementalTwilioStream):
+class UsageRecords(IncrementalTwilioStream, UsageNestedStream):
     """https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "StartDate"
+    lower_boundary_filter_field = "StartDate="
+    upper_boundary_filter_field = "EndDate="
     cursor_field = "start_date"
     time_filter_template = "YYYY-MM-DD"
     path_name = "Records"
@@ -429,7 +456,8 @@ class Alerts(IncrementalTwilioStream):
     """https://www.twilio.com/docs/usage/monitor-alert#read-multiple-alert-resources"""
 
     url_base = TWILIO_MONITOR_URL_BASE
-    incremental_filter_field = "StartDate"
+    lower_boundary_filter_field = "StartDate="
+    upper_boundary_filter_field = "EndDate="
     cursor_field = "date_generated"
 
     def path(self, **kwargs):
