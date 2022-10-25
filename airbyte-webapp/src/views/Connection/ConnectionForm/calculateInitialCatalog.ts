@@ -131,13 +131,14 @@ const calculateInitialCatalog = (
     streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
       const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
       const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isNotCreateMode || false);
+
+      // if the stream is new since a refresh, we want to verify cursor and get optimal sync modes
       const matches = newStreamDescriptors?.filter(
         (streamId) => streamId.name === nodeStream?.stream?.name && streamId.namespace === nodeStream.stream?.namespace
       );
       if (isNotCreateMode && (matches?.length === 0 || !matches)) {
         return nodeStream;
       }
-
       return getOptimalSyncMode(verifyConfigCursorField(nodeStream), supportedDestinationSyncModes);
     }),
   };
