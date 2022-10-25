@@ -1,4 +1,5 @@
 @use "scss/colors";
+@use "scss/variables";
 
 .container {
   display: flex;
@@ -10,7 +11,7 @@
   flex: 0 0 auto;
   background-color: colors.$dark-blue;
   display: flex;
-  padding: 10px;
+  padding: variables.$spacing-md;
   flex-direction: row;
   justify-content: flex-end;
 }
