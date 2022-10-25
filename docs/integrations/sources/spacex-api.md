@@ -47,6 +47,18 @@ The SpaceX-API source connector supports the following [sync modes](https://docs
 ## Supported Streams
 
 - Launches
+- Capsules
+- Company
+- Crew
+- Cores
+- Dragons
+- History
+- Landpads
+- Payloads
+- Roadster
+- Rockets
+- Ships
+- Starlink
 
 ## API method example
 

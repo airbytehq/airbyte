@@ -14,4 +14,4 @@ connectionSpecification:
       airbyte_secret: true
     id:
       type: string
-      desciption: For a specific ID
+      desciption: Optional, For a specific ID
