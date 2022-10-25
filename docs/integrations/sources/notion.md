@@ -32,7 +32,7 @@ You must be the owner of a Notion workspace to create a new integration.
 4. Enter a name for your source.
 5. Choose the method of authentication:
       * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
-      * If you select OAuth2.0 authorization, click **Authenticate your Notion account**.
+      * If you select **OAuth2.0** authorization, click **Authenticate your Notion account**.
           * Log in and Authorize the Notion account. Select the permissions you want to allow Airbyte.
 6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
@@ -45,7 +45,7 @@ You must be the owner of a Notion workspace to create a new integration.
 4. Enter a name for your source.
 5. Choose the method of authentication:
       * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
-      * If you select OAuth2.0 authorization, paste the client ID, access token, and client secret.
+      * If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
 6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
 
