@@ -48,7 +48,24 @@
             "airbyte_secret": true
           }
           }
-
+        }, {
+          "type": "object",
+          "title": "Access Token",
+          "required": ["auth_type", "access_token"],
+          "properties": {
+            "auth_type": {
+              "type": "string",
+              "const": "access_token",
+              "default": "access_token",
+              "order": 0
+            },
+            "access_token": {
+              "title": "Access token",
+              "type": "string",
+              "description": "Access token for making authenticated requests. See the Intercom docs for more information https://go.estuary.dev/b5C9aN",
+              "airbyte_secret": true
+            }
+          }
         }]
       }
     }
