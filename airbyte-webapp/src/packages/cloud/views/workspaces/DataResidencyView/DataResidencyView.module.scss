@@ -3,6 +3,20 @@
   width: 100%;
 }
 
+.inline {
+  display: flex;
+  justify-content: space-between;
+
+  > :first-child {
+    display: flex;
+    flex-direction: column;
+  }
+
+  > :last-child {
+    width: 300px;
+  }
+}
+
 .buttonGroup {
   display: flex;
   flex-direction: row;

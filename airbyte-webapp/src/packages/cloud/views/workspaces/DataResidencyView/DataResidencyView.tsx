@@ -1,11 +1,11 @@
 import classNames from "classnames";
 import { US } from "country-flag-icons/react/3x2";
-import { Field, FieldProps, Form, Formik } from "formik";
+import { Form, Formik } from "formik";
 import React from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import * as yup from "yup";
 
-import { Label, LabeledInput, LabeledSwitch } from "components";
+import { Label } from "components";
 import { Button } from "components/ui/Button";
 import { DropDown } from "components/ui/DropDown";
 import { InfoTooltip } from "components/ui/Tooltip";
@@ -19,14 +19,14 @@ import { useInvalidateWorkspace } from "services/workspaces/WorkspacesService";
 
 import styles from "./DataResidencyView.module.scss";
 
-const AdvancedModeSwitchLabel = () => (
-  <>
-    <FormattedMessage id="settings.generalSettings.form.advancedMode.switchLabel" />
-    <InfoTooltip>
-      <FormattedMessage id="settings.generalSettings.form.advancedMode.tooltip" />
-    </InfoTooltip>
-  </>
-);
+// const AdvancedModeSwitchLabel = () => (
+//   <>
+//     <FormattedMessage id="settings.generalSettings.form.advancedMode.switchLabel" />
+//     <InfoTooltip>
+//       <FormattedMessage id="settings.generalSettings.form.advancedMode.tooltip" />
+//     </InfoTooltip>
+//   </>
+// );
 
 const ValidationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
@@ -37,7 +37,7 @@ const options = [
     value: "US",
     label: (
       <>
-        <US style={{ height: "10px" }} />
+        <US style={{ height: "14px" }} />
         <span style={{ paddingLeft: "10px" }}>United States</span>
       </>
     ),
@@ -47,7 +47,6 @@ const options = [
 ];
 
 export const DataResidencyView: React.FC = () => {
-  const { formatMessage } = useIntl();
   useTrackPage(PageTrackingCodes.SETTINGS_WORKSPACE);
   const workspace = useCurrentWorkspace();
   const { mutateAsync: updateCloudWorkspace } = useUpdateCloudWorkspace();
@@ -79,37 +78,22 @@ export const DataResidencyView: React.FC = () => {
         enableReinitialize
         validationSchema={ValidationSchema}
       >
-        {({ dirty, isSubmitting, resetForm, isValid, setFieldValue }) => (
+        {({ dirty, isSubmitting, resetForm, isValid }) => (
           <Form>
             <Content>
-              <Field name="name">
-                {({ field, meta }: FieldProps<string>) => (
-                  <LabeledInput
-                    {...field}
-                    label={<FormattedMessage id="settings.generalSettings.form.name.label" />}
-                    placeholder={formatMessage({
-                      id: "settings.generalSettings.form.name.placeholder",
-                    })}
-                    type="text"
-                    error={!!meta.error && meta.touched}
-                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-                  />
-                )}
-              </Field>
-              <Label className={styles.formItem}>
-                <FormattedMessage id="settings.dataResidency.description" />
-              </Label>
-              <DropDown options={options} />
-              <Field name="advancedMode">
-                {({ field }: FieldProps<boolean>) => (
-                  <LabeledSwitch
-                    label={<AdvancedModeSwitchLabel />}
-                    checked={field.value}
-                    onChange={() => setFieldValue(field.name, !field.value)}
-                  />
-                )}
-              </Field>
-
+              <FormattedMessage id="settings.dataResidency.description" />
+              <div className={classNames(styles.formItem, styles.inline)}>
+                <div>
+                  <Label>
+                    <FormattedMessage id="settings.dataResidency.form.dropdownLabel" />
+                    <InfoTooltip>
+                      <FormattedMessage id="settings.dataResidency.form.dropdownLabel.tooltip" />
+                    </InfoTooltip>
+                  </Label>
+                  <FormattedMessage id="settings.dataResidency.IPRange.US" />
+                </div>
+                <DropDown options={options} />
+              </div>
               <div className={classNames(styles.formItem, styles.buttonGroup)}>
                 <Button type="button" variant="secondary" disabled={!dirty} onClick={() => resetForm()}>
                   <FormattedMessage id="form.cancel" />
