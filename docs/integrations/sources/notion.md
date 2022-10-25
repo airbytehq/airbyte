@@ -14,9 +14,7 @@ You must be the owner of a Notion workspace to create a new integration.
 
 :::
 
-2. Fill out the form: 
-      * Make sure to check **Read content**. 
-      * Check any other [capabilities](https://developers.notion.com/reference/capabilities) you want to authorize.
+2. Fill out the form. Make sure to check **Read content** and check any other [capabilities](https://developers.notion.com/reference/capabilities) you want to authorize.
 3. Click **Submit**.
 4. In the **Integration type** section, select either **Internal integration** (token authorization) or **Public integration** (OAuth2.0 authentication).
 5. Check the capabilities you want to authorize.
@@ -33,10 +31,9 @@ You must be the owner of a Notion workspace to create a new integration.
 3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
 4. Enter a name for your source.
 5. Choose the method of authentication:
-      * If you select **Access Token**, paste the access_token from [Step 8](#step-1-set-up-notion​).
+      * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
       * If you select OAuth2.0 authorization, click **Authenticate your Notion account**.
           * Log in and Authorize the Notion account. Select the permissions you want to allow Airbyte.
-
 6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
 
@@ -47,7 +44,7 @@ You must be the owner of a Notion workspace to create a new integration.
 3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
 4. Enter a name for your source.
 5. Choose the method of authentication:
-      * If you select **Access Token**, paste the access_token from [Step 8](#step-1-set-up-notion​).
+      * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
       * If you select OAuth2.0 authorization, paste the client ID, access token, and client secret.
 6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
