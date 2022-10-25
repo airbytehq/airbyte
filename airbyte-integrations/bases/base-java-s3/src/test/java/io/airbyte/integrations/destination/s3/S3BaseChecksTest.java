@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -34,8 +37,7 @@ public class S3BaseChecksTest {
         null,
         null,
         null,
-        s3Client
-    );
+        s3Client);
     S3StorageOperations operations = new S3StorageOperations(new S3NameTransformer(), s3Client, config);
     when(s3Client.doesObjectExist("test_bucket", "test/bucket/path/")).thenReturn(false);
 
@@ -46,4 +48,5 @@ public class S3BaseChecksTest {
     verify(s3Client).listObjects(ArgumentMatchers.<ListObjectsRequest>argThat(request -> "test_bucket".equals(request.getBucketName())));
     verify(s3Client).deleteObject(eq("test_bucket"), startsWith("test/bucket/path/_airbyte_connection_test_"));
   }
+
 }
