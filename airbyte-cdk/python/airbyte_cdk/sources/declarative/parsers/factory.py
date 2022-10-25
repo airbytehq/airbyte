@@ -243,7 +243,7 @@ class DeclarativeComponentFactory:
 
     @staticmethod
     def is_object_definition_with_type(definition):
-        return isinstance(definition, dict) and "type" in definition
+        return isinstance(definition, dict) and "type" in definition and definition["type"] != "object"
 
     @staticmethod
     def get_default_type(parameter_name, parent_class):

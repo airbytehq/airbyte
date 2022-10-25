@@ -85,25 +85,23 @@ class YamlDeclarativeSource(DeclarativeSource):
         manifest's spec block, otherwise it will load it from "spec.yaml" or "spec.json" in the project root.
         """
 
+        self.logger.debug(
+            "parsed YAML into declarative source",
+            extra={"path_to_yaml_file": self._path_to_yaml, "source_name": self.name, "parsed_config": json.dumps(self._source_config)},
+        )
+
         spec = self._source_config.get("spec")
         if spec:
-            return ConnectorSpecification.parse_obj(spec)
+            if "class_name" not in spec:
+                spec["class_name"] = "airbyte_cdk.sources.declarative.spec.Spec"
+            spec_component = self._factory.create_component(spec, dict())()
+            return spec_component.generate_spec()
         else:
             return super().spec(logger)
 
     def _read_and_parse_yaml_file(self, path_to_yaml_file):
-        # This is a hack, but operates on the assumption that during unit tests we write manifests to a temporary directory
-        # (ex. /var/folders/...). In production, source_manifest.yaml is loaded into the package in setup.py, but for our
-        # unit testing, the temporary file doesn't get loaded in so we have to access it using the open instead
-        path_parts = list(filter(None, path_to_yaml_file.split("/")))
-        is_unit_test = len(path_parts) > 0 and path_parts[0] == "var"
-        if is_unit_test:
-            with open(path_to_yaml_file, "r") as f:
-                config_content = f.read()
-                parsed_config = YamlParser().parse(config_content)
-                return parsed_config
-
         package = self.__class__.__module__.split(".")[0]
+
         yaml_config = pkgutil.get_data(package, path_to_yaml_file)
         decoded_yaml = yaml_config.decode()
         return YamlParser().parse(decoded_yaml)
