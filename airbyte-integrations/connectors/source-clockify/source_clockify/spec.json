@@ -5,6 +5,7 @@
     "title": "Clockify Spec",
     "type": "object",
     "required": ["workspace_id", "api_key"],
+    "additionalProperties": true,
     "properties": {
       "workspace_id": {
         "title": "Workspace Id",
