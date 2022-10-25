@@ -18,7 +18,7 @@ If you are a visual learner and want to see a video version of this guide going 
 
 ```bash
 # # clone the repo if you havent already
-# git clone -–depth 1 https://github.com/airbytehq/airbyte/ 
+# git clone --depth 1 https://github.com/airbytehq/airbyte/ 
 # cd airbyte # start from repo root
 cd airbyte-integrations/connector-templates/generator 
 ./generate.sh

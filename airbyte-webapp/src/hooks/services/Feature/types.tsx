@@ -4,7 +4,6 @@ export enum FeatureItem {
   AllowDBTCloudIntegration = "ALLOW_DBT_CLOUD_INTEGRATION",
   AllowUpdateConnectors = "ALLOW_UPDATE_CONNECTORS",
   AllowOAuthConnector = "ALLOW_OAUTH_CONNECTOR",
-  AllowCreateConnection = "ALLOW_CREATE_CONNECTION",
   AllowSync = "ALLOW_SYNC",
 }
 
