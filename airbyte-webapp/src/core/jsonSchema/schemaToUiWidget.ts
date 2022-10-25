@@ -81,7 +81,6 @@ export const jsonSchemaToUiWidget = (
       jsonSchema,
       path: path || key,
       fieldKey: key,
-      hasOauth: jsonSchema.is_auth,
       properties,
       isRequired,
     };
