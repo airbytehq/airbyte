@@ -105,6 +105,5 @@
       "destination_sync_mode": "append",
       "cursor_field": ["Date"]
     }
-
   ]
 }
