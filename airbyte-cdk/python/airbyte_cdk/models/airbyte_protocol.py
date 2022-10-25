@@ -274,6 +274,10 @@ class ConnectorSpecification(BaseModel):
     )
     supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
     supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
+    allowed_hosts: Optional[List[str]] = Field(
+        None,
+        description='The hostnames or IP addresses that this connector expects to communicate with.  Wildcards, CIDR ranges, or IP addresses can be used.  A reference to a property within connectionSpecification (e.g. "#/connectionSpecification/hostname") is also valid.',
+    )
     supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
         None, description="List of destination sync modes supported by the connector"
     )

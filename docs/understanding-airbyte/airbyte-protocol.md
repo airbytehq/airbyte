@@ -28,6 +28,7 @@ The Airbyte Protocol is versioned independently of the Airbyte Platform, and the
 
 | Version  | Date of Change | Pull Request(s)                                                                                                     | Subject                                                                          |
 | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------- |
+| `v0.3.2` | 2022-10-30     | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)                                                                | `allowed_hosts` added to `ConnectorSpecification`                                |
 | `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                            | `AirbyteLogMessage.stack_trace` added                                            |
 | `v0.2.0` | 2022-06-10     | [13573](https://github.com/airbytehq/airbyte/pull/13573) & [12586](https://github.com/airbytehq/airbyte/pull/12586) | `STREAM` and `GLOBAL` STATE messages                                             |
 | `v0.1.1` | 2022-06-06     | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                            | Add a namespace in association with the stream name                              |
@@ -223,6 +224,11 @@ ConnectorSpecification:
       existingJavaType: com.fasterxml.jackson.databind.JsonNode
     # Connector Type Properties (Common to all connectors from same type)
     # Source Connectors Properties
+    allowed_hosts:
+      description: The hostnames or IP addresses that this connector expects to communicate with.  Wildcards, CIDR ranges, or IP addresses can be used.  A reference to a property within connectionSpecification (e.g. "#/connectionSpecification/hostname") is also valid.
+      type: array
+      items:
+        type: string
     supportsIncremental:
       description: (deprecated) If the connector supports incremental mode or not.
       type: boolean

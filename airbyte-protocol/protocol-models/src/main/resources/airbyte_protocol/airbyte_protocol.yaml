@@ -395,6 +395,11 @@ definitions:
         description: If the connector supports DBT or not.
         type: boolean
         default: false
+      allowed_hosts:
+        description: The hostnames or IP addresses that this connector expects to communicate with.  Wildcards, CIDR ranges, or IP addresses can be used.  A reference to a property within connectionSpecification (e.g. "#/connectionSpecification/hostname") is also valid.
+        type: array
+        items:
+          type: string
       supported_destination_sync_modes:
         description: List of destination sync modes supported by the connector
         type: array
