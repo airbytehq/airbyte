@@ -2,6 +2,9 @@
 connector_image: airbyte/source-pokeapi:dev
 test_strictness_level: high
 acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_pokeapi/spec.json"
   connection:
     tests:
       - config_path: "integration_tests/config.json"
@@ -17,3 +20,5 @@ acceptance_tests:
     tests:
       - config_path: "integration_tests/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    bypass_reason: "This connector does not support incremental syncs."
