@@ -37,13 +37,22 @@ Be careful using variables marked as `alpha` as they aren't meant for public con
 The following variables are relevant to both Docker and Kubernetes.
 
 #### Core
+
 1. `AIRBYTE_VERSION` - Defines the Airbyte deployment version.
 2. `SPEC_CACHE_BUCKET` - Defines the bucket for caching specs. This immensely speeds up spec operations. This is updated when new versions are published.
 3. `WORKER_ENVIRONMENT` - Defines if the deployment is Docker or Kubernetes. Airbyte behaves accordingly.
 4. `CONFIG_ROOT` - Defines the configs directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
 5. `WORKSPACE_ROOT` - Defines the Airbyte workspace directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
 
+#### Access
+
+Set to empty values, e.g. "" to disable basic auth. **Be sure to change these values**.
+
+1. BASIC_AUTH_USERNAME=airbyte
+2. BASIC_AUTH_PASSWORD=password
+
 #### Secrets
+
 1. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
 2. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
 3. `VAULT_ADDRESS` - Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
@@ -53,6 +62,7 @@ The following variables are relevant to both Docker and Kubernetes.
 7. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use Hashicorp Vault, currently only the token based authentication is supported. Alpha support. Undefined behavior will result if this is turned on and then off.
 
 #### Database
+
 1. `DATABASE_USER` - Define the Jobs Database user.
 2. `DATABASE_PASSWORD` - Define the Jobs Database password.
 3. `DATABASE_URL` - Define the Jobs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}`. Do not include username or password.
@@ -64,22 +74,26 @@ The following variables are relevant to both Docker and Kubernetes.
 9. `RUN_DATABASE_MIGRATION_ON_STARTUP` - Define if the Bootloader should run migrations on start up.
 
 #### Airbyte Services
+
 1. `TEMPORAL_HOST` - Define the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
 2. `INTERNAL_API_HOST` - Define the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
 3. `WEBAPP_URL` - Define the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information.
 
 #### Jobs
+
 1. `SYNC_JOB_MAX_ATTEMPTS` - Define the number of attempts a sync will attempt before failing.
 2. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Define the number of days a sync job will execute for before timing out.
-3. `JOB_MAIN_CONTAINER_CPU_REQUEST` -  Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+3. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
 4. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Define the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
 5. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Define the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
 6. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
 
 #### Logging
+
 1. `LOG_LEVEL` - Define log levels. Defaults to INFO. This value is expected to be one of the various Log4J log levels.
 
 #### Monitoring
+
 1. `PUBLISH_METRICS` - Define whether to publish metrics collected by the Metrics Reporter. Defaults to false.
 2. `METRIC_CLIENT` - Defines which metrics client to use. Only relevant if `PUBLISH_METRICS` is set to true. Accepts either `datadog` or `otel`. Default to none.
 3. `DD_AGENT_HOST` - Defines the ip the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
@@ -87,6 +101,7 @@ The following variables are relevant to both Docker and Kubernetes.
 5. `OTEL_COLLECTOR_ENDPOIN` - Define the ip:port the OTEL metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `otel`. Defaults to none.
 
 #### Worker
+
 1. `MAX_SPEC_WORKERS` - Define the maximum number of Spec workers each Airbyte Worker container can support. Defaults to 5.
 2. `MAX_CHECK_WORKERS` - Define the maximum number of Check workers each Airbyte Worker container can support. Defaults to 5.
 3. `MAX_SYNC_WORKERS` - Define the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
@@ -94,12 +109,15 @@ The following variables are relevant to both Docker and Kubernetes.
 5. `SENTRY_DSN` - Define the [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) of necessary Sentry instance. Defaults to empty. Integration with Sentry is explained [here](./sentry-integration.md)
 
 ### Docker-Only
+
 1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.
 2. `DOCKER_NETWORK` - Defines the docker network the new Scheduler launches jobs on.
 3. `LOCAL_DOCKER_MOUNT` - Defines the name of the docker mount that is used for local file handling. On Docker, this allows connector pods to interact with a volume for "local file" operations.
 
 ### Kubernetes-Only
+
 #### Jobs
+
 1. `JOB_KUBE_TOLERATIONS` - Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
 2. `JOB_KUBE_NODE_SELECTORS` - Define one or more Job pod node selectors. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod node selectors of the sync job and the default pod node selectors fallback for others jobs.
 3. `JOB_KUBE_ANNOTATIONS` - Define one or more Job pod annotations. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod annotations of the sync job and the default pod annotations fallback for others jobs.
@@ -116,16 +134,18 @@ The following variables are relevant to both Docker and Kubernetes.
 A job specific variable overwrites the default sync job variable defined above.
 
 1. `SPEC_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
-2. `CHECK_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2` 
+2. `CHECK_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 3. `DISCOVER_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 4. `SPEC_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 5. `CHECK_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 6. `DISCOVER_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 
 #### Worker
+
 1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Kustomize deployments.
 
 #### Logging
+
 Note that Airbyte does not support logging to separate Cloud Storage providers.
 
 Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes#configure-logs) for more information on configuring Kuberentes logging.

@@ -7,12 +7,12 @@ The new open-source standard to sync data from applications, APIs & databases to
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 
-* **Maintenance-free connectors you can use in minutes**. Just authenticate your sources and warehouse, and get connectors that adapt to schema and API changes for you.
-* **Building new connectors made trivial.** We make it very easy to add new connectors that you need, using the language of your choice, by offering scheduling and orchestration. 
-* Designed to **cover the long tail of connectors and needs**. Benefit from the community's battle-tested connectors and adapt them to your specific needs.
-* **Your data stays in your cloud**. Have full control over your data, and the costs of your data transfers. 
-* **No more security compliance process** to go through as Airbyte is self-hosted. 
-* **No more pricing indexed on volume**, as cloud-based solutions offer. 
+- **Maintenance-free connectors you can use in minutes**. Just authenticate your sources and warehouse, and get connectors that adapt to schema and API changes for you.
+- **Building new connectors made trivial.** We make it very easy to add new connectors that you need, using the language of your choice, by offering scheduling and orchestration.
+- Designed to **cover the long tail of connectors and needs**. Benefit from the community's battle-tested connectors and adapt them to your specific needs.
+- **Your data stays in your cloud**. Have full control over your data, and the costs of your data transfers.
+- **No more security compliance process** to go through as Airbyte is self-hosted.
+- **No more pricing indexed on volume**, as cloud-based solutions offer.
 
 Here's a list of our [connectors with their health status](docs/integrations/).
 
@@ -24,19 +24,19 @@ cd airbyte
 docker-compose up
 ```
 
-Now visit [http://localhost:8000](http://localhost:8000)
+Now visit [http://localhost:8000](http://localhost:8000). You will be asked for a username (default: `airbyte`) and password (default: `password`). You should update these values by changing `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` in your local `.env` file.
 
 Here is a [step-by-step guide](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md) showing you how to load data from an API into a file, all on your computer.
 
 ## Features
 
-* **Built for extensibility**: Adapt an existing connector to your needs or build a new one with ease.
-* **Optional normalized schemas**: Entirely customizable, start with raw data or from some suggestion of normalized data.
-* **Full-grade scheduler**: Automate your replications with the frequency you need.
-* **Real-time monitoring**: We log all errors in full detail to help you understand.
-* **Incremental updates**: Automated replications are based on incremental updates to reduce your data transfer costs.
-* **Manual full refresh**: Sometimes, you need to re-sync all your data to start again.
-* **Debugging autonomy**: Modify and debug pipelines as you see fit, without waiting.
+- **Built for extensibility**: Adapt an existing connector to your needs or build a new one with ease.
+- **Optional normalized schemas**: Entirely customizable, start with raw data or from some suggestion of normalized data.
+- **Full-grade scheduler**: Automate your replications with the frequency you need.
+- **Real-time monitoring**: We log all errors in full detail to help you understand.
+- **Incremental updates**: Automated replications are based on incremental updates to reduce your data transfer costs.
+- **Manual full refresh**: Sometimes, you need to re-sync all your data to start again.
+- **Debugging autonomy**: Modify and debug pipelines as you see fit, without waiting.
 
 [See more on our website.](https://airbyte.io/features/)
 
@@ -54,13 +54,14 @@ See our [Contributing guide](docs/contributing-to-airbyte/README.md) on how to g
 
 For general help using Airbyte, please refer to the official Airbyte documentation. For additional help, you can use one of these channels to ask a question:
 
-* [Slack](https://slack.airbyte.io) \(For live discussion with the Community and Airbyte team\)
-* [Forum](https://discuss.airbyte.io/) \(For deeper conversations about features, connectors, or problems\)
-* [GitHub](https://github.com/airbytehq/airbyte) \(Bug reports, Contributions\)
-* [Twitter](https://twitter.com/airbytehq) \(Get the news fast\)
-* [Weekly office hours](https://airbyte.io/weekly-office-hours/) \(Live informal 30-minute video call sessions with the Airbyte team\)
+- [Slack](https://slack.airbyte.io) \(For live discussion with the Community and Airbyte team\)
+- [Forum](https://discuss.airbyte.io/) \(For deeper conversations about features, connectors, or problems\)
+- [GitHub](https://github.com/airbytehq/airbyte) \(Bug reports, Contributions\)
+- [Twitter](https://twitter.com/airbytehq) \(Get the news fast\)
+- [Weekly office hours](https://airbyte.io/weekly-office-hours/) \(Live informal 30-minute video call sessions with the Airbyte team\)
 
 ## Reporting Vulnerabilities
+
 ⚠️ Please do not file GitHub issues or post on our public forum for security vulnerabilities as they are public! ⚠️
 
 Airbyte takes security issues very seriously. If you have any concerns about Airbyte or believe you have uncovered a vulnerability, please get in touch via the e-mail address security@airbyte.io. In the message, try to provide a description of the issue and ideally a way of reproducing it. The security team will get back to you as soon as possible.
