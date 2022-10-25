@@ -14,7 +14,10 @@ import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.server.apis.AttemptApiController;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.server.apis.binders.AttemptApiBinder;
+import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import java.net.http.HttpClient;
@@ -82,9 +85,11 @@ public interface ServerFactory {
           configsFlyway,
           jobsFlyway);
 
+      AttemptApiFactory.setValues(jobPersistence, MDC.getCopyOfContextMap());
+
       // server configurations
-      final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);
-      final Set<Object> components = Set.of(new CorsFilter(), new ConfigurationApiBinder());
+      final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiController.class);
+      final Set<Object> components = Set.of(new CorsFilter(), new ConfigurationApiBinder(), new AttemptApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
