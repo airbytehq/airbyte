@@ -7,7 +7,6 @@ package io.airbyte.workers.temporal.sync;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
-import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -41,7 +40,8 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
   @Override
   public void refreshSchema(UUID sourceCatalogId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    SourceDiscoverSchemaRequestBody requestBody = new SourceDiscoverSchemaRequestBody().sourceId(sourceCatalogId).disableCache(true);
+    io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody requestBody =
+        new io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody().sourceId(sourceCatalogId).disableCache(true);
     schedulerHandler.discoverSchemaForSourceFromSourceId(requestBody);
   }
 

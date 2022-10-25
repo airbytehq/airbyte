@@ -5,10 +5,15 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.handlers.SchedulerHandler;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.sync.RefreshSchemaActivityImpl;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -33,6 +38,7 @@ class RefreshSchemaActivityTest {
   @BeforeEach
   void setUp() {
     mConfigRepository = mock(ConfigRepository.class);
+    mSchedulerHandler = mock(SchedulerHandler.class);
     refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mSchedulerHandler);
   }
 
@@ -56,6 +62,15 @@ class RefreshSchemaActivityTest {
     ActorCatalogFetchEvent fetchEvent = new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID()).withCreatedAt(twelveHoursAgo);
     when(mConfigRepository.getMostRecentActorCatalogFetchEventForSource(SOURCE_ID)).thenReturn(Optional.ofNullable(fetchEvent));
     Assertions.assertThat(false).isEqualTo(refreshSchemaActivity.shouldRefreshSchema(SOURCE_ID));
+  }
+
+  @Test
+  void testRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
+    UUID sourceId = UUID.randomUUID();
+    refreshSchemaActivity.refreshSchema(sourceId);
+    io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody requestBody =
+        new io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true);
+    verify(mSchedulerHandler, times(1)).discoverSchemaForSourceFromSourceId(requestBody);
   }
 
 }
