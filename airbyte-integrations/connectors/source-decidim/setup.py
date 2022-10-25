@@ -18,8 +18,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_decidim",
     description="Source implementation for Decidim.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Dynnammo",
+    author_email="contact@dynnammo.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "*.yaml"]},
