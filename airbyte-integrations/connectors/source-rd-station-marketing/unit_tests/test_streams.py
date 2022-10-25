@@ -23,14 +23,14 @@ def test_path(patch_base_class):
 def test_request_params(patch_base_class):
     stream = RDStationMarketingStream(authenticator=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {'page_size': 125}
+    expected_params = {'page': 1, 'page_size': 125}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = RDStationMarketingStream(authenticator=MagicMock())
     inputs = {"response": MagicMock()}
-    expected_token = {'page': 2}
+    expected_token = {'next_page': 2}
     assert stream.next_page_token(**inputs) == expected_token
 
 
