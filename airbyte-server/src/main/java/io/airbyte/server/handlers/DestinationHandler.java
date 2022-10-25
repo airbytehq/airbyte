@@ -207,7 +207,7 @@ public class DestinationHandler {
         continue;
       }
 
-      reads.add(buildDestinationRead(dci.getDestinationId()));
+      reads.add(buildDestinationRead(dci));
     }
 
     return new DestinationReadList().destinations(reads);
@@ -225,7 +225,7 @@ public class DestinationHandler {
         continue;
       }
 
-      reads.add(buildDestinationRead(destinationConnection.getDestinationId()));
+      reads.add(buildDestinationRead(destinationConnection));
     }
 
     return new DestinationReadList().destinations(reads);
@@ -237,7 +237,7 @@ public class DestinationHandler {
 
     for (final DestinationConnection dci : configRepository.listDestinationConnection()) {
       if (!dci.getTombstone()) {
-        final DestinationRead destinationRead = buildDestinationRead(dci.getDestinationId());
+        final DestinationRead destinationRead = buildDestinationRead(dci);
         if (connectionsHandler.matchSearch(destinationSearch, destinationRead)) {
           reads.add(destinationRead);
         }
@@ -274,8 +274,11 @@ public class DestinationHandler {
   }
 
   private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    final ConnectorSpecification spec = getSpec(configRepository.getDestinationConnection(destinationId).getDestinationDefinitionId());
-    final DestinationConnection destinationConnection = configRepository.getDestinationConnection(destinationId);
+    return buildDestinationRead(configRepository.getDestinationConnection(destinationId));
+  }
+
+  private DestinationRead buildDestinationRead(final DestinationConnection destinationConnection) throws JsonValidationException, IOException, ConfigNotFoundException {
+    final ConnectorSpecification spec = getSpec(destinationConnection.getDestinationDefinitionId());
     return buildDestinationRead(destinationConnection, spec);
   }
 
