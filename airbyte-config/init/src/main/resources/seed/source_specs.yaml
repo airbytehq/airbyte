@@ -3808,7 +3808,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.1"
+- dockerImage: "airbyte/source-google-ads:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -5215,7 +5215,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-iterable:0.1.19"
+- dockerImage: "airbyte/source-iterable:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
@@ -5293,7 +5293,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.21"
+- dockerImage: "airbyte/source-jira:0.2.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -5323,6 +5323,11 @@
           type: "string"
           title: "Email"
           description: "The user email for your Jira account."
+        max_results:
+          type: "number"
+          title: "Max Results"
+          description: "Pagination max results (only for users stream)"
+          default: 50
         projects:
           type: "array"
           title: "Projects"
@@ -5887,7 +5892,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-linkedin-ads:0.1.11"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-ads"
     connectionSpecification:
@@ -6348,7 +6353,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.22"
+- dockerImage: "airbyte/source-mssql:0.4.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -7178,7 +7183,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.6"
+- dockerImage: "airbyte/source-mysql:1.0.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8501,7 +8506,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.1.7"
+- dockerImage: "airbyte/source-pinterest:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -8810,7 +8815,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.18"
+- dockerImage: "airbyte/source-postgres:1.0.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -10220,7 +10225,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.39"
+- dockerImage: "airbyte/source-shopify:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
@@ -11835,6 +11840,17 @@
           type: "string"
           title: "VictorOps Current Phase"
           default: "triggered,acknowledged,resolved"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-xkcd:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/xkcd"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Xkcd Spec"
+      type: "object"
+      properties: {}
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

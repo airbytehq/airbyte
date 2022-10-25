@@ -56,10 +56,10 @@ def pytest_generate_tests(metafunc):
         config_key = metafunc.cls.config_key()
         test_name = f"{metafunc.cls.__name__}.{metafunc.function.__name__}"
         config = load_config(metafunc.config.getoption("--acceptance-test-config"))
-        if not hasattr(config.tests, config_key) or not getattr(config.tests, config_key):
+        if not hasattr(config.acceptance_tests, config_key) or not getattr(config.acceptance_tests, config_key):
             pytest.skip(f"Skipping {test_name} because not found in the config")
         else:
-            test_inputs = getattr(config.tests, config_key)
+            test_inputs = getattr(config.acceptance_tests, config_key).tests
             if not test_inputs:
                 pytest.skip(f"Skipping {test_name} because no inputs provided")
 
@@ -87,8 +87,9 @@ def pytest_collection_modifyitems(config, items):
         if not hasattr(items[0].cls, "config_key"):
             # Skip user defined test classes from integration_tests/ directory.
             continue
-        test_configs = getattr(config.tests, items[0].cls.config_key())
-        for test_config, item in zip(test_configs, items):
+        test_configs = getattr(config.acceptance_tests, items[0].cls.config_key())
+
+        for test_config, item in zip(test_configs.tests, items):
             default_timeout = item.get_closest_marker("default_timeout")
             if test_config.timeout_seconds:
                 item.add_marker(pytest.mark.timeout(test_config.timeout_seconds))
