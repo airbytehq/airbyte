@@ -4,10 +4,10 @@ connectionSpecification:
   title: Convertkit Spec
   type: object
   required:
-    - api_key
+    - api_secret
   additionalProperties: true
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    api_key:
+    api_secret:
       type: string
-      description: API Key
+      description: API Secret
+      airbyte_secret: true
