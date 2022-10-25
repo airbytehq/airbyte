@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_zoom_singer import SourceZoomSinger
+from source_zoom import SourceZoom
 
 if __name__ == "__main__":
-    source = SourceZoomSinger()
+    source = SourceZoom()
     launch(source, sys.argv[1:])
