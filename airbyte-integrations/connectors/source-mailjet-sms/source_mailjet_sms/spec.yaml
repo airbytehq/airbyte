@@ -13,3 +13,13 @@ connectionSpecification:
         Your access token. See <a
         href="https://dev.mailjet.com/sms/reference/overview/authentication">here</a>.
       airbyte_secret: true
+    start_date:
+      type: integer
+      description: Retrieve SMS messages created after the specified timestamp. Required format - Unix timestamp.
+      examples:
+        - 1666261656
+    end_date:
+      type: integer
+      description: Retrieve SMS messages created before the specified timestamp. Required format - Unix timestamp.
+      examples:
+        - 1666281656
