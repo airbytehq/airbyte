@@ -13,14 +13,14 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.server.apis.ConnectionApiImpl;
+import io.airbyte.server.apis.ConnectionApiController;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import java.util.Map;
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.MDC;
 
-public class ConnectionApiFactory implements Factory<ConnectionApiImpl> {
+public class ConnectionApiFactory implements Factory<ConnectionApiController> {
 
   private static ConfigRepository configRepository;
   private static JobPersistence jobPersistence;
@@ -62,15 +62,15 @@ public class ConnectionApiFactory implements Factory<ConnectionApiImpl> {
   }
 
   @Override
-  public ConnectionApiImpl provide() {
+  public ConnectionApiController provide() {
     MDC.setContextMap(ConnectionApiFactory.mdc);
 
-    return new ConnectionApiImpl(configRepository, jobPersistence, trackingClient, eventRunner, secretsRepositoryReader, secretsRepositoryWriter,
+    return new ConnectionApiController(configRepository, jobPersistence, trackingClient, eventRunner, secretsRepositoryReader, secretsRepositoryWriter,
         synchronousSchedulerClient, workerEnvironment, logConfigs, statePersistence, airbyteVersion);
   }
 
   @Override
-  public void dispose(final ConnectionApiImpl instance) {
+  public void dispose(final ConnectionApiController instance) {
     /* no op */
   }
 

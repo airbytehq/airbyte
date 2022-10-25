@@ -40,7 +40,7 @@ import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 
-public class ConnectionApiImpl implements ConnectionApi {
+public class ConnectionApiController implements ConnectionApi {
 
   private final ConnectionsHandler connectionsHandler;
   private final OperationsHandler operationsHandler;
@@ -48,17 +48,17 @@ public class ConnectionApiImpl implements ConnectionApi {
   private final StateHandler stateHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
 
-  public ConnectionApiImpl(final ConfigRepository configRepository,
-                           final JobPersistence jobPersistence,
-                           final TrackingClient trackingClient,
-                           final EventRunner eventRunner,
-                           final SecretsRepositoryReader secretsRepositoryReader,
-                           final SecretsRepositoryWriter secretsRepositoryWriter,
-                           final SynchronousSchedulerClient synchronousSchedulerClient,
-                           final WorkerEnvironment workerEnvironment,
-                           final LogConfigs logConfigs,
-                           final StatePersistence statePersistence,
-                           final AirbyteVersion airbyteVersion) {
+  public ConnectionApiController(final ConfigRepository configRepository,
+                                 final JobPersistence jobPersistence,
+                                 final TrackingClient trackingClient,
+                                 final EventRunner eventRunner,
+                                 final SecretsRepositoryReader secretsRepositoryReader,
+                                 final SecretsRepositoryWriter secretsRepositoryWriter,
+                                 final SynchronousSchedulerClient synchronousSchedulerClient,
+                                 final WorkerEnvironment workerEnvironment,
+                                 final LogConfigs logConfigs,
+                                 final StatePersistence statePersistence,
+                                 final AirbyteVersion airbyteVersion) {
 
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
 
