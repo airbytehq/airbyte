@@ -1,65 +1,39 @@
 # Local Deployment
+This page guides you through setting up your Airbyte on your local machine. 
 
-:::info
-These instructions have been tested on MacOS, Windows 10 and Ubuntu 20.04.
+## Prerequisites
+* [Install Docker](https://docs.docker.com/get-docker/) and make sure you have the latest version of `docker-compose` installed.
+* Additionally, for Windows, install [WSL 2 backend](https://docs.docker.com/desktop/windows/wsl/).
 
-:::
+> **_Note:_** These instructions have been tested on MacOS, Windows 10 and Ubuntu 20.04.
 
-## Setup & launch Airbyte
+## Deploy on Mac and Linux
+To set up Airbyte on your local machine:
 
-- Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\). Make sure you're on the latest version of `docker-compose`.
-- After Docker is installed, you can immediately get started locally by running:
+1. Clone the Airbyte repository.
+2.  to the cloned folder (`airbyte`) and start the server with `docker compose`
 
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
+sudo docker compose up
 ```
-
-- In your browser, just visit [http://localhost:8000](http://localhost:8000)
-- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, be sure to [change these](/operator-guides/security):
-
-```yaml
-# Proxy Configuration
-# Set to empty values, e.g. "" to disable basic auth
-BASIC_AUTH_USERNAME=your_new_username_here
-BASIC_AUTH_PASSWORD=your_new_password_here
-```
-
-- Start moving some data!
+3. In your browser, visit http://localhost:8000
+> **_Note:_** You will be asked for a username and password. The default username is `airbyte` and the password is `password`.
 
 ## Deploy on Windows
+To install on Windows:
 
-After installing the WSL 2 backend and Docker you should be able to run containers using Windows PowerShell. Additionally, as we note frequently, you will need `docker-compose` to build Airbyte from source. The suggested guide already installs `docker-compose` on Windows.
-
-### Setup Guide
-
-**1. Check out system requirements from [Docker documentation](https://docs.docker.com/desktop/windows/install/).**
-
-Follow the steps on the system requirements, and necessarily, download and install the Linux kernel update package.
-
-**2. Install Docker Desktop on Windows.**
-
-Install [Docker Desktop](https://docs.docker.com/desktop/windows/install/) from here.
-
-Make sure to select the options:
-
-1. _Enable Hyper-V Windows Features_
-2. _Install required Windows components for WSL 2_\
-   when prompted. After installation, it will require to reboot your computer.
-
-**3. You're done!**
+1. Clone the Airbyte repository.
+2.  to the cloned folder (`airbyte`) and start the server with `docker compose`
 
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
+sudo docker compose up
 ```
+3. In your browser, visit http://localhost:8000
+4. You will be asked for a username and password. The default username is `airbyte` and the password is `password`.
 
-- In your browser, just visit [http://localhost:8000](http://localhost:8000)
-- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, be sure to [change these](/operator-guides/security).
-- Start moving some data!
-
-## Troubleshooting
-
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [troubleshooting](../troubleshooting/on-deploying.md) section in our docs for common problems.
+### Troubleshooting
+If you encounter any issues, reach out to our community on [Slack](https://slack.airbyte.com/).
