@@ -178,7 +178,7 @@ describe("useAuthentication", () => {
         });
       });
 
-      it("should return authErrors when conditional hasn't the correct option selected", () => {
+      it("should not return authErrors when conditional has the incorrect option selected", () => {
         const accessTokenField = makeConnectionConfigurationPath(["credentials", "access_token"]);
         const clientIdField = makeConnectionConfigurationPath(["credentials", "client_id"]);
         mockContext({
