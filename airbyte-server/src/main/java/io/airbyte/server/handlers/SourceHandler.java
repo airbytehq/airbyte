@@ -100,16 +100,17 @@ public class SourceHandler {
         spec);
 
     // read configuration from db
-    return buildSourceRead(sourceId, spec);
+    return buildSourceRead(configRepository.getSourceConnection(sourceId), spec);
   }
 
   public SourceRead updateSource(final SourceUpdate sourceUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
+    final UUID sourceId = sourceUpdate.getSourceId();
     final SourceConnection updatedSource = configurationUpdate
-        .source(sourceUpdate.getSourceId(), sourceUpdate.getName(),
+        .source(sourceId, sourceUpdate.getName(),
             sourceUpdate.getConnectionConfiguration());
-    final ConnectorSpecification spec = getSpecFromSourceId(updatedSource.getSourceId());
+    final ConnectorSpecification spec = getSpecFromSourceId(sourceId);
     validateSource(spec, sourceUpdate.getConnectionConfiguration());
 
     // persist
@@ -123,7 +124,7 @@ public class SourceHandler {
         spec);
 
     // read configuration from db
-    return buildSourceRead(sourceUpdate.getSourceId(), spec);
+    return buildSourceRead(configRepository.getSourceConnection(sourceId), spec);
   }
 
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody)
@@ -244,13 +245,12 @@ public class SourceHandler {
     // read configuration from db
     final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
     final ConnectorSpecification spec = sourceDef.getSpec();
-    return buildSourceRead(sourceId, spec);
+    return buildSourceRead(configRepository.getSourceConnection(sourceId), spec);
   }
 
-  private SourceRead buildSourceRead(final UUID sourceId, final ConnectorSpecification spec)
+  private SourceRead buildSourceRead(final SourceConnection sourceConnection, final ConnectorSpecification spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
