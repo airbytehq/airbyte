@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "records",
+        "name": "Default view",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

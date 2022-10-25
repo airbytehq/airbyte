@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from typing import Any, Dict
+from typing import Any, Dict, Mapping
 
 import requests
 from airbyte_cdk.models import AirbyteStream
@@ -10,6 +10,37 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 
 class Helpers(object):
+    @staticmethod
+    def get_views(auth: TokenAuthenticator, grid_id: str) -> Dict[str, Any]:
+        url = f"https://api.gridly.com/v1/views?gridId={grid_id}"
+        try:
+            response = requests.get(url, headers=auth.get_auth_header())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 401:
+                raise Exception("Invalid API Key")
+            elif e.response.status_code == 404:
+                raise Exception(f"Grid id '{grid_id}' not found")
+            else:
+                raise Exception(f"Error getting listing views of grid '{grid_id}'")
+
+        return response.json()
+
+    @staticmethod
+    def get_grid(auth: TokenAuthenticator, grid_id: str) -> Dict[str, Any]:
+        url = f"https://api.gridly.com/v1/grids/{grid_id}"
+        try:
+            response = requests.get(url, headers=auth.get_auth_header())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 401:
+                raise Exception("Invalid API Key")
+            elif e.response.status_code == 404:
+                raise Exception(f"Grid '{grid_id}' not found")
+            else:
+                raise Exception(f"Error getting grid {grid_id}: {e}")
+        return response.json()
+
     @staticmethod
     def get_view(auth: TokenAuthenticator, view_id: str) -> Dict[str, Any]:
         url = f"https://api.gridly.com/v1/views/{view_id}"
@@ -88,3 +119,4 @@ class Helpers(object):
             transformed_record[cell.get('columnId')] = cell.get('value')
 
         return transformed_record
+

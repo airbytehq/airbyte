@@ -86,31 +86,42 @@ class GridlyStream(HttpStream, ABC):
 class SourceGridly(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         api_key = config.get('api_key')
-        view_id = config.get('view_id')
+        grid_id = config.get('grid_id')
         auth = TokenAuthenticator(auth_method='ApiKey', token=api_key)
 
-        logger.info(f"Checking connection on view {view_id}")
-        Helpers.get_view(auth=auth, view_id=view_id)
+        logger.info(f"Checking connection on grid {grid_id}")
+        Helpers.get_grid(auth=auth, grid_id=grid_id)
 
         return True, None
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         api_key = config.get('api_key')
-        view_id = config.get('view_id')
+        grid_id = config.get('grid_id')
         auth = TokenAuthenticator(auth_method='ApiKey', token=api_key)
 
-        logger.info(f"Running discovery on view {view_id}")
-        view = Helpers.get_view(auth=auth, view_id=view_id)
-        streams = [Helpers.get_airbyte_stream(view)]
+        logger.info(f"Running discovery on grid {grid_id}")
+        views = Helpers.get_views(auth=auth, grid_id=grid_id)
+
+        streams = []
+        for view in views:
+            stream = Helpers.get_airbyte_stream(view)
+            streams.append(stream)
 
         return AirbyteCatalog(streams=streams)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         api_key = config.get('api_key')
-        view_id = config.get('view_id')
+        grid_id = config.get('grid_id')
         auth = TokenAuthenticator(auth_method='ApiKey', token=api_key)
-        view = Helpers.get_view(auth=auth, view_id=view_id)
-        schema = Helpers.get_json_schema(view)
-        view_name = view.get('name')
+        views = Helpers.get_views(auth=auth, grid_id=grid_id)
 
-        return [GridlyStream(view_id=view_id, view_name=view_name, schema=schema, authenticator=auth)]
+        streams = []
+        for view in views:
+            view_id = view.get('id')
+            view_name = view.get('name')
+            schema = Helpers.get_json_schema(view)
+            stream = GridlyStream(view_id=view_id, view_name=view_name, schema=schema, authenticator=auth)
+            streams.append(stream)
+
+        return streams
+
