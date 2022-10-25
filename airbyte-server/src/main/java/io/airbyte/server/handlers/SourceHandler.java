@@ -243,9 +243,15 @@ public class SourceHandler {
   private SourceRead buildSourceRead(final UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
+    return buildSourceRead(sourceConnection);
+  }
+
+  private SourceRead buildSourceRead(final SourceConnection sourceConnection)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId());
     final ConnectorSpecification spec = sourceDef.getSpec();
-    return buildSourceRead(configRepository.getSourceConnection(sourceId), spec);
+    return buildSourceRead(sourceConnection, spec);
   }
 
   private SourceRead buildSourceRead(final SourceConnection sourceConnection, final ConnectorSpecification spec)
