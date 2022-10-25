@@ -72,7 +72,15 @@ class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Test
   @Override
+  void testGetDestinationConsentUrl() {}
+
+  @Test
+  @Override
   void testGetSourceConsentUrlEmptyOAuthSpec() {}
+
+  @Test
+  @Override
+  void testGetSourceConsentUrl() {}
 
   @Test
   @Override
