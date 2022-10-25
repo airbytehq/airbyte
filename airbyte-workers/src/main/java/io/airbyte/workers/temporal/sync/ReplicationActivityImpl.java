@@ -4,10 +4,10 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
 
 import datadog.trace.api.Trace;
 import edu.umd.cs.findbugs.annotations.Nullable;
