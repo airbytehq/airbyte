@@ -42,6 +42,13 @@ definitions:
       name: "applications"
       primary_key: "id"
       path: "/application.list"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_body_json:
+            createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
   archive_reasons_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -84,6 +91,13 @@ definitions:
       name: "interview_schedules"
       primary_key: "id"
       path: "/interviewSchedule.list"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_body_json:
+            createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
   job_postings_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
