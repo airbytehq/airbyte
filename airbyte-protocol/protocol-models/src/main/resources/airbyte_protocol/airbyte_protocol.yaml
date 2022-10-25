@@ -176,6 +176,12 @@ definitions:
       error:
         description: "error trace message: the error object"
         "$ref": "#/definitions/AirbyteErrorTraceMessage"
+      source_request:
+        description: "source request trace message: a request sent to the source"
+        "$ref": "#/definitions/AirbyteSourceRequestTraceMessage"
+      source_response:
+        description: "source response trace message: a raw response received from the source"
+        "$ref": "#/definitions/AirbyteSourceResponseTraceMessage"
   AirbyteErrorTraceMessage:
     type: object
     additionalProperties: true
@@ -197,6 +203,26 @@ definitions:
         enum:
           - system_error
           - config_error
+  AirbyteRequestTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - request
+    properties:
+      request:
+        description: The request sent to the source
+        type: object
+        additionalPropertied: true
+  AirbyteResponseTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - response
+    properties:
+      response:
+        description: The raw response received from the source
+        type: object
+        additionalPropertied: true
   AirbyteConnectionStatus:
     type: object
     description: Airbyte connection status
