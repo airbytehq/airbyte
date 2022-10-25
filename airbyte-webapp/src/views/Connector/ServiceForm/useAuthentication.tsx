@@ -37,7 +37,7 @@ const convertAndPrefixPaths = (paths?: Path[], rootPath: Path = []): string[] =>
 };
 
 /**
- * Returns true if the auth button should be shown for a advancedAuth specification.
+ * Returns true if the auth button should be shown for an advancedAuth specification.
  * This will check if the connector has a predicateKey, and if so, check if the current form value
  * of the corresponding field matches the predicateValue from the specification.
  */
