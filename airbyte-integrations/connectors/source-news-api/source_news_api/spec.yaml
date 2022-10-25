@@ -20,6 +20,9 @@ connectionSpecification:
       description: |
         Search query. See https://newsapi.org/docs/endpoints/everything for 
         information.
+      examples:
+        - "+bitcoin OR +crypto"
+        - "sunak AND (truss OR johnson)"
       order: 1
     search_in:
       type: array
