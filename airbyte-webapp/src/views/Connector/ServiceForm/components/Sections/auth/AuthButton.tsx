@@ -42,7 +42,7 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
 export const AuthButton: React.FC = () => {
   const { selectedService, selectedConnector } = useServiceForm();
   const { hiddenAuthFieldErrors } = useAuthentication();
-  const requiresAuthError = Object.values(hiddenAuthFieldErrors).includes("form.empty.error");
+  const authRequiredError = Object.values(hiddenAuthFieldErrors).includes("form.empty.error");
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnector!);
@@ -56,8 +56,8 @@ export const AuthButton: React.FC = () => {
   const Component = getButtonComponent(definitionId);
 
   const messageStyle = classnames(styles.message, {
-    [styles.error]: requiresAuthError,
-    [styles.success]: !requiresAuthError,
+    [styles.error]: authRequiredError,
+    [styles.success]: !authRequiredError,
   });
   const buttonLabel = done ? (
     <FormattedMessage id="connectorForm.reauthenticate" />
@@ -74,7 +74,7 @@ export const AuthButton: React.FC = () => {
           <FormattedMessage id="connectorForm.authenticate.succeeded" />
         </Text>
       )}
-      {requiresAuthError && (
+      {authRequiredError && (
         <Text as="div" size="lg" className={messageStyle}>
           <FormattedMessage id="connectorForm.authenticate.required" />
         </Text>
