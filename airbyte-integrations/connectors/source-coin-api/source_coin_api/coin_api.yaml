@@ -61,6 +61,7 @@ definitions:
 
 streams:
   - "*ref(definitions.ohlcv_historical_data_stream)"
+  - "*ref(definitions.trades_historical_data_stream)"
 
 check:
   stream_names:
