@@ -15,7 +15,7 @@ import logging
 
 
 # Basic full refresh stream
-class Crm365Stream(HttpStream, ABC):
+class MicrosoftDataverseStream(HttpStream, ABC):
 
     # Base url will be set by init(), using information provided by the user through config input
     url_base = ""
@@ -54,7 +54,7 @@ class Crm365Stream(HttpStream, ABC):
 
 
 # Basic incremental stream
-class IncrementalCrm365Stream(Crm365Stream, IncrementalMixin, ABC):
+class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalMixin, ABC):
 
     maxNumPages = 0
     numPagesRetrieved = 0

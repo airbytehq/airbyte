@@ -1,16 +1,14 @@
-FROM python:3.9.11-alpine3.15 as base
+FROM python:3.9.13-alpine3.15 as base
 
 # build and load all requirements
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
-RUN apk --no-cache -U upgrade
-RUN pip install --upgrade pip
-RUN apk --no-cache add tzdata build-base
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip \
+    && apk --no-cache add tzdata build-base
 
-# Fixing "error: legacy-install-failure": #include <ffi.h> 
-RUN apk --no-cache add libffi-dev
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
@@ -31,10 +29,10 @@ RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
-COPY source_crm_365 ./source_crm_365
+COPY source_microsoft_dataverse ./source_microsoft_dataverse
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=0.1.0
-LABEL io.airbyte.name=airbyte/source-crm-365
+LABEL io.airbyte.name=airbyte/source-microsoft-dataverse

@@ -10,12 +10,12 @@ from airbyte_cdk.models import AirbyteCatalog, AirbyteStream, ConfiguredAirbyteC
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .streams import IncrementalCrm365Stream
+from .streams import IncrementalMicrosoftDataverseStream
 
 from .authenticator import Crm365Oauth2Authenticator
 
 
-class SourceCrm365(AbstractSource):
+class SourceMicrosoftDataverse(AbstractSource):
 
     def __init__(self):
         self.catalogs = None
@@ -127,7 +127,7 @@ class SourceCrm365(AbstractSource):
 
         streams = []
         for catalog in self.catalogs.streams:
-            streams.append(IncrementalCrm365Stream(
+            streams.append(IncrementalMicrosoftDataverseStream(
                 url=config["url"],
                 stream_name=catalog.stream.name,
                 primary_key=catalog.primary_key,

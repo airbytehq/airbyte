@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_crm_365 import SourceCrm365
+from source_microsoft_dataverse import SourceMicrosoftDataverse
 
 if __name__ == "__main__":
-    source = SourceCrm365()
+    source = SourceMicrosoftDataverse()
     launch(source, sys.argv[1:])

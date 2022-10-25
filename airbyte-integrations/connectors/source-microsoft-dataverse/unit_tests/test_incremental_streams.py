@@ -5,7 +5,7 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_crm_365.source import IncrementalCrm_365Stream
+from source_microsoft_dataverse.source import IncrementalCrm_365Stream
 
 
 @fixture

@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_crm_365'
+    moduleDirectory 'source_microsoft_dataverse'
 }

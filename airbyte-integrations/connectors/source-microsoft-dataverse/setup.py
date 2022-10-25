@@ -5,7 +5,9 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1.56", "msal==1.18.0"]
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk~=0.2",
+]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
@@ -14,10 +16,10 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_crm_365",
-    description="Source implementation for Dynamics Crm 365.",
-    author="Danilo Santos",
-    author_email="danilo.santos@dtidigital.com.br",
+    name="source_microsoft_dataverse",
+    description="Source implementation for Microsoft Dataverse.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},

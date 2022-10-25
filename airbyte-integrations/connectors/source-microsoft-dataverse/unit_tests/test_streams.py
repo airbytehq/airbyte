@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_crm_365.source import Crm_365Stream
+from source_microsoft_dataverse.source import Crm_365Stream
 
 
 @pytest.fixture

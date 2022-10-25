@@ -4,7 +4,7 @@
 
 from unittest.mock import MagicMock
 
-from source_crm_365.source import SourceCrm_365
+from source_microsoft_dataverse.source import SourceCrm_365
 
 
 def test_check_connection(mocker):

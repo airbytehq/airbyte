@@ -7,10 +7,10 @@ docker build . -t $(cat acceptance-test-config.yml | grep "connector_image" | he
 docker pull airbyte/source-acceptance-test:latest
 
 # Run
-docker run --rm \
+docker run --rm -it \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /tmp:/tmp \
     -v $(pwd):/test_input \
     airbyte/source-acceptance-test \
-    --acceptance-test-config /test_input \
-    -k 'test_read_sequential_slices or not test_read'
+    --acceptance-test-config /test_input
+
