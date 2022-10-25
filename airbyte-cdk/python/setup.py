@@ -42,6 +42,7 @@ setup(
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("unit_tests",)),
+    package_data={"airbyte_cdk": ["py.typed"]},
     install_requires=[
         "backoff",
         # pinned to the last working version for us temporarily while we fix
