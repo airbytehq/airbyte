@@ -94,9 +94,9 @@ public class S3StorageOperations extends BlobStorageOperations {
   }
 
   /**
-   * Create an object within this bucket with empty contents. Creates the bucket if necessary.
+   * Create a directory object at the specified location. Creates the bucket if necessary.
    *
-   * @param objectPath The path to the object. Must be nonempty.
+   * @param objectPath The directory to create. Must be a nonempty string.
    */
   @Override
   public void createBucketObjectIfNotExists(final String objectPath) {

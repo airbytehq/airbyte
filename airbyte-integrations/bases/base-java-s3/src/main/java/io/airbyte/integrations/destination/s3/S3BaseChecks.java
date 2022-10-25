@@ -9,6 +9,7 @@ import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -92,7 +93,15 @@ public final class S3BaseChecks {
                                       final S3DestinationConfig s3Config,
                                       final String bucketPath,
                                       final AmazonS3 s3) {
-    final var prefix = bucketPath.endsWith("/") ? bucketPath : bucketPath + "/";
+    final String prefix;
+    if (Strings.isNullOrEmpty(bucketPath)) {
+      prefix = "";
+    } else if (bucketPath.endsWith("/")) {
+      prefix = bucketPath;
+    } else {
+      prefix = bucketPath + "/";
+    }
+
     final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteS3Object(storageOperations, s3Config, outputTableName, s3);
   }
@@ -111,7 +120,7 @@ public final class S3BaseChecks {
     final var s3Bucket = s3Config.getBucketName();
     final var bucketPath = s3Config.getBucketPath();
 
-    if (!bucketPath.isEmpty()) {
+    if (!Strings.isNullOrEmpty(bucketPath)) {
       storageOperations.createBucketObjectIfNotExists(bucketPath);
     }
     s3.putObject(s3Bucket, outputTableName, "check-content");
