@@ -5,7 +5,7 @@ connectionSpecification:
   type: object
   required:
     - api_key
-    - id
+    
   additionalProperties: true
   properties:
     api_key:
