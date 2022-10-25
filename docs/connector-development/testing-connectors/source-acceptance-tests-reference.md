@@ -237,11 +237,11 @@ This test verifies that sync produces no records when run with the STATE with ab
 ## Strictness level
 
 To enforce maximal coverage of acceptances tests we expose a `test_strictness_level` field at the root of the `acceptance-test-config.yml` configuration.
-The default `test_strictness_level` is `low`, but for generally available connector it is expected to be eventually set to `high`.
+The default `test_strictness_level` is `low`, but for generally available connectors it is expected to be eventually set to `high`.
 
 ### Test enforcements in `high` test strictness level
 
-### All acceptance tests are declared, a `bypass_reason` is filled if a test can't run
+#### All acceptance tests are declared, a `bypass_reason` is filled if a test can't run
 In `high` test strictness level we expect all acceptance tests to be declared:
 * `spec`
 * `connection`
@@ -250,7 +250,7 @@ In `high` test strictness level we expect all acceptance tests to be declared:
 * `full_refresh`
 * `incremental`
 
-If a test can't be run for a valid technical or organization reason a `bypass_reason` can be declared to skip this test.
+If a test can't be run for a valid technical or organizational reason a `bypass_reason` can be declared to skip this test.
 E.G. `source-pokeapi` does not support incremental syncs, we can skip this test when `test_strictness_level` is `high` by setting a `bypass_reason` under `incremental`.
 ```yaml
 connector_image: "airbyte/source-pokeapi"
