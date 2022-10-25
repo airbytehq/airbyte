@@ -19,7 +19,7 @@ definitions:
       datetime: "{{ config['start_year_month'] }}"
       format: "%Y-%m"
     end_datetime:
-      datetime: "{{ config['end_month'] or now_utc().strftime('%Y-%m') }}"
+      datetime: "{{ config['end_year_month'] or now_utc().strftime('%Y-%m') }}"
       format: "%Y-%m"
     datetime_format: "%Y-%m"
     step: 28d
