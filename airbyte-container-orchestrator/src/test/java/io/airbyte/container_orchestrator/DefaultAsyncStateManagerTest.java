@@ -6,7 +6,9 @@ package io.airbyte.container_orchestrator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.workers.process.AsyncKubePodStatus;
@@ -20,11 +22,12 @@ import org.junit.jupiter.api.Test;
 class DefaultAsyncStateManagerTest {
 
   public static final String FAKE_IMAGE = "fake_image";
-  private static final KubePodInfo KUBE_POD_INFO = new KubePodInfo("default", "pod1", new KubeContainerInfo(FAKE_IMAGE, "IfNotPresent"));
+  private static final KubePodInfo KUBE_POD_INFO = new KubePodInfo("default", "pod1",
+      new KubeContainerInfo(FAKE_IMAGE, "IfNotPresent"));
   private static final String OUTPUT = "some output value";
 
   private DocumentStoreClient documentStore;
-  private AsyncStateManager stateManager;
+  private DefaultAsyncStateManager stateManager;
 
   @BeforeEach
   void setup() {
@@ -80,7 +83,8 @@ class DefaultAsyncStateManagerTest {
     final var runningStatus = stateManager.getStatus(KUBE_POD_INFO);
     assertEquals(AsyncKubePodStatus.RUNNING, runningStatus);
 
-    when(documentStore.read(getKey(AsyncKubePodStatus.SUCCEEDED))).thenReturn(Optional.of("output"));
+    when(documentStore.read(getKey(AsyncKubePodStatus.SUCCEEDED))).thenReturn(
+        Optional.of("output"));
     final var succeededStatus = stateManager.getStatus(KUBE_POD_INFO);
     assertEquals(AsyncKubePodStatus.SUCCEEDED, succeededStatus);
   }

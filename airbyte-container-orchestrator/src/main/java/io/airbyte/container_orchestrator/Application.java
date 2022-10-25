@@ -43,16 +43,16 @@ import sun.misc.Signal;
  * Entrypoint for the application responsible for launching containers and handling all message
  * passing for replication, normalization, and dbt. Also, the current version relies on a heartbeat
  * from a Temporal worker. This will also be removed in the future so this can run fully async.
- *
+ * <p>
  * This application retrieves most of its configuration from copied files from the calling Temporal
  * worker.
- *
+ * <p>
  * This app uses default logging which is directly captured by the calling Temporal worker. In the
  * future this will need to independently interact with cloud storage.
  */
 @Slf4j
 @SuppressWarnings({"PMD.AvoidCatchingThrowable", "PMD.DoNotTerminateVM"})
-public class ContainerOrchestratorApp {
+public class Application {
 
   public static final int MAX_SECONDS_TO_WAIT_FOR_FILE_COPY = 60;
 
@@ -70,12 +70,12 @@ public class ContainerOrchestratorApp {
   private final Configs configs;
   private final FeatureFlags featureFlags;
 
-  public ContainerOrchestratorApp(
-                                  final String application,
-                                  final Map<String, String> envMap,
-                                  final JobRunConfig jobRunConfig,
-                                  final KubePodInfo kubePodInfo,
-                                  final FeatureFlags featureFlags) {
+  public Application(
+      final String application,
+      final Map<String, String> envMap,
+      final JobRunConfig jobRunConfig,
+      final KubePodInfo kubePodInfo,
+      final FeatureFlags featureFlags) {
     this.application = application;
     this.envMap = envMap;
     this.jobRunConfig = jobRunConfig;
@@ -84,28 +84,10 @@ public class ContainerOrchestratorApp {
     this.featureFlags = featureFlags;
   }
 
-  private void configureLogging() {
-    for (final String envVar : OrchestratorConstants.ENV_VARS_TO_TRANSFER) {
-      if (envMap.containsKey(envVar)) {
-        System.setProperty(envVar, envMap.get(envVar));
-      }
-    }
-
-    // make sure the new configuration is picked up
-    final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-    ctx.reconfigure();
-
-    final var logClient = LogClientSingleton.getInstance();
-    logClient.setJobMdc(
-        configs.getWorkerEnvironment(),
-        configs.getLogConfigs(),
-        TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
-  }
-
   /**
    * Handles state updates (including writing failures) and running the job orchestrator. As much of
-   * the initialization as possible should go in here so it's logged properly and the state storage is
-   * updated appropriately.
+   * the initialization as possible should go in here so it's logged properly and the state storage
+   * is updated appropriately.
    */
   private void runInternal(final DefaultAsyncStateManager asyncStateManager) {
     try {
@@ -113,10 +95,12 @@ public class ContainerOrchestratorApp {
 
       final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
       final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
-      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs, processFactory, application, featureFlags);
+      final JobOrchestrator<?> jobOrchestrator = getJobOrchestrator(configs, workerConfigs,
+          processFactory, application, featureFlags);
 
       if (jobOrchestrator == null) {
-        throw new IllegalStateException("Could not find job orchestrator for application: " + application);
+        throw new IllegalStateException(
+            "Could not find job orchestrator for application: " + application);
       }
 
       final var heartbeatServer = new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT);
@@ -139,7 +123,7 @@ public class ContainerOrchestratorApp {
 
   /**
    * Configures logging/mdc scope, and creates all objects necessary to handle state updates.
-   * Everything else is delegated to {@link ContainerOrchestratorApp#runInternal}.
+   * Everything else is delegated to {@link Application#runInternal}.
    */
   public void run() {
     configureLogging();
@@ -152,7 +136,8 @@ public class ContainerOrchestratorApp {
 
       // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
       // version is deployed!
-      final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(), STATE_STORAGE_PREFIX);
+      final var documentStoreClient = StateClients.create(configs.getStateStorageCloudConfigs(),
+          STATE_STORAGE_PREFIX);
       final var asyncStateManager = new DefaultAsyncStateManager(documentStoreClient);
 
       runInternal(asyncStateManager);
@@ -178,7 +163,8 @@ public class ContainerOrchestratorApp {
       }
 
       if (!successFile.toFile().exists()) {
-        log.error("Config files did not transfer within the maximum amount of time ({} seconds)!", MAX_SECONDS_TO_WAIT_FOR_FILE_COPY);
+        log.error("Config files did not transfer within the maximum amount of time ({} seconds)!",
+            MAX_SECONDS_TO_WAIT_FOR_FILE_COPY);
         System.exit(1);
       }
 
@@ -188,7 +174,8 @@ public class ContainerOrchestratorApp {
       final var kubePodInfo = JobOrchestrator.readKubePodInfo();
       final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
-      final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo, featureFlags);
+      final var app = new Application(applicationName, envMap, jobRunConfig, kubePodInfo,
+          featureFlags);
       app.run();
     } catch (final Throwable t) {
       log.error("Orchestrator failed...", t);
@@ -197,14 +184,32 @@ public class ContainerOrchestratorApp {
     }
   }
 
+  private void configureLogging() {
+    OrchestratorConstants.ENV_VARS_TO_TRANSFER.stream()
+        .filter(envMap::containsKey)
+        .forEach(envVar -> System.setProperty(envVar, envMap.get(envVar)));
+
+    // make sure the new configuration is picked up
+    final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    ctx.reconfigure();
+
+    LogClientSingleton.getInstance().setJobMdc(
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs(),
+        TemporalUtils.getJobRoot(
+            configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId()));
+  }
+
   private static JobOrchestrator<?> getJobOrchestrator(final Configs configs,
-                                                       final WorkerConfigs workerConfigs,
-                                                       final ProcessFactory processFactory,
-                                                       final String application,
-                                                       final FeatureFlags featureFlags) {
+      final WorkerConfigs workerConfigs,
+      final ProcessFactory processFactory,
+      final String application,
+      final FeatureFlags featureFlags) {
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(configs, processFactory, featureFlags);
-      case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(configs, processFactory);
+      case ReplicationLauncherWorker.REPLICATION ->
+          new ReplicationJobOrchestrator(configs, processFactory, featureFlags);
+      case NormalizationLauncherWorker.NORMALIZATION ->
+          new NormalizationJobOrchestrator(configs, processFactory);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(configs, workerConfigs, processFactory);
       case AsyncOrchestratorPodProcess.NO_OP -> new NoOpOrchestrator();
       default -> null;
@@ -214,7 +219,9 @@ public class ContainerOrchestratorApp {
   /**
    * Creates a process builder factory that will be used to create connector containers/pods.
    */
-  private static ProcessFactory getProcessBuilderFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
+  private static ProcessFactory getProcessBuilderFactory(final Configs configs,
+      final WorkerConfigs workerConfigs)
+      throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final String localIp = InetAddress.getLocalHost().getHostAddress();

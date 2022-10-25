@@ -7,12 +7,14 @@ package io.airbyte.container_orchestrator;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.storage.DocumentStoreClient;
+import java.lang.invoke.MethodHandles;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
-public class DefaultAsyncStateManager implements AsyncStateManager {
+public class DefaultAsyncStateManager {
 
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final List<AsyncKubePodStatus> STATUS_CHECK_ORDER = List.of(
       // terminal states first
       AsyncKubePodStatus.FAILED,
@@ -30,26 +32,25 @@ public class DefaultAsyncStateManager implements AsyncStateManager {
     this.documentStoreClient = documentStoreClient;
   }
 
-  @Override
-  public void write(final KubePodInfo kubePodInfo, final AsyncKubePodStatus status, final String value) {
+  public void write(final KubePodInfo kubePodInfo,
+                    final AsyncKubePodStatus status,
+                    final String value) {
     final var key = getDocumentStoreKey(kubePodInfo, status);
     log.info("Writing async status {} for {}...", status, kubePodInfo);
     documentStoreClient.write(key, value);
   }
 
-  @Override
   public void write(final KubePodInfo kubePodInfo, final AsyncKubePodStatus status) {
     write(kubePodInfo, status, "");
   }
 
   /**
    * Checks terminal states first, then running, then initialized. Defaults to not started.
-   *
+   * <p>
    * The order matters here!
    */
-  @Override
-  public AsyncKubePodStatus getStatus(KubePodInfo kubePodInfo) {
-    for (AsyncKubePodStatus status : STATUS_CHECK_ORDER) {
+  public AsyncKubePodStatus getStatus(final KubePodInfo kubePodInfo) {
+    for (final AsyncKubePodStatus status : STATUS_CHECK_ORDER) {
       if (statusFileExists(kubePodInfo, status)) {
         return status;
       }
@@ -58,15 +59,15 @@ public class DefaultAsyncStateManager implements AsyncStateManager {
     return AsyncKubePodStatus.NOT_STARTED;
   }
 
-  @Override
-  public String getOutput(KubePodInfo kubePodInfo) throws IllegalArgumentException {
+  public String getOutput(final KubePodInfo kubePodInfo) throws IllegalArgumentException {
     final var key = getDocumentStoreKey(kubePodInfo, AsyncKubePodStatus.SUCCEEDED);
     final var output = documentStoreClient.read(key);
 
     if (output.isPresent()) {
       return output.get();
     } else {
-      throw new IllegalArgumentException("Expected to retrieve output from a successfully completed pod!");
+      throw new IllegalArgumentException(
+          "Expected to retrieve output from a successfully completed pod!");
     }
   }
 
@@ -74,7 +75,8 @@ public class DefaultAsyncStateManager implements AsyncStateManager {
    * IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
    * version is deployed!
    */
-  public static String getDocumentStoreKey(final KubePodInfo kubePodInfo, final AsyncKubePodStatus status) {
+  public static String getDocumentStoreKey(final KubePodInfo kubePodInfo,
+                                           final AsyncKubePodStatus status) {
     return kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + status.name();
   }
 
