@@ -63,6 +63,8 @@ tags:
     description: Export/Import Airbyte Configuration and Database resources.
   - name: attempt
     description: Interactions with attempt related resources.
+  - name: state
+    description: Interactions with state related resources.
 
 paths:
   /v1/workspaces/create:
@@ -1389,7 +1391,7 @@ paths:
   /v1/state/get:
     post:
       tags:
-        - connection
+        - state
       summary: Fetch the current state for a connection.
       operationId: getState
       requestBody:
@@ -1412,7 +1414,7 @@ paths:
   /v1/state/create_or_update:
     post:
       tags:
-        - connection
+        - state
         - internal
       summary: Create or update the state for a connection.
       operationId: createOrUpdateState
@@ -1994,7 +1996,7 @@ paths:
   /v1/web_backend/state/get_type:
     post:
       tags:
-        - connection
+        - web_backend
       summary: Fetch the current state type for a connection.
       operationId: getStateType
       requestBody:
