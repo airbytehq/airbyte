@@ -1,4 +1,5 @@
 @use "scss/colors";
+@use "scss/variables";
 
 .button {
   max-width: 100%;
@@ -10,7 +11,7 @@
   border-radius: 20px;
   cursor: pointer;
   background: colors.$grey-50;
-  border: 1px solid colors.$grey-50;
+  border: variables.$border-thin solid colors.$grey-50;
   color: colors.$grey-600;
 
   &:hover,
