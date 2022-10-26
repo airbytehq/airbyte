@@ -82,15 +82,15 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
   return (
     <ConnectorCard
       full
-      jobInfo={LogsRequestError.extractJobInfo(error)}
-      onServiceSelect={onServiceSelect}
-      onSubmit={onSubmitForm}
       formType="source"
-      availableServices={sourceDefinitions}
+      isLoading={isLoading}
       hasSuccess={successRequest}
       errorMessage={errorMessage}
+      availableConnectorDefinitions={sourceDefinitions}
+      onConnectorDefinitionSelect={onServiceSelect}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-      isLoading={isLoading}
+      onSubmit={onSubmitForm}
+      jobInfo={LogsRequestError.extractJobInfo(error)}
     />
   );
 };

@@ -75,18 +75,18 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   return (
     <>
       <ConnectorCard
-        onServiceSelect={onDropDownSelect}
-        fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
-        onSubmit={onSubmitForm}
         formType="destination"
-        additionalSelectorComponent={frequentlyUsedDestinationsComponent}
-        availableServices={destinationDefinitions}
-        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+        title={<FormattedMessage id="onboarding.destinationSetUp" />}
+        isLoading={isLoading}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
-        isLoading={isLoading}
-        title={<FormattedMessage id="onboarding.destinationSetUp" />}
+        fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
+        availableConnectorDefinitions={destinationDefinitions}
+        onConnectorDefinitionSelect={onDropDownSelect}
+        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+        onSubmit={onSubmitForm}
         jobInfo={LogsRequestError.extractJobInfo(error)}
+        additionalSelectorComponent={frequentlyUsedDestinationsComponent}
       />
       {startWithDestinationComponent}
     </>

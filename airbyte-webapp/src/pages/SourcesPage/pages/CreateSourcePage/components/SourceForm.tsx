@@ -58,16 +58,16 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
 
   return (
     <ConnectorCard
-      onServiceSelect={onDropDownSelect}
-      onSubmit={onSubmitForm}
       formType="source"
-      availableServices={sourceDefinitions}
-      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-      hasSuccess={hasSuccess}
-      fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
-      errorMessage={errorMessage}
-      isLoading={isLoading}
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
+      isLoading={isLoading}
+      hasSuccess={hasSuccess}
+      errorMessage={errorMessage}
+      fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
+      availableConnectorDefinitions={sourceDefinitions}
+      onConnectorDefinitionSelect={onDropDownSelect}
+      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+      onSubmit={onSubmitForm}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />
   );

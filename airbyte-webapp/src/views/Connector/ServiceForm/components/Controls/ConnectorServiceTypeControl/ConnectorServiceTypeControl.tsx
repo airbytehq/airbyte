@@ -102,22 +102,22 @@ const SingleValue: React.FC<SingleValueProps<any>> = (props) => {
 
 interface ConnectorServiceTypeControlProps {
   formType: "source" | "destination";
-  availableServices: ConnectorDefinition[];
+  availableConnectorDefinitions: ConnectorDefinition[];
   isEditMode?: boolean;
   documentationUrl?: string;
-  onChangeServiceType?: (id: string) => void;
+  onChangeConnectorDefinition?: (id: string) => void;
   disabled?: boolean;
-  selectedServiceId?: string;
+  selectedConnectorDefinitionSpecificationId?: string;
 }
 
 const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
   formType,
   isEditMode,
-  onChangeServiceType,
-  availableServices,
+  onChangeConnectorDefinition,
+  availableConnectorDefinitions,
   documentationUrl,
   disabled,
-  selectedServiceId,
+  selectedConnectorDefinitionSpecificationId,
 }) => {
   const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
@@ -125,10 +125,10 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
 
   const workspace = useCurrentWorkspace();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
-  const availableConnectorDefinitions = useAvailableConnectorDefinitions(availableServices, workspace);
+  const connectorDefinitions = useAvailableConnectorDefinitions(availableConnectorDefinitions, workspace);
   const sortedDropDownData = useMemo(
-    () => getSortedDropdownDataUsingExperiment(availableConnectorDefinitions, orderOverwrite),
-    [availableConnectorDefinitions, orderOverwrite]
+    () => getSortedDropdownDataUsingExperiment(connectorDefinitions, orderOverwrite),
+    [connectorDefinitions, orderOverwrite]
   );
 
   const { setDocumentationUrl } = useDocumentationPanelContext();
@@ -143,18 +143,18 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
   );
 
   const selectedService = React.useMemo(
-    () => availableServices.find((s) => Connector.id(s) === selectedServiceId),
-    [selectedServiceId, availableServices]
+    () => availableConnectorDefinitions.find((s) => Connector.id(s) === selectedConnectorDefinitionSpecificationId),
+    [selectedConnectorDefinitionSpecificationId, availableConnectorDefinitions]
   );
 
   const handleSelect = useCallback(
     (item: DropDownOptionDataItem | null) => {
-      if (item && onChangeServiceType) {
-        onChangeServiceType(item.value);
+      if (item && onChangeConnectorDefinition) {
+        onChangeConnectorDefinition(item.value);
         trackConnectorSelection(item.value, item.label || "");
       }
     },
-    [onChangeServiceType, trackConnectorSelection]
+    [onChangeConnectorDefinition, trackConnectorSelection]
   );
 
   const selectProps = useMemo(
@@ -183,7 +183,7 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
         })}
       >
         <DropDown
-          value={selectedServiceId}
+          value={selectedConnectorDefinitionSpecificationId}
           components={{
             MenuList: ConnectorList,
             Option,

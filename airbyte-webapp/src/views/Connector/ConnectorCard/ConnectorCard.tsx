@@ -31,8 +31,8 @@ interface ConnectorCardBaseProps {
   jobInfo?: SynchronousJobRead | null;
   additionalSelectorComponent?: React.ReactNode;
   onSubmit: (values: ConnectorFormValues) => Promise<void> | void;
-  onServiceSelect?: (id: string) => void;
-  availableServices: ConnectorDefinition[];
+  onConnectorDefinitionSelect?: (id: string) => void;
+  availableConnectorDefinitions: ConnectorDefinition[]; // remove Service word
 
   // used in ConnectorCard and ServiceForm
   formType: "source" | "destination";
@@ -81,43 +81,48 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     setErrorStatusRequest(null);
   }, [props.selectedConnectorDefinitionSpecification, reset]);
 
-  const { selectedConnectorDefinitionSpecification, onServiceSelect, availableServices, isEditMode } = props;
+  const {
+    selectedConnectorDefinitionSpecification,
+    onConnectorDefinitionSelect,
+    availableConnectorDefinitions,
+    isEditMode,
+  } = props;
 
   const selectedConnectorDefinitionSpecificationId =
     selectedConnectorDefinitionSpecification && ConnectorSpecification.id(selectedConnectorDefinitionSpecification);
 
-  const selectedService = useMemo(
-    () => availableServices.find((s) => Connector.id(s) === selectedConnectorDefinitionSpecificationId),
-    [availableServices, selectedConnectorDefinitionSpecificationId]
+  const selectedConnector = useMemo(
+    () => availableConnectorDefinitions.find((s) => Connector.id(s) === selectedConnectorDefinitionSpecificationId),
+    [availableConnectorDefinitions, selectedConnectorDefinitionSpecificationId]
   );
 
   // Handle Doc panel
   useEffect(() => {
-    if (!selectedService) {
+    if (!selectedConnector) {
       return;
     }
 
-    setDocumentationUrl(selectedService?.documentationUrl ?? "");
+    setDocumentationUrl(selectedConnector?.documentationUrl ?? "");
     setDocumentationPanelOpen(true);
-  }, [selectedConnectorDefinitionSpecification, selectedService, setDocumentationPanelOpen, setDocumentationUrl]);
+  }, [selectedConnectorDefinitionSpecification, selectedConnector, setDocumentationPanelOpen, setDocumentationUrl]);
 
   const onHandleSubmit = async (values: ServiceFormValues) => {
-    if (!selectedService) {
+    if (!selectedConnector) {
       return;
     }
     setErrorStatusRequest(null);
     setIsFormSubmitting(true);
 
     //  combine the "ServiceFormValues" and serviceType to make "ConnectorFormValues"
-    const connectorFormValues: ConnectorFormValues = { ...values, serviceType: Connector.id(selectedService) };
+    const connectorFormValues: ConnectorFormValues = { ...values, serviceType: Connector.id(selectedConnector) };
 
     const testConnectorWithTracking = async () => {
-      trackTestConnectorStarted(selectedService);
+      trackTestConnectorStarted(selectedConnector);
       try {
         await testConnector(connectorFormValues);
-        trackTestConnectorSuccess(selectedService);
+        trackTestConnectorSuccess(selectedConnector);
       } catch (e) {
-        trackTestConnectorFailure(selectedService);
+        trackTestConnectorFailure(selectedConnector);
         throw e;
       }
     };
@@ -135,7 +140,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
   // Fill form with existing connector values otherwise set the default service name
-  const formValues = isEditMode ? props.connector : { name: selectedService?.name };
+  const formValues = isEditMode ? props.connector : { name: selectedConnector?.name };
 
   return (
     <Card title={title} fullWidth={full}>
@@ -143,18 +148,18 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
         <div className={styles.connectorSelectControl}>
           <ConnectorServiceTypeControl
             formType={props.formType}
-            onChangeServiceType={onServiceSelect}
-            availableServices={availableServices}
             isEditMode={isEditMode}
-            selectedServiceId={selectedConnectorDefinitionSpecificationId}
             disabled={isFormSubmitting}
+            onChangeConnectorDefinition={onConnectorDefinitionSelect}
+            availableConnectorDefinitions={availableConnectorDefinitions}
+            selectedConnectorDefinitionSpecificationId={selectedConnectorDefinitionSpecificationId}
           />
         </div>
         {additionalSelectorComponent}
         <div>
           <ServiceForm
             {...props}
-            selectedService={selectedService}
+            selectedService={selectedConnector} // remove Service word
             isTestConnectionInProgress={isTestConnectionInProgress}
             onStopTesting={onStopTesting}
             testConnector={testConnector}

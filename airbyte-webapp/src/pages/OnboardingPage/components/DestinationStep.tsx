@@ -81,13 +81,13 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     <ConnectorCard
       full
       formType="destination"
-      onServiceSelect={onDropDownSelect}
-      onSubmit={onSubmitForm}
-      hasSuccess={successRequest}
-      availableServices={destinationDefinitions}
-      errorMessage={errorMessage}
-      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
       isLoading={isLoading}
+      hasSuccess={successRequest}
+      errorMessage={errorMessage}
+      availableConnectorDefinitions={destinationDefinitions}
+      onConnectorDefinitionSelect={onDropDownSelect}
+      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+      onSubmit={onSubmitForm}
     />
   );
 };

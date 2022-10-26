@@ -50,14 +50,14 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
   return (
     <div className={styles.content}>
       <ConnectorCard
-        formId={formId}
-        isEditMode
-        onSubmit={onSubmitForm}
         formType="destination"
-        availableServices={[destinationDefinition]}
-        connector={currentDestination}
-        selectedConnectorDefinitionSpecification={destinationSpecification}
         title={<FormattedMessage id="destination.destinationSettings" />}
+        isEditMode
+        formId={formId}
+        availableConnectorDefinitions={[destinationDefinition]}
+        selectedConnectorDefinitionSpecification={destinationSpecification}
+        connector={currentDestination}
+        onSubmit={onSubmitForm}
       />
       <DeleteBlock type="destination" onDelete={onDelete} />
     </div>
