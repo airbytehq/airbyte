@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
@@ -21,9 +22,9 @@ def patch_base_class(mocker):
 
 
 def test_request_params(patch_base_class):
-    stream = NasaApod(config=config)
+    stream = NasaApod(config={**config, "start_date": "2022-09-10"})
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {"api_key": api_key_value}
+    expected_params = {"api_key": api_key_value, "start_date": "2022-09-10", "end_date": datetime.now().strftime("%Y-%m-%d")}
     assert stream.request_params(**inputs) == expected_params
 
 

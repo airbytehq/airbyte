@@ -9,7 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
 date_format = "%Y-%m-%d"
@@ -45,9 +45,47 @@ class NasaStream(HttpStream, ABC):
             yield from r
 
 
-class NasaApod(NasaStream):
+class NasaApod(NasaStream, IncrementalMixin):
 
+    cursor_field = "date"
     primary_key = "date"
+    start_date_key = "start_date"
+    end_date_key = "end_date"
+
+    def __init__(self, config: Mapping[str, any], **kwargs):
+        super().__init__(config)
+        self.start_date = datetime.strptime(config.pop(self.start_date_key), date_format) if self.start_date_key in config else datetime.now()
+        self.end_date = datetime.strptime(config.pop(self.end_date_key), date_format) if self.end_date_key in config else datetime.now()
+        self.sync_mode = SyncMode.full_refresh
+        self._cursor_value = self.start_date
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return {self.cursor_field: self._cursor_value.strftime(date_format)}
+    
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = datetime.strptime(value[self.cursor_field], date_format)
+
+    def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
+        """
+        Returns a list of each day between the start date and end date.
+        The return value is a list of dicts {'date': date_string}.
+        """
+        dates = []
+        while start_date <= self.end_date:
+            dates.append({self.cursor_field: start_date.strftime(date_format)})
+            start_date += timedelta(days=1)
+        return dates
+
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        if stream_state and self.cursor_field in stream_state and datetime.strptime(stream_state[self.cursor_field], date_format) > self.end_date:
+            return []
+        if sync_mode == SyncMode.full_refresh:
+            return [self.start_date]
+
+        start_date = datetime.strptime(stream_state[self.cursor_field], date_format) if stream_state and self.cursor_field in stream_state else self.start_date
+        return self._chunk_date_range(start_date)
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -57,7 +95,27 @@ class NasaApod(NasaStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return self.config
+        request_dict = {
+            **self.config,
+            **super().request_params(stream_state, stream_slice, next_page_token)
+        }
+        if self.sync_mode == SyncMode.full_refresh:
+            request_dict[self.start_date_key] = self.start_date.strftime(date_format)
+            request_dict[self.end_date_key] = self.end_date.strftime(date_format)
+        else:
+            request_dict[self.primary_key] = stream_slice[self.cursor_field]
+        return request_dict
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        self.sync_mode = kwargs.get("sync_mode", SyncMode.full_refresh)
+        if self._cursor_value and self._cursor_value > self.end_date:
+            yield []
+        else:
+            for record in super().read_records(*args, **kwargs):
+                if self._cursor_value:
+                    latest_record_date = datetime.strptime(record[self.cursor_field], date_format)
+                    self._cursor_value = max(self._cursor_value, latest_record_date)
+                yield record
 
 
 # Source
