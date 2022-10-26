@@ -14,7 +14,6 @@ import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.workers.temporal.sync.RefreshSchemaActivityImpl;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -30,7 +29,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class RefreshSchemaActivityTest {
 
   static private ConfigRepository mConfigRepository;
-  static private SchedulerHandler mSchedulerHandler;
 
   static private SourceApi mSourceApi;
 
