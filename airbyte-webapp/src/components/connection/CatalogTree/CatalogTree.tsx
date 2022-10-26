@@ -12,6 +12,9 @@ import { CatalogTreeBody } from "./CatalogTreeBody";
 import { CatalogTreeHeader } from "./CatalogTreeHeader";
 import { CatalogTreeSearch } from "./CatalogTreeSearch";
 import { CatalogTreeSubheader } from "./CatalogTreeSubheader";
+import { BulkEditPanel } from "./next/BulkEditPanel";
+import { CatalogTreeTableHeader } from "./next/CatalogTreeTableHeader";
+import { StreamConnectionHeader } from "./next/StreamConnectionHeader";
 
 interface CatalogTreeProps {
   streams: SyncSchemaStream[];
@@ -24,6 +27,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   onStreamsChanged,
   isLoading,
 }) => {
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
   const { mode } = useConnectionFormService();
 
   const [searchString, setSearchString] = useState("");
@@ -53,11 +57,21 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
     <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
-        <CatalogTreeHeader />
-        <CatalogTreeSubheader />
-        <BulkHeader />
+        {isNewStreamsTableEnabled ? (
+          <>
+            <StreamConnectionHeader />
+            <CatalogTreeTableHeader />
+          </>
+        ) : (
+          <>
+            <CatalogTreeHeader />
+            <CatalogTreeSubheader />
+            <BulkHeader />
+          </>
+        )}
         <CatalogTreeBody streams={filteredStreams} onStreamChanged={onSingleStreamChanged} />
       </LoadingBackdrop>
+      {isNewStreamsTableEnabled && <BulkEditPanel />}
     </BulkEditServiceProvider>
   );
 };
