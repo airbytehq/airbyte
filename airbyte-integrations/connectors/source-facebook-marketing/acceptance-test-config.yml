@@ -19,6 +19,5 @@ tests:
   incremental:
     - config_path: "secrets/config.json"
       future_state_path: "integration_tests/future_state.json"
-      skip_comprehensive_incremental_tests: true
   full_refresh:
     - config_path: "secrets/config.json"
