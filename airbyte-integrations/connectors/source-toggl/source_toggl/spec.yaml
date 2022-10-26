@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - api_token
     - organization_id
+    - workspace_id
   additionalProperties: true
   properties:
     api_token:
