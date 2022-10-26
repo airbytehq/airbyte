@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "active": {
+      "description": "Whether the project is active or archived",
+      "type": "boolean"
+    },
+    "actual_hours": {
+      "description": "Actual hours",
+      "type": "integer",
+      "nullable": true
+    },
+    "at": {
+      "description": "Last updated date",
+      "type": "string"
+    },
+    "auto_estimates": {
+      "description": "Whether estimates are based on task hours, premium feature",
+      "type": "boolean",
+      "nullable": true
+    },
+    "billable": {
+      "description": "Whether the project is billable, premium feature",
+      "type": "boolean",
+      "nullable": true
+    },
+    "cid": {
+      "description": "Client ID legacy field",
+      "type": "integer"
+    },
+    "client_id": {
+      "description": "Client ID",
+      "type": "integer",
+      "nullable": true
+    },
+    "color": {
+      "description": "Color",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "Creation date",
+      "type": "string"
+    },
+    "currency": {
+      "description": "Currency, premium feature",
+      "type": "string",
+      "nullable": true
+    },
+    "current_period": {
+      "object": {
+        "end_date": {
+          "type": "string"
+        },
+        "start_date": {
+          "type": "string"
+        }
+      },
+      "description": "Current project period, premium feature"
+    },
+    "estimated_hours": {
+      "description": "Estimated hours",
+      "type": "integer",
+      "nullable": true
+    },
+    "first_time_entry": {
+      "description": "First time entry for this project. Only included if it was requested with with_first_time_entry",
+      "type": "string"
+    },
+    "fixed_fee": {
+      "description": "Fixed fee, premium feature",
+      "type": "number"
+    },
+    "id": {
+      "description": "Project ID",
+      "type": "integer"
+    },
+    "is_private": {
+      "description": "Whether the project is private",
+      "type": "boolean"
+    },
+    "name": {
+      "description": "Name",
+      "type": "string"
+    },
+    "rate": {
+      "description": "Hourly rate",
+      "type": "number"
+    },
+    "rate_last_updated": {
+      "description": "Last date for rate change",
+      "type": "string",
+      "nullable": true
+    },
+    "recurring": {
+      "description": "Whether the project is recurring, premium feature",
+      "type": "boolean"
+    },
+    "recurring_parameters": {
+      "description": "Project recurring parameters, premium feature",
+      "items": [
+        {
+          "custom_period": {
+            "description": "Custom period, used when \"period\" field is \"custom\"",
+            "type": "integer"
+          },
+          "estimated_seconds": {
+            "description": "Estimated seconds",
+            "type": "integer"
+          },
+          "parameter_end_date": {
+            "description": "Recurring end date",
+            "type": "string",
+            "nullable": true
+          },
+          "parameter_start_date": {
+            "description": "Recurring start date",
+            "type": "string"
+          },
+          "period": {
+            "description": "Period",
+            "type": "string"
+          },
+          "project_start_date": {
+            "description": "Project start date",
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "server_deleted_at": {
+      "description": "Deletion date",
+      "type": "string",
+      "nullable": true
+    },
+    "template": {
+      "description": "Whether the project is used as template, premium feature",
+      "type": "boolean",
+      "nullable": true
+    },
+    "wid": {
+      "description": "Workspace ID legacy field",
+      "type": "integer"
+    },
+    "workspace_id": {
+      "description": "Workspace ID",
+      "type": "integer"
+    }
+  }
+}
