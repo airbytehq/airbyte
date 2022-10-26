@@ -11,11 +11,12 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class RDStationMarketingStream(HttpStream, ABC):
-    url_base = "https://api.rd.services"
-    primary_key = None
-    page = 1
-    extra_params = {}
     data_field = None
+    extra_params = {}
+    page = 1
+    page_size_limit = 125
+    primary_key = None
+    url_base = "https://api.rd.services"
 
     def __init__(self, authenticator, start_date=None, **kwargs):
         super().__init__(authenticator=authenticator, **kwargs)
@@ -39,9 +40,9 @@ class RDStationMarketingStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"page_size": 125, "page": self.page}
+        params = {"page_size": self.page_size_limit, "page": self.page}
         if next_page_token:
-            params = {"page_size": 125, "page": next_page_token["next_page"]}
+            params = {"page_size": self.page_size_limit, "page": next_page_token["next_page"]}
         return params
 
     def parse_response(
@@ -53,8 +54,7 @@ class RDStationMarketingStream(HttpStream, ABC):
             records = response.json().get(self.data_field)
         else:
             records = response.json()
-        for record in records:
-            yield record
+        yield from records
 
 
 class IncrementalRDStationMarketingStream(RDStationMarketingStream):
@@ -105,8 +105,7 @@ class AnalyticsConversions(IncrementalRDStationMarketingStream):
             **kwargs
     ) -> Iterable[Mapping]:
         records = response.json().get(self.data_field)[0].get(self.data_field)
-        for record in records:
-            yield record
+        yield from records
 
 
 class AnalyticsEmails(IncrementalRDStationMarketingStream):
