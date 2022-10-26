@@ -38,18 +38,27 @@ definitions:
 
   keys_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        extractor:
+          field_pointer: ["keys"]
     $options:
       name: "keys"
       primary_key: "key_id"
       path: "/api2/projects/{{ config['project_id'] }}/keys"
-      field_pointer: ["keys"]
+
   languages_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        extractor:
+          field_pointer: ["languages"]
     $options:
       name: "languages"
       primary_key: "lang_id"
       path: "/api2/projects/{{ config['project_id'] }}/languages"
-      field_pointer: ["languages"]
 
 
 streams:
