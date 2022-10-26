@@ -79,49 +79,68 @@ class SourceIterable(AbstractSource):
         # end date is provided for integration tests only
         start_date, end_date = config["start_date"], config.get("end_date")
         date_range = {"start_date": start_date, "end_date": end_date}
-        return [
+        streams = [
             Campaigns(authenticator=authenticator),
             CampaignsMetrics(authenticator=authenticator, **date_range),
             Channels(authenticator=authenticator),
-            EmailBounce(authenticator=authenticator, **date_range),
-            EmailClick(authenticator=authenticator, **date_range),
-            EmailComplaint(authenticator=authenticator, **date_range),
-            EmailOpen(authenticator=authenticator, **date_range),
-            EmailSend(authenticator=authenticator, **date_range),
-            EmailSendSkip(authenticator=authenticator, **date_range),
-            EmailSubscribe(authenticator=authenticator, **date_range),
-            EmailUnsubscribe(authenticator=authenticator, **date_range),
-            PushSend(authenticator=authenticator, **date_range),
-            PushSendSkip(authenticator=authenticator, **date_range),
-            PushOpen(authenticator=authenticator, **date_range),
-            PushUninstall(authenticator=authenticator, **date_range),
-            PushBounce(authenticator=authenticator, **date_range),
-            WebPushSend(authenticator=authenticator, **date_range),
-            WebPushClick(authenticator=authenticator, **date_range),
-            WebPushSendSkip(authenticator=authenticator, **date_range),
-            InAppSend(authenticator=authenticator, **date_range),
-            InAppOpen(authenticator=authenticator, **date_range),
-            InAppClick(authenticator=authenticator, **date_range),
-            InAppClose(authenticator=authenticator, **date_range),
-            InAppDelete(authenticator=authenticator, **date_range),
-            InAppDelivery(authenticator=authenticator, **date_range),
-            InAppSendSkip(authenticator=authenticator, **date_range),
-            InboxSession(authenticator=authenticator, **date_range),
-            InboxMessageImpression(authenticator=authenticator, **date_range),
-            SmsSend(authenticator=authenticator, **date_range),
-            SmsBounce(authenticator=authenticator, **date_range),
-            SmsClick(authenticator=authenticator, **date_range),
-            SmsReceived(authenticator=authenticator, **date_range),
-            SmsSendSkip(authenticator=authenticator, **date_range),
-            SmsUsageInfo(authenticator=authenticator, **date_range),
-            Purchase(authenticator=authenticator, **date_range),
-            CustomEvent(authenticator=authenticator, **date_range),
-            HostedUnsubscribeClick(authenticator=authenticator, **date_range),
-            Events(authenticator=authenticator),
             Lists(authenticator=authenticator),
-            ListUsers(authenticator=authenticator),
             MessageTypes(authenticator=authenticator),
             Metadata(authenticator=authenticator),
             Templates(authenticator=authenticator, **date_range),
-            Users(authenticator=authenticator, **date_range),
         ]
+        # Iterable supports two types of Server-side api keys:
+        # - read only
+        # - server side
+        # The first one has a limited set of supported APIs, so others are filtered out here.
+        # A simple check is done - a read operation on a stream that can be accessed only via a Server side API key.
+        # If read is successful - other streams should be supported as well.
+        # More on this - https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-
+        users_stream = ListUsers(authenticator=authenticator)
+        for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            users = users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh)
+            # first slice is enough
+            break
+
+        if next(users, None):
+            streams.extend(
+                [
+                    Users(authenticator=authenticator, **date_range),
+                    ListUsers(authenticator=authenticator),
+                    EmailBounce(authenticator=authenticator, **date_range),
+                    EmailClick(authenticator=authenticator, **date_range),
+                    EmailComplaint(authenticator=authenticator, **date_range),
+                    EmailOpen(authenticator=authenticator, **date_range),
+                    EmailSend(authenticator=authenticator, **date_range),
+                    EmailSendSkip(authenticator=authenticator, **date_range),
+                    EmailSubscribe(authenticator=authenticator, **date_range),
+                    EmailUnsubscribe(authenticator=authenticator, **date_range),
+                    PushSend(authenticator=authenticator, **date_range),
+                    PushSendSkip(authenticator=authenticator, **date_range),
+                    PushOpen(authenticator=authenticator, **date_range),
+                    PushUninstall(authenticator=authenticator, **date_range),
+                    PushBounce(authenticator=authenticator, **date_range),
+                    WebPushSend(authenticator=authenticator, **date_range),
+                    WebPushClick(authenticator=authenticator, **date_range),
+                    WebPushSendSkip(authenticator=authenticator, **date_range),
+                    InAppSend(authenticator=authenticator, **date_range),
+                    InAppOpen(authenticator=authenticator, **date_range),
+                    InAppClick(authenticator=authenticator, **date_range),
+                    InAppClose(authenticator=authenticator, **date_range),
+                    InAppDelete(authenticator=authenticator, **date_range),
+                    InAppDelivery(authenticator=authenticator, **date_range),
+                    InAppSendSkip(authenticator=authenticator, **date_range),
+                    InboxSession(authenticator=authenticator, **date_range),
+                    InboxMessageImpression(authenticator=authenticator, **date_range),
+                    SmsSend(authenticator=authenticator, **date_range),
+                    SmsBounce(authenticator=authenticator, **date_range),
+                    SmsClick(authenticator=authenticator, **date_range),
+                    SmsReceived(authenticator=authenticator, **date_range),
+                    SmsSendSkip(authenticator=authenticator, **date_range),
+                    SmsUsageInfo(authenticator=authenticator, **date_range),
+                    Purchase(authenticator=authenticator, **date_range),
+                    CustomEvent(authenticator=authenticator, **date_range),
+                    HostedUnsubscribeClick(authenticator=authenticator, **date_range),
+                    Events(authenticator=authenticator),
+                ]
+            )
+        return streams

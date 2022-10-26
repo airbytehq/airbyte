@@ -581,7 +581,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .withOperatorType(Enums.toEnum(record.get(OPERATION.OPERATOR_TYPE, String.class), OperatorType.class).orElseThrow())
         .withOperatorNormalization(Jsons.deserialize(record.get(OPERATION.OPERATOR_NORMALIZATION).data(), OperatorNormalization.class))
         .withOperatorDbt(Jsons.deserialize(record.get(OPERATION.OPERATOR_DBT).data(), OperatorDbt.class))
-        .withOperatorWebhook(Jsons.deserialize(record.get(OPERATION.OPERATOR_WEBHOOK).data(), OperatorWebhook.class))
+        .withOperatorWebhook(record.get(OPERATION.OPERATOR_WEBHOOK) == null ? null
+            : Jsons.deserialize(record.get(OPERATION.OPERATOR_WEBHOOK).data(), OperatorWebhook.class))
         .withTombstone(record.get(OPERATION.TOMBSTONE));
   }
 
@@ -1103,6 +1104,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                 JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
+            .set(CONNECTION.BREAKING_CHANGE, standardSync.getBreakingChange())
             .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
                 io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
             .where(CONNECTION.ID.eq(standardSync.getConnectionId()))
@@ -1147,6 +1149,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
             .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
                 io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
+            .set(CONNECTION.BREAKING_CHANGE, standardSync.getBreakingChange())
             .set(CONNECTION.CREATED_AT, timestamp)
             .set(CONNECTION.UPDATED_AT, timestamp)
             .execute();
