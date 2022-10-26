@@ -804,32 +804,54 @@ AirbyteErrorTraceMessage:
         - config_error
 ```
 
-## AirbyteConnectorConfigMessage
+## AirbyteOrchestratorMessage
 
-An `AirbyteConnectorConfigMessage` allows a connector to update its configuration in the middle of a sync. This is valuable for connectors with short-lived or single-use credentials.
-
-Emitting this message signals to the orchestrator process (for example, the Airbyte platform) that it should update its persistence layer, replacing the connector's current configuration with the config present in the `.config` field of the message.
-
-The config in the `AirbyteConnectorConfigMessage` must conform to connector's specification's schema, and the orchestrator process is expected to validate these messages. If the output config does not conform to the specification's schema, the orchestrator process should raise an exception and terminate the sync.
+An `AirbyteOrchestratorMessage` is for connectors to signal to the Airbyte Platform or Orchestrator that an action with a side-effect should be taken. This means that the Orchestrator will likely be altering some stored data about the connector, connection, or sync.
 
 ```yaml
-AirbyteConnectorConfigMessage:
+AirbyteOrchestratorMessage:
+  type: object
+  additionalProperties: true
+  required:
+    - type
+    - emitted_at
+  properties:
+    type:
+      title: orchestrator type
+      description: "the type of orchestrator message"
+      type: string
+      enum:
+        - CONNECTOR_CONFIG
+    emitted_at:
+      description: "the time in ms that the message was emitted"
+      type: number
+    connectorConfig:
+      description: "connector config orchestrator message: the updated config for the platform to store for this connector"
+      "$ref": "#/definitions/AirbyteOrchestratorConnectorConfigMessage"
+```
+
+### AirbyteOrchestratorConnectorConfigMessage
+
+`AirbyteOrchestratorConnectorConfigMessage` allows a connector to update its configuration in the middle of a sync. This is valuable for connectors with short-lived or single-use credentials.
+
+Emitting this message signals to the orchestrator process that it should update its persistence layer, replacing the connector's current configuration with the config present in the `.config` field of the message.
+
+The config in the `AirbyteOrchestratorConnectorConfigMessage` must conform to connector's specification's schema, and the orchestrator process is expected to validate these messages. If the output config does not conform to the specification's schema, the orchestrator process should raise an exception and terminate the sync.
+
+```yaml
+AirbyteOrchestratorConnectorConfigMessage:
   type: object
   additionalProperties: true
   required:
     - config
-    - emitted_at
   properties:
-    emitted_at:
-      description: "the time in ms that the message was emitted"
-      type: number
     config:
       description: "the config items from this connector's spec to update"
       type: object
       additionalProperties: true
 ```
 
-For example, if the currently persisted config file is `{"api_key": 123, start_date: "01-01-2022"}` and the following `AirbyteConnectorConfigMessage` is output `{"config": {"api_key": 456}, "emitted_at": <current_time>}` then the persisted configuration is merged, and will become `{"api_key": 456, start_date: "01-01-2022"}`.
+For example, if the currently persisted config file is `{"api_key": 123, start_date: "01-01-2022"}` and the following `AirbyteOrchestratorConnectorConfigMessage` is output `{type: ORCHESTRATOR, connectorConfig: {"config": {"api_key": 456}, "emitted_at": <current_time>}}` then the persisted configuration is merged, and will become `{"api_key": 456, start_date: "01-01-2022"}`.
 
 # Acknowledgements
 
