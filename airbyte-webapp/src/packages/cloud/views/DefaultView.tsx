@@ -1,12 +1,24 @@
+import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
+
+import { useExperiment } from "hooks/services/Experiment";
 
 import { RoutePaths } from "../../../pages/routePaths";
 import { CloudRoutes } from "../cloudRoutes";
+import { EXP_SOURCE_SIGNUP_SELECTOR } from "../components/experiments/constants";
 import { useListCloudWorkspaces } from "../services/workspaces/CloudWorkspacesService";
 
 export const DefaultView: React.FC = () => {
   const workspaces = useListCloudWorkspaces();
+  // exp-signup-selected-source-definition
+  const isSignupSourceSelectorExperiment = useExperiment("authPage.signup.sourceSelector", false);
+  const sourceDefinitionId = localStorage.getItem(EXP_SOURCE_SIGNUP_SELECTOR);
 
+  useEffect(() => {
+    setTimeout(() => {
+      localStorage.removeItem(EXP_SOURCE_SIGNUP_SELECTOR);
+    }, 5000);
+  }, []);
   // Only show the workspace creation list if there is more than one workspace
   // otherwise redirect to the single workspace
   return (
@@ -17,6 +29,11 @@ export const DefaultView: React.FC = () => {
           : `/${RoutePaths.Workspaces}/${workspaces[0].workspaceId}`
       }
       replace
+      // exp-signup-selected-source-definition
+      {...(isSignupSourceSelectorExperiment && {
+        state: { sourceDefinitionId },
+        to: `/${RoutePaths.Workspaces}/${workspaces[0].workspaceId}/${RoutePaths.Source}/${RoutePaths.SourceNew}`,
+      })}
     />
   );
 };

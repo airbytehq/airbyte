@@ -94,6 +94,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
         setState("initialized");
         // Make sure enabled experiments are added to each analytics event
         addAnalyticsContext({ experiments: JSON.stringify(ldClient.current?.allFlags()) });
+        console.log("ldClient.current?.allFlags()", ldClient.current?.allFlags());
         // Check for overwritten i18n messages
         updateI18nMessages();
         updateFeatureOverwrites(ldClient.current?.variation(FEATURE_FLAG_EXPERIMENT, ""));

@@ -41,6 +41,7 @@
   "login.oauth.github": "Continue with GitHub",
   "login.oauth.differentCredentialsError": "Use your email and password to sign in.",
   "login.oauth.unknownError": "An unknown error happened during sign in: {error}",
+  "login.sourceSelector": "Select a source to get started",
 
   "confirmResetPassword.newPassword": "Enter a new password",
   "confirmResetPassword.success": "Your password has been reset. Please log in with the new password.",
