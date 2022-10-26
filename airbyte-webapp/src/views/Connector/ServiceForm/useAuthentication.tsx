@@ -1,6 +1,5 @@
 import { getIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
-import { get } from "lodash";
 import { useCallback, useMemo } from "react";
 
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -211,7 +210,7 @@ export const useAuthentication = (): AuthenticationHook => {
   const hasAuthFieldValues: boolean = useMemo(() => {
     if (
       implicitAuthFieldPaths.some((path) => {
-        return get(values, path) !== undefined;
+        return getIn(values, path) !== undefined;
       })
     ) {
       return true;
