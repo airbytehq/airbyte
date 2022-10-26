@@ -118,7 +118,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
 | [Oracle DB](sources/oracle.md)                                                              | Alpha                | Yes                 |
-| [Oracle Netsuite](sources/netsuite.md)                                                      | Generally Available  | Yes                 |
+| [Oracle Netsuite](sources/netsuite.md)                                                      | Alpha                | Yes                 |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md)                                           | Alpha                | No                  |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md)                                           | Alpha                | No                  |
 | [Orb](sources/orb.md)                                                                       | Alpha                | Yes                 |
@@ -142,7 +142,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Recurly](sources/recurly.md)                                                               | Alpha                | Yes                 |
 | [Redshift](sources/redshift.md)                                                             | Alpha                | Yes                 |
 | [Retently](sources/retently.md)                                                             | Alpha                | Yes                 |
-| [S3](sources/s3.md)                                                                         | Generally Available  | No                 |
+| [S3](sources/s3.md)                                                                         | Generally Available  | Yes                 |
 | [Salesforce](sources/salesforce.md)                                                         | Generally Available  | Yes                 |
 | [Salesloft](sources/salesloft.md)                                                           | Alpha                | No                  |
 | [SAP Business One](sources/sap-business-one.md)                                             | Alpha                | No                  |
