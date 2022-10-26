@@ -5,7 +5,6 @@
 import copy
 from abc import ABC, abstractmethod
 from functools import cached_property
-from requests.auth import AuthBase
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
@@ -16,6 +15,7 @@ from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from requests.auth import AuthBase
 
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
@@ -114,7 +114,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         authenticator: Union[AuthBase, HttpAuthenticator],
         start_date: str = None,
         lookback_window: int = 0,
-        slice_step_map: Mapping[str, int] = None
+        slice_step_map: Mapping[str, int] = None,
     ):
         super().__init__(authenticator)
         slice_step = (slice_step_map or {}).get(self.name)
