@@ -349,17 +349,20 @@ class Customers(SquareStreamPageJson):
     items_per_page_limit = 100
     data_field = "customers"
     cursor_field = "created_at"
-    filterbody = """{
+    filterbody = """{{
                         "filter": 
-                     {
-                        "created_at": 
-                            {   
-                                "start_at": 
-                """
-    sortbody = """ "sort": {
-                        "field": "CREATED_AT",
-                        "order": "ASC"
-                    }
+                         {{
+                            "created_at": 
+                            {{   
+                                "start_at": "{cursor_field}"
+                            }}
+                        }},
+                        "sort": 
+                            {{
+                                "field": "CREATED_AT",
+                                "order": "ASC"
+                            }}
+                    }}
             """
     #params_payload = super().request_params(stream_state, stream_slice, next_page_token)
     def path(self, **kwargs) -> str:
@@ -375,10 +378,9 @@ class Customers(SquareStreamPageJson):
             json_payload.update(stream_slice)
         json_payload["limit"] = self.items_per_page_limit
         if stream_state:
-            json_payload["query"] = json.loads(f'{self.filterbody}"{stream_state[self.cursor_field]}" }}}}, {self.sortbody}}}}}') 
+            json_payload["query"] = json.loads(self.filterbody.format(cursor_field=stream_state[self.cursor_field])) 
         else:
-            json_payload["query"] = json.loads(f'{self.filterbody}"{self.start_date}" }}}}, {self.sortbody}}}')
-
+            json_payload["query"] = json.loads(self.filterbody.format(cursor_field=self.start_date))
         return json_payload
 
 
@@ -389,19 +391,23 @@ class Orders(SquareStreamPageJson):
     http_method = "POST"
     items_per_page_limit = 500
     cursor_field = "updated_at"
-    filterbody = """{
+    filterbody = """{{
                         "filter": 
-                     {
+                        {{
                             "date_time_filter": 
-                            {   
+                            {{   
                                 "updated_at": 
-                                {   
-                                    "start_at": 
-                """
-    sortbody = """ "sort": {
-                        "sort_field": "UPDATED_AT",
-                        "sort_order": "ASC"
-                    }
+                                {{   
+                                    "start_at": "{cursor_field}"
+                                }}
+                            }}
+                        }},
+                        "sort": 
+                        {{
+                            "sort_field": "UPDATED_AT",
+                            "sort_order": "ASC"
+                        }}
+                    }}
             """
 
     # There is a restriction in the documentation where only 10 locations can be send at one request
@@ -421,9 +427,9 @@ class Orders(SquareStreamPageJson):
             json_payload.update(stream_slice)
         json_payload["limit"] = self.items_per_page_limit
         if stream_state:
-            json_payload["query"] = json.loads(f'{self.filterbody}"{stream_state[self.cursor_field]}" }}}}}}, {self.sortbody}}}') 
+            json_payload["query"] = json.loads(self.filterbody.format(cursor_field=stream_state[self.cursor_field])) 
         else:
-            json_payload["query"] = json.loads(f'{self.filterbody}"{self.start_date}" }}}}}}, {self.sortbody}}}')
+            json_payload["query"] = json.loads(self.filterbody.format(cursor_field=self.start_date))
         
     #    if next_page_token: 
     #        json_payload["cursor"] =  next_page_token["cursor"]
