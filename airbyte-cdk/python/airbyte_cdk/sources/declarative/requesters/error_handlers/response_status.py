@@ -37,7 +37,7 @@ class ResponseStatus:
         return self._retry_in
 
     @property
-    def error_message(self) -> Optional[str]:
+    def error_message(self) -> str:
         """The message to be displayed when an error response is received"""
         return self._error_message
 

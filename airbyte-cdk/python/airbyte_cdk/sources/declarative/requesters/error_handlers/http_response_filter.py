@@ -82,9 +82,7 @@ class HttpResponseFilter(JsonSchemaMixin):
         :param response: The HTTP response which can be used during interpolation
         :return: The evaluated error message string to be emitted
         """
-        if self.error_message:
-            return self.error_message.eval(self.config, response=response.json(), headers=response.headers)
-        return ""
+        return self.error_message.eval(self.config, response=response.json(), headers=response.headers)
 
     def _response_matches_predicate(self, response: requests.Response) -> bool:
         return self.predicate and self.predicate.eval(None, response=response.json(), headers=response.headers)
