@@ -6,6 +6,7 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -43,35 +44,27 @@ class RailzStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
+    page_size = 100
     url_base = "https://api.railz.ai/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
-        return None
+        response_json = response.json()
+        pagination = response_json.get("pagination", response_json.get("meta"))
+        if pagination:
+            if pagination["offset"] + self.page_size < pagination["count"]:
+                return {"offset": str(pagination["offset"] + self.page_size)}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {}
+        params = {"limit": str(self.page_size)}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code == 204:
+            return
         response_json = response.json()
         for record in response_json["data"]:
             yield record
@@ -112,11 +105,15 @@ class IncrementalRailzStream(RailzStream, ABC):
         return []
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
+        businessName = latest_record["businessName"]
+        serviceName = latest_record["serviceName"]
+        updated_state = pendulum.parse(latest_record[self.cursor_field]).date()
+        stream_state_value = current_stream_state.setdefault(businessName, {}).setdefault(serviceName, {}).get(self.cursor_field)
+        if stream_state_value:
+            stream_state_value = pendulum.parse(stream_state_value).date()
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[businessName][serviceName][self.cursor_field] = updated_state.format("YYYY-MM-DD")
+        return current_stream_state
 
 
 class AccountingTransactions(IncrementalRailzStream):
@@ -154,7 +151,14 @@ class AccountingTransactions(IncrementalRailzStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {"businessName": stream_slice["businessName"], "serviceName": stream_slice["serviceName"], "orderBy": "postedDate"}
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        businessName = stream_slice["businessName"]
+        serviceName = stream_slice["serviceName"]
+        params.update({"businessName": businessName, "serviceName": serviceName, "orderBy": self.cursor_field})
+        startDate = stream_state.get(businessName, {}).get(serviceName, {}).get(self.cursor_field)
+        if startDate:
+            params["startDate"] = startDate
+        return params
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, any], **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
