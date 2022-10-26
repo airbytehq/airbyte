@@ -4,6 +4,7 @@
 
 
 from abc import ABC
+from pydoc import doc
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk.models import SyncMode
@@ -20,33 +21,33 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, NoAuth
 
 class SurveyctoStream(HttpStream,  IncrementalMixin, ABC):
     # @TODO: Make server name as a parameter
-    primary_key = 'KEY'
 
+    primary_key = 'KEY'
     date_format = '%b %d, %Y %H:%M:%S %p'
     dateformat =  '%Y-%m-%dT%H:%M:%S'
-    initial_date = datetime(2022, 1, 9, 0, 0)
-    last_form_date = initial_date
     cursor_field = 'CompletionDate'
     _cursor_value = None
-
-    @property
-    def state(self) -> Mapping[str, Any]:
-        if self._cursor_value:
-            return {self.cursor_field: self._cursor_value}
-        else:
-            return {self.cursor_field: self.initial_date}
-    
-    @state.setter
-    def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
-
+   
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
         self.server_name = config['server_name']
         self.form_id = config.get("form_id", [])
+        self.start_date = config['start_date']
         #base64 encode username and password as auth token
         user_name_password = f"{config['username']}:{config['password']}"
         self.auth_token = self._base64_encode(user_name_password)
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        initial_date = datetime.strptime(self.start_date, self.date_format)
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {self.cursor_field: initial_date}
+    
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
         
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -70,7 +71,7 @@ class SurveyctoStream(HttpStream,  IncrementalMixin, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-         ix = self.state[self.cursor_field] if self.cursor_field in self.state else self.initial_date
+         ix = self.state[self.cursor_field] 
          return {'date': ix.strftime(self.date_format)}
 
     def request_headers(
@@ -105,7 +106,6 @@ class SurveyctoStream(HttpStream,  IncrementalMixin, ABC):
         for record in super().read_records(*args, **kwargs):
             self._cursor_value = datetime.strptime(record[self.cursor_field], self.date_format)
             yield record
-        self.last_form_date = self._cursor_value
 
 # Source
 class SourceSurveycto(AbstractSource):
