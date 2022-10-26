@@ -4,4 +4,18 @@
   padding: variables.$spacing-xl;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  gap: variables.$spacing-xl;
+}
+
+.streamSelector {
+  flex: 0 0 auto;
+}
+
+.testControls {
+  flex: 0 0 auto;
+}
+
+.resultDisplay {
+  flex: 1;
 }

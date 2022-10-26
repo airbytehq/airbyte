@@ -16,13 +16,14 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
 
   return (
     <div className={styles.container}>
-      <StreamSelector />
+      <StreamSelector className={styles.streamSelector} />
       <TestControls
+        className={styles.testControls}
         onClickTest={() => {
           readStream();
         }}
       />
-      <ResultDisplay streamRead={streamReadData ?? { logs: [], slices: [] }} />
+      <ResultDisplay className={styles.resultDisplay} streamRead={streamReadData ?? { logs: [], slices: [] }} />
     </div>
   );
 };

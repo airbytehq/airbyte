@@ -9,33 +9,39 @@ import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBui
 
 import styles from "./StreamSelector.module.scss";
 
-export const StreamSelector: React.FC<unknown> = () => {
+interface StreamSelectorProps {
+  className?: string;
+}
+
+export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
   const { streams, selectedStream, setSelectedStream } = useConnectorBuilderState();
 
   return (
-    <Listbox value={selectedStream.name} onChange={setSelectedStream}>
-      <Listbox.Button className={classNames(styles.button, styles.centered)}>
-        <Text className={styles.capitalized} as="h1" size="sm">
-          {selectedStream.name}
-        </Text>
-        <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
-      </Listbox.Button>
-      {/* wrap in div to make `position: absolute` on Listbox.Options result in correct vertical positioning */}
-      <div>
-        <Listbox.Options className={classNames(styles.optionsMenu, styles.centered)}>
-          {streams.map(({ name: streamName }) => (
-            <Listbox.Option key={streamName} value={streamName} className={styles.option}>
-              {({ active }) => (
-                <div className={classNames(styles.optionValue, { [styles.active]: active })}>
-                  <Text className={styles.capitalized} size="lg">
-                    {streamName}
-                  </Text>
-                </div>
-              )}
-            </Listbox.Option>
-          ))}
-        </Listbox.Options>
-      </div>
-    </Listbox>
+    <div className={className}>
+      <Listbox value={selectedStream.name} onChange={setSelectedStream}>
+        <Listbox.Button className={classNames(styles.button, styles.centered)}>
+          <Text className={styles.capitalized} as="h1" size="sm">
+            {selectedStream.name}
+          </Text>
+          <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
+        </Listbox.Button>
+        {/* wrap in div to make `position: absolute` on Listbox.Options result in correct vertical positioning */}
+        <div>
+          <Listbox.Options className={classNames(styles.optionsMenu, styles.centered)}>
+            {streams.map(({ name: streamName }) => (
+              <Listbox.Option key={streamName} value={streamName} className={styles.option}>
+                {({ active }) => (
+                  <div className={classNames(styles.optionValue, { [styles.active]: active })}>
+                    <Text className={styles.capitalized} size="lg">
+                      {streamName}
+                    </Text>
+                  </div>
+                )}
+              </Listbox.Option>
+            ))}
+          </Listbox.Options>
+        </div>
+      </Listbox>
+    </div>
   );
 };

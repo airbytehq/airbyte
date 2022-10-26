@@ -23,7 +23,7 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
         ],
         slices: [
           {
-            sliceDescriptor: { start: "Jan 1, 2022", end: "Jan 2, 2022" },
+            sliceDescriptor: { startDatetime: "Jan 1, 2022", listItem: "airbyte-cloud" },
             state: {
               type: "STREAM",
               stream: { stream_descriptor: { name: readParams.stream }, stream_state: { date: "2022-09-26" } },
@@ -37,13 +37,32 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
                     data: {
                       id: "dp_123",
                       object: readParams.stream,
-                      amount: 2000,
+                      amount: 1000,
                       balance_transaction: "txn_123",
                     },
                   },
                 ],
                 request: {
-                  url: `https://api.com/${readParams.stream}`,
+                  url: `https://api.com/${readParams.stream}?page=1`,
+                },
+                response: {
+                  status: 200,
+                },
+              },
+              {
+                records: [
+                  {
+                    stream: readParams.stream,
+                    data: {
+                      id: "dp_456",
+                      object: readParams.stream,
+                      amount: 2000,
+                      balance_transaction: "txn_456",
+                    },
+                  },
+                ],
+                request: {
+                  url: `https://api.com/${readParams.stream}?page=2`,
                 },
                 response: {
                   status: 200,
