@@ -534,7 +534,7 @@ class StrandedInventoryUiReport(ReportsAmazonSPStream):
 
 class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
     def parse_document(self, document):
-        parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message", "OrderItem", "Component"})
+        parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message", "OrderItem"})
         orders = parsed.get("AmazonEnvelope", {}).get("Message", [])
         result = []
         if isinstance(orders, list):
