@@ -13,7 +13,9 @@ import javax.annotation.Nonnull;
  */
 public interface IcebergCatalogConfig {
 
-    Map<String, Object> sparkConfigMap(S3Config s3Config);
+    void check(S3Config destinationConfig);
+
+    Map<String, String> sparkConfigMap(S3Config s3Config);
 
     static IcebergCatalogConfig fromDestinationConfig(@Nonnull final JsonNode config) {
         final JsonNode catalogConfig = config.get(ICEBERG_CATALOG_CONFIG_KEY);
@@ -26,4 +28,5 @@ public interface IcebergCatalogConfig {
                 throw new RuntimeException("Unexpected catalog config: " + Jsons.serialize(config));
         }
     }
+
 }

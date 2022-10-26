@@ -18,9 +18,12 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.SparkSession.Builder;
 
 @Slf4j
 public class IcebergDestination extends BaseConnector implements Destination {
@@ -72,6 +75,8 @@ public class IcebergDestination extends BaseConnector implements Destination {
             //delete temp object
             s3Client.deleteObject(bucket, tempObjectName);
 
+            destinationConfig.getCatalogConfig().check(destinationConfig);
+
             //getting here means s3 check success
             return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
         } catch (final Exception e) {
@@ -85,10 +90,17 @@ public class IcebergDestination extends BaseConnector implements Destination {
 
     @Override
     public AirbyteMessageConsumer getConsumer(JsonNode config,
-        ConfiguredAirbyteCatalog configuredCatalog,
+        ConfiguredAirbyteCatalog catalog,
         Consumer<AirbyteMessage> outputRecordCollector) {
-        // TODO
-        return null;
+        final S3Config s3Config = this.s3ConfigFactory.parseS3Config(config);
+        Map<String, String> sparkConfMap = s3Config.getCatalogConfig().sparkConfigMap(s3Config);
+
+        Builder sparkBuilder = SparkSession.builder().master("local")
+            .appName("Airbyte->Iceberg-" + System.currentTimeMillis());
+        sparkConfMap.forEach(sparkBuilder::config);
+        SparkSession spark = sparkBuilder.getOrCreate();
+
+        return new IcebergConsumer(spark, outputRecordCollector, catalog);
     }
 
 }

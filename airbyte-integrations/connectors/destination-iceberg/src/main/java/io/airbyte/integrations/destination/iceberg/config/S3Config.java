@@ -40,6 +40,8 @@ public class S3Config {
     private final String bucketName;
     private final String bucketPath;
     private final String bucketRegion;
+    private final String accessKeyId;
+    private final String secretKey;
     private final S3CredentialConfig credentialConfig;
     private final boolean pathStyleAccess;
     private final boolean sslEnabled;
@@ -47,17 +49,19 @@ public class S3Config {
     private AmazonS3 s3Client;
 
     public static S3Config fromDestinationConfig(@Nonnull final JsonNode config) {
-        S3ConfigBuilder builder = new S3ConfigBuilder()
-            .bucketName(getProperty(config, S3_BUCKET_NAME_CONFIG_KEY))
+        S3ConfigBuilder builder = new S3ConfigBuilder().bucketName(getProperty(config, S3_BUCKET_NAME_CONFIG_KEY))
             .bucketRegion(getProperty(config, S3_BUCKET_REGION_CONFIG_KEY))
             .bucketPath(getProperty(config, S3_BUCKET_PATH_CONFIG_KEY))
             .endpoint(getProperty(config, S3_ENDPOINT_CONFIG_KEY));
 
         if (config.has(S3_ACCESS_KEY_ID_CONFIG_KEY)) {
-            builder.credentialConfig(new S3AccessKeyCredentialConfig(getProperty(config, S3_ACCESS_KEY_ID_CONFIG_KEY),
-                getProperty(config, S3_SECRET_KEY_CONFIG_KEY)));
+            String accessKeyId = getProperty(config, S3_ACCESS_KEY_ID_CONFIG_KEY);
+            String secretAccessKey = getProperty(config, S3_SECRET_KEY_CONFIG_KEY);
+            builder.credentialConfig(new S3AccessKeyCredentialConfig(accessKeyId, secretAccessKey))
+                .accessKeyId(accessKeyId)
+                .secretKey(secretAccessKey);
         } else {
-            builder.credentialConfig(new S3AWSDefaultProfileCredentialConfig());
+            builder.credentialConfig(new S3AWSDefaultProfileCredentialConfig()).accessKeyId("").secretKey("");
         }
 
         if (config.has(S3_PATH_STYLE_ACCESS_CONFIG_KEY)) {
