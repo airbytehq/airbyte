@@ -112,7 +112,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Mongo DB](sources/mongodb-v2.md)                                                           | Alpha                | Yes                 |
 | [My Hours](sources/my-hours.md)                                                             | Alpha                | Yes                 |
 | [MySQL](sources/mysql.md)                                                                   | Beta                 | Yes                 |
-| [NASA APOD](sources/nasa-apod.md)                                                           | Alpha                | Yes                 |
+| [NASA](sources/nasa.md)                                                                     | Alpha                | Yes                 |
 | [Notion](sources/notion.md)                                                                 | Generally Available  | Yes                 |
 | [Okta](sources/okta.md)                                                                     | Alpha                | Yes                 |
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |

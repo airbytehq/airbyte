@@ -1,12 +1,16 @@
-# NASA APOD
+# NASA
 
 ## Overview
 
-The NASA APOD (Astronomy Picture Of the Day) supports full refresh syncs
+The NASA source supports full refresh syncs
 
 ### Output schema
 
-There is only one stream available from this source, and its documentation can be found [here](https://github.com/nasa/apod-api#docs-).
+Asingle output stream is available (at the moment) from this source:
+
+*[APOD](https://github.com/nasa/apod-api#docs-).
+
+If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Features
 
@@ -19,7 +23,7 @@ There is only one stream available from this source, and its documentation can b
 
 ### Performance considerations
 
-The NASA APOD connector should not run into NASA APOD API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The NASA connector should not run into NASA API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
 
