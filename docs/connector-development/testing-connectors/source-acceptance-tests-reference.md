@@ -151,6 +151,7 @@ Set `validate_data_points=True` if possible. This validation is going to be enab
 | `expect_trace_message_on_failure` | boolean          | True                                        | Ensure that a trace message is emitted when the connector crashes                                             |
 | `expect_records`                  | object           | None                                        | Compare produced records with expected records, see details below                                             |
 | `expect_records.path`             | string           |                                             | File with expected records                                                                                    |
+| `expect_records.bypass_reason`    | string           |                                             | Explain why this test is bypassed                                                                             |
 | `expect_records.extra_fields`     | boolean          | False                                       | Allow output records to have other fields i.e: expected records are a subset                                  |
 | `expect_records.exact_order`      | boolean          | False                                       | Ensure  that records produced in exact same order                                                             |
 | `expect_records.extra_records`    | boolean          | True                                        | Allow connector to produce extra records, but still enforce all records from the expected file to be produced |
@@ -302,3 +303,9 @@ acceptance_tests:
         timeout_seconds: 1200
 ...
 ```
+
+#### Basic read: `expect_records` must be set 
+In `high` test strictness level we expect the `expect_records` subtest to be set.
+If you can't create an `expected_records.json` with all the existing stream you need to declare the missing streams in the `empty_streams` section.
+If you can't get an `expected_records.json` file at all, you must fill in a `bypass_reason`.
+
