@@ -5,8 +5,13 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.workers.temporal.sync.RefreshSchemaActivityImpl;
@@ -24,6 +29,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class RefreshSchemaActivityTest {
 
   static private ConfigRepository mConfigRepository;
+
+  static private SourceApi mSourceApi;
+
   static private RefreshSchemaActivityImpl refreshSchemaActivity;
 
   static private final UUID SOURCE_ID = UUID.randomUUID();
@@ -31,7 +39,8 @@ class RefreshSchemaActivityTest {
   @BeforeEach
   void setUp() {
     mConfigRepository = mock(ConfigRepository.class);
-    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository));
+    mSourceApi = mock(SourceApi.class);
+    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mSourceApi);
   }
 
   @Test
@@ -54,6 +63,15 @@ class RefreshSchemaActivityTest {
     ActorCatalogFetchEvent fetchEvent = new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID()).withCreatedAt(twelveHoursAgo);
     when(mConfigRepository.getMostRecentActorCatalogFetchEventForSource(SOURCE_ID)).thenReturn(Optional.ofNullable(fetchEvent));
     Assertions.assertThat(false).isEqualTo(refreshSchemaActivity.shouldRefreshSchema(SOURCE_ID));
+  }
+
+  @Test
+  void testRefreshSchema() throws ApiException {
+    UUID sourceId = UUID.randomUUID();
+    refreshSchemaActivity.refreshSchema(sourceId);
+    SourceDiscoverSchemaRequestBody requestBody =
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true);
+    verify(mSourceApi, times(1)).discoverSchemaForSource(requestBody);
   }
 
 }
