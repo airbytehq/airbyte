@@ -3,7 +3,6 @@
 #
 
 from datetime import datetime
-from json.decoder import JSONDecodeError
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
@@ -21,24 +20,14 @@ class SourceDatadog(AbstractSource):
         return DatadogAuthenticator(api_key=config["api_key"], application_key=config["application_key"])
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        alive = True
-        error_msg = None
-
         try:
             args = self.connector_config(config)
-            dd_dashboards = Dashboards(**args)
-            for _ in dd_dashboards.read_records(sync_mode=SyncMode.full_refresh):
-                continue
-        except ConnectionError as error:
-            alive, error_msg = False, repr(error)
-        except JSONDecodeError:
-            alive, error_msg = (
-                False,
-                "Unable to connect to the Datadog API with the provided credentials. Please make sure the input "
-                "credentials and environment are correct.",
-            )
-
-        return alive, error_msg
+            dashboards_stream = Dashboards(**args)
+            records = dashboards_stream.read_records(sync_mode=SyncMode.full_refresh)
+            next(records, None)
+            return True, None
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self.connector_config(config)

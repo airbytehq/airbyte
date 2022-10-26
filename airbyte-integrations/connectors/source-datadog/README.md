@@ -86,6 +86,12 @@ docker build . --no-cache -t airbyte/source-datadog:dev \
 && python -m pytest -p source_acceptance_test.plugin
 ```
 
+### Unit Tests
+To run unit tests locally, from the connector directory run:
+```
+python -m pytest unit_tests
+```
+
 ### Integration Tests
 1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-datadog:integrationTest` to run the standard integration test suite.
 1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
