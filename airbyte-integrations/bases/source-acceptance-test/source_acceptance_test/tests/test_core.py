@@ -27,7 +27,7 @@ from airbyte_cdk.models import (
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import BasicReadTestConfig, Config, ConnectionTestConfig, DiscoveryTestConfig, SpecTestConfig
+from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, DiscoveryTestConfig, SpecTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from source_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
@@ -435,14 +435,17 @@ class TestBasicRead(BaseTest):
         assert not stream_name_to_empty_fields_mapping, msg
 
     def _validate_expected_records(
-        self, records: List[AirbyteRecordMessage], expected_records: List[AirbyteRecordMessage], flags, detailed_logger: Logger
+        self,
+        records: List[AirbyteRecordMessage],
+        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
+        flags,
+        detailed_logger: Logger,
     ):
         """
         We expect some records from stream to match expected_records, partially or fully, in exact or any order.
         """
         actual_by_stream = self.group_by_stream(records)
-        expected_by_stream = self.group_by_stream(expected_records)
-        for stream_name, expected in expected_by_stream.items():
+        for stream_name, expected in expected_records_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
             detailed_logger.info(f"Actual records for stream {stream_name}:")
             detailed_logger.log_json_list(actual)
@@ -464,12 +467,10 @@ class TestBasicRead(BaseTest):
         connector_config,
         configured_catalog,
         inputs: BasicReadTestConfig,
-        expected_records: List[AirbyteRecordMessage],
+        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
         detailed_logger,
-        test_strictness_level: Config.TestStrictnessLevel,
     ):
-        self.enforce_strictness_level(test_strictness_level, inputs)
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
 
@@ -489,9 +490,12 @@ class TestBasicRead(BaseTest):
         if inputs.validate_data_points:
             self._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
 
-        if expected_records:
+        if expected_records_by_stream:
             self._validate_expected_records(
-                records=records, expected_records=expected_records, flags=inputs.expect_records, detailed_logger=detailed_logger
+                records=records,
+                expected_records_by_stream=expected_records_by_stream,
+                flags=inputs.expect_records,
+                detailed_logger=detailed_logger,
             )
 
     def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
@@ -581,11 +585,3 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
-
-    @staticmethod
-    def enforce_strictness_level(test_strictness_level: Config.TestStrictnessLevel, inputs: BasicReadTestConfig):
-        if test_strictness_level is Config.TestStrictnessLevel.high:
-            if inputs.empty_streams:
-                all_empty_streams_have_bypass_reasons = all([bool(empty_stream.bypass_reason) for empty_stream in inputs.empty_streams])
-                if not all_empty_streams_have_bypass_reasons:
-                    pytest.fail("A bypass_reason must be filled in for all empty streams when test_strictness_level is set to high.")
