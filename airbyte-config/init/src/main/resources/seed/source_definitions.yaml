@@ -17,7 +17,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 1.0.15
+  dockerImageTag: 1.0.16
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -225,6 +225,14 @@
   dockerRepository: airbyte/source-courier
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/courier
+  sourceType: api
+  releaseStage: alpha
+- name: Clockify
+  sourceDefinitionId: e71aae8a-5143-11ed-bdc3-0242ac120002
+  dockerRepository: airbyte/source-clockify
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/clockify
+  icon: clockify.svg
   sourceType: api
   releaseStage: alpha
 - name: Customer.io
@@ -593,7 +601,7 @@
 - name: Lever Hiring
   sourceDefinitionId: 3981c999-bd7d-4afc-849b-e53dea90c948
   dockerRepository: airbyte/source-lever-hiring
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/lever-hiring
   icon: leverhiring.svg
   sourceType: api
@@ -665,7 +673,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.4.23
+  dockerImageTag: 0.4.24
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -713,7 +721,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 1.0.7
+  dockerImageTag: 1.0.8
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -871,7 +879,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.19
+  dockerImageTag: 1.0.21
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1118,7 +1126,7 @@
 - name: Twilio
   sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   icon: twilio.svg
   sourceType: api

@@ -198,7 +198,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.15"
+- dockerImage: "airbyte/source-alloydb:1.0.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -2183,6 +2183,31 @@
         api_key:
           type: "string"
           description: "Courier API Key to retrieve your data."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-clockify:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/clockify"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Clockify Spec"
+      type: "object"
+      required:
+      - "workspace_id"
+      - "api_key"
+      additionalProperties: true
+      properties:
+        workspace_id:
+          title: "Workspace Id"
+          description: "WorkSpace Id"
+          type: "string"
+        api_key:
+          title: "API Key"
+          description: "You can get your api access_key <a href=\"https://app.clockify.me/user/settings\"\
+            >here</a> This API is Case Sensitive."
+          type: "string"
           airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
@@ -5741,7 +5766,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-lever-hiring:0.1.2"
+- dockerImage: "airbyte/source-lever-hiring:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/lever-hiring"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/lever-hiring#changelog"
@@ -5767,9 +5792,6 @@
               auth_type:
                 type: "string"
                 const: "Client"
-                enum:
-                - "Client"
-                default: "Client"
                 order: 0
               client_id:
                 title: "Client ID"
@@ -5780,16 +5802,26 @@
                 type: "string"
                 description: "The Client Secret of your Lever Hiring developer application."
                 airbyte_secret: true
-              option_title:
-                type: "string"
-                title: "Credentials Title"
-                description: "OAuth Credentials"
-                const: "OAuth Credentials"
               refresh_token:
                 type: "string"
                 title: "Refresh Token"
                 description: "The token for obtaining new access token."
                 airbyte_secret: true
+          - type: "object"
+            title: "Authenticate via Lever (Api Key)"
+            required:
+            - "api_key"
+            properties:
+              auth_type:
+                type: "string"
+                const: "Api Key"
+                order: 0
+              api_key:
+                title: "Api key"
+                type: "string"
+                description: "The Api Key of your Lever Hiring account."
+                airbyte_secret: true
+                order: 1
         start_date:
           order: 0
           type: "string"
@@ -6330,7 +6362,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.23"
+- dockerImage: "airbyte/source-mssql:0.4.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -7160,7 +7192,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.7"
+- dockerImage: "airbyte/source-mysql:1.0.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8792,7 +8824,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.19"
+- dockerImage: "airbyte/source-postgres:1.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11610,7 +11642,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-twilio:0.1.12"
+- dockerImage: "airbyte/source-twilio:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
