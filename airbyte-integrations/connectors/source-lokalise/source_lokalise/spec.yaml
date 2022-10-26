@@ -14,4 +14,4 @@ connectionSpecification:
       airbyte_secret: true
     project_id:
       type: string
-      description: Lokalise project ID. Available at Project settings > General.
+      description: Lokalise project ID. Available at Project Settings > General.

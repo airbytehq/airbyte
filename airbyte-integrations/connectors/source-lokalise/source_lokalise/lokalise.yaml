@@ -45,6 +45,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
 
   keys_stream:
+    # https://developers.lokalise.com/reference/list-all-keys
     $ref: "*ref(definitions.base_stream)"
     retriever:
       record_selector:
@@ -59,6 +60,7 @@ definitions:
       path: "/api2/projects/{{ config['project_id'] }}/keys"
 
   languages_stream:
+    # https://developers.lokalise.com/reference/list-all-keys
     $ref: "*ref(definitions.base_stream)"
     retriever:
       record_selector:

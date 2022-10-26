@@ -1,12 +1,15 @@
 # Lokalise 
 
-This page contains the setup guide and reference information for the Lokalise source connector.
+This page contains the setup guide and reference information for the [Lokalise](https://lokalise.com/) source connector.
+
+You can find more information about the Lokalise REST API [here](https://developers.lokalise.com/reference/lokalise-rest-api).
 
 ## Prerequisites
 
 You can find your Project ID and find or create an API key within [Lokalise](https://docs.lokalise.com/en/articles/1929556-api-tokens).
 
 ## Setup guide
+
 ## Step 1: Set up the Lokalise connector in Airbyte
 
 ### For Airbyte Cloud:
