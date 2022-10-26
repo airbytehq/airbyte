@@ -1,0 +1,38 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["items"]
+  requester:
+    url_base: "https://webfonts.googleapis.com/v1"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "apikey"
+      api_token: "{{ config['api_key'] }}"
+
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+
+  fonts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "fonts"
+      path: "/webfonts?key={{ config['api_key'] }}&sort={{ config['sort'] or 'SORT_UNDEFINED'}}&prettyPrint={{ config['prettyPrint'] or 'true'}}&alt={{ config['alt'] or 'json'}}"
+
+streams:
+  - "*ref(definitions.fonts_stream)"
+
+check:
+  stream_names:
+    - "fonts"
