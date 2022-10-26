@@ -107,7 +107,7 @@ definitions:
         $ref: "*ref(definitions.requester)"
     $options:
       name: "contributors"
-      primary_key: "contributor_id"
+      primary_key: "user_id"
       path: "/api2/projects/{{ config['project_id'] }}/contributors"
 
 streams:
