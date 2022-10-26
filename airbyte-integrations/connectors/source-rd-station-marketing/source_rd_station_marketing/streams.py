@@ -71,8 +71,7 @@ class IncrementalRDStationMarketingStream(RDStationMarketingStream):
     ) -> MutableMapping[str, Any]:
         start_date = self._start_date
         
-        if start_date:
-            if stream_state.get(self.cursor_field):
+        if start_date and stream_state.get(self.cursor_field):
                 start_date = max(pendulum.parse(stream_state[self.cursor_field]), start_date)
         
         params = {}
