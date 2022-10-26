@@ -109,7 +109,8 @@ public final class S3BaseChecks {
   /**
    * Runs some permissions checks:
    * 1. Check whether the bucket exists; create it if not
-   * 2. Check whether s3://bucketName://bucketPath/ exists; create it (with empty contents) if not
+   * 2. Check whether s3://bucketName/bucketPath/ exists; create it (with empty contents) if not.
+   *    (if bucketPath is null/empty-string, then skip this step)
    * 3. Attempt to create and delete s3://bucketName/outputTableName
    * 4. Attempt to list all objects in the bucket
    */
