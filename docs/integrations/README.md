@@ -14,7 +14,6 @@ For more information about the grading system, see [Product Release Stages](http
 
 ## Sources
 
-<<<<<<< HEAD
 | Connector                                                                                   | Product Release Stage | Available in Cloud? |
 | :------------------------------------------------------------------------------------------ | :-------------------- | :------------------ |
 | [3PL Central](sources/tplcentral.md)                                                        | Alpha                 | No                  |
@@ -157,6 +156,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Stripe](sources/stripe.md)                                                                 | Generally Available   | Yes                 |
 | [Sugar CRM](sources/sugar-crm.md)                                                           | Alpha                 | No                  |
 | [SurveyMonkey](sources/surveymonkey.md)                                                     | Beta                  | Yes                 |
+| [SurveyCTO](sources/surveycto.md)                                                           | Beta                  | No                  |
 | [Tempo](sources/tempo.md)                                                                   | Alpha                 | Yes                 |
 | [TiDB](sources/tidb.md)                                                                     | Alpha                 | No                  |
 | [TikTok Marketing](./sources/tiktok-marketing.md)                                           | Generally Available   | Yes                 |
