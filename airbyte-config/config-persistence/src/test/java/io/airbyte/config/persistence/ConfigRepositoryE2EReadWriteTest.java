@@ -515,17 +515,17 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException, JsonValidationException {
+  void testGetMostRecentActorCatalogFetchEventForSource() throws SQLException, IOException, JsonValidationException {
     for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
       configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
     }
 
-    OffsetDateTime now = OffsetDateTime.now();
-    OffsetDateTime yesterday = now.minusDays(1l);
+    final OffsetDateTime now = OffsetDateTime.now();
+    final OffsetDateTime yesterday = now.minusDays(1l);
 
-    List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEventsSameSource();
-    ActorCatalogFetchEvent fetchEvent1 = fetchEvents.get(0);
-    ActorCatalogFetchEvent fetchEvent2 = fetchEvents.get(1);
+    final List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEventsSameSource();
+    final ActorCatalogFetchEvent fetchEvent1 = fetchEvents.get(0);
+    final ActorCatalogFetchEvent fetchEvent2 = fetchEvents.get(1);
 
     database.transaction(ctx -> {
       insertCatalogFetchEvent(
@@ -542,13 +542,37 @@ class ConfigRepositoryE2EReadWriteTest {
       return null;
     });
 
-    Optional<ActorCatalogFetchEvent> result =
+    final Optional<ActorCatalogFetchEvent> result =
         configRepository.getMostRecentActorCatalogFetchEventForSource(fetchEvent1.getActorId());
 
     assertEquals(fetchEvent2.getActorCatalogId(), result.get().getActorCatalogId());
   }
 
-  private void insertCatalogFetchEvent(DSLContext ctx, UUID sourceId, UUID catalogId, OffsetDateTime creationDate) {
+  @Test
+  void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException, JsonValidationException {
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+    }
+
+    database.transaction(ctx -> {
+      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEvent -> insertCatalogFetchEvent(
+          ctx,
+          actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+          actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+          actorCatalogFetchEvent.getCreatedAt()));
+
+      return null;
+    });
+
+    final Map<UUID, ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
+            MockData.SOURCE_ID_2));
+
+    assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
+    assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
+  }
+
+  private void insertCatalogFetchEvent(final DSLContext ctx, final UUID sourceId, final UUID catalogId, final OffsetDateTime creationDate) {
     ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
         .columns(
             ACTOR_CATALOG_FETCH_EVENT.ID,
