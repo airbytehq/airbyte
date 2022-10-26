@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_nasa_apod'
+    moduleDirectory 'source_nasa'
 }

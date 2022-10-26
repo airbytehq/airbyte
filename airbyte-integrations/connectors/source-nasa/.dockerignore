@@ -1,6 +1,6 @@
 *
 !Dockerfile
 !main.py
-!source_nasa_apod
+!source_nasa
 !setup.py
 !secrets

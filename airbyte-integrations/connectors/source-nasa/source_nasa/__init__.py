@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceNasaApod
+from .source import SourceNasa
 
-__all__ = ["SourceNasaApod"]
+__all__ = ["SourceNasa"]

@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_nasa_apod import SourceNasaApod
+from source_nasa import SourceNasa
 
 if __name__ == "__main__":
-    source = SourceNasaApod()
+    source = SourceNasa()
     launch(source, sys.argv[1:])

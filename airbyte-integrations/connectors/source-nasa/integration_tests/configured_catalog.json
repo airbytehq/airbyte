@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "nasa_apod_stream",
+        "name": "nasa_apod",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh"

@@ -1,9 +1,9 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-nasa-apod:dev
+connector_image: airbyte/source-nasa:dev
 tests:
   spec:
-    - spec_path: "source_nasa_apod/spec.yaml"
+    - spec_path: "source_nasa/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

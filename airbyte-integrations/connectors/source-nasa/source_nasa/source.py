@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from abc import ABC
 from datetime import datetime, time, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -14,12 +15,10 @@ from airbyte_cdk.sources.streams.http import HttpStream
 date_format = "%Y-%m-%d"
 
 
-class NasaApodStream(HttpStream):
+class NasaStream(HttpStream, ABC):
 
     api_key = "api_key"
     url_base = "https://api.nasa.gov/"
-
-    primary_key = "date"
 
     def __init__(self, config: Mapping[str, any], **kwargs):
         super().__init__()
@@ -28,7 +27,7 @@ class NasaApodStream(HttpStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "planetary/apod"
+        return ""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -36,14 +35,33 @@ class NasaApodStream(HttpStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return self.config
+        return {self.api_key: self.config[self.api_key]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response.json()
+        r = response.json()
+        if type(r) is dict:
+            yield r
+        else: # We got a list
+            yield from r
+
+
+class NasaApod(NasaStream):
+
+    primary_key = "date"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "planetary/apod"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return self.config
 
 
 # Source
-class SourceNasaApod(AbstractSource):
+class SourceNasa(AbstractSource):
 
     count_key = "count"
     start_date_key = "start_date"
@@ -113,7 +131,7 @@ class SourceNasaApod(AbstractSource):
                 )
 
         try:
-            stream = NasaApodStream(authenticator=None, config=config)
+            stream = NasaApod(authenticator=None, config=config)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
@@ -121,4 +139,4 @@ class SourceNasaApod(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [NasaApodStream(authenticator=None, config=config)]
+        return [NasaApod(authenticator=None, config=config)]

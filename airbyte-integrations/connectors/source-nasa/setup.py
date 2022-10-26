@@ -16,8 +16,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_nasa_apod",
-    description="Source implementation for Nasa Apod.",
+    name="source_nasa",
+    description="Source implementation for Nasa.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

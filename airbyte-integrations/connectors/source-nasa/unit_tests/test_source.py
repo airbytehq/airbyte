@@ -6,11 +6,11 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
-from source_nasa_apod.source import NasaApodStream, SourceNasaApod
+from source_nasa.source import NasaApod, SourceNasa
 
 date_format = "%Y-%m-%d"
 min_date = datetime.strptime("1995-06-16", date_format)
-tomorrow = SourceNasaApod().max_date
+tomorrow = SourceNasa().max_date
 after_tomorrow_str = (tomorrow + timedelta(days=1)).strftime(date_format)
 valid_date_str = (min_date + timedelta(days=10)).strftime(date_format)
 
@@ -43,15 +43,15 @@ valid_date_str = (min_date + timedelta(days=10)).strftime(date_format)
     ],
 )
 def test_check_connection(mocker, config, expected_return):
-    with patch.object(NasaApodStream, "read_records") as mock_http_request:
+    with patch.object(NasaApod, "read_records") as mock_http_request:
         mock_http_request.return_value = iter([None])
-        source = SourceNasaApod()
+        source = SourceNasa()
         logger_mock = MagicMock()
         assert source.check_connection(logger_mock, config) == expected_return
 
 
 def test_streams(mocker):
-    source = SourceNasaApod()
+    source = SourceNasa()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
     expected_streams_number = 1
