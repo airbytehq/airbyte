@@ -341,7 +341,7 @@ public class ConnectionsHandler {
     }
 
     if (patch.getGeography() != null) {
-      sync.setGeography(Enums.convertTo(patch.getGeography(), Geography.class));
+      sync.setGeography(ApiPojoConverters.toPersistenceGeography(patch.getGeography()));
     }
   }
 
