@@ -4,6 +4,7 @@
 
 
 from abc import ABC
+from time import strptime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from datetime import datetime, timedelta
 
@@ -71,11 +72,8 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
     @property
     def state(self) -> Mapping[str, Any]:
-        initial_date = datetime(2022,1,1,0,0,0)
         if self._cursor_value:
             return {self.cursor_field: self._cursor_value}
-        else:
-            return {self.cursor_field: initial_date}
     
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -114,6 +112,10 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 class FormCase(IncrementalStream):
     cursor_field = 'indexed_on'
     primary_key = "case_id"
+
+    def __init__(self, start_date, app_id, **kwargs):
+        super().__init__(**kwargs)
+        self._cursor_value = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -156,20 +158,22 @@ class FormCase(IncrementalStream):
                     found = True
                     break
             if found:
+                self._cursor_value = datetime.strptime(record[self.cursor_field], self.dateformat)
                 yield record
 
         # This cycle of pull is complete so clear out the form ids we saved for this cycle
-        CommcareStream.forms.clear()
-        self._cursor_value = CommcareStream.last_form_date
+        # CommcareStream.forms.clear()
+        # self._cursor_value = CommcareStream.last_form_date
         print(f'######============= CASE READ DONE {self.state[self.cursor_field]} ===============')
 
 
 class Form(IncrementalStream):
     cursor_field = 'indexed_on'
     primary_key = "id"
-    def __init__(self, app_id, **kwargs):
+    def __init__(self, start_date, app_id, **kwargs):
         super().__init__(**kwargs)
         self.app_id = app_id
+        self._cursor_value = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
         
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -222,11 +226,11 @@ class SourceCommcare(AbstractSource):
         args = {
             "authenticator": auth,
         }
-        with_appid = { **args, 'app_id': config['app_id']}
-
+        app_args = { **args, 'app_id': config['app_id']}
+        form_args = { **args, 'app_id': config['app_id'], 'start_date': config['start_date']}
         return [
-            Application(**with_appid),
-            Form(**with_appid),       
-            FormCase(**args)
+            Application(**app_args),
+            Form(**form_args),       
+            FormCase(**form_args)
         ]
 
