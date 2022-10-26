@@ -100,16 +100,17 @@ public class SourceHandler {
         spec);
 
     // read configuration from db
-    return buildSourceRead(sourceId, spec);
+    return buildSourceRead(configRepository.getSourceConnection(sourceId), spec);
   }
 
   public SourceRead updateSource(final SourceUpdate sourceUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
+    final UUID sourceId = sourceUpdate.getSourceId();
     final SourceConnection updatedSource = configurationUpdate
-        .source(sourceUpdate.getSourceId(), sourceUpdate.getName(),
+        .source(sourceId, sourceUpdate.getName(),
             sourceUpdate.getConnectionConfiguration());
-    final ConnectorSpecification spec = getSpecFromSourceId(updatedSource.getSourceId());
+    final ConnectorSpecification spec = getSpecFromSourceId(sourceId);
     validateSource(spec, sourceUpdate.getConnectionConfiguration());
 
     // persist
@@ -123,7 +124,7 @@ public class SourceHandler {
         spec);
 
     // read configuration from db
-    return buildSourceRead(sourceUpdate.getSourceId(), spec);
+    return buildSourceRead(configRepository.getSourceConnection(sourceId), spec);
   }
 
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody)
@@ -166,7 +167,7 @@ public class SourceHandler {
 
     final List<SourceRead> reads = Lists.newArrayList();
     for (final SourceConnection sc : sourceConnections) {
-      reads.add(buildSourceRead(sc.getSourceId()));
+      reads.add(buildSourceRead(sc));
     }
 
     return new SourceReadList().sources(reads);
@@ -183,7 +184,7 @@ public class SourceHandler {
 
     final List<SourceRead> reads = Lists.newArrayList();
     for (final SourceConnection sourceConnection : sourceConnections) {
-      reads.add(buildSourceRead(sourceConnection.getSourceId()));
+      reads.add(buildSourceRead(sourceConnection));
     }
 
     return new SourceReadList().sources(reads);
@@ -195,7 +196,7 @@ public class SourceHandler {
 
     for (final SourceConnection sci : configRepository.listSourceConnection()) {
       if (!sci.getTombstone()) {
-        final SourceRead sourceRead = buildSourceRead(sci.getSourceId());
+        final SourceRead sourceRead = buildSourceRead(sci);
         if (connectionsHandler.matchSearch(sourceSearch, sourceRead)) {
           reads.add(sourceRead);
         }
@@ -242,15 +243,20 @@ public class SourceHandler {
   private SourceRead buildSourceRead(final UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
-    final ConnectorSpecification spec = sourceDef.getSpec();
-    return buildSourceRead(sourceId, spec);
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
+    return buildSourceRead(sourceConnection);
   }
 
-  private SourceRead buildSourceRead(final UUID sourceId, final ConnectorSpecification spec)
+  private SourceRead buildSourceRead(final SourceConnection sourceConnection)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId());
+    final ConnectorSpecification spec = sourceDef.getSpec();
+    return buildSourceRead(sourceConnection, spec);
+  }
+
+  private SourceRead buildSourceRead(final SourceConnection sourceConnection, final ConnectorSpecification spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
