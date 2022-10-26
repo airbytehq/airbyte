@@ -5,7 +5,8 @@
 import copy
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from requests.auth import AuthBase
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -13,6 +14,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 TWILIO_API_URL_BASE = "https://api.twilio.com"
@@ -102,16 +104,28 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     time_filter_template = "YYYY-MM-DD HH:mm:ss[Z]"
     # This attribute allows balancing between sync speed and memory consumption.
     # The greater a slice is - the bigger memory consumption and the faster syncs are since fewer requests are made.
-    slice_step = pendulum.duration(years=1)
+    slice_step_default = pendulum.duration(years=1)
     # time gap between when previous slice ends and current slice begins
     slice_granularity = pendulum.duration(microseconds=1)
     state_checkpoint_interval = 1000
 
-    def __init__(self, start_date: str = None, lookback_window: int = 0, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        authenticator: Union[AuthBase, HttpAuthenticator],
+        start_date: str = None,
+        lookback_window: int = 0,
+        slice_step_map: Mapping[str, int] = None
+    ):
+        super().__init__(authenticator)
+        slice_step = (slice_step_map or {}).get(self.name)
+        self._slice_step = slice_step and pendulum.duration(days=slice_step)
         self._start_date = start_date if start_date is not None else "1970-01-01T00:00:00Z"
         self._lookback_window = lookback_window
         self._cursor_value = None
+
+    @property
+    def slice_step(self):
+        return self._slice_step or self.slice_step_default
 
     @property
     @abstractmethod
@@ -398,7 +412,7 @@ class Messages(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources"""
 
     parent_stream = Accounts
-    slice_step = pendulum.duration(days=1)
+    slice_step_default = pendulum.duration(days=1)
     lower_boundary_filter_field = "DateSent>"
     upper_boundary_filter_field = "DateSent<"
     cursor_field = "date_sent"
