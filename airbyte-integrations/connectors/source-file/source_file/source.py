@@ -21,7 +21,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
-from .client import Client
+from .client import Client, ConfigurationError
 from .utils import dropbox_force_download
 
 
@@ -106,7 +106,7 @@ class SourceFile(Source):
             with client.reader.open():
                 list(client.streams)
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except (TypeError, ValueError) as err:
+        except (TypeError, ValueError, ConfigurationError) as err:
             reason = f"Failed to load {source_url}\n Please check File Format and Reader Options are set correctly" \
                      f"\n{repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
