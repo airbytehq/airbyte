@@ -3,7 +3,7 @@
 #
 
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -118,32 +118,18 @@ class IncrementalRailzStream(RailzStream, ABC):
         return current_stream_state
 
 
-class AccountingTransactions(IncrementalRailzStream):
-    """
-    https://docs.railz.ai/reference/accounting-transactions
-    """
-
+class ServiceIncrementalRailzStream(IncrementalRailzStream):
     cursor_field = "postedDate"
     primary_key = "id"
-    serviceNames = [
-        "dynamicsBusinessCentral",
-        "freshbooks",
-        "oracleNetsuite",
-        "quickbooks",
-        "quickbooksDesktop",
-        "sageBusinessCloud",
-        "sageIntacct",
-        "wave",
-        "xero",
-    ]
 
     def __init__(self, *, parent: HttpStream, **kwargs):
         super().__init__(**kwargs)
         self.parent = parent
         self.start_date_cache = {}
 
+    @abstractmethod
     def path(self, **kwargs) -> str:
-        return "accountingTransactions"
+        pass
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for record in read_full_refresh(self.parent):
@@ -176,6 +162,51 @@ class AccountingTransactions(IncrementalRailzStream):
             yield record
 
 
+class AccountingTransactions(ServiceIncrementalRailzStream):
+    """
+    https://docs.railz.ai/reference/accounting-transactions
+    """
+
+    serviceNames = [
+        "dynamicsBusinessCentral",
+        "freshbooks",
+        "oracleNetsuite",
+        "quickbooks",
+        "quickbooksDesktop",
+        "sageBusinessCloud",
+        "sageIntacct",
+        "wave",
+        "xero",
+    ]
+
+    def path(self, **kwargs) -> str:
+        return "accountingTransactions"
+
+
+class Bills(ServiceIncrementalRailzStream):
+    """
+    https://api.railz.ai/bills
+    """
+
+    serviceNames = [
+        "dynamicsBusinessCentral",
+        "freshbooks",
+        "oracleNetsuite",
+        "plaid",
+        "quickbooks",
+        "quickbooksDesktop",
+        "sageBusinessCloud",
+        "sageIntacct",
+        "shopify",
+        "square",
+        "wave",
+        "xero",
+    ]
+
+    def path(self, **kwargs) -> str:
+        return "bills"
+
+
 # Source
 class SourceRailz(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -194,4 +225,4 @@ class SourceRailz(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = AccessTokenAuthenticator(client_id=config["client_id"], secret_key=config["secret_key"])
         businesses = Businesses(authenticator=auth)
-        return [businesses, AccountingTransactions(parent=businesses, authenticator=auth)]
+        return [businesses, AccountingTransactions(parent=businesses, authenticator=auth), Bills(parent=businesses, authenticator=auth)]

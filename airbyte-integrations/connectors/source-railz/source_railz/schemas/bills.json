@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "vendorRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "postedDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dueDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "currencyRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "symbol": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "currencyRate": {
+      "type": ["null", "integer"]
+    },
+    "lines": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "totalAmount": {
+            "type": ["null", "number"]
+          },
+          "accountRef": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "trackingCategoryRef": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "totalAmount": {
+      "type": ["null", "number"]
+    },
+    "amountDue": {
+      "type": ["null", "integer"]
+    },
+    "memo": {
+      "type": ["null", "string"]
+    },
+    "payments": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "amount": {
+            "type": ["null", "number"]
+          },
+          "paymentId": {
+            "type": ["null", "string"]
+          },
+          "date": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "sourceModifiedDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

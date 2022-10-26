@@ -12,7 +12,7 @@
       "type": "string"
     },
     "postedDate": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "entityRef": {
