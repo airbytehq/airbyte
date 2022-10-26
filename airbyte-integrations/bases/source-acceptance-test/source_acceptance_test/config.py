@@ -73,7 +73,8 @@ class ExpectedRecordsConfig(BaseModel):
     class Config:
         extra = "forbid"
 
-    path: Path = Field(description="File with expected records")
+    bypass_reason: Optional[str] = Field(description="Reason why this test is bypassed.")
+    path: Optional[Path] = Field(description="File with expected records")
     extra_fields: bool = Field(False, description="Allow records to have other fields")
     exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
     extra_records: bool = Field(
@@ -91,6 +92,14 @@ class ExpectedRecordsConfig(BaseModel):
         if "extra_fields" in values and values["extra_fields"] and extra_records:
             raise ValueError("extra_records must be off if extra_fields enabled")
         return extra_records
+
+    @validator("path", always=True)
+    def no_bypass_reason_when_path_is_set(cls, path, values):
+        if path and values.get("bypass_reason"):
+            raise ValueError("You can't set a bypass_reason if a path is set")
+        if not path and not values.get("bypass_reason"):
+            raise ValueError("A path or a bypass_reason must be set")
+        return path
 
 
 class EmptyStreamConfiguration(BaseConfig):
