@@ -140,6 +140,7 @@ class AccountingTransactions(IncrementalRailzStream):
     def __init__(self, *, parent: HttpStream, **kwargs):
         super().__init__(**kwargs)
         self.parent = parent
+        self.start_date_cache = {}
 
     def path(self, **kwargs) -> str:
         return "accountingTransactions"
@@ -157,10 +158,16 @@ class AccountingTransactions(IncrementalRailzStream):
         businessName = stream_slice["businessName"]
         serviceName = stream_slice["serviceName"]
         params.update({"businessName": businessName, "serviceName": serviceName, "orderBy": self.cursor_field})
-        startDate = stream_state.get(businessName, {}).get(serviceName, {}).get(self.cursor_field)
+        startDate = self.get_start_date(stream_state, stream_slice)
         if startDate:
             params["startDate"] = startDate
         return params
+
+    def get_start_date(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        businessName = stream_slice["businessName"]
+        serviceName = stream_slice["serviceName"]
+        start_date = stream_state.get(businessName, {}).get(serviceName, {}).get(self.cursor_field)
+        return self.start_date_cache.setdefault(businessName, {}).setdefault(serviceName, start_date)
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, any], **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
