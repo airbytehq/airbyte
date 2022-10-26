@@ -9,7 +9,7 @@ definitions:
 
   requester:
     # API Docs: https://developers.activecampaign.com/reference/url
-    url_base: "https://{{ config['account_username'] }}.api-us1.com"
+    url_base: "https://{{ config['account_username'] }}.api-us1.com/api/3"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
@@ -47,7 +47,7 @@ definitions:
     $options:
       name: "campaigns"
       primary_key: "id"
-      path: "/api/3/campaigns"
+      path: "/campaigns"
 
   # API Docs: https://developers.activecampaign.com/reference/list-all-contacts
   contacts_stream:
@@ -55,7 +55,7 @@ definitions:
     $options:
       name: "contacts"
       primary_key: "id"
-      path: "/api/3/contacts"
+      path: "/contacts"
 
   # API Docs: https://developers.activecampaign.com/reference/list-all-deals
   deals_stream:
@@ -63,7 +63,7 @@ definitions:
     $options:
       name: "deals"
       primary_key: "id"
-      path: "/api/3/deals"
+      path: "/deals"
   
   # API Docs: https://developers.activecampaign.com/reference/retrieve-all-lists
   lists_stream:
@@ -71,7 +71,7 @@ definitions:
     $options:
       name: "lists"
       primary_key: "id"
-      path: "/api/3/lists"
+      path: "/lists"
 
   # API Docs: https://developers.activecampaign.com/reference/list-all-segments
   segments_stream:
@@ -79,7 +79,7 @@ definitions:
     $options:
       name: "segments"
       primary_key: "id"
-      path: "/api/3/segments"
+      path: "/segments"
 
   # API Docs: https://developers.activecampaign.com/reference/forms-1
   forms_stream:
@@ -87,7 +87,7 @@ definitions:
     $options:
       name: "forms"
       primary_key: "id"
-      path: "/api/3/forms"
+      path: "/forms"
 
 streams:
   - "*ref(definitions.campaigns_stream)"
