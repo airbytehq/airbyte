@@ -16,6 +16,9 @@ definitions:
   contributors_selector:
     extractor:
       field_pointer: ["contributors"]
+  translations_selector:
+    extractor:
+      field_pointer: ["translations"]
 
   requester:
     url_base: "https://api.lokalise.com"
@@ -96,7 +99,7 @@ definitions:
       path: "/api2/projects/{{ config['project_id'] }}/comments"
 
   contributors_stream:
-    # https://developers.lokalise.com/reference/list-project-contributors
+    # https://developers.lokalise.com/reference/list-all-contributors
     $ref: "*ref(definitions.base_stream)"
     retriever:
       record_selector:
@@ -110,11 +113,28 @@ definitions:
       primary_key: "user_id"
       path: "/api2/projects/{{ config['project_id'] }}/contributors"
 
+  translations_stream:
+    # https://developers.lokalise.com/reference/list-all-translations
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      record_selector:
+        $ref: "*ref(definitions.translations_selector)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+    $options:
+      name: "translations"
+      primary_key: "translation_id"
+      path: "/api2/projects/{{ config['project_id'] }}/translations"
+
+
 streams:
   - "*ref(definitions.keys_stream)"
   - "*ref(definitions.languages_stream)"
   - "*ref(definitions.comments_stream)"
   - "*ref(definitions.contributors_stream)"
+  - "*ref(definitions.translations_stream)"
 
 check:
   stream_names:
@@ -122,3 +142,4 @@ check:
     - "languages"
     - "comments"
     - "contributors"
+    - "translations"

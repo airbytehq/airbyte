@@ -45,6 +45,8 @@ The Lokalise source connector supports the following [sync modes](https://docs.a
 * [Keys](https://developers.lokalise.com/reference/list-all-keys)
 * [Languages](https://developers.lokalise.com/reference/list-project-languages)
 * [Comments](https://developers.lokalise.com/reference/list-project-comments)
+* [Contributors](https://developers.lokalise.com/reference/list-all-contributors)
+* [Translations](https://developers.lokalise.com/reference/list-all-translations)
 
 ## Data type map
 
