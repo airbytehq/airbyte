@@ -93,4 +93,5 @@ public class S3BaseChecksTest {
     verify(s3Client).listObjects(ArgumentMatchers.<ListObjectsRequest>argThat(request -> "test_bucket".equals(request.getBucketName())));
     verify(s3Client).deleteObject(eq("test_bucket"), startsWith("_airbyte_connection_test_"));
   }
+
 }
