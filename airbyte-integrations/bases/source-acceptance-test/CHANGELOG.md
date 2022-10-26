@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.15
+Make `expect_records` mandatory in `high` `test_strictness_level`. [#18497](https://github.com/airbytehq/airbyte/pull/18497/).
+
 ## 0.2.14
 Fail basic read in `high` `test_strictness_level` if no `bypass_reason` is set on empty_streams. [#18425](https://github.com/airbytehq/airbyte/pull/18425/).
 
