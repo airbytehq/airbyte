@@ -1,5 +1,27 @@
+@use "../../scss/variables";
+@use "../../scss/colors";
+
+.container {
+  width: 300px;
+}
+
+.option {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+
+  & > * {
+    padding: 30px;
+
+    &:focus {
+      background-color: tomato;
+    }
+  }
+}
+
 .flag svg {
-  height: 14px;
+  height: 16px;
 }
 
 .label {

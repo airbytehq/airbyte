@@ -30,7 +30,7 @@ const flags: Record<string, React.ReactNode> = {
 const GeographyOption: React.FC<OptionProps> = (props) => {
   console.log(props);
   return (
-    <components.Option {...props}>
+    <components.Option className={styles.option} {...props}>
       <>
         <span className={styles.flag}>{flags[props.label]}</span>
         <span className={styles.label}>{props.label}</span>
@@ -49,5 +49,12 @@ const MenuList = (props: MenuListProps) => {
 };
 
 export const GeographyDropdown: React.FC = () => {
-  return <DropDown options={options} defaultValue={options[0]} components={{ Option: GeographyOption, MenuList }} />;
+  return (
+    <DropDown
+      className={styles.container}
+      options={options}
+      defaultValue={options[0]}
+      components={{ Option: GeographyOption, MenuList }}
+    />
+  );
 };
