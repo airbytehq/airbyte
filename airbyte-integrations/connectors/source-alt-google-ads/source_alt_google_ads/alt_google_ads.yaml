@@ -1,68 +1,25 @@
 version: "0.1.0"
 
 definitions:
+  cq: "SELECT campaign.accessible_bidding_strategy, campaign.ad_serving_optimization_status,  campaign.advertising_channel_sub_type, campaign.advertising_channel_type,  campaign.app_campaign_setting.app_id, campaign.app_campaign_setting.app_store,  campaign.app_campaign_setting.bidding_strategy_goal_type, campaign.base_campaign,  campaign.bidding_strategy, campaign.bidding_strategy_type, campaign.campaign_budget,  campaign_budget.amount_micros, campaign.commission.commission_rate_micros,  campaign.dynamic_search_ads_setting.domain_name, campaign.dynamic_search_ads_setting.feeds,  campaign.dynamic_search_ads_setting.language_code,  campaign.dynamic_search_ads_setting.use_supplied_urls_only, campaign.end_date,  campaign.excluded_parent_asset_field_types, campaign.experiment_type,  campaign.final_url_suffix, campaign.frequency_caps,  campaign.geo_target_type_setting.negative_geo_target_type,  campaign.geo_target_type_setting.positive_geo_target_type,  campaign.hotel_setting.hotel_center_id, campaign.id, campaign.labels,  campaign.local_campaign_setting.location_source_type,  campaign.manual_cpc.enhanced_cpc_enabled, campaign.manual_cpm, campaign.manual_cpv,  campaign.maximize_conversion_value.target_roas,  campaign.maximize_conversions.target_cpa_micros, campaign.name,  campaign.network_settings.target_content_network,  campaign.network_settings.target_google_search,  campaign.network_settings.target_partner_search_network,  campaign.network_settings.target_search_network,  campaign.optimization_goal_setting.optimization_goal_types, campaign.optimization_score,  campaign.payment_mode, campaign.percent_cpc.cpc_bid_ceiling_micros,  campaign.percent_cpc.enhanced_cpc_enabled, campaign.real_time_bidding_setting.opt_in,  campaign.resource_name, campaign.selective_optimization.conversion_actions,  campaign.serving_status, campaign.shopping_setting.campaign_priority,  campaign.shopping_setting.enable_local, campaign.shopping_setting.merchant_id,  campaign.shopping_setting.sales_country, campaign.start_date, campaign.status,  campaign.target_cpa.cpc_bid_ceiling_micros, campaign.target_cpa.cpc_bid_floor_micros,  campaign.target_cpa.target_cpa_micros, campaign.target_cpm,  campaign.target_impression_share.cpc_bid_ceiling_micros,  campaign.target_impression_share.location,  campaign.target_impression_share.location_fraction_micros,  campaign.target_roas.cpc_bid_ceiling_micros, campaign.target_roas.cpc_bid_floor_micros,  campaign.target_roas.target_roas, campaign.target_spend.cpc_bid_ceiling_micros,  campaign.target_spend.target_spend_micros, campaign.targeting_setting.target_restrictions,  campaign.tracking_setting.tracking_url, campaign.tracking_url_template,  campaign.url_custom_parameters, campaign.vanity_pharma.vanity_pharma_display_url_mode,  campaign.vanity_pharma.vanity_pharma_text, campaign.video_brand_safety_suitability,  metrics.ctr, metrics.conversions, metrics.conversions_value, metrics.clicks,  metrics.cost_micros, metrics.impressions, metrics.video_views,  metrics.video_quartile_p100_rate, segments.date, segments.hour FROM campaign WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().strftime('%Y-%m-%d') }} LIMIT 1;"
+
   campaigns_query:
-    query: >-
-       SELECT campaign.accessible_bidding_strategy, campaign.ad_serving_optimization_status, 
-       campaign.advertising_channel_sub_type, campaign.advertising_channel_type, 
-       campaign.app_campaign_setting.app_id, campaign.app_campaign_setting.app_store, 
-       campaign.app_campaign_setting.bidding_strategy_goal_type, campaign.base_campaign, 
-       campaign.bidding_strategy, campaign.bidding_strategy_type, campaign.campaign_budget, 
-       campaign_budget.amount_micros, campaign.commission.commission_rate_micros, 
-       campaign.dynamic_search_ads_setting.domain_name, campaign.dynamic_search_ads_setting.feeds, 
-       campaign.dynamic_search_ads_setting.language_code, 
-       campaign.dynamic_search_ads_setting.use_supplied_urls_only, campaign.end_date, 
-       campaign.excluded_parent_asset_field_types, campaign.experiment_type, 
-       campaign.final_url_suffix, campaign.frequency_caps, 
-       campaign.geo_target_type_setting.negative_geo_target_type, 
-       campaign.geo_target_type_setting.positive_geo_target_type, 
-       campaign.hotel_setting.hotel_center_id, campaign.id, campaign.labels, 
-       campaign.local_campaign_setting.location_source_type, 
-       campaign.manual_cpc.enhanced_cpc_enabled, campaign.manual_cpm, campaign.manual_cpv, 
-       campaign.maximize_conversion_value.target_roas, 
-       campaign.maximize_conversions.target_cpa_micros, campaign.name, 
-       campaign.network_settings.target_content_network, 
-       campaign.network_settings.target_google_search, 
-       campaign.network_settings.target_partner_search_network, 
-       campaign.network_settings.target_search_network, 
-       campaign.optimization_goal_setting.optimization_goal_types, campaign.optimization_score, 
-       campaign.payment_mode, campaign.percent_cpc.cpc_bid_ceiling_micros, 
-       campaign.percent_cpc.enhanced_cpc_enabled, campaign.real_time_bidding_setting.opt_in, 
-       campaign.resource_name, campaign.selective_optimization.conversion_actions, 
-       campaign.serving_status, campaign.shopping_setting.campaign_priority, 
-       campaign.shopping_setting.enable_local, campaign.shopping_setting.merchant_id, 
-       campaign.shopping_setting.sales_country, campaign.start_date, campaign.status, 
-       campaign.target_cpa.cpc_bid_ceiling_micros, campaign.target_cpa.cpc_bid_floor_micros, 
-       campaign.target_cpa.target_cpa_micros, campaign.target_cpm, 
-       campaign.target_impression_share.cpc_bid_ceiling_micros, 
-       campaign.target_impression_share.location, 
-       campaign.target_impression_share.location_fraction_micros, 
-       campaign.target_roas.cpc_bid_ceiling_micros, campaign.target_roas.cpc_bid_floor_micros, 
-       campaign.target_roas.target_roas, campaign.target_spend.cpc_bid_ceiling_micros, 
-       campaign.target_spend.target_spend_micros, campaign.targeting_setting.target_restrictions, 
-       campaign.tracking_setting.tracking_url, campaign.tracking_url_template, 
-       campaign.url_custom_parameters, campaign.vanity_pharma.vanity_pharma_display_url_mode, 
-       campaign.vanity_pharma.vanity_pharma_text, campaign.video_brand_safety_suitability, 
-       metrics.ctr, metrics.conversions, metrics.conversions_value, metrics.clicks, 
-       metrics.cost_micros, metrics.impressions, metrics.video_views, 
-       metrics.video_quartile_p100_rate, segments.date, segments.hour
-       FROM campaign
-       WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
+    query: "*ref(definitions.cq)"
   accounts_query:
     query: >-
       SELECT customer.auto_tagging_enabled, customer.call_reporting_setting.call_conversion_action,
-      customer.call_reporting_setting.call_conversion_reporting_enabled, 
-      customer.call_reporting_setting.call_reporting_enabled,
-      customer.conversion_tracking_setting.conversion_tracking_id, 
-      customer.conversion_tracking_setting.cross_account_conversion_tracking_id, 
-      customer.currency_code, customer.descriptive_name, customer.final_url_suffix, 
-      customer.has_partners_badge, customer.id, customer.manager, customer.optimization_score, 
-      customer.optimization_score_weight, customer.pay_per_conversion_eligibility_failure_reason, 
-      customer.remarketing_setting.google_global_site_tag, customer.resource_name, 
-      customer.test_account, customer.time_zone, customer.tracking_url_template, 
-      segments.date 
+        customer.call_reporting_setting.call_conversion_reporting_enabled, 
+        customer.call_reporting_setting.call_reporting_enabled,
+        customer.conversion_tracking_setting.conversion_tracking_id, 
+        customer.conversion_tracking_setting.cross_account_conversion_tracking_id, 
+        customer.currency_code, customer.descriptive_name, customer.final_url_suffix, 
+        customer.has_partners_badge, customer.id, customer.manager, customer.optimization_score, 
+        customer.optimization_score_weight, customer.pay_per_conversion_eligibility_failure_reason, 
+        customer.remarketing_setting.google_global_site_tag, customer.resource_name, 
+        customer.test_account, customer.time_zone, customer.tracking_url_template, 
+        segments.date 
       FROM accounts 
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
+      WHERE segments.date BETWEEN '2022-01-01' AND '2022-07-07'
   ad_group_ads_query:
     query: >-
       SELECT ad_group_ad.ad.added_by_google_ads, ad_group_ad.ad.app_ad.descriptions, 
@@ -163,7 +120,6 @@ definitions:
         label.name, label.resource_name
       FROM
         ad_group_ad_label
-      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
   ad_groups_query:
     query: >- 
       SELECT ad_group.ad_rotation_mode, ad_group.base_ad_group, ad_group.campaign, 
@@ -186,9 +142,34 @@ definitions:
     query: >-
       SELECT campaign.resource_name, campaign_label.resource_name, label.name, label.resource_name
       FROM campaign_label
-  click_view_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
-  keyword_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
-  geographic_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  click_view_query:
+   query: >-
+    SELECT ad_group.name, click_view.gclid, click_view.ad_group_ad, 
+    click_view.keyword, click_view.keyword_info.match_type, 
+    click_view.keyword_info.text, campaign.id, ad_group.id, 
+    segments.date, customer.id, campaign.name, 
+    segments.ad_network_type, 
+    campaign.network_settings.target_content_network, 
+    campaign.network_settings.target_google_search, 
+    campaign.network_settings.target_partner_search_network, 
+    campaign.network_settings.target_search_network
+    FROM click_view
+    WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
+  keyword_report_query:
+    query: >-
+      SELECT customer.descriptive_name, ad_group.id, ad_group_criterion.type, 
+      ad_group_criterion.keyword.text, ad_group_criterion.negative, 
+      ad_group_criterion.keyword.match_type, metrics.historical_quality_score, 
+      metrics.ctr, segments.date, campaign.bidding_strategy_type, metrics.clicks, 
+      metrics.cost_micros, metrics.impressions, ad_group_criterion.criterion_id 
+      FROM keyword_view
+      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
+  geographic_report_query:
+    query: >-
+      SELECT customer.descriptive_name, geographic_view.country_criterion_id, 
+      geographic_view.location_type, ad_group.id, segments.date 
+      FROM geographic_view
+      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
   account_performance_report_query: 
     query: >- 
       SELECT customer.currency_code, customer.descriptive_name, customer.time_zone,
@@ -298,10 +279,114 @@ definitions:
       metrics.view_through_conversions, segments.week, segments.year
       FROM ad_group_ad
       WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
-  display_keyword_performance_report_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
-  display_topics_performance_report_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
-  shopping_performance_report_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
-  user_location_report_query: "SELECT campaign.name, campaign.id FROM campaign LIMIT 1"
+  display_keyword_performance_report_query:
+    query: >-
+      SELECT customer.currency_code, customer.descriptive_name, 
+      customer.time_zone, metrics.active_view_cpm, 
+      metrics.active_view_ctr, metrics.active_view_impressions, 
+      metrics.active_view_measurability, 
+      metrics.active_view_measurable_cost_micros, 
+      metrics.active_view_measurable_impressions, 
+      metrics.active_view_viewability, ad_group.id, 
+      ad_group.name, ad_group.status, segments.ad_network_type, 
+      metrics.all_conversions_from_interactions_rate, 
+      metrics.all_conversions_value, metrics.all_conversions, 
+      metrics.average_cost, metrics.average_cpc, 
+      metrics.average_cpe, metrics.average_cpm, 
+      metrics.average_cpv, ad_group.base_ad_group, 
+      campaign.base_campaign, campaign.bidding_strategy, 
+      campaign.bidding_strategy_type, campaign.id, campaign.name, 
+      campaign.status, metrics.clicks, metrics.conversions_from_interactions_rate, 
+      metrics.conversions_value, metrics.conversions, metrics.cost_micros, 
+      metrics.cost_per_all_conversions, metrics.cost_per_conversion, 
+      ad_group_criterion.effective_cpc_bid_micros, ad_group_criterion.effective_cpc_bid_source, 
+      ad_group_criterion.effective_cpm_bid_micros, ad_group_criterion.effective_cpm_bid_source, 
+      ad_group_criterion.effective_cpv_bid_micros, ad_group_criterion.effective_cpv_bid_source, 
+      ad_group_criterion.keyword.text, metrics.cross_device_conversions, metrics.ctr, 
+      segments.day_of_week, segments.device, metrics.engagement_rate, metrics.engagements, 
+      customer.id, ad_group_criterion.final_mobile_urls, ad_group_criterion.final_urls, 
+      metrics.gmail_forwards, metrics.gmail_saves, metrics.gmail_secondary_clicks, 
+      ad_group_criterion.criterion_id, metrics.impressions, metrics.interaction_rate, 
+      metrics.interaction_event_types, metrics.interactions, ad_group_criterion.negative, 
+      ad_group.targeting_setting.target_restrictions, segments.month, segments.quarter, 
+      ad_group_criterion.status, ad_group_criterion.tracking_url_template, 
+      ad_group_criterion.keyword.match_type, ad_group_criterion.url_custom_parameters, 
+      metrics.value_per_all_conversions, metrics.value_per_conversion, 
+      metrics.video_quartile_p100_rate, metrics.video_quartile_p25_rate, 
+      metrics.video_quartile_p50_rate, metrics.video_quartile_p75_rate, metrics.video_view_rate, 
+      metrics.video_views, metrics.view_through_conversions, segments.week, segments.year, 
+      segments.date
+      FROM display_keyword_view
+      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
+  display_topics_performance_report_query:
+    query: >-
+      SELECT customer.currency_code, customer.descriptive_name, customer.time_zone, 
+      metrics.active_view_cpm, metrics.active_view_ctr, metrics.active_view_impressions, 
+      metrics.active_view_measurability, metrics.active_view_measurable_cost_micros, 
+      metrics.active_view_measurable_impressions, metrics.active_view_viewability, ad_group.id, 
+      ad_group.name, ad_group.status, segments.ad_network_type, 
+      metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, 
+      metrics.all_conversions, metrics.average_cost, metrics.average_cpc, metrics.average_cpe, 
+      metrics.average_cpm, metrics.average_cpv, ad_group.base_ad_group, campaign.base_campaign, 
+      ad_group_criterion.bid_modifier, campaign.bidding_strategy, campaign.bidding_strategy_type, 
+      campaign.id, campaign.name, campaign.status, metrics.clicks, 
+      metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, 
+      metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, 
+      ad_group_criterion.effective_cpc_bid_micros, ad_group_criterion.effective_cpc_bid_source, 
+      ad_group_criterion.effective_cpm_bid_micros, ad_group_criterion.effective_cpm_bid_source, 
+      ad_group_criterion.topic.path, metrics.cross_device_conversions, metrics.ctr, segments.date, 
+      segments.day_of_week, segments.device, metrics.engagement_rate, metrics.engagements, 
+      customer.id, ad_group_criterion.final_mobile_urls, ad_group_criterion.final_urls, 
+      metrics.gmail_forwards, metrics.gmail_saves, metrics.gmail_secondary_clicks, 
+      ad_group_criterion.criterion_id, metrics.impressions, metrics.interaction_rate, 
+      metrics.interaction_event_types, metrics.interactions, ad_group_criterion.negative, 
+      ad_group.targeting_setting.target_restrictions, segments.month, segments.quarter, 
+      ad_group_criterion.status, ad_group_criterion.tracking_url_template, 
+      ad_group_criterion.url_custom_parameters, metrics.value_per_all_conversions, 
+      metrics.value_per_conversion, ad_group_criterion.topic.topic_constant, 
+      metrics.video_quartile_p100_rate, metrics.video_quartile_p25_rate, 
+      metrics.video_quartile_p50_rate, metrics.video_quartile_p75_rate, metrics.video_view_rate, 
+      metrics.video_views, metrics.view_through_conversions, segments.week, segments.year 
+      FROM topic_view
+      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
+  shopping_performance_report_query:
+    query: >-
+      SELECT customer.descriptive_name, ad_group.id, ad_group.name, ad_group.status, 
+      segments.ad_network_type, segments.product_aggregator_id, 
+      metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, 
+      metrics.all_conversions, metrics.average_cpc, segments.product_brand, campaign.id, 
+      campaign.name, campaign.status, segments.product_bidding_category_level1, 
+      segments.product_bidding_category_level2, segments.product_bidding_category_level3, 
+      segments.product_bidding_category_level4, segments.product_bidding_category_level5, 
+      segments.product_channel, segments.product_channel_exclusivity, segments.click_type, 
+      metrics.clicks, metrics.conversions_from_interactions_rate, metrics.conversions_value, 
+      metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, 
+      metrics.cost_per_conversion, segments.product_country, metrics.cross_device_conversions, 
+      metrics.ctr, segments.product_custom_attribute0, segments.product_custom_attribute1, 
+      segments.product_custom_attribute2, segments.product_custom_attribute3, 
+      segments.product_custom_attribute4, segments.date, segments.day_of_week, segments.device, 
+      customer.id, metrics.impressions, segments.product_language, segments.product_merchant_id, 
+      segments.month, segments.product_item_id, segments.product_condition, segments.product_title, 
+      segments.product_type_l1, segments.product_type_l2, segments.product_type_l3, 
+      segments.product_type_l4, segments.product_type_l5, segments.quarter, 
+      segments.product_store_id, metrics.value_per_all_conversions, metrics.value_per_conversion, 
+      segments.week, segments.year
+      FROM shopping_performance_view
+      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
+  user_location_report_query: 
+    query: >-
+      SELECT customer.auto_tagging_enabled, customer.call_reporting_setting.call_conversion_action, 
+      customer.call_reporting_setting.call_conversion_reporting_enabled, 
+      customer.call_reporting_setting.call_reporting_enabled, 
+      customer.conversion_tracking_setting.conversion_tracking_id, 
+      customer.conversion_tracking_setting.cross_account_conversion_tracking_id, 
+      customer.currency_code, customer.descriptive_name, customer.final_url_suffix, 
+      customer.has_partners_badge, customer.id, customer.manager, customer.optimization_score, 
+      customer.optimization_score_weight, customer.pay_per_conversion_eligibility_failure_reasons, 
+      customer.remarketing_setting.google_global_site_tag, customer.resource_name, 
+      customer.test_account, customer.time_zone, customer.tracking_url_template
+      FROM user_location_view
+      WHERE segments.date BETWEEN {{config['start_date']}} AND {{ config.get('end_date') or utc_now().format(%Y-%m-%d) }}
   selector:
     extractor: 
       field_pointer: []
@@ -349,42 +434,98 @@ definitions:
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   accounts_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.accounts_query)"
     $options:
       name: "accounts"
       primary_key: ["customer.id", "segments.date"]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   ad_group_ads_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.ad_group_ads_query)"
     $options:
       name: "ad_group_ads"
       primary_key: ["ad_group_ad.ad.id", "segments.date"]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   ad_group_ad_labels_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.ad_group_ad_labels_query)"
     $options:
       name: "ad_group_ad_labels"
       primary_key: ["ad_group_ad_label.resource_name"]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   ad_groups_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.ad_groups_query)"
     $options:
       name: "ad_groups"
       primary_key: ["ad_group.id", "segments.date"]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   ad_group_labels_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.ad_group_labels_query)"
     $options:
       name: "ad_group_labels"
       primary_key: ["ad_group_label.resource_name"]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   campaign_labels_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.campaign_labels_query)"
     $options:
       name: "campaign_labels"
       primary_key: ["campaign_label.resource_name"]
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   click_view_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.click_view_query)"
     $options:
       name: "click_view"
       primary_key: ["click_view.gclid", "segments.date", "segments.ad_network_type"]
@@ -393,41 +534,105 @@ definitions:
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   keyword_report_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.keyword_report_query)"
     $options:
       name: "keyword_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   geographic_report_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.geographic_report_query)"
     $options:
       name: "geographic_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   account_performance_report_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.account_performance_report_query)"
     $options:
       name: "account_performance_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   ad_group_ad_report_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.ad_group_ad_report_query)"
     $options:
       name: "ad_group_ad_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   display_keyword_performance_report_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.display_keyword_performance_report_query)"
     $options:
       name: "display_keyword_performance_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   display_topics_performance_report_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.display_topics_performance_report_query)"
     $options:
       name: "display_topics_performance_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   shopping_performance_report_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.shopping_performance_report_query)"
     $options:
       name: "shopping_performance_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
   user_location_report_stream:
     $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          $ref: "*ref(definitions.requester.request_options_provider)"
+          request_body_json:
+            $ref: "*ref(definitions.user_location_report_query)"
     $options:
       name: "user_location_report"
       path: "/customers/{{ config['customer_id'] }}/googleAds:searchStream"
@@ -448,9 +653,21 @@ streams:
   - "*ref(definitions.display_topics_performance_report_stream)"
   - "*ref(definitions.shopping_performance_report_stream)"
   - "*ref(definitions.user_location_report_stream)"
-
-
-
 check:
   stream_names:
     - "campaigns"
+    - "accounts"
+    - "ad_group_ads"
+    - "ad_group_ad_labels"
+    - "ad_groups"
+    - "ad_group_labels"
+    - "campaign_labels"
+    - "click_view"
+    - "keyword_report"
+    - "geographic_report"
+    - "account_performance_report"
+    - "ad_group_ad_report"
+    - "display_keyword_performance_report"
+    - "display_topics_performance_report"
+    - "shopping_performance_report"
+    - "user_location_report"
