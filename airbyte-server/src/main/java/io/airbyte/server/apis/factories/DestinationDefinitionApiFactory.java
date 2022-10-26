@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis.factories;
 
 import io.airbyte.server.apis.DestinationDefinitionApiController;
@@ -12,11 +16,14 @@ public class DestinationDefinitionApiFactory implements Factory<DestinationDefin
     DestinationDefinitionApiFactory.destinationDefinitionsHandler = destinationDefinitionsHandler;
   }
 
-  @Override public DestinationDefinitionApiController provide() {
+  @Override
+  public DestinationDefinitionApiController provide() {
     return new DestinationDefinitionApiController(destinationDefinitionsHandler);
   }
 
-  @Override public void dispose(final DestinationDefinitionApiController instance) {
+  @Override
+  public void dispose(final DestinationDefinitionApiController instance) {
     /* no op */
   }
+
 }
