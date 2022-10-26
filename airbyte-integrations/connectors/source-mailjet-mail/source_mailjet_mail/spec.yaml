@@ -1,4 +1,4 @@
-documentationUrl: https://dev.mailjet.com/email/guides/
+documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-mail
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Mailjet Mail Spec
@@ -9,11 +9,13 @@ connectionSpecification:
   additionalProperties: true
   properties:
     api_key:
+      title: API Key
       type: string
       description: >-
         Your API Key. See <a
         href="https://dev.mailjet.com/email/guides/#authentication">here</a>.
     api_key_secret:
+      title: API Secret Key
       type: string
       description: >- 
         Your API Secret Key. See <a
