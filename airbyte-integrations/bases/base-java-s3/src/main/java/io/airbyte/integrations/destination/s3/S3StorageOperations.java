@@ -93,6 +93,11 @@ public class S3StorageOperations extends BlobStorageOperations {
             .replaceAll("/+", "/"));
   }
 
+  /**
+   * Create a directory object at the specified location. Creates the bucket if necessary.
+   *
+   * @param objectPath The directory to create. Must be a nonempty string.
+   */
   @Override
   public void createBucketObjectIfNotExists(final String objectPath) {
     final String bucket = s3Config.getBucketName();
