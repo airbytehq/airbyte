@@ -9,11 +9,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.config.ActorCatalogFetchEvent;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.handlers.SchedulerHandler;
-import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.sync.RefreshSchemaActivityImpl;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -31,6 +32,8 @@ class RefreshSchemaActivityTest {
   static private ConfigRepository mConfigRepository;
   static private SchedulerHandler mSchedulerHandler;
 
+  static private SourceApi mSourceApi;
+
   static private RefreshSchemaActivityImpl refreshSchemaActivity;
 
   static private final UUID SOURCE_ID = UUID.randomUUID();
@@ -38,8 +41,8 @@ class RefreshSchemaActivityTest {
   @BeforeEach
   void setUp() {
     mConfigRepository = mock(ConfigRepository.class);
-    mSchedulerHandler = mock(SchedulerHandler.class);
-    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mSchedulerHandler);
+    mSourceApi = mock(SourceApi.class);
+    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mSourceApi);
   }
 
   @Test
@@ -65,12 +68,12 @@ class RefreshSchemaActivityTest {
   }
 
   @Test
-  void testRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testRefreshSchema() throws ApiException {
     UUID sourceId = UUID.randomUUID();
     refreshSchemaActivity.refreshSchema(sourceId);
-    io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody requestBody =
-        new io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true);
-    verify(mSchedulerHandler, times(1)).discoverSchemaForSourceFromSourceId(requestBody);
+    SourceDiscoverSchemaRequestBody requestBody =
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true);
+    verify(mSourceApi, times(1)).discoverSchemaForSource(requestBody);
   }
 
 }
