@@ -20,7 +20,7 @@ from source_gridly.helpers import Helpers
 
 # Basic full refresh stream
 class GridlyStream(HttpStream, ABC):
-    url_base = "https://api.gridly.com/v1/"
+    url_base = Helpers.base_url
     primary_key = "id"
     current_page = 1
     limit = 100

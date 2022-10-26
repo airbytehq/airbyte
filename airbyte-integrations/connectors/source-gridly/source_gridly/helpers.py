@@ -10,9 +10,23 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 
 class Helpers(object):
+    base_url = "https://api.gridly.com/v1/"
+
+    @staticmethod
+    def view_detail_url(view_id: str) -> str:
+        return Helpers.base_url + f"views/{view_id}"
+
+    @staticmethod
+    def view_list_url(grid_id: str) -> str:
+        return Helpers.base_url + f"views?gridId={grid_id}"
+
+    @staticmethod
+    def grid_detail_url(grid_id: str) -> str:
+        return Helpers.base_url + f"grids/{grid_id}"
+
     @staticmethod
     def get_views(auth: TokenAuthenticator, grid_id: str) -> Dict[str, Any]:
-        url = f"https://api.gridly.com/v1/views?gridId={grid_id}"
+        url = Helpers.view_list_url(grid_id)
         try:
             response = requests.get(url, headers=auth.get_auth_header())
             response.raise_for_status()
@@ -28,7 +42,7 @@ class Helpers(object):
 
     @staticmethod
     def get_grid(auth: TokenAuthenticator, grid_id: str) -> Dict[str, Any]:
-        url = f"https://api.gridly.com/v1/grids/{grid_id}"
+        url = Helpers.grid_detail_url(grid_id)
         try:
             response = requests.get(url, headers=auth.get_auth_header())
             response.raise_for_status()
@@ -43,7 +57,7 @@ class Helpers(object):
 
     @staticmethod
     def get_view(auth: TokenAuthenticator, view_id: str) -> Dict[str, Any]:
-        url = f"https://api.gridly.com/v1/views/{view_id}"
+        url = Helpers.view_detail_url(view_id)
         try:
             response = requests.get(url, headers=auth.get_auth_header())
             response.raise_for_status()
