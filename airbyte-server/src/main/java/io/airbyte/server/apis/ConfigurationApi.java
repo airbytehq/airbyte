@@ -511,8 +511,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   // DESTINATION
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public DestinationDefinitionReadList listDestinationDefinitions() {
@@ -520,8 +521,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
@@ -529,8 +531,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
@@ -538,8 +541,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
@@ -547,8 +551,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
@@ -556,8 +561,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public DestinationDefinitionRead getDestinationDefinitionForWorkspace(
@@ -566,8 +572,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   // TODO: Deprecate this route in favor of createCustomDestinationDefinition
   // since all connector definitions created through the API are custom
@@ -577,8 +584,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
@@ -586,8 +594,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate) {
@@ -595,8 +604,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public DestinationDefinitionRead updateCustomDestinationDefinition(final CustomDestinationDefinitionUpdate customDestinationDefinitionUpdate) {
@@ -604,8 +614,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
@@ -613,8 +624,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public void deleteCustomDestinationDefinition(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
@@ -622,8 +634,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(
@@ -632,8 +645,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   /**
-   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path of
-   * {@link DestinationDefinitionApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
    */
   @Override
   public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
