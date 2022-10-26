@@ -13,7 +13,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_auth0.utils import datetime_to_string, get_api_endpoint, initialize_authenticator
+from source_auth0.utils import get_api_endpoint, initialize_authenticator
 
 
 # Basic full refresh stream
