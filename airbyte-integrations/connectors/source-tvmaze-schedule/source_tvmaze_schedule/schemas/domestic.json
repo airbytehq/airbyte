@@ -35,10 +35,22 @@
     "rating": {
       "type": "object",
       "properties": {
-        "average": {}
+        "average": {
+          "type": ["number", "null"]
+        }
       }
     },
-    "image": {},
+    "image": {
+      "type": ["object", "null"],
+      "properties": {
+        "medium": {
+          "type": ["string", "null"]
+        },
+        "original": {
+          "type": ["string", "null"]
+        }
+      }
+    },
     "summary": {
       "type": ["string", "null"]
     },
@@ -81,7 +93,7 @@
         "ended": {
           "type": ["string", "null"]
         },
-        "officialSite": {},
+        "officialSite": { "type": ["string", "null"] },
         "schedule": {
           "type": "object",
           "properties": {
@@ -99,7 +111,9 @@
         "rating": {
           "type": "object",
           "properties": {
-            "average": {}
+            "average": {
+              "type": ["number", "null"]
+            }
           }
         },
         "weight": {
@@ -136,7 +150,9 @@
         "externals": {
           "type": "object",
           "properties": {
-            "tvrage": {},
+            "tvrage": {
+              "type": ["number", "null"]
+            },
             "thetvdb": {
               "type": ["number", "null"]
             },
@@ -146,7 +162,7 @@
           }
         },
         "image": {
-          "type": "object",
+          "type": ["object", "null"],
           "properties": {
             "medium": {
               "type": ["string", "null"]
