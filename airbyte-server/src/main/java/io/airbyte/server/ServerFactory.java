@@ -17,8 +17,10 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.AttemptApiController;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.server.apis.ConnectionApiController;
+import io.airbyte.server.apis.DbMigrationApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
+import io.airbyte.server.apis.binders.DbMigrationBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
@@ -118,8 +120,10 @@ public interface ServerFactory {
       DbMigrationApiFactory.setValues(dbMigrationHandler, mdc);
 
       // server configurations
-      final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiController.class, ConnectionApiController.class);
-      final Set<Object> components = Set.of(new CorsFilter(), new ConfigurationApiBinder(), new AttemptApiBinder(), new ConnectionApiBinder());
+      final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiController.class, ConnectionApiController.class,
+          DbMigrationApiController.class);
+      final Set<Object> components = Set.of(new CorsFilter(), new ConfigurationApiBinder(), new AttemptApiBinder(), new ConnectionApiBinder(),
+          new DbMigrationBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
