@@ -20,10 +20,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "float",
-        "string"
-      ]
+      "required": ["float", "string"]
     },
     "click_rate": {
       "type": "object",
@@ -35,21 +32,11 @@
           "type": "string"
         }
       },
-      "required": [
-        "float",
-        "string"
-      ]
+      "required": ["float", "string"]
     },
     "created_at": {
       "type": "string"
     }
   },
-  "required": [
-    "id",
-    "name",
-    "total",
-    "open_rate",
-    "click_rate",
-    "created_at"
-  ]
+  "required": ["id", "name", "total", "open_rate", "click_rate", "created_at"]
 }

@@ -40,11 +40,7 @@
           "format": "integer"
         }
       },
-      "required": [
-        "ecommerce_tracking",
-        "track_opens",
-        "use_google_analytics"
-      ]
+      "required": ["ecommerce_tracking", "track_opens", "use_google_analytics"]
     },
     "filter": {
       "type": "array",
@@ -74,10 +70,7 @@
               }
             }
           },
-          "required": [
-            "args",
-            "operator"
-          ]
+          "required": ["args", "operator"]
         }
       }
     },
@@ -110,31 +103,19 @@
       "format": "date-time"
     },
     "queued_at": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "started_at": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "finished_at": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "stopped_at": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "default_email_id": {
       "type": "string"
@@ -169,10 +150,7 @@
             "type": "string"
           },
           "name": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "subject": {
             "type": "string"
@@ -181,16 +159,10 @@
             "type": "string"
           },
           "screenshot_url": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "preview_url": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "created_at": {
             "type": "string",
@@ -204,10 +176,7 @@
             "type": "boolean"
           },
           "language_id": {
-            "type": [
-              "integer",
-              "null"
-            ]
+            "type": ["integer", "null"]
           },
           "is_winner": {
             "type": "boolean"
@@ -234,10 +203,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "float",
-                  "string"
-                ]
+                "required": ["float", "string"]
               },
               "clicks_count": {
                 "type": "integer"
@@ -255,10 +221,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "float",
-                  "string"
-                ]
+                "required": ["float", "string"]
               },
               "unsubscribes_count": {
                 "type": "integer"
@@ -273,10 +236,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "float",
-                  "string"
-                ]
+                "required": ["float", "string"]
               },
               "spam_count": {
                 "type": "integer"
@@ -291,10 +251,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "float",
-                  "string"
-                ]
+                "required": ["float", "string"]
               },
               "hard_bounces_count": {
                 "type": "integer"
@@ -309,10 +266,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "float",
-                  "string"
-                ]
+                "required": ["float", "string"]
               },
               "soft_bounces_count": {
                 "type": "integer"
@@ -327,10 +281,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "float",
-                  "string"
-                ]
+                "required": ["float", "string"]
               },
               "forwards_count": {
                 "type": "integer"
@@ -345,10 +296,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "float",
-                  "string"
-                ]
+                "required": ["float", "string"]
               }
             },
             "required": [
@@ -371,10 +319,7 @@
             ]
           },
           "send_after": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "track_opens": {
             "type": "boolean"
@@ -432,10 +377,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "clicks_count": {
           "type": "integer"
@@ -453,10 +395,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "unsubscribes_count": {
           "type": "integer"
@@ -471,10 +410,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "spam_count": {
           "type": "integer"
@@ -489,10 +425,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "hard_bounces_count": {
           "type": "integer"
@@ -507,10 +440,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "soft_bounces_count": {
           "type": "integer"
@@ -525,10 +455,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "forwards_count": {
           "type": "integer"
@@ -543,10 +470,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         }
       },
       "required": [
@@ -572,28 +496,16 @@
       "type": "boolean"
     },
     "has_winner": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "winner_version_for_human": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "winner_sending_time_for_humans": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "winner_selected_manually_at": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "uses_ecommerce": {
       "type": "boolean"
@@ -611,10 +523,7 @@
       }
     },
     "initial_created_at": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "is_currently_sending_out": {
       "type": "boolean"

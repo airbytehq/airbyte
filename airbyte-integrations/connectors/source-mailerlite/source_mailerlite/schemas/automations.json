@@ -32,9 +32,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "valid"
-      ]
+      "required": ["valid"]
     },
     "steps": {
       "type": "array",
@@ -96,22 +94,13 @@
                 "type": "string"
               },
               "plain_text": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "type": ["string", "null"]
               },
               "screenshot_url": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "type": ["string", "null"]
               },
               "preview_url": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "type": ["string", "null"]
               },
               "created_at": {
                 "type": "string"
@@ -150,10 +139,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "float",
-                      "string"
-                    ]
+                    "required": ["float", "string"]
                   },
                   "clicks_count": {
                     "type": "integer"
@@ -171,10 +157,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "float",
-                      "string"
-                    ]
+                    "required": ["float", "string"]
                   },
                   "unsubscribes_count": {
                     "type": "integer"
@@ -189,10 +172,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "float",
-                      "string"
-                    ]
+                    "required": ["float", "string"]
                   },
                   "spam_count": {
                     "type": "integer"
@@ -207,10 +187,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "float",
-                      "string"
-                    ]
+                    "required": ["float", "string"]
                   },
                   "hard_bounces_count": {
                     "type": "integer"
@@ -225,10 +202,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "float",
-                      "string"
-                    ]
+                    "required": ["float", "string"]
                   },
                   "soft_bounces_count": {
                     "type": "integer"
@@ -243,10 +217,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "float",
-                      "string"
-                    ]
+                    "required": ["float", "string"]
                   },
                   "forwards_count": {
                     "type": "integer"
@@ -272,10 +243,7 @@
                 ]
               },
               "send_after": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "type": ["string", "null"]
               },
               "track_opens": {
                 "type": "boolean"
@@ -320,10 +288,7 @@
             "type": "boolean"
           },
           "google_analytics": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "tracking_was_disabled": {
             "type": "boolean"
@@ -332,9 +297,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id"
-        ]
+        "required": ["id"]
       }
     },
     "triggers": {
@@ -361,17 +324,10 @@
                 "type": "string"
               },
               "url": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+                "type": ["string", "null"]
               }
             },
-            "required": [
-              "id",
-              "name",
-              "url"
-            ]
+            "required": ["id", "name", "url"]
           },
           "exclude_group_ids": {
             "type": "array",
@@ -416,10 +372,7 @@
       "type": "integer"
     },
     "first_email_screenshot_url": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "stats": {
       "type": "object",
@@ -440,10 +393,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "click_to_open_rate": {
           "type": "object",
@@ -455,10 +405,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "sent": {
           "type": "integer"
@@ -467,10 +414,7 @@
           "type": "integer"
         },
         "unique_opens_count": {
-          "type": [
-            "integer",
-            "null"
-          ]
+          "type": ["integer", "null"]
         },
         "open_rate": {
           "type": "object",
@@ -482,19 +426,13 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "clicks_count": {
           "type": "integer"
         },
         "unique_clicks_count": {
-          "type": [
-            "integer",
-            "null"
-          ]
+          "type": ["integer", "null"]
         },
         "click_rate": {
           "type": "object",
@@ -506,10 +444,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "unsubscribes_count": {
           "type": "integer"
@@ -524,10 +459,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "spam_count": {
           "type": "integer"
@@ -542,10 +474,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "hard_bounces_count": {
           "type": "integer"
@@ -560,10 +489,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         },
         "soft_bounces_count": {
           "type": "integer"
@@ -578,10 +504,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "float",
-            "string"
-          ]
+          "required": ["float", "string"]
         }
       },
       "required": [

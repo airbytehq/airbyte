@@ -32,10 +32,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "float",
-        "string"
-      ]
+      "required": ["float", "string"]
     },
     "settings": {
       "type": "object",
@@ -47,10 +44,7 @@
           "type": "integer"
         }
       },
-      "required": [
-        "double_optin",
-        "groot_id"
-      ]
+      "required": ["double_optin", "groot_id"]
     },
     "last_registration_at": {
       "type": ["null", "string"]
@@ -71,9 +65,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "update"
-      ]
+      "required": ["update"]
     },
     "used_in_automations": {
       "type": "boolean"
@@ -95,90 +87,83 @@
     },
     "groups": {
       "type": "array",
-      "items": 
-        {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "active_count": {
-              "type": "integer"
-            },
-            "sent_count": {
-              "type": "integer"
-            },
-            "opens_count": {
-              "type": "integer"
-            },
-            "open_rate": {
-              "type": "object",
-              "properties": {
-                "float": {
-                  "type": "number"
-                },
-                "string": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "float",
-                "string"
-              ]
-            },
-            "clicks_count": {
-              "type": "integer"
-            },
-            "click_rate": {
-              "type": "object",
-              "properties": {
-                "float": {
-                  "type": "number"
-                },
-                "string": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "float",
-                "string"
-              ]
-            },
-            "unsubscribed_count": {
-              "type": "integer"
-            },
-            "unconfirmed_count": {
-              "type": "integer"
-            },
-            "bounced_count": {
-              "type": "integer"
-            },
-            "junk_count": {
-              "type": "integer"
-            },
-            "created_at": {
-              "type": "string"
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
           },
-          "required": [
-            "id",
-            "name",
-            "active_count",
-            "sent_count",
-            "opens_count",
-            "open_rate",
-            "clicks_count",
-            "click_rate",
-            "unsubscribed_count",
-            "unconfirmed_count",
-            "bounced_count",
-            "junk_count",
-            "created_at"
-          ]
-        } 
+          "name": {
+            "type": "string"
+          },
+          "active_count": {
+            "type": "integer"
+          },
+          "sent_count": {
+            "type": "integer"
+          },
+          "opens_count": {
+            "type": "integer"
+          },
+          "open_rate": {
+            "type": "object",
+            "properties": {
+              "float": {
+                "type": "number"
+              },
+              "string": {
+                "type": "string"
+              }
+            },
+            "required": ["float", "string"]
+          },
+          "clicks_count": {
+            "type": "integer"
+          },
+          "click_rate": {
+            "type": "object",
+            "properties": {
+              "float": {
+                "type": "number"
+              },
+              "string": {
+                "type": "string"
+              }
+            },
+            "required": ["float", "string"]
+          },
+          "unsubscribed_count": {
+            "type": "integer"
+          },
+          "unconfirmed_count": {
+            "type": "integer"
+          },
+          "bounced_count": {
+            "type": "integer"
+          },
+          "junk_count": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "active_count",
+          "sent_count",
+          "opens_count",
+          "open_rate",
+          "clicks_count",
+          "click_rate",
+          "unsubscribed_count",
+          "unconfirmed_count",
+          "bounced_count",
+          "junk_count",
+          "created_at"
+        ]
+      }
     }
   },
   "required": [

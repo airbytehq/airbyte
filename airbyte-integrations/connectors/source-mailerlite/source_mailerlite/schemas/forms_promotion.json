@@ -33,10 +33,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "float",
-        "string"
-      ]
+      "required": ["float", "string"]
     },
     "settings": {
       "type": "object",
@@ -118,10 +115,7 @@
       ]
     },
     "last_registration_at": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "active": {
       "type": "boolean"
@@ -139,9 +133,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "update"
-      ]
+      "required": ["update"]
     },
     "used_in_automations": {
       "type": "boolean"
@@ -153,10 +145,7 @@
       }
     },
     "double_optin": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "screenshot_url": {
       "type": "string"

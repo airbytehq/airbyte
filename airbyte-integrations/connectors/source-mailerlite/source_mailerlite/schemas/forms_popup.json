@@ -32,10 +32,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "float",
-        "string"
-      ]
+      "required": ["float", "string"]
     },
     "settings": {
       "type": "object",
@@ -77,10 +74,7 @@
           }
         },
         "url_list_strict": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "hide_on": {
           "type": "array",
@@ -109,10 +103,7 @@
       ]
     },
     "last_registration_at": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "active": {
       "type": "boolean"
@@ -130,9 +121,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "update"
-      ]
+      "required": ["update"]
     },
     "used_in_automations": {
       "type": "boolean"
@@ -144,16 +133,10 @@
       }
     },
     "double_optin": {
-      "type": [
-        "boolean",
-        "null"
-      ]
+      "type": ["boolean", "null"]
     },
     "screenshot_url": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "has_missing_groups": {
       "type": "boolean"
@@ -188,10 +171,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "float",
-              "string"
-            ]
+            "required": ["float", "string"]
           },
           "clicks_count": {
             "type": "integer"
@@ -206,10 +186,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "float",
-              "string"
-            ]
+            "required": ["float", "string"]
           },
           "unsubscribed_count": {
             "type": "integer"
