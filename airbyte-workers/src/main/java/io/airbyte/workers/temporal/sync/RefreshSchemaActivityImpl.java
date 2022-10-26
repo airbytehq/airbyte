@@ -7,6 +7,9 @@ package io.airbyte.workers.temporal.sync;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
@@ -18,8 +21,11 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
   private final Optional<ConfigRepository> configRepository;
 
-  public RefreshSchemaActivityImpl(Optional<ConfigRepository> configRepository) {
+  private final SourceApi sourceApi;
+
+  public RefreshSchemaActivityImpl(Optional<ConfigRepository> configRepository, SourceApi sourceApi) {
     this.configRepository = configRepository;
+    this.sourceApi = sourceApi;
   }
 
   @Override
@@ -31,6 +37,13 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
     }
 
     return !schemaRefreshRanRecently(sourceCatalogId);
+  }
+
+  @Override
+  public void refreshSchema(UUID sourceCatalogId) throws ApiException {
+    SourceDiscoverSchemaRequestBody requestBody =
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceCatalogId).disableCache(true);
+    sourceApi.discoverSchemaForSource(requestBody);
   }
 
   private boolean schemaRefreshRanRecently(UUID sourceCatalogId) throws IOException {

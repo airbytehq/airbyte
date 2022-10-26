@@ -4,7 +4,7 @@
 
 import random
 from typing import Any, MutableMapping
-from unittest.mock import patch, PropertyMock
+from unittest.mock import PropertyMock, patch
 
 import pytest
 from airbyte_cdk.models import SyncMode
@@ -126,7 +126,7 @@ def test_incremental(stream, resource, authenticator, config, requests_mock):
     highest_updated_at = "2022-04-25T22:00:00Z"
     other_updated_at = "2022-04-01T00:00:00Z"
     highest_index = random.randint(0, 24)
-    with patch(f'source_freshdesk.streams.{stream.__name__}.use_cache', new_callable=PropertyMock, return_value=False):
+    with patch(f"source_freshdesk.streams.{stream.__name__}.use_cache", new_callable=PropertyMock, return_value=False):
         requests_mock.register_uri(
             "GET",
             f"/api/{resource}",
