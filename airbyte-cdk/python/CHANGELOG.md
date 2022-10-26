@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.0
+Publish python typehints via `py.typed` file. 
+
 ## 0.2.3
 - Propagate options to InterpolatedRequestInputProvider
 
