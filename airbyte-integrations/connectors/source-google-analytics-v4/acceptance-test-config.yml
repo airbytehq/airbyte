@@ -1,5 +1,5 @@
 connector_image: airbyte/source-google-analytics-v4:dev
-test_strictness_level: strict
+test_strictness_level: high
 acceptance_tests:
   basic_read:
     tests:
