@@ -6,12 +6,13 @@ package io.airbyte.workers.temporal.sync;
 
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.UUID;
 
 @ActivityInterface
-public interface NormalizationSummaryCheckActivity {
+public interface RefreshSchemaActivity {
 
   @ActivityMethod
-  boolean shouldRunNormalization(Long jobId, Long attemptId, Optional<Long> numCommittedRecords);
+  boolean shouldRefreshSchema(UUID sourceCatalogId) throws IOException;
 
 }
