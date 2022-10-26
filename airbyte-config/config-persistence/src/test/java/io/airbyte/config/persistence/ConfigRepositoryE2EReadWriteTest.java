@@ -167,10 +167,11 @@ class ConfigRepositoryE2EReadWriteTest {
     final List<SourceConnection> sourceConnections = configRepository.listSourcesForDefinition(
         sourceDefinitionId);
 
-    assertThat(destinationConnections).containsExactlyElementsOf(MockData.destinationConnections().stream().filter(d -> d.getDestinationDefinitionId().equals(
-        destinationDefinitionId) && ! d.getTombstone()).collect(Collectors.toList()));
+    assertThat(destinationConnections)
+        .containsExactlyElementsOf(MockData.destinationConnections().stream().filter(d -> d.getDestinationDefinitionId().equals(
+            destinationDefinitionId) && !d.getTombstone()).collect(Collectors.toList()));
     assertThat(sourceConnections).containsExactlyElementsOf(MockData.sourceConnections().stream().filter(d -> d.getSourceDefinitionId().equals(
-        sourceDefinitionId) && ! d.getTombstone()).collect(Collectors.toList()));
+        sourceDefinitionId) && !d.getTombstone()).collect(Collectors.toList()));
   }
 
   @Test

@@ -208,7 +208,8 @@ public class DestinationHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<DestinationRead> reads = Lists.newArrayList();
 
-    for (final DestinationConnection destinationConnection : configRepository.listDestinationsForDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId())) {
+    for (final DestinationConnection destinationConnection : configRepository
+        .listDestinationsForDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId())) {
       reads.add(buildDestinationRead(destinationConnection));
     }
 
