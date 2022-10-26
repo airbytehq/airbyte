@@ -4,10 +4,13 @@
 
 package io.airbyte.integrations.destination.elasticsearch;
 
+import static org.junit.Assert.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
@@ -18,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -88,33 +92,28 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
 
   @Override
   protected JsonNode getConfig() {
-
-    final JsonNode authConfig = Jsons.jsonNode(Map.of(
-        "method", "basic",
-        "username", "elastic",
-        "password", "s3cret"));
-
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("endpoint", String.format("https://%s:%s", container.getHost(), container.getMappedPort(9200)))
-        .put("authenticationMethod", authConfig)
+        .put("authenticationMethod", getAuthConfig())
         .put("ca_certificate", new String(container.copyFileFromContainer(
             "/usr/share/elasticsearch/config/certs/http_ca.crt",
             InputStream::readAllBytes), StandardCharsets.UTF_8))
         .build());
   }
 
-    protected JsonNode getUnsecureConfig() {
+  protected JsonNode getUnsecureConfig() {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
+        .put("authenticationMethod", getAuthConfig())
+        .build());
+  }
 
-      final JsonNode authConfig = Jsons.jsonNode(Map.of(
-          "method", "basic",
-          "username", "elastic",
-          "password", "MagicWord"));
-
-      return Jsons.jsonNode(ImmutableMap.builder()
-          .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
-          .put("authenticationMethod", authConfig)
-          .build());
-    }
+  protected JsonNode getAuthConfig() {
+    return Jsons.jsonNode(Map.of(
+        "method", "basic",
+        "username", "elastic",
+        "password", "s3cret"));
+  }
 
   @Override
   protected JsonNode getFailCheckConfig() {
@@ -152,6 +151,5 @@ public class ElasticsearchStrictEncryptDestinationAcceptanceTest extends Destina
   public void testCheckConnectionInvalidHttpProtocol() throws Exception {
     assertEquals(Status.FAILED, runCheck(getUnsecureConfig()).getStatus());
   }
-
 
 }

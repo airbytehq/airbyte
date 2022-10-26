@@ -25,6 +25,8 @@ public class ElasticsearchStrictEncryptDestination extends SpecModifyingDestinat
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchStrictEncryptDestination.class);
   private final ObjectMapper mapper = new ObjectMapper();
+  private static final String NON_EMPTY_URL_ERR_MSG = "Server Endpoint is a required field";
+  private static final String NON_SECURE_URL_ERR_MSG = "Server Endpoint requires HTTPS";
 
   public ElasticsearchStrictEncryptDestination() {
     super(new ElasticsearchDestination());
@@ -52,12 +54,14 @@ public class ElasticsearchStrictEncryptDestination extends SpecModifyingDestinat
     final ConnectorConfiguration configObject = convertConfig(config);
     if (Objects.isNull(configObject.getEndpoint())) {
       return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("endpoint must not be empty");
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage(NON_EMPTY_URL_ERR_MSG);
     }
 
     if (new URL(configObject.getEndpoint()).getProtocol().equals(HTTP)) {
       return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("only https protocol is allowed");
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage(NON_SECURE_URL_ERR_MSG);
     }
 
     return super.check(config);
