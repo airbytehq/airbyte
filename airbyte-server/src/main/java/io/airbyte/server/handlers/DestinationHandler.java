@@ -198,15 +198,7 @@ public class DestinationHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<DestinationRead> reads = Lists.newArrayList();
 
-    for (final DestinationConnection dci : configRepository.listDestinationConnection()) {
-      if (!dci.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId())) {
-        continue;
-      }
-
-      if (dci.getTombstone()) {
-        continue;
-      }
-
+    for (final DestinationConnection dci : configRepository.listWorkspaceDestinationConnection(workspaceIdRequestBody.getWorkspaceId())) {
       reads.add(buildDestinationRead(dci));
     }
 
