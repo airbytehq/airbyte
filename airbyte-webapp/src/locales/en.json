@@ -97,6 +97,7 @@
   "form.prefix.message": "Add a prefix to stream names (ex. “airbyte_” causes “projects” => “airbyte_projects”)",
   "form.prefix.placeholder": "prefix",
   "form.nameSearch": "Search stream name",
+  "form.fields": "Fields",
   "form.namespace": "Namespace",
   "form.streamName": "Stream name",
   "form.sourceAndDestination": "Source | Destination",

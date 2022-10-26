@@ -173,6 +173,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final JobPersistence jobPersistence,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
+
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final Database configsDatabase,
                           final Database jobsDatabase,
@@ -603,103 +604,168 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // DESTINATION IMPLEMENTATION
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead createDestination(final DestinationCreate destinationCreate) {
-    return execute(() -> destinationHandler.createDestination(destinationCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    execute(() -> {
-      destinationHandler.deleteDestination(destinationIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead updateDestination(final DestinationUpdate destinationUpdate) {
-    return execute(() -> destinationHandler.updateDestination(destinationUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationReadList searchDestinations(final DestinationSearch destinationSearch) {
-    return execute(() -> destinationHandler.searchDestinations(destinationSearch));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody) {
-    return execute(() -> destinationHandler.cloneDestination(destinationCloneRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead checkConnectionToDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationApiController}. Since the path of
+   * {@link DestinationApiController} is more granular, it will override this implementation
+   */
   @Override
   public CheckConnectionRead checkConnectionToDestinationForUpdate(final DestinationUpdate destinationUpdate) {
-    return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate));
+    throw new NotImplementedException();
   }
 
   // CONNECTION
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate) {
-    return execute(() -> connectionsHandler.createConnection(connectionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate) {
-    return execute(() -> connectionsHandler.updateConnection(connectionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
-    return execute(() -> connectionsHandler.searchConnections(connectionSearch));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    execute(() -> {
-      operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
-      connectionsHandler.deleteConnection(connectionIdRequestBody.getConnectionId());
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
   // Operations
@@ -716,7 +782,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
-    return execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
+    return ConfigurationApi.execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
   }
 
   @Override
@@ -744,7 +810,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> stateHandler.getState(connectionIdRequestBody));
+    return ConfigurationApi.execute(() -> stateHandler.getState(connectionIdRequestBody));
   }
 
   // SCHEDULER
@@ -840,7 +906,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
+    return ConfigurationApi.execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
   }
 
   @Override
