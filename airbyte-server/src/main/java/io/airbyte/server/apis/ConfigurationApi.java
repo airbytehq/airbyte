@@ -5,6 +5,7 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckOperationRead;
 import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
@@ -787,6 +788,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody) {
     return execute(() -> jobHistoryHandler.getJobDebugInfo(jobIdRequestBody));
+  }
+
+  @Override
+  public AttemptNormalizationStatusReadList getAttemptNormalizationStatusesForJob(final JobIdRequestBody jobIdRequestBody) {
+    return execute(() -> jobHistoryHandler.getAttemptNormalizationStatuses(jobIdRequestBody));
   }
 
   @Override
