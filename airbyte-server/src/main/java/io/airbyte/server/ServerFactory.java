@@ -36,12 +36,14 @@ import io.airbyte.server.apis.factories.DestinationApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.HealthApiFactory;
+import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
+import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.scheduler.EventRunner;
@@ -77,6 +79,7 @@ public interface ServerFactory {
                         final DestinationDefinitionsHandler destinationDefinitionsHandler,
                         final DestinationHandler destinationApiHandler,
                         final HealthCheckHandler healthCheckHandler,
+                        final JobHistoryHandler jobHistoryHandler,
                         final OperationsHandler operationsHandler,
                         final SchedulerHandler schedulerHandler);
 
@@ -105,6 +108,7 @@ public interface ServerFactory {
                                  final DestinationDefinitionsHandler destinationDefinitionsHandler,
                                  final DestinationHandler destinationApiHandler,
                                  final HealthCheckHandler healthCheckHandler,
+                                 final JobHistoryHandler jobHistoryHandler,
                                  final OperationsHandler operationsHandler,
                                  final SchedulerHandler schedulerHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -147,6 +151,8 @@ public interface ServerFactory {
       DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
 
       HealthApiFactory.setValues(healthCheckHandler);
+
+      JobsApiFactory.setValues(jobHistoryHandler, schedulerHandler);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
