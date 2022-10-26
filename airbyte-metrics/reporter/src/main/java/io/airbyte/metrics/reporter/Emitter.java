@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 final class NumPendingJobs extends Emitter {
 
   public NumPendingJobs(final MetricClient client, final MetricRepository db) {
-    super(() -> {
+    super(client, () -> {
       final var pending = db.numberOfPendingJobs();
       client.gauge(OssMetricsRegistry.NUM_PENDING_JOBS, pending);
       return null;
@@ -32,7 +32,7 @@ final class NumPendingJobs extends Emitter {
 final class NumRunningJobs extends Emitter {
 
   public NumRunningJobs(final MetricClient client, final MetricRepository db) {
-    super(() -> {
+    super(client, () -> {
       final var running = db.numberOfRunningJobs();
       client.gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, running);
       return null;
@@ -45,7 +45,7 @@ final class NumRunningJobs extends Emitter {
 final class NumOrphanRunningJobs extends Emitter {
 
   NumOrphanRunningJobs(final MetricClient client, final MetricRepository db) {
-    super(() -> {
+    super(client, () -> {
       final var orphaned = db.numberOfOrphanRunningJobs();
       client.gauge(OssMetricsRegistry.NUM_ORPHAN_RUNNING_JOBS, orphaned);
       return null;
@@ -58,7 +58,7 @@ final class NumOrphanRunningJobs extends Emitter {
 final class OldestRunningJob extends Emitter {
 
   OldestRunningJob(final MetricClient client, final MetricRepository db) {
-    super(() -> {
+    super(client, () -> {
       final var age = db.oldestRunningJobAgeSecs();
       client.gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
       return null;
@@ -71,7 +71,7 @@ final class OldestRunningJob extends Emitter {
 final class OldestPendingJob extends Emitter {
 
   OldestPendingJob(final MetricClient client, final MetricRepository db) {
-    super(() -> {
+    super(client, () -> {
       final var age = db.oldestPendingJobAgeSecs();
       client.gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
       return null;
@@ -84,7 +84,7 @@ final class OldestPendingJob extends Emitter {
 final class NumActiveConnectionsPerWorkspace extends Emitter {
 
   NumActiveConnectionsPerWorkspace(final MetricClient client, final MetricRepository db) {
-    super(() -> {
+    super(client, () -> {
       final var workspaceConns = db.numberOfActiveConnPerWorkspace();
       for (final long numCons : workspaceConns) {
         client.distribution(OssMetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, numCons);
@@ -99,7 +99,7 @@ final class NumActiveConnectionsPerWorkspace extends Emitter {
 final class NumAbnormalScheduledSyncs extends Emitter {
 
   NumAbnormalScheduledSyncs(final MetricClient client, final MetricRepository db) {
-    super(() -> {
+    super(client, () -> {
       final var count = db.numberOfJobsNotRunningOnScheduleInLastDay();
       client.gauge(OssMetricsRegistry.NUM_ABNORMAL_SCHEDULED_SYNCS_IN_LAST_DAY, count);
       return null;
@@ -114,10 +114,28 @@ final class NumAbnormalScheduledSyncs extends Emitter {
 }
 
 @Singleton
+final class NumUnusuallyLongSyncs extends Emitter {
+
+  NumUnusuallyLongSyncs(final MetricClient client, final MetricRepository db) {
+    super(client, () -> {
+      final var count = db.numberOfJobsRunningUnusuallyLong();
+      client.gauge(OssMetricsRegistry.NUM_UNUSUALLY_LONG_SYNCS, count);
+      return null;
+    });
+  }
+
+  @Override
+  public Duration getDuration() {
+    return Duration.ofMinutes(15);
+  }
+
+}
+
+@Singleton
 final class TotalScheduledSyncs extends Emitter {
 
   TotalScheduledSyncs(final MetricClient client, final MetricRepository db) {
-    super(() -> {
+    super(client, () -> {
       final var count = db.numScheduledActiveConnectionsInLastDay();
       client.gauge(OssMetricsRegistry.NUM_TOTAL_SCHEDULED_SYNCS_IN_LAST_DAY, count);
       return null;
@@ -135,7 +153,7 @@ final class TotalScheduledSyncs extends Emitter {
 final class TotalJobRuntimeByTerminalState extends Emitter {
 
   public TotalJobRuntimeByTerminalState(final MetricClient client, final MetricRepository db) {
-    super(() -> {
+    super(client, () -> {
       db.overallJobRuntimeForTerminalJobsInLastHour()
           .forEach((jobStatus, time) -> client.distribution(
               OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS,
@@ -160,9 +178,11 @@ final class TotalJobRuntimeByTerminalState extends Emitter {
 sealed class Emitter {
 
   protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  protected final MetricClient client;
   protected final Callable<Void> callable;
 
-  Emitter(final Callable<Void> callable) {
+  Emitter(final MetricClient client, final Callable<Void> callable) {
+    this.client = client;
     this.callable = callable;
   }
 
@@ -176,6 +196,7 @@ sealed class Emitter {
   public void Emit() {
     try {
       callable.call();
+      client.count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
     } catch (final Exception e) {
       log.error("Exception querying database for metric: ", e);
     }

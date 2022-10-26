@@ -34,13 +34,13 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     stream_schema = {"type": "object", "properties": {"string_col": {"type": "str"}, "int_col": {"type": "integer"}}}
 
     append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="append_stream", json_schema=stream_schema),
+        stream=AirbyteStream(name="append_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )
 
     overwrite_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="overwrite_stream", json_schema=stream_schema),
+        stream=AirbyteStream(name="overwrite_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.overwrite,
     )
