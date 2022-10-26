@@ -656,8 +656,9 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // DESTINATION SPECIFICATION
   /**
-   * This implementation has been moved to {@link DestinationDefinitionSpecificationApiController}. Since the path of
-   * {@link DestinationDefinitionSpecificationApiController} is more granular, it will override this implementation
+   * This implementation has been moved to {@link DestinationDefinitionSpecificationApiController}.
+   * Since the path of {@link DestinationDefinitionSpecificationApiController} is more granular, it
+   * will override this implementation
    */
   @Override
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(

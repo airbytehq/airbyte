@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis.factories;
 
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
@@ -12,11 +16,14 @@ public class DestinationDefinitionSpecificationApiFactory implements Factory<Des
     DestinationDefinitionSpecificationApiFactory.schedulerHandler = schedulerHandler;
   }
 
-  @Override public DestinationDefinitionSpecificationApiController provide() {
+  @Override
+  public DestinationDefinitionSpecificationApiController provide() {
     return new DestinationDefinitionSpecificationApiController(DestinationDefinitionSpecificationApiFactory.schedulerHandler);
   }
 
-  @Override public void dispose(final DestinationDefinitionSpecificationApiController instance) {
+  @Override
+  public void dispose(final DestinationDefinitionSpecificationApiController instance) {
 
   }
+
 }

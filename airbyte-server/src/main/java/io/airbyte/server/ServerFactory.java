@@ -145,7 +145,8 @@ public interface ServerFactory {
           DbMigrationApiController.class, DestinationApiController.class, DestinationDefinitionApiController.class,
           DestinationDefinitionSpecificationApiController.class);
       final Set<Object> components = Set.of(new CorsFilter(), new ConfigurationApiBinder(), new AttemptApiBinder(), new ConnectionApiBinder(),
-          new DbMigrationBinder(), new DestinationApiBinder(), new DestinationDefinitionApiBinder(), new DestinationDefinitionSpecificationApiBinder());
+          new DbMigrationBinder(), new DestinationApiBinder(), new DestinationDefinitionApiBinder(),
+          new DestinationDefinitionSpecificationApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
