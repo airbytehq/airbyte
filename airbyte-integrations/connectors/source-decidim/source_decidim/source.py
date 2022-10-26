@@ -23,6 +23,36 @@ from airbyte_cdk.sources import Source
 
 DECIDIM_GRAPHQL_URL = "decidim_graphql_url"
 
+class DecidimStream(HttpStream, ABC):
+    def __init__(self, decidim_graphql_url: str, **kwargs):
+        super().__init__(**kwargs)
+        self.decidim_graphql_url =  decidim_graphql_url
+    
+    primary_key = "id"
+    response_entity = None
+    
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # The API does not offer pagination, so we return None to indicate there are no more pages in the response
+        return None
+
+    def path(
+        self, 
+        stream_state: Mapping[str, Any] = None, 
+        stream_slice: Mapping[str, Any] = None, 
+        next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return ""  # TODO
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        return None  # TODO
+
+    
 
 class SourceDecidim(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
@@ -51,6 +81,13 @@ class SourceDecidim(Source):
                 return AirbyteConnectionStatus(status=Status.FAILED, message=f"Provided URL of Decidim instance isn't correct. Please recheck decidim graphql URL.")
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        # NoAuth just means there is no authentication required for this API and is included for completeness.
+        # Skip passing an authenticator if no authentication is required.
+        # Other authenticators are available for API token-based auth and Oauth2. 
+        auth = NoAuth()  
+        return [DecidimStream(config[DECIDIM_GRAPHQL_URL])]
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         """
