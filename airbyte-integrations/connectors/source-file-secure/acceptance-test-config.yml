@@ -13,9 +13,6 @@ tests:
     # for https
     - config_path: "integration_tests/config.json"
       status: "succeed"
-    # for local should be failed
-    - config_path: "integration_tests/local_config.json"
-      status: "exception"
 
   discovery:
     # for https
