@@ -75,11 +75,13 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Search Console](sources/google-search-console.md)                                   | Generally Available  | Yes                 |
 | [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
-| [Greenhouse](sources/greenhouse.md)                                                         | Generally Available  | Yes                 |
+| [Greenhouse](sources/greenhouse.md)                                                         | Beta                 | Yes                 |
+| [Gutendex](sources/gutendex.md)                                                             | Alpha                | No                  |
 | [Harness](sources/harness.md)                                                               | Alpha                | No                  |
 | [Harvest](sources/harvest.md)                                                               | Generally Available  | Yes                 |
 | [http-request](sources/http-request.md)                                                     | Alpha                | No                  |
 | [HubSpot](sources/hubspot.md)                                                               | Generally Available  | Yes                 |
+| [Insightly](sources/insightly.md)                                                           | Alpha                | Yes                 |
 | [Instagram](sources/instagram.md)                                                           | Generally Available  | Yes                 |
 | [Intercom](sources/intercom.md)                                                             | Generally Available  | Yes                 |
 | [Iterable](sources/iterable.md)                                                             | Generally Available  | Yes                 |
@@ -115,7 +117,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
 | [Oracle DB](sources/oracle.md)                                                              | Alpha                | Yes                 |
-| [Oracle Netsuite](sources/netsuite.md)                                                      | Generally Available  | Yes                 |
+| [Oracle Netsuite](sources/netsuite.md)                                                      | Alpha                | Yes                 |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md)                                           | Alpha                | No                  |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md)                                           | Alpha                | No                  |
 | [Orb](sources/orb.md)                                                                       | Alpha                | Yes                 |
@@ -139,7 +141,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Recurly](sources/recurly.md)                                                               | Alpha                | Yes                 |
 | [Redshift](sources/redshift.md)                                                             | Alpha                | Yes                 |
 | [Retently](sources/retently.md)                                                             | Alpha                | Yes                 |
-| [S3](sources/s3.md)                                                                         | Generally Available  | No                 |
+| [S3](sources/s3.md)                                                                         | Generally Available  | Yes                 |
 | [Salesforce](sources/salesforce.md)                                                         | Generally Available  | Yes                 |
 | [Salesloft](sources/salesloft.md)                                                           | Alpha                | No                  |
 | [SAP Business One](sources/sap-business-one.md)                                             | Alpha                | No                  |
@@ -168,10 +170,12 @@ For more information about the grading system, see [Product Release Stages](http
 | [US Census](sources/us-census.md)                                                           | Alpha                | Yes                 |
 | [VictorOps](sources/victorops.md)                                                           | Alpha                | No                  |
 | [Webflow](sources/webflow.md        )                                                       | Alpha                | Yes                 |
+| [Whisky Hunter](sources/whisky-hunter.md        )                                           | Alpha                | No                  |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
 | [Wordpress](sources/wordpress.md)                                                           | Alpha                | No                  |
 | [Wrike](sources/wrike.md)                                                                   | Alpha                | No                  |
 | [YouTube Analytics](sources/youtube-analytics.md)                                           | Beta                 | Yes                 |
+| [Xkcd](sources/xkcd.md)                                                                     | Alpha                | No                  |
 | [Zencart](sources/zencart.md)                                                               | Alpha                | No                  |
 | [Zendesk Chat](sources/zendesk-chat.md)                                                     | Generally Available  | Yes                 |
 | [Zendesk Sunshine](sources/zendesk-sunshine.md)                                             | Alpha                | Yes                 |
