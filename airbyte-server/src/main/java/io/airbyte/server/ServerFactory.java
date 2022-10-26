@@ -136,7 +136,7 @@ public interface ServerFactory {
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
     }
- 
+
   }
 
 }
