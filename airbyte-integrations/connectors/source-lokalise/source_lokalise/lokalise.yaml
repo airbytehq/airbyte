@@ -13,6 +13,9 @@ definitions:
   comments_selector:
     extractor:
       field_pointer: ["comments"]
+  contributors_selector:
+    extractor:
+      field_pointer: ["contributors"]
 
   requester:
     url_base: "https://api.lokalise.com"
@@ -92,14 +95,30 @@ definitions:
       primary_key: "comment_id"
       path: "/api2/projects/{{ config['project_id'] }}/comments"
 
+  contributors_stream:
+    # https://developers.lokalise.com/reference/list-project-contributors
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      record_selector:
+        $ref: "*ref(definitions.contributors_selector)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+    $options:
+      name: "contributors"
+      primary_key: "contributor_id"
+      path: "/api2/projects/{{ config['project_id'] }}/contributors"
 
 streams:
   - "*ref(definitions.keys_stream)"
   - "*ref(definitions.languages_stream)"
   - "*ref(definitions.comments_stream)"
+  - "*ref(definitions.contributors_stream)"
 
 check:
   stream_names:
     - "keys"
     - "languages"
     - "comments"
+    - "contributors"
