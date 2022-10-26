@@ -4,9 +4,12 @@ connectionSpecification:
   title: Railz Spec
   type: object
   required:
-    - TODO
+    - client_id
+    - secret_key
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    client_id:
       type: string
-      description: describe me
+      description: API identifier client_id
+    secret_key:
+      type: string
+      description: secret_key
