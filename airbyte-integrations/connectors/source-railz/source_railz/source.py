@@ -48,6 +48,8 @@ class RailzStream(HttpStream, ABC):
     url_base = "https://api.railz.ai/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if response.status_code == 204:
+            return
         response_json = response.json()
         pagination = response_json.get("pagination", response_json.get("meta"))
         if pagination:
