@@ -15,7 +15,7 @@ import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "utils/errorStatusMessage";
-import { ConnectorFormValues, ServiceForm, ServiceFormValues } from "views/Connector/ServiceForm";
+import { ConnectorFormValues, ConnectorForm, ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorDefinitionTypeControl } from "../ServiceForm/components/Controls/ConnectorServiceTypeControl";
@@ -158,7 +158,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
         </div>
         {additionalSelectorComponent}
         <div>
-          <ServiceForm
+          <ConnectorForm
             {...props}
             selectedService={selectedConnector} // remove Service word
             isTestConnectionInProgress={isTestConnectionInProgress}

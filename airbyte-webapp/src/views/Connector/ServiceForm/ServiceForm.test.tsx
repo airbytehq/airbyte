@@ -7,7 +7,7 @@ import { render, useMockIntersectionObserver } from "test-utils/testutils";
 
 import { AirbyteJSONSchema } from "core/jsonSchema";
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
-import { ServiceForm, ServiceFormProps } from "views/Connector/ServiceForm";
+import { ConnectorForm, ConnectorFormProps } from "views/Connector/ServiceForm";
 
 import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "./types";
@@ -158,7 +158,7 @@ describe("Service Form", () => {
     beforeEach(async () => {
       const handleSubmit = jest.fn();
       const renderResult = await render(
-        <ServiceForm
+        <ConnectorForm
           formType="source"
           onSubmit={handleSubmit}
           selectedConnectorDefinitionSpecification={
@@ -238,7 +238,7 @@ describe("Service Form", () => {
     let container: HTMLElement;
     beforeEach(async () => {
       const renderResult = await render(
-        <ServiceForm
+        <ConnectorForm
           formType="source"
           formValues={{ name: "test-name" }}
           onSubmit={(values) => {
@@ -377,8 +377,8 @@ describe("Service Form", () => {
   });
 
   describe("conditionally render form submit button", () => {
-    const renderServiceForm = (props: ServiceFormProps) =>
-      render(<ServiceForm {...props} formValues={{ name: "test-name" }} />);
+    const renderServiceForm = (props: ConnectorFormProps) =>
+      render(<ConnectorForm {...props} formValues={{ name: "test-name" }} />);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     const onSubmitClb = () => {};
     const connectorDefSpec = {

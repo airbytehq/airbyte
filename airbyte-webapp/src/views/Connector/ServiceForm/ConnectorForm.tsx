@@ -80,7 +80,7 @@ const RevalidateOnValidationSchemaChange: React.FC<{ validationSchema: unknown }
   return null;
 };
 
-export interface ServiceFormProps {
+export interface ConnectorFormProps {
   formType: "source" | "destination";
   formId?: string;
   selectedService?: ConnectorDefinition;
@@ -99,7 +99,7 @@ export interface ServiceFormProps {
   testConnector?: (v?: ConnectorFormValues) => Promise<CheckConnectionRead>;
 }
 
-export const ServiceForm: React.FC<ServiceFormProps> = (props) => {
+export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
   const formId = useUniqueFormId(props.formId);
   const { clearFormChange } = useFormChangeTrackerService();
 
