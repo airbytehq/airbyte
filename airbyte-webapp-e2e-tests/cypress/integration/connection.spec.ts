@@ -355,6 +355,10 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
+    setupDestinationNamespaceDefaultFormat();
+    assert(cy.get(`[title*="<destination schema>"]`));
+    submitButtonClick();
+
     setupDestinationNamespaceSourceFormat();
 
     const namespace = "<source schema>";
