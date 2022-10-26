@@ -44,13 +44,3 @@ connectionSpecification:
       examples:
         - -0.118092
       order: 4
-    force:
-      type: string
-      description: |
-        The force to filter by. See the /forces endpoint for a list of valid
-        forces. Required for the '*_no_location' and '*_by_force' streams.
-      examples:
-        - avon-and-somerset
-        - city-of-london
-      order: 5
-

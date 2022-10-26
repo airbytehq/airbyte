@@ -2,6 +2,5 @@
   "start_year_month": "2032-08",
   "lat": 151.5074,
   "lng": -0.1278,
-  "crime_category": "made-up-category",
-  "force": "unknown-force"
+  "crime_category": "made-up-category"
 }

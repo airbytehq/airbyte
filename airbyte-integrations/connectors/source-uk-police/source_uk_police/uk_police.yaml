@@ -12,7 +12,7 @@ definitions:
         lat: "{{ config['lat'] }}"
         lng: "{{ config['lng'] }}"
         category: "{{ config['crime_category'] }}"
-        force: "{{ config['force'] }}"
+#        force: "{{ config['force'] }}"
   month_stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime:
@@ -50,6 +50,27 @@ definitions:
       name: "all_forces"
       primary_key: "id"
       path: "/forces"
+  forces_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.all_forces_stream)"
+        parent_key: "id"
+        stream_slice_field: "force"
+        request_option:
+          field_name: "force"
+          inject_into: "request_parameter"
+  months_and_forces_stream_slicer:
+    type: CartesianProductStreamSlicer
+    stream_slicers:
+      - $ref: "*ref(definitions.forces_stream_slicer)"
+      - $ref: "*ref(definitions.month_stream_slicer)"
+  month_and_force_sliced_retriever:
+    $ref: "*ref(definitions.retriever)"
+    stream_slicer:
+      $ref: "*ref(definitions.months_and_forces_stream_slicer)"
+  month_and_force_sliced_stream:
+    retriever:
+      $ref: "*ref(definitions.month_and_force_sliced_retriever)"
   crime_categories_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -75,7 +96,7 @@ definitions:
       primary_key: "persistent_id"
       path: "/crimes-at-location"
   crimes_with_no_location_stream:
-    $ref: "*ref(definitions.month_sliced_stream)"
+    $ref: "*ref(definitions.month_and_force_sliced_stream)"
     $options:
       name: "crimes_with_no_location"
       primary_key: "persistent_id"
@@ -87,13 +108,13 @@ definitions:
       primary_key: "datetime"
       path: "/stops-street"
   stop_and_search_with_no_location_stream:
-    $ref: "*ref(definitions.month_sliced_stream)"
+    $ref: "*ref(definitions.month_and_force_sliced_stream)"
     $options:
       name: "stop_and_search_with_no_location"
       primary_key: "datetime"
       path: "/stops-no-location"
   stop_and_search_for_force_stream:
-    $ref: "*ref(definitions.month_sliced_stream)"
+    $ref: "*ref(definitions.month_and_force_sliced_stream)"
     $options:
       name: "stop_and_search_for_force"
       primary_key: "datetime"
@@ -113,4 +134,5 @@ streams:
 
 check:
   stream_names:
-    - "street_level_crime"
+#    - "street_level_crime"
+    - "crimes_with_no_location"
