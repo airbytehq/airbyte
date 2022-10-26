@@ -25,7 +25,7 @@ import styles from "views/Connector/ServiceForm/components/Controls/ConnectorSer
 import { useAnalyticsTrackFunctions } from "views/Connector/ServiceForm/components/Controls/ConnectorServiceTypeControl/useAnalyticsTrackFunctions";
 import { WarningMessage } from "views/Connector/ServiceForm/components/WarningMessage";
 
-import { mapSourcesWithIcons } from "./useGetSourceDefinitions";
+import { useGetSourceDefinitions } from "./useGetSourceDefinitions";
 import { getSortedDropdownData } from "./utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,7 +106,8 @@ export const SignupSourceDropdown: React.FC<SignupSourceDropdownProps> = ({ disa
   const { openModal, closeModal } = useModalService();
   const { trackMenuOpen, trackNoOptionMessage, trackConnectorSelection } = useAnalyticsTrackFunctions("source");
 
-  const availableSources = mapSourcesWithIcons();
+  const { data: availableSources } = useGetSourceDefinitions();
+
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string>("");
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -115,7 +116,7 @@ export const SignupSourceDropdown: React.FC<SignupSourceDropdownProps> = ({ disa
     localStorage.setItem("exp-signup-selected-source-definition-id", sourceDefinitionId);
   };
 
-  const sortedDropDownData = useMemo(() => getSortedDropdownData(availableSources), [availableSources]);
+  const sortedDropDownData = useMemo(() => getSortedDropdownData(availableSources ?? []), [availableSources]);
 
   const getNoOptionsMessage = useCallback(
     ({ inputValue }: { inputValue: string }) => {
@@ -158,6 +159,9 @@ export const SignupSourceDropdown: React.FC<SignupSourceDropdownProps> = ({ disa
     [closeModal, formatMessage, openModal, email]
   );
 
+  if (!Boolean(sortedDropDownData.length)) {
+    return null;
+  }
   return (
     <>
       <ControlLabels
@@ -180,7 +184,7 @@ export const SignupSourceDropdown: React.FC<SignupSourceDropdownProps> = ({ disa
           })}
           options={sortedDropDownData}
           onChange={handleSelect}
-          onMenuOpen={() => trackMenuOpen()}
+          onMenuOpen={trackMenuOpen}
           noOptionsMessage={getNoOptionsMessage}
           data-testid="serviceType"
         />
