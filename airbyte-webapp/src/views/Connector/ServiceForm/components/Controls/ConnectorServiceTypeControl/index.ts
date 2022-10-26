@@ -1,1 +1,1 @@
-export { ConnectorServiceTypeControl } from "./ConnectorServiceTypeControl";
+export { ConnectorDefinitionTypeControl } from "./ConnectorDefinitionTypeControl";

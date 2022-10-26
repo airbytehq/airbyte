@@ -18,7 +18,7 @@ import {
 } from "components/ui/DropDown";
 import { Text } from "components/ui/Text";
 
-import { Connector, ConnectorDefinition } from "core/domain/connector";
+import { ConnectorDefinition } from "core/domain/connector";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useExperiment } from "hooks/services/Experiment";
@@ -100,24 +100,26 @@ const SingleValue: React.FC<SingleValueProps<any>> = (props) => {
   );
 };
 
-interface ConnectorServiceTypeControlProps {
+interface ConnectorDefinitionTypeControlProps {
   formType: "source" | "destination";
-  availableConnectorDefinitions: ConnectorDefinition[];
   isEditMode?: boolean;
-  documentationUrl?: string;
-  onChangeConnectorDefinition?: (id: string) => void;
   disabled?: boolean;
+  availableConnectorDefinitions: ConnectorDefinition[];
+  selectedConnectorDefinition?: ConnectorDefinition;
   selectedConnectorDefinitionSpecificationId?: string;
+  onChangeConnectorDefinition?: (id: string) => void;
+  documentationUrl?: string;
 }
 
-const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = ({
+export const ConnectorDefinitionTypeControl: React.FC<ConnectorDefinitionTypeControlProps> = ({
   formType,
   isEditMode,
-  onChangeConnectorDefinition,
-  availableConnectorDefinitions,
-  documentationUrl,
   disabled,
+  availableConnectorDefinitions,
+  selectedConnectorDefinition,
   selectedConnectorDefinitionSpecificationId,
+  onChangeConnectorDefinition,
+  documentationUrl,
 }) => {
   const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
@@ -140,11 +142,6 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
       return formatMessage({ id: "form.noConnectorFound" });
     },
     [formatMessage, trackNoOptionMessage]
-  );
-
-  const selectedService = React.useMemo(
-    () => availableConnectorDefinitions.find((s) => Connector.id(s) === selectedConnectorDefinitionSpecificationId),
-    [selectedConnectorDefinitionSpecificationId, availableConnectorDefinitions]
   );
 
   const handleSelect = useCallback(
@@ -202,12 +199,11 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
           data-testid="serviceType"
         />
       </ControlLabels>
-      {selectedService &&
-        (selectedService.releaseStage === ReleaseStage.alpha || selectedService.releaseStage === ReleaseStage.beta) && (
-          <WarningMessage stage={selectedService.releaseStage} />
+      {selectedConnectorDefinition &&
+        (selectedConnectorDefinition.releaseStage === ReleaseStage.alpha ||
+          selectedConnectorDefinition.releaseStage === ReleaseStage.beta) && (
+          <WarningMessage stage={selectedConnectorDefinition.releaseStage} />
         )}
     </>
   );
 };
-
-export { ConnectorServiceTypeControl };

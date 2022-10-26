@@ -18,7 +18,7 @@ import { generateMessageFromError } from "utils/errorStatusMessage";
 import { ConnectorFormValues, ServiceForm, ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
-import { ConnectorServiceTypeControl } from "../ServiceForm/components/Controls/ConnectorServiceTypeControl";
+import { ConnectorDefinitionTypeControl } from "../ServiceForm/components/Controls/ConnectorServiceTypeControl";
 import styles from "./ConnectorCard.module.scss";
 import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
 import { useTestConnector } from "./useTestConnector";
@@ -146,13 +146,14 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     <Card title={title} fullWidth={full}>
       <div className={styles.cardForm}>
         <div className={styles.connectorSelectControl}>
-          <ConnectorServiceTypeControl
+          <ConnectorDefinitionTypeControl
             formType={props.formType}
             isEditMode={isEditMode}
             disabled={isFormSubmitting}
-            onChangeConnectorDefinition={onConnectorDefinitionSelect}
             availableConnectorDefinitions={availableConnectorDefinitions}
+            selectedConnectorDefinition={selectedConnector}
             selectedConnectorDefinitionSpecificationId={selectedConnectorDefinitionSpecificationId}
+            onChangeConnectorDefinition={onConnectorDefinitionSelect}
           />
         </div>
         {additionalSelectorComponent}
