@@ -164,6 +164,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Tempo](sources/tempo.md)                                                                   | Alpha                | Yes                 |
 | [TiDB](sources/tidb.md)                                                                     | Alpha                | No                  |
 | [TikTok Marketing](./sources/tiktok-marketing.md)                                           | Generally Available  | Yes                 |
+| [Toggl](./sources/toggl.md)                                                                 | Alpha                | Yes                 |
 | [Trello](sources/trello.md)                                                                 | Alpha                | No                  |
 | [Twilio](sources/twilio.md)                                                                 | Generally Available  | Yes                 |
 | [Typeform](sources/typeform.md)                                                             | Alpha                | Yes                 |
