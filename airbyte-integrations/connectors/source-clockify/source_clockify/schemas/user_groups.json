@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "userIds": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "workspaceId": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

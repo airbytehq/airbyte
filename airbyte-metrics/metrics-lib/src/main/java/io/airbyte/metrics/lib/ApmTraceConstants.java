@@ -69,6 +69,11 @@ public final class ApmTraceConstants {
     public static final String JOB_ROOT_KEY = "job_root";
 
     /**
+     * Name of the APM trace tag that holds the process exit value associated with the trace.
+     */
+    public static final String PROCESS_EXIT_VALUE_KEY = "process.exit_value";
+
+    /**
      * Name of the APM trace tag that holds the source Docker image value associated with the trace.
      */
     public static final String SOURCE_DOCKER_IMAGE_KEY = "source.docker_image";
