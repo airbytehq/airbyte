@@ -5766,7 +5766,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-lever-hiring:0.1.2"
+- dockerImage: "airbyte/source-lever-hiring:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/lever-hiring"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/lever-hiring#changelog"
@@ -5792,9 +5792,6 @@
               auth_type:
                 type: "string"
                 const: "Client"
-                enum:
-                - "Client"
-                default: "Client"
                 order: 0
               client_id:
                 title: "Client ID"
@@ -5805,16 +5802,26 @@
                 type: "string"
                 description: "The Client Secret of your Lever Hiring developer application."
                 airbyte_secret: true
-              option_title:
-                type: "string"
-                title: "Credentials Title"
-                description: "OAuth Credentials"
-                const: "OAuth Credentials"
               refresh_token:
                 type: "string"
                 title: "Refresh Token"
                 description: "The token for obtaining new access token."
                 airbyte_secret: true
+          - type: "object"
+            title: "Authenticate via Lever (Api Key)"
+            required:
+            - "api_key"
+            properties:
+              auth_type:
+                type: "string"
+                const: "Api Key"
+                order: 0
+              api_key:
+                title: "Api key"
+                type: "string"
+                description: "The Api Key of your Lever Hiring account."
+                airbyte_secret: true
+                order: 1
         start_date:
           order: 0
           type: "string"
