@@ -10,6 +10,9 @@ definitions:
   languages_selector:
     extractor:
       field_pointer: ["languages"]
+  comments_selector:
+    extractor:
+      field_pointer: ["comments"]
 
   requester:
     url_base: "https://api.lokalise.com"
@@ -74,12 +77,29 @@ definitions:
       primary_key: "lang_id"
       path: "/api2/projects/{{ config['project_id'] }}/languages"
 
+  comments_stream:
+    # https://developers.lokalise.com/reference/list-project-comments
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      record_selector:
+        $ref: "*ref(definitions.comments_selector)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+    $options:
+      name: "comments"
+      primary_key: "comment_id"
+      path: "/api2/projects/{{ config['project_id'] }}/comments"
+
 
 streams:
   - "*ref(definitions.keys_stream)"
   - "*ref(definitions.languages_stream)"
+  - "*ref(definitions.comments_stream)"
 
 check:
   stream_names:
     - "keys"
     - "languages"
+    - "comments"
