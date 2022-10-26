@@ -7,7 +7,7 @@ definitions:
       field_pointer: [ "data" ]
 
   requester:
-    url_base: "https://connect.mailerlite.com"
+    url_base: "https://connect.mailerlite.com/api"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -48,7 +48,7 @@ definitions:
     $options:
       name: "subscribers"
       primary_key: "id"
-      path: "/api/subscribers"
+      path: "/subscribers"
     retriever:
       $ref: "*ref(definitions.retriever)"
       paginator:
@@ -60,7 +60,7 @@ definitions:
     $options:
       name: "segments"
       primary_key: "id"
-      path: "/api/segments"
+      path: "/segments"
     retriever:
       $ref: "*ref(definitions.retriever)"
       paginator:
@@ -75,7 +75,7 @@ definitions:
     $options:
       name: "automations"
       primary_key: "id"
-      path: "/api/automations"
+      path: "/automations"
     retriever:
       $ref: "*ref(definitions.retriever)"
       paginator:
@@ -90,7 +90,7 @@ definitions:
     $options:
       name: "campaigns"
       primary_key: "id"
-      path: "/api/campaigns"
+      path: "/campaigns"
     retriever:
       $ref: "*ref(definitions.retriever)"
       paginator:
@@ -102,7 +102,7 @@ definitions:
     $options:
       name: "timezones"
       primary_key: "id"
-      path: "/api/timezones"
+      path: "/timezones"
   
   # API Docs: https://developers.mailerlite.com/docs/forms.html
   forms_popup_stream:
@@ -110,7 +110,7 @@ definitions:
     $options:
       name: "forms_popup"
       primary_key: "id"
-      path: "/api/forms/popup"
+      path: "/forms/popup"
     retriever:
       $ref: "*ref(definitions.retriever)"
       paginator:
@@ -122,7 +122,7 @@ definitions:
     $options:
       name: "forms_embedded"
       primary_key: "id"
-      path: "/api/forms/embedded"
+      path: "/forms/embedded"
     retriever:
       $ref: "*ref(definitions.retriever)"
       paginator:
@@ -134,7 +134,7 @@ definitions:
     $options:
       name: "forms_promotion"
       primary_key: "id"
-      path: "/api/forms/promotion"
+      path: "/forms/promotion"
     retriever:
       $ref: "*ref(definitions.retriever)"
       paginator:
