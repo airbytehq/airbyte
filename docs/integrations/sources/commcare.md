@@ -5,6 +5,8 @@ This page guides you through the process of setting up the Commcare source conne
 ## Prerequisites
 
 - Your Commcare API Key
+- The Application ID you are interested in
+- The start date to replicate records
 
 ## Set up the Commcare source connector
 
@@ -21,11 +23,13 @@ The Commcare source connector supports the following [sync modes](https://docs.a
 
 - Full Refresh
 - Overwrite
+- Incremental
 
 ## Supported Streams
 
 The Commcare source connector supports the following streams:
 
+- Application
 - Case
 - Form
 
