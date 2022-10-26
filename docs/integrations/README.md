@@ -73,7 +73,8 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Analytics (Universal Analytics)](sources/google-analytics-universal-analytics.md)   | Generally Available  | Yes                 |
 | [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
 | [Google Search Console](sources/google-search-console.md)                                   | Generally Available  | Yes                 |
-| [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
+| [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | No                  |
+| [Google Webfonts](sources/google-webfonts.md)                                               | Alpha                | Yes                 |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
 | [Greenhouse](sources/greenhouse.md)                                                         | Beta                 | Yes                 |
 | [Gutendex](sources/gutendex.md)                                                             | Alpha                | No                  |
