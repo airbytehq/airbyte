@@ -17,7 +17,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 1.0.15
+  dockerImageTag: 1.0.16
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -218,6 +218,14 @@
   dockerRepository: airbyte/source-courier
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/courier
+  sourceType: api
+  releaseStage: alpha
+- name: Clockify
+  sourceDefinitionId: e71aae8a-5143-11ed-bdc3-0242ac120002
+  dockerRepository: airbyte/source-clockify
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/clockify
+  icon: clockify.svg
   sourceType: api
   releaseStage: alpha
 - name: Customer.io
@@ -864,7 +872,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.20
+  dockerImageTag: 1.0.21
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1111,7 +1119,7 @@
 - name: Twilio
   sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   icon: twilio.svg
   sourceType: api
