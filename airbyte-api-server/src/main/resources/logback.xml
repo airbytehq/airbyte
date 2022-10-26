@@ -13,4 +13,11 @@
     <root level="info">
         <appender-ref ref="STDOUT"/>
     </root>
+
+    <logger name="io.micronaut.http.client" level="DEBUG"/>
+<!--    <logger name="io.micronaut.http.server" level="TRACE"/>-->
+<!--    <logger name="HTTP_ACCESS_LOGGER" additivity="false" level="info">-->
+<!--        <appender-ref ref="httpAccessLogAppender" />-->
+<!--    </logger>-->
+
 </configuration>

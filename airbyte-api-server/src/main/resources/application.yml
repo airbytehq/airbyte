@@ -1,15 +1,18 @@
 micronaut:
   application:
     name: airbyteApiServer
-  http:
-    services:
-      config-api:
-        url: "http://localhost:8000"
-        read-timeout: 1m
-netty:
-  default:
-    allocator:
-      max-order: 3
-
+#  http:
+#    services:
+#      config-api:
+#        url: "http://localhost:8000"
+#        read-timeout: 1m
+#        logger-name: config-api
+#        log-level: TRACE
+#        access-logger:
+#          enabled: true # Enables the access logger
+  server:
+    netty:
+      access-logger:
+        enabled: true # Enables the access logger
 airbyte:
   configServerUrl: "localhost:8080"
