@@ -52,7 +52,8 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
   const { run, loading, done } = useRunOauthFlow(connector, onDone);
   const preparedValues = useMemo(() => getValues<Credentials>(values), [getValues, values]);
   const connectionObjectEmpty = preparedValues?.connectionConfiguration?.credentials
-    ? Object.keys(preparedValues.connectionConfiguration?.credentials).length <= 1
+    ? Object.values(preparedValues.connectionConfiguration?.credentials).filter((value) => value !== undefined)
+        .length <= 1
     : true;
 
   return {
