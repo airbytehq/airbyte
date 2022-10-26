@@ -186,12 +186,10 @@ def expected_records_by_stream_fixture(
     inputs,
     base_path,
 ) -> MutableMapping[str, List[MutableMapping]]:
-    def enforce_high_strictness_level_rules(expect_records_config, configured_catalog, empty_streams, records_by_stream):
+    def enforce_high_strictness_level_rules(expect_records_config, configured_catalog, empty_streams, records_by_stream) -> Optional[str]:
         error_prefix = "High strictness level error: "
         if expect_records_config is None:
             pytest.fail(error_prefix + "expect_records must be configured for the basic_read test.")
-        elif not expect_records_config.path and not expect_records_config.bypass_reason:
-            pytest.fail(error_prefix + "A bypass reason for expect_records needs to be filled in if no path is provided")
         elif expect_records_config.path:
             not_seeded_streams = find_not_seeded_streams(configured_catalog, empty_streams, records_by_stream)
             if not_seeded_streams:
