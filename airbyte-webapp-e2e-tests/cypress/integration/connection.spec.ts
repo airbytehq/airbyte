@@ -294,7 +294,7 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Saving a connection's destination type with DestinationNamespaceCustomFormat value", () => {
+  it("Saving a connection's destination namespace with "Custom format" option", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
