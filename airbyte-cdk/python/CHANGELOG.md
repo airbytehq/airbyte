@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.0
+Low-code: Add support for custom error messages on error response filters
+
 ## 0.3.0
 Publish python typehints via `py.typed` file. 
 
