@@ -5,6 +5,7 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckOperationRead;
 import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
@@ -113,7 +114,6 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
-import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
@@ -141,6 +141,7 @@ import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.NotImplementedException;
 import org.flywaydb.core.Flyway;
 
 @javax.ws.rs.Path("/v1")
@@ -164,7 +165,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final OpenApiConfigHandler openApiConfigHandler;
   private final DbMigrationHandler dbMigrationHandler;
   private final OAuthHandler oAuthHandler;
-  private final AttemptHandler attemptHandler;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final Path workspaceRoot;
@@ -249,7 +249,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
-    attemptHandler = new AttemptHandler(jobPersistence);
   }
 
   // WORKSPACE
@@ -431,6 +430,15 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
       oAuthHandler.setSourceInstancewideOauthParams(requestBody);
       return null;
     });
+  }
+
+  /**
+   * This implementation has been moved to {@link AttemptApiController}. Since the path of
+   * {@link AttemptApiController} is more granular, it will override this implementation
+   */
+  @Override
+  public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody setWorkflowInAttemptRequestBody) {
+    throw new NotImplementedException();
   }
 
   // SOURCE IMPLEMENTATION
@@ -645,53 +653,85 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // CONNECTION
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate) {
-    return execute(() -> connectionsHandler.createConnection(connectionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate) {
-    return execute(() -> connectionsHandler.updateConnection(connectionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
-    return execute(() -> connectionsHandler.searchConnections(connectionSearch));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    execute(() -> {
-      operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
-      connectionsHandler.deleteConnection(connectionIdRequestBody.getConnectionId());
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link ConnectionApiController}. Since the path of
+   * {@link ConnectionApiController} is more granular, it will override this implementation
+   */
   @Override
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
+    throw new NotImplementedException();
   }
 
   // Operations
@@ -708,7 +748,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
-    return execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
+    return ConfigurationApi.execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
   }
 
   @Override
@@ -736,7 +776,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> stateHandler.getState(connectionIdRequestBody));
+    return ConfigurationApi.execute(() -> stateHandler.getState(connectionIdRequestBody));
   }
 
   // SCHEDULER
@@ -780,6 +820,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody) {
     return execute(() -> jobHistoryHandler.getJobDebugInfo(jobIdRequestBody));
+  }
+
+  @Override
+  public AttemptNormalizationStatusReadList getAttemptNormalizationStatusesForJob(final JobIdRequestBody jobIdRequestBody) {
+    return execute(() -> jobHistoryHandler.getAttemptNormalizationStatuses(jobIdRequestBody));
   }
 
   @Override
@@ -827,7 +872,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
+    return ConfigurationApi.execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
   }
 
   @Override
@@ -835,12 +880,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
   }
 
-  @Override
-  public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody requestBody) {
-    return execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
-  }
-
-  private static <T> T execute(final HandlerCall<T> call) {
+  // TODO: Move to common when all the api are moved
+  static <T> T execute(final HandlerCall<T> call) {
     try {
       return call.call();
     } catch (final ConfigNotFoundException e) {
@@ -854,7 +895,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     }
   }
 
-  private interface HandlerCall<T> {
+  interface HandlerCall<T> {
 
     T call() throws ConfigNotFoundException, IOException, JsonValidationException;
 
