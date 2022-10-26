@@ -914,7 +914,7 @@ class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
 
     def get_transform_function(self):
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-            if original_value and field_schema.get("format") == "date-time":
+            if original_value and field_schema.get("format") == "date":
                 transformed_value = pendulum.from_format(original_value, "MM/DD/YYYY").to_date_string()
                 return transformed_value
             return original_value
