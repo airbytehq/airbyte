@@ -22,12 +22,12 @@ connectionSpecification:
       order: 2
     query:
       title: Query
-      description: The search query. This just applies from Logs and Audit Logs entities.
+      description: The search query. This just applies from Logs and Audit Logs entities. If empty, it'll collect all logs.
       type: string
       order: 3
-    limit:
+    max_records_per_request:
       type: integer
-      title: Limit
+      title: Max records per requests
       default: 5000
       minimum: 1
       maximum: 5000

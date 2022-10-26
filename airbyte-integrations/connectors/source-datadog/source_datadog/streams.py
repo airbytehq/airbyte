@@ -19,10 +19,10 @@ class DatadogStream(HttpStream, ABC):
     primary_key: Optional[str] = None
     parse_response_root: Optional[str] = None
 
-    def __init__(self, query: str, limit: int, start_date: str, end_date: str, **kwargs):
+    def __init__(self, query: str, max_records_per_request: int, start_date: str, end_date: str, **kwargs):
         super().__init__(**kwargs)
         self.query = query
-        self.limit = limit
+        self.max_records_per_request = max_records_per_request
         self.start_date = start_date
         self.end_date = end_date
         self._cursor_value = None
@@ -111,8 +111,8 @@ class IncrementalSearchableStream(V2ApiDatadogStream, IncrementalMixin, ABC):
     primary_key: Optional[str] = "id"
     parse_response_root: Optional[str] = "data"
 
-    def __init__(self, query: str, limit: int, start_date: str, end_date: str, **kwargs):
-        super().__init__(query, limit, start_date, end_date, **kwargs)
+    def __init__(self, query: str, max_records_per_request: int, start_date: str, end_date: str, **kwargs):
+        super().__init__(query, max_records_per_request, start_date, end_date, **kwargs)
         self._cursor_value = ""
 
     @property
@@ -171,7 +171,7 @@ class IncrementalSearchableStream(V2ApiDatadogStream, IncrementalMixin, ABC):
     def get_payload(self, cursor: Optional[str]) -> Mapping[str, Any]:
         payload = {
             "filter": {"query": self.query, "from": self._cursor_value if self._cursor_value else self.start_date, "to": self.end_date},
-            "page": {"limit": self.limit},
+            "page": {"limit": self.max_records_per_request},
         }
         if cursor:
             payload["page"]["cursor"] = cursor
@@ -255,7 +255,7 @@ class Incidents(PaginatedBasedListStream):
 
     def get_url_path(self, offset: Optional[str]) -> str:
         params = f"&page[offset]={offset}" if offset else ""
-        return f"incidents?page[size]={self.limit}{params}"
+        return f"incidents?page[size]={self.max_records_per_request}{params}"
 
 
 class IncidentTeams(PaginatedBasedListStream):
@@ -265,7 +265,7 @@ class IncidentTeams(PaginatedBasedListStream):
 
     def get_url_path(self, offset: Optional[str]) -> str:
         params = f"&page[offset]={offset}" if offset else ""
-        return f"teams?page[size]={self.limit}{params}"
+        return f"teams?page[size]={self.max_records_per_request}{params}"
 
 
 class Users(PaginatedBasedListStream):
@@ -277,7 +277,7 @@ class Users(PaginatedBasedListStream):
 
     def get_url_path(self, offset: Optional[int]) -> str:
         params = f"&page[number]={offset}" if offset else ""
-        return f"users?page[size]={self.limit}{params}"
+        return f"users?page[size]={self.max_records_per_request}{params}"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
