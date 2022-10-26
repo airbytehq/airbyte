@@ -100,5 +100,11 @@
   },
   "GET_LEDGER_DETAIL_VIEW_DATA": {
     "createdTime": "2021-07-01T00:00:00Z"
+  },
+  "GET_FBA_INVENTORY_PLANNING_DATA": {
+    "createdTime": "2021-07-01T00:00:00Z"
+  },
+  "GET_LEDGER_SUMMARY_VIEW_DATA": {
+    "createdTime": "2021-07-01T00:00:00Z"
   }
 }
