@@ -27,7 +27,7 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
             state: {
               type: "STREAM",
               stream: { stream_descriptor: { name: readParams.stream }, stream_state: { date: "2022-09-26" } },
-              data: { rates: { date: "2022-09-26" } },
+              data: { [readParams.stream]: { date: "2022-09-26" } },
             },
             pages: [
               {
