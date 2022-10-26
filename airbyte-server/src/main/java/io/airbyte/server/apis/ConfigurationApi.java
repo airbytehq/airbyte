@@ -936,9 +936,13 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   // HEALTH
+  /**
+   * This implementation has been moved to {@link HealthApiController}. Since the path of
+   * {@link HealthApiController} is more granular, it will override this implementation
+   */
   @Override
   public HealthCheckRead getHealthCheck() {
-    return healthCheckHandler.health();
+    throw new NotImplementedException();
   }
 
   // WEB BACKEND
