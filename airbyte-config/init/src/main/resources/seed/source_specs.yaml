@@ -3785,7 +3785,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.2"
+- dockerImage: "airbyte/source-google-ads:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -4554,7 +4554,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-greenhouse:0.2.11"
+- dockerImage: "airbyte/source-greenhouse:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/greenhouse"
     connectionSpecification:
@@ -5192,7 +5192,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-iterable:0.1.19"
+- dockerImage: "airbyte/source-iterable:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
@@ -5270,7 +5270,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.21"
+- dockerImage: "airbyte/source-jira:0.2.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -5300,6 +5300,11 @@
           type: "string"
           title: "Email"
           description: "The user email for your Jira account."
+        max_results:
+          type: "number"
+          title: "Max Results"
+          description: "Pagination max results (only for users stream)"
+          default: 50
         projects:
           type: "array"
           title: "Projects"
@@ -6325,7 +6330,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.23"
+- dockerImage: "airbyte/source-mssql:0.4.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -7155,7 +7160,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.7"
+- dockerImage: "airbyte/source-mysql:1.0.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8787,7 +8792,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.19"
+- dockerImage: "airbyte/source-postgres:1.0.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11815,6 +11820,17 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-xkcd:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/xkcd"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Xkcd Spec"
+      type: "object"
+      properties: {}
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-webflow:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/webflow"
@@ -12529,26 +12545,6 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zoom-singer:0.2.4"
-  spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/sources/zoom"
-    connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Source Zoom Singer Spec"
-      type: "object"
-      required:
-      - "jwt"
-      additionalProperties: false
-      properties:
-        jwt:
-          title: "JWT Token"
-          type: "string"
-          description: "Zoom JWT Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/zoom\"\
-            >docs</a> for more information on how to obtain this key."
-          airbyte_secret: true
-    supportsNormalization: false
-    supportsDBT: false
-    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-zuora:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zuora"
@@ -12997,6 +12993,24 @@
           examples:
           - "2022-01-01"
           order: 3
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-zoom:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zoom"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Zoom Spec"
+      type: "object"
+      required:
+      - "jwt_token"
+      additionalProperties: true
+      properties:
+        jwt_token:
+          type: "string"
+          description: "JWT Token"
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
