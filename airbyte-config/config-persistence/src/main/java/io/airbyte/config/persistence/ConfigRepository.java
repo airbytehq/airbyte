@@ -650,6 +650,22 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
   }
 
+  /**
+   * Returns all destinations for a workspace. Does not contain secrets.
+   *
+   * @param workspaceId - id of the workspace
+   * @return destinations
+   * @throws IOException - you never know when you IO
+   */
+  public List<DestinationConnection> listWorkspaceDestinationConnection(UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .and(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildDestinationConnection).collect(Collectors.toList());
+  }
+
   public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.STANDARD_SYNC, connectionId.toString(), StandardSync.class);
   }
