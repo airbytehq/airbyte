@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useDebounce, useLocalStorage } from "react-use";
 
 import { DownloadYamlButton } from "./DownloadYamlButton";
+import { TestBuilderServer } from "./TestBuilderServer";
 import styles from "./YamlEditor.module.scss";
 import { template } from "./YamlTemplate";
 
@@ -23,7 +24,8 @@ export const YamlEditor: React.FC = () => {
       base: "vs-dark",
       inherit: true,
       rules: [
-        { token: "string", foreground: styles.tokenString },
+        // add logic to convert these two six character
+        { token: "string", foreground: "#ffffff" },
         { token: "type", foreground: styles.tokenType },
         { token: "number", foreground: styles.tokenNumber },
         { token: "delimiter", foreground: styles.tokenDelimiter },
@@ -41,6 +43,7 @@ export const YamlEditor: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.control}>
         <DownloadYamlButton className={styles.downloadButton} yaml={editorValue} />
+        <TestBuilderServer />
       </div>
       <div className={styles.editorContainer}>
         <Editor
