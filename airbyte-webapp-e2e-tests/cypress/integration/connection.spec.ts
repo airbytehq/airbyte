@@ -294,7 +294,7 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Saving a connection's destination namespace with "Custom format" option", () => {
+  it("Saving a connection's destination namespace with 'Custom format' option", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
@@ -308,7 +308,6 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    selectSchedule("Every hour");
     
     const namespace = "_DestinationNamespaceCustomFormat";
     setupDestinationNamespaceCustomFormat(namespace);
@@ -329,10 +328,6 @@ describe("Connection main actions", () => {
           namespaceFormat: "${SOURCE_NAMESPACE}_DestinationNamespaceCustomFormat",
           status: "active",
         });
-      expect(interception.request.body.scheduleData.basicSchedule).to.contain({
-        units: 1,
-        timeUnit: "hours",
-      });
 
       const streamToUpdate = interception.request.body.syncCatalog.streams[0];
 
@@ -346,7 +341,7 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Saving a connection's destination namespace with "Mirror source structure" option", () => {
+  it("Saving a connection's destination namespace with 'Mirror source structure' option", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
@@ -360,7 +355,6 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    selectSchedule("Every hour");
     setupDestinationNamespaceSourceFormat();
 
     const namespace = "<source schema>";
@@ -381,10 +375,6 @@ describe("Connection main actions", () => {
           namespaceFormat: "${SOURCE_NAMESPACE}",
           status: "active",
         });
-      expect(interception.request.body.scheduleData.basicSchedule).to.contain({
-        units: 1,
-        timeUnit: "hours",
-      });
 
       const streamToUpdate = interception.request.body.syncCatalog.streams[0];
 
@@ -398,7 +388,7 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Saving a connection's destination namespace with "Destination default", () => {
+  it("Saving a connection's destination namespace with 'Destination default' option", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
@@ -412,7 +402,6 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    selectSchedule("Every hour");
     setupDestinationNamespaceDefaultFormat();
 
     const namespace = "<destination schema>";
@@ -433,10 +422,6 @@ describe("Connection main actions", () => {
           namespaceFormat: "${SOURCE_NAMESPACE}",
           status: "active",
         });
-      expect(interception.request.body.scheduleData.basicSchedule).to.contain({
-        units: 1,
-        timeUnit: "hours",
-      });
 
       const streamToUpdate = interception.request.body.syncCatalog.streams[0];
 
