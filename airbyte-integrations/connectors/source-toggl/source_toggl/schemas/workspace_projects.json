@@ -18,7 +18,7 @@
       "type": ["null", "boolean"]
     },
     "cid": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "client_id": {
       "type": ["null", "integer"]
@@ -33,7 +33,7 @@
       "type": ["null", "string"]
     },
     "current_period": {
-      "type": "object"
+      "type": ["null", "object"]
     },
     "estimated_hours": {
       "type": ["null", "integer"]
@@ -42,7 +42,7 @@
       "type": "string"
     },
     "fixed_fee": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "id": {
       "type": "integer"
@@ -54,7 +54,7 @@
       "type": "string"
     },
     "rate": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "rate_last_updated": {
       "type": ["null", "string"]
@@ -63,7 +63,7 @@
       "type": "boolean"
     },
     "recurring_parameters": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "server_deleted_at": {
       "type": ["null", "string"]

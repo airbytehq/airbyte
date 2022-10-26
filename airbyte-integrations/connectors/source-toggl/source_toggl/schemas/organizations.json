@@ -42,7 +42,7 @@
       "type": ["null", "string"]
     },
     "suspended_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "trial_info": {
       "type": "object"

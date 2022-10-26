@@ -12,7 +12,7 @@
       "type": "string"
     },
     "users": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "workspaces": {
       "type": "array"

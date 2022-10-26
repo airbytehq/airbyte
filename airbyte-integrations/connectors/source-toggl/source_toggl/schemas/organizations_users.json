@@ -15,7 +15,7 @@
       "type": "string"
     },
     "groups": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "id": {
       "type": "integer"
@@ -24,7 +24,7 @@
       "type": "boolean"
     },
     "invitation_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "joined": {
       "type": "boolean"
@@ -39,7 +39,7 @@
       "type": "integer"
     },
     "workspaces": {
-      "type": "string"
+      "type": "array"
     }
   }
 }

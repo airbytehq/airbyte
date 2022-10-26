@@ -36,10 +36,10 @@
       "type": "string"
     },
     "tag_ids": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "tags": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "task_id": {
       "type": ["null", "integer"]
