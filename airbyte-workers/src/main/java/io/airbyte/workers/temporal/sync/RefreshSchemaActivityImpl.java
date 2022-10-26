@@ -7,11 +7,11 @@ package io.airbyte.workers.temporal.sync;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
-import io.airbyte.api.client.generated.SourceApi;
-import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.server.handlers.SchedulerHandler;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -20,12 +20,11 @@ import java.util.UUID;
 public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
   private final Optional<ConfigRepository> configRepository;
+  private final SchedulerHandler schedulerHandler;
 
-  private final SourceApi sourceApi;
-
-  public RefreshSchemaActivityImpl(Optional<ConfigRepository> configRepository, SourceApi sourceApi) {
+  public RefreshSchemaActivityImpl(Optional<ConfigRepository> configRepository, SchedulerHandler schedulerHandler) {
     this.configRepository = configRepository;
-    this.sourceApi = sourceApi;
+    this.schedulerHandler = schedulerHandler;
   }
 
   @Override
@@ -40,10 +39,10 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
   }
 
   @Override
-  public void refreshSchema(UUID sourceCatalogId) throws ApiException {
-    SourceDiscoverSchemaRequestBody requestBody =
-        new SourceDiscoverSchemaRequestBody().sourceId(sourceCatalogId).disableCache(true);
-    sourceApi.discoverSchemaForSource(requestBody);
+  public void refreshSchema(UUID sourceCatalogId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody requestBody =
+        new io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody().sourceId(sourceCatalogId).disableCache(true);
+    schedulerHandler.discoverSchemaForSourceFromSourceId(requestBody);
   }
 
   private boolean schemaRefreshRanRecently(UUID sourceCatalogId) throws IOException {
