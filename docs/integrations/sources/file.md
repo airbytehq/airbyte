@@ -129,7 +129,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------- |
-| 0.2.27  | 2022-10-25 | [18428](https://github.com/airbytehq/airbyte/pull/18428) | Added single retry for `Connection reset error - 104`                            |
+| 0.2.27  | 2022-10-25 | [18428](https://github.com/airbytehq/airbyte/pull/18428) | Added retry logic for `Connection reset error - 104`                            |
 | 0.2.26  | 2022-10-18 | [18116](https://github.com/airbytehq/airbyte/pull/18116) | Transform Dropbox shared link                            |
 | 0.2.25  | 2022-10-14 | [17994](https://github.com/airbytehq/airbyte/pull/17994) | Handle `UnicodeDecodeError` during discover step.        |
 | 0.2.24  | 2022-10-03 | [17504](https://github.com/airbytehq/airbyte/pull/17504) | Validate data for `HTTPS` while `check_connection`       |

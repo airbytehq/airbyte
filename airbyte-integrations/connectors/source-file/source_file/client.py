@@ -7,10 +7,10 @@ import json
 import tempfile
 import traceback
 from os import environ
-from time import sleep
 from typing import Iterable
 from urllib.parse import urlparse
 
+import backoff
 import boto3
 import botocore
 import google
@@ -24,6 +24,8 @@ from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from yaml import safe_load
+
+from .utils import backoff_handler
 
 
 class ConfigurationError(Exception):
@@ -231,9 +233,6 @@ class Client:
     reader_class = URLFile
     binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
 
-    # sleeping 30 sec, on connection errors, such as 104
-    sleep_on_retry_sec = 30
-
     def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: dict = None):
         self._dataset_name = dataset_name
         self._url = url
@@ -355,34 +354,32 @@ class Client:
     def reader(self) -> reader_class:
         return self.reader_class(url=self._url, provider=self._provider, binary=self.binary_source, encoding=self.encoding)
 
-    def _read(self, fields: Iterable = None) -> Iterable[dict]:
+    @backoff.on_exception(backoff.expo, ConnectionResetError, on_backoff=backoff_handler, max_tries=5, max_time=60)
+    def read(self, fields: Iterable = None) -> Iterable[dict]:
         """Read data from the stream"""
         with self.reader.open() as fp:
-            if self._reader_format in ["json", "jsonl"]:
-                yield from self.load_nested_json(fp)
-            elif self._reader_format == "yaml":
-                fields = set(fields) if fields else None
-                df = self.load_yaml(fp)
-                columns = fields.intersection(set(df.columns)) if fields else df.columns
-                df = df.where(pd.notnull(df), None)
-                yield from df[columns].to_dict(orient="records")
-            else:
-                fields = set(fields) if fields else None
-                if self.binary_source:
-                    fp = self._cache_stream(fp)
-                for df in self.load_dataframes(fp):
+            try:
+                if self._reader_format in ["json", "jsonl"]:
+                    yield from self.load_nested_json(fp)
+                elif self._reader_format == "yaml":
+                    fields = set(fields) if fields else None
+                    df = self.load_yaml(fp)
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
-                    df.replace({np.nan: None}, inplace=True)
-                    yield from df[list(columns)].to_dict(orient="records")
-
-    def read(self, fields: Iterable = None) -> Iterable[dict]:
-        try:
-            yield from self._read(fields)
-        except ConnectionResetError:
-            logger.warning(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
-            logger.info(f"Retrying once again after: {self.sleep_on_retry_sec} sec.")
-            sleep(self.sleep_on_retry_sec)
-            yield from self._read(fields)
+                    df = df.where(pd.notnull(df), None)
+                    yield from df[columns].to_dict(orient="records")
+                else:
+                    fields = set(fields) if fields else None
+                    if self.binary_source:
+                        fp = self._cache_stream(fp)
+                    for df in self.load_dataframes(fp):
+                        columns = fields.intersection(set(df.columns)) if fields else df.columns
+                        df.replace({np.nan: None}, inplace=True)
+                        yield from df[list(columns)].to_dict(orient="records")
+            except ConnectionResetError:
+                logger.info(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
+                raise ConnectionResetError
+            except Exception as e:
+                raise Exception(f"Error while reading data using `client.reader` method: {e}") from e
 
     def _cache_stream(self, fp):
         """cache stream to file"""

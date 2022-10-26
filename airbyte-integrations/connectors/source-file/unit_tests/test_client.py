@@ -140,11 +140,10 @@ def test_open_gcs_url():
 
 def test_read(test_read_config):
     client = Client(**test_read_config)
-    fields = ["date", "key"]
     client.sleep_on_retry_sec = 0  # just for test
-    with patch.object(client, "_read", side_effect=ConnectionResetError) as mock_method:
+    with patch.object(client, "load_dataframes", side_effect=ConnectionResetError) as mock_method:
         try:
-            list(client.read(fields))
+            return client.read(["date", "key"])
         except ConnectionResetError:
-            pass
+            print("Exception has been raised correctly!")
         mock_method.assert_called()
