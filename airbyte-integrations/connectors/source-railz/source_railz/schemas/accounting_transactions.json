@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "postedDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "entityRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "isReconciled": {
+      "type": ["null", "boolean"]
+    },
+    "accountRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "section": {
+          "type": ["null", "string"]
+        },
+        "subSection": {
+          "type": ["null", "string"]
+        },
+        "group": {
+          "type": ["null", "string"]
+        },
+        "subGroup": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "isSplitTransaction": {
+      "type": ["null", "boolean"]
+    },
+    "subTotal": {
+      "type": ["null", "number"]
+    },
+    "totalAmount": {
+      "type": ["null", "number"]
+    }
+  }
+}

@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .auth import AccessTokenAuthenticator
+from .utils import read_full_refresh
 
 
 # Basic full refresh stream
@@ -118,45 +119,48 @@ class IncrementalRailzStream(RailzStream, ABC):
         return {}
 
 
-class Employees(IncrementalRailzStream):
+class AccountingTransactions(IncrementalRailzStream):
     """
-    TODO: Change class name to match the table/data source this stream corresponds to.
+    https://docs.railz.ai/reference/accounting-transactions
     """
 
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
+    cursor_field = "postedDate"
+    primary_key = "id"
+    serviceNames = [
+        "dynamicsBusinessCentral",
+        "freshbooks",
+        "oracleNetsuite",
+        "quickbooks",
+        "quickbooksDesktop",
+        "sageBusinessCloud",
+        "sageIntacct",
+        "wave",
+        "xero",
+    ]
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
+    def __init__(self, *, parent: HttpStream, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
 
     def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "employees"
+        return "accountingTransactions"
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
+        for record in read_full_refresh(self.parent):
+            for connection in record["connections"]:
+                if connection["serviceName"] in self.serviceNames:
+                    yield {"businessName": record["businessName"], "serviceName": connection["serviceName"]}
 
-        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-        section of the docs for more information.
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {"businessName": stream_slice["businessName"], "serviceName": stream_slice["serviceName"], "orderBy": "postedDate"}
 
-        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
-
-        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-        craft that specific request.
-
-        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-        the date query param.
-        """
-        raise NotImplementedError("Implement stream slices or delete this method!")
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, any], **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            record["businessName"] = stream_slice["businessName"]
+            record["serviceName"] = stream_slice["serviceName"]
+            yield record
 
 
 # Source
@@ -176,4 +180,5 @@ class SourceRailz(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = AccessTokenAuthenticator(client_id=config["client_id"], secret_key=config["secret_key"])
-        return [Businesses(authenticator=auth)]
+        businesses = Businesses(authenticator=auth)
+        return [businesses, AccountingTransactions(parent=businesses, authenticator=auth)]
