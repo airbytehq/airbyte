@@ -44,7 +44,6 @@ export const AuthButton: React.FC = () => {
   const { selectedService, selectedConnector } = useServiceForm();
   const { hiddenAuthFieldErrors } = useAuthentication();
   const authRequiredError = Object.values(hiddenAuthFieldErrors).includes("form.empty.error");
-
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnector!);
 
