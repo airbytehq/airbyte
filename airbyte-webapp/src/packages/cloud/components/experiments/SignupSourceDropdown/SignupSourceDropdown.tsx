@@ -110,11 +110,10 @@ export const SignupSourceDropdown: React.FC<SignupSourceDropdownProps> = ({ disa
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string>("");
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onChangeServiceType = (sourceDefinitionId: string) => {
+  const onChangeServiceType = useCallback((sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
     localStorage.setItem("exp-signup-selected-source-definition-id", sourceDefinitionId);
-  };
+  }, []);
 
   const sortedDropDownData = useMemo(() => getSortedDropdownData(availableSources ?? []), [availableSources]);
 
