@@ -28,6 +28,7 @@ import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
+import io.airbyte.server.apis.factories.DestinationApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
@@ -129,6 +130,8 @@ public interface ServerFactory {
           mdc);
 
       DbMigrationApiFactory.setValues(dbMigrationHandler, mdc);
+
+      DestinationApiFactory.setValues(destinationApiHandler, schedulerHandler, mdc);
 
       DestinationDefinitionApiFactory.setValues(destinationDefinitionsHandler);
 
