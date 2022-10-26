@@ -16,34 +16,46 @@ import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.AttemptApiController;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.server.apis.ConnectionApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
+import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
+import io.airbyte.server.apis.factories.ConnectionApiFactory;
+import io.airbyte.server.handlers.AttemptHandler;
+import io.airbyte.server.handlers.ConnectionsHandler;
+import io.airbyte.server.handlers.OperationsHandler;
+import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Set;
 import org.flywaydb.core.Flyway;
 import org.slf4j.MDC;
 
 public interface ServerFactory {
 
-  ServerRunnable create(SynchronousSchedulerClient cachingSchedulerClient,
-                        ConfigRepository configRepository,
-                        SecretsRepositoryReader secretsRepositoryReader,
-                        SecretsRepositoryWriter secretsRepositoryWriter,
-                        JobPersistence jobPersistence,
-                        Database configsDatabase,
-                        Database jobsDatabase,
-                        TrackingClient trackingClient,
-                        WorkerEnvironment workerEnvironment,
-                        LogConfigs logConfigs,
-                        AirbyteVersion airbyteVersion,
-                        Path workspaceRoot,
-                        HttpClient httpClient,
-                        EventRunner eventRunner,
-                        Flyway configsFlyway,
-                        Flyway jobsFlyway);
+  ServerRunnable create(final SynchronousSchedulerClient synchronousSchedulerClient,
+                        final ConfigRepository configRepository,
+                        final SecretsRepositoryReader secretsRepositoryReader,
+                        final SecretsRepositoryWriter secretsRepositoryWriter,
+                        final JobPersistence jobPersistence,
+                        final Database configsDatabase,
+                        final Database jobsDatabase,
+                        final TrackingClient trackingClient,
+                        final WorkerEnvironment workerEnvironment,
+                        final LogConfigs logConfigs,
+                        final AirbyteVersion airbyteVersion,
+                        final Path workspaceRoot,
+                        final HttpClient httpClient,
+                        final EventRunner eventRunner,
+                        final Flyway configsFlyway,
+                        final Flyway jobsFlyway,
+                        final AttemptHandler attemptHandler,
+                        final ConnectionsHandler connectionsHandler,
+                        final OperationsHandler operationsHandler,
+                        final SchedulerHandler schedulerHandler);
 
   class Api implements ServerFactory {
 
@@ -63,7 +75,13 @@ public interface ServerFactory {
                                  final HttpClient httpClient,
                                  final EventRunner eventRunner,
                                  final Flyway configsFlyway,
-                                 final Flyway jobsFlyway) {
+                                 final Flyway jobsFlyway,
+                                 final AttemptHandler attemptHandler,
+                                 final ConnectionsHandler connectionsHandler,
+                                 final OperationsHandler operationsHandler,
+                                 final SchedulerHandler schedulerHandler) {
+      final Map<String, String> mdc = MDC.getCopyOfContextMap();
+
       // set static values for factory
       ConfigurationApiFactory.setValues(
           configRepository,
@@ -72,7 +90,7 @@ public interface ServerFactory {
           jobPersistence,
           synchronousSchedulerClient,
           new StatePersistence(configsDatabase),
-          MDC.getCopyOfContextMap(),
+          mdc,
           configsDatabase,
           jobsDatabase,
           trackingClient,
@@ -85,11 +103,17 @@ public interface ServerFactory {
           configsFlyway,
           jobsFlyway);
 
-      AttemptApiFactory.setValues(jobPersistence, MDC.getCopyOfContextMap());
+      AttemptApiFactory.setValues(attemptHandler, mdc);
+
+      ConnectionApiFactory.setValues(
+          connectionsHandler,
+          operationsHandler,
+          schedulerHandler,
+          mdc);
 
       // server configurations
-      final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiController.class);
-      final Set<Object> components = Set.of(new CorsFilter(), new ConfigurationApiBinder(), new AttemptApiBinder());
+      final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiController.class, ConnectionApiController.class);
+      final Set<Object> components = Set.of(new CorsFilter(), new ConfigurationApiBinder(), new AttemptApiBinder(), new ConnectionApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
