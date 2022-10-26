@@ -176,14 +176,8 @@ public class SourceHandler {
   public SourceReadList listSourcesForSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
-    final List<SourceConnection> sourceConnections = configRepository.listSourceConnection()
-        .stream()
-        .filter(sc -> sc.getSourceDefinitionId().equals(sourceDefinitionIdRequestBody.getSourceDefinitionId())
-            && !MoreBooleans.isTruthy(sc.getTombstone()))
-        .toList();
-
     final List<SourceRead> reads = Lists.newArrayList();
-    for (final SourceConnection sourceConnection : sourceConnections) {
+    for (final SourceConnection sourceConnection : configRepository.listSourcesForDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId())) {
       reads.add(buildSourceRead(sourceConnection));
     }
 
