@@ -20,7 +20,8 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from source_acceptance_test.config import BasicReadTestConfig
+from source_acceptance_test.config import BasicReadTestConfig, Config, EmptyStreamConfiguration
+from source_acceptance_test.tests import test_core
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
 
@@ -236,22 +237,30 @@ def test_additional_properties_is_true(discovered_catalog, expectation):
 
 
 @pytest.mark.parametrize(
-    "schema, record, should_fail",
+    "schema, record, expectation",
     [
-        ({"type": "object"}, {"aa": 23}, False),
-        ({"type": "object"}, {}, False),
-        ({"type": "object", "properties": {"created": {"type": "string"}}}, {"aa": 23}, True),
-        ({"type": "object", "properties": {"created": {"type": "string"}}}, {"created": "23"}, False),
-        ({"type": "object", "properties": {"created": {"type": "string"}}}, {"root": {"created": "23"}}, True),
+        ({"type": "object"}, {"aa": 23}, does_not_raise()),
+        ({"type": "object"}, {}, does_not_raise()),
+        (
+            {"type": "object", "properties": {"created": {"type": "string"}}},
+            {"aa": 23},
+            pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
+        ),
+        ({"type": "object", "properties": {"created": {"type": "string"}}}, {"created": "23"}, does_not_raise()),
+        (
+            {"type": "object", "properties": {"created": {"type": "string"}}},
+            {"root": {"created": "23"}},
+            pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
+        ),
         # Recharge shop stream case
         (
             {"type": "object", "properties": {"shop": {"type": ["null", "object"]}, "store": {"type": ["null", "object"]}}},
             {"shop": {"a": "23"}, "store": {"b": "23"}},
-            False,
+            does_not_raise(),
         ),
     ],
 )
-def test_read(schema, record, should_fail):
+def test_read(mocker, schema, record, expectation):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -267,11 +276,10 @@ def test_read(schema, record, should_fail):
         AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
     ]
     t = _TestBasicRead()
-    if should_fail:
-        with pytest.raises(AssertionError, match="should have some fields mentioned by json schema"):
-            t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
-    else:
-        t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
+    t.enforce_strictness_level = mocker.Mock()
+    with expectation:
+        t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock(), Config.TestStrictnessLevel.low)
+        t.enforce_strictness_level.assert_called_with(Config.TestStrictnessLevel.low, input_config)
 
 
 @pytest.mark.parametrize(
@@ -836,3 +844,45 @@ def test_validate_field_appears_at_least_once(records, configured_catalog, expec
             t._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
     else:
         t._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
+
+
+@pytest.mark.parametrize(
+    "test_strictness_level, basic_read_test_config, expect_test_failure",
+    [
+        pytest.param(
+            Config.TestStrictnessLevel.low,
+            BasicReadTestConfig(config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream")}),
+            False,
+            id="[LOW test strictness level] Empty streams can be declared without bypass_reason.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.low,
+            BasicReadTestConfig(
+                config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream", bypass_reason="good reason")}
+            ),
+            False,
+            id="[LOW test strictness level] Empty streams can be declared with a bypass_reason.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.high,
+            BasicReadTestConfig(config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream")}),
+            True,
+            id="[HIGH test strictness level] Empty streams can't be declared without bypass_reason.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.high,
+            BasicReadTestConfig(
+                config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream", bypass_reason="good reason")}
+            ),
+            False,
+            id="[HIGH test strictness level] Empty streams can be declared with a bypass_reason.",
+        ),
+    ],
+)
+def test_enforce_strictness_level(mocker, test_strictness_level, basic_read_test_config, expect_test_failure):
+    mocker.patch.object(test_core, "pytest")
+    assert _TestBasicRead.enforce_strictness_level(test_strictness_level, basic_read_test_config) is None
+    if expect_test_failure:
+        test_core.pytest.fail.assert_called_once()
+    else:
+        test_core.pytest.fail.assert_not_called()
