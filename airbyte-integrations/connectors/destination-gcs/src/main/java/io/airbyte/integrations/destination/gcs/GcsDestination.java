@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.gcs;
 
-import static io.airbyte.commons.exceptions.SqlStateErrorMessage.getErrorMessage;
+import static io.airbyte.commons.exceptions.DisplayErrorMessage.getErrorMessage;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;

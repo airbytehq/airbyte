@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import static com.mongodb.client.model.Projections.excludeId;
-import static io.airbyte.commons.exceptions.SqlStateErrorMessage.getErrorMessage;
+import static io.airbyte.commons.exceptions.DisplayErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -83,11 +83,10 @@ public class MongodbDestination extends BaseConnector implements Destination {
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConfigErrorException e) {
-      final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, e.getDisplayMessage());
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage(message);
+          .withMessage(e.getDisplayMessage());
     } catch (final RuntimeException e) {
       LOGGER.error("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -100,9 +99,11 @@ public class MongodbDestination extends BaseConnector implements Destination {
       return MoreIterators.toSet(mongoDatabase.getDatabaseNames().iterator());
     } catch (final MongoSecurityException e) {
       final MongoCommandException exception = (MongoCommandException) e.getCause();
-      throw new ConfigErrorException(String.valueOf(exception.getCode()), e);
+      throw new ConfigErrorException(getErrorMessage(
+          String.valueOf(exception.getCode()), 0, null, exception), exception);
     } catch (final MongoException e) {
-      throw new ConfigErrorException(String.valueOf(e.getCode()), e);
+      throw new ConfigErrorException(getErrorMessage(
+          String.valueOf(e.getCode()), 0, null, e), e);
     }
   }
 

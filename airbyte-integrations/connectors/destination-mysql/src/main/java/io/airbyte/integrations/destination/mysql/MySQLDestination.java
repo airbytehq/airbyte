@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import static io.airbyte.commons.exceptions.SqlStateErrorMessage.getErrorMessage;
+import static io.airbyte.commons.exceptions.DisplayErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;

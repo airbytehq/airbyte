@@ -6,7 +6,7 @@ package io.airbyte.db.jdbc;
 
 import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.exceptions.SqlStateErrorMessage;
+import io.airbyte.commons.exceptions.DisplayErrorMessage;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -82,10 +82,10 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     } catch (final SQLException e) {
       // Some databases like Redshift will have null cause
       if (Objects.isNull(e.getCause()) || !(e.getCause() instanceof SQLException)) {
-        throw new ConfigErrorException(SqlStateErrorMessage.getErrorMessage(e.getSQLState(), e.getErrorCode(), e.getMessage(), e), e);
+        throw new ConfigErrorException(DisplayErrorMessage.getErrorMessage(e.getSQLState(), e.getErrorCode(), e.getMessage(), e), e);
       } else {
         final SQLException cause = (SQLException) e.getCause();
-        throw new ConfigErrorException(SqlStateErrorMessage.getErrorMessage(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e), e);
+        throw new ConfigErrorException(DisplayErrorMessage.getErrorMessage(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e), e);
       }
     }
   }

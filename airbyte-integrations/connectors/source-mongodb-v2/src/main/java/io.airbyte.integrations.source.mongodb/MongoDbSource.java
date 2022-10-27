@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static com.mongodb.client.model.Filters.gt;
+import static io.airbyte.commons.exceptions.DisplayErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -141,9 +142,11 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
     } catch (final MongoSecurityException e) {
       final MongoCommandException exception = (MongoCommandException) e.getCause();
-      throw new ConfigErrorException(String.valueOf(exception.getCode()), e);
+      throw new ConfigErrorException(getErrorMessage(
+          String.valueOf(exception.getCode()), 0, null, exception), exception);
     } catch (final MongoException e) {
-      throw new ConfigErrorException(String.valueOf(e.getCode()), e);
+      throw new ConfigErrorException(getErrorMessage(
+          String.valueOf(e.getCode()), 0, null, e), e);
     }
   }
 

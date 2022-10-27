@@ -151,11 +151,12 @@ public class IntegrationRunner {
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
     } catch (final ConfigErrorException e) {
-      // If the source connector throws a config error, a trace message with the relevant message should be surfaced.
+      // If the source connector throws a config error, a trace message with the relevant message should
+      // be surfaced.
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, e.getDisplayMessage());
       switch (parsed.getCommand()) {
         case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
-                new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getDisplayMessage())));
+            new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getDisplayMessage())));
         default -> throw e;
       }
     }

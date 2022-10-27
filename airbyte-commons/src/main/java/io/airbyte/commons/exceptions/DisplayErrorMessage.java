@@ -6,7 +6,7 @@ package io.airbyte.commons.exceptions;
 
 import java.util.Objects;
 
-public class SqlStateErrorMessage {
+public class DisplayErrorMessage {
 
   // TODO: this could be built using a Builder design pattern instead of passing in 0 to indicate no
   // errorCode exists
