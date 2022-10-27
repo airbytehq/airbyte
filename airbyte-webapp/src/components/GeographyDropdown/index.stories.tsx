@@ -10,6 +10,4 @@ export default {
 const Template: ComponentStory<typeof GeographyDropdown> = (args) => <GeographyDropdown {...args} />;
 
 export const Primary = Template.bind({});
-Primary.args = {
-  children: "Text",
-};
+Primary.args = {};
