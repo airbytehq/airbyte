@@ -8,7 +8,7 @@
 .option {
   display: flex;
   align-items: center;
-  padding: 6px 20px;
+  padding: 6px 20px 6px 6px;
   margin: 0 10px;
   max-width: 280px;
   background-color: colors.$white;
@@ -37,7 +37,7 @@
 }
 
 .menuList {
-  padding: 10px 30px;
+  padding: 10px 16px;
   margin-top: 10px;
   max-width: 300px;
   color: colors.$blue-300;
