@@ -1,0 +1,84 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1666884830.json",
+  "title": "Root",
+  "type": "object",
+  "properties": {
+    "changes": {
+      "$id": "#root/changes",
+      "title": "Changes",
+      "type": ["object","array","null"],
+      "default": [],
+      "items": {
+        "$id": "#root/changes/items",
+        "title": "Items",
+        "type": ["object","array","null"],
+        "properties": {
+          "key": {
+            "$id": "#root/changes/items/key",
+            "title": "Key",
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+          },
+          "items": {
+            "$id": "#root/changes/items/items",
+            "title": "Items",
+            "type": ["object","array","null"],
+            "default": [],
+            "items": {
+              "$id": "#root/changes/items/items/items",
+              "title": "Items",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$id": "#root/changes/items/items/items/id",
+                  "title": "Id",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^.*$"
+                },
+                "action": {
+                  "$id": "#root/changes/items/items/items/action",
+                  "title": "Action",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^.*$"
+                },
+                "time": {
+                  "$id": "#root/changes/items/items/items/time",
+                  "title": "Time",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^.*$"
+                },
+                "iso_639_1": {
+                  "$id": "#root/changes/items/items/items/iso_639_1",
+                  "title": "Iso_639_1",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^.*$"
+                },
+                "value": {
+                  "$id": "#root/changes/items/items/items/value",
+                  "title": "Value",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^.*$"
+                },
+                "original_value": {
+                  "$id": "#root/changes/items/items/items/original_value",
+                  "title": "Original_value",
+                  "type": "string",
+                  "default": "",
+                  "pattern": "^.*$"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
