@@ -120,7 +120,7 @@
           "type": ["number", "null"]
         },
         "network": {
-          "type": "object",
+          "type": ["object", "null"],
           "properties": {
             "id": {
               "type": ["number", "null"]

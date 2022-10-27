@@ -35,15 +35,19 @@
     "rating": {
       "type": "object",
       "properties": {
-        "average": {}
+        "average": {
+          "type": ["number", "null"]
+        }
       }
     },
-    "image": {},
+    "image": {
+      "type": ["object", "null"]
+    },
     "summary": {
       "type": ["string", "null"]
     },
     "show": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "id": {
           "type": ["number", "null"]
@@ -99,7 +103,9 @@
         "rating": {
           "type": "object",
           "properties": {
-            "average": {}
+            "average": {
+              "type": ["number", "null"]
+            }
           }
         },
         "weight": {
@@ -146,7 +152,7 @@
           }
         },
         "image": {
-          "type": "object",
+          "type": ["object", "null"],
           "properties": {
             "medium": {
               "type": ["string", "null"]
