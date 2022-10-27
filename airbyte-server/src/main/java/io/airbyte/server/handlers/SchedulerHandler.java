@@ -250,7 +250,7 @@ public class SchedulerHandler {
         CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
             CatalogConverter.toProtocol(currentAirbyteCatalog));
         if (containsBreakingChange(diff)) {
-          connectionsHandler.updateConnection(new ConnectionUpdate().breakingChange(true));
+          connectionsHandler.updateConnection(new ConnectionUpdate().breakingChange(true).connectionId(discoverSchemaRequestBody.getConnectionId()));
         }
         discoveredSchema.catalogDiff(diff);
       }
