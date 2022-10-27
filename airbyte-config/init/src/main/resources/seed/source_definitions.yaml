@@ -731,7 +731,13 @@
   dockerRepository: airbyte/source-netsuite
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite
-  # icon: notion.svg
+  sourceType: api
+  releaseStage: alpha
+- name: News API
+  sourceDefinitionId: df38991e-f35b-4af2-996d-36817f614587
+  dockerRepository: airbyte/source-news-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/news-api
   sourceType: api
   releaseStage: alpha
 - name: Notion
