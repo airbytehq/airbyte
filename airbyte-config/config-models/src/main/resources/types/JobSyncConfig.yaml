@@ -36,9 +36,17 @@ properties:
   sourceDockerImage:
     description: Image name of the source with tag.
     type: string
+  sourceProtocolVersion:
+    description: Airbyte Protocol Version of the source
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
   destinationDockerImage:
     description: Image name of the destination with tag.
     type: string
+  destinationProtocolVersion:
+    description: Airbyte Protocol Version of the destination
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
   sourceResourceRequirements:
     type: object
     description: optional resource requirements to use in source container - this is used instead of `resourceRequirements` for the source container
