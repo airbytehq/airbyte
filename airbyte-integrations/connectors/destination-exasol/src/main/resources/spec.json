@@ -1,20 +1,47 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/exasol",
-  "supportsIncremental": TODO,
-  "supported_destination_sync_modes": ["TODO"],
+  "supportsIncremental": true,
+  "supportsNormalization": true,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "TODO",
+    "title": "Exasol Destination Spec",
     "type": "object",
-    "required": [
-      "TODO"
-    ],
+    "required": ["connectionstring", "username"],
+    "additionalProperties": true,
     "properties": {
-      "TODO_sample_field": {
-        "title": "Sample Field",
+      "connectionstring": {
+        "title": "Connection String",
+        "description": "Connection string of the Exasol database",
         "type": "string",
-        "description": "",
-        "examples": [""]
+        "examples": ["localhost:8563"],
+        "order": 0
+      },
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the database.",
+        "type": "string",
+        "order": 1
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 2
+      },
+      "schema": {
+        "title": "Schema Name",
+        "description": "Schema Name",
+        "type": "string",
+        "order": 3
+      },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol ';'. (example: key1=value1;key2=value2;key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 4
       }
     }
   }
