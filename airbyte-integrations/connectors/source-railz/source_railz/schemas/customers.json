@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "customerName": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "addresses": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "sourceModifiedDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

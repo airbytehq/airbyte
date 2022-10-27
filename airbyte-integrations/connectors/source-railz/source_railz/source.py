@@ -182,6 +182,30 @@ class Bills(IncrementalServiceRailzStream):
         return "bills"
 
 
+class Customers(ServiceRailzStream):
+    """
+    https://docs.railz.ai/reference/getcustomers
+    """
+
+    serviceNames = [
+        "dynamicsBusinessCentral",
+        "freshbooks",
+        "oracleNetsuite",
+        "plaid",
+        "quickbooks",
+        "quickbooksDesktop",
+        "sageBusinessCloud",
+        "sageIntacct",
+        "shopify",
+        "square",
+        "wave",
+        "xero",
+    ]
+
+    def path(self, **kwargs) -> str:
+        return "customers"
+
+
 class SourceRailz(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
@@ -199,4 +223,9 @@ class SourceRailz(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = AccessTokenAuthenticator(client_id=config["client_id"], secret_key=config["secret_key"])
         businesses = Businesses(authenticator=auth)
-        return [businesses, AccountingTransactions(parent=businesses, authenticator=auth), Bills(parent=businesses, authenticator=auth)]
+        return [
+            businesses,
+            AccountingTransactions(parent=businesses, authenticator=auth),
+            Bills(parent=businesses, authenticator=auth),
+            Customers(parent=businesses, authenticator=auth),
+        ]
