@@ -43,6 +43,7 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self._cursor = None
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+        # This method is called after the records are processed.
         slice_value = stream_slice.get(self.cursor_field.eval(self.config))
         if slice_value and slice_value in self.slice_values:
             self._cursor = slice_value
@@ -58,6 +59,7 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
         return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
 
     def get_request_headers(
@@ -66,6 +68,7 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
         return self._get_request_option(RequestOptionType.header, stream_slice)
 
     def get_request_body_data(
@@ -74,6 +77,7 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
         return self._get_request_option(RequestOptionType.body_data, stream_slice)
 
     def get_request_body_json(
@@ -82,6 +86,7 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
         return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
