@@ -57,11 +57,14 @@ import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
+import io.airbyte.server.handlers.DestinationDefinitionsHandler;
+import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -262,6 +265,8 @@ public class ServerApp implements ServerRunnable {
 
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
 
+    final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
+
     final AttemptHandler attemptHandler = new AttemptHandler(jobPersistence);
 
     final ConnectionsHandler connectionsHandler = new ConnectionsHandler(
@@ -269,6 +274,13 @@ public class ServerApp implements ServerRunnable {
         workspaceHelper,
         trackingClient,
         eventRunner);
+
+    final DestinationHandler destinationHandler = new DestinationHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        schemaValidator,
+        connectionsHandler);
 
     final OperationsHandler operationsHandler = new OperationsHandler(configRepository);
 
@@ -281,6 +293,11 @@ public class ServerApp implements ServerRunnable {
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
         eventRunner);
+
+    final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
+
+    final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
+        destinationHandler);
 
     LOGGER.info("Starting server...");
 
@@ -303,6 +320,9 @@ public class ServerApp implements ServerRunnable {
         jobsFlyway,
         attemptHandler,
         connectionsHandler,
+        dbMigrationHandler,
+        destinationDefinitionsHandler,
+        destinationHandler,
         operationsHandler,
         schedulerHandler);
   }
