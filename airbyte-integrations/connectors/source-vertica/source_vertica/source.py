@@ -37,7 +37,8 @@ class SourceVertica(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            self.create_connection(config)
+            connection = self.create_connection(config)
+            self.get_tables(logger, config, connection)
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
