@@ -161,7 +161,7 @@ public class MockData {
         .withNotifications(Collections.singletonList(notification))
         .withFirstCompletedSync(true)
         .withFeedbackDone(true)
-        .withDefaultGeography(Geography.AUTO)
+        .withDefaultGeography(Geography.US)
         .withWebhookOperationConfigs(Jsons.jsonNode(
             new WebhookOperationConfigs().withWebhookConfigs(List.of(new WebhookConfig().withId(WEBHOOK_CONFIG_ID).withName("name")))));
 
