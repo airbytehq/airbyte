@@ -83,7 +83,7 @@ const RevalidateOnValidationSchemaChange: React.FC<{ validationSchema: unknown }
 export interface ConnectorFormProps {
   formType: "source" | "destination";
   formId?: string;
-  selectedService?: ConnectorDefinition;
+  selectedConnectorDefinition?: ConnectorDefinition;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   onSubmit: (values: ConnectorFormValues) => Promise<void> | void;
   isLoading?: boolean;
@@ -112,9 +112,9 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     isTestConnectionInProgress,
     onStopTesting,
     testConnector,
+    selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
     errorMessage,
-    selectedService,
   } = props;
 
   const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
@@ -137,6 +137,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
+  // Overrides default field label(i.e "Source name", "Destination name")
   const uiOverrides = useMemo(() => {
     return {
       name: {
@@ -184,12 +185,12 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     >
       {({ dirty }) => (
         <ConnectorFormContextProvider
+          formType={formType}
           widgetsInfo={uiWidgetsInfo}
           getValues={getValues}
           setUiWidgetsInfo={setUiWidgetsInfo}
           resetUiWidgetsInfo={resetUiWidgetsInfo}
-          formType={formType}
-          selectedService={selectedService}
+          selectedConnectorDefinition={selectedConnectorDefinition}
           selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
           isEditMode={isEditMode}
           isLoadingSchema={isLoading}

@@ -92,38 +92,46 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const selectedConnectorDefinitionSpecificationId =
     selectedConnectorDefinitionSpecification && ConnectorSpecification.id(selectedConnectorDefinitionSpecification);
 
-  const selectedConnector = useMemo(
+  const selectedConnectorDefinition = useMemo(
     () => availableConnectorDefinitions.find((s) => Connector.id(s) === selectedConnectorDefinitionSpecificationId),
     [availableConnectorDefinitions, selectedConnectorDefinitionSpecificationId]
   );
 
   // Handle Doc panel
   useEffect(() => {
-    if (!selectedConnector) {
+    if (!selectedConnectorDefinition) {
       return;
     }
 
-    setDocumentationUrl(selectedConnector?.documentationUrl ?? "");
+    setDocumentationUrl(selectedConnectorDefinition?.documentationUrl ?? "");
     setDocumentationPanelOpen(true);
-  }, [selectedConnectorDefinitionSpecification, selectedConnector, setDocumentationPanelOpen, setDocumentationUrl]);
+  }, [
+    selectedConnectorDefinitionSpecification,
+    selectedConnectorDefinition,
+    setDocumentationPanelOpen,
+    setDocumentationUrl,
+  ]);
 
   const onHandleSubmit = async (values: ConnectorFormValues) => {
-    if (!selectedConnector) {
+    if (!selectedConnectorDefinition) {
       return;
     }
     setErrorStatusRequest(null);
     setIsFormSubmitting(true);
 
-    //  combine the "ServiceFormValues" and serviceType to make "ConnectorFormValues"
-    const connectorCardValues: ConnectorCardValues = { ...values, serviceType: Connector.id(selectedConnector) };
+    //  combine the "ConnectorFormValues" and serviceType to make "ConnectorFormValues"
+    const connectorCardValues: ConnectorCardValues = {
+      ...values,
+      serviceType: Connector.id(selectedConnectorDefinition),
+    };
 
     const testConnectorWithTracking = async () => {
-      trackTestConnectorStarted(selectedConnector);
+      trackTestConnectorStarted(selectedConnectorDefinition);
       try {
         await testConnector(connectorCardValues);
-        trackTestConnectorSuccess(selectedConnector);
+        trackTestConnectorSuccess(selectedConnectorDefinition);
       } catch (e) {
-        trackTestConnectorFailure(selectedConnector);
+        trackTestConnectorFailure(selectedConnectorDefinition);
         throw e;
       }
     };
@@ -141,7 +149,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
   // Fill form with existing connector values otherwise set the default service name
-  const formValues = isEditMode ? props.connector : { name: selectedConnector?.name };
+  const formValues = isEditMode ? props.connector : { name: selectedConnectorDefinition?.name };
 
   return (
     <Card title={title} fullWidth={full}>
@@ -152,7 +160,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
             isEditMode={isEditMode}
             disabled={isFormSubmitting}
             availableConnectorDefinitions={availableConnectorDefinitions}
-            selectedConnectorDefinition={selectedConnector}
+            selectedConnectorDefinition={selectedConnectorDefinition}
             selectedConnectorDefinitionSpecificationId={selectedConnectorDefinitionSpecificationId}
             onChangeConnectorDefinition={onConnectorDefinitionSelect}
           />
@@ -161,7 +169,8 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
         <div>
           <ConnectorForm
             {...props}
-            selectedService={selectedConnector} // remove Service word
+            selectedConnectorDefinition={selectedConnectorDefinition}
+            selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
             isTestConnectionInProgress={isTestConnectionInProgress}
             onStopTesting={onStopTesting}
             testConnector={testConnector}

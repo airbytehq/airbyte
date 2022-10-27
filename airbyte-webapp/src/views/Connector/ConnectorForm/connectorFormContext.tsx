@@ -34,7 +34,7 @@ export const useConnectorForm = (): ConnectorFormContext => {
 };
 
 interface ConnectorFormContextProviderProps {
-  selectedService?: ConnectorDefinition;
+  selectedConnectorDefinition?: ConnectorDefinition;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   resetUiWidgetsInfo: () => void;
@@ -47,7 +47,7 @@ interface ConnectorFormContextProviderProps {
 }
 
 export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<ConnectorFormContextProviderProps>> = ({
-  selectedService,
+  selectedConnectorDefinition,
   children,
   widgetsInfo,
   setUiWidgetsInfo,
@@ -67,7 +67,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
       widgetsInfo,
       getValues,
       setUiWidgetsInfo,
-      selectedService,
+      selectedConnectorDefinition,
       selectedConnectorDefinitionSpecification,
       formType,
       isLoadingSchema,
@@ -93,7 +93,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
     widgetsInfo,
     getValues,
     setUiWidgetsInfo,
-    selectedService,
+    selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
     formType,
     isLoadingSchema,
