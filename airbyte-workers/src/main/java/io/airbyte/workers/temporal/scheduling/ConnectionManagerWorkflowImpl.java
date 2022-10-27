@@ -622,7 +622,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // overwhelming temporal.
       log.info("Waiting {} before restarting the workflow for connection {}, to prevent spamming temporal with restarts.", workflowDelay,
           connectionId);
-      Workflow.await(workflowDelay, () -> workflowState.isRetryFailedActivity());
+      Workflow.await(Duration.ofSeconds(1), () -> workflowState.isRetryFailedActivity());
 
       // Accept a manual signal to retry the failed activity during this window
       if (workflowState.isRetryFailedActivity()) {
