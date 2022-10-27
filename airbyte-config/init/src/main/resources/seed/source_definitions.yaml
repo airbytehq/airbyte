@@ -1199,6 +1199,13 @@
   icon: woocommerce.svg
   sourceType: api
   releaseStage: alpha
+- name: Workable
+  sourceDefinitionId: ef3c99c6-9e90-43c8-9517-926cfd978517
+  dockerRepository: airbyte/source-workable
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/workable
+  sourceType: api
+  releaseStage: alpha
 - name: Wrike
   sourceDefinitionId: 9c13f986-a13b-4988-b808-4705badf71c2
   dockerRepository: airbyte/source-wrike
