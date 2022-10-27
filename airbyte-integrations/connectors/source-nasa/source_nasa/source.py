@@ -41,7 +41,7 @@ class NasaStream(HttpStream, ABC):
         r = response.json()
         if type(r) is dict:
             yield r
-        else: # We got a list
+        else:  # We got a list
             yield from r
 
 
@@ -54,7 +54,9 @@ class NasaApod(NasaStream, IncrementalMixin):
 
     def __init__(self, config: Mapping[str, any], **kwargs):
         super().__init__(config)
-        self.start_date = datetime.strptime(config.pop(self.start_date_key), date_format) if self.start_date_key in config else datetime.now()
+        self.start_date = (
+            datetime.strptime(config.pop(self.start_date_key), date_format) if self.start_date_key in config else datetime.now()
+        )
         self.end_date = datetime.strptime(config.pop(self.end_date_key), date_format) if self.end_date_key in config else datetime.now()
         self.sync_mode = SyncMode.full_refresh
         self._cursor_value = self.start_date
@@ -62,7 +64,7 @@ class NasaApod(NasaStream, IncrementalMixin):
     @property
     def state(self) -> Mapping[str, Any]:
         return {self.cursor_field: self._cursor_value.strftime(date_format)}
-    
+
     @state.setter
     def state(self, value: Mapping[str, Any]):
         self._cursor_value = datetime.strptime(value[self.cursor_field], date_format)
@@ -78,13 +80,23 @@ class NasaApod(NasaStream, IncrementalMixin):
             start_date += timedelta(days=1)
         return dates
 
-    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
-        if stream_state and self.cursor_field in stream_state and datetime.strptime(stream_state[self.cursor_field], date_format) > self.end_date:
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        if (
+            stream_state
+            and self.cursor_field in stream_state
+            and datetime.strptime(stream_state[self.cursor_field], date_format) > self.end_date
+        ):
             return []
         if sync_mode == SyncMode.full_refresh:
             return [self.start_date]
 
-        start_date = datetime.strptime(stream_state[self.cursor_field], date_format) if stream_state and self.cursor_field in stream_state else self.start_date
+        start_date = (
+            datetime.strptime(stream_state[self.cursor_field], date_format)
+            if stream_state and self.cursor_field in stream_state
+            else self.start_date
+        )
         return self._chunk_date_range(start_date)
 
     def path(
@@ -95,10 +107,7 @@ class NasaApod(NasaStream, IncrementalMixin):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        request_dict = {
-            **self.config,
-            **super().request_params(stream_state, stream_slice, next_page_token)
-        }
+        request_dict = {**self.config, **super().request_params(stream_state, stream_slice, next_page_token)}
         if self.sync_mode == SyncMode.full_refresh:
             request_dict[self.start_date_key] = self.start_date.strftime(date_format)
             request_dict[self.end_date_key] = self.end_date.strftime(date_format)
