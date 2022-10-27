@@ -4,6 +4,7 @@
 
 package io.airbyte.container_orchestrator;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.KubePodInfo;
 import io.airbyte.workers.storage.DocumentStoreClient;
@@ -26,10 +27,8 @@ public class AsyncStateManager {
       // terminal states first
       AsyncKubePodStatus.FAILED,
       AsyncKubePodStatus.SUCCEEDED,
-
       // then check in progress state
       AsyncKubePodStatus.RUNNING,
-
       // then check for initialization state
       AsyncKubePodStatus.INITIALIZING);
 
@@ -65,13 +64,10 @@ public class AsyncStateManager {
    * The order matters here!
    */
   public AsyncKubePodStatus getStatus(final KubePodInfo kubePodInfo) {
-    for (final AsyncKubePodStatus status : STATUS_CHECK_ORDER) {
-      if (statusFileExists(kubePodInfo, status)) {
-        return status;
-      }
-    }
-
-    return AsyncKubePodStatus.NOT_STARTED;
+    return STATUS_CHECK_ORDER.stream()
+        .filter(status -> statusFileExists(kubePodInfo, status))
+        .findFirst()
+        .orElse(AsyncKubePodStatus.NOT_STARTED);
   }
 
   /**
@@ -82,20 +78,18 @@ public class AsyncStateManager {
     final var key = getDocumentStoreKey(kubePodInfo, AsyncKubePodStatus.SUCCEEDED);
     final var output = documentStoreClient.read(key);
 
-    if (output.isPresent()) {
-      return output.get();
-    } else {
-      throw new IllegalArgumentException(
-          "Expected to retrieve output from a successfully completed pod!");
-    }
+    return output.orElseThrow(() -> new IllegalArgumentException(
+        "Expected to retrieve output from a successfully completed pod!"));
+
   }
 
   /**
    * IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
    * version is deployed!
    */
-  public static String getDocumentStoreKey(final KubePodInfo kubePodInfo,
-                                           final AsyncKubePodStatus status) {
+  @VisibleForTesting
+  static String getDocumentStoreKey(final KubePodInfo kubePodInfo,
+                                    final AsyncKubePodStatus status) {
     return kubePodInfo.namespace() + "/" + kubePodInfo.name() + "/" + status.name();
   }
 
