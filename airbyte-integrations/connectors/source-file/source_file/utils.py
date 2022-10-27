@@ -2,8 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 from urllib.parse import parse_qs, urlencode, urlparse
+
+# default logger
+logger = logging.getLogger("airbyte")
 
 
 def dropbox_force_download(url):
@@ -17,3 +20,7 @@ def dropbox_force_download(url):
             qs["dl"] = "1"
             parse_result = parse_result._replace(query=urlencode(qs))
     return parse_result.geturl()
+
+
+def backoff_handler(details):
+    logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")

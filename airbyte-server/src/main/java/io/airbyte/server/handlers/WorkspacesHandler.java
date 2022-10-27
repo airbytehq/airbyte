@@ -30,6 +30,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.notification.NotificationClient;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.server.converters.WorkspaceWebhookConfigsConverter;
 import io.airbyte.server.errors.IdNotFoundKnownException;
@@ -301,8 +302,7 @@ public class WorkspacesHandler {
       workspace.setNotifications(NotificationConverter.toConfigList(workspacePatch.getNotifications()));
     }
     if (workspacePatch.getDefaultGeography() != null) {
-      workspace.setDefaultGeography(
-          Enums.convertTo(workspacePatch.getDefaultGeography(), io.airbyte.config.Geography.class));
+      workspace.setDefaultGeography(ApiPojoConverters.toPersistenceGeography(workspacePatch.getDefaultGeography()));
     }
     if (workspacePatch.getWebhookConfigs() != null) {
       workspace.setWebhookOperationConfigs(WorkspaceWebhookConfigsConverter.toPersistenceWrite(workspacePatch.getWebhookConfigs(), uuidSupplier));
