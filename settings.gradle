@@ -140,9 +140,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':octavia-cli'
 }
 
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTOR_BUILDER") {
-}
-
 // connectors
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
     // include all connector projects
