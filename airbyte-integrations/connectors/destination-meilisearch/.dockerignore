@@ -1,3 +1,5 @@
 *
 !Dockerfile
-!build
+!main.py
+!destination_meilisearch
+!setup.py
