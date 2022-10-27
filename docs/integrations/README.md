@@ -80,6 +80,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Webfonts](sources/google-webfonts.md)                                               | Alpha                | Yes                 |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
 | [Greenhouse](sources/greenhouse.md)                                                         | Beta                 | Yes                 |
+| [Gridly](sources/gridly.md)                                                                 | Alpha                | No                  |
 | [Gutendex](sources/gutendex.md)                                                             | Alpha                | No                  |
 | [Harness](sources/harness.md)                                                               | Alpha                | No                  |
 | [Harvest](sources/harvest.md)                                                               | Generally Available  | Yes                 |
