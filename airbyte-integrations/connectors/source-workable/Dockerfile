@@ -29,10 +29,10 @@ RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
-COPY source_airtable ./source_airtable
+COPY source_workable ./source_workable
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.3
-LABEL io.airbyte.name=airbyte/source-airtable
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-workable
