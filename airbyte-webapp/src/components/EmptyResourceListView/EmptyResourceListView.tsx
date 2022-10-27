@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
-import { Text } from "components/ui/Text";
+import { Heading } from "components/ui/Heading";
 
 import { ReactComponent as BowtieHalf } from "./bowtie-half.svg";
 import styles from "./EmptyResourceListView.module.scss";
@@ -30,9 +30,9 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
 
   return (
     <div className={styles.container}>
-      <Text as="h2" size="lg" centered className={styles.heading}>
+      <Heading as="h2" size="lg" centered className={styles.heading}>
         <FormattedMessage id={headingMessageId} />
-      </Text>
+      </Heading>
       <div className={classNames(styles.container, styles.illustration)}>
         {resourceType !== "destinations" && (
           <BowtieHalf aria-hidden="true" className={classNames(styles.bowtie, styles.left)} />
