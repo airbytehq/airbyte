@@ -9,7 +9,10 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
+
+# list of all possible HTTP methods which can be used for sending of request bodies
+from airbyte_cdk.sources.utils.record_helper import data_to_airbyte_record
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
@@ -86,6 +89,17 @@ class Stream(ABC):
         :return: A user-friendly message that indicates the cause of the error
         """
         return None
+
+    def read_records_as_messages(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[AirbyteMessage]:
+        """ """
+        for record_mapping in self.read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            yield data_to_airbyte_record(self.name, record_mapping, self.transformer, self.get_json_schema())
 
     @abstractmethod
     def read_records(
