@@ -17,4 +17,7 @@ connectionSpecification:
       type: string
       title: Status
       description: Status of the Vitally accounts. One of the following values; active, churned, activeOrChurned.
-      examples: ["active", "churned", "activeOrChurned"]
+      enum:
+        - active
+        - churned
+        - activeOrChurned
