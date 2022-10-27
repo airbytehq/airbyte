@@ -1,3 +1,6 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_key": "<invaid_api_key>",
+  "sort": "<Non_supported_params>",
+  "prettyPrint": "<Non_supported_params>",
+  "alt": "<Non_supported_params>"
 }

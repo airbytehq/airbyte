@@ -26,7 +26,7 @@ Just pass the generated API key and optional parameters for establishing the con
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Google-webfonts connector and select **Google-webfonts** from the Source type dropdown.
 4. Enter your `api_key`.
-5. Enter the params configuration if needed. (Optional)
+5. Enter the params configuration if needed. Supported params are: sort, alt, prettyPrint (Optional)
 6. Click **Set up source**.
 
 ### For Airbyte OSS:
@@ -34,7 +34,7 @@ Just pass the generated API key and optional parameters for establishing the con
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-5. Enter the params configuration if needed. (Optional)
+5. Enter the params configuration if needed. Supported params are: sort, alt, prettyPrint (Optional)
 6. Click **Set up source**.
 
 ## Supported sync modes
