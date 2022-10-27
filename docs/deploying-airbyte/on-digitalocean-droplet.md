@@ -1,86 +1,57 @@
-# On DigitalOcean (Droplet)
+# Deploy on DigitalOcean
 
-The instructions have been tested on `DigitalOcean Droplet ($5)`. 
+This page guides you through deploying Airbyte Open Source on a DigitalOcean droplet by setting up the deployment environment, and installing and starting Airbyte.  
 
-Alternatively, you can one-click deploy Airbyte to DigitalOcean using their marketplace:<br/>
-<a href="https://cloud.digitalocean.com/droplets/new?onboarding_origin=marketplace&appId=95451155&image=airbyte&utm_source=deploying-airbyte_on-digitalocean-droplet"><img src="https://www.deploytodo.com/do-btn-blue.svg" alt="Deploy to DigitalOcean" /></a>
+Alternatively, you can deploy Airbyte on DigitalOcean in one click using their [marketplace](https://cloud.digitalocean.com/droplets/new?onboarding_origin=marketplace&appId=95451155&image=airbyte&utm_source=deploying-airbyte_on-digitalocean-droplet).
 
-## Create a new droplet
+## Requirements
 
-* Launch a new droplet
+- To test Airbyte, we recommend a $20/month droplet.
+- To deploy Airbyte in a production environment, we recommend a $40/month instance.
 
-![](../.gitbook/assets/digitalocean_launch_droplet.png)
+## Set up the Environment
 
-* Select image distribution 
+To deploy Airbyte Open Source on DigitalOcean:
 
-![](../.gitbook/assets/dg_choose_ditribution.png)
+1. [Create a DigitalOcean droplet](https://docs.digitalocean.com/products/droplets/how-to/create/).
+2. Connect to the droplet using the [Droplet Console](https://www.google.com/url?q=https://docs.digitalocean.com/products/droplets/how-to/connect-with-console/&sa=D&source=docs&ust=1666280581103312&usg=AOvVaw1hyEPyjRsmsRdIgbxZdu6F).
+3. To update the available packages and install Docker, run the following command:
 
-* Select droplet type
-  * For testing out Airbyte, a `$20/month` droplet is likely sufficient.
-  * For long-running Airbyte installations, we recommend a `$40/month` instance.
+  ```bash
+      sudo apt update
+      sudo apt install apt-transport-https ca-certificates curl software-properties-common
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+      sudo apt install docker-ce
+      sudo systemctl status docker
+      sudo usermod -aG docker ${USER}
+      su - ${USER}
+  ```
 
-![](../.gitbook/assets/dg_droplet_type.png)
-
-* `Region` 
-  * Generally, choose a datacenter close to you.
-* `Authentication`
-  * Password
-* `Create Droplet`
-
-![](../.gitbook/assets/dg_droplet_creating.png)
-
-* Wait for the droplet to enter the `Running` state.
-
-## Install environment
-
-Note: The following commands will be entered either on your local terminal or in your ssh session on the instance terminal. The comments above each command block will indicate where to enter the commands.
-
-* Connect to your instance
-
-* `Click on Console`
-
-![](../.gitbook/assets/dg_console.png)
-
-* Install `docker`
+4. To install Docker-Compose, run the following command:
 
 ```bash
-# In your ssh session on the instance terminal
-sudo apt update
-sudo apt install apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-sudo apt install docker-ce
-sudo systemctl status docker
-sudo usermod -aG docker ${USER}
-su - ${USER}
+    sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    docker-compose --version
 ```
 
-* Install `docker-compose`
+## Install Airbyte
+
+To install and start Airbyte :
+
+1. Run the following command:
 
 ```bash
-# In your ssh session on the instance terminal
-sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-docker-compose --version
+  mkdir airbyte && cd airbyte
+  wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+  docker-compose up -d
 ```
-## Install & start Airbyte
 
-* Connect to your instance
+2. Verify that Airbyte is running:
 
-* `Click on Console`
-
-![](../.gitbook/assets/dg_console.png)
-
-* Install Airbyte
-
-```bash
-# In your ssh session on the instance terminal
-mkdir airbyte && cd airbyte
-wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
-docker-compose up -d
-```
+    #todo -add the ssh tunnel command
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
-
+If you encounter any issues, reach out to our community on [Slack](https://slack.airbyte.com/).  
