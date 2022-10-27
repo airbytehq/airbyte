@@ -4,7 +4,6 @@
 
 import logging
 from abc import ABC, abstractmethod
-from functools import lru_cache
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import (
@@ -22,9 +21,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
-from airbyte_cdk.sources.utils.record_helper import data_to_airbyte_record
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
-from airbyte_cdk.sources.utils.transform import TypeTransformer
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -231,30 +228,31 @@ class AbstractSource(Source, ABC):
 
         total_records_counter = 0
         has_slices = False
-        transformer, schema = self._get_stream_transformer_and_schema(configured_stream.stream.name)
         for _slice in slices:
             has_slices = True
             logger.debug("Processing stream slice", extra={"slice": _slice})
-            records = stream_instance.read_records(
+            records = stream_instance.read_records_as_messages(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,
                 stream_state=stream_state,
                 cursor_field=configured_stream.cursor_field or None,
             )
-            for record_counter, record_data in enumerate(records, start=1):
-                yield data_to_airbyte_record(stream_name, record_data, transformer, schema)
-                stream_state = stream_instance.get_updated_state(stream_state, record_data)
-                checkpoint_interval = stream_instance.state_checkpoint_interval
-                if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                    yield self._checkpoint_state(stream_instance, stream_state, state_manager)
+            for record_counter, message in enumerate(records, start=1):
+                yield message
+                if message.type == MessageType.RECORD:
+                    record = message.record
+                    stream_state = stream_instance.get_updated_state(stream_state, record.data)
+                    checkpoint_interval = stream_instance.state_checkpoint_interval
+                    if checkpoint_interval and record_counter % checkpoint_interval == 0:
+                        yield self._checkpoint_state(stream_instance, stream_state, state_manager)
 
-                total_records_counter += 1
-                # This functionality should ideally live outside of this method
-                # but since state is managed inside this method, we keep track
-                # of it here.
-                if self._limit_reached(internal_config, total_records_counter):
-                    # Break from slice loop to save state and exit from _read_incremental function.
-                    break
+                    total_records_counter += 1
+                    # This functionality should ideally live outside of this method
+                    # but since state is managed inside this method, we keep track
+                    # of it here.
+                    if self._limit_reached(internal_config, total_records_counter):
+                        # Break from slice loop to save state and exit from _read_incremental function.
+                        break
 
             yield self._checkpoint_state(stream_instance, stream_state, state_manager)
             if self._limit_reached(internal_config, total_records_counter):
@@ -275,19 +273,19 @@ class AbstractSource(Source, ABC):
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
         logger.debug(f"Processing stream slices for {configured_stream.stream.name}", extra={"stream_slices": slices})
         total_records_counter = 0
-        transformer, schema = self._get_stream_transformer_and_schema(configured_stream.stream.name)
         for _slice in slices:
             logger.debug("Processing stream slice", extra={"slice": _slice})
-            records = stream_instance.read_records(
+            messages = stream_instance.read_records_as_messages(
                 stream_slice=_slice,
                 sync_mode=SyncMode.full_refresh,
                 cursor_field=configured_stream.cursor_field,
             )
-            for record in records:
-                yield data_to_airbyte_record(configured_stream.stream.name, record, transformer, schema)
-                total_records_counter += 1
-                if self._limit_reached(internal_config, total_records_counter):
-                    return
+            for message in messages:
+                yield message
+                if message.type == MessageType.RECORD:
+                    total_records_counter += 1
+                    if self._limit_reached(internal_config, total_records_counter):
+                        return
 
     def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
@@ -298,18 +296,6 @@ class AbstractSource(Source, ABC):
         except AttributeError:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
         return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)
-
-    @lru_cache(maxsize=None)
-    def _get_stream_transformer_and_schema(self, stream_name: str) -> Tuple[TypeTransformer, Mapping[str, Any]]:
-        """
-        Lookup stream's transform object and jsonschema based on stream name.
-        This function would be called a lot so using caching to save on costly
-        get_json_schema operation.
-        :param stream_name name of stream from catalog.
-        :return tuple with stream transformer object and discover json schema.
-        """
-        stream_instance = self._stream_to_instance_map[stream_name]
-        return stream_instance.transformer, stream_instance.get_json_schema()
 
     @staticmethod
     def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream):

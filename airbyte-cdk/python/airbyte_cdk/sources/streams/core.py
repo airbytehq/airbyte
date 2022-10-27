@@ -6,6 +6,7 @@
 import inspect
 import logging
 from abc import ABC, abstractmethod
+from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
@@ -98,7 +99,9 @@ class Stream(ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[AirbyteMessage]:
         """ """
-        for record_mapping in self.read_records(sync_mode, cursor_field, stream_slice, stream_state):
+        for record_mapping in self.read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
             yield data_to_airbyte_record(self.name, record_mapping, self.transformer, self.get_json_schema())
 
     @abstractmethod
@@ -113,6 +116,7 @@ class Stream(ABC):
         This method should be overridden by subclasses to read records based on the inputs
         """
 
+    @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.

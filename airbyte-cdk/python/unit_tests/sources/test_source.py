@@ -425,8 +425,8 @@ def test_source_config_no_transform(abstract_source, catalog):
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2 * 5
     assert [r.record.data for r in records] == [{"value": 23}] * 2 * 5
-    assert http_stream.get_json_schema.call_count == 1
-    assert non_http_stream.get_json_schema.call_count == 1
+    assert http_stream.get_json_schema.call_count == 5
+    assert non_http_stream.get_json_schema.call_count == 5
 
 
 def test_source_config_transform(abstract_source, catalog):
