@@ -355,38 +355,10 @@ describe("Connection main actions", () => {
 
     goToReplicationTab();
 
-    setupDestinationNamespaceDefaultFormat();
-    assert(cy.get(`[title*="<destination schema>"]`));
-    submitButtonClick();
-
-    setupDestinationNamespaceSourceFormat();
-
     const namespace = "<source schema>";
 
     // Ensures the DestinationNamespace is applied to the streams
     assert(cy.get(`[title*="${namespace}"]`));
-
-    submitButtonClick();
-
-    cy.wait("@updateConnection").then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, "200");
-      expect(interception.request.method).to.eq("POST");
-      expect(interception.request)
-        .property("body")
-        .to.contain({
-          name: sourceName + " <> " + destName + "Connection name",
-          namespaceDefinition: "source",
-          namespaceFormat: "${SOURCE_NAMESPACE}",
-          status: "active",
-        });
-
-      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
-
-      expect(streamToUpdate.stream).to.contain({
-        name: "pokemon",
-      });
-    });
-    checkSuccessResult();
 
     deleteSource(sourceName);
     deleteDestination(destName);
