@@ -3167,16 +3167,16 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-meilisearch:0.2.13"
+- dockerImage: "airbyte/destination-meilisearch:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/meilisearch"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "MeiliSearch Destination Spec"
+      title: "Destination Meilisearch"
       type: "object"
       required:
       - "host"
-      additionalProperties: true
+      additionalProperties: false
       properties:
         host:
           title: "Host"

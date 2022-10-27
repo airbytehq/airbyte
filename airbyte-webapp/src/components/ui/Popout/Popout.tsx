@@ -27,7 +27,7 @@ const ControlComponent = (props: ControlProps & { selectProps: Value }) => (
   </div>
 );
 
-interface PopoutProps extends DropdownProps {
+export interface PopoutProps extends DropdownProps {
   targetComponent: (props: { onOpen: () => void; isOpen?: boolean; value: Value }) => ReactNode;
   title?: string;
 }
