@@ -104,6 +104,8 @@ class SchedulerHandlerTest {
   private static final String DESTINATION_DOCKER_TAG = "tag";
   private static final String DESTINATION_DOCKER_IMAGE = DockerUtils.getTaggedImageName(DESTINATION_DOCKER_REPO, DESTINATION_DOCKER_TAG);
   private static final String DESTINATION_PROTOCOL_VERSION = "0.7.9";
+  private static final String NAME = "name";
+  private static final String DOGS = "dogs";
 
   private static final AirbyteCatalog airbyteCatalog = CatalogHelpers.createAirbyteCatalog("shoes",
       Field.of("sku", JsonSchemaType.STRING));
@@ -265,7 +267,7 @@ class SchedulerHandlerTest {
         new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID());
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-        .withName("name")
+        .withName(NAME)
         .withDockerRepository(SOURCE_DOCKER_REPO)
         .withDockerImageTag(SOURCE_DOCKER_TAG)
         .withSourceDefinitionId(sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId())
@@ -285,7 +287,7 @@ class SchedulerHandlerTest {
         new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID());
 
     final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-        .withName("name")
+        .withName(NAME)
         .withDockerRepository(DESTINATION_DOCKER_REPO)
         .withDockerImageTag(DESTINATION_DOCKER_TAG)
         .withDestinationDefinitionId(destinationDefinitionIdWithWorkspaceId.getDestinationDefinitionId())
@@ -537,7 +539,7 @@ class SchedulerHandlerTest {
     final SourceDiscoverSchemaRequestBody request =
         new SourceDiscoverSchemaRequestBody().sourceId(source.getSourceId()).connectionId(connectionId).disableCache(true);
     final StreamTransform streamTransform = new StreamTransform().transformType(TransformTypeEnum.REMOVE_STREAM)
-        .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("dogs"));
+        .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name(DOGS));
     final CatalogDiff catalogDiff = new CatalogDiff().addTransformsItem(streamTransform);
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
@@ -554,7 +556,7 @@ class SchedulerHandlerTest {
 
     final AirbyteCatalog airbyteCatalogCurrent = new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream("shoes", Field.of("sku", JsonSchemaType.STRING)),
-        CatalogHelpers.createAirbyteStream("dogs", Field.of("name", JsonSchemaType.STRING))));
+        CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
     final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent));
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
@@ -584,7 +586,7 @@ class SchedulerHandlerTest {
     final SourceDiscoverSchemaRequestBody request =
         new SourceDiscoverSchemaRequestBody().sourceId(source.getSourceId()).connectionId(connectionId).disableCache(true);
     final StreamTransform streamTransform = new StreamTransform().transformType(TransformTypeEnum.UPDATE_STREAM)
-        .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("dogs")).addUpdateStreamItem(new FieldTransform().transformType(
+        .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name(DOGS)).addUpdateStreamItem(new FieldTransform().transformType(
             FieldTransform.TransformTypeEnum.REMOVE_FIELD).breaking(true));
     final CatalogDiff catalogDiff = new CatalogDiff().addTransformsItem(streamTransform);
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
@@ -602,7 +604,7 @@ class SchedulerHandlerTest {
 
     final AirbyteCatalog airbyteCatalogCurrent = new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream("shoes", Field.of("sku", JsonSchemaType.STRING)),
-        CatalogHelpers.createAirbyteStream("dogs", Field.of("name", JsonSchemaType.STRING))));
+        CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
     final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent));
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
