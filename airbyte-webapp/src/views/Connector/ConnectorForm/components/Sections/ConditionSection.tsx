@@ -8,7 +8,7 @@ import { FormBlock, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
 import { useConnectorForm } from "../../connectorFormContext";
-import { ServiceFormValues } from "../../types";
+import { ConnectorFormValues } from "../../types";
 import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 import { GroupLabel } from "./GroupLabel";
@@ -24,7 +24,7 @@ interface ConditionSectionProps {
  */
 export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
   const { widgetsInfo, setUiWidgetsInfo } = useConnectorForm();
-  const { values, setValues } = useFormikContext<ServiceFormValues>();
+  const { values, setValues } = useFormikContext<ConnectorFormValues>();
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
@@ -35,7 +35,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
       const newValues =
         newSelectedPath._type === "formGroup"
           ? newSelectedPath.properties?.reduce(
-              (acc: ServiceFormValues, property: FormBlock) =>
+              (acc: ConnectorFormValues, property: FormBlock) =>
                 property._type === "formItem" && isDefined(property.const)
                   ? setIn(acc, property.path, property.const)
                   : acc,

@@ -15,7 +15,7 @@ import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "utils/errorStatusMessage";
-import { ConnectorCardValues, ConnectorForm, ServiceFormValues } from "views/Connector/ConnectorForm";
+import { ConnectorCardValues, ConnectorForm, ConnectorFormValues } from "views/Connector/ConnectorForm";
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorDefinitionTypeControl } from "../ConnectorForm/components/Controls/ConnectorServiceTypeControl";
@@ -107,7 +107,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     setDocumentationPanelOpen(true);
   }, [selectedConnectorDefinitionSpecification, selectedConnector, setDocumentationPanelOpen, setDocumentationUrl]);
 
-  const onHandleSubmit = async (values: ServiceFormValues) => {
+  const onHandleSubmit = async (values: ConnectorFormValues) => {
     if (!selectedConnector) {
       return;
     }

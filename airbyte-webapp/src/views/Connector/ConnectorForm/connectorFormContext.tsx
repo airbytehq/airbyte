@@ -5,11 +5,11 @@ import { AnySchema } from "yup";
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { WidgetConfigMap } from "core/form/types";
 
-import { ServiceFormValues } from "./types";
+import { ConnectorFormValues } from "./types";
 
 interface ConnectorFormContext {
   formType: "source" | "destination";
-  getValues: <T = unknown>(values: ServiceFormValues<T>) => ServiceFormValues<T>;
+  getValues: <T = unknown>(values: ConnectorFormValues<T>) => ConnectorFormValues<T>;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
@@ -41,7 +41,7 @@ interface ConnectorFormContextProviderProps {
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
-  getValues: <T = unknown>(values: ServiceFormValues<T>) => ServiceFormValues<T>;
+  getValues: <T = unknown>(values: ConnectorFormValues<T>) => ConnectorFormValues<T>;
   selectedConnector?: ConnectorDefinitionSpecification;
   validationSchema: AnySchema;
 }
@@ -59,7 +59,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
   validationSchema,
   isEditMode,
 }) => {
-  const { resetForm } = useFormikContext<ServiceFormValues>();
+  const { resetForm } = useFormikContext<ConnectorFormValues>();
 
   const ctx = useMemo<ConnectorFormContext>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};

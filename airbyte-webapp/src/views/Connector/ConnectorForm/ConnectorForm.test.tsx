@@ -10,7 +10,7 @@ import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClie
 import { ConnectorForm, ConnectorFormProps } from "views/Connector/ConnectorForm";
 
 import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
-import { ServiceFormValues } from "./types";
+import { ConnectorFormValues } from "./types";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
 jest.mock("components/ui/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
@@ -234,7 +234,7 @@ describe("Service Form", () => {
   });
 
   describe("filling service form", () => {
-    let result: ServiceFormValues;
+    let result: ConnectorFormValues;
     let container: HTMLElement;
     beforeEach(async () => {
       const renderResult = await render(

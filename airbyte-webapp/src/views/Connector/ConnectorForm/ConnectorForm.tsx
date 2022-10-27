@@ -14,7 +14,7 @@ import { isDefined } from "utils/common";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorFormContextProvider, useConnectorForm } from "./connectorFormContext";
 import { FormRoot } from "./FormRoot";
-import { ConnectorCardValues, ServiceFormValues } from "./types";
+import { ConnectorCardValues, ConnectorFormValues } from "./types";
 import {
   useBuildForm,
   useBuildInitialSchema,
@@ -36,10 +36,10 @@ const FormikPatch: React.FC = () => {
  */
 const PatchInitialValuesWithWidgetConfig: React.FC<{
   schema: JSONSchema7;
-  initialValues: ServiceFormValues;
+  initialValues: ConnectorFormValues;
 }> = ({ schema, initialValues }) => {
   const { widgetsInfo } = useConnectorForm();
-  const { setFieldValue } = useFormikContext<ServiceFormValues>();
+  const { setFieldValue } = useFormikContext<ConnectorFormValues>();
 
   useDeepCompareEffect(() => {
     const widgetsInfoEntries = Object.entries(widgetsInfo);
@@ -85,10 +85,10 @@ export interface ConnectorFormProps {
   formId?: string;
   selectedService?: ConnectorDefinition;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
-  onSubmit: (values: ServiceFormValues) => Promise<void> | void;
+  onSubmit: (values: ConnectorFormValues) => Promise<void> | void;
   isLoading?: boolean;
   isEditMode?: boolean;
-  formValues?: Partial<ServiceFormValues>;
+  formValues?: Partial<ConnectorFormValues>;
   hasSuccess?: boolean;
   fetchingConnectorError?: Error | null;
   errorMessage?: React.ReactNode;
@@ -156,7 +156,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
   const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
 
   const getValues = useCallback(
-    (values: ServiceFormValues) =>
+    (values: ConnectorFormValues) =>
       validationSchema.cast(values, {
         stripUnknown: true,
       }),
@@ -164,7 +164,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
   );
 
   const onFormSubmit = useCallback(
-    async (values: ServiceFormValues) => {
+    async (values: ConnectorFormValues) => {
       const valuesToSend = getValues(values);
       await onSubmit(valuesToSend);
 
