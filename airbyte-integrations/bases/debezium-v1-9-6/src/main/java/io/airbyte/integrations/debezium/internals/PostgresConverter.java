@@ -149,20 +149,23 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     switch (fieldType) {
       // debezium currently cannot handle MONEY[] datatype and it's not implemented
       case "_MONEY":
-      // PgArray.getArray() trying to convert to Double instead of PgMoney
-      // due to incorrect type mapping in the postgres driver https://github.com/pgjdbc/pgjdbc/blob/d5ed52ef391670e83ae5265af2f7301c615ce4ca/pgjdbc/src/main/java/org/postgresql/jdbc/TypeInfoCache.java#L88
-      // and throws an exception, so a custom implementation of converting to String is used to get the value as is
+        // PgArray.getArray() trying to convert to Double instead of PgMoney
+        // due to incorrect type mapping in the postgres driver
+        // https://github.com/pgjdbc/pgjdbc/blob/d5ed52ef391670e83ae5265af2f7301c615ce4ca/pgjdbc/src/main/java/org/postgresql/jdbc/TypeInfoCache.java#L88
+        // and throws an exception, so a custom implementation of converting to String is used to get the
+        // value as is
         final String nativeMoneyValue = ((PgArray) x).toString();
         final String substringM = Objects.requireNonNull(nativeMoneyValue).substring(1, nativeMoneyValue.length() - 1);
         final char currency = substringM.charAt(0);
         final String regex = "\\" + currency;
         final List<String> myListM = new ArrayList<>(Arrays.asList(substringM.split(regex)));
         return myListM.stream()
-        // since the separator is the currency sign, all extra characters must be removed except for numbers and dots
-                .map(val -> val.replaceAll("[^\\d.]", ""))
-                .filter(money -> !money.isEmpty())
-                .map(Double::valueOf)
-                .collect(Collectors.toList());
+            // since the separator is the currency sign, all extra characters must be removed except for numbers
+            // and dots
+            .map(val -> val.replaceAll("[^\\d.]", ""))
+            .filter(money -> !money.isEmpty())
+            .map(Double::valueOf)
+            .collect(Collectors.toList());
       case "_NUMERIC":
         return Arrays.stream(values).map(value -> value == null ? null : Double.valueOf(value.toString())).collect(Collectors.toList());
       case "_TIME":
@@ -196,8 +199,8 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         return Arrays.stream(values).map(value -> (Boolean) value).collect(Collectors.toList());
       case "_NAME":
         return Arrays.stream(values).map(value -> (String) value).collect(Collectors.toList());
-        default:
-          return new ArrayList<>();
+      default:
+        return new ArrayList<>();
     }
   }
 

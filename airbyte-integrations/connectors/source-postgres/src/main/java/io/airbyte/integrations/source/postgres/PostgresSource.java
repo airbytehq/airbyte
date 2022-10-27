@@ -57,7 +57,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -321,10 +320,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
+                                                                             final StateManager stateManager,
+                                                                             final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
@@ -471,14 +470,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     if (PostgresUtils.isCdc(config)) {
-      if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)){
+      if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
         String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
         if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
           return new AirbyteConnectionStatus()
-                  .withStatus(Status.FAILED)
-                  .withMessage(String.format(
-                          "In CDC replication mode ssl value '%s' is invalid. Please use one of the following SSL modes: disable, require, verify-ca, verify-full",
-                          sslModeValue));
+              .withStatus(Status.FAILED)
+              .withMessage(String.format(
+                  "In CDC replication mode ssl value '%s' is invalid. Please use one of the following SSL modes: disable, require, verify-ca, verify-full",
+                  sslModeValue));
         }
       }
     }

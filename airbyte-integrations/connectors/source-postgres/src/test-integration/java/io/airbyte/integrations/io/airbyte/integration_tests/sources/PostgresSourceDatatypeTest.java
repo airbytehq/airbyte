@@ -13,11 +13,10 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
+import java.sql.SQLException;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
-
-import java.sql.SQLException;
 
 public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
 
