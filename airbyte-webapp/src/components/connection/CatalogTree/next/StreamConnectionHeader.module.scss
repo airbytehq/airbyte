@@ -1,0 +1,20 @@
+@use "scss/variables";
+
+$icon-size: 15px;
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: variables.$spacing-lg calc(variables.$spacing-lg * 2);
+}
+
+.connector {
+  display: flex;
+  flex-direction: row;
+}
+
+.icon {
+  height: $icon-size;
+  width: $icon-size;
+}

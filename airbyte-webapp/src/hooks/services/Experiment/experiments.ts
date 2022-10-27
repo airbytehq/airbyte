@@ -18,4 +18,5 @@ export interface Experiments {
   "authPage.oauth.github": boolean;
   "authPage.oauth.google.signUpPage": boolean;
   "authPage.oauth.github.signUpPage": boolean;
+  "onboarding.speedyConnection": boolean;
 }

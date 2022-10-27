@@ -74,6 +74,14 @@ public class BigQueryDenormalizedTestSchemaUtils {
     return getTestDataFromResourceJson("expectedSchemaArrays.json");
   }
 
+  public static JsonNode getExpectedSchemaArraysLegacy() {
+    return getTestDataFromResourceJson("expectedSchemaArraysLegacy.json");
+  }
+
+  public static JsonNode getSchemaWithAllOf() {
+    return getTestDataFromResourceJson("schemaAllOf.json");
+  }
+
   private static JsonNode getTestDataFromResourceJson(final String fileName) {
     final String fileContent;
     try {

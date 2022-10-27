@@ -11,7 +11,7 @@ export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({ title
   <Card>
     <div className={styles.section}>
       {title && (
-        <Heading as="h5" size="sm">
+        <Heading as="h2" size="sm">
           {title}
         </Heading>
       )}

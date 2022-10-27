@@ -230,20 +230,12 @@ class Client:
     reader_class = URLFile
     binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
 
-    def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: str = None):
+    def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: dict = None):
         self._dataset_name = dataset_name
         self._url = url
         self._provider = provider
         self._reader_format = format or "csv"
-        self._reader_options = {}
-        if reader_options:
-            try:
-                self._reader_options = json.loads(reader_options)
-            except json.decoder.JSONDecodeError as err:
-                error_msg = f"Failed to parse reader options {repr(err)}\n{reader_options}\n{traceback.format_exc()}"
-                logger.error(error_msg)
-                raise ConfigurationError(error_msg) from err
-
+        self._reader_options = reader_options or {}
         self.binary_source = self._reader_format in self.binary_formats
         self.encoding = self._reader_options.get("encoding")
 
@@ -318,18 +310,22 @@ class Client:
             raise ConfigurationError(error_msg) from err
 
         reader_options = {**self._reader_options}
-        if self._reader_format == "csv":
-            reader_options["chunksize"] = self.CSV_CHUNK_SIZE
-            if skip_data:
-                reader_options["nrows"] = 0
-                reader_options["index_col"] = 0
-
-            yield from reader(fp, **reader_options)
-        elif self._reader_options == "excel_binary":
-            reader_options["engine"] = "pyxlsb"
-            yield from reader(fp, **reader_options)
-        else:
-            yield reader(fp, **reader_options)
+        try:
+            if self._reader_format == "csv":
+                reader_options["chunksize"] = self.CSV_CHUNK_SIZE
+                if skip_data:
+                    reader_options["nrows"] = 0
+                    reader_options["index_col"] = 0
+                yield from reader(fp, **reader_options)
+            elif self._reader_options == "excel_binary":
+                reader_options["engine"] = "pyxlsb"
+                yield from reader(fp, **reader_options)
+            else:
+                yield reader(fp, **reader_options)
+        except UnicodeDecodeError as err:
+            error_msg = f"File {fp} can't be parsed with reader of chosen type ({self._reader_format})\n{traceback.format_exc()}"
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg) from err
 
     @staticmethod
     def dtype_to_json_type(current_type: str, dtype) -> str:
