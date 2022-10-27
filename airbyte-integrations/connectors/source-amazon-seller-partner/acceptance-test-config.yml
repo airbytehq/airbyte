@@ -62,9 +62,6 @@ tests:
 #      configured_catalog_path: "integration_tests/configured_catalog_get_fba_fulfillment_inventory_adjustments_data.json"
 #    - config_path: "secrets/config.json"
 #      timeout_seconds: 3600
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_fulfillment_inventory_health_data.json"
-#    - config_path: "secrets/config.json"
-#      timeout_seconds: 3600
 #      configured_catalog_path: "integration_tests/configured_catalog_get_fba_fulfillment_inventory_receipts_data.json"
 #    - config_path: "secrets/config.json"
 #      timeout_seconds: 3600

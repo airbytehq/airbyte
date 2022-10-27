@@ -470,28 +470,6 @@ class GetXmlBrowseTreeData(ReportsAmazonSPStream):
     name = "GET_XML_BROWSE_TREE_DATA"
 
 
-class FbaFulfillmentInventoryHealthReport(ReportsAmazonSPStream):
-    """
-    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values
-    """
-
-    name = "GET_FBA_FULFILLMENT_INVENTORY_HEALTH_DATA"
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.transformer.registerCustomTransform(self.get_transform_function())
-
-    def get_transform_function(self):
-        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-            if original_value and field_schema.get("format") == "date-time":
-                transformed_value = pendulum.parse(original_value).strftime(DATE_TIME_FORMAT)
-                return transformed_value
-            return original_value
-
-        return transform_function
-
-
 class FbaEstimatedFbaFeesTxtReport(ReportsAmazonSPStream):
     name = "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
 
