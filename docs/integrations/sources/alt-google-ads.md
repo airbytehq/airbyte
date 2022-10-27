@@ -114,4 +114,4 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|                                                                                  |
-| `0.1.0`  | 2022-10-26 | [4288](https://github.com/airbytehq/airbyte/pull/4288)   | `First Release`                                                                                      |
+| `0.1.0`  | 2022-10-26 | [18091](https://github.com/airbytehq/airbyte/pull/4288)   | `First Release`                                                                                      |
