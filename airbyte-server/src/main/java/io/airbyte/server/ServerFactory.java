@@ -17,15 +17,19 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.AttemptApiController;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.server.apis.ConnectionApiController;
+import io.airbyte.server.apis.DbMigrationApiController;
 import io.airbyte.server.apis.DestinationApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
+import io.airbyte.server.apis.binders.DbMigrationBinder;
 import io.airbyte.server.apis.binders.DestinationApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
+import io.airbyte.server.apis.factories.DbMigrationApiFactory;
 import io.airbyte.server.apis.factories.DestinationApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
+import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
@@ -58,6 +62,7 @@ public interface ServerFactory {
                         final Flyway jobsFlyway,
                         final AttemptHandler attemptHandler,
                         final ConnectionsHandler connectionsHandler,
+                        final DbMigrationHandler dbMigrationHandler,
                         final DestinationHandler destinationApiHandler,
                         final OperationsHandler operationsHandler,
                         final SchedulerHandler schedulerHandler);
@@ -83,6 +88,7 @@ public interface ServerFactory {
                                  final Flyway jobsFlyway,
                                  final AttemptHandler attemptHandler,
                                  final ConnectionsHandler connectionsHandler,
+                                 final DbMigrationHandler dbMigrationHandler,
                                  final DestinationHandler destinationApiHandler,
                                  final OperationsHandler operationsHandler,
                                  final SchedulerHandler schedulerHandler) {
@@ -117,13 +123,15 @@ public interface ServerFactory {
           schedulerHandler,
           mdc);
 
+      DbMigrationApiFactory.setValues(dbMigrationHandler, mdc);
+
       DestinationApiFactory.setValues(destinationApiHandler, schedulerHandler, mdc);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiController.class, ConnectionApiController.class,
-          DestinationApiController.class);
+          DbMigrationApiController.class, DestinationApiController.class);
       final Set<Object> components = Set.of(new CorsFilter(), new ConfigurationApiBinder(), new AttemptApiBinder(), new ConnectionApiBinder(),
-          new DestinationApiBinder());
+          new DbMigrationBinder(), new DestinationApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
