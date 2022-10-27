@@ -7,27 +7,40 @@ import {
 
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
-function mockRecord(streamName: string, recordNum: number) {
+function mockRecord(streamName: string, recordNum: number, pageNum: number, sliceDay: number) {
   return {
-    id: `record_${recordNum}`,
+    id: `day_${sliceDay}_page_${pageNum}_record_${recordNum}`,
     object: streamName,
     amount: recordNum * 1000,
   };
 }
 
-function mockPage(streamName: string, pageNum: number, numRecords: number) {
-  const records = Array.from(Array(numRecords).keys()).map((i) => mockRecord(streamName, i));
+function mockPage(streamName: string, pageNum: number, sliceDay: number, numRecords: number) {
+  const records = Array.from(Array(numRecords).keys()).map((i) => mockRecord(streamName, i, pageNum, sliceDay));
 
   return {
     records,
     request: {
       url: `https://api.com/${streamName}?page=${pageNum}`,
+      headers: {
+        Accept: "*/*",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
       parameters: {
         page: pageNum,
       },
     },
     response: {
       status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": "2626",
+        Connection: "keep-alive",
+        "cache-control": "no-cache, no-store",
+      },
       body: {
         data: records,
       },
@@ -36,7 +49,7 @@ function mockPage(streamName: string, pageNum: number, numRecords: number) {
 }
 
 function mockSlice(streamName: string, day: number, numPages: number, numRecords: number) {
-  const pages = Array.from(Array(numPages).keys()).map((i) => mockPage(streamName, i, numRecords));
+  const pages = Array.from(Array(numPages).keys()).map((i) => mockPage(streamName, i, day, numRecords));
 
   return {
     sliceDescriptor: { startDatetime: `${day} Jan 2022`, listItem: "airbyte-cloud" },
