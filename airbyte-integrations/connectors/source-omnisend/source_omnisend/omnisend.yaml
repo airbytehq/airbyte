@@ -15,7 +15,17 @@ definitions:
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
-      type: NoPagination
+      type: DefaultPaginator
+      url_base: "*ref(definitions.requester.url_base)"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{response['paging']['next']}}"
+        page_size: 100
+      page_token_option:
+        inject_into: "path"
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
