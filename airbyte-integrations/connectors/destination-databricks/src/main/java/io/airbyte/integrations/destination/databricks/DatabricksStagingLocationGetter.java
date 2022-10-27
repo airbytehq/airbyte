@@ -1,18 +1,13 @@
 package io.airbyte.integrations.destination.databricks;
 
-import static java.util.stream.Collectors.joining;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,20 +55,15 @@ public class DatabricksStagingLocationGetter {
     final String stagingUrl = String.format(STAGING_URL, username, filePath);
     LOGGER.info("Requesting Databricks personal staging location for {}", stagingUrl);
 
-    final Map<String, String> requestBody = new HashMap<>();
-    requestBody.putAll(staticRequestParams);
+    final Map<String, String> requestBody = new HashMap<>(staticRequestParams);
     requestBody.put(PARAM_STAGING_URL, stagingUrl);
 
-    final BodyPublisher bodyPublisher = BodyPublishers.ofString(requestBody.keySet().stream()
-        .map(key -> key + "=" + URLEncoder.encode(requestBody.get(key), StandardCharsets.UTF_8))
-        .collect(joining("&")));
     final HttpRequest request = HttpRequest.newBuilder()
-        .POST(bodyPublisher)
+        .POST(BodyPublishers.ofString(Jsons.serialize(requestBody)))
         .uri(URI.create(String.format(PERSONAL_STAGING_REQUEST_URL, serverHost)))
         .header("Authorization", "Bearer " + personalAccessToken)
         .build();
-    final HttpResponse<String> response = httpClient.send(request,
-        HttpResponse.BodyHandlers.ofString());
+    final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     final JsonNode jsonResponse = Jsons.deserialize(response.body());
     if (jsonResponse.has(RESPONSE_PRESIGNED_URL) && jsonResponse.get(RESPONSE_PRESIGNED_URL).has(RESPONSE_URL) && jsonResponse.get(
