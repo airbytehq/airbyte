@@ -109,13 +109,11 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.StatePersistence;
-import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
@@ -142,7 +140,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
-import org.flywaydb.core.Flyway;
 
 @javax.ws.rs.Path("/v1")
 @Slf4j
@@ -163,7 +160,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final HealthCheckHandler healthCheckHandler;
   private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
-  private final DbMigrationHandler dbMigrationHandler;
   private final OAuthHandler oAuthHandler;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
@@ -175,8 +171,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final SecretsRepositoryWriter secretsRepositoryWriter,
 
                           final SynchronousSchedulerClient synchronousSchedulerClient,
-                          final Database configsDatabase,
-                          final Database jobsDatabase,
                           final StatePersistence statePersistence,
                           final TrackingClient trackingClient,
                           final WorkerEnvironment workerEnvironment,
@@ -184,9 +178,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final AirbyteVersion airbyteVersion,
                           final Path workspaceRoot,
                           final HttpClient httpClient,
-                          final EventRunner eventRunner,
-                          final Flyway configsFlyway,
-                          final Flyway jobsFlyway) {
+                          final EventRunner eventRunner) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
@@ -249,7 +241,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     healthCheckHandler = new HealthCheckHandler(configRepository);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
-    dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
   }
 
   // WORKSPACE
@@ -499,14 +490,22 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // DB MIGRATION
 
+  /**
+   * This implementation has been moved to {@link DbMigrationApiController}. Since the path of
+   * {@link DbMigrationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DbMigrationReadList listMigrations(final DbMigrationRequestBody request) {
-    return execute(() -> dbMigrationHandler.list(request));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DbMigrationApiController}. Since the path of
+   * {@link DbMigrationApiController} is more granular, it will override this implementation
+   */
   @Override
   public DbMigrationExecutionRead executeMigrations(final DbMigrationRequestBody request) {
-    return execute(() -> dbMigrationHandler.migrate(request));
+    throw new NotImplementedException();
   }
 
   // DESTINATION
