@@ -723,7 +723,6 @@
   dockerRepository: airbyte/source-news-api
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/news-api
-  # icon: notion.svg
   sourceType: api
   releaseStage: alpha
 - name: Notion
