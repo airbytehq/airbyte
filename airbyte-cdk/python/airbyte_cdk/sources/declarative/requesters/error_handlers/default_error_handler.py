@@ -42,7 +42,7 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
     `
         error_handler:
           backoff_strategies:
-            - type: "ConstantBackoffStrategy"
+            - type: "ConstantBackoff"
               backoff_time_in_seconds: 5
     `
     3. retry on HTTP 404
@@ -92,6 +92,7 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
 
     DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
+    config: Config
     options: InitVar[Mapping[str, Any]]
     config: Config
     response_filters: Optional[List[HttpResponseFilter]] = None
@@ -104,9 +105,11 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
 
         if not self.response_filters:
             self.response_filters.append(
-                HttpResponseFilter(ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, options={})
+                HttpResponseFilter(
+                    ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=self.config, options={}
+                )
             )
-            self.response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, options={}))
+            self.response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config={}, options={}))
 
         if not self.backoff_strategies:
             self.backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(options=options, config=self.config)]
@@ -124,7 +127,7 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
         if not isinstance(value, property):
             self._max_retries = value
 
-    def should_retry(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response(self, response: requests.Response) -> ResponseStatus:
         request = response.request
 
         if request not in self._last_request_to_attempt_count:
@@ -132,12 +135,12 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
         else:
             self._last_request_to_attempt_count[request] += 1
         for response_filter in self.response_filters:
-            filter_action = response_filter.matches(response)
-            if filter_action is not None:
-                if filter_action == ResponseAction.RETRY:
-                    return ResponseStatus(ResponseAction.RETRY, self._backoff_time(response, self._last_request_to_attempt_count[request]))
-                else:
-                    return ResponseStatus(filter_action)
+            matched_status = response_filter.matches(
+                response=response, backoff_time=self._backoff_time(response, self._last_request_to_attempt_count[request])
+            )
+            if matched_status is not None:
+                return matched_status
+
         if response.ok:
             return response_status.SUCCESS
         # Fail if the response matches no filters

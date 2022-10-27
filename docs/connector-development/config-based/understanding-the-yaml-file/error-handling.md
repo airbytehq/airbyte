@@ -183,7 +183,7 @@ Schema:
 
 ### Constant Backoff
 
-When using the `ConstantBackoffStrategy`, the requester will backoff with a constant interval.
+When using the `ConstantBackoff` strategy, the requester will backoff with a constant interval.
 
 Schema:
 
@@ -202,7 +202,7 @@ Schema:
 
 ### Wait time defined in header
 
-When using the `WaitTimeFromHeaderBackoffStrategy`, the requester will backoff by an interval specified in the response header.
+When using the `WaitTimeFromHeader`, the requester will backoff by an interval specified in the response header.
 In this example, the requester will backoff by the response's "wait_time" header value:
 
 Schema:
@@ -230,7 +230,7 @@ requester:
   error_handler:
     <...>
     backoff_strategies:
-        - type: "WaitTimeFromHeaderBackoffStrategy"
+        - type: "WaitTimeFromHeader"
           header: "wait_time"
 ```
 
@@ -244,14 +244,14 @@ requester:
   error_handler:
     <...>
     backoff_strategies:
-        - type: "WaitTimeFromHeaderBackoffStrategy"
+        - type: "WaitTimeFromHeader"
           header: "wait_time"
           regex: "[-+]?\d+"
 ```
 
 ### Wait until time defined in header
 
-When using the `WaitUntilTimeFromHeaderBackoffStrategy`, the requester will backoff until the time specified in the response header.
+When using the `WaitUntilTimeFromHeader` backoff strategy, the requester will backoff until the time specified in the response header.
 In this example, the requester will wait until the time specified in the "wait_until" header value:
 
 Schema:
@@ -281,7 +281,7 @@ requester:
   error_handler:
     <...>
     backoff_strategies:
-        - type: "WaitUntilTimeFromHeaderBackoffStrategy"
+        - type: "WaitUntilTimeFromHeader"
           header: "wait_until"
           regex: "[-+]?\d+"
           min_wait: 5
@@ -302,9 +302,9 @@ requester:
   error_handler:
     <...>
     backoff_strategies:
-        - type: "WaitTimeFromHeaderBackoffStrategy"
+        - type: "WaitTimeFromHeader"
           header: "wait_time"
-            - type: "ConstantBackoffStrategy"
+            - type: "ConstantBackoff"
               backoff_time_in_seconds: 5
 ```
 
@@ -340,13 +340,13 @@ requester:
           - predicate: "{{ 'code' in response }}"
             action: RETRY
         backoff_strategies:
-          - type: "ConstantBackoffStrategy"
+          - type: "ConstantBackoff"
             backoff_time_in_seconds: 5
       - response_filters:
           - http_codes: [ 403 ]
             action: RETRY
         backoff_strategies:
-          - type: "ExponentialBackoffStrategy"
+          - type: "ExponentialBackoff"
 ```
 
 ## More readings

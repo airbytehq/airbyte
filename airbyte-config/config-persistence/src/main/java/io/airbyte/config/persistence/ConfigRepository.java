@@ -29,10 +29,12 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -142,10 +144,7 @@ public class ConfigRepository {
           .where(WORKSPACE.SLUG.eq(slug)).andNot(WORKSPACE.TOMBSTONE)).fetch();
     }
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildStandardWorkspace(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildStandardWorkspace);
   }
 
   public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)
@@ -190,10 +189,16 @@ public class ConfigRepository {
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
-    return persistence.getConfig(
+    final StandardSourceDefinition sourceDef = persistence.getConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         sourceDefinitionId.toString(),
         StandardSourceDefinition.class);
+    // Make sure we have a default version of the Protocol.
+    // This corner case may happen for connectors that haven't been upgraded since we added versioning.
+    if (sourceDef != null) {
+      return sourceDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(sourceDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
@@ -302,8 +307,15 @@ public class ConfigRepository {
 
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
-        StandardDestinationDefinition.class);
+    final StandardDestinationDefinition destDef =
+        persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
+            StandardDestinationDefinition.class);
+    // Make sure we have a default version of the Protocol.
+    // This corner case may happen for connectors that haven't been upgraded since we added versioning.
+    if (destDef != null) {
+      return destDef.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(destDef.getProtocolVersion()).serialize());
+    }
+    return null;
   }
 
   public StandardDestinationDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {
@@ -580,6 +592,23 @@ public class ConfigRepository {
   }
 
   /**
+   * Returns all sources for a workspace. Does not contain secrets.
+   *
+   * @param workspaceId - id of the workspace
+   * @return sources
+   * @throws JsonValidationException - throws if returned sources are invalid
+   * @throws IOException - you never know when you IO
+   */
+  public List<SourceConnection> listWorkspaceSourceConnection(final UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .and(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildSourceConnection).collect(Collectors.toList());
+  }
+
+  /**
    * Returns destination with a given id. Does not contain secrets. To hydrate with secrets see
    * { @link SecretsRepositoryReader#getDestinationConnectionWithSecrets(final UUID destinationId) }.
    *
@@ -619,6 +648,54 @@ public class ConfigRepository {
    */
   public List<DestinationConnection> listDestinationConnection() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
+  }
+
+  /**
+   * Returns all destinations for a workspace. Does not contain secrets.
+   *
+   * @param workspaceId - id of the workspace
+   * @return destinations
+   * @throws IOException - you never know when you IO
+   */
+  public List<DestinationConnection> listWorkspaceDestinationConnection(UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .and(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildDestinationConnection).collect(Collectors.toList());
+  }
+
+  /**
+   * Returns all active sources using a definition
+   *
+   * @param definitionId - id for the definition
+   * @return sources
+   * @throws IOException
+   */
+  public List<SourceConnection> listSourcesForDefinition(UUID definitionId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .and(ACTOR.ACTOR_DEFINITION_ID.eq(definitionId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildSourceConnection).collect(Collectors.toList());
+  }
+
+  /**
+   * Returns all active destinations using a definition
+   *
+   * @param definitionId - id for the definition
+   * @return destinations
+   * @throws IOException
+   */
+  public List<DestinationConnection> listDestinationsForDefinition(UUID definitionId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.ACTOR_TYPE.eq(ActorType.destination))
+        .and(ACTOR.ACTOR_DEFINITION_ID.eq(definitionId))
+        .andNot(ACTOR.TOMBSTONE).fetch());
+    return result.stream().map(DbConverter::buildDestinationConnection).collect(Collectors.toList());
   }
 
   public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -774,10 +851,7 @@ public class ConfigRepository {
           ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(sourceDefinitionId)).fetch();
     });
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildSourceOAuthParameter(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildSourceOAuthParameter);
   }
 
   public void writeSourceOAuthParam(final SourceOAuthParameter sourceOAuthParameter) throws JsonValidationException, IOException {
@@ -803,10 +877,7 @@ public class ConfigRepository {
           ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(destinationDefinitionId)).fetch();
     });
 
-    if (result.size() == 0) {
-      return Optional.empty();
-    }
-    return Optional.of(DbConverter.buildDestinationOAuthParameter(result.get(0)));
+    return result.stream().findFirst().map(DbConverter::buildDestinationOAuthParameter);
   }
 
   public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter) throws JsonValidationException, IOException {
@@ -903,6 +974,7 @@ public class ConfigRepository {
       throws IOException, ConfigNotFoundException {
     final Result<Record> result = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
         .from(ACTOR_CATALOG).where(ACTOR_CATALOG.ID.eq(actorCatalogId))).fetch();
+
     if (result.size() > 0) {
       return DbConverter.buildActorCatalog(result.get(0));
     }
@@ -920,8 +992,8 @@ public class ConfigRepository {
    * @return the db identifier for the cached catalog.
    */
   private UUID getOrInsertActorCatalog(final AirbyteCatalog airbyteCatalog,
-                                       final DSLContext context) {
-    final OffsetDateTime timestamp = OffsetDateTime.now();
+                                       final DSLContext context,
+                                       final OffsetDateTime timestamp) {
     final HashFunction hashFunction = Hashing.murmur3_32_fixed();
     final String catalogHash = hashFunction.hashBytes(Jsons.serialize(airbyteCatalog).getBytes(
         Charsets.UTF_8)).toString();
@@ -955,11 +1027,33 @@ public class ConfigRepository {
         .and(ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH.eq(configHash))
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1)).fetch();
 
-    if (records.size() >= 1) {
-      return Optional.of(DbConverter.buildActorCatalog(records.get(0)));
-    }
-    return Optional.empty();
+    return records.stream().findFirst().map(DbConverter::buildActorCatalog);
+  }
 
+  public Optional<ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSource(final UUID sourceId) throws IOException {
+
+    final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
+        .from(ACTOR_CATALOG_FETCH_EVENT)
+        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(sourceId))
+        .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1).fetch());
+
+    return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
+  }
+
+  public Map<UUID, ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds)
+      throws IOException {
+
+    return database.query(ctx -> ctx.fetch(
+        """
+        select actor_catalog_id, actor_id, created_at from
+          (select actor_catalog_id, actor_id, created_at, rank() over (partition by actor_id order by created_at desc) as creation_order_rank
+          from public.actor_catalog_fetch_event
+          ) table_with_rank
+        where creation_order_rank = 1;
+        """))
+        .stream().map(DbConverter::buildActorCatalogFetchEvent)
+        .collect(Collectors.toMap(record -> record.getActorId(),
+            record -> record));
   }
 
   /**
@@ -987,7 +1081,7 @@ public class ConfigRepository {
     final OffsetDateTime timestamp = OffsetDateTime.now();
     final UUID fetchEventID = UUID.randomUUID();
     return database.transaction(ctx -> {
-      final UUID catalogId = getOrInsertActorCatalog(catalog, ctx);
+      final UUID catalogId = getOrInsertActorCatalog(catalog, ctx, timestamp);
       ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
           .set(ACTOR_CATALOG_FETCH_EVENT.ID, fetchEventID)
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, actorId)
@@ -1107,6 +1201,14 @@ public class ConfigRepository {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = getStandardSync(connectionId);
     return standardSync.getCatalog();
+  }
+
+  public Geography getGeographyForConnection(final UUID connectionId) throws IOException {
+    return database.query(ctx -> ctx.select(CONNECTION.GEOGRAPHY)
+        .from(CONNECTION)
+        .where(CONNECTION.ID.eq(connectionId))
+        .limit(1))
+        .fetchOneInto(Geography.class);
   }
 
 }

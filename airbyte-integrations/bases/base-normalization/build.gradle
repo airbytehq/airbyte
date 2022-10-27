@@ -10,7 +10,6 @@ airbytePython {
 }
 
 dependencies {
-    implementation project(':airbyte-workers')
     implementation project(':airbyte-commons-worker')
 }
 
