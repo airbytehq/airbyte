@@ -1,7 +1,8 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from typing import Any, Dict, Mapping
+
+from typing import Any, Dict
 
 import requests
 from airbyte_cdk.models import AirbyteStream
@@ -72,12 +73,12 @@ class Helpers(object):
 
     @staticmethod
     def to_airbyte_data_type(column_type: str) -> str:
-        if column_type == 'number':
-            return 'number'
-        elif column_type == 'boolean':
-            return 'boolean'
+        if column_type == "number":
+            return "number"
+        elif column_type == "boolean":
+            return "boolean"
         else:
-            return 'string'
+            return "string"
 
     @staticmethod
     def get_json_schema(view: Dict[str, Any]) -> Dict[str, str]:
@@ -85,8 +86,8 @@ class Helpers(object):
         properties = {}
 
         for column in columns:
-            column_id = column.get('id')
-            column_type = column.get('type', 'singleLine')
+            column_id = column.get("id")
+            column_type = column.get("type", "singleLine")
             properties[column_id] = {"type": ["null", Helpers.to_airbyte_data_type(column_type)]}
 
         json_schema = {
@@ -103,8 +104,8 @@ class Helpers(object):
         properties = {}
 
         for column in columns:
-            column_id = column.get('id')
-            column_type = column.get('type', 'singleLine')
+            column_id = column.get("id")
+            column_type = column.get("type", "singleLine")
             properties[column_id] = {"type": ["null", Helpers.to_airbyte_data_type(column_type)]}
 
         json_schema = Helpers.get_json_schema(view)
@@ -118,19 +119,18 @@ class Helpers(object):
 
     @staticmethod
     def transform_record(record: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:
-        schema_properties = schema.get('properties')
+        schema_properties = schema.get("properties")
         columns = [k for k, v in schema_properties.items()]
 
-        cells = record.get('cells')
+        cells = record.get("cells")
 
         transformed_record = {}
-        if '_recordId' in columns:
-            transformed_record['_recordId'] = record.get('id')
-        if '_path' in columns:
-            transformed_record['_path'] = record.get('path', '')
+        if "_recordId" in columns:
+            transformed_record["_recordId"] = record.get("id")
+        if "_path" in columns:
+            transformed_record["_path"] = record.get("path", "")
 
         for cell in cells:
-            transformed_record[cell.get('columnId')] = cell.get('value')
+            transformed_record[cell.get("columnId")] = cell.get("value")
 
         return transformed_record
-
