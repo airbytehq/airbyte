@@ -86,6 +86,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final BigQuery bigquery = getBigQuery(config);
       final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
 
+      BigQueryUtils.checkHasCreateAndDeleteDatasetRole(bigquery, datasetId, datasetLocation);
+
       BigQueryUtils.createDataset(bigquery, datasetId, datasetLocation);
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM `%s.INFORMATION_SCHEMA.TABLES` LIMIT 1;", datasetId))

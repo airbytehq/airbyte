@@ -72,6 +72,8 @@ import org.slf4j.LoggerFactory;
 class BigQueryDestinationTest {
 
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  protected static final Path CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH =
+      Path.of("secrets/credentials-with-missed-dataset-creation-role.json");
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
   private static final String DATASET_NAME_PREFIX = "bq_dest_integration_test";
@@ -228,6 +230,40 @@ class BigQueryDestinationTest {
     ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
     resetDatasetId.accept(config);
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+    final String actualMessage = actual.getMessage();
+    LOGGER.info("Checking expected failure message:" + actualMessage);
+    assertTrue(actualMessage.contains("Access Denied:"));
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("");
+    assertEquals(expected, actual.withMessage(""));
+  }
+
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testCheckFailureInsufficientPermissionForCreateDataset(final DatasetIdResetter resetDatasetId) throws IOException {
+
+    if (!Files.exists(CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH)) {
+      throw new IllegalStateException(
+          "Must provide path to a big query credentials file. By default {module-root}/config/credentialsWithMissedDatasetCreationRole.json. "
+              + "Override by setting setting path with the CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH constant.");
+    }
+    final String fullConfigAsString = Files.readString(CREDENTIALS_WITHMISSED_CREATE_DATASET_ROLE_PATH);
+    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+    final String datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
+
+    final JsonNode insufficientRoleConfig;
+
+    insufficientRoleConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
+        .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
+        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, DATASET_LOCATION)
+        .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
+        .build());
+
+    resetDatasetId.accept(insufficientRoleConfig);
+
+    final AirbyteConnectionStatus actual = new BigQueryDestination().check(insufficientRoleConfig);
     final String actualMessage = actual.getMessage();
     LOGGER.info("Checking expected failure message:" + actualMessage);
     assertTrue(actualMessage.contains("Access Denied:"));
