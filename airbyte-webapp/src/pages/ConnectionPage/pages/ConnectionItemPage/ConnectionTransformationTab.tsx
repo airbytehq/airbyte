@@ -140,7 +140,7 @@ export const ConnectionTransformationTab: React.FC = () => {
         {supportsCloudDbtIntegration && <DbtCloudTransformationsCard connection={connection} />}
         {noSupportedTransformations && (
           <Card className={styles.customCard}>
-            <Text as="p" size="lg" centered>
+            <Text size="lg" centered>
               <FormattedMessage id="connectionForm.operations.notSupported" />
             </Text>
           </Card>
