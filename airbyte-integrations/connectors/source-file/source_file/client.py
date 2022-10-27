@@ -378,8 +378,6 @@ class Client:
             except ConnectionResetError:
                 logger.info(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
                 raise ConnectionResetError
-            except Exception as e:
-                raise Exception(f"Error while reading data using `client.reader` method: {e}") from e
 
     def _cache_stream(self, fp):
         """cache stream to file"""
