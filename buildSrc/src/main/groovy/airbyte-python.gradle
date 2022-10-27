@@ -31,7 +31,7 @@ class Helpers {
         """
 
         if (project.file(testFilesDirectory).exists()) {
-            def outputArg = project.hasProperty('reports_folder') ?"-otemp_coverage.xml" : "--skip-empty"
+            def outputArg = project.hasProperty('reports_folder') ? "-otemp_coverage.xml" : "--skip-empty"
             def coverageFormat = project.hasProperty('reports_folder') ? 'xml' : 'report'
             def testConfig = project.file('pytest.ini').exists() ? 'pytest.ini' : project.rootProject.file('pyproject.toml').absolutePath
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
@@ -41,7 +41,7 @@ class Helpers {
                 }
                 // generation of coverage report is optional and we should skip it if tests are empty
 
-                project.task(taskName, type: Exec){
+                project.task(taskName, type: Exec) {
                     commandLine = ".venv/bin/python"
                     args "-m", "coverage", coverageFormat, "--data-file=${testFilesDirectory}/.coverage.${taskName}", "--rcfile=${project.rootProject.file('pyproject.toml').absolutePath}", outputArg
                     dependsOn project.tasks.findByName("_${taskName}Coverage")
@@ -133,12 +133,11 @@ class AirbytePythonPlugin implements Plugin<Project> {
             outputPrefix = ''
         }
 
-        project.task("mypyReport", type: Exec){
+        project.task("mypyReport", type: Exec) {
             commandLine = ".venv/bin/python"
             args "-m", "mypy", "--config-file", "${project.rootProject.file('pyproject.toml').absolutePath}", "./"
             setIgnoreExitValue true
         }
-
 
 
         // attempt to install anything in requirements.txt. by convention this should only be dependencies whose source is located in the project.
@@ -173,7 +172,17 @@ class AirbytePythonPlugin implements Plugin<Project> {
             outputs.file('build/installedreqs.txt')
         }
 
-        project.task('installTestReqs', type: PythonTask, dependsOn: project.installReqs) {
+        project.task('uninstallCDK', type: PythonTask, dependsOn: project.installReqs) {
+            module = "pip"
+            command = "uninstall airbyte_cdk"
+        }
+
+        project.task('installLocalCDK', type: PythonTask, dependsOn: project.uninstallCDK) {
+            module = "pip"
+            command = "install -e ../../../airbyte-cdk/python/"
+        }
+
+        project.task('installTestReqs', type: PythonTask, dependsOn: project.installLocalCDK) {
             module = "pip"
             command = "install .[tests]"
             inputs.file('setup.py')
@@ -209,27 +218,27 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn project.flakeReport
             dependsOn project.mypyReport
             doLast {
-               if (project.hasProperty('reports_folder')) {
-                      // Gradles adds some log messages to files and we must remote them
-                      // examples of these lines:
-                      // :airbyte-integrations:connectors: ...
-                      // [python] .venv/bin/python -m black  ...
-                      project.fileTree(project.reports_folder).visit { FileVisitDetails details ->
-                          project.println "Found the report file: " + details.file.path
-                          def tempFile = project.file(details.file.path + ".1")
-                          details.file.eachLine { line ->
-                                if ( !line.startsWith(":airbyte") && !line.startsWith("[python]") ) {
-                                    tempFile << line + "\n"
-                                }
-                          }
-                          if (!tempFile.exists()) {
-                                // generate empty file
-                                tempFile << "\n"
-                          }
-                          tempFile.renameTo(details.file)
+                if (project.hasProperty('reports_folder')) {
+                    // Gradles adds some log messages to files and we must remote them
+                    // examples of these lines:
+                    // :airbyte-integrations:connectors: ...
+                    // [python] .venv/bin/python -m black  ...
+                    project.fileTree(project.reports_folder).visit { FileVisitDetails details ->
+                        project.println "Found the report file: " + details.file.path
+                        def tempFile = project.file(details.file.path + ".1")
+                        details.file.eachLine { line ->
+                            if (!line.startsWith(":airbyte") && !line.startsWith("[python]")) {
+                                tempFile << line + "\n"
+                            }
+                        }
+                        if (!tempFile.exists()) {
+                            // generate empty file
+                            tempFile << "\n"
+                        }
+                        tempFile.renameTo(details.file)
 
-                      }
-               }
+                    }
+                }
             }
         }
 
@@ -261,14 +270,13 @@ class AirbytePythonPlugin implements Plugin<Project> {
         project.assemble.dependsOn project.airbytePythonTest
         project.test.dependsOn project.airbytePythonTest
 
-                // saves tools reports to a custom folder
+        // saves tools reports to a custom folder
         def reportsFolder = project.hasProperty('reports_folder') ? project.reports_folder : ''
-        if ( reportsFolder != '' ) {
+        if (reportsFolder != '') {
 
             // clean reports folders
             project.file(reportsFolder).deleteDir()
             project.file(reportsFolder).mkdirs()
-
 
 
             project.tasks.blackReport.configure {
