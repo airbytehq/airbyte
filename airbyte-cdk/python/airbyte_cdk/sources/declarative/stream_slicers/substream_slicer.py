@@ -72,7 +72,6 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        self.update_cursor(stream_slice)
         return self._get_request_option(RequestOptionType.header, stream_slice)
 
     def get_request_body_data(
@@ -81,7 +80,6 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        self.update_cursor(stream_slice)
         return self._get_request_option(RequestOptionType.body_data, stream_slice)
 
     def get_request_body_json(
@@ -90,7 +88,6 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
-        self.update_cursor(stream_slice)
         return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
     def _get_request_option(self, option_type: RequestOptionType, stream_slice: StreamSlice):
