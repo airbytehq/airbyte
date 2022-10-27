@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.cli.Clis;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -23,15 +24,31 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 
 /**
  * Generates a combined representation of the connector catalog that includes Sources, Destinations
  * and their specs all in one. This connector catalog can then be served and loaded from a
  * RemoteDefinitionsProvider.
- *
- * Catalog generation is done at build time from {@link SeedConnectorSpecGenerator}.
  */
 public class CombinedConnectorCatalogGenerator {
+
+  private static final Option SEED_ROOT_OPTION = Option.builder("s").longOpt("seed-root").hasArg(true).required(true)
+      .desc("path to where seed resource files are stored").build();
+  private static final Option OUTPUT_FILENAME_OPTION = Option.builder("o").longOpt("output-filename").hasArg(true).required(true)
+      .desc("name for the generated catalog json file").build();
+  private static final Options OPTIONS = new Options().addOption(SEED_ROOT_OPTION).addOption(OUTPUT_FILENAME_OPTION);
+
+  public static void main(final String[] args) throws Exception {
+    final CommandLine parsed = Clis.parse(args, OPTIONS);
+    final Path outputRoot = Path.of(parsed.getOptionValue(SEED_ROOT_OPTION.getOpt()));
+    final String outputFileName = parsed.getOptionValue(OUTPUT_FILENAME_OPTION.getOpt());
+
+    final CombinedConnectorCatalogGenerator combinedConnectorCatalogGenerator = new CombinedConnectorCatalogGenerator();
+    combinedConnectorCatalogGenerator.run(outputRoot, outputFileName);
+  }
 
   public void run(final Path outputRoot, final String outputFileName) {
     final List<JsonNode> destinationDefinitionsJson = getSeedJson(outputRoot, SeedConnectorType.DESTINATION.getDefinitionFileName());

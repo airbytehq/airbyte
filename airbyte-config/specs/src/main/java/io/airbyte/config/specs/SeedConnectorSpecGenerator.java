@@ -72,10 +72,6 @@ public class SeedConnectorSpecGenerator {
     final SeedConnectorSpecGenerator seedConnectorSpecGenerator = new SeedConnectorSpecGenerator(bucketSpecFetcher);
     seedConnectorSpecGenerator.run(outputRoot, SeedConnectorType.SOURCE);
     seedConnectorSpecGenerator.run(outputRoot, SeedConnectorType.DESTINATION);
-
-    // Build full catalog to serve remotely, using generated source/destination specs and definitions
-    final CombinedConnectorCatalogGenerator combinedConnectorCatalogGenerator = new CombinedConnectorCatalogGenerator();
-    combinedConnectorCatalogGenerator.run(outputRoot, "oss_catalog.json");
   }
 
   public void run(final Path seedRoot, final SeedConnectorType seedConnectorType) throws IOException {
