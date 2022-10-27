@@ -11,9 +11,12 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from pendulum import DateTime
 
 from .auth import AccessTokenAuthenticator
-from .utils import read_full_refresh
+from .utils import read_full_refresh, safe_max
+
+CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
 class RailzStream(HttpStream, ABC):
@@ -55,7 +58,6 @@ class ServiceRailzStream(RailzStream, ABC):
     def __init__(self, *, parent: HttpStream, **kwargs):
         super().__init__(**kwargs)
         self.parent = parent
-        self.start_date_cache = {}
 
     @abstractmethod
     def path(self, **kwargs) -> str:
@@ -88,6 +90,11 @@ class IncrementalServiceRailzStream(ServiceRailzStream, ABC):
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
+    def __init__(self, *, start_date: DateTime, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = start_date
+        self.start_date_cache = {}
+
     @property
     def cursor_field(self) -> str:
         return []
@@ -100,7 +107,7 @@ class IncrementalServiceRailzStream(ServiceRailzStream, ABC):
         if stream_state_value:
             stream_state_value = pendulum.parse(stream_state_value).date()
             updated_state = max(updated_state, stream_state_value)
-        current_stream_state[businessName][serviceName][self.cursor_field] = updated_state.format("YYYY-MM-DD")
+        current_stream_state[businessName][serviceName][self.cursor_field] = updated_state.format(CONFIG_DATE_FORMAT)
         return current_stream_state
 
     def request_params(
@@ -117,6 +124,11 @@ class IncrementalServiceRailzStream(ServiceRailzStream, ABC):
         businessName = stream_slice["businessName"]
         serviceName = stream_slice["serviceName"]
         start_date = stream_state.get(businessName, {}).get(serviceName, {}).get(self.cursor_field)
+        if start_date:
+            start_date = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
+        start_date = safe_max(self.start_date, start_date)
+        if start_date:
+            start_date.format(CONFIG_DATE_FORMAT)
         return self.start_date_cache.setdefault(businessName, {}).setdefault(serviceName, start_date)
 
 
@@ -207,6 +219,12 @@ class Customers(ServiceRailzStream):
 
 
 class SourceRailz(AbstractSource):
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        start_date = config.get("start_date")
+        if start_date:
+            config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
+        return config
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -221,11 +239,12 @@ class SourceRailz(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config = self._validate_and_transform(config)
         auth = AccessTokenAuthenticator(client_id=config["client_id"], secret_key=config["secret_key"])
         businesses = Businesses(authenticator=auth)
         return [
             businesses,
-            AccountingTransactions(parent=businesses, authenticator=auth),
-            Bills(parent=businesses, authenticator=auth),
+            AccountingTransactions(parent=businesses, authenticator=auth, start_date=config.get("start_date")),
+            Bills(parent=businesses, authenticator=auth, start_date=config.get("start_date")),
             Customers(parent=businesses, authenticator=auth),
         ]

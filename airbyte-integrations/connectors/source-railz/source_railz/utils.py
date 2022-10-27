@@ -13,3 +13,11 @@ def read_full_refresh(stream_instance: Stream):
         records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
         for record in records:
             yield record
+
+
+def safe_max(arg1, arg2):
+    if arg1 is None:
+        return arg2
+    if arg2 is None:
+        return arg1
+    return max(arg1, arg2)
