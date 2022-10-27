@@ -49,7 +49,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private final String[] MONEY_ITEM_TYPE = {"MONEY"};
   private final String[] GEOMETRICS_TYPES = {"BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH"};
   private final String[] TEXT_TYPES =
-      {"VARCHAR", "VARBINARY", "BLOB", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT", "INVENTORY_ITEM", "TSVECTOR", "TSQUERY", "PG_LSN",};
+      {"VARCHAR", "VARBINARY", "BLOB", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT", "INVENTORY_ITEM", "TSVECTOR", "TSQUERY", "PG_LSN"};
   private final String[] NUMERIC_TYPES = {"NUMERIC", "DECIMAL"};
   private final String[] ARRAY_TYPES = {"_NAME", "_NUMERIC", "_BYTEA", "_MONEY", "_BIT", "_DATE", "_TIME", "_TIMETZ", "_TIMESTAMP", "_TIMESTAMPTZ"};
   private final String BYTEA_TYPE = "BYTEA";
@@ -78,7 +78,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
 
   private void registerArray(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
     final String fieldType = field.typeName().toUpperCase();
-    SchemaBuilder arraySchema = switch (fieldType) {
+    final SchemaBuilder arraySchema = switch (fieldType) {
       case "_NUMERIC", "_MONEY" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
       case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA" -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA);
       case "_BIT" -> SchemaBuilder.array(OPTIONAL_BOOLEAN_SCHEMA);
@@ -139,7 +139,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   }
 
   private Object convertArray(Object x, RelationalColumn field) {
-    String fieldType = field.typeName().toUpperCase();
+    final String fieldType = field.typeName().toUpperCase();
     Object[] values = new Object[0];
     try {
       values = (Object[]) ((PgArray) x).getArray();
@@ -147,14 +147,18 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       LOGGER.error("Failed to convert PgArray:" + e);
     }
     switch (fieldType) {
+      // debezium currently cannot handle MONEY[] datatype and it's not implemented
       case "_MONEY":
-
+      // PgArray.getArray() trying to convert to Double instead of PgMoney
+      // due to incorrect type mapping in the postgres driver https://github.com/pgjdbc/pgjdbc/blob/d5ed52ef391670e83ae5265af2f7301c615ce4ca/pgjdbc/src/main/java/org/postgresql/jdbc/TypeInfoCache.java#L88
+      // and throws an exception, so a custom implementation of converting to String is used to get the value as is
         final String nativeMoneyValue = ((PgArray) x).toString();
         final String substringM = Objects.requireNonNull(nativeMoneyValue).substring(1, nativeMoneyValue.length() - 1);
         final char currency = substringM.charAt(0);
         final String regex = "\\" + currency;
-        List<String> myListM = new ArrayList<>(Arrays.asList(substringM.split(regex)));
+        final List<String> myListM = new ArrayList<>(Arrays.asList(substringM.split(regex)));
         return myListM.stream()
+        // since the separator is the currency sign, all extra characters must be removed except for numbers and dots
                 .map(val -> val.replaceAll("[^\\d.]", ""))
                 .filter(money -> !money.isEmpty())
                 .map(Double::valueOf)
@@ -171,11 +175,11 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         return Arrays.stream(values).map(value -> value == null ? null : convertToTimestampWithTimezone(value)).collect(Collectors.toList());
       case "_TIMETZ":
 
-        List<String> timetzArr = new ArrayList<>();
+        final List<String> timetzArr = new ArrayList<>();
         final String nativeValue = ((PgArray) x).toString();
         final String substring = Objects.requireNonNull(nativeValue).substring(1, nativeValue.length() - 1);
-        List<String> times = new ArrayList<>(Arrays.asList(substring.split(",")));
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("HH:mm:ss[.SSSSSS]X");
+        final List<String> times = new ArrayList<>(Arrays.asList(substring.split(",")));
+        final DateTimeFormatter format = DateTimeFormatter.ofPattern("HH:mm:ss[.SSSSSS]X");
 
         times.forEach(s -> {
           if (s.equalsIgnoreCase("NULL")) {
