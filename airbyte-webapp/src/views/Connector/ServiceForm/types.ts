@@ -8,7 +8,7 @@ export type ServiceFormValues<T = unknown> = {
 };
 
 // The whole ConnectorCard form values
-export type ConnectorFormValues = { serviceType: string } & ServiceFormValues;
+export type ConnectorCardValues = { serviceType: string } & ServiceFormValues;
 
 export type DestinationConnectorCard = Pick<
   DestinationDefinitionReadWithLatestTag,

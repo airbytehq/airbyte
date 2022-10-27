@@ -7,7 +7,7 @@ import { useGetDestinationDefinitionSpecificationAsync } from "services/connecto
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
-import { ConnectorFormValues } from "views/Connector/ServiceForm";
+import { ConnectorCardValues } from "views/Connector/ServiceForm";
 
 interface Props {
   onNextStep: () => void;
@@ -68,7 +68,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     setError(null);
     setDestinationDefinitionId(destinationDefinitionId);
   };
-  const onSubmitForm = async (values: ConnectorFormValues) => {
+  const onSubmitForm = async (values: ConnectorCardValues) => {
     await onSubmitDestinationStep({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,

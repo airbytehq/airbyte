@@ -10,7 +10,7 @@ import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDe
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorFormValues } from "views/Connector/ServiceForm";
+import { ConnectorCardValues } from "views/Connector/ServiceForm";
 
 import styles from "./DestinationSettings.module.scss";
 
@@ -32,7 +32,7 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
 
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM_SETTINGS);
 
-  const onSubmitForm = async (values: ConnectorFormValues) => {
+  const onSubmitForm = async (values: ConnectorCardValues) => {
     await updateDestination({
       values,
       destinationId: currentDestination.destinationId,

@@ -15,7 +15,7 @@ import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "utils/errorStatusMessage";
-import { ConnectorFormValues, ConnectorForm, ServiceFormValues } from "views/Connector/ServiceForm";
+import { ConnectorCardValues, ConnectorForm, ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorDefinitionTypeControl } from "../ServiceForm/components/Controls/ConnectorServiceTypeControl";
@@ -31,9 +31,9 @@ interface ConnectorCardBaseProps {
   full?: boolean;
   jobInfo?: SynchronousJobRead | null;
   additionalSelectorComponent?: React.ReactNode;
-  onSubmit: (values: ConnectorFormValues) => Promise<void> | void;
+  onSubmit: (values: ConnectorCardValues) => Promise<void> | void;
   onConnectorDefinitionSelect?: (id: string) => void;
-  availableConnectorDefinitions: ConnectorDefinition[]; // remove Service word
+  availableConnectorDefinitions: ConnectorDefinition[];
 
   // used in ConnectorCard and ServiceForm
   formType: "source" | "destination";
@@ -115,12 +115,12 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     setIsFormSubmitting(true);
 
     //  combine the "ServiceFormValues" and serviceType to make "ConnectorFormValues"
-    const connectorFormValues: ConnectorFormValues = { ...values, serviceType: Connector.id(selectedConnector) };
+    const connectorCardValues: ConnectorCardValues = { ...values, serviceType: Connector.id(selectedConnector) };
 
     const testConnectorWithTracking = async () => {
       trackTestConnectorStarted(selectedConnector);
       try {
-        await testConnector(connectorFormValues);
+        await testConnector(connectorCardValues);
         trackTestConnectorSuccess(selectedConnector);
       } catch (e) {
         trackTestConnectorFailure(selectedConnector);
@@ -130,7 +130,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
 
     try {
       await testConnectorWithTracking();
-      onSubmit(connectorFormValues);
+      onSubmit(connectorCardValues);
       setSaved(true);
     } catch (e) {
       setErrorStatusRequest(e);

@@ -8,7 +8,7 @@ import { useGetSourceDefinitionSpecificationAsync } from "services/connector/Sou
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
-import { ConnectorFormValues } from "views/Connector/ServiceForm";
+import { ConnectorCardValues } from "views/Connector/ServiceForm";
 
 interface SourcesStepProps {
   onSuccess: () => void;
@@ -72,7 +72,7 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
     setSourceDefinitionId(sourceId);
   };
 
-  const onSubmitForm = async (values: ConnectorFormValues) =>
+  const onSubmitForm = async (values: ConnectorCardValues) =>
     onSubmitSourceStep({
       ...values,
     });

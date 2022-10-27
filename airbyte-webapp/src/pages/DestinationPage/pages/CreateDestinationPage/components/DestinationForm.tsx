@@ -8,7 +8,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorFormValues, FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ServiceForm";
+import { ConnectorCardValues, FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ServiceForm";
 
 import styles from "./DestinationForm.module.scss";
 
@@ -54,7 +54,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     setDestinationDefinitionId(destinationDefinitionId);
   };
 
-  const onSubmitForm = async (values: ConnectorFormValues) => {
+  const onSubmitForm = async (values: ConnectorCardValues) => {
     onSubmit({
       ...values,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,

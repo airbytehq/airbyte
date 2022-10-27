@@ -14,7 +14,7 @@ import { isDefined } from "utils/common";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { FormRoot } from "./FormRoot";
 import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
-import { ConnectorFormValues, ServiceFormValues } from "./types";
+import { ConnectorCardValues, ServiceFormValues } from "./types";
 import {
   useBuildForm,
   useBuildInitialSchema,
@@ -96,7 +96,7 @@ export interface ConnectorFormProps {
 
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
-  testConnector?: (v?: ConnectorFormValues) => Promise<CheckConnectionRead>;
+  testConnector?: (v?: ConnectorCardValues) => Promise<CheckConnectionRead>;
 }
 
 export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
