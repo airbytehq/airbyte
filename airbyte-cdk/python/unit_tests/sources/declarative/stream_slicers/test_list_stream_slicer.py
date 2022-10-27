@@ -44,16 +44,22 @@ def test_list_stream_slicer(test_name, slice_values, cursor_field, expected_slic
 @pytest.mark.parametrize(
     "test_name, stream_slice, last_record, expected_state",
     [
-        ("test_update_cursor_no_state_no_record", {}, None, {}),
         ("test_update_cursor_with_state_no_record", {"owner_resource": "customer"}, None, {"owner_resource": "customer"}),
         ("test_update_cursor_value_not_in_list", {"owner_resource": "invalid"}, None, {}),
     ],
 )
 def test_update_cursor(test_name, stream_slice, last_record, expected_state):
     slicer = ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, options={})
-    slicer.update_cursor(stream_slice, last_record)
-    updated_state = slicer.get_stream_state()
-    assert expected_state == updated_state
+    if expected_state:
+        slicer.update_cursor(stream_slice, last_record)
+        updated_state = slicer.get_stream_state()
+        assert expected_state == updated_state
+    else:
+        try:
+            slicer.update_cursor(stream_slice, last_record)
+            assert False
+        except ValueError:
+            pass
 
 
 @pytest.mark.parametrize(

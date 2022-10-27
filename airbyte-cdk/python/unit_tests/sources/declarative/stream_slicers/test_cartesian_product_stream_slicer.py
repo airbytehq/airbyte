@@ -95,9 +95,17 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
     ]
     slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, options={})
-    slicer.update_cursor(stream_slice, None)
-    updated_state = slicer.get_stream_state()
-    assert expected_state == updated_state
+
+    if expected_state:
+        slicer.update_cursor(stream_slice, None)
+        updated_state = slicer.get_stream_state()
+        assert expected_state == updated_state
+    else:
+        try:
+            slicer.update_cursor(stream_slice, None)
+            assert False
+        except ValueError:
+            pass
 
 
 @pytest.mark.parametrize(
