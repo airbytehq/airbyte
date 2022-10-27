@@ -189,11 +189,11 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           setUiWidgetsInfo={setUiWidgetsInfo}
           resetUiWidgetsInfo={resetUiWidgetsInfo}
           formType={formType}
-          selectedConnector={selectedConnectorDefinitionSpecification}
+          selectedService={selectedService}
+          selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
           isEditMode={isEditMode}
           isLoadingSchema={isLoading}
           validationSchema={validationSchema}
-          selectedService={selectedService}
         >
           <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
           <FormikPatch />

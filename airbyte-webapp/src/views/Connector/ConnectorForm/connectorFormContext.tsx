@@ -42,7 +42,7 @@ interface ConnectorFormContextProviderProps {
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
   getValues: <T = unknown>(values: ConnectorFormValues<T>) => ConnectorFormValues<T>;
-  selectedConnector?: ConnectorDefinitionSpecification;
+  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   validationSchema: AnySchema;
 }
 
@@ -52,7 +52,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
   widgetsInfo,
   setUiWidgetsInfo,
   resetUiWidgetsInfo,
-  selectedConnector,
+  selectedConnectorDefinitionSpecification,
   getValues,
   formType,
   isLoadingSchema,
@@ -68,7 +68,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
       getValues,
       setUiWidgetsInfo,
       selectedService,
-      selectedConnector,
+      selectedConnectorDefinitionSpecification,
       formType,
       isLoadingSchema,
       validationSchema,
@@ -94,7 +94,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
     getValues,
     setUiWidgetsInfo,
     selectedService,
-    selectedConnector,
+    selectedConnectorDefinitionSpecification,
     formType,
     isLoadingSchema,
     validationSchema,
