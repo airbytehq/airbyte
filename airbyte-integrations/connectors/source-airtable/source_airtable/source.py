@@ -75,7 +75,7 @@ class SourceAirtable(AbstractSource):
         auth = TokenAuthenticator(token=config["api_key"])
         for table in config["tables"]:
             try:
-                Helpers.get_first_row(auth, config["base_id"], table)
+                Helpers.get_most_complete_row(auth, config["base_id"], table)
             except Exception as e:
                 return False, str(e)
         return True, None
@@ -84,7 +84,7 @@ class SourceAirtable(AbstractSource):
         streams = []
         auth = TokenAuthenticator(token=config["api_key"])
         for table in config["tables"]:
-            record = Helpers.get_first_row(auth, config["base_id"], table)
+            record = Helpers.get_most_complete_row(auth, config["base_id"], table)
             json_schema = Helpers.get_json_schema(record)
             airbyte_stream = Helpers.get_airbyte_stream(table, json_schema)
             streams.append(airbyte_stream)
@@ -94,7 +94,7 @@ class SourceAirtable(AbstractSource):
         auth = TokenAuthenticator(token=config["api_key"])
         streams = []
         for table in config["tables"]:
-            record = Helpers.get_first_row(auth, config["base_id"], table)
+            record = Helpers.get_most_complete_row(auth, config["base_id"], table)
             json_schema = Helpers.get_json_schema(record)
             stream = AirtableStream(base_id=config["base_id"], table_name=table, authenticator=auth, schema=json_schema)
             streams.append(stream)

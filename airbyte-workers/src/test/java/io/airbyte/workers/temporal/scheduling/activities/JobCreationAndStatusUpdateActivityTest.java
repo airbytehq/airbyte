@@ -229,12 +229,12 @@ class JobCreationAndStatusUpdateActivityTest {
       final Job activeJob = new Job(JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(activeAttempt),
           JobStatus.RUNNING, 2L, 2L, 3L);
 
-      Set<ConfigType> configTypes = new HashSet<>();
+      final Set<ConfigType> configTypes = new HashSet<>();
       configTypes.add(SYNC);
 
       Mockito.when(mJobPersistence.listJobsIncludingId(configTypes, CONNECTION_ID.toString(), JOB_ID, 2))
           .thenReturn(List.of(activeJob, previousJob));
-      boolean result = jobCreationAndStatusUpdateActivity
+      final boolean result = jobCreationAndStatusUpdateActivity
           .isLastJobOrAttemptFailure(new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 0, CONNECTION_ID));
       Assertions.assertThat(result).isEqualTo(false);
     }
@@ -249,12 +249,12 @@ class JobCreationAndStatusUpdateActivityTest {
       final Job activeJob = new Job(JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(activeAttempt),
           JobStatus.RUNNING, 2L, 2L, 3L);
 
-      Set<ConfigType> configTypes = new HashSet<>();
+      final Set<ConfigType> configTypes = new HashSet<>();
       configTypes.add(SYNC);
 
       Mockito.when(mJobPersistence.listJobsIncludingId(configTypes, CONNECTION_ID.toString(), JOB_ID, 2))
           .thenReturn(List.of(activeJob, previousJob));
-      boolean result = jobCreationAndStatusUpdateActivity
+      final boolean result = jobCreationAndStatusUpdateActivity
           .isLastJobOrAttemptFailure(new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 0, CONNECTION_ID));
       Assertions.assertThat(result).isEqualTo(true);
     }
@@ -270,12 +270,12 @@ class JobCreationAndStatusUpdateActivityTest {
       final Job activeJob = new Job(JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(activeAttempt, previousAttempt),
           JobStatus.RUNNING, 2L, 2L, 3L);
 
-      Set<ConfigType> configTypes = new HashSet<>();
+      final Set<ConfigType> configTypes = new HashSet<>();
       configTypes.add(SYNC);
 
       Mockito.when(mJobPersistence.listJobsIncludingId(configTypes, CONNECTION_ID.toString(), JOB_ID, 2))
           .thenReturn(List.of(activeJob, previousJob));
-      boolean result = jobCreationAndStatusUpdateActivity
+      final boolean result = jobCreationAndStatusUpdateActivity
           .isLastJobOrAttemptFailure(new JobCreationAndStatusUpdateActivity.JobCheckFailureInput(JOB_ID, 1, CONNECTION_ID));
       Assertions.assertThat(result).isEqualTo(true);
     }
@@ -389,7 +389,7 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobPersistence.getJob(JOB_ID))
           .thenReturn(mJob);
 
-      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, CONNECTION_ID, 1, "reason"));
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, "reason"));
 
       verify(mJobPersistence).failJob(JOB_ID);
       verify(mJobNotifier).failJob(eq("reason"), Mockito.any());
@@ -403,7 +403,7 @@ class JobCreationAndStatusUpdateActivityTest {
           .when(mJobPersistence).failJob(JOB_ID);
 
       Assertions
-          .assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, CONNECTION_ID, ATTEMPT_NUMBER, "")))
+          .assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, ATTEMPT_NUMBER, CONNECTION_ID, "")))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
 

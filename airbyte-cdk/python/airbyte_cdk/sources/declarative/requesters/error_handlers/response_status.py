@@ -9,13 +9,14 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action i
 
 class ResponseStatus:
     """
-    ResponseAction amended with backoff time if a action is RETRY
+    ResponseAction amended with backoff time if an action is RETRY
     """
 
-    def __init__(self, response_action: Union[ResponseAction, str], retry_in: Optional[float] = None):
+    def __init__(self, response_action: Union[ResponseAction, str], retry_in: Optional[float] = None, error_message: str = ""):
         """
         :param response_action: response action to execute
         :param retry_in: backoff time (if action is RETRY)
+        :param error_message: the error to be displayed back to the customer
         """
         if isinstance(response_action, str):
             response_action = ResponseAction[response_action]
@@ -23,6 +24,7 @@ class ResponseStatus:
             raise ValueError(f"Unexpected backoff time ({retry_in} for non-retryable response action {response_action}")
         self._retry_in = retry_in
         self._action = response_action
+        self._error_message = error_message
 
     @property
     def action(self):
@@ -33,6 +35,11 @@ class ResponseStatus:
     def retry_in(self) -> Optional[float]:
         """How long to backoff before retrying a response. None if no wait required."""
         return self._retry_in
+
+    @property
+    def error_message(self) -> str:
+        """The message to be displayed when an error response is received"""
+        return self._error_message
 
     @classmethod
     def retry(cls, retry_in: Optional[float]) -> "ResponseStatus":
