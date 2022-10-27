@@ -71,7 +71,7 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
     console.log(`Connector manifest:\n${JSON.stringify(readParams.manifest)}`);
     console.log(`Config:\n${JSON.stringify(readParams.config)}`);
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
-      const slices = Array.from(Array(9).keys()).map((i) => mockSlice(readParams.stream, i, 10, 20));
+      const slices = Array.from(Array(4).keys()).map((i) => mockSlice(readParams.stream, i, 10, 20));
 
       return {
         logs: [

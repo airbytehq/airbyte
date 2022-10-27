@@ -39,7 +39,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
   };
 
   if (streamRead.slices.length === 0) {
-    return <div>Click Test to fetch data!</div>;
+    return <div className={styles.placeholder}>Click Test to fetch data for this stream</div>;
   }
 
   const slice = streamRead.slices[selectedSliceIndex];
