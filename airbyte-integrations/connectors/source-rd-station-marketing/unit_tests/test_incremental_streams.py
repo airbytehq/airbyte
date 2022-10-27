@@ -13,6 +13,7 @@ from source_rd_station_marketing.streams import IncrementalRDStationMarketingStr
 def test_current_stream_state():
     return {"updated_time": "2021-10-22"}
 
+
 @fixture
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class

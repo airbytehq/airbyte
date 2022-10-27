@@ -26,9 +26,7 @@ from source_rd_station_marketing.streams import (
 
 
 class SourceRDStationMarketing(AbstractSource):
-    def check_connection(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             stream_kwargs = self.get_stream_kwargs(config)
             segmentations = Segmentations(**stream_kwargs)
@@ -58,7 +56,7 @@ class SourceRDStationMarketing(AbstractSource):
             LandingPages(**stream_kwargs),
             Popups(**stream_kwargs),
             Segmentations(**stream_kwargs),
-            Workflows(**stream_kwargs)            
+            Workflows(**stream_kwargs),
         ]
         return streams
 

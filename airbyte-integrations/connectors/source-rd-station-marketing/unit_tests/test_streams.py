@@ -20,24 +20,26 @@ def test_path(patch_base_class):
     stream = Segmentations(authenticator=MagicMock())
     assert stream.path() == "/platform/segmentations"
 
+
 def test_request_params(patch_base_class):
     stream = RDStationMarketingStream(authenticator=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {'page': 1, 'page_size': 125}
+    expected_params = {"page": 1, "page_size": 125}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = RDStationMarketingStream(authenticator=MagicMock())
     inputs = {"response": MagicMock()}
-    expected_token = {'next_page': 2}
+    expected_token = {"next_page": 2}
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_parse_response(patch_base_class):
     stream = RDStationMarketingStream(authenticator=MagicMock())
     response = MagicMock()
-    response.json.return_value = [{
+    response.json.return_value = [
+        {
             "id": 71625167165,
             "name": "A mock segmentation",
             "standard": True,
@@ -49,27 +51,28 @@ def test_parse_response(patch_base_class):
                     "rel": "SEGMENTATIONS.CONTACTS",
                     "href": "https://api.rd.services/platform/segmentations/71625167165/contacts",
                     "media": "application/json",
-                    "type": "GET"
+                    "type": "GET",
                 }
-            ]
-        }]
+            ],
+        }
+    ]
     inputs = {"response": response, "stream_state": None}
     expected_parsed_object = {
-            "id": 71625167165,
-            "name": "A mock segmentation",
-            "standard": True,
-            "created_at": "2019-09-04T18:05:42.638-03:00",
-            "updated_at": "2019-09-04T18:05:42.638-03:00",
-            "process_status": "processed",
-            "links": [
-                {
-                    "rel": "SEGMENTATIONS.CONTACTS",
-                    "href": "https://api.rd.services/platform/segmentations/71625167165/contacts",
-                    "media": "application/json",
-                    "type": "GET"
-                }
-            ]
-        }
+        "id": 71625167165,
+        "name": "A mock segmentation",
+        "standard": True,
+        "created_at": "2019-09-04T18:05:42.638-03:00",
+        "updated_at": "2019-09-04T18:05:42.638-03:00",
+        "process_status": "processed",
+        "links": [
+            {
+                "rel": "SEGMENTATIONS.CONTACTS",
+                "href": "https://api.rd.services/platform/segmentations/71625167165/contacts",
+                "media": "application/json",
+                "type": "GET",
+            }
+        ],
+    }
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
