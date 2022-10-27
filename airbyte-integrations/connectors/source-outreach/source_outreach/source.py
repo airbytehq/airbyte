@@ -28,9 +28,11 @@ class OutreachStream(HttpStream, ABC):
         self,
         authenticator: HttpAuthenticator,
         start_date: str = None,
+        page_size: int = 100,
         **kwargs,
     ):
         self.start_date = start_date
+        self.page_size = page_size
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -50,7 +52,7 @@ class OutreachStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"page[size]": 1000, "count": "false"}
+        params = {"page[size]": self.page_size, "count": "false", "sort": "updatedAt"}
         if next_page_token and "after" in next_page_token:
             params["page[after]"] = next_page_token["after"]
         return params
