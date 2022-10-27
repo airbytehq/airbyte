@@ -20,8 +20,11 @@ final class NumPendingJobs extends Emitter {
 
   public NumPendingJobs(final MetricClient client, final MetricRepository db) {
     super(client, () -> {
-      final var pending = db.numberOfPendingJobs();
-      client.gauge(OssMetricsRegistry.NUM_PENDING_JOBS, pending);
+      db.numberOfPendingJobs().forEach((geography, count) -> client.gauge(
+          OssMetricsRegistry.NUM_PENDING_JOBS,
+          count,
+          new MetricAttribute(MetricTags.GEOGRAPHY, geography)));
+
       return null;
     });
   }
@@ -33,8 +36,10 @@ final class NumRunningJobs extends Emitter {
 
   public NumRunningJobs(final MetricClient client, final MetricRepository db) {
     super(client, () -> {
-      final var running = db.numberOfRunningJobs();
-      client.gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, running);
+      db.numberOfRunningJobs().forEach((attemptQueue, count) -> client.gauge(
+          OssMetricsRegistry.NUM_RUNNING_JOBS,
+          count,
+          new MetricAttribute(MetricTags.ATTEMPT_QUEUE, attemptQueue)));
       return null;
     });
   }
@@ -59,8 +64,10 @@ final class OldestRunningJob extends Emitter {
 
   OldestRunningJob(final MetricClient client, final MetricRepository db) {
     super(client, () -> {
-      final var age = db.oldestRunningJobAgeSecs();
-      client.gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
+      db.oldestRunningJobAgeSecs().forEach((attemptQueue, count) -> client.gauge(
+          OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS,
+          count,
+          new MetricAttribute(MetricTags.ATTEMPT_QUEUE, attemptQueue)));
       return null;
     });
   }
@@ -72,8 +79,10 @@ final class OldestPendingJob extends Emitter {
 
   OldestPendingJob(final MetricClient client, final MetricRepository db) {
     super(client, () -> {
-      final var age = db.oldestPendingJobAgeSecs();
-      client.gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
+      db.oldestPendingJobAgeSecs().forEach((geographyType, count) -> client.gauge(
+          OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS,
+          count,
+          new MetricAttribute(MetricTags.GEOGRAPHY, geographyType.getLiteral())));
       return null;
     });
   }
