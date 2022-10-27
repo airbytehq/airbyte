@@ -577,5 +577,6 @@
   "connectorBuilder.configMenuConfirm": "Confirm",
   "connectorBuilder.recordsTab": "Records",
   "connectorBuilder.requestTab": "Request",
-  "connectorBuilder.responseTab": "Response"
+  "connectorBuilder.responseTab": "Response",
+  "connectorBuilder.resultsPlaceholder": "Click Test to fetch data for this stream"
 }

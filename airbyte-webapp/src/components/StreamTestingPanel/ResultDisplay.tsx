@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { useState } from "react";
+import { useIntl } from "react-intl";
 
 import { Paginator } from "components/ui/Paginator";
 import { Text } from "components/ui/Text";
@@ -30,6 +31,7 @@ function pageRangeDisplayed(numPages: number, selectedPageIndex: number): number
 }
 
 export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, className }) => {
+  const { formatMessage } = useIntl();
   const [selectedSliceIndex, setSelectedSliceIndex] = useState(0);
   const [selectedPage, setSelectedPage] = useState(0);
 
@@ -39,7 +41,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
   };
 
   if (streamRead.slices.length === 0) {
-    return <div className={styles.placeholder}>Click Test to fetch data for this stream</div>;
+    return <div className={styles.placeholder}>{formatMessage({ id: "connectorBuilder.resultsPlaceholder" })}</div>;
   }
 
   const slice = streamRead.slices[selectedSliceIndex];
