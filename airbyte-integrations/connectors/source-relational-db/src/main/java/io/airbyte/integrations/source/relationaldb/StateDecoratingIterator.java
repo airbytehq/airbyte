@@ -29,8 +29,8 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private final JsonSchemaPrimitive cursorType;
 
   private final String initialCursor;
-  private String maxCursor;
-  private long maxCursorRecordCount = 0L;
+  private String currentCursor;
+  private long currentCursorRecordCount = 0L;
   private boolean hasEmittedFinalState;
 
   /**
@@ -82,7 +82,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     this.cursorField = cursorField;
     this.cursorType = cursorType;
     this.initialCursor = initialCursor;
-    this.maxCursor = initialCursor;
+    this.currentCursor = initialCursor;
     this.stateEmissionFrequency = stateEmissionFrequency;
   }
 
@@ -126,17 +126,18 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         final AirbyteMessage message = messageIterator.next();
         if (message.getRecord().getData().hasNonNull(cursorField)) {
           final String cursorCandidate = getCursorCandidate(message);
-          final int cursorComparison = IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType);
+          final int cursorComparison = IncrementalUtils.compareCursors(currentCursor, cursorCandidate, cursorType);
           if (cursorComparison < 0) {
-            if (stateEmissionFrequency > 0 && !Objects.equals(maxCursor, initialCursor) && messageIterator.hasNext()) {
+            // Update the current cursor only when current cursor < cursor candidate
+            if (stateEmissionFrequency > 0 && !Objects.equals(currentCursor, initialCursor) && messageIterator.hasNext()) {
               // Only emit an intermediate state when it is not the first or last record message,
               // because the last state message will be taken care of in a different branch.
               intermediateStateMessage = createStateMessage(false);
             }
-            maxCursor = cursorCandidate;
-            maxCursorRecordCount = 1L;
+            currentCursor = cursorCandidate;
+            currentCursorRecordCount = 1L;
           } else if (cursorComparison == 0) {
-            maxCursorRecordCount++;
+            currentCursorRecordCount++;
           }
         }
 
@@ -188,7 +189,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    * @return AirbyteMessage which includes information on state of records read so far
    */
   public AirbyteMessage createStateMessage(final boolean isFinalState) {
-    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor, maxCursorRecordCount);
+    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentCursor, currentCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
     LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
         pair,
