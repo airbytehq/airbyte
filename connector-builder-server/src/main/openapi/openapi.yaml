@@ -69,8 +69,6 @@ paths:
               schema:
                 type: string
                 description: Connector manifest template string
-        "400":
-          $ref: "#/components/responses/ExceptionResponse"
 
 components:
   schemas:
