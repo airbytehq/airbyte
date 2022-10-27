@@ -12,6 +12,6 @@ import io.micronaut.context.annotation.Requires;
 public class ClientConfigs {
 
   public static final String PREFIX = "config-api";
-  public static final String API_URL = "http://localhost:8001";
+  public static final String API_URL = "http://" + "${airbyte.internal.api.host}";
 
 }

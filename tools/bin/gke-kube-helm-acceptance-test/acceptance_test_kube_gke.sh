@@ -29,6 +29,7 @@ helm upgrade --install --debug --namespace $NAMESPACE \\
 --set webapp.image.tag=$TAG \\
 --set worker.image.tag=$TAG \\
 --set server.image.tag=$TAG \\
+--set api-server.image.tag=$TAG \\
  ab charts/airbyte
 kubectl apply -f tools/bin/gke-kube-helm-acceptance-test/postgres-source.yaml --namespace=$NAMESPACE
 kubectl apply -f tools/bin/gke-kube-helm-acceptance-test/postgres-destination.yaml --namespace=$NAMESPACE

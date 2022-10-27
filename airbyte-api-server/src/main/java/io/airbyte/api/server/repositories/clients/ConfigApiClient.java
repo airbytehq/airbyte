@@ -31,7 +31,7 @@ public interface ConfigApiClient {
         produces = MediaType.APPLICATION_JSON)
   HttpResponse<String> reset(@Body SyncDto connectionId);
 
-  @Post(value = "/api/v1/workspaces/list")
+  @Post("/api/v1/workspaces/list")
   HttpResponse<String> workspaceList();
 
   @Get("/health")

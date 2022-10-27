@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - airbyte-minio.yaml
+  - api-server.yaml
   - bootloader.yaml
   - cron.yaml
   - db.yaml

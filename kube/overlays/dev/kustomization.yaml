@@ -13,6 +13,8 @@ images:
     newTag: dev
   - name: airbyte/server
     newTag: dev
+  - name: airbyte/api-server
+    newTag: dev
   - name: airbyte/webapp
     newTag: dev
   - name: airbyte/worker

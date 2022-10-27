@@ -7,9 +7,6 @@ plugins {
 
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
-version = "0.1"
-group = "io.airbyte.api.server"
-
 def specFile = "$projectDir/src/main/openapi/api.yaml"
 
 repositories {
@@ -28,7 +25,6 @@ dependencies {
     testAnnotationProcessor("io.micronaut.jaxrs:micronaut-jaxrs-processor")
     implementation("io.micronaut:micronaut-validation")
 
-
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
 
     implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2'
@@ -44,6 +40,30 @@ application {
     mainClass.set("io.airbyte.api.server.Application")
 }
 
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
+
+// todo remove unnecessary env vars
+run {
+    // default for running on local machine.
+    env.each { entry ->
+        environment entry.getKey(), entry.getValue()
+    }
+
+    // we map the docker pg db to port 5433 so it does not conflict with other pg instances.
+    environment "DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.DATABASE_DB}"
+    environment "CONFIG_DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.CONFIG_DATABASE_DB}"
+
+    environment "RUN_DATABASE_MIGRATION_ON_STARTUP", "true"
+
+    environment "WORKSPACE_ROOT", env.WORKSPACE_ROOT
+    environment "CONFIG_ROOT", "/tmp/airbyte_config"
+    environment "TRACKING_STRATEGY", env.TRACKING_STRATEGY
+    environment "AIRBYTE_VERSION", env.VERSION
+    environment "AIRBYTE_ROLE", System.getenv('AIRBYTE_ROLE')
+    environment "TEMPORAL_HOST", "localhost:7233"
+}
+
 graalvmNative.toolchainDetection = false
 micronaut {
     runtime("netty")
@@ -53,7 +73,6 @@ micronaut {
         annotations("io.airbyte.api.server.*")
     }
 }
-
 
 task generateApiServer(type: GenerateTask) {
     def serverOutputDir = "$buildDir/generated/api/server"
@@ -100,6 +119,10 @@ sourceSets {
             srcDir "$projectDir/src/main/openapi/"
         }
     }
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
