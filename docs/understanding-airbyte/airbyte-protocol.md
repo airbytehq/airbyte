@@ -28,7 +28,7 @@ The Airbyte Protocol is versioned independently of the Airbyte Platform, and the
 
 | Version  | Date of Change | Pull Request(s)                                                                                                     | Subject                                                                          |
 | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------- |
-| `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                            | `AirbyteConnectorConfigMessage` added                                            |
+| `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                            | `AirbyteControlMessage.ConnectorConfig` added                                    |
 | `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                            | `AirbyteLogMessage.stack_trace` added                                            |
 | `v0.2.0` | 2022-06-10     | [13573](https://github.com/airbytehq/airbyte/pull/13573) & [12586](https://github.com/airbytehq/airbyte/pull/12586) | `STREAM` and `GLOBAL` STATE messages                                             |
 | `v0.1.1` | 2022-06-06     | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                            | Add a namespace in association with the stream name                              |
@@ -804,12 +804,12 @@ AirbyteErrorTraceMessage:
         - config_error
 ```
 
-## AirbyteOrchestratorMessage
+## AirbyteControlMessage
 
-An `AirbyteOrchestratorMessage` is for connectors to signal to the Airbyte Platform or Orchestrator that an action with a side-effect should be taken. This means that the Orchestrator will likely be altering some stored data about the connector, connection, or sync.
+An `AirbyteControlMessage` is for connectors to signal to the Airbyte Platform or Orchestrator that an action with a side-effect should be taken. This means that the Orchestrator will likely be altering some stored data about the connector, connection, or sync.
 
 ```yaml
-AirbyteOrchestratorMessage:
+AirbyteControlMessage:
   type: object
   additionalProperties: true
   required:
@@ -827,19 +827,19 @@ AirbyteOrchestratorMessage:
       type: number
     connectorConfig:
       description: "connector config orchestrator message: the updated config for the platform to store for this connector"
-      "$ref": "#/definitions/AirbyteOrchestratorConnectorConfigMessage"
+      "$ref": "#/definitions/AirbyteControlConnectorConfigMessage"
 ```
 
-### AirbyteOrchestratorConnectorConfigMessage
+### AirbyteControlConnectorConfigMessage
 
-`AirbyteOrchestratorConnectorConfigMessage` allows a connector to update its configuration in the middle of a sync. This is valuable for connectors with short-lived or single-use credentials.
+`AirbyteControlConnectorConfigMessage` allows a connector to update its configuration in the middle of a sync. This is valuable for connectors with short-lived or single-use credentials.
 
 Emitting this message signals to the orchestrator process that it should update its persistence layer, replacing the connector's current configuration with the config present in the `.config` field of the message.
 
-The config in the `AirbyteOrchestratorConnectorConfigMessage` must conform to connector's specification's schema, and the orchestrator process is expected to validate these messages. If the output config does not conform to the specification's schema, the orchestrator process should raise an exception and terminate the sync.
+The config in the `AirbyteControlConnectorConfigMessage` must conform to connector's specification's schema, and the orchestrator process is expected to validate these messages. If the output config does not conform to the specification's schema, the orchestrator process should raise an exception and terminate the sync.
 
 ```yaml
-AirbyteOrchestratorConnectorConfigMessage:
+AirbyteControlConnectorConfigMessage:
   type: object
   additionalProperties: true
   required:
@@ -851,7 +851,7 @@ AirbyteOrchestratorConnectorConfigMessage:
       additionalProperties: true
 ```
 
-For example, if the currently persisted config file is `{"api_key": 123, start_date: "01-01-2022"}` and the following `AirbyteOrchestratorConnectorConfigMessage` is output `{type: ORCHESTRATOR, connectorConfig: {"config": {"api_key": 456}, "emitted_at": <current_time>}}` then the persisted configuration is merged, and will become `{"api_key": 456, start_date: "01-01-2022"}`.
+For example, if the currently persisted config file is `{"api_key": 123, start_date: "01-01-2022"}` and the following `AirbyteControlConnectorConfigMessage` is output `{type: ORCHESTRATOR, connectorConfig: {"config": {"api_key": 456}, "emitted_at": <current_time>}}` then the persisted configuration is merged, and will become `{"api_key": 456, start_date: "01-01-2022"}`.
 
 # Acknowledgements
 

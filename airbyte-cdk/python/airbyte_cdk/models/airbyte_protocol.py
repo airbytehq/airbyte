@@ -21,7 +21,7 @@ class Type(Enum):
     CONNECTION_STATUS = "CONNECTION_STATUS"
     CATALOG = "CATALOG"
     TRACE = "TRACE"
-    ORCHESTRATOR = "ORCHESTRATOR"
+    CONTROL = "CONTROL"
 
 
 class AirbyteRecordMessage(BaseModel):
@@ -102,7 +102,7 @@ class OrchestratorType(Enum):
     CONNECTOR_CONFIG = "CONNECTOR_CONFIG"
 
 
-class AirbyteOrchestratorConnectorConfigMessage(BaseModel):
+class AirbyteControlConnectorConfigMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
@@ -215,13 +215,13 @@ class AirbyteTraceMessage(BaseModel):
     error: Optional[AirbyteErrorTraceMessage] = Field(None, description="error trace message: the error object")
 
 
-class AirbyteOrchestratorMessage(BaseModel):
+class AirbyteControlMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
     type: OrchestratorType = Field(..., description="the type of orchestrator message", title="orchestrator type")
     emitted_at: float = Field(..., description="the time in ms that the message was emitted")
-    connectorConfig: Optional[AirbyteOrchestratorConnectorConfigMessage] = Field(
+    connectorConfig: Optional[AirbyteControlConnectorConfigMessage] = Field(
         None,
         description="connector config orchestrator message: the updated config for the platform to store for this connector",
     )
@@ -357,7 +357,7 @@ class AirbyteMessage(BaseModel):
         None,
         description="trace message: a message to communicate information about the status and performance of a connector",
     )
-    orchestrator: Optional[AirbyteOrchestratorMessage] = Field(
+    control: Optional[AirbyteControlMessage] = Field(
         None,
         description="connector config message: a message to communicate an updated configuration from a connector that should be persisted",
     )

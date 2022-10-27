@@ -28,7 +28,7 @@ definitions:
           - CONNECTION_STATUS
           - CATALOG
           - TRACE
-          - ORCHESTRATOR
+          - CONTROL
       log:
         description: "log message: any kind of logging you want the platform to know about."
         "$ref": "#/definitions/AirbyteLogMessage"
@@ -49,9 +49,9 @@ definitions:
       trace:
         description: "trace message: a message to communicate information about the status and performance of a connector"
         "$ref": "#/definitions/AirbyteTraceMessage"
-      orchestrator:
+      control:
         description: "connector config message: a message to communicate an updated configuration from a connector that should be persisted"
-        "$ref": "#/definitions/AirbyteOrchestratorMessage"
+        "$ref": "#/definitions/AirbyteControlMessage"
   AirbyteRecordMessage:
     type: object
     additionalProperties: true
@@ -201,7 +201,7 @@ definitions:
         enum:
           - system_error
           - config_error
-  AirbyteOrchestratorMessage:
+  AirbyteControlMessage:
     type: object
     additionalProperties: true
     required:
@@ -219,8 +219,8 @@ definitions:
         type: number
       connectorConfig:
         description: "connector config orchestrator message: the updated config for the platform to store for this connector"
-        "$ref": "#/definitions/AirbyteOrchestratorConnectorConfigMessage"
-  AirbyteOrchestratorConnectorConfigMessage:
+        "$ref": "#/definitions/AirbyteControlConnectorConfigMessage"
+  AirbyteControlConnectorConfigMessage:
     type: object
     additionalProperties: true
     required:
