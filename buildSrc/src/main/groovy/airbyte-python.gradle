@@ -179,7 +179,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         project.task('installLocalCDK', type: PythonTask, dependsOn: project.uninstallCDK) {
             module = "pip"
-            command = "install -e ./airbyte-cdk/python/"
+            command = "install -e" + project.rootDir.toPath() + "/airbyte-cdk/python/"
         }
 
         project.task('installTestReqs', type: PythonTask, dependsOn: project.installLocalCDK) {
