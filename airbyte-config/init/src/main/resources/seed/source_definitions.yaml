@@ -639,6 +639,13 @@
   icon: mailgun.svg
   sourceType: api
   releaseStage: alpha
+- name: Mailjet Mail
+  sourceDefinitionId: 809e3e91-2f8c-4828-9c16-91c814e9947b
+  dockerRepository: airbyte/source-mailjet-mail
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-mail
+  sourceType: api
+  releaseStage: alpha
 - name: Marketo
   sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
   dockerRepository: airbyte/source-marketo
