@@ -40,7 +40,7 @@ The following fields are required fields for the connector to work:
 - `api_key`: Your Newsdata API key.
 
 ## Changelog
-TODO
-| Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
-| 0.1.0   | 2022-10-21 | [](https://github.com/airbytehq/airbyte/pull/) | 🎉 New Source: Newsdata |
+
+| Version | Date       | Pull Request                                             | Subject                 |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------|
+| 0.1.0   | 2022-10-21 | [18576](https://github.com/airbytehq/airbyte/pull/18576) | 🎉 New Source: Newsdata |
