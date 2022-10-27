@@ -27,7 +27,7 @@ def _default_file_path() -> str:
 
 
 @dataclass
-class JsonSchema(SchemaLoader, JsonSchemaMixin):
+class JsonFileSchemaLoader(SchemaLoader, JsonSchemaMixin):
     """
     Loads the schema from a json file
 

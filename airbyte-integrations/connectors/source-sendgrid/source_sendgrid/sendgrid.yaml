@@ -4,7 +4,7 @@ definitions:
   step: "30d"
 
   schema_loader:
-    type: JsonSchema
+    type: JsonFileSchemaLoader
     file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
 
   requester:
