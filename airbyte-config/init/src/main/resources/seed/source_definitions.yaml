@@ -211,6 +211,13 @@
   icon: cockroachdb.svg
   sourceType: database
   releaseStage: alpha
+- name: Coin API
+  sourceDefinitionId: 919984ef-53a2-479b-8ffe-9c1ddb9fc3f3
+  dockerRepository: airbyte/source-coin-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
+  sourceType: api
+  releaseStage: alpha
 - name: Commercetools
   sourceDefinitionId: 008b2e26-11a3-11ec-82a8-0242ac130003
   dockerRepository: airbyte/source-commercetools
