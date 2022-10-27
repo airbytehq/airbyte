@@ -62,16 +62,8 @@ public class SshWrappedDestination implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    try {
-      return (endPointKey != null) ? SshTunnel.sshWrap(config, endPointKey, delegate::check)
-          : SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
-    } catch (final RuntimeException e) {
-      final String sshErrorMessage = "Could not connect with provided SSH configuration. Error: " + e.getMessage();
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, sshErrorMessage);
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage(sshErrorMessage);
-    }
+    return (endPointKey != null) ? SshTunnel.sshWrap(config, endPointKey, delegate::check)
+        : SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
   }
 
   @Override

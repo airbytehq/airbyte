@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.relationaldb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -83,7 +84,13 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (final Exception e) {
+    } catch (final ConfigErrorException ex) {
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, ex.getDisplayMessage());
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage(ex.getDisplayMessage());
+    }
+    catch (final Exception e) {
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)

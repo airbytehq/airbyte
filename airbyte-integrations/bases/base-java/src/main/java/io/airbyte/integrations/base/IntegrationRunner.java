@@ -155,6 +155,8 @@ public class IntegrationRunner {
       // be surfaced.
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, e.getDisplayMessage());
       switch (parsed.getCommand()) {
+        // Currently, special handling is required for the SPEC case since the user display information in the trace message is
+        // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
         case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
             new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getDisplayMessage())));
         default -> throw e;

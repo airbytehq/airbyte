@@ -304,6 +304,22 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state)
+      throws Exception {
+    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
+    // create it.
+    final AirbyteConnectionStatus check = check(config);
+
+    if (check.getStatus().equals(Status.FAILED)) {
+      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
+    }
+
+    return super.read(config, catalog, state);
+  }
+
+  @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
@@ -456,7 +472,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     if (PostgresUtils.isCdc(config)) {
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)){
-        final String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
+        String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
         if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
           return new AirbyteConnectionStatus()
                   .withStatus(Status.FAILED)
