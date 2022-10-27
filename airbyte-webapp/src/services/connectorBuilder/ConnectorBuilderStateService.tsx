@@ -1,4 +1,5 @@
 import { load, YAMLException } from "js-yaml";
+import { lowerCase } from "lodash";
 import React, { useContext, useEffect, useState } from "react";
 import { useDebounce, useLocalStorage } from "react-use";
 
@@ -51,7 +52,7 @@ const useStreams = () => {
   const streams = streamListRead.streams;
 
   const [selectedStreamName, setSelectedStream] = useState(streamListRead.streams[0].name);
-  const selectedStream = streams.find((stream) => stream.name === selectedStreamName) ?? {
+  const selectedStream = streams.find((stream) => lowerCase(stream.name) === lowerCase(selectedStreamName)) ?? {
     name: selectedStreamName,
     url: "",
   };

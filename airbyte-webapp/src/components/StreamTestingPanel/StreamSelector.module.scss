@@ -13,7 +13,6 @@
   background-color: transparent;
   border-radius: variables.$border-radius-md;
   border: none;
-  cursor: pointer;
   display: flex;
   justify-content: center;
 }
@@ -24,34 +23,34 @@
   color: colors.$blue;
 }
 
-.optionsMenu {
-  background-color: colors.$white;
-  border-radius: variables.$border-radius-md;
-  box-shadow: 0 7px 15px -5px colors.$grey;
-  padding: variables.$spacing-md;
-  margin-top: 0;
-  margin-bottom: 0;
-  position: absolute;
-  right: 0;
-  left: 0;
-}
+// .optionsMenu {
+//   background-color: colors.$white;
+//   border-radius: variables.$border-radius-md;
+//   box-shadow: 0 7px 15px -5px colors.$grey;
+//   padding: variables.$spacing-md;
+//   margin-top: 0;
+//   margin-bottom: 0;
+//   position: absolute;
+//   right: 0;
+//   left: 0;
+// }
 
-.option {
-  list-style-type: none;
-}
+// .option {
+//   list-style-type: none;
+// }
 
-.optionValue {
-  padding: variables.$spacing-lg variables.$spacing-md;
-  border-radius: variables.$border-radius-md;
-  cursor: pointer;
-}
+// .optionValue {
+//   padding: variables.$spacing-lg variables.$spacing-md;
+//   border-radius: variables.$border-radius-md;
+//   cursor: pointer;
+// }
 
-.active {
-  background-color: colors.$grey-50;
-  height: 100%;
-  width: 100%;
-}
+// .active {
+//   background-color: colors.$grey-50;
+//   height: 100%;
+//   width: 100%;
+// }
 
-.capitalized {
-  text-transform: capitalize;
-}
+// .capitalized {
+//   text-transform: capitalize;
+// }

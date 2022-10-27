@@ -1,8 +1,9 @@
 import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Listbox } from "@headlessui/react";
 import classNames from "classnames";
+import { capitalize } from "lodash";
 
+import { ListBox } from "components/ui/ListBox";
 import { Text } from "components/ui/Text";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
@@ -15,33 +16,25 @@ interface StreamSelectorProps {
 
 export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
   const { streams, selectedStream, setSelectedStream } = useConnectorBuilderState();
+  const streamNames = streams.map((stream) => capitalize(stream.name));
 
   return (
-    <div className={className}>
-      <Listbox value={selectedStream.name} onChange={setSelectedStream}>
-        <Listbox.Button className={classNames(styles.button, styles.centered)}>
-          <Text className={styles.capitalized} as="h1" size="sm">
-            {selectedStream.name}
-          </Text>
-          <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
-        </Listbox.Button>
-        {/* wrap in div to make `position: absolute` on Listbox.Options result in correct vertical positioning */}
-        <div>
-          <Listbox.Options className={classNames(styles.optionsMenu, styles.centered)}>
-            {streams.map(({ name: streamName }) => (
-              <Listbox.Option key={streamName} value={streamName} className={styles.option}>
-                {({ active }) => (
-                  <div className={classNames(styles.optionValue, { [styles.active]: active })}>
-                    <Text className={styles.capitalized} size="lg">
-                      {streamName}
-                    </Text>
-                  </div>
-                )}
-              </Listbox.Option>
-            ))}
-          </Listbox.Options>
-        </div>
-      </Listbox>
-    </div>
+    <ListBox
+      className={classNames(className, styles.centered)}
+      values={streamNames}
+      selectedValue={capitalize(selectedStream.name)}
+      onSelect={setSelectedStream}
+      buttonClassName={styles.button}
+      buttonContent={(value) => {
+        return (
+          <>
+            <Text as="h1" size="sm">
+              {value}
+            </Text>
+            <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
+          </>
+        );
+      }}
+    />
   );
 };

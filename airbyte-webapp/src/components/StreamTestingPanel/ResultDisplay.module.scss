@@ -7,28 +7,28 @@
   gap: variables.$spacing-md;
 }
 
-.displayBox {
-  background-color: aqua;
-  padding: variables.$spacing-md;
-  border-radius: variables.$border-radius-xs;
-  overflow-x: auto;
-  display: flex;
-  flex-direction: column;
-  gap: variables.$spacing-md;
-  flex: 1;
-}
+// .displayBox {
+//   background-color: aqua;
+//   padding: variables.$spacing-md;
+//   border-radius: variables.$border-radius-xs;
+//   overflow-x: auto;
+//   display: flex;
+//   flex-direction: column;
+//   gap: variables.$spacing-md;
+//   flex: 1;
+// }
 
-.slice {
-  background-color: colors.$blue-200;
-}
+// .slice {
+//   background-color: colors.$blue-200;
+// }
 
 // .page {
 //   background-color: colors.$blue-100;
 // }
 
-.pageData {
-  background-color: colors.$blue-50;
-}
+// .pageData {
+//   background-color: colors.$blue-50;
+// }
 
 // .state {
 //   background-color: colors.$orange-50;
