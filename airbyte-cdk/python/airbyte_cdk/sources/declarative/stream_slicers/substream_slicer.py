@@ -92,12 +92,13 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
 
     def _get_request_option(self, option_type: RequestOptionType):
         params = {}
-        for parent_config in self.parent_stream_configs:
-            if parent_config.request_option and parent_config.request_option.inject_into == option_type:
-                key = parent_config.stream_slice_field
-                value = self._cursor.get(key)
-                if value:
-                    params.update({key: value})
+        if self._cursor:
+            for parent_config in self.parent_stream_configs:
+                if parent_config.request_option and parent_config.request_option.inject_into == option_type:
+                    key = parent_config.stream_slice_field
+                    value = self._cursor.get(key)
+                    if value:
+                        params.update({key: value})
         return params
 
     def get_stream_state(self) -> StreamState:
@@ -137,5 +138,4 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
                         yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
                     # If the parent slice contains no records,
                     if empty_parent_slice:
-                        stream_state_value = parent_stream_slice.get(parent_field)
-                        yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
+                        yield from []

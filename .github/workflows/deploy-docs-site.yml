@@ -1,22 +1,37 @@
-name: Deploy docs.airbyte.com [DUMMY workflow]
+name: Deploy docs.airbyte.com
 
 on:
-  ## XXX uncomment the following when this code gets in good shape
-  #push:
-  #  branches:
-  #    - master
-  #  paths:
-  #    - 'docs/**'
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   dummy-job:
-    name: A placeholder job
+    name: Deploy Docs Assets
     runs-on: ubuntu-latest
     steps:
-      - name: A placeholder step
-        shell: bash
-        run: |-
-          echo "Hello from 'Deploy Docs' workflow!"
+      - name: Check out the repository
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Node.js is needed for Yarn
+      - name: Setup Yarn
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.14.0'
+          cache: 'yarn'
+          cache-dependency-path: docusaurus
+
+      - name: Run Docusaurus
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./tools/bin/deploy_docusaurus
