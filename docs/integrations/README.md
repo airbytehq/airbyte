@@ -169,6 +169,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Typeform](sources/typeform.md)                                                             | Alpha                | Yes                 |
 | [US Census](sources/us-census.md)                                                           | Alpha                | Yes                 |
 | [VictorOps](sources/victorops.md)                                                           | Alpha                | No                  |
+| [Vitally](sources/vitally.md)                                                               | Alpha                | No                  |
 | [Webflow](sources/webflow.md        )                                                       | Alpha                | Yes                 |
 | [Whisky Hunter](sources/whisky-hunter.md        )                                           | Alpha                | No                  |
 | [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
