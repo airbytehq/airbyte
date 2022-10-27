@@ -174,7 +174,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         project.task('uninstallCDK', type: PythonTask, dependsOn: project.installReqs) {
             module = "pip"
-            command = "uninstall airbyte_cdk"
+            command = "uninstall - y airbyte_cdk"
         }
 
         project.task('installLocalCDK', type: PythonTask, dependsOn: project.uninstallCDK) {
