@@ -3,7 +3,7 @@
 The connector uses the v3 API documented here: https://developers.themoviedb.org/3/getting-started/introduction. It is
 straightforward HTTP REST API with API Authentication. 
 
-## Dummy API key
+## API key
 
 Api key is mandate for this connector to work. It could be generated using a free account at TMDb. Visit: https://www.themoviedb.org/settings/api
 
@@ -15,6 +15,12 @@ Api key is mandate for this connector to work. It could be generated using a fre
 
 - Have an API key by generating personal API key (Example: 12345)
 - A movie ID (Mandate to target a movie for generating info)
+- Streams doesn't require movie_id to work is listed. Just pass 550 as movie_id to connect
+    - movies_latest
+    - movies_now_playing
+    - movies_popular
+    - movies_top_rated
+    - movies_upcoming
 
 ## Step 2: Generate schema for the endpoint
 
