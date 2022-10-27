@@ -209,7 +209,6 @@
   dockerRepository: airbyte/source-coin-api
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
-  icon: close.svg
   sourceType: api
   releaseStage: alpha
 - name: Commercetools
