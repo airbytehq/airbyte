@@ -23,7 +23,7 @@ This source can sync data from the [Toggl API](https://developers.track.toggl.co
 
 ### Performance considerations
 
-Mailjet APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://developers.track.toggl.com/docs/#the-api-format)
+Toggl APIs are under rate limits for the number of API calls allowed per API keys per second. If you reach a rate limit, API will return a 429 HTTP error code. See [here](https://developers.track.toggl.com/docs/#the-api-format)
 
 ## Getting started
 
