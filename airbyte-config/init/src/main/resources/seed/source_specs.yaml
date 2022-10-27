@@ -5303,7 +5303,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-iterable:0.1.20"
+- dockerImage: "airbyte/source-iterable:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
