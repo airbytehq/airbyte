@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "webinar_id": {
+      "type": "number"
+    },
+    "id": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "join_url": {
+      "type": "string"
+    },
+    "virtual_background_id": {
+      "type": "string"
+    },
+    "name_tag_id": {
+      "type": "string"
+    },
+    "name_tag_name": {
+      "type": "string"
+    },
+    "name_tag_pronouns": {
+      "type": "string"
+    },
+    "name_tag_description": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

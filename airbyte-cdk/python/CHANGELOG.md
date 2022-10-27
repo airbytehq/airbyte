@@ -1,8 +1,17 @@
 # Changelog
 
-## 0.2.2
+## 0.4.0
+Low-code: Add support for custom error messages on error response filters
 
-- Low-code: Enable requests caching
+## 0.3.0
+Publish python typehints via `py.typed` file. 
+
+## 0.2.3
+- Propagate options to InterpolatedRequestInputProvider
+
+## 0.2.2
+- Report config validation errors as failed connection status during `check`.
+- Report config validation errors as `config_error` failure type.
 
 ## 0.2.1
 

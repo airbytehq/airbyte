@@ -8,7 +8,6 @@ import { Popout } from "components/ui/Popout";
 import { Text } from "components/ui/Text";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import styles from "./TableItemTitle.module.scss";
 
@@ -31,7 +30,6 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
   entityIcon,
   releaseStage,
 }) => {
-  const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
   const { formatMessage } = useIntl();
   const options = [
     {
@@ -76,7 +74,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           menuShouldBlockScroll={false}
           onChange={onSelect}
           targetComponent={({ onOpen }) => (
-            <Button onClick={onOpen} disabled={!allowCreateConnection}>
+            <Button onClick={onOpen}>
               <FormattedMessage id={`tables.${type}Add`} />
             </Button>
           )}
