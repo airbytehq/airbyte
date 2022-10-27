@@ -1,0 +1,40 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: 
+        - "{{ options['name'] }}"
+  requester:
+    url_base: "https://airbyte-connector-poc.rocket.chat/api/v1"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "X-Auth-Token"
+      api_token: "{{ config['token'] }}"
+    request_options_provider:
+      request_headers:
+        X-User-Id: "{{ config['user_id'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  teams_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "teams"
+      primary_key: "id"
+      path: "/teams.list"
+
+streams:
+  - "*ref(definitions.teams_stream)"
+
+check:
+  stream_names:
+    - "teams"
