@@ -3,6 +3,10 @@
 
 .reactSelectContainer {
   width: 300px;
+
+  &__option {
+    background-color: colors.$white;
+  }
 }
 
 .option {
