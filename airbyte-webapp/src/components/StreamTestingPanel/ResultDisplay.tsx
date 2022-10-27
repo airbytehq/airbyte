@@ -6,6 +6,7 @@ import { Text } from "components/ui/Text";
 
 import { StreamRead } from "core/request/ConnectorBuilderClient";
 
+import { PageDisplay } from "./PageDisplay";
 import styles from "./ResultDisplay.module.scss";
 import { SliceSelector } from "./SliceSelector";
 
@@ -42,12 +43,12 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
 
   const slice = streamRead.slices[0];
   const numPages = slice.pages.length;
-  // const page = slice.pages[selectedPage];
+  const page = slice.pages[selectedPage];
 
   return (
     <div className={classNames(className, styles.container)}>
       <SliceSelector slices={streamRead.slices} />
-      {/* <PageDisplay page={page} /> */}
+      <PageDisplay page={page} />
       <div className={styles.paginator}>
         <Text className={styles.pageLabel}>Page:</Text>
         <Paginator

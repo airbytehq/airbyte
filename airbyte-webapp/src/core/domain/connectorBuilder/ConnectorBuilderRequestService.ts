@@ -23,7 +23,7 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
         ],
         slices: [
           {
-            sliceDescriptor: { startDatetime: "Jan 1, 2022", listItem: "airbyte-cloud" },
+            sliceDescriptor: { startDatetime: "1 Jan 2022", listItem: "airbyte-cloud" },
             state: {
               type: "STREAM",
               stream: { stream_descriptor: { name: readParams.stream }, stream_state: { date: "2022-09-26" } },
