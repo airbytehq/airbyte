@@ -63,6 +63,8 @@ tags:
     description: Export/Import Airbyte Configuration and Database resources.
   - name: attempt
     description: Interactions with attempt related resources.
+  - name: state
+    description: Interactions with state related resources.
 
 paths:
   /v1/workspaces/create:
@@ -1389,7 +1391,7 @@ paths:
   /v1/state/get:
     post:
       tags:
-        - connection
+        - state
       summary: Fetch the current state for a connection.
       operationId: getState
       requestBody:
@@ -1412,7 +1414,7 @@ paths:
   /v1/state/create_or_update:
     post:
       tags:
-        - connection
+        - state
         - internal
       summary: Create or update the state for a connection.
       operationId: createOrUpdateState
@@ -1994,7 +1996,7 @@ paths:
   /v1/web_backend/state/get_type:
     post:
       tags:
-        - connection
+        - web_backend
       summary: Fetch the current state type for a connection.
       operationId: getStateType
       requestBody:
@@ -2169,6 +2171,26 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_normalization_status:
+    post:
+      tags:
+        - jobs
+        - internal
+      summary: Get normalization status to determine if we can bypass normalization phase
+      operationId: getAttemptNormalizationStatusesForJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttemptNormalizationStatusReadList"
+
   /v1/health:
     get:
       tags:
@@ -2242,6 +2264,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalOperationResult"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -4838,6 +4861,26 @@ components:
       properties:
         succeeded:
           type: boolean
+    AttemptNormalizationStatusReadList:
+      type: object
+      properties:
+        attemptNormalizationStatuses:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptNormalizationStatusRead"
+    AttemptNormalizationStatusRead:
+      type: object
+      properties:
+        attemptNumber:
+          $ref: "#/components/schemas/AttemptNumber"
+        hasRecordsCommitted:
+          type: boolean
+        recordsCommitted:
+          type: integer
+          format: int64
+        hasNormalizationFailed:
+          type: boolean
+
     InvalidInputProperty:
       type: object
       required:

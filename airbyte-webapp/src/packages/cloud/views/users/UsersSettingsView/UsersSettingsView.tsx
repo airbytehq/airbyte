@@ -5,8 +5,8 @@ import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
 import { Button } from "components/ui/Button";
+import { Heading } from "components/ui/Heading";
 import { Table } from "components/ui/Table";
-import { Text } from "components/ui/Text";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
@@ -50,9 +50,9 @@ const Header: React.VFC = () => {
   const { toggleInviteUsersModalOpen } = useInviteUsersModalService();
   return (
     <div className={styles.header}>
-      <Text as="h1" size="sm">
+      <Heading as="h1" size="sm">
         <FormattedMessage id="userSettings.table.title" />
-      </Text>
+      </Heading>
       <Button
         onClick={() => {
           toggleInviteUsersModalOpen();
