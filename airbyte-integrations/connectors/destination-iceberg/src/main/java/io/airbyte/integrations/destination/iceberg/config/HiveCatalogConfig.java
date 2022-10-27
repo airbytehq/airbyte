@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.iceberg.config;
 
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.CATALOG_NAME;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.HIVE_THRIFT_URI_CONFIG_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,13 +37,14 @@ public class HiveCatalogConfig implements IcebergCatalogConfig {
         String warehouse = "s3a://%s/%s".formatted(s3Config.getBucketName(), s3Config.getBucketPath());
         Map<String, String> configMap = new HashMap<>();
         configMap.put("spark.network.timeout", "300000");
-        configMap.put("spark.sql.catalog.iceberg.type", "hive");
-        configMap.put("spark.sql.catalog.iceberg", "org.apache.iceberg.spark.SparkCatalog");
-        configMap.put("spark.sql.catalog.iceberg.io-impl", "org.apache.iceberg.aws.s3.S3FileIO");
-        configMap.put("spark.sql.catalog.iceberg.s3.endpoint", s3EndpointSchema + "://" + s3Config.getEndpoint());
-        configMap.put("spark.sql.catalog.iceberg.uri", this.thriftUri);
-        configMap.put("spark.sql.catalog.iceberg.warehouse", warehouse);
-        configMap.put("spark.sql.defaultCatalog", "iceberg");
+        configMap.put("spark.sql.catalog." + CATALOG_NAME, "org.apache.iceberg.spark.SparkCatalog");
+        configMap.put("spark.sql.catalog." + CATALOG_NAME + ".type", "hive");
+        configMap.put("spark.sql.catalog." + CATALOG_NAME + ".io-impl", "org.apache.iceberg.aws.s3.S3FileIO");
+        configMap.put("spark.sql.catalog." + CATALOG_NAME + ".s3.endpoint",
+            s3EndpointSchema + "://" + s3Config.getEndpoint());
+        configMap.put("spark.sql.catalog." + CATALOG_NAME + ".uri", this.thriftUri);
+        configMap.put("spark.sql.catalog." + CATALOG_NAME + ".warehouse", warehouse);
+        configMap.put("spark.sql.defaultCatalog", CATALOG_NAME);
         configMap.put("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions");
         //TODO
         configMap.put("spark.driver.extraClassPath", "");

@@ -67,7 +67,7 @@ public class S3Config {
         if (config.has(S3_PATH_STYLE_ACCESS_CONFIG_KEY)) {
             builder.pathStyleAccess(config.get(S3_PATH_STYLE_ACCESS_CONFIG_KEY).booleanValue());
         } else {
-            builder.pathStyleAccess(false);
+            builder.pathStyleAccess(true);
         }
 
         if (config.has(S3_SSL_ENABLED_CONFIG_KEY)) {
@@ -77,7 +77,15 @@ public class S3Config {
         }
 
         builder.catalogConfig(IcebergCatalogConfig.fromDestinationConfig(config));
-        return builder.build();
+
+        return builder.build().setProperty();
+    }
+
+    private S3Config setProperty() {
+        System.setProperty("aws.region", bucketRegion);
+        System.setProperty("aws.access.key.id", accessKeyId);
+        System.setProperty("aws.secret.access.key", secretKey);
+        return this;
     }
 
     private static String getProperty(@Nonnull final JsonNode config, @Nonnull final String key) {

@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ public class IcebergDestination extends BaseConnector implements Destination {
 
     @VisibleForTesting
     public IcebergDestination(S3ConfigFactory s3ConfigFactory) {
-        this.s3ConfigFactory = s3ConfigFactory;
+        this.s3ConfigFactory = Objects.requireNonNullElseGet(s3ConfigFactory, S3ConfigFactory::new);
     }
 
     public static void main(String[] args) throws Exception {
@@ -95,6 +96,8 @@ public class IcebergDestination extends BaseConnector implements Destination {
         final S3Config s3Config = this.s3ConfigFactory.parseS3Config(config);
         Map<String, String> sparkConfMap = s3Config.getCatalogConfig().sparkConfigMap(s3Config);
 
+        log.info("JAVA_OPTS:{}", System.getenv());
+        log.info("s3Config:{}, sparkConfMap:{}", s3Config, sparkConfMap);
         Builder sparkBuilder = SparkSession.builder().master("local")
             .appName("Airbyte->Iceberg-" + System.currentTimeMillis());
         sparkConfMap.forEach(sparkBuilder::config);

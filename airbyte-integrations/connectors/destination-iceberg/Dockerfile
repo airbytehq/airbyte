@@ -12,6 +12,13 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 ENV APPLICATION destination-iceberg
 
+ENV JAVA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED \
+    --add-opens java.base/java.util=ALL-UNNAMED \
+    --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+    --add-opens java.base/java.text=ALL-UNNAMED \
+    --add-opens java.base/sun.nio.ch=ALL-UNNAMED \
+    --add-opens java.desktop/java.awt.font=ALL-UNNAMED"
+
 COPY --from=build /airbyte /airbyte
 
 LABEL io.airbyte.version=0.1.0
