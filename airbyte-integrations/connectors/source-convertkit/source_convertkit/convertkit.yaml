@@ -11,6 +11,18 @@ definitions:
     request_options_provider:
       request_parameters:
         api_secret: "{{ config['api_secret'] }}"
+  increment_paginator:
+    type: DefaultPaginator
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "limit"
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 50
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "page"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -47,6 +59,10 @@ definitions:
       name: "tags"
       primary_key: "id"
       path: "/tags"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
   # API Docs: https://developers.convertkit.com/#subscribers
   subscribers_stream:
     $ref: "*ref(definitions.base_stream)"
