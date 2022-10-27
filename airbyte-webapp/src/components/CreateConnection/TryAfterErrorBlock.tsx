@@ -16,11 +16,11 @@ export const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message,
   return (
     <div className={styles.container}>
       <StatusIcon big />
-      <Text as="p" size="lg" centered className={styles.message}>
+      <Text size="lg" centered className={styles.message}>
         <FormattedMessage id="form.schemaFailed" />
       </Text>
       {message && (
-        <Text as="p" size="lg" centered className={styles.message}>
+        <Text size="lg" centered className={styles.message}>
           <FormattedMessage id="form.error" values={{ message }} />
         </Text>
       )}
