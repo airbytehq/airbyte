@@ -6008,6 +6008,41 @@
     "releaseStage": "alpha"
   } ],
   "sources": [ {
+    "sourceDefinitionId": "9f32dab3-77cb-45a1-9d33-347aa5fbe363",
+    "name": "ActiveCampaign",
+    "dockerRepository": "airbyte/source-activecampaign",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/activecampaign",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/activecampaign",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Activecampaign Spec",
+        "type": "object",
+        "required": [ "api_key", "account_username" ],
+        "additionalProperties": true,
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "description": "API Key",
+            "airbyte_secret": true
+          },
+          "account_username": {
+            "type": "string",
+            "description": "Account Username"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "sourceDefinitionId": "d3b7fa46-111b-419a-998a-d7f046f6d66d",
     "name": "Adjust",
     "dockerRepository": "airbyte/source-adjust",
