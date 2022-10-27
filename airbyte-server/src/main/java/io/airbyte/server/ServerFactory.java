@@ -20,16 +20,19 @@ import io.airbyte.server.apis.ConnectionApiController;
 import io.airbyte.server.apis.DbMigrationApiController;
 import io.airbyte.server.apis.DestinationApiController;
 import io.airbyte.server.apis.DestinationDefinitionApiController;
+import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
 import io.airbyte.server.apis.binders.DestinationApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
+import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
 import io.airbyte.server.apis.factories.DestinationApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
+import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
@@ -135,11 +138,15 @@ public interface ServerFactory {
 
       DestinationDefinitionApiFactory.setValues(destinationDefinitionsHandler);
 
+      DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
+
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class, AttemptApiController.class, ConnectionApiController.class,
-          DbMigrationApiController.class, DestinationApiController.class, DestinationDefinitionApiController.class);
+          DbMigrationApiController.class, DestinationApiController.class, DestinationDefinitionApiController.class,
+          DestinationDefinitionSpecificationApiController.class);
       final Set<Object> components = Set.of(new CorsFilter(), new ConfigurationApiBinder(), new AttemptApiBinder(), new ConnectionApiBinder(),
-          new DbMigrationBinder(), new DestinationApiBinder(), new DestinationDefinitionApiBinder());
+          new DbMigrationBinder(), new DestinationApiBinder(), new DestinationDefinitionApiBinder(),
+          new DestinationDefinitionSpecificationApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);
