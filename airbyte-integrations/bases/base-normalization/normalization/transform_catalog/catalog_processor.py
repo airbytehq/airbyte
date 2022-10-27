@@ -9,8 +9,7 @@ import re
 from typing import Any, Dict, List, Set
 
 import yaml
-from airbyte_cdk.models import DestinationSyncMode, SyncMode
-from normalization.destination_type import DestinationType
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, DestinationType, SyncMode
 from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 from normalization.transform_catalog.stream_processor import StreamProcessor
