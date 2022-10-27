@@ -54,6 +54,7 @@ exclude = "(build|integration_tests|unit_tests)"
 
 # Optionals
 ignore_missing_imports = true
+implicit_reexport = true
 
 # Strictness
 allow_untyped_globals = false
