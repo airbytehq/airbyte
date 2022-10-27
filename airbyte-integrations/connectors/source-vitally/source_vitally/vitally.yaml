@@ -17,14 +17,14 @@ definitions:
       type: DefaultPaginator
       pagination_strategy:
         type: "CursorPagination"
-        cursor_value: "{{ response.nextCursor }}"
+        cursor_value: "{{ response.next }}"
         page_size: 100
       page_size_option:
         field_name: "limit"
-        inject_into: "body_json"
+        inject_into: "request_parameter"
       page_token_option:
-        inject_into: "body_json"
-        field_name: "cursor"
+        field_name: "from"
+        inject_into: "request_parameter"
       url_base:
         $ref: "*ref(definitions.requester.url_base)"
     requester:
@@ -42,6 +42,13 @@ definitions:
       name: "accounts"
       primary_key: "id"
       path: "/accounts"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            status: "{{ config['status'] }}"
   admins_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
