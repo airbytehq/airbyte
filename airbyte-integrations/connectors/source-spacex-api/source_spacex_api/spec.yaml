@@ -9,12 +9,15 @@ connectionSpecification:
   additionalProperties: true
   properties:
     api_key:
+      title: API Key for authentication
       type: string
       description: Dummy as SpaceX doesn't need an API right now, Integrating for future uses
       airbyte_secret: true
     id:
+      title: Unique ID for specific source target
       type: string
       desciption: Optional, For a specific ID
     options:
+      title: Configuration options for endpoints
       type: string
       desciption: Optional, Possible values for an endpoint. Example values for launches-latest, upcoming, past
