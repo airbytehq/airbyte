@@ -1,0 +1,122 @@
+{
+  "type": "object",
+  "properties": {
+    "productID": {
+      "type": "string"
+    },
+    "title": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "currency": {
+      "type": ["string", "null"]
+    },
+    "productUrl": {
+      "type": ["string", "null"]
+    },
+    "vendor": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    },
+    "createdAt": {
+      "type": ["string", "null"]
+    },
+    "updatedAt": {
+      "type": ["string", "null"]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+          "type" : ["string", "null"]
+        }
+    },
+    "categoryIDs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "images": {
+      "type": "array",
+      "items":
+        {
+          "type": "object",
+          "properties": {
+            "imageID": {
+              "type": ["string", "null"]
+            },
+            "url": {
+              "type": ["string", "null"]
+            },
+            "isDefault": {
+              "type": ["string", "null"]
+            },
+            "variants": {
+              "type": "array",
+              "items":
+                {
+                  "type": ["string", "null"]
+                }
+            }
+          }
+        }
+    },
+    "variants": {
+      "type": "array",
+      "items":
+        {
+          "type": "object",
+          "properties": {
+            "variantID": {
+              "type": ["string", "null"]
+            },
+            "title": {
+              "type": ["string", "null"]
+            },
+            "sku": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "price": {
+              "type": ["integer", "null"]
+            },
+            "oldPrice": {
+              "type": ["integer", "null"]
+            },
+            "productUrl": {
+              "type": ["string", "null"]
+            },
+            "imageID": {
+              "type": ["string", "null"]
+            },
+            "customFields": {
+              "type": "object",
+              "properties": {
+                "protectionClass": {
+                  "type": ["string", "null"]
+                }
+              }
+            }
+          }
+        }
+    }
+  },
+  "required": [
+    "productID"
+  ]
+}

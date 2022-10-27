@@ -27,9 +27,37 @@ definitions:
       name: "contacts"
       primary_key: "contactID"
       path: "/contacts"
+  campaigns_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "campaigns"
+      primary_key: "campaignID"
+      path: "/campaigns"
+  carts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "carts"
+      primary_key: "cartID"
+      path: "/carts"
+  orders_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "orders"
+      primary_key: "orderID"
+      path: "/orders"
+  products_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "products"
+      primary_key: "productID"
+      path: "/products"
 
 streams:
   - "*ref(definitions.contacts_stream)"
+  - "*ref(definitions.campaigns_stream)"
+  - "*ref(definitions.carts_stream)"
+  - "*ref(definitions.orders_stream)"
+  - "*ref(definitions.products_stream)"
 
 check:
   stream_names: ["contacts"]
