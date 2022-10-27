@@ -17,6 +17,7 @@ import {
   ConnectionScheduleType,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
+  Geography,
   NamespaceDefinitionType,
   OperationCreate,
   OperationRead,
@@ -41,6 +42,7 @@ export interface FormikConnectionFormValues {
   namespaceFormat: string;
   transformations?: OperationRead[];
   normalization?: NormalizationType;
+  geography: Geography;
 }
 
 export type ConnectionFormValues = ValuesProps;
@@ -80,6 +82,7 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
     .object({
       // The connection name during Editing is handled separately from the form
       name: mode === "create" ? yup.string().required("form.empty.error") : yup.string().notRequired(),
+      geography: yup.mixed<Geography>().oneOf(Object.values(Geography)),
       scheduleType: yup
         .string()
         .oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic, ConnectionScheduleType.cron]),
@@ -270,6 +273,7 @@ export const useInitialValues = (
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
+      geography: connection.geography || "auto",
     };
 
     // Is Create Mode
@@ -291,6 +295,7 @@ export const useInitialValues = (
   }, [
     connection.connectionId,
     connection.destination.name,
+    connection.geography,
     connection.name,
     connection.namespaceDefinition,
     connection.namespaceFormat,
