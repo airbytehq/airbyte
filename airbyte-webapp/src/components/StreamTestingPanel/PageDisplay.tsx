@@ -1,5 +1,6 @@
 import { Tab } from "@headlessui/react";
 import classNames from "classnames";
+import { useIntl } from "react-intl";
 
 import { Text } from "components/ui/Text";
 
@@ -23,14 +24,15 @@ interface TabData {
 }
 
 export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => {
+  const { formatMessage } = useIntl();
   const tabs: TabData[] = [
-    { title: "Records", content: page.records },
-    { title: "Request", content: page.request },
-    { title: "Response", content: page.response },
+    { title: formatMessage({ id: "connectorBuilder.recordsTab" }), content: page.records },
+    { title: formatMessage({ id: "connectorBuilder.requestTab" }), content: page.request },
+    { title: formatMessage({ id: "connectorBuilder.responseTab" }), content: page.response },
   ];
 
   return (
-    <div className={classNames(className, styles.container)}>
+    <div className={classNames(className)}>
       <Tab.Group>
         <Tab.List className={styles.tabList}>
           {tabs.map((tab) => (
