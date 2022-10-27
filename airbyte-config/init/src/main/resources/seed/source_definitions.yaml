@@ -1,3 +1,10 @@
+- name: ActiveCampaign
+  sourceDefinitionId: 9f32dab3-77cb-45a1-9d33-347aa5fbe363
+  dockerRepository: airbyte/source-activecampaign
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/activecampaign
+  sourceType: api
+  releaseStage: alpha
 - name: Adjust
   sourceDefinitionId: d3b7fa46-111b-419a-998a-d7f046f6d66d
   dockerRepository: airbyte/source-adjust
