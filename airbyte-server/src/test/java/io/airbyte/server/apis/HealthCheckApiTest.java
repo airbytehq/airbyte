@@ -19,8 +19,7 @@ class HealthCheckApiTest {
     final HealthCheckHandler healthCheckHandler = mock(HealthCheckHandler.class);
     when(healthCheckHandler.health())
         .thenReturn(new HealthCheckRead().available(
-            false
-        ));
+            false));
 
     final HealthApiController configurationApi = new HealthApiController(healthCheckHandler);
 
