@@ -25,6 +25,7 @@ import { useTestConnector } from "./useTestConnector";
 
 // TODO: need to clean up the ConnectorCard and ServiceForm props,
 // since some of props are used in both components, and some of them used just as a prop-drill
+// https://github.com/airbytehq/airbyte/issues/18553
 interface ConnectorCardBaseProps {
   title?: React.ReactNode;
   full?: boolean;
