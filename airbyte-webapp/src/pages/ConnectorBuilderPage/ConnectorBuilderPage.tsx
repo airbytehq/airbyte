@@ -4,11 +4,14 @@ import { StreamTestingPanel } from "components/StreamTestingPanel";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 import { YamlEditor } from "components/YamlEditor";
 
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  ConnectorBuilderStateProvider,
+  useConnectorBuilderState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./ConnectorBuilderPage.module.scss";
 
-export const ConnectorBuilderPage: React.FC = () => {
+const ConnectorBuilderPageInner: React.FC = () => {
   const { selectedStream } = useConnectorBuilderState();
 
   return (
@@ -33,3 +36,9 @@ export const ConnectorBuilderPage: React.FC = () => {
     />
   );
 };
+
+export const ConnectorBuilderPage: React.FC = () => (
+  <ConnectorBuilderStateProvider>
+    <ConnectorBuilderPageInner />
+  </ConnectorBuilderStateProvider>
+);
