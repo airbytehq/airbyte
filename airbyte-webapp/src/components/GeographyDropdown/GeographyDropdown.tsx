@@ -41,7 +41,7 @@ const GeographyOption: React.FC<OptionProps> = (props) => {
 
 const MenuList = (props: MenuListProps) => {
   return (
-    <components.MenuList {...props}>
+    <components.MenuList className={styles.menuList} {...props}>
       {props.children}
       <div>Request a new geography</div>
     </components.MenuList>
@@ -51,7 +51,8 @@ const MenuList = (props: MenuListProps) => {
 export const GeographyDropdown: React.FC = () => {
   return (
     <DropDown
-      className={styles.container}
+      className={styles.reactSelectContainer}
+      classNamePrefix="reactSelect"
       options={options}
       defaultValue={options[0]}
       components={{ Option: GeographyOption, MenuList }}
