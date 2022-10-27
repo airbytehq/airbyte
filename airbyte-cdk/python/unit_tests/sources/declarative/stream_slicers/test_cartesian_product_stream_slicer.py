@@ -177,9 +177,9 @@ def test_request_option(
         ],
         options={},
     )
-    slicer.update_cursor({"owner_resource": "customer", "repository": "airbyte"}, None)
+    stream_slice = {"owner_resource": "customer", "repository": "airbyte"}
 
-    assert expected_req_params == slicer.get_request_params()
-    assert expected_headers == slicer.get_request_headers()
-    assert expected_body_json == slicer.get_request_body_json()
-    assert expected_body_data == slicer.get_request_body_data()
+    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
+    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
+    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
+    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)

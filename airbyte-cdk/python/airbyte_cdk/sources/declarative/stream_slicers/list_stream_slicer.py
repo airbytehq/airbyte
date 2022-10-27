@@ -40,7 +40,7 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
         if self.request_option and self.request_option.inject_into == RequestOptionType.path:
             raise ValueError("Slice value cannot be injected in the path")
-        self._cursor = self.slice_values[0]
+        self._cursor = None
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         slice_value = stream_slice.get(self.cursor_field.eval(self.config))
@@ -58,7 +58,7 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.request_parameter)
+        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
 
     def get_request_headers(
         self,
@@ -66,7 +66,7 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.header)
+        return self._get_request_option(RequestOptionType.header, stream_slice)
 
     def get_request_body_data(
         self,
@@ -74,7 +74,7 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.body_data)
+        return self._get_request_option(RequestOptionType.body_data, stream_slice)
 
     def get_request_body_json(
         self,
@@ -82,13 +82,17 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.body_json)
+        return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         return [{self.cursor_field.eval(self.config): slice_value} for slice_value in self.slice_values]
 
-    def _get_request_option(self, request_option_type: RequestOptionType):
-        if self.request_option and self.request_option.inject_into == request_option_type:
-            return {self.request_option.field_name: self._cursor}
+    def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: StreamSlice):
+        if self.request_option and self.request_option.inject_into == request_option_type and stream_slice:
+            slice_value = stream_slice.get(self.cursor_field.eval(self.config))
+            if slice_value:
+                return {self.request_option.field_name: slice_value}
+            else:
+                return {}
         else:
             return {}

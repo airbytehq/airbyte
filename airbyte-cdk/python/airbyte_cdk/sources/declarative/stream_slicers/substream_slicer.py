@@ -64,7 +64,7 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.request_parameter)
+        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
 
     def get_request_headers(
         self,
@@ -72,7 +72,8 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.header)
+        self.update_cursor(stream_slice)
+        return self._get_request_option(RequestOptionType.header, stream_slice)
 
     def get_request_body_data(
         self,
@@ -80,7 +81,8 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.body_data)
+        self.update_cursor(stream_slice)
+        return self._get_request_option(RequestOptionType.body_data, stream_slice)
 
     def get_request_body_json(
         self,
@@ -88,14 +90,15 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
-        return self._get_request_option(RequestOptionType.body_json)
+        self.update_cursor(stream_slice)
+        return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
-    def _get_request_option(self, option_type: RequestOptionType):
+    def _get_request_option(self, option_type: RequestOptionType, stream_slice: StreamSlice):
         params = {}
         for parent_config in self.parent_stream_configs:
             if parent_config.request_option and parent_config.request_option.inject_into == option_type:
                 key = parent_config.stream_slice_field
-                value = self._cursor.get(key)
+                value = stream_slice.get(key)
                 if value:
                     params.update({key: value})
         return params
