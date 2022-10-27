@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.redis;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -41,10 +42,10 @@ class RedisDestination extends BaseConnector implements Destination {
       redisCache.ping("Connection check");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.error("Can't establish Redis connection with reason: ", e);
+      final String errorMessage = "Could not connect with provided configuration. Error: " + e.getMessage();
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, errorMessage);
       return new AirbyteConnectionStatus()
-          .withMessage("Could not connect to the Redis with the provided configuration. \n" + e
-              .getMessage())
+          .withMessage(errorMessage)
           .withStatus(AirbyteConnectionStatus.Status.FAILED);
     }
 

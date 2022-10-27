@@ -116,14 +116,13 @@
           }
         ]
       },
-
       "cache_type": {
         "title": "Cache type",
         "type": "string",
         "default": "hash",
         "description": "Redis cache type to store data in.",
         "enum": ["hash"],
-        "order": 6
+        "order": 7
       }
     }
   }

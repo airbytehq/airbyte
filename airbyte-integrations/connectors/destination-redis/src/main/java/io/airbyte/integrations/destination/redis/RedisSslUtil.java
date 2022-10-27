@@ -38,15 +38,15 @@ public class RedisSslUtil {
   /**
    * set javax.net.ssl.keyStore and javax.net.ssl.trustStore based on provided ca.crt, client.crt, client.kay
    *
-   * @param redisSslMode json ssl mode config
+   * @param sslModeConfig json ssl mode config
    */
-  public static void setupCertificates(final JsonNode redisSslMode) {
+  public static void setupCertificates(final JsonNode sslModeConfig) {
     try {
-      if (getSslVerifyMode(redisSslMode) == VERIFY_IDENTITY) {
+      if (getSslVerifyMode(sslModeConfig) == VERIFY_IDENTITY) {
         LOGGER.info("Preparing ssl certificates for {} mode", PARAM_SSL_MODE_VERIFY_FULL);
-        final String clientKeyPassword = getOrGeneratePassword(redisSslMode);
-        initCertificateStores(redisSslMode.get(PARAM_CA_CERTIFICATE).asText(),
-            redisSslMode.get(PARAM_CLIENT_CERTIFICATE).asText(), redisSslMode.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
+        final String clientKeyPassword = getOrGeneratePassword(sslModeConfig);
+        initCertificateStores(sslModeConfig.get(PARAM_CA_CERTIFICATE).asText(),
+            sslModeConfig.get(PARAM_CLIENT_CERTIFICATE).asText(), sslModeConfig.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
       }
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
@@ -70,7 +70,7 @@ public class RedisSslUtil {
   }
 
   /**
-   * The method generate certificates based on provided ca.crt, client.crt, client.kay.
+   * The method generate certificates based on provided ca.crt, client.crt, client.key.
    * Generated keys
    *
    * @param caCertificate certificate to validate client certificate and key.
@@ -88,14 +88,21 @@ public class RedisSslUtil {
     LOGGER.info("Try to generate {}", CLIENT_KEY_STORE);
     createCertificateFile(CLIENT_CERTIFICATE, clientCertificate);
     createCertificateFile(CLIENT_KEY, clientKey);
-    runProcess("openssl pkcs12 -export -in " + CLIENT_CERTIFICATE + " -inkey " + CLIENT_KEY + " -out " + CLIENT_KEY_STORE + " -passout pass:"
-        + clientKeyPassword + "", Runtime.getRuntime());
+    runProcess(String.format("openssl pkcs12 -export -in %s -inkey %s -out %s -passout pass:%s",
+        CLIENT_CERTIFICATE,
+        CLIENT_KEY,
+        CLIENT_KEY_STORE,
+        clientKeyPassword),
+        Runtime.getRuntime());
     LOGGER.info("{} Generated", CLIENT_KEY_STORE);
 
     LOGGER.info("Try to generate {}", TRUST_STORE);
     createCertificateFile(CLIENT_CA_CERTIFICATE, caCertificate);
-    runProcess("keytool -import -file " + CLIENT_CA_CERTIFICATE + " -alias redis-ca -keystore " + TRUST_STORE + " -storepass " + TRUST_PASSWORD
-        + "  -noprompt", Runtime.getRuntime());
+    runProcess(String.format("keytool -import -file %s -alias redis-ca -keystore %s -storepass %s -noprompt",
+        CLIENT_CA_CERTIFICATE,
+        TRUST_STORE,
+        TRUST_PASSWORD),
+        Runtime.getRuntime());
     LOGGER.info("{} Generated", TRUST_STORE);
 
     setSystemProperty(clientKeyPassword);
