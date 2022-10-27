@@ -27,7 +27,7 @@ export const PathPopoutButton: React.FC<React.PropsWithChildren<PathPopoutButton
       </button>
     }
     placement="bottom-start"
-    disabled={items.length <= 1}
+    disabled={items.length === 0}
   >
     {items.map((value, key) => (
       <div key={`tooltip-item-${key}`}>
