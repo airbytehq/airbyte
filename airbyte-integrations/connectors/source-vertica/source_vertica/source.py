@@ -72,9 +72,7 @@ class SourceVertica(Source):
             columns = self.get_columns(logger, config, connection, table)
 
             for column in columns:
-                properties[column[0]] = {
-                    "type": column[1]
-                }
+                properties[column[0]] = self.map_column_type(column[1])
 
             streams.append(
                 AirbyteStream(
@@ -172,3 +170,25 @@ class SourceVertica(Source):
                 logger.error(f'Error running query: {query} on {config["database"]}!')
 
         return results, columns
+
+    def map_column_type(self, column_type):
+        column_mapping = {
+            "varchar": {
+                "type": "string"
+            },
+            "int": {
+                "type": "integer",
+            },
+            "float": {
+                "type": "number"
+            },
+            "date": {
+                "type": "string",
+                "format": "date"
+            }
+        }
+
+        if 'varchar' in column_type or 'char' in column_type:
+            return column_mapping['varchar']
+
+        return column_mapping[column_type]
