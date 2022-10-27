@@ -86,11 +86,14 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       <Cell>
         <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </Cell>
-      <Cell>{fieldCount}</Cell>
+      {/* <Cell>{fieldCount}</Cell> */}
       <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
         {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
       </HeaderCell>
-      <Cell>{stream.stream?.name}</Cell>
+      <HeaderCell ellipsis title={stream.stream?.name || ""}>
+        {stream.stream?.name}
+      </HeaderCell>
+      {/* todo: this is weird, we have a cell nested inside a cell */}
       <Cell>
         {disabled ? (
           <HeaderCell ellipsis title={syncSchema.syncMode}>
@@ -137,7 +140,9 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           </HeaderCell>
         ) : (
           // TODO: Replace with Dropdown/Popout
-          syncSchema.destinationSyncMode
+          <HeaderCell ellipsis title={syncSchema.destinationSyncMode}>
+            {syncSchema.destinationSyncMode}
+          </HeaderCell>
         )}
       </Cell>
     </Row>
