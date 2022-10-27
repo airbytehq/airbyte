@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,7 +19,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Request personal staging locations from Databricks metastore.
+ * Request personal staging locations from Databricks metastore. The equivalent curl command is:
+ *
+ * <pre>
+ * curl --location --request POST \
+ *   'https://<server-host>/api/2.1/unity-catalog/temporary-stage-credentials' \
+ *   --header 'Authorization: Bearer <personal-access-token>' \
+ *   --form 'staging_url="stage://tmp/<username>/file.csv"' \
+ *   --form 'operation="PUT"' \
+ *   --form 'credential_type="PRESIGNED_URL"'
+ * </pre>
  */
 public class DatabricksStagingLocationGetter {
 
