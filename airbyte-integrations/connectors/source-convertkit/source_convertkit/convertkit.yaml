@@ -1,23 +1,16 @@
 version: "0.1.0"
-
 definitions:
-
   selector:
     extractor:
       field_pointer: [ "{{ options['name'] }}" ]
-
   requester:
-
     # API Docs: https://developers.convertkit.com/#overview
     url_base: "https://api.convertkit.com/v3"
-
     http_method: "GET"
-
     # API Docs: https://developers.convertkit.com/#api-basics
     request_options_provider:
       request_parameters:
         api_secret: "{{ config['api_secret'] }}"
-
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -25,11 +18,9 @@ definitions:
       type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
-
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-
   # API Docs: https://developers.convertkit.com/#forms
   forms_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -37,7 +28,6 @@ definitions:
       name: "forms"
       primary_key: "id"
       path: "/forms"
-
   # API Docs: https://developers.convertkit.com/#sequences
   sequences_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -50,7 +40,6 @@ definitions:
       name: "sequences"
       primary_key: "id"
       path: "/sequences"
-  
   # API Docs: https://developers.convertkit.com/#tags
   tags_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -58,7 +47,6 @@ definitions:
       name: "tags"
       primary_key: "id"
       path: "/tags"
-  
   # API Docs: https://developers.convertkit.com/#subscribers
   subscribers_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -66,7 +54,6 @@ definitions:
       name: "subscribers"
       primary_key: "id"
       path: "/subscribers"
-  
   # API Docs: https://developers.convertkit.com/#broadcasts
   broadcasts_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -74,13 +61,11 @@ definitions:
       name: "broadcasts"
       primary_key: "id"
       path: "/broadcasts"
-
 streams:
   - "*ref(definitions.forms_stream)"
   - "*ref(definitions.sequences_stream)"
   - "*ref(definitions.tags_stream)"
   - "*ref(definitions.subscribers_stream)"
   - "*ref(definitions.broadcasts_stream)"
-
 check:
   stream_names: ["forms"]
