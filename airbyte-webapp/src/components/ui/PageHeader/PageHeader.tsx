@@ -23,7 +23,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   <div className={classNames(styles.container)} data-withline={withLine}>
     <Heading
       as="h1"
-      size="md"
       className={classNames(styles.start, {
         [styles.withLine]: withLine,
       })}
@@ -33,7 +32,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     {middleTitleBlock ? (
       <Heading
         as="h3"
-        size="md"
         className={classNames(styles.heading, {
           [styles.middle]: middleTitleBlock,
         })}

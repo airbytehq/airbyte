@@ -48,9 +48,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
       <div className={styles.entityInfo}>
         {entityIcon && <div className={styles.entityIcon}>{entityIcon}</div>}
         <div>
-          <Heading as="h2" size="md">
-            {entityName}
-          </Heading>
+          <Heading as="h2">{entityName}</Heading>
           <Text size="lg" bold className={styles.entityType}>
             <span>{entity}</span>
             <ReleaseStageBadge stage={releaseStage} />
