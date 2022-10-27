@@ -11,9 +11,11 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.api.model.generated.AdvancedAuth;
 import io.airbyte.api.model.generated.AuthSpecification;
+import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
@@ -31,6 +33,7 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceUpdate;
+import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
@@ -70,6 +73,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -80,6 +85,7 @@ public class SchedulerHandler {
   private static final ImmutableSet<ErrorCode> VALUE_CONFLICT_EXCEPTION_ERROR_CODE_SET =
       ImmutableSet.of(ErrorCode.WORKFLOW_DELETED, ErrorCode.WORKFLOW_RUNNING);
 
+  private final ConnectionsHandler connectionsHandler;
   private final ConfigRepository configRepository;
   private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final SynchronousSchedulerClient synchronousSchedulerClient;
@@ -96,7 +102,8 @@ public class SchedulerHandler {
                           final JobPersistence jobPersistence,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
-                          final EventRunner eventRunner) {
+                          final EventRunner eventRunner,
+                          final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -105,7 +112,8 @@ public class SchedulerHandler {
         new JsonSchemaValidator(),
         jobPersistence,
         eventRunner,
-        new JobConverter(workerEnvironment, logConfigs));
+        new JobConverter(workerEnvironment, logConfigs),
+        connectionsHandler);
   }
 
   @VisibleForTesting
@@ -116,7 +124,8 @@ public class SchedulerHandler {
                    final JsonSchemaValidator jsonSchemaValidator,
                    final JobPersistence jobPersistence,
                    final EventRunner eventRunner,
-                   final JobConverter jobConverter) {
+                   final JobConverter jobConverter,
+                   final ConnectionsHandler connectionsHandler) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -125,6 +134,7 @@ public class SchedulerHandler {
     this.jobPersistence = jobPersistence;
     this.eventRunner = eventRunner;
     this.jobConverter = jobConverter;
+    this.connectionsHandler = connectionsHandler;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
@@ -230,7 +240,22 @@ public class SchedulerHandler {
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
       final SynchronousResponse<UUID> persistedCatalogId =
           synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, connectorVersion, new Version(sourceDef.getProtocolVersion()));
-      return retrieveDiscoveredSchema(persistedCatalogId);
+      final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId);
+
+      if (discoverSchemaRequestBody.getConnectionId() != null) {
+        final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
+            .getConnectionAirbyteCatalog(discoverSchemaRequestBody.getConnectionId());
+        io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
+            connectionsHandler.getConnection(discoverSchemaRequestBody.getConnectionId()).getSyncCatalog();
+        CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
+            CatalogConverter.toProtocol(currentAirbyteCatalog));
+        if (containsBreakingChange(diff)) {
+          connectionsHandler.updateConnection(new ConnectionUpdate().breakingChange(true));
+        }
+        discoveredSchema.catalogDiff(diff);
+      }
+
+      return discoveredSchema;
     }
     final AirbyteCatalog airbyteCatalog = Jsons.object(currentCatalog.get().getCatalog(), AirbyteCatalog.class);
     final SynchronousJobRead emptyJob = new SynchronousJobRead()
@@ -407,6 +432,21 @@ public class SchedulerHandler {
     final Job job = jobPersistence.getJob(manualOperationResult.getJobId().get());
 
     return jobConverter.getJobInfoRead(job);
+  }
+
+  private boolean containsBreakingChange(final CatalogDiff diff) {
+    AtomicBoolean isBreaking = new AtomicBoolean(false);
+    diff.getTransforms().stream().forEach(streamTransform -> {
+      if (streamTransform.getTransformType() != TransformTypeEnum.UPDATE_STREAM) {
+        return;
+      }
+      streamTransform.getUpdateStream().stream().forEach(fieldTransform -> {
+        if (fieldTransform.getBreaking()) {
+          isBreaking.set(true);
+        }
+      });
+    });
+    return isBreaking.get();
   }
 
 }

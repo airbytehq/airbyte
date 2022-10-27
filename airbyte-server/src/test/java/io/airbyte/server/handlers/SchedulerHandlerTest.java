@@ -134,6 +134,7 @@ class SchedulerHandlerTest {
   private JobPersistence jobPersistence;
   private EventRunner eventRunner;
   private JobConverter jobConverter;
+  private ConnectionsHandler connectionsHandler;
 
   @BeforeEach
   void setup() {
@@ -150,6 +151,7 @@ class SchedulerHandlerTest {
     secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
     jobPersistence = mock(JobPersistence.class);
     eventRunner = mock(EventRunner.class);
+    connectionsHandler = mock(ConnectionsHandler.class);
 
     jobConverter = spy(new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY));
 
@@ -161,7 +163,8 @@ class SchedulerHandlerTest {
         jsonSchemaValidator,
         jobPersistence,
         eventRunner,
-        jobConverter);
+        jobConverter,
+        connectionsHandler);
   }
 
   @Test

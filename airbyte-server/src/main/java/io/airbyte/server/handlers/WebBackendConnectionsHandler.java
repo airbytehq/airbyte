@@ -328,7 +328,7 @@ public class WebBackendConnectionsHandler {
      */
     final Optional<SourceDiscoverSchemaRead> refreshedCatalog;
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
-      refreshedCatalog = getRefreshedSchema(connection.getSourceId());
+      refreshedCatalog = getRefreshedSchema(connection.getSourceId(), connection.getConnectionId());
     } else {
       refreshedCatalog = Optional.empty();
     }
@@ -337,6 +337,7 @@ public class WebBackendConnectionsHandler {
     final AirbyteCatalog syncCatalog;
     final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connection.getSourceCatalogId());
     if (refreshedCatalog.isPresent()) {
+      log.info("refreshsed catalog is present");
       connection.sourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
        * constructs a full picture of all existing configured + all new / updated streams in the newest
@@ -351,8 +352,7 @@ public class WebBackendConnectionsHandler {
        * but was present at time of configuration will appear in the diff as an added stream which is
        * confusing. We need to figure out why source_catalog_id is not always populated in the db.
        */
-      diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog(),
-          CatalogConverter.toProtocol(configuredCatalog));
+      diff = refreshedCatalog.get().getCatalogDiff();
 
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
@@ -370,12 +370,15 @@ public class WebBackendConnectionsHandler {
     return buildWebBackendConnectionRead(connection, currentSourceCatalogId).catalogDiff(diff);
   }
 
-  private Optional<SourceDiscoverSchemaRead> getRefreshedSchema(final UUID sourceId)
+  private Optional<SourceDiscoverSchemaRead> getRefreshedSchema(final UUID sourceId, final UUID connectionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final SourceDiscoverSchemaRequestBody discoverSchemaReadReq = new SourceDiscoverSchemaRequestBody()
         .sourceId(sourceId)
-        .disableCache(true);
-    return Optional.ofNullable(schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq));
+        .disableCache(true)
+        .connectionId(connectionId);
+    SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
+    log.info("schema read returned from discover schema is: " + schemaRead);
+    return Optional.ofNullable(schemaRead);
   }
 
   /**
@@ -480,10 +483,7 @@ public class WebBackendConnectionsHandler {
     connectionRead = connectionsHandler.updateConnection(connectionPatch);
 
     // detect if any streams need to be reset based on the patch and initial catalog, if so, reset them
-    // and fetch
-    // an up-to-date connectionRead
     connectionRead = resetStreamsIfNeeded(webBackendConnectionPatch, oldConfiguredCatalog, connectionRead);
-
     /*
      * This catalog represents the full catalog that was used to create the configured catalog. It will
      * have all streams that were present at the time. It will have no configuration set.

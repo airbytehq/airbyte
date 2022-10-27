@@ -2822,6 +2822,9 @@ components:
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
+        connectionId:
+          type: string
+          format: uuid
         disable_cache:
           type: boolean
     SourceUpdate:
@@ -2883,6 +2886,8 @@ components:
         catalogId:
           type: string
           format: uuid
+        catalogDiff:
+          $ref: "#/components/schemas/CatalogDiff"
     SourceSearch:
       type: object
       properties:
@@ -3375,6 +3380,8 @@ components:
           type: boolean
         nonBreakingChangesPreference:
           $ref: "#/components/schemas/NonBreakingChangesPreference"
+        breakingChange:
+          type: boolean
     WebBackendConnectionUpdate:
       type: object
       description: Used to apply a patch-style update to a connection, which means that null properties remain unchanged
