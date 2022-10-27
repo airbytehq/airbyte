@@ -1143,6 +1143,14 @@
   icon: trelllo.svg
   sourceType: api
   releaseStage: alpha
+- name: TVMaze Schedule
+  sourceDefinitionId: bd14b08f-9f43-400f-b2b6-7248b5c72561
+  dockerRepository: airbyte/source-tvmaze-schedule
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tvmaze-schedule
+  icon: trelllo.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Twilio
   sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerRepository: airbyte/source-twilio
