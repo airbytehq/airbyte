@@ -510,87 +510,148 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   // DESTINATION
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionReadList listDestinationDefinitions() {
-    return execute(destinationDefinitionsHandler::listDestinationDefinitions);
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> destinationDefinitionsHandler.listDestinationDefinitionsForWorkspace(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
-    return execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> destinationDefinitionsHandler.listPrivateDestinationDefinitions(workspaceIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    return execute(() -> destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionRead getDestinationDefinitionForWorkspace(
                                                                         final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    return execute(() -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   // TODO: Deprecate this route in favor of createCustomDestinationDefinition
   // since all connector definitions created through the API are custom
   @Override
   public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
-    return execute(() -> destinationDefinitionsHandler.createPrivateDestinationDefinition(destinationDefinitionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
-    return execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(customDestinationDefinitionCreate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate) {
-    return execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public DestinationDefinitionRead updateCustomDestinationDefinition(final CustomDestinationDefinitionUpdate customDestinationDefinitionUpdate) {
-    return execute(() -> destinationDefinitionsHandler.updateCustomDestinationDefinition(customDestinationDefinitionUpdate));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    execute(() -> {
-      destinationDefinitionsHandler.deleteDestinationDefinition(destinationDefinitionIdRequestBody);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public void deleteCustomDestinationDefinition(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    execute(() -> {
-      destinationDefinitionsHandler.deleteCustomDestinationDefinition(destinationDefinitionIdWithWorkspaceId);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(
                                                                                 final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    return execute(() -> destinationDefinitionsHandler.grantDestinationDefinitionToWorkspace(destinationDefinitionIdWithWorkspaceId));
+    throw new NotImplementedException();
   }
 
+  /**
+   * This implementation has been moved to {@link DestinationDefinitionApiController}. Since the path
+   * of {@link DestinationDefinitionApiController} is more granular, it will override this
+   * implementation
+   */
   @Override
   public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    execute(() -> {
-      destinationDefinitionsHandler.revokeDestinationDefinitionFromWorkspace(destinationDefinitionIdWithWorkspaceId);
-      return null;
-    });
+    throw new NotImplementedException();
   }
 
   // DESTINATION SPECIFICATION
