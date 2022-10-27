@@ -14,6 +14,7 @@ import styles from "./PageDisplay.module.scss";
 
 interface PageDisplayProps {
   page: StreamReadSlicesItemPagesItem;
+  className?: string;
 }
 
 interface TabData {
@@ -21,7 +22,7 @@ interface TabData {
   content: StreamReadSlicesItemPagesItemRecordsItem[] | HttpRequest | HttpResponse;
 }
 
-export const PageDisplay: React.FC<PageDisplayProps> = ({ page }) => {
+export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => {
   const tabs: TabData[] = [
     { title: "Records", content: page.records },
     { title: "Request", content: page.request },
@@ -29,7 +30,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page }) => {
   ];
 
   return (
-    <div className={styles.container}>
+    <div className={classNames(className, styles.container)}>
       <Tab.Group>
         <Tab.List className={styles.tabList}>
           {tabs.map((tab) => (
@@ -40,9 +41,9 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page }) => {
             </Tab>
           ))}
         </Tab.List>
-        <Tab.Panels>
+        <Tab.Panels className={styles.tabPanelContainer}>
           {tabs.map((tab) => (
-            <Tab.Panel>
+            <Tab.Panel className={styles.tabPanel}>
               <pre>{JSON.stringify(tab.content, null, 2)}</pre>
             </Tab.Panel>
           ))}

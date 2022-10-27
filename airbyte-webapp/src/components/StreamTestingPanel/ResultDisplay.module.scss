@@ -7,36 +7,16 @@
   gap: variables.$spacing-lg;
 }
 
-// .displayBox {
-//   background-color: aqua;
-//   padding: variables.$spacing-md;
-//   border-radius: variables.$border-radius-xs;
-//   overflow-x: auto;
-//   display: flex;
-//   flex-direction: column;
-//   gap: variables.$spacing-md;
-//   flex: 1;
-// }
+.sliceSelector {
+  flex: 0 0 auto;
+}
 
-// .slice {
-//   background-color: colors.$blue-200;
-// }
-
-// .page {
-//   background-color: colors.$blue-100;
-// }
-
-// .pageData {
-//   background-color: colors.$blue-50;
-// }
-
-// .state {
-//   background-color: colors.$orange-50;
-// }
-
-// .logs {
-//   background-color: colors.$grey-200;
-// }
+.pageDisplay {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 
 .paginator {
   display: flex;

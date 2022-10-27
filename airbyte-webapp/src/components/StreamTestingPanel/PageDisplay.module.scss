@@ -6,6 +6,7 @@
 }
 
 .tabList {
+  flex: 0 0 auto;
   display: flex;
 }
 
@@ -27,4 +28,14 @@
 .selected {
   border-bottom-color: colors.$grey-300;
   color: colors.$dark-blue;
+}
+
+.tabPanelContainer {
+  flex: 1;
+  min-height: 0;
+}
+
+.tabPanel {
+  max-height: 100%;
+  overflow-y: auto;
 }

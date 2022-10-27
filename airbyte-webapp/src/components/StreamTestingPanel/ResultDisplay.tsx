@@ -47,8 +47,8 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
 
   return (
     <div className={classNames(className, styles.container)}>
-      <SliceSelector slices={streamRead.slices} />
-      <PageDisplay page={page} />
+      <SliceSelector className={styles.sliceSelector} slices={streamRead.slices} />
+      <PageDisplay className={styles.pageDisplay} page={page} />
       <div className={styles.paginator}>
         <Text className={styles.pageLabel}>Page:</Text>
         <Paginator
