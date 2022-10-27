@@ -49,7 +49,7 @@ function mockPage(streamName: string, pageNum: number, sliceDay: number, numReco
 }
 
 function mockSlice(streamName: string, day: number, numPages: number, numRecords: number) {
-  const pages = Array.from(Array(numPages).keys()).map((i) => mockPage(streamName, i, day, numRecords));
+  const pages = Array.from(Array(numPages).keys()).map((i) => mockPage(streamName, i + 1, day, numRecords));
 
   return {
     sliceDescriptor: { startDatetime: `${day} Jan 2022`, listItem: "airbyte-cloud" },
@@ -71,7 +71,7 @@ export class ConnectorBuilderRequestService extends AirbyteRequestService {
     console.log(`Connector manifest:\n${JSON.stringify(readParams.manifest)}`);
     console.log(`Config:\n${JSON.stringify(readParams.config)}`);
     return new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
-      const slices = Array.from(Array(4).keys()).map((i) => mockSlice(readParams.stream, i, 10, 20));
+      const slices = Array.from(Array(4).keys()).map((i) => mockSlice(readParams.stream, i + 1, 20, 20));
 
       return {
         logs: [

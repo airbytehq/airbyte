@@ -58,6 +58,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
       <div className={styles.paginator}>
         <Text className={styles.pageLabel}>Page:</Text>
         <Paginator
+          forcePage={selectedPage}
           numPages={numPages}
           onPageChange={handlePageChange}
           marginPagesDisplayed={marginPagesDisplayed}
