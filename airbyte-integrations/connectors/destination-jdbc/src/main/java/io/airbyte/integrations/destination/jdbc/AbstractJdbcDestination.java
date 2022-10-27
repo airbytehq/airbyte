@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+import static io.airbyte.commons.exceptions.SqlStateErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -64,7 +64,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (final ConnectionErrorException ex) {
+    } catch (final ConfigErrorException ex) {
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
       return new AirbyteConnectionStatus()
@@ -103,10 +103,10 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
     } catch (final SQLException e) {
       if (Objects.isNull(e.getCause()) || !(e.getCause() instanceof SQLException)) {
-        throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
+        throw new ConfigErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
       } else {
         final SQLException cause = (SQLException) e.getCause();
-        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
+        throw new ConfigErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
       }
     } catch (final Exception e) {
       throw new Exception(e);

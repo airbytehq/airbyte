@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
@@ -105,48 +106,58 @@ public class IntegrationRunner {
     LOGGER.info("Command: {}", parsed.getCommand());
     LOGGER.info("Integration config: {}", parsed);
 
-    switch (parsed.getCommand()) {
-      // common
-      case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
-      case CHECK -> {
-        final JsonNode config = parseConfig(parsed.getConfigPath());
-        try {
-          validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
-        } catch (final Exception e) {
-          // if validation fails don't throw an exception, return a failed connection check message
-          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
-              new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
-        }
+    try {
+      switch (parsed.getCommand()) {
+        // common
+        case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
+        case CHECK -> {
+          final JsonNode config = parseConfig(parsed.getConfigPath());
+          try {
+            validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
+          } catch (final Exception e) {
+            // if validation fails don't throw an exception, return a failed connection check message
+            outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
+                new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
+          }
 
-        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
-      }
-      // source only
-      case DISCOVER -> {
-        final JsonNode config = parseConfig(parsed.getConfigPath());
-        validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
-        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
-      }
-      // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
-      // envelope) while the other commands return what goes inside it.
-      case READ -> {
-        final JsonNode config = parseConfig(parsed.getConfigPath());
-        validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
-        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-          produceMessages(messageIterator);
+          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
         }
-      }
-      // destination only
-      case WRITE -> {
-        final JsonNode config = parseConfig(parsed.getConfigPath());
-        validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
-        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-        try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
-          runConsumer(consumer);
+        // source only
+        case DISCOVER -> {
+          final JsonNode config = parseConfig(parsed.getConfigPath());
+          validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
+          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
         }
+        // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
+        // envelope) while the other commands return what goes inside it.
+        case READ -> {
+          final JsonNode config = parseConfig(parsed.getConfigPath());
+          validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
+          final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+          final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
+          try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+            produceMessages(messageIterator);
+          }
+        }
+        // destination only
+        case WRITE -> {
+          final JsonNode config = parseConfig(parsed.getConfigPath());
+          validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
+          final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+          try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
+            runConsumer(consumer);
+          }
+        }
+        default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
-      default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
+    } catch (final ConfigErrorException e) {
+      // If the source connector throws a config error, a trace message with the relevant message should be surfaced.
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, e.getDisplayMessage());
+      switch (parsed.getCommand()) {
+        case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
+                new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getDisplayMessage())));
+        default -> throw e;
+      }
     }
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());

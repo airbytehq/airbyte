@@ -4,14 +4,14 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+import static io.airbyte.commons.exceptions.SqlStateErrorMessage.getErrorMessage;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
 import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
 import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -79,7 +79,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (final ConnectionErrorException e) {
+    } catch (final ConfigErrorException e) {
       final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
       return new AirbyteConnectionStatus()

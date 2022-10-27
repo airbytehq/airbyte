@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+import static io.airbyte.commons.exceptions.SqlStateErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
@@ -71,7 +71,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (final ConnectionErrorException ex) {
+    } catch (final ConfigErrorException ex) {
       LOGGER.info("Exception while checking connection: ", ex);
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);

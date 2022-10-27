@@ -2,11 +2,11 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.base.errors.messages;
+package io.airbyte.commons.exceptions;
 
 import java.util.Objects;
 
-public class ErrorMessage {
+public class SqlStateErrorMessage {
 
   // TODO: this could be built using a Builder design pattern instead of passing in 0 to indicate no
   // errorCode exists
