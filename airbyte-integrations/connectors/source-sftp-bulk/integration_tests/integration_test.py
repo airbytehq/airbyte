@@ -4,11 +4,14 @@
 
 import logging
 import os
+import shutil
 import time
+from io import StringIO
 from socket import socket
 from typing import Mapping
 
 import docker
+import paramiko
 import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode, Type
 from source_sftp_bulk import SourceFtp
@@ -17,13 +20,23 @@ pytest_plugins = ("source_acceptance_test.plugin",)
 
 logger = logging.getLogger("airbyte")
 
+TMP_FOLDER = "/tmp/test_sftp_source"
 
-@pytest.fixture(scope="module")
+
+def generate_ssh_keys():
+    key = paramiko.RSAKey.generate(2048)
+    privateString = StringIO()
+    key.write_private_key(privateString)
+
+    return privateString.getvalue(), "ssh-rsa " + key.get_base64()
+
+
+@pytest.fixture(scope="session")
 def docker_client():
     return docker.from_env()
 
 
-@pytest.fixture(name="config", scope="module")
+@pytest.fixture(name="config", scope="session")
 def config_fixture(docker_client):
     with socket() as s:
         s.bind(("", 0))
@@ -60,14 +73,25 @@ def config_fixture(docker_client):
     container.remove()
 
 
-@pytest.fixture(name="config_pk", scope="module")
+@pytest.fixture(name="config_pk", scope="session")
 def config_fixture_pk(docker_client):
     with socket() as s:
         s.bind(("", 0))
         available_port = s.getsockname()[1]
 
+    ssh_path = TMP_FOLDER + "/ssh"
     dir_path = os.getcwd() + "/integration_tests"
-    pk = open(f"{dir_path}/ssh/id_rsa", "r").read()
+
+    if os.path.exists(ssh_path):
+        shutil.rmtree(ssh_path)
+
+    os.makedirs(ssh_path)
+
+    pk, pubk = generate_ssh_keys()
+
+    pub_key_path = ssh_path + "/id_rsa.pub"
+    with open(pub_key_path, "w") as f:
+        f.write(pubk)
 
     config = {
         "host": "localhost",
@@ -88,7 +112,7 @@ def config_fixture_pk(docker_client):
         ports={22: config["port"]},
         volumes={
             f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
-            f"{dir_path}/ssh/id_rsa.pub": {"bind": "/home/foo/.ssh/keys/id_rsa.pub", "mode": "ro"},
+            f"{pub_key_path}": {"bind": "/home/foo/.ssh/keys/id_rsa.pub", "mode": "ro"},
         },
         detach=True,
     )
@@ -96,6 +120,7 @@ def config_fixture_pk(docker_client):
     time.sleep(20)
     yield config
 
+    shutil.rmtree(ssh_path)
     container.kill()
     container.remove()
 
