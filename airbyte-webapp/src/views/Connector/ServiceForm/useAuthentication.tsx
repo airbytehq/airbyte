@@ -208,15 +208,7 @@ export const useAuthentication = (): AuthenticationHook => {
   );
 
   const hasAuthFieldValues: boolean = useMemo(() => {
-    if (
-      implicitAuthFieldPaths.some((path) => {
-        return getIn(values, path) !== undefined;
-      })
-    ) {
-      return true;
-    }
-
-    return false;
+    return implicitAuthFieldPaths.some((path) => getIn(values, path) !== undefined);
   }, [implicitAuthFieldPaths, values]);
 
   return {
