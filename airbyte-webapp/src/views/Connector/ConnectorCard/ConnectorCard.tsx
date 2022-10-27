@@ -15,15 +15,15 @@ import { SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "utils/errorStatusMessage";
-import { ConnectorCardValues, ConnectorForm, ServiceFormValues } from "views/Connector/ServiceForm";
+import { ConnectorCardValues, ConnectorForm, ServiceFormValues } from "views/Connector/ConnectorForm";
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
-import { ConnectorDefinitionTypeControl } from "../ServiceForm/components/Controls/ConnectorServiceTypeControl";
+import { ConnectorDefinitionTypeControl } from "../ConnectorForm/components/Controls/ConnectorServiceTypeControl";
 import styles from "./ConnectorCard.module.scss";
 import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
 import { useTestConnector } from "./useTestConnector";
 
-// TODO: need to clean up the ConnectorCard and ServiceForm props,
+// TODO: need to clean up the ConnectorCard and ConnectorForm props,
 // since some of props are used in both components, and some of them used just as a prop-drill
 // https://github.com/airbytehq/airbyte/issues/18553
 interface ConnectorCardBaseProps {
@@ -35,12 +35,12 @@ interface ConnectorCardBaseProps {
   onConnectorDefinitionSelect?: (id: string) => void;
   availableConnectorDefinitions: ConnectorDefinition[];
 
-  // used in ConnectorCard and ServiceForm
+  // used in ConnectorCard and ConnectorForm
   formType: "source" | "destination";
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   isEditMode?: boolean;
 
-  // used in ServiceForm
+  // used in ConnectorForm
   formId?: string;
   fetchingConnectorError?: Error | null;
   errorMessage?: React.ReactNode;

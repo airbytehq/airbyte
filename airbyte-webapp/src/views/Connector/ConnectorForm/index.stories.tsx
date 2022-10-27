@@ -19,7 +19,7 @@ const TempConnector = {
 };
 
 export default {
-  title: "Connector/ServiceForm",
+  title: "Connector/ConnectorForm",
   component: ConnectorForm,
   parameters: {
     actions: { argTypesRegex: "^on.*" },

@@ -3,8 +3,8 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 import { Card } from "components/ui/Card";
 
 import { FormBlock, FormConditionItem } from "core/form/types";
-import { GroupLabel } from "views/Connector/ServiceForm/components/Sections/GroupLabel";
-import { SectionContainer } from "views/Connector/ServiceForm/components/Sections/SectionContainer";
+import { GroupLabel } from "views/Connector/ConnectorForm/components/Sections/GroupLabel";
+import { SectionContainer } from "views/Connector/ConnectorForm/components/Sections/SectionContainer";
 
 import GroupControls from "./GroupControls";
 

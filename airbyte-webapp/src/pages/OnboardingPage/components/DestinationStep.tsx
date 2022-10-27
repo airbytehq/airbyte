@@ -7,7 +7,7 @@ import { useGetDestinationDefinitionSpecificationAsync } from "services/connecto
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
-import { ConnectorCardValues } from "views/Connector/ServiceForm";
+import { ConnectorCardValues } from "views/Connector/ConnectorForm";
 
 interface Props {
   onNextStep: () => void;

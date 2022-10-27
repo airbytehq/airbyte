@@ -1,9 +1,9 @@
 import { screen, render } from "@testing-library/react";
 import { TestWrapper } from "test-utils/testutils";
 
-import { useFormikOauthAdapter } from "views/Connector/ServiceForm/components/Sections/auth/useOauthFlowAdapter";
-import { useServiceForm } from "views/Connector/ServiceForm/serviceFormContext";
-import { useAuthentication } from "views/Connector/ServiceForm/useAuthentication";
+import { useFormikOauthAdapter } from "views/Connector/ConnectorForm/components/Sections/auth/useOauthFlowAdapter";
+import { useServiceForm } from "views/Connector/ConnectorForm/serviceFormContext";
+import { useAuthentication } from "views/Connector/ConnectorForm/useAuthentication";
 
 import { AuthButton } from "./AuthButton";
 jest.setTimeout(10000);
@@ -27,14 +27,14 @@ jest.mock("formik", () => {
  * Then, can implement in tests using useWhateverServiceYouMocked.mockImplementationOnce or useWhateverServiceYouMocked.mockImplementation
  */
 
-jest.mock("views/Connector/ServiceForm/components/Sections/auth/useOauthFlowAdapter");
+jest.mock("views/Connector/ConnectorForm/components/Sections/auth/useOauthFlowAdapter");
 const mockUseFormikOauthAdapter = useFormikOauthAdapter as unknown as jest.Mock<Partial<typeof useFormikOauthAdapter>>;
 const baseUseFormikOauthAdapterValues = {
   run: jest.fn(),
   loading: false,
 };
 
-jest.mock("views/Connector/ServiceForm/serviceFormContext");
+jest.mock("views/Connector/ConnectorForm/serviceFormContext");
 const mockUseServiceForm = useServiceForm as unknown as jest.Mock<Partial<typeof useServiceForm>>;
 const baseUseServiceFormValues = {
   selectedConnector: "abcde",
@@ -42,7 +42,7 @@ const baseUseServiceFormValues = {
   selectedService: undefined,
 };
 
-jest.mock("views/Connector/ServiceForm/useAuthentication");
+jest.mock("views/Connector/ConnectorForm/useAuthentication");
 const mockUseAuthentication = useAuthentication as unknown as jest.Mock<Partial<typeof useAuthentication>>;
 
 describe("auth button", () => {

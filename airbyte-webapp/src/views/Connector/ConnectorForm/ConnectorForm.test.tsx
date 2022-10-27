@@ -7,7 +7,7 @@ import { render, useMockIntersectionObserver } from "test-utils/testutils";
 
 import { AirbyteJSONSchema } from "core/jsonSchema";
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
-import { ConnectorForm, ConnectorFormProps } from "views/Connector/ServiceForm";
+import { ConnectorForm, ConnectorFormProps } from "views/Connector/ConnectorForm";
 
 import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "./types";

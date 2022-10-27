@@ -11,7 +11,7 @@ import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/Air
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { links } from "utils/links";
-import { PropertyError } from "views/Connector/ServiceForm/components/Property/PropertyError";
+import { PropertyError } from "views/Connector/ConnectorForm/components/Property/PropertyError";
 
 import availableCronTimeZones from "../../../../config/availableCronTimeZones.json";
 import { FormikConnectionFormValues, useFrequencyDropdownData } from "../formConfig";

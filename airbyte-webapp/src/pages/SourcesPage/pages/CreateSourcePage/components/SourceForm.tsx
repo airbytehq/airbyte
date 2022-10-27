@@ -8,7 +8,7 @@ import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefi
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorCardValues } from "views/Connector/ServiceForm/types";
+import { ConnectorCardValues } from "views/Connector/ConnectorForm/types";
 
 interface SourceFormProps {
   onSubmit: (values: {

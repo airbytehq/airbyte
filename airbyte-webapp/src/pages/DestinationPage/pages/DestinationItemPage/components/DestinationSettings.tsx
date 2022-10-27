@@ -10,7 +10,7 @@ import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDe
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorCardValues } from "views/Connector/ServiceForm";
+import { ConnectorCardValues } from "views/Connector/ConnectorForm";
 
 import styles from "./DestinationSettings.module.scss";
 

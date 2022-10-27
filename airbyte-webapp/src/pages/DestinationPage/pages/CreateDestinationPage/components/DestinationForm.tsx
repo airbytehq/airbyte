@@ -8,7 +8,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorCardValues, FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ServiceForm";
+import { ConnectorCardValues, FrequentlyUsedDestinations, StartWithDestination } from "views/Connector/ConnectorForm";
 
 import styles from "./DestinationForm.module.scss";
 

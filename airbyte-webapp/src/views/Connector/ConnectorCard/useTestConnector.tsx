@@ -6,7 +6,7 @@ import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { CheckConnectorParams, useCheckConnector } from "hooks/services/useConnector";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-import { ConnectorCardValues } from "../ServiceForm";
+import { ConnectorCardValues } from "../ConnectorForm";
 
 export const useTestConnector = (
   props: {

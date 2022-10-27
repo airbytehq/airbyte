@@ -8,7 +8,7 @@ import { useGetSourceDefinitionSpecificationAsync } from "services/connector/Sou
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
-import { ConnectorCardValues } from "views/Connector/ServiceForm";
+import { ConnectorCardValues } from "views/Connector/ConnectorForm";
 
 interface SourcesStepProps {
   onSuccess: () => void;
