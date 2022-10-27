@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.temporal.exception.RetryableException;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
@@ -123,6 +124,7 @@ class JobCreationAndStatusUpdateActivityTest {
   private static final String DOCKER_REPOSITORY = "docker-repo";
   private static final String DOCKER_IMAGE_TAG = "0.0.1";
   private static final String DOCKER_IMAGE_NAME = DockerUtils.getTaggedImageName(DOCKER_REPOSITORY, DOCKER_IMAGE_TAG);
+  private static final Version DESTINATION_PROTOCOL_VERSION = new Version("0.4.0");
   private static final long JOB_ID = 123L;
   private static final long PREVIOUS_JOB_ID = 120L;
   private static final int ATTEMPT_ID = 0;
@@ -170,12 +172,15 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mConfigRepository.getDestinationConnection(DESTINATION_ID)).thenReturn(destination);
       final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
           .withDockerRepository(DOCKER_REPOSITORY)
-          .withDockerImageTag(DOCKER_IMAGE_TAG);
+          .withDockerImageTag(DOCKER_IMAGE_TAG)
+          .withProtocolVersion(DESTINATION_PROTOCOL_VERSION.serialize());
       Mockito.when(mConfigRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID)).thenReturn(destinationDefinition);
       final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2);
       Mockito.when(mStreamResetPersistence.getStreamResets(CONNECTION_ID)).thenReturn(streamsToReset);
 
-      Mockito.when(mJobCreator.createResetConnectionJob(destination, standardSync, DOCKER_IMAGE_NAME, List.of(), streamsToReset))
+      Mockito
+          .when(mJobCreator.createResetConnectionJob(destination, standardSync, DOCKER_IMAGE_NAME, DESTINATION_PROTOCOL_VERSION, List.of(),
+              streamsToReset))
           .thenReturn(Optional.of(JOB_ID));
 
       final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
