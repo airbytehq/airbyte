@@ -10,12 +10,11 @@ connectionSpecification:
   additionalProperties: true
 
   properties:
-
     api_key:
       type: string
       description: API Key
       airbyte_secret: true
-    
+
     account_username:
       type: string
       description: Account Username

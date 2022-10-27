@@ -1,7 +1,6 @@
 version: "0.1.0"
 
 definitions:
-
   selector:
     extractor:
       # API Docs: https://developers.activecampaign.com/reference/schema
@@ -19,7 +18,7 @@ definitions:
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
-    
+
     # API Docs: https://developers.activecampaign.com/reference/pagination
     paginator:
       type: DefaultPaginator
@@ -64,7 +63,7 @@ definitions:
       name: "deals"
       primary_key: "id"
       path: "/deals"
-  
+
   # API Docs: https://developers.activecampaign.com/reference/retrieve-all-lists
   lists_stream:
     $ref: "*ref(definitions.base_stream)"
