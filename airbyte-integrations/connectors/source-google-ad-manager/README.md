@@ -78,6 +78,15 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-ad-manager:dev 
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-ad-manager:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-google-ad-manager:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
+
+### Pushing the container to AWS ECR
+
+This section helps to push the container to AWS ECR for  usage. It is optional.
+- Make sure you have AWS credentials and they are saved in the appropriate repository, head up here to learn how to [authenticate with AWS](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
+- Then log in to AWS EC using `aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin repository_uri`
+docker build -t  public.ecr.aws/repository_uri:dev .
+docker build -t  public.ecr.aws/repository_uri:latest .
+docker push --all-tags public.ecr.aws/repository_uri
 ## Testing
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 First install test dependencies into your virtual environment:
@@ -130,3 +139,5 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 1. Create a Pull Request.
 1. Pat yourself on the back for being an awesome contributor.
 1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+
+
