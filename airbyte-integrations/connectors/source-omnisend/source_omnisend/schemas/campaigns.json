@@ -56,7 +56,7 @@
       "type": ["boolean", "null"]
     },
     "segments": {
-      "type": "array",
+      "type": ["array", "null"],
       "items":
         {
           "type": "object",
