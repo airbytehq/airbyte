@@ -1,3 +1,5 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { EU, US } from "country-flag-icons/react/3x2";
 import React from "react";
 import { components, OptionProps, MenuListProps } from "react-select";
@@ -27,6 +29,18 @@ const flags: Record<string, React.ReactNode> = {
   eu: <EU />,
 };
 
+// const Icon = styled(FontAwesomeIcon)`
+//   display: none;
+//   color: ${({ theme }) => theme.greyColor60};
+
+//   tr:hover & {
+//     display: block;
+//   }
+//   &:hover {
+//     color: ${({ theme }) => theme.greyColor70};
+//   }
+// `;
+
 const GeographyOption: React.FC<OptionProps> = (props) => {
   console.log(props);
   return (
@@ -41,9 +55,12 @@ const GeographyOption: React.FC<OptionProps> = (props) => {
 
 const MenuList = (props: MenuListProps) => {
   return (
-    <components.MenuList className={styles.menuList} {...props}>
+    <components.MenuList {...props}>
       {props.children}
-      <div>Request a new geography</div>
+      <div className={styles.menuList}>
+        <FontAwesomeIcon icon={faPlus} />
+        <span>Request a new geography</span>
+      </div>
     </components.MenuList>
   );
 };

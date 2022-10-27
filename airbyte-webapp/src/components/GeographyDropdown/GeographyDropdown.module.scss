@@ -12,6 +12,7 @@
   margin: 0 10px;
   max-width: 280px;
   background-color: colors.$white;
+  font-weight: 500;
 
   &:hover {
     background-color: colors.$grey-50;
@@ -26,11 +27,27 @@
   display: flex;
   align-items: center;
 
-  & svg {
+  & > svg {
     height: 16px;
   }
 }
 
 .label {
   padding-left: 10px;
+}
+
+.menuList {
+  padding: 10px 30px;
+  margin-top: 10px;
+  max-width: 300px;
+  color: colors.$blue-300;
+  border-top: solid colors.$dark-blue-50 1px;
+
+  :first-child {
+    padding-right: 8px;
+  }
+
+  :last-child {
+    font-size: smaller;
+  }
 }
