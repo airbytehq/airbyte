@@ -163,7 +163,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionUpdaterInput.getConnectionId()));
-      if(Workflow.getVersion(WORKFLOW_DELAY_TAG, Workflow.DEFAULT_VERSION, WORKFLOW_DELAY_TAG_CURRENT_VERSION) < WORKFLOW_DELAY_TAG_CURRENT_VERSION) {
+      if (Workflow.getVersion(WORKFLOW_DELAY_TAG, Workflow.DEFAULT_VERSION,
+          WORKFLOW_DELAY_TAG_CURRENT_VERSION) < WORKFLOW_DELAY_TAG_CURRENT_VERSION) {
         recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.empty(), OssMetricsRegistry.TEMPORAL_WORKFLOW_ATTEMPT, null));
         workflowDelay = getWorkflowRestartDelaySeconds();
       } else {
