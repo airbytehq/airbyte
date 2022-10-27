@@ -60,6 +60,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
+            .withDestinationProtocolVersion(resetConnection.getDestinationProtocolVersion())
             // null check for backwards compatibility with reset jobs that did not have a
             // resetSourceConfiguration
             .withSourceConfiguration(resetSourceConfiguration == null ? Jsons.emptyObject() : Jsons.jsonNode(resetSourceConfiguration))
@@ -81,12 +82,14 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
           .withAttemptId((long) attempt)
-          .withDockerImage(config.getSourceDockerImage());
+          .withDockerImage(config.getSourceDockerImage())
+          .withProtocolVersion(config.getSourceProtocolVersion());
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
           .withAttemptId((long) attempt)
-          .withDockerImage(config.getDestinationDockerImage());
+          .withDockerImage(config.getDestinationDockerImage())
+          .withProtocolVersion(config.getDestinationProtocolVersion());
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
