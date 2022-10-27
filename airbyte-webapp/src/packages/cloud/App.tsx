@@ -44,7 +44,6 @@ const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
               <FeatureService
                 features={[
                   FeatureItem.AllowOAuthConnector,
-                  FeatureItem.AllowCreateConnection,
                   FeatureItem.AllowSync,
                   FeatureItem.AllowSyncSubOneHourCronExpressions,
                 ]}
