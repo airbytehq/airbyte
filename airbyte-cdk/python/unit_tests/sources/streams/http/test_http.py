@@ -3,19 +3,27 @@
 #
 
 
+import datetime
 import json
+import unittest
 from http import HTTPStatus
 from typing import Any, Iterable, Mapping, Optional
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator as HttpTokenAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+
+datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
+FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
+
+config = {"start_date": "2021-01-01T00:00:00.000000+0000", "start_date_ymd": "2021-01-01"}
+timezone = datetime.timezone.utc
 
 
 class StubBasicReadHttpStream(HttpStream):
@@ -36,6 +44,16 @@ class StubBasicReadHttpStream(HttpStream):
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stubResp
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
+
+
+@pytest.fixture()
+def mock_datetime_now(monkeypatch):
+    datetime_mock = unittest.mock.MagicMock(wraps=datetime.datetime)
+    datetime_mock.now.return_value = FAKE_NOW
+    monkeypatch.setattr(datetime, "datetime", datetime_mock)
 
 
 def test_default_authenticator():
@@ -77,6 +95,20 @@ def test_stub_basic_read_http_stream_read_records(mocker):
     records = list(stream.read_records(SyncMode.full_refresh))
 
     assert [{"data": 1}] == records
+
+
+def test_stub_basic_read_http_stream_read_records_as_messages(mocker, mock_datetime_now):
+    stream = StubBasicReadHttpStream()
+    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
+    mocker.patch.object(StubBasicReadHttpStream, "_send_request", return_value=blank_response)
+
+    records = list(stream.read_records_as_messages(SyncMode.full_refresh))
+
+    assert [
+        AirbyteMessage(
+            type=Type.RECORD, record=AirbyteRecordMessage(stream="stub_basic_read_http_stream", data={"data": 1}, emitted_at=1640995200000)
+        )
+    ] == records
 
 
 class StubNextPageTokenHttpStream(StubBasicReadHttpStream):

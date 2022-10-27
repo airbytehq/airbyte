@@ -4,7 +4,6 @@
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import datetime
 from functools import lru_cache
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -12,7 +11,6 @@ from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
-    AirbyteRecordMessage,
     AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
@@ -24,6 +22,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
+from airbyte_cdk.sources.utils.record_helper import data_to_airbyte_record
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from airbyte_cdk.utils.event_timing import create_timer
@@ -232,6 +231,7 @@ class AbstractSource(Source, ABC):
 
         total_records_counter = 0
         has_slices = False
+        transformer, schema = self._get_stream_transformer_and_schema(configured_stream.stream.name)
         for _slice in slices:
             has_slices = True
             logger.debug("Processing stream slice", extra={"slice": _slice})
@@ -242,7 +242,7 @@ class AbstractSource(Source, ABC):
                 cursor_field=configured_stream.cursor_field or None,
             )
             for record_counter, record_data in enumerate(records, start=1):
-                yield self._as_airbyte_record(stream_name, record_data)
+                yield data_to_airbyte_record(stream_name, record_data, transformer, schema)
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
                 checkpoint_interval = stream_instance.state_checkpoint_interval
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
@@ -275,6 +275,7 @@ class AbstractSource(Source, ABC):
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
         logger.debug(f"Processing stream slices for {configured_stream.stream.name}", extra={"stream_slices": slices})
         total_records_counter = 0
+        transformer, schema = self._get_stream_transformer_and_schema(configured_stream.stream.name)
         for _slice in slices:
             logger.debug("Processing stream slice", extra={"slice": _slice})
             records = stream_instance.read_records(
@@ -283,7 +284,7 @@ class AbstractSource(Source, ABC):
                 cursor_field=configured_stream.cursor_field,
             )
             for record in records:
-                yield self._as_airbyte_record(configured_stream.stream.name, record)
+                yield data_to_airbyte_record(configured_stream.stream.name, record, transformer, schema)
                 total_records_counter += 1
                 if self._limit_reached(internal_config, total_records_counter):
                     return
@@ -309,17 +310,6 @@ class AbstractSource(Source, ABC):
         """
         stream_instance = self._stream_to_instance_map[stream_name]
         return stream_instance.transformer, stream_instance.get_json_schema()
-
-    def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
-        now_millis = int(datetime.now().timestamp() * 1000)
-        transformer, schema = self._get_stream_transformer_and_schema(stream_name)
-        # Transform object fields according to config. Most likely you will
-        # need it to normalize values against json schema. By default no action
-        # taken unless configured. See
-        # docs/connector-development/cdk-python/schemas.md for details.
-        transformer.transform(data, schema)  # type: ignore
-        message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
-        return AirbyteMessage(type=MessageType.RECORD, record=message)
 
     @staticmethod
     def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream):

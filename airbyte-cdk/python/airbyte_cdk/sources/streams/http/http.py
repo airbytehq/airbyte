@@ -12,16 +12,17 @@ from urllib.parse import urljoin
 
 import requests
 import requests_cache
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.sources.streams.core import Stream
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
+# list of all possible HTTP methods which can be used for sending of request bodies
+from ...utils.record_helper import data_to_airbyte_record
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
-# list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
@@ -401,6 +402,17 @@ class HttpStream(Stream, ABC):
         if isinstance(exception, requests.HTTPError):
             return self.parse_response_error_message(exception.response)
         return None
+
+    def read_records_as_messages(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[AirbyteMessage]:
+        """ """
+        for record_mapping in self.read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            yield data_to_airbyte_record(self.name, record_mapping, self.transformer, self.get_json_schema())
 
     def read_records(
         self,
