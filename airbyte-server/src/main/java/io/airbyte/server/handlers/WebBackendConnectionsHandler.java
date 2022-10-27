@@ -337,7 +337,6 @@ public class WebBackendConnectionsHandler {
     final AirbyteCatalog syncCatalog;
     final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connection.getSourceCatalogId());
     if (refreshedCatalog.isPresent()) {
-      log.info("refreshsed catalog is present");
       connection.sourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
        * constructs a full picture of all existing configured + all new / updated streams in the newest
@@ -377,7 +376,6 @@ public class WebBackendConnectionsHandler {
         .disableCache(true)
         .connectionId(connectionId);
     SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
-    log.info("schema read returned from discover schema is: " + schemaRead);
     return Optional.ofNullable(schemaRead);
   }
 
@@ -483,7 +481,7 @@ public class WebBackendConnectionsHandler {
     connectionRead = connectionsHandler.updateConnection(connectionPatch);
 
     // detect if any streams need to be reset based on the patch and initial catalog, if so, reset them
-    connectionRead = resetStreamsIfNeeded(webBackendConnectionPatch, oldConfiguredCatalog, connectionRead);
+    resetStreamsIfNeeded(webBackendConnectionPatch, oldConfiguredCatalog, connectionRead);
     /*
      * This catalog represents the full catalog that was used to create the configured catalog. It will
      * have all streams that were present at the time. It will have no configuration set.
@@ -504,9 +502,9 @@ public class WebBackendConnectionsHandler {
    * Given a fully updated connection, check for a diff between the old catalog and the updated
    * catalog to see if any streams need to be reset.
    */
-  private ConnectionRead resetStreamsIfNeeded(final WebBackendConnectionUpdate webBackendConnectionPatch,
-                                              final ConfiguredAirbyteCatalog oldConfiguredCatalog,
-                                              final ConnectionRead updatedConnectionRead)
+  private void resetStreamsIfNeeded(final WebBackendConnectionUpdate webBackendConnectionPatch,
+                                    final ConfiguredAirbyteCatalog oldConfiguredCatalog,
+                                    final ConnectionRead updatedConnectionRead)
       throws IOException, JsonValidationException, ConfigNotFoundException {
 
     final UUID connectionId = webBackendConnectionPatch.getConnectionId();
@@ -535,13 +533,8 @@ public class WebBackendConnectionsHandler {
         eventRunner.resetConnection(
             connectionId,
             streamsToReset, true);
-
-        // return updated connectionRead after reset
-        return connectionsHandler.getConnection(connectionId);
       }
     }
-    // if no reset was necessary, return the connectionRead without changes
-    return updatedConnectionRead;
   }
 
   private List<UUID> createOperations(final WebBackendConnectionCreate webBackendConnectionCreate)
