@@ -1,0 +1,66 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["results"]
+  base_requester:
+    url_base: "https://newsdata.io/api/1"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "X-ACCESS-KEY"
+      api_token: "{{ config['api_key'] }}"
+  base_retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.base_retriever)"
+      requester: 
+        $ref: "*ref(definitions.base_requester)"
+  common_inputs:
+    country: "{{ ','.join(config['country']) }}"
+    language: "{{ ','.join(config['language']) }}"
+    category: "{{ ','.join(config['category']) }}"
+  latest_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "latest"
+      primary_key: "link"
+      path: "/news"
+    retriever:
+      $ref: "*ref(definitions.base_retriever)"
+      requester:
+        $ref: "*ref(definitions.base_requester)"
+        request_options_provider:
+          request_parameters:
+            $ref: "*ref(definitions.common_inputs)"
+            q: "{{ config['query'] | urlencode }}"
+            qInTitle: "{{ config['queryInTitle'] | urlencode }}"
+            domain: "{{ ','.join(config['domain']) }}"
+  sources_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "sources"
+      primary_key: "id"
+      path: "/sources"
+    retriever:
+      $ref: "*ref(definitions.base_retriever)"
+      requester:
+        $ref: "*ref(definitions.base_requester)"
+        request_options_provider:
+          request_parameters:
+            $ref: "*ref(definitions.common_inputs)"
+  
+
+streams:
+  - "*ref(definitions.latest_stream)"
+  - "*ref(definitions.sources_stream)"
+
+check:
+  stream_names:
+    - "latest"
+    - "sources"
