@@ -133,10 +133,10 @@ const calculateInitialCatalog = (
       const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isNotCreateMode || false);
 
       // if the stream is new since a refresh, we want to verify cursor and get optimal sync modes
-      const matches = newStreamDescriptors?.filter(
+      const matches = newStreamDescriptors?.some(
         (streamId) => streamId.name === nodeStream?.stream?.name && streamId.namespace === nodeStream.stream?.namespace
       );
-      if (isNotCreateMode && (matches?.length === 0 || !matches)) {
+      if (isNotCreateMode && !matches) {
         return nodeStream;
       }
       return getOptimalSyncMode(verifyConfigCursorField(nodeStream), supportedDestinationSyncModes);
