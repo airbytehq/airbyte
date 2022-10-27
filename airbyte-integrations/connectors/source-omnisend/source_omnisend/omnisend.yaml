@@ -31,12 +31,14 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+  # API Docs: https://api-docs.omnisend.com/reference/list-contacts
   contacts_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "contacts"
       primary_key: "contactID"
       path: "/contacts"
+  # API Docs: https://api-docs.omnisend.com/reference/get_campaigns
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -48,18 +50,21 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["campaign"]
+  # API Docs: https://api-docs.omnisend.com/reference/get_carts
   carts_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "carts"
       primary_key: "cartID"
       path: "/carts"
+  # API Docs: https://api-docs.omnisend.com/reference/get_orders
   orders_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "orders"
       primary_key: "orderID"
       path: "/orders"
+  # API Docs: https://api-docs.omnisend.com/reference/get_products
   products_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
