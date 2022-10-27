@@ -25,7 +25,7 @@ const getHeadingClassNames = ({ size, centered }: Required<Pick<HeadingProps, "s
 };
 
 export const Heading: React.FC<React.PropsWithChildren<HeadingProps>> = React.memo(
-  ({ as = "h1", centered = false, children, className: classNameProp, size = "md", ...remainingProps }) => {
+  ({ as, centered = false, children, className: classNameProp, size = "md", ...remainingProps }) => {
     const className = classNames(getHeadingClassNames({ centered, size }), classNameProp);
 
     return React.createElement(as, {
