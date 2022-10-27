@@ -6,13 +6,11 @@ This source can sync data from the [Coinmarketcap API](https://coinmarketcap.com
 
 ## This Source Supports the Following Streams
 
-* time_entries
-* organizations
-* organizations_users
-* organizations_groups
-* workspace
-* workspace_clients
-* workspace_tasks
+* categories
+* listing
+* quotes
+* fiat
+* exchange
 
 ### Features
 
