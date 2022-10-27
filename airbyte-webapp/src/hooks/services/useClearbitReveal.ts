@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 
-import { RevealProps } from "config";
+import { ClearbitRevealProps } from "config";
 
-export const useReveal = () => {
-  const [reveal, setReveal] = useState<RevealProps | null>(null);
+export const useClearbitReveal = () => {
+  const [reveal, setReveal] = useState<ClearbitRevealProps | null>(null);
 
   useEffect(() => {
     function onReveal() {
