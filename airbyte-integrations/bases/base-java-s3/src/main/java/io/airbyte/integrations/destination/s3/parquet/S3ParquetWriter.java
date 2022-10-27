@@ -40,8 +40,10 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
   private final AvroRecordFactory avroRecordFactory;
   private final Schema schema;
   private final String outputFilename;
+  // object key = <path>/<output-filename>
   private final String objectKey;
-  private final String gcsFileLocation;
+  // full file path = s3://<bucket>/<path>/<output-filename>
+  private final String fullFilePath;
 
   public S3ParquetWriter(final S3DestinationConfig config,
                          final AmazonS3 s3Client,
@@ -61,14 +63,10 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
         .build());
 
     objectKey = String.join("/", outputPrefix, outputFilename);
+    fullFilePath = String.format("s3a://%s/%s", config.getBucketName(), objectKey);
+    LOGGER.info("Full S3 path for stream '{}': {}", stream.getName(), fullFilePath);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
-    gcsFileLocation = String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename);
-
-    final URI uri = new URI(
-        String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
-    final Path path = new Path(uri);
-
+    final Path path = new Path(new URI(fullFilePath));
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     final Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
@@ -137,7 +135,7 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
 
   @Override
   public String getFileLocation() {
-    return gcsFileLocation;
+    return fullFilePath;
   }
 
   @Override
