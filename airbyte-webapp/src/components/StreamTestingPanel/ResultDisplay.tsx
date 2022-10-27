@@ -30,6 +30,7 @@ function pageRangeDisplayed(numPages: number, selectedPageIndex: number): number
 }
 
 export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, className }) => {
+  const [selectedSliceIndex, setSelectedSliceIndex] = useState(0);
   const [selectedPage, setSelectedPage] = useState(0);
 
   const handlePageChange = (selectedPageIndex: number) => {
@@ -41,13 +42,18 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ streamRead, classN
     return <div>Click Test to fetch data!</div>;
   }
 
-  const slice = streamRead.slices[0];
+  const slice = streamRead.slices[selectedSliceIndex];
   const numPages = slice.pages.length;
   const page = slice.pages[selectedPage];
 
   return (
     <div className={classNames(className, styles.container)}>
-      <SliceSelector className={styles.sliceSelector} slices={streamRead.slices} />
+      <SliceSelector
+        className={styles.sliceSelector}
+        slices={streamRead.slices}
+        selectedSliceIndex={selectedSliceIndex}
+        onSelect={setSelectedSliceIndex}
+      />
       <PageDisplay className={styles.pageDisplay} page={page} />
       <div className={styles.paginator}>
         <Text className={styles.pageLabel}>Page:</Text>

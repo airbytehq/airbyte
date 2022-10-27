@@ -1,6 +1,5 @@
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
 
 import { ListBox } from "components/ui/ListBox";
 import { Text } from "components/ui/Text";
@@ -12,10 +11,11 @@ import styles from "./SliceSelector.module.scss";
 interface SliceSelectorProps {
   className?: string;
   slices: StreamReadSlicesItem[];
+  selectedSliceIndex: number;
+  onSelect: (sliceIndex: number) => void;
 }
 
-export const SliceSelector: React.FC<SliceSelectorProps> = ({ className, slices }) => {
-  const [selectedSliceIndex, setSelectedSliceIndex] = useState("0");
+export const SliceSelector: React.FC<SliceSelectorProps> = ({ className, slices, selectedSliceIndex, onSelect }) => {
   const sliceIndexes = [...Array.from(slices.keys())].map((index) => index.toString());
 
   const getSliceLabel = (value: string) => {
@@ -45,8 +45,8 @@ export const SliceSelector: React.FC<SliceSelectorProps> = ({ className, slices 
     <ListBox
       className={className}
       values={sliceIndexes}
-      selectedValue={selectedSliceIndex}
-      onSelect={setSelectedSliceIndex}
+      selectedValue={selectedSliceIndex.toString()}
+      onSelect={(selected) => onSelect(Number(selected))}
       buttonClassName={styles.button}
       buttonContent={(value) => {
         return (
