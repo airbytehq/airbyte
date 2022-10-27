@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -21,6 +22,9 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -88,6 +92,20 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     return Set
         .of("information_schema", "pg_catalog", "pg_internal", "catalog_history", "pg_extension",
             "crdb_internal");
+  }
+
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final JsonNode state)
+      throws Exception {
+    final AirbyteConnectionStatus check = check(config);
+
+    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
+      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
+    }
+
+    return super.read(config, catalog, state);
   }
 
   @Override
