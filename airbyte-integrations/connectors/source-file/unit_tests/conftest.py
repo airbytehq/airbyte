@@ -35,7 +35,7 @@ def invalid_config(read_file):
 
 
 @pytest.fixture
-def non_direct_url_provided_config():
+def config_dropbox_link():
     return {
         "dataset_name": "test",
         "format": "csv",
@@ -64,3 +64,17 @@ def absolute_path():
 @pytest.fixture
 def test_files():
     return "../integration_tests/sample_files"
+
+
+@pytest.fixture
+def test_read_config():
+    return {
+        "dataset_name": "integrationTestFile",
+        "format": "csv",
+        "url": "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv",
+        "provider": {
+            "storage": "HTTPS",
+            "reader_impl": "gcsfs",
+            "user_agent": False,
+        },
+    }

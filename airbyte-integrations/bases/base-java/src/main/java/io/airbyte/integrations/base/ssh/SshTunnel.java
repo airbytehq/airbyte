@@ -142,7 +142,7 @@ public class SshTunnel implements AutoCloseable {
         URL urlObject = null;
         try {
           urlObject = new URL(remoteServiceUrl);
-        } catch (MalformedURLException e) {
+        } catch (final MalformedURLException e) {
           AirbyteTraceMessageUtility.emitConfigErrorTrace(e,
               String.format("Provided value for remote service URL is not valid: %s", remoteServiceUrl));
         }
@@ -184,7 +184,8 @@ public class SshTunnel implements AutoCloseable {
         Jsons.replaceNestedInt(clone, portKey, tunnelLocalPort);
       }
       if (endPointKey != null) {
-        URL tunnelEndPointURL = new URL(remoteServiceProtocol, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), tunnelLocalPort, remoteServicePath);
+        final URL tunnelEndPointURL =
+            new URL(remoteServiceProtocol, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), tunnelLocalPort, remoteServicePath);
         Jsons.replaceNestedString(clone, Arrays.asList(endPointKey), tunnelEndPointURL.toString());
       }
       return clone;
@@ -297,6 +298,7 @@ public class SshTunnel implements AutoCloseable {
    * From the OPENSSH private key string, use mina-sshd to deserialize the key pair, reconstruct the
    * keys from the key info, and return the key pair for use in authentication.
    *
+   * @return The {@link KeyPair} to add - may not be {@code null}
    * @see <a href=
    *      "https://javadoc.io/static/org.apache.sshd/sshd-common/2.8.0/org/apache/sshd/common/config/keys/loader/KeyPairResourceLoader.html#loadKeyPairs-org.apache.sshd.common.session.SessionContext-org.apache.sshd.common.util.io.resource.IoResource-org.apache.sshd.common.config.keys.FilePasswordProvider-">loadKeyPairs()</a>
    */
@@ -306,7 +308,10 @@ public class SshTunnel implements AutoCloseable {
         .getKeyPairResourceParser()
         .loadKeyPairs(null, null, null, new StringReader(validatedKey));
 
-    return (keyPairs == null) ? null : keyPairs.iterator().next();
+    if (keyPairs != null && keyPairs.iterator().hasNext()) {
+      return keyPairs.iterator().next();
+    }
+    throw new RuntimeException("Unable to load private key pairs, verify key pairs are properly inputted");
   }
 
   private String validateKey() {
