@@ -20,13 +20,18 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
+import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationUpdate;
+import io.airbyte.api.model.generated.FieldTransform;
 import io.airbyte.api.model.generated.JobIdRequestBody;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.SourceCoreConfig;
@@ -36,6 +41,8 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceUpdate;
+import io.airbyte.api.model.generated.StreamTransform;
+import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
@@ -67,6 +74,7 @@ import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.errors.ValueConflictKnownException;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.server.scheduler.EventRunner;
@@ -518,6 +526,103 @@ class SchedulerHandlerTest {
     assertFalse(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
     verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION));
+  }
+
+  @Test
+  void testDiscoverSchemaFromSourceIdWithConnectionIdNonBreaking() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    final UUID connectionId = UUID.randomUUID();
+    final UUID discoveredCatalogId = UUID.randomUUID();
+    final SynchronousResponse<UUID> discoverResponse = (SynchronousResponse<UUID>) jobResponse;
+    final SourceDiscoverSchemaRequestBody request =
+        new SourceDiscoverSchemaRequestBody().sourceId(source.getSourceId()).connectionId(connectionId).disableCache(true);
+    final StreamTransform streamTransform = new StreamTransform().transformType(TransformTypeEnum.REMOVE_STREAM)
+        .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("dogs"));
+    final CatalogDiff catalogDiff = new CatalogDiff().addTransformsItem(streamTransform);
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPO)
+            .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withProtocolVersion(SOURCE_PROTOCOL_VERSION)
+            .withSourceDefinitionId(source.getSourceDefinitionId()));
+    when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
+    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION)))
+        .thenReturn(discoverResponse);
+
+    when(discoverResponse.isSuccess()).thenReturn(true);
+    when(discoverResponse.getOutput()).thenReturn(discoveredCatalogId);
+
+    final AirbyteCatalog airbyteCatalogCurrent = new AirbyteCatalog().withStreams(Lists.newArrayList(
+        CatalogHelpers.createAirbyteStream("shoes", Field.of("sku", JsonSchemaType.STRING)),
+        CatalogHelpers.createAirbyteStream("dogs", Field.of("name", JsonSchemaType.STRING))));
+
+    final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent));
+    when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
+
+    final ActorCatalog actorCatalog = new ActorCatalog()
+        .withCatalog(Jsons.jsonNode(airbyteCatalog))
+        .withCatalogHash("")
+        .withId(discoveredCatalogId);
+    when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
+
+    final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
+        io.airbyte.protocol.models.AirbyteCatalog.class);
+    final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
+
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
+    assertEquals(actual.getCatalogDiff(), catalogDiff);
+    assertEquals(actual.getCatalog(), expectedActorCatalog);
+  }
+
+  @Test
+  void testDiscoverSchemaFromSourceIdWithConnectionIdBreaking() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    final UUID connectionId = UUID.randomUUID();
+    final UUID discoveredCatalogId = UUID.randomUUID();
+    final SynchronousResponse<UUID> discoverResponse = (SynchronousResponse<UUID>) jobResponse;
+    final SourceDiscoverSchemaRequestBody request =
+        new SourceDiscoverSchemaRequestBody().sourceId(source.getSourceId()).connectionId(connectionId).disableCache(true);
+    final StreamTransform streamTransform = new StreamTransform().transformType(TransformTypeEnum.UPDATE_STREAM)
+        .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("dogs")).addUpdateStreamItem(new FieldTransform().transformType(
+            FieldTransform.TransformTypeEnum.REMOVE_FIELD).breaking(true));
+    final CatalogDiff catalogDiff = new CatalogDiff().addTransformsItem(streamTransform);
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPO)
+            .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withProtocolVersion(SOURCE_PROTOCOL_VERSION)
+            .withSourceDefinitionId(source.getSourceDefinitionId()));
+    when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
+    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION)))
+        .thenReturn(discoverResponse);
+
+    when(discoverResponse.isSuccess()).thenReturn(true);
+    when(discoverResponse.getOutput()).thenReturn(discoveredCatalogId);
+
+    final AirbyteCatalog airbyteCatalogCurrent = new AirbyteCatalog().withStreams(Lists.newArrayList(
+        CatalogHelpers.createAirbyteStream("shoes", Field.of("sku", JsonSchemaType.STRING)),
+        CatalogHelpers.createAirbyteStream("dogs", Field.of("name", JsonSchemaType.STRING))));
+
+    final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent));
+    when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
+
+    final ActorCatalog actorCatalog = new ActorCatalog()
+        .withCatalog(Jsons.jsonNode(airbyteCatalog))
+        .withCatalogHash("")
+        .withId(discoveredCatalogId);
+    when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
+
+    final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
+        io.airbyte.protocol.models.AirbyteCatalog.class);
+    final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
+    final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate().connectionId(connectionId).breakingChange(true);
+
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
+    assertEquals(actual.getCatalogDiff(), catalogDiff);
+    assertEquals(actual.getCatalog(), expectedActorCatalog);
+    verify(connectionsHandler).updateConnection(expectedConnectionUpdate);
   }
 
   @Test
