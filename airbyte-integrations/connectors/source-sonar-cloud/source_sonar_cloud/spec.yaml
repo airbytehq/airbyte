@@ -27,10 +27,11 @@ connectionSpecification:
         - airbyte
     component_keys:
       title:  Component Keys
-      type: string
+      type: array
       description: Comma-separated list of component keys.
       examples:
-        - airbyte-ws-order,airbyte-ws-checkout
+        - airbyte-ws-order
+        - airbyte-ws-checkout
     start_date:
       title: Start date
       type: string

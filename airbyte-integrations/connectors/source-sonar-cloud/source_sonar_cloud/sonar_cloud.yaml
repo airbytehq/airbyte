@@ -49,7 +49,7 @@ definitions:
     $options:
       name: "issues"
       primary_key: "key"
-      path: "/issues/search?componentKeys={{ config['component_keys'] }}"
+      path: "/issues/search?componentKeys={{ ','.join(config.get('component_keys', [])) }}"
   metrics_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
