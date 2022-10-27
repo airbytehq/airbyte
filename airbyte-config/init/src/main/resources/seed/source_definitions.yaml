@@ -634,7 +634,7 @@
 - name: MailerLite
   sourceDefinitionId: dc3b9003-2432-4e93-a7f4-4620b0f14674
   dockerRepository: airbyte/source-mailerlite
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailerlite
   sourceType: api
   releaseStage: alpha
