@@ -46,7 +46,6 @@ class DestinationMeilisearch(Destination):
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
             client = get_client(config=config)
-            writer = MeiliWriter(client, "_airbyte", self.primary_key)
 
             create_index_job = client.create_index("_airbyte", {"primaryKey": "id"})
             client.wait_for_task(create_index_job["taskUid"])

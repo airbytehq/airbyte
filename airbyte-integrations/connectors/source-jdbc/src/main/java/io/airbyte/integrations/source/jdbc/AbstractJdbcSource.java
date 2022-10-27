@@ -387,7 +387,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                                          final Connection connection,
                                          final List<String> columnNames,
                                          final String schemaName,
-                                         final String tableName) throws SQLException {
+                                         final String tableName)
+      throws SQLException {
     return sourceOperations.enquoteIdentifierList(connection, columnNames);
   }
 

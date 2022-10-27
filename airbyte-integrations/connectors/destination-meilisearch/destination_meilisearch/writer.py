@@ -3,11 +3,14 @@
 #
 
 from collections.abc import Mapping
-from uuid import uuid4
-from meilisearch import Client
 from logging import getLogger
+from uuid import uuid4
+
+from meilisearch import Client
 
 logger = getLogger("airbyte")
+
+
 class MeiliWriter:
     write_buffer = []
     flush_interval = 50000
@@ -31,5 +34,3 @@ class MeiliWriter:
         response = self.client.index(self.steam_name).add_documents(self.write_buffer)
         self.client.wait_for_task(response.task_uid, 1800000, 1000)
         self.write_buffer.clear()
-
-
