@@ -2,11 +2,24 @@ import { FormattedMessage } from "react-intl";
 
 import { Cell, Header } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
+import { Text } from "components/ui/Text";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { links } from "utils/links";
+
+import styles from "./CatalogTreeTableHeader.module.scss";
+
+const TextCell: React.FC = ({ children }) => {
+  return (
+    <Cell>
+      <Text size="sm" className={styles.cellText}>
+        {children}
+      </Text>
+    </Cell>
+  );
+};
 
 export const CatalogTreeTableHeader: React.FC = () => {
   const { mode } = useConnectionFormService();
@@ -23,48 +36,48 @@ export const CatalogTreeTableHeader: React.FC = () => {
           />
         )}
       </Cell>
-      <Cell>
+      <TextCell>
         <FormattedMessage id="sources.sync" />
-      </Cell>
-      <Cell>
+      </TextCell>
+      {/* <TextCell>
         <FormattedMessage id="form.fields" />
-      </Cell>
-      <Cell>
+      </TextCell> */}
+      <TextCell>
         <FormattedMessage id="form.namespace" />
-      </Cell>
-      <Cell>
+      </TextCell>
+      <TextCell>
         <FormattedMessage id="form.streamName" />
-      </Cell>
-      <Cell>
+      </TextCell>
+      <TextCell>
         <FormattedMessage id="form.syncMode" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
           <TooltipLearnMoreLink url={links.syncModeLink} />
         </InfoTooltip>
-      </Cell>
-      <Cell>
+      </TextCell>
+      <TextCell>
         <FormattedMessage id="form.cursorField" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.cursor.info" />
         </InfoTooltip>
-      </Cell>
-      <Cell>
+      </TextCell>
+      <TextCell>
         <FormattedMessage id="form.primaryKey" />
-      </Cell>
+      </TextCell>
       <Cell />
-      <Cell>
+      <TextCell>
         <FormattedMessage id="form.namespace" />
-      </Cell>
-      <Cell>
+      </TextCell>
+      <TextCell>
         <FormattedMessage id="form.streamName" />
-      </Cell>
-      <Cell>
+      </TextCell>
+      <TextCell>
         <FormattedMessage id="form.syncMode" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
           <TooltipLearnMoreLink url={links.syncModeLink} />
         </InfoTooltip>
-      </Cell>
+      </TextCell>
     </Header>
   );
 };

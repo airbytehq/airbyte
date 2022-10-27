@@ -1,5 +1,8 @@
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FormattedMessage } from "react-intl";
+
+import { Text } from "components/ui/Text";
 
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
@@ -19,9 +22,19 @@ export const StreamConnectionHeader: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.connector}>{renderIcon(sourceDefinition.icon)} Source</div>
+      <div className={styles.connector}>
+        {renderIcon(sourceDefinition.icon)}{" "}
+        <Text as="h5" size="sm">
+          <FormattedMessage id="connectionForm.sourceTitle" />
+        </Text>
+      </div>
       <FontAwesomeIcon icon={faArrowRight} />
-      <div className={styles.connector}>{renderIcon(destinationDefinition.icon)} Destination</div>
+      <div className={styles.connector}>
+        {renderIcon(destinationDefinition.icon)}{" "}
+        <Text as="h5" size="sm">
+          <FormattedMessage id="connectionForm.destinationTitle" />
+        </Text>
+      </div>
     </div>
   );
 };

@@ -5,16 +5,22 @@ $icon-size: 15px;
 .container {
   display: flex;
   flex-direction: row;
+  align-items: center;
   justify-content: space-between;
-  padding: variables.$spacing-lg calc(variables.$spacing-lg * 2);
+  padding: variables.$spacing-lg calc(variables.$spacing-lg * 2) 0;
+  height: 43px;
 }
 
 .connector {
   display: flex;
   flex-direction: row;
+  flex: none;
+  align-self: stretch;
+  flex-grow: 0;
 }
 
 .icon {
   height: $icon-size;
   width: $icon-size;
+  padding-right: variables.$spacing-sm;
 }
