@@ -440,11 +440,9 @@ public class SchedulerHandler {
       if (streamTransform.getTransformType() != TransformTypeEnum.UPDATE_STREAM) {
         return;
       }
-      streamTransform.getUpdateStream().stream().forEach(fieldTransform -> {
-        if (fieldTransform.getBreaking()) {
-          isBreaking.set(true);
-        }
-      });
+
+      boolean anyBreakingFieldTransforms = streamTransform.getUpdateStream().stream().anyMatch(fieldTransform -> fieldTransform.getBreaking());
+      isBreaking.set(anyBreakingFieldTransforms);
     });
     return isBreaking.get();
   }
