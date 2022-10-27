@@ -6,6 +6,7 @@ import pendulum
 import pytest
 import requests
 import responses
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_iterable.streams import (
     Campaigns,
@@ -173,3 +174,16 @@ def test_get_updated_state(current_state, record_date, expected_state):
         latest_record={"profileUpdatedAt": pendulum.parse(record_date)},
     )
     assert state == expected_state
+
+
+@responses.activate
+def test_stream_stops_on_401(mock_lists_resp):
+    # no requests should be made after getting 401 error despite the multiple slices
+    users_stream = ListUsers(authenticator=NoAuth())
+    responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", json={}, status=401)
+    slices = 0
+    for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        slices += 1
+        _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
+    assert len(responses.calls) == 1
+    assert slices > 1

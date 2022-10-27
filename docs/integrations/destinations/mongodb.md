@@ -60,6 +60,26 @@ You should now have all the requirements needed to configure MongoDB as a destin
 
 For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.3/fundamentals/connection/).
 
+### Connection via SSH Tunnel
+
+Airbyte has the ability to connect to an MongoDB instance via an SSH Tunnel.
+The reason you might want to do this because it is not possible \(or against security policy\) to connect to your MongoDB instance directly \(e.g. it does not have a public IP address\).
+
+When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server \(a.k.a. a bastion sever\) that _does_ have direct access to the MongoDB instance.
+Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+
+Using this feature requires additional configuration, when creating the source. We will talk through what each piece of configuration means.
+
+1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
+2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
+    1. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel \(see below for more information on generating this key\).
+    2. Choose `Password Authentication` if you will be using a password as your secret for establishing the SSH Tunnel.
+3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will connect to. This should be a hostname or an IP Address.
+4. `SSH Connection Port` is the port on the bastion server with which to make the SSH connection. The default port for SSH connections is `22`, so unless you have explicitly changed something, go with the default.
+5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the TiDB username.
+6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` TiDB password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
+7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
+
 ## Naming Conventions
 
 The following information comes from the [MongoDB Limits and Thresholds](https://docs.mongodb.com/manual/reference/limits/) documentation.
@@ -95,13 +115,14 @@ Collection names should begin with an underscore or a letter character, and cann
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.7 | 2022-09-02 | [16025](https://github.com/airbytehq/airbyte/pull/16025) | Remove additionalProperties:false from spec |
-| 0.1.6 | 2022-08-02 | [15211](https://github.com/airbytehq/airbyte/pull/15211) | Fix standard mode |
-| 0.1.5 | 2022-07-27 | [14561](https://github.com/airbytehq/airbyte/pull/14561) | Change Airbyte Id from MD5 to SHA256 |
-| 0.1.4 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.1.3 | 2021-12-30 | [8809](https://github.com/airbytehq/airbyte/pull/8809) | Update connector fields title/description |
-| 0.1.2 | 2021-10-18 | [6945](https://github.com/airbytehq/airbyte/pull/6945) | Create a secure-only MongoDb destination |
-| 0.1.1 | 2021-09-29 | [6536](https://github.com/airbytehq/airbyte/pull/6536) | Destination MongoDb: added support via TLS/SSL |
+| Version | Date       | Pull Request                                             | Subject                                                    |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------|
+| 0.1.8   | 2022-10-26 | [18280](https://github.com/airbytehq/airbyte/pull/18280) | Adds SSH tunneling                                         |
+| 0.1.7   | 2022-09-02 | [16025](https://github.com/airbytehq/airbyte/pull/16025) | Remove additionalProperties:false from spec                |
+| 0.1.6   | 2022-08-02 | [15211](https://github.com/airbytehq/airbyte/pull/15211) | Fix standard mode                                          |
+| 0.1.5   | 2022-07-27 | [14561](https://github.com/airbytehq/airbyte/pull/14561) | Change Airbyte Id from MD5 to SHA256                       |
+| 0.1.4   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.1.3   | 2021-12-30 | [8809](https://github.com/airbytehq/airbyte/pull/8809)   | Update connector fields title/description                  |
+| 0.1.2   | 2021-10-18 | [6945](https://github.com/airbytehq/airbyte/pull/6945)   | Create a secure-only MongoDb destination                   |
+| 0.1.1   | 2021-09-29 | [6536](https://github.com/airbytehq/airbyte/pull/6536)   | Destination MongoDb: added support via TLS/SSL             |
 
