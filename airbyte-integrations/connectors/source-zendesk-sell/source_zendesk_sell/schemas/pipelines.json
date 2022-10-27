@@ -17,7 +17,7 @@
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
-    }, 
+    },
     "disabled": {
       "type": ["null", "boolean"]
     }
