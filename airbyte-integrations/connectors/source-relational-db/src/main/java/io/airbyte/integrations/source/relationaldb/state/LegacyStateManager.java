@@ -4,17 +4,16 @@
 
 package io.airbyte.integrations.source.relationaldb.state;
 
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -44,6 +43,9 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
    */
   private static final Function<DbStreamState, List<String>> CURSOR_FIELD_FUNCTION = DbStreamState::getCursorField;
 
+  private static final Function<DbStreamState, Long> CURSOR_RECORD_COUNT_FUNCTION =
+      stream -> Objects.requireNonNullElse(stream.getCursorRecordCount(), 0L);
+
   /**
    * {@link Function} that creates an {@link AirbyteStreamNameNamespacePair} from the stream state.
    */
@@ -70,9 +72,10 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
    */
   public LegacyStateManager(final DbState dbState, final ConfiguredAirbyteCatalog catalog) {
     super(catalog,
-        () -> dbState.getStreams(),
+        dbState::getStreams,
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
+        CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
 
     this.cdcStateManager = new CdcStateManager(dbState.getCdcState(), AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog));
@@ -99,11 +102,14 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
 
   @Override
   public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
+    return updateAndEmit(pair, cursor, 0L);
+  }
+
+  @Override
+  public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final long cursorRecordCount) {
     // cdc file gets updated by debezium so the "update" part is a no op.
     if (!isCdc) {
-      final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
-      Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
-      cursorInfo.get().setCursor(cursor);
+      return super.updateAndEmit(pair, cursor, cursorRecordCount);
     }
 
     return toState(Optional.ofNullable(pair));

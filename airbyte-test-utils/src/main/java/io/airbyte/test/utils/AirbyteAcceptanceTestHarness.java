@@ -126,7 +126,7 @@ public class AirbyteAcceptanceTestHarness {
   private static final DockerImageName SOURCE_POSTGRES_IMAGE_NAME = DockerImageName.parse("debezium/postgres:13-alpine")
       .asCompatibleSubstituteFor("postgres");
 
-  private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
+  private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.2";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
 
   public static final String POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION = "0.4.26";
@@ -298,7 +298,9 @@ public class AirbyteAcceptanceTestHarness {
       for (final UUID destinationId : destinationIds) {
         deleteDestination(destinationId);
       }
-      destinationPsql.stop();
+      if (!isGke) {
+        destinationPsql.stop();
+      }
     } catch (final Exception e) {
       LOGGER.error("Error tearing down test fixtures:", e);
     }
@@ -795,11 +797,11 @@ public class AirbyteAcceptanceTestHarness {
   @SuppressWarnings("BusyWait")
   public static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId)
       throws ApiException, InterruptedException {
-    ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+    ConnectionState connectionState = apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     int count = 0;
     while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {
       LOGGER.info("fetching connection state. attempt: {}", count++);
-      connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+      connectionState = apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
       sleep(1000);
     }
     return connectionState;

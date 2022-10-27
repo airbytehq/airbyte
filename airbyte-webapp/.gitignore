@@ -29,5 +29,6 @@ yarn-error.log*
 
 storybook-static/
 
-# Ignore generated API client, since it's automatically generated
+# Ignore generated API clients, since they're automatically generated
 /src/core/request/AirbyteClient.ts
+/src/core/request/ConnectorBuilderClient.ts
